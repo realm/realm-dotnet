@@ -94,9 +94,6 @@
     <Reference Include="Remotion.Linq">
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.80.0\lib\Xamarin.iOS10\Realm.dll</HintPath>
-    </Reference>
     <Reference Include="SkiaSharp">
       <HintPath>..\packages\SkiaSharp.1.54.1\lib\XamariniOS\SkiaSharp.dll</HintPath>
     </Reference>
@@ -120,6 +117,7 @@
     <None Include="..\iOS\Entitlements.plist" />
     <None Include="..\iOS\packages.config" />
     <None Include="FodyWeavers.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\iOS\Main.cs" />
@@ -129,8 +127,13 @@
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Platform.XamarinIOS\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
+      <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
+      <Name>Realm.XamarinIOS</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.80.0\build\Realm.targets" Condition="Exists('..\packages\Realm.0.80.0\build\Realm.targets')" />
 </Project>
