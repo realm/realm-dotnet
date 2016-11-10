@@ -20,8 +20,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+#if __IOS__
+using ObjCRuntime;
+#endif
 
 namespace Realms
 {
@@ -34,6 +39,26 @@ namespace Realms
     [Preserve(AllMembers = true, Conditional = false)]
     public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
+        #region static
+
+        static RealmObject()
+        {
+            NativeCommon.register_notify_realm_object_changed(NotifyRealmObjectPropertyChanged);
+        }
+
+        #if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+        #endif
+        private static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        {
+            var gch = GCHandle.FromIntPtr(realmObjectHandle);
+            var realmObject = (RealmObject)gch.Target;
+            var propertyName = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex).Name;
+            realmObject.RaisePropertyChanged(propertyName);
+        }
+
+        #endregion
+
         private Realm _realm;
         private ObjectHandle _objectHandle;
         private Metadata _metadata;

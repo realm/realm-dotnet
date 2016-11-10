@@ -83,18 +83,31 @@ namespace IntegrationTests.Shared
         [Test]
         public void ShouldTriggerObjectPropertyChangedEvent()
         {
-            var wasNotified = false;
+            string notifiedPropertyName = null;
             var person = new Person();
             _realm.Write(() => 
             {
                 _realm.Add(person);
             });
 
-            person.PropertyChanged += (sender, e) => { wasNotified = true; };
+            person.PropertyChanged += (sender, e) => 
+            { 
+                notifiedPropertyName = e.PropertyName;
+            };
 
-            _realm.Write(() => person.FirstName = "Peter");
+            Task.Run(() =>
+            {
+                var realm = Realm.GetInstance(_databasePath);
+                var p = realm.All<Person>().First();
+                realm.Write(() =>
+                {
+                    p.FirstName = "Peter";
+                });
+            }).Wait();
 
-            Assert.That(wasNotified, Is.True);
+            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+
+            Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
         }
 
         [Test]

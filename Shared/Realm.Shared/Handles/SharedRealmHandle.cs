@@ -79,7 +79,7 @@ namespace Realms
             public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_add_observed_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, ObjectHandle objectHandle, out NativeException ex);
+            public static extern void add_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
         }
 
         [Preserve]
@@ -116,10 +116,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void AddObservedObject(IntPtr managedRealmHandle, ObjectHandle objectHandle)
+        public void AddObservedObject(IntPtr managedRealmHandle, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle)
         {
             NativeException nativeException;
-            NativeMethods.add_observed_object(this, managedRealmHandle, objectHandle, out nativeException);
+            NativeMethods.add_observed_object(this, managedRealmHandle, objectHandle, managedRealmObjectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
