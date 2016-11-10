@@ -25,7 +25,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidLinkMode>None</AndroidLinkMode>
+    <AndroidSupportedAbis>arm64-v8a;armeabi-v7a;x86;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,6 +36,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,9 +48,6 @@
     </Reference>
     <Reference Include="Remotion.Linq">
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.80.0\lib\MonoAndroid44\Realm.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp">
       <HintPath>..\packages\SkiaSharp.1.54.1\lib\MonoAndroid\SkiaSharp.dll</HintPath>
@@ -69,6 +67,7 @@
     <None Include="..\Droid\Assets\AboutAssets.txt" />
     <None Include="..\Droid\packages.config" />
     <None Include="FodyWeavers.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml" />
@@ -79,8 +78,41 @@
     <AndroidResource Include="Resources\mipmap-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Platform.XamarinAndroid\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
+      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
+      <Name>Realm.XamarinAndroid</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.80.0\build\Realm.targets" Condition="Exists('..\packages\Realm.0.80.0\build\Realm.targets')" />
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\x86_64\libwrappers.so">
+      <Link>wrappers\x86_64\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\arm64-v8a\libwrappers.so">
+      <Link>wrappers\arm64-v8a\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\x86_64\libwrappers.so">
+      <Link>wrappers\x86_64\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\arm64-v8a\libwrappers.so">
+      <Link>wrappers\arm64-v8a\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
 </Project>
