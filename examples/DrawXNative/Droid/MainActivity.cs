@@ -1,26 +1,34 @@
 ﻿using Android.App;
 using Android.Widget;
 using Android.OS;
+using SkiaSharp.Views;
+using DrawXShared;
 
 namespace DrawX.Droid
 {
     [Activity(Label = "DrawX", MainLauncher = true, Icon = "@mipmap/icon")]
     public class MainActivity : Activity
     {
-        int count = 1;
+        RealmDraw _drawer;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            _drawer = new RealmDraw();
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
             // Get our button from the layout resource,
             // and attach an event to it
-            Button button = FindViewById<Button>(Resource.Id.myButton);
+            SKCanvasView canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
+            canvas.PaintSurface += OnPaintSample;
 
-            button.Click += delegate { button.Text = string.Format("{0} clicks!", count++); };
+        }
+
+        private void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
+        {
+            _drawer.DrawBackground(e.Surface.Canvas, e.Info.Width, e.Info.Height);
         }
     }
 }
