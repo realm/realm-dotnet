@@ -8,6 +8,8 @@ This version is a write from scratch using Xamarin and the [SkiaSharp](https://g
 
 To allow testers to have both this and the original on the same device, it is called DrawX.
 
+Note for our testing purposes, the `DrawXNativeLocal` variants use an adjacent Realm project directly rather than the Realm from NuGet, to be able to pull in sync code in progress.
+
 ## Installation Instructions
 
 1. [Download the macOS version](https://realm.io/docs/realm-mobile-platform/get-started/) of the Realm Mobile Platform.
