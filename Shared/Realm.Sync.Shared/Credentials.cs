@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Json;
 
 namespace Realms.Sync
 {
@@ -123,5 +124,39 @@ namespace Realms.Sync
         public string Token { get; private set; }
 
         public IReadOnlyDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
+
+        private Credentials()
+        {
+        }
+
+        internal JsonObject ToJson()
+        {
+            var user_info = new JsonObject();
+            foreach (var kvp in UserInfo)
+            {
+                JsonValue value = null;
+                if (kvp.Value is string)
+                {
+                    value = (string)kvp.Value;
+                }
+                else if (kvp.Value is bool)
+                {
+                    value = (bool)kvp.Value;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Fail($"Unsupported type in JSON conversion '{kvp.Value?.GetType()}'");
+                }
+
+                user_info.Add(kvp.Key, value);
+            }
+
+            return new JsonObject
+            {
+                ["data"] = Token,
+                ["provider"] = IdentityProvider,
+                ["user_info"] = user_info
+            };
+        }
     }
 }

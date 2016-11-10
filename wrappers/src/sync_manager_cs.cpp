@@ -18,6 +18,7 @@
 
 #include <future>
 #include <realm.hpp>
+#include <realm/util/uri.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -39,11 +40,15 @@ struct SyncConfiguration
     size_t url_len;
 };
 
+void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
+
 extern "C" {
-REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len)
+REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len, decltype(s_refresh_access_token_callback) refresh_callback)
 {
     Utf16StringAccessor base_path(base_path_buf, base_path_len);
     SyncManager::shared().configure_file_system(base_path);
+
+    s_refresh_access_token_callback = refresh_callback;
 }
     
     
@@ -61,13 +66,15 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         config.schema_version = configuration.schema_version;
 
         Utf16StringAccessor realm_url(sync_configuration.url, sync_configuration.url_len);
-        auto handler = [=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
+        auto handler = [=](const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
             if (config.user->is_admin()) {
                 std::async([session, user=config.user]() {
                     session->refresh_access_token(user->refresh_token(), user->server_url());
                 });
             }
-            //TODO
+            else {
+                s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
+            }
         };
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url.to_string(), SyncSessionStopPolicy::AfterChangesUploaded, handler);
         config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url.to_string());

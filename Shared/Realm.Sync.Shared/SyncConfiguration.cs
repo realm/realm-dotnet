@@ -29,11 +29,6 @@ namespace Realms.Sync
 
         public bool ShouldDeleteRealmOnLogOut { get; private set; }
 
-        static SyncConfiguration()
-        {
-            SharedRealmHandleExtensions.InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-        }
-
         public SyncConfiguration(User user, Uri serverUri)
         {
             this.User = user;
@@ -42,8 +37,6 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var srHandle = new SharedRealmHandle();
-
             var configuration = new Realms.Native.Configuration
             {
                 schema_version = SchemaVersion
@@ -55,9 +48,7 @@ namespace Realms.Sync
                 Url = ServerUri.ToString()
             };
 
-            var srPtr = srHandle.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-
-            srHandle.SetHandle(srPtr);
+            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             return new Realm(srHandle, this, schema);
         }
     }
