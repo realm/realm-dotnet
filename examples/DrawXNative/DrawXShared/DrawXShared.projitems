@@ -8,4 +8,8 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>DrawXShared</Import_RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RealmDraw.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmDrawerMedia.cs" />
+  </ItemGroup>
 </Project>
