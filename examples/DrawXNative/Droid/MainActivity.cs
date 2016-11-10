@@ -77,6 +77,12 @@ namespace DrawX.Droid
                 _canvas.Invalidate();
             }
         }
+
+        public override void OnBackPressed()
+        {
+            _drawer.ErasePaths();
+            _canvas.Invalidate();
+        }
     }
 }
 
