@@ -54,12 +54,9 @@
     <Reference Include="SkiaSharp">
       <HintPath>..\packages\SkiaSharp.1.54.1\lib\MonoAndroid\SkiaSharp.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DrawX\DrawX.csproj">
-      <Project>{884FAFA0-25B9-49EE-8F7B-16CBDA425E1A}</Project>
-      <Name>DrawX</Name>
-    </ProjectReference>
+    <Reference Include="SkiaSharp.Views.Android">
+      <HintPath>..\packages\SkiaSharp.Views.1.54.1-beta1\lib\MonoAndroid\SkiaSharp.Views.Android.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -82,6 +79,7 @@
     <AndroidResource Include="Resources\mipmap-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
   </ItemGroup>
+  <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
   <Import Project="..\packages\Realm.0.80.0\build\Realm.targets" Condition="Exists('..\packages\Realm.0.80.0\build\Realm.targets')" />
