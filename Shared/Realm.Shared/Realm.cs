@@ -433,6 +433,13 @@ namespace Realms
             return new SortDescriptorBuilder(metadata);
         }
 
+        internal void SubscribeForNotifications(RealmObject @object)
+        {
+            // TODO: add objects to a local collection as well
+            var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            this.SharedRealmHandle.AddObservedObject(GCHandle.ToIntPtr(managedRealmHandle), @object.ObjectHandle);
+        }
+
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>

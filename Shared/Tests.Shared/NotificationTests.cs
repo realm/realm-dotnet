@@ -81,6 +81,23 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void ShouldTriggerObjectPropertyChangedEvent()
+        {
+            var wasNotified = false;
+            var person = new Person();
+            _realm.Write(() => 
+            {
+                _realm.Add(person);
+            });
+
+            person.PropertyChanged += (sender, e) => { wasNotified = true; };
+
+            _realm.Write(() => person.FirstName = "Peter");
+
+            Assert.That(wasNotified, Is.True);
+        }
+
+        [Test]
         public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();

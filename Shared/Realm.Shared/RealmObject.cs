@@ -46,7 +46,7 @@ namespace Realms
             {
                 if (IsManaged && _propertyChanged == null)
                 {
-                    // TODO: Subscribe
+                    _realm.SubscribeForNotifications(this);
                 }
 
                 _propertyChanged += value;
@@ -99,7 +99,7 @@ namespace Realms
 
             if (_propertyChanged != null)
             {
-                // TODO: subscribe
+                realm.SubscribeForNotifications(this);
             }
         }
 
