@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Session.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
