@@ -129,14 +129,14 @@ namespace Realms
             }
         }
 
-        internal void RemoveFromRealm()
+        internal void RemoveFromRealm(Realm realm)
         {
             if (_propertyChanged != null)
             {
                 UnsubscribeFromNotifications();
             }
 
-            ObjectHandle.RemoveFromRealm(_realm.SharedRealmHandle);
+            ObjectHandle.RemoveFromRealm(realm.SharedRealmHandle);
         }
 
         internal class Metadata
