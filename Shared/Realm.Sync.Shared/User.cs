@@ -93,7 +93,8 @@ namespace Realms.Sync
             Handle.LogOut();
         }
 
-        internal async Task<string> RefreshAccessToken(string path)
+        // returns a tuple of access token and resolved realm path
+        internal async Task<Tuple<string, string>> RefreshAccessToken(string path)
         {
             var json = new JsonObject
             {
@@ -103,7 +104,8 @@ namespace Realms.Sync
             };
 
             var result = await MakeAuthRequestAsync(ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            return result["access_token"]["token"];
+            var access_token = result["access_token"];
+            return Tuple.Create<string, string>(access_token["token"], access_token["token_data"]["path"]);
         }
 
         private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)

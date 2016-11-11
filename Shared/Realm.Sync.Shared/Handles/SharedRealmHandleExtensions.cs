@@ -71,12 +71,22 @@ namespace Realms.Sync
             userHandle.SetHandle(userHandlePtr);
             var user = new User(userHandle);
 
+            var sessionHandle = new SessionHandle();
+            sessionHandle.SetHandle(sessionHandlePtr);
+
             var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
 
             user.RefreshAccessToken(realmUri.AbsolutePath)
                 .ContinueWith(t =>
             {
-                var accessToken = t.Result;
+                if (t.IsFaulted)
+                {
+                    // TODO: raise error event on the session
+                }
+                else
+                {
+                    sessionHandle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
+                }
             });
         }
     }

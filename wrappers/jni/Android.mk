@@ -73,6 +73,7 @@ LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
 
 LOCAL_SRC_FILES += src/sync_manager_cs.cpp
 LOCAL_SRC_FILES += src/sync_user_cs.cpp
+LOCAL_SRC_FILES += src/sync_session_cs.cpp
 
 LOCAL_STATIC_LIBRARIES := realm-sync-android
 # endif
