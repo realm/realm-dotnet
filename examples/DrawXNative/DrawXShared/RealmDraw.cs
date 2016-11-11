@@ -21,6 +21,8 @@ using System.Diagnostics;
 using SkiaSharp;
 using Realms;
 using Realms.Sync;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace DrawXShared
@@ -30,15 +32,54 @@ namespace DrawXShared
         private bool _isDrawing = false;
         private Realm _realm;
         private DrawPath _drawPath;
-        private SwatchColor _currentColor = SwatchColor.Flamingo;
+
+        #region Settings
+        private Realm _realmLocalSettings;
+        private DrawXSettings _savedSettings;
+        private SwatchColor _currentColorCache;
+        private SwatchColor currentColor
+        {
+            get
+            {
+                if (_savedSettings == null)
+                {
+                    _savedSettings = _realmLocalSettings.All<DrawXSettings>().FirstOrDefault();
+                    if (_savedSettings == null)
+                    {
+                        _realmLocalSettings.Write(() =>
+                        {
+                            _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
+                            _savedSettings.LastColorUsed = SwatchColor.Indigo.name;
+                        });
+                    }
+                    _currentColorCache = SwatchColor.colors[_savedSettings.LastColorUsed];
+                }
+                return _currentColorCache;
+            }
+            set
+            {
+                if (!_currentColorCache.name.Equals(value.name))
+                {
+                    _currentColorCache = value;
+                    _realmLocalSettings.Write(() => _savedSettings.LastColorUsed = _currentColorCache.name);
+                }
+
+            }
+        }
+        #endregion Settings
 
 
         public RealmDraw()
         {
             // TODO close the Realm
             // TODO allow entering credentials
-            Login().RunSynchronously();
-// simple local open            _realm = Realm.GetInstance("DrawX.realm");
+            //Login().RunSynchronously();
+            // simple local open            
+            _realm = Realm.GetInstance("DrawX.realm");
+            var settingsConf = new RealmConfiguration("DrawXsettings.realm");
+            settingsConf.ObjectClasses = new[] { typeof(DrawXSettings) };
+            settingsConf.SchemaVersion = 1;  // set explicitly and bump as we add setting properties
+            _realmLocalSettings = Realm.GetInstance(settingsConf);
         }
 
         private async Task Login()
@@ -47,29 +88,6 @@ namespace DrawXShared
             var credentials = Credentials.AccessToken(ADMIN_TOKEN, Guid.NewGuid().ToString(), true);
             var user = await User.LoginAsync(credentials, "http://localhost:9080");
             _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080/drawx")));
-        }
-
-        public void DrawBackground(SKCanvas canvas, int width, int height)
-        {
-            canvas.Clear(SKColors.White);
-
-            using (SKPaint paint = new SKPaint())
-            using (SKPath path = new SKPath())
-            {
-                paint.Style = SKPaintStyle.Stroke;
-                paint.StrokeWidth = 10;
-                paint.IsAntialias = true;
-                paint.StrokeCap = SKStrokeCap.Round;
-                paint.StrokeJoin = SKStrokeJoin.Round;
-                paint.Color = SwatchColor.Dove.color;//RealmDrawerMedia.Colors.XamarinGreen;
-
-                path.MoveTo(20, 20);
-                path.LineTo(400, 50);
-                path.LineTo(80, 100);
-                path.LineTo(300, 150);
-
-                canvas.DrawPath(path, paint);
-            }
         }
 
         // replaces the CanvasView.drawRect of the original
@@ -119,7 +137,7 @@ namespace DrawXShared
             _isDrawing = true;
             _realm.Write(() =>
             {
-                _drawPath = new DrawPath() { color = _currentColor.name };
+                _drawPath = new DrawPath() { color = currentColor.name };
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
                 _realm.Manage(_drawPath);
             });
