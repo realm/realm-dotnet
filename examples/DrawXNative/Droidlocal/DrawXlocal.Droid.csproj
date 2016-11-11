@@ -83,6 +83,10 @@
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Platform.XamarinAndroid\Realm.Sync.XamarinAndroid\Realm.Sync.XamarinAndroid.csproj">
+      <Project>{3379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
+      <Name>Realm.Sync.XamarinAndroid</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

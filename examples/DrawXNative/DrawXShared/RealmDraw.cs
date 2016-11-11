@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics;
 using SkiaSharp;
 using Realms;
+using Realms.Sync;
+using System.Threading.Tasks;
 
 namespace DrawXShared
 {
@@ -33,7 +36,17 @@ namespace DrawXShared
         public RealmDraw()
         {
             // TODO close the Realm
-            _realm = Realm.GetInstance("DrawX.realm");
+            // TODO allow entering credentials
+            Login().RunSynchronously();
+// simple local open            _realm = Realm.GetInstance("DrawX.realm");
+        }
+
+        private async Task Login()
+        {
+            const string ADMIN_TOKEN = "ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:C5cvsDDd43JhqNRTr83zp+w3ivo8PKa7dvPe2qxMRj7YB2ARjJzKwccVjyvYoYK9e9DQPAbXf/38lYeaGSKDrUQKnpAEXDS1KpVFTCRNIoihCil9WhwGlkHaSAAattn4yrD20Ej5mPDHPMvXcbEepotbg5bQYsteiBs5Ehudbw3Stl5NW9jwKhdNxtOAOoEp/iwIHHCOAkQDBEJCnjf9tI0OIoWhMknPgmBLgYUBiX0pogmtr2fzLvK/O84z+hObdzqf39YC2JniIkZnzBpn645zBKJP0Q0aJ3YaL+IEOzsupUhc2+opq/LtxdD9UgoTEd2w8miXFh3A/G2wS4wMbw==";
+            var credentials = Credentials.AccessToken(ADMIN_TOKEN, Guid.NewGuid().ToString(), true);
+            var user = await User.LoginAsync(credentials, "http://localhost:9080");
+            _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080/drawx")));
         }
 
         public void DrawBackground(SKCanvas canvas, int width, int height)
