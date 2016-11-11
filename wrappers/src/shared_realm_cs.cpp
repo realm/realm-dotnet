@@ -30,65 +30,7 @@
 using namespace realm;
 using namespace realm::binding;
 
-using NotifyRealmChangedT = void(*)(void* managed_realm_handle);
-NotifyRealmChangedT notify_realm_changed = nullptr;
-
-using NotifyRealmObjectChangedT = void(*)(void* managed_realm_object_handle, size_t property_ndx);
-NotifyRealmObjectChangedT notify_realm_object_changed = nullptr;
-
 namespace realm {
-namespace binding {
-    
-class CSharpBindingContext: public BindingContext {
-public:
-    CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle) {}
-    
-    void did_change(std::vector<ObserverState> const& observed, std::vector<void*> const& invalidated) override
-    {
-        for (auto const& o : observed) {
-            for (auto const& change : o.changes) {
-                if (change.kind == ColumnInfo::Kind::Set) {
-                    // TODO: get property index from column_index
-                    notify_realm_object_changed(o.info, change.initial_column_index);
-                }
-            }
-        }
-        
-        for (auto const& o : invalidated) {
-            remove_observed_row(o);
-        }
-
-        notify_realm_changed(m_managed_realm_handle);
-    }
-
-    std::vector<ObserverState> get_observed_rows() override
-    {
-        return observed_rows;
-    }
-    
-    void add_observed_row(const size_t& row_ndx, const size_t& table_ndx, void* info)
-    {
-        auto observer_state = realm::BindingContext::ObserverState();
-        observer_state.row_ndx = row_ndx;
-        observer_state.table_ndx = table_ndx;
-        observer_state.info = info;
-        observed_rows.push_back(observer_state);
-    }
-    
-    void remove_observed_row(void* info)
-    {
-        observed_rows.erase(std::remove_if(observed_rows.begin(), observed_rows.end(), [&](auto const& row) { return row.info == info; }));
-    }
-    
-    void* get_managed_realm_handle() {
-        return m_managed_realm_handle;
-    }
-private:
-    void* m_managed_realm_handle;
-    std::vector<realm::BindingContext::ObserverState> observed_rows;
-};
-
-}
     
 inline CSharpBindingContext* get_or_set_managed_context(SharedRealm& realm, void* managed_realm_handle)
 {
@@ -171,7 +113,7 @@ REALM_EXPORT void shared_realm_bind_to_managed_realm_handle(SharedRealm& realm, 
 REALM_EXPORT void shared_realm_add_observed_object(SharedRealm& realm, void* managed_realm_handle, const Object& object, void* managed_realm_object_handle, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        CSharpBindingContext* csharp_context = get_or_set_managed_context(realm, managed_realm_handle);
+        auto const& csharp_context = get_or_set_managed_context(realm, managed_realm_handle);
         csharp_context->add_observed_row(object.row().get_index(), object.row().get_table()->get_index_in_group(), managed_realm_object_handle);
     });
 }
@@ -180,7 +122,7 @@ REALM_EXPORT void shared_realm_remove_observed_object(SharedRealm& realm, void* 
 {
     handle_errors(ex, [&]() {
         if (realm->m_binding_context != nullptr) {
-            CSharpBindingContext* csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+            auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
             csharp_context->remove_observed_row(managed_realm_object_handle);
         }
     });
