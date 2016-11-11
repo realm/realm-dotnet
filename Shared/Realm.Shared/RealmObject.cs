@@ -62,6 +62,7 @@ namespace Realms
         private Realm _realm;
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
+        private GCHandle? _notificationsHandle;
 
         private event PropertyChangedEventHandler _propertyChanged;
 
@@ -71,7 +72,7 @@ namespace Realms
             {
                 if (IsManaged && _propertyChanged == null)
                 {
-                    _realm.SubscribeForNotifications(this);
+                    SubscribeForNotifications();
                 }
 
                 _propertyChanged += value;
@@ -84,7 +85,7 @@ namespace Realms
                 if (IsManaged &&
                     _propertyChanged == null)
                 {
-                    // TODO: Unsubscribe
+                    UnsubscribeFromNotifications();
                 }
             }
         }
@@ -124,7 +125,7 @@ namespace Realms
 
             if (_propertyChanged != null)
             {
-                realm.SubscribeForNotifications(this);
+                SubscribeForNotifications();
             }
         }
 
@@ -132,8 +133,10 @@ namespace Realms
         {
             if (_propertyChanged != null)
             {
-                // TODO: unsubscribe
+                UnsubscribeFromNotifications();
             }
+
+            ObjectHandle.RemoveFromRealm(_realm.SharedRealmHandle);
         }
 
         internal class Metadata
@@ -607,6 +610,23 @@ namespace Realms
         TypeInfo IReflectableType.GetTypeInfo()
         {
             return RealmObjectTypeInfo.FromType(this.GetType());
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(!_notificationsHandle.HasValue, "Notification handle must be null before subscribing");
+
+            var managedRealmHandle = GCHandle.Alloc(_realm, GCHandleType.Weak);
+            _notificationsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            _realm.SharedRealmHandle.AddObservedObject(GCHandle.ToIntPtr(managedRealmHandle), this.ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            Debug.Assert(_notificationsHandle.HasValue, "Notification handle must not be null to unsubscribe");
+
+            _realm.SharedRealmHandle.RemoveObservedObject(GCHandle.ToIntPtr(_notificationsHandle.Value));
+            _notificationsHandle = null;
         }
     }
 }

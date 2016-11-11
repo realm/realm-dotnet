@@ -80,6 +80,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_add_observed_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_observed_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void remove_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmObjectHandle, out NativeException ex);
         }
 
         [Preserve]
@@ -120,6 +123,13 @@ namespace Realms
         {
             NativeException nativeException;
             NativeMethods.add_observed_object(this, managedRealmHandle, objectHandle, managedRealmObjectHandle, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void RemoveObservedObject(IntPtr managedRealmObjectHandle)
+        {
+            NativeException nativeException;
+            NativeMethods.remove_observed_object(this, managedRealmObjectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

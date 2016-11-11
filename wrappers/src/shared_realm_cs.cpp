@@ -54,7 +54,9 @@ public:
             }
         }
         
-        // TODO: remove invalidated from observation
+        for (auto const& o : invalidated) {
+            remove_observed_row(o);
+        }
 
         notify_realm_changed(m_managed_realm_handle);
     }
@@ -71,6 +73,11 @@ public:
         observer_state.table_ndx = table_ndx;
         observer_state.info = info;
         observed_rows.push_back(observer_state);
+    }
+    
+    void remove_observed_row(void* info)
+    {
+        observed_rows.erase(std::remove_if(observed_rows.begin(), observed_rows.end(), [&](auto const& row) { return row.info == info; }));
     }
     
     void* get_managed_realm_handle() {
@@ -168,7 +175,17 @@ REALM_EXPORT void shared_realm_add_observed_object(SharedRealm& realm, void* man
         csharp_context->add_observed_row(object.row().get_index(), object.row().get_table()->get_index_in_group(), managed_realm_object_handle);
     });
 }
-
+    
+REALM_EXPORT void shared_realm_remove_observed_object(SharedRealm& realm, void* managed_realm_object_handle, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        if (realm->m_binding_context != nullptr) {
+            CSharpBindingContext* csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+            csharp_context->remove_observed_row(managed_realm_object_handle);
+        }
+    });
+}
+    
 REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
 {
     delete realm;

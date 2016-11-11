@@ -433,13 +433,6 @@ namespace Realms
             return new SortDescriptorBuilder(metadata);
         }
 
-        internal void SubscribeForNotifications(RealmObject @object)
-        {
-            var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var managedRealmObjectHandle = GCHandle.Alloc(@object, GCHandleType.Weak);
-            this.SharedRealmHandle.AddObservedObject(GCHandle.ToIntPtr(managedRealmHandle), @object.ObjectHandle, GCHandle.ToIntPtr(managedRealmObjectHandle));
-        }
-
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
@@ -799,7 +792,7 @@ namespace Realms
                 throw new ArgumentException("Object is not managed by Realm, so it cannot be removed.", nameof(obj));
             }
 
-            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
+            obj.RemoveFromRealm();
         }
 
         /// <summary>

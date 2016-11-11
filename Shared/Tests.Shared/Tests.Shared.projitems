@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GetPrimaryKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableTypeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectSchemaTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertyChangedTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
