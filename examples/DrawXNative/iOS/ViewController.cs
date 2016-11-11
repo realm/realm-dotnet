@@ -61,7 +61,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StartDrawing(point.X, point.Y);
+                _drawer.StartDrawing(point.X*2.0, point.Y*2.0);
             }
             View.SetNeedsDisplay();
         }
@@ -74,7 +74,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.AddPoint(point.X, point.Y);
+                _drawer.AddPoint(point.X*2.0, point.Y*2.0);
             }
             View.SetNeedsDisplay();
         }
@@ -99,7 +99,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StopDrawing(point.X, point.Y);
+                _drawer.StopDrawing(point.X*2.0, point.Y*2.0);
             }
             View.SetNeedsDisplay();
         }
