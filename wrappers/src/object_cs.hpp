@@ -53,11 +53,4 @@ namespace realm {
             csharp_context->notify_change(object.row().get_index(), object.row().get_table()->get_index_in_group(), property_index);
         }
     }
-    
-    inline void notify_removed(const Object& object) {
-        if (object.realm()->m_binding_context != nullptr) {
-            auto const& csharp_context = static_cast<binding::CSharpBindingContext*>(object.realm()->m_binding_context.get());
-            csharp_context->notify_removed(object.row().get_index(), object.row().get_table()->get_index_in_group());
-        }
-    }
 }

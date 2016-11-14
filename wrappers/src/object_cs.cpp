@@ -446,9 +446,14 @@ extern "C" {
             
             verify_can_set(object);
             
-            object.row().get_table()->move_last_over(object.row().get_index());
+            auto const row_index = object.row().get_index();
+            auto const table_index = object.row().get_table()->get_index_in_group();
+            object.row().get_table()->move_last_over(row_index);
             
-            notify_removed(object);
+            if (realm->m_binding_context != nullptr) {
+                auto const& csharp_context = static_cast<binding::CSharpBindingContext*>(object.realm()->m_binding_context.get());
+                csharp_context->notify_removed(row_index, table_index);
+            }
         });
     }
     

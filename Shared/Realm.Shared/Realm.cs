@@ -792,7 +792,7 @@ namespace Realms
                 throw new ArgumentException("Object is not managed by Realm, so it cannot be removed.", nameof(obj));
             }
 
-            obj.RemoveFromRealm(this);
+            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>

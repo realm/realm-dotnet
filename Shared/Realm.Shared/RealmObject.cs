@@ -53,7 +53,7 @@ namespace Realms
         {
             var gch = GCHandle.FromIntPtr(realmObjectHandle);
             var realmObject = (RealmObject)gch.Target;
-            var propertyName = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex).Name;
+            var propertyName = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex).PropertyInfo.Name;
             realmObject.RaisePropertyChanged(propertyName);
         }
 
@@ -127,16 +127,6 @@ namespace Realms
             {
                 SubscribeForNotifications();
             }
-        }
-
-        internal void RemoveFromRealm(Realm realm)
-        {
-            if (_propertyChanged != null)
-            {
-                UnsubscribeFromNotifications();
-            }
-
-            ObjectHandle.RemoveFromRealm(realm.SharedRealmHandle);
         }
 
         internal class Metadata

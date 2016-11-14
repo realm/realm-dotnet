@@ -77,15 +77,17 @@ namespace IntegrationTests.Shared
         public void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
         {
             var notifications = 0;
-            var person = new SomeClass();
+            var person = new Person();
 
             person.PropertyChanged += (sender, e) =>
             {
-                Assert.That(e.PropertyName, Is.EqualTo(nameof(SomeClass.StringValue)));
-                notifications++;
+                if (e.PropertyName == nameof(Person.FirstName))
+                {
+                    notifications++;
+                }
             };
 
-            person.StringValue = "Peter";
+            person.FirstName = "Peter";
             TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
             Assert.That(notifications, Is.EqualTo(1));
 
@@ -101,7 +103,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                person.StringValue = "George";
+                person.FirstName = "George";
             });
 
             TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
@@ -199,6 +201,199 @@ namespace IntegrationTests.Shared
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
+        [Test]
+        public void ManagedObject_MultipleProperties()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "Peter";
+            });
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+
+            _realm.Write(() =>
+            {
+                person.LastName = "Smith";
+            });
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.LastName) }));
+
+            _realm.Write(() =>
+            {
+                person.Score = 3.5f;
+            });
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.LastName), nameof(Person.Score) }));
+        }
+
+        [Test]
+        public void MultipleManagedObjects()
+        {
+            var firstNotifiedPropertyNames = new List<string>();
+            var secondNotifiedPropertyNames = new List<string>();
+            var first = new Person();
+            var second = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(first);
+                _realm.Add(second);
+            });
+
+            first.PropertyChanged += (sender, e) =>
+            {
+                firstNotifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            second.PropertyChanged += (sender, e) =>
+            {
+                secondNotifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                first.IsAmbivalent = true;
+            });
+
+            Assert.That(firstNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.IsAmbivalent) }));
+            Assert.That(secondNotifiedPropertyNames, Is.Empty);
+
+            _realm.Write(() =>
+            {
+                second.Latitude = 4.6;
+                second.Longitude = 5.6;
+            });
+
+            Assert.That(firstNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.IsAmbivalent) }));
+            Assert.That(secondNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.Latitude), nameof(Person.Longitude) }));
+        }
+
+        [Test]
+        public void ManagedObject_AfterSubscribe_CanRemove()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                Assert.That(sender, Is.EqualTo(person));
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "Peter";
+            });
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(person);
+            });
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ManagedObject_MultipleSubscribers()
+        {
+            var subscriber1Properties = new List<string>();
+            var subscriber2Properties = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var handler1 = new PropertyChangedEventHandler((sender, e) =>
+            {
+                Assert.That(sender, Is.EqualTo(person));
+                subscriber1Properties.Add(e.PropertyName);
+            });
+            person.PropertyChanged += handler1;
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                Assert.That(sender, Is.EqualTo(person));
+                subscriber2Properties.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                person.Birthday = new DateTimeOffset(1985, 1, 5, 8, 2, 3, TimeSpan.FromHours(3));
+            });
+
+            Assert.That(subscriber1Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
+            Assert.That(subscriber2Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
+
+            person.PropertyChanged -= handler1;
+
+            _realm.Write(() =>
+            {
+                person.IsInteresting = true;
+            });
+
+            Assert.That(subscriber1Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
+            Assert.That(subscriber2Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday), nameof(Person.IsInteresting) }));
+        }
+
+        [Test]
+        public void ManagedObject_WhenMappedTo_ShouldUsePropertyName()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                Assert.That(sender, Is.EqualTo(person));
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                person.Email = "peter@gmail.com";
+            });
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { "Email_" }));
+        }
+
+        [Test]
+        public void UnmanagedObject_WhenMappedTo_ShouldUsePropertyName()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                Assert.That(sender, Is.EqualTo(person));
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            person.Email = "peter@gmail.com";
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { "Email_" }));
+        }
+
         private void TestManaged(Action<Person, string> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
@@ -260,13 +455,6 @@ namespace IntegrationTests.Shared
 
             TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
-        }
-
-        private class SomeClass : RealmObject
-        {
-            public string StringValue { get; set; }
-
-            public int IntValue { get; set; }
         }
     }
 }

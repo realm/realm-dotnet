@@ -114,7 +114,7 @@ REALM_EXPORT void shared_realm_add_observed_object(SharedRealm& realm, void* man
 {
     handle_errors(ex, [&]() {
         auto const& csharp_context = get_or_set_managed_context(realm, managed_realm_handle);
-        csharp_context->add_observed_row(object.row().get_index(), object.row().get_table()->get_index_in_group(), managed_realm_object_handle);
+        csharp_context->add_observed_row(object, managed_realm_object_handle);
     });
 }
     
