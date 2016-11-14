@@ -11,13 +11,12 @@ using UIKit;
 
 namespace DrawX.iOS
 {
-    [Register ("ViewController")]
-    partial class ViewController
+    [Register ("ViewControllerLocal")]
+    partial class ViewControllerLocal
     {
-
         [Outlet]
         [GeneratedCode ("iOS Designer", "1.0")]
-        SkiaSharp.Views.SKCanvasView canvas { get; set; }
+        SkiaSharp.Views.iOS.SKCanvasView canvas { get; set; }
 
         void ReleaseDesignerOutlets ()
         {

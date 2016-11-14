@@ -50,10 +50,10 @@
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp">
-      <HintPath>..\packages\SkiaSharp.1.54.1\lib\MonoAndroid\SkiaSharp.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.1.55.0\lib\MonoAndroid\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SkiaSharp.Views.Android">
-      <HintPath>..\packages\SkiaSharp.Views.1.54.1-beta1\lib\MonoAndroid\SkiaSharp.Views.Android.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.Views.1.55.0\lib\MonoAndroid\SkiaSharp.Views.Android.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

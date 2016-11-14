@@ -94,11 +94,14 @@
     <Reference Include="Remotion.Linq">
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="SkiaSharp">
-      <HintPath>..\packages\SkiaSharp.1.54.1\lib\XamariniOS\SkiaSharp.dll</HintPath>
-    </Reference>
     <Reference Include="/SkiaSharp.Views.iOS">
       <HintPath>..\packages\SkiaSharp.Views.1.54.1-beta1\lib\XamariniOS\SkiaSharp.Views.iOS.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp">
+      <HintPath>..\packages\SkiaSharp.1.55.0\lib\XamariniOS\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp.Views.iOS">
+      <HintPath>..\packages\SkiaSharp.Views.1.55.0\lib\XamariniOS\SkiaSharp.Views.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -122,9 +125,12 @@
   <ItemGroup>
     <Compile Include="..\iOS\Main.cs" />
     <Compile Include="..\iOS\AppDelegate.cs" />
-    <Compile Include="..\iOS\ViewController.cs" />
-    <Compile Include="..\iOS\ViewController.designer.cs">
-      <DependentUpon>ViewController.cs</DependentUpon>
+    <Compile Include="ViewControllerLocal.cs" />
+    <Compile Include="ViewControllerLocal.designer.cs">
+      <DependentUpon>ViewControllerLocal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\DrawXShared\ViewControllerShared.cs">
+      <Link>ViewControllerShared.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
