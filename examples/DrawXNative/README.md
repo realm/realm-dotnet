@@ -8,7 +8,11 @@ This version is a write from scratch using Xamarin and the [SkiaSharp](https://g
 
 To allow testers to have both this and the original on the same device, it is called DrawX.
 
+## Local Versions of projects
+
 Note for our testing purposes, the `DrawXNativeLocal` variants use an adjacent Realm project directly rather than the Realm from NuGet, to be able to pull in sync code in progress.
+
+**Note:** due to the way that the IOS designer.cs files are generated, instead of a shared link to `ViewController.cs`, an immediate adjacent copy is required.
 
 ## Installation Instructions
 

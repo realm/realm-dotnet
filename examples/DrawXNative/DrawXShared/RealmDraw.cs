@@ -73,26 +73,31 @@ namespace DrawXShared
         {
             // TODO close the Realm
             // TODO allow entering credentials
-            //Login().RunSynchronously();
+
+            // LoginToServerAsync();  // comment out to allow launch and login on first touch
             // simple local open            
-            _realm = Realm.GetInstance("DrawX.realm");
+            //_realm = Realm.GetInstance("DrawX.realm");
             var settingsConf = new RealmConfiguration("DrawXsettings.realm");
             settingsConf.ObjectClasses = new[] { typeof(DrawXSettings) };
             settingsConf.SchemaVersion = 1;  // set explicitly and bump as we add setting properties
             _realmLocalSettings = Realm.GetInstance(settingsConf);
         }
 
-        private async Task Login()
+        private async void LoginToServerAsync()
         {
-            const string ADMIN_TOKEN = "ewoJImlkZW50aXR5IjogImFkbWluIiwKCSJhY2Nlc3MiOiBbInVwbG9hZCIsICJkb3dubG9hZCIsICJtYW5hZ2UiXQp9Cg==:C5cvsDDd43JhqNRTr83zp+w3ivo8PKa7dvPe2qxMRj7YB2ARjJzKwccVjyvYoYK9e9DQPAbXf/38lYeaGSKDrUQKnpAEXDS1KpVFTCRNIoihCil9WhwGlkHaSAAattn4yrD20Ej5mPDHPMvXcbEepotbg5bQYsteiBs5Ehudbw3Stl5NW9jwKhdNxtOAOoEp/iwIHHCOAkQDBEJCnjf9tI0OIoWhMknPgmBLgYUBiX0pogmtr2fzLvK/O84z+hObdzqf39YC2JniIkZnzBpn645zBKJP0Q0aJ3YaL+IEOzsupUhc2+opq/LtxdD9UgoTEd2w8miXFh3A/G2wS4wMbw==";
-            var credentials = Credentials.AccessToken(ADMIN_TOKEN, Guid.NewGuid().ToString(), true);
-            var user = await User.LoginAsync(credentials, "http://localhost:9080");
-            _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080/drawx")));
+            var credentials = Credentials.UsernamePassword("foo@foo.com", "bar", false);
+            var user = await User.LoginAsync(credentials, new Uri("http://localhost:9080"));
+            var loginConf = new SyncConfiguration(user, new Uri("realm://localhost:9080/~/drawx"));
+            _realm = Realm.GetInstance(loginConf);
+            System.Diagnostics.Debug.WriteLine($"Got realm at {loginConf.DatabasePath}");
         }
 
         // replaces the CanvasView.drawRect of the original
         public void DrawTouches(SKCanvas canvas, int width, int height)
         {
+            if (_realm == null)
+                return;  // too early to have finished login
+            
             // TODO avoid clear and build up new paths incrementally fron the unfinished ones
             canvas.Clear(SKColors.White);
 
@@ -134,7 +139,12 @@ namespace DrawXShared
 
         public void StartDrawing(double inX, double inY)
         {
+            if (_realm == null) {
+                LoginToServerAsync();
+                return;  // not yet logged into server, let next touch invoke us
+            }
             _isDrawing = true;
+            // TODO smarter guard against _realm null
             _realm.Write(() =>
             {
                 _drawPath = new DrawPath() { color = currentColor.name };
@@ -145,7 +155,14 @@ namespace DrawXShared
 
         public void AddPoint(double inX, double inY)
         {
-            Debug.Assert(_isDrawing = true);
+            if (_realm == null)
+                return;  // not yet logged into server
+            if (!_isDrawing)
+            {
+                // has finished connecting to Realm so this is actually a start
+                StartDrawing(inX, inY);
+                return;
+            }
             //TODO add check if _drawPath.IsInvalidated
             _realm.Write(() =>
             {
@@ -154,12 +171,14 @@ namespace DrawXShared
         }
         public void StopDrawing(double inX, double inY)
         {
+            _isDrawing = false;
+            if (_realm == null)
+                return;  // not yet logged into server
             _realm.Write(() =>
             {
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
                 _drawPath.drawerID = "";  // TODO work out what the intent is here in original Draw sample!
             });
-            _isDrawing = false;
         }
 
         public void CancelDrawing()

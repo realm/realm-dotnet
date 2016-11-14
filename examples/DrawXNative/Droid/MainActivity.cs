@@ -19,7 +19,7 @@
 using Android.App;
 using Android.Views;
 using Android.OS;
-using SkiaSharp.Views;
+using SkiaSharp.Views.Android;
 using DrawXShared;
 
 namespace DrawX.Droid
