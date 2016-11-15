@@ -1,30 +1,37 @@
 LOCAL_PATH := $(call my-dir)/..
 
-#$(error Realm enable sync is $(REALM_ENABLE_SYNC).)
+REALM_ABI := $(TARGET_ARCH_ABI)
+ifeq ($(REALM_ABI),armeabi-v7a)
+  REALM_ABI := arm-v7a
+else ifeq ($(REALM_ABI),arm64-v8a)
+  REALM_ABI := arm64
+endif
 
 # Prepare librealm-android
 include $(CLEAR_VARS)
 LOCAL_MODULE    := librealm-android
 
 ifdef NDK_DEBUG
-LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-android-dbg.a
+LOCAL_SRC_FILES := core-android/librealm-android-$(REALM_ABI)-dbg.a
 else
-LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-android.a
+LOCAL_SRC_FILES := core-android/librealm-android-$(REALM_ABI).a
 endif
 
 include $(PREBUILT_STATIC_LIBRARY)
 
+ifeq ($(REALM_ENABLE_SYNC),1)
 # Prepare librealm-sync-android
 include $(CLEAR_VARS)
 LOCAL_MODULE    := librealm-sync-android
 
 ifdef NDK_DEBUG
-LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-sync-android-dbg.a
+LOCAL_SRC_FILES := core-android/librealm-sync-android-$(REALM_ABI)-dbg.a
 else
-LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-sync-android.a
+LOCAL_SRC_FILES := core-android/librealm-sync-android-$(REALM_ABI).a
 endif
 
 include $(PREBUILT_STATIC_LIBRARY)
+endif
 
 # And finally make wrappers
 include $(CLEAR_VARS)
@@ -64,7 +71,7 @@ LOCAL_SRC_FILES += src/debug.cpp
 LOCAL_SRC_FILES += src/object_cs.cpp
 
 
-# ifdef REALM_ENABLE_SYNC
+ifeq ($(REALM_ENABLE_SYNC),1)
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp 
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp
 LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
@@ -76,7 +83,7 @@ LOCAL_SRC_FILES += src/sync_user_cs.cpp
 LOCAL_SRC_FILES += src/sync_session_cs.cpp
 
 LOCAL_STATIC_LIBRARIES := realm-sync-android
-# endif
+endif
 
 LOCAL_STATIC_LIBRARIES += realm-android
 
