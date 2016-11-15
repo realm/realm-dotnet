@@ -74,7 +74,7 @@ namespace DrawXShared
             // TODO close the Realm
             // TODO allow entering credentials
 
-            // LoginToServerAsync();  // comment out to allow launch and login on first touch
+            LoginToServerAsync();  // comment out to allow launch and login on first touch, useful for debugging wrappers with XCode
             // simple local open            
             //_realm = Realm.GetInstance("DrawX.realm");
             var settingsConf = new RealmConfiguration("DrawXsettings.realm");
@@ -86,8 +86,8 @@ namespace DrawXShared
         private async void LoginToServerAsync()
         {
             var credentials = Credentials.UsernamePassword("foo@foo.com", "bar", false);
-            var user = await User.LoginAsync(credentials, new Uri("http://localhost:9080"));
-            var loginConf = new SyncConfiguration(user, new Uri("realm://localhost:9080/~/drawx"));
+            var user = await User.LoginAsync(credentials, new Uri("http://192.168.0.64:9080"));
+            var loginConf = new SyncConfiguration(user, new Uri("realm://192.168.0.6:9080/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
             System.Diagnostics.Debug.WriteLine($"Got realm at {loginConf.DatabasePath}");
         }
