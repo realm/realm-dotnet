@@ -36,27 +36,37 @@ namespace DrawX.Droid
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
-
             _canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
-            var bounds = _canvas.ClipBounds;
-            _drawer = new RealmDraw(
-                bounds.Width(),
-                bounds.Height(),
-                (sender, args) => {
-                _canvas?.Invalidate();
-            });
-
             _canvas.PaintSurface += OnPaintSample;
             _canvas.Touch += OnTouch;
         }
 
+        public override void OnWindowFocusChanged(bool hasFocus)
+        {
+            base.OnWindowFocusChanged(hasFocus);
+            if (_drawer == null)
+            {
+                // deferred update until can get view bounds
+                _drawer = new RealmDraw(
+                    _canvas.CanvasSize.Width,
+                    _canvas.CanvasSize.Height,
+                    (sender, args) =>
+                    {
+                        _canvas.Invalidate();
+                    });
+            }
+        }
+
         private void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
-            _drawer.DrawTouches(e.Surface.Canvas);
+            _drawer?.DrawTouches(e.Surface.Canvas);
         }
 
         private void OnTouch(object sender, View.TouchEventArgs touchEventArgs)
         {
+            if (_drawer == null)
+                return;  // in case managed to trigger before focus event finished setup
+            
             float fx = touchEventArgs.Event.GetX();
             float fy = touchEventArgs.Event.GetY();
             bool needsRefresh = false;

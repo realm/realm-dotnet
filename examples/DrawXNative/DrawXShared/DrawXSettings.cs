@@ -24,5 +24,8 @@ namespace DrawXShared
     public class DrawXSettings : RealmObject
     {
         public string LastColorUsed {get;set;}
+        public string ServerIP {get;set;}  // without prefix ie no http://
+        public string Username {get;set;}
+        public string Password {get;set;}
     }
 }
