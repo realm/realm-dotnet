@@ -46,7 +46,7 @@ extern "C" {
 REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len, decltype(s_refresh_access_token_callback) refresh_callback)
 {
     Utf16StringAccessor base_path(base_path_buf, base_path_len);
-    SyncManager::shared().configure_file_system(base_path);
+    SyncManager::shared().configure_file_system(base_path, SyncManager::MetadataMode::NoEncryption);
 
     s_refresh_access_token_callback = refresh_callback;
 }
