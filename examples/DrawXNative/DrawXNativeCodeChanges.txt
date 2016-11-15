@@ -1,0 +1,26 @@
+Started codechange diary at point where rough drawing works and has hardcoded server comms
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-15 Prep for abstracting login
+
+RealmDraw.cs
+RealmDraw
+- RealmObjectServerAddress, Username and Password properties added
+- LoginToServerAsync use above props instead of literal strings
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-15 Updates on Sync Changes
+
+RealmDraw.cs
+RealmDraw
+- _refreshOnRealmUpdate added
+- added param to ctor to set _refreshOnRealmUpdate
+- LoginToServerAsync  assign _refreshOnRealmUpdate and invoke it
+
+ViewControllerShared.cs
+- ViewDidLoad pass in a lambda to RealmDraw
+
+MainActivity.cs
+- OnCreate pass in a lambda to RealmDraw
+
+
