@@ -46,5 +46,20 @@ RealmDraw.cs
 - DrawTouches call ScalePointsToDraw
 
 MainActivity.cs
-- OnCreate pass bounds to RealmDraw
+- OnWindowFocusChanged added to pass bounds to RealmDraw
 - OnPaintSample don't pass in bounds
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-15 iOS Credentials dialog
+
+DrawXSettings.cs
+- added ServerIP, Username, Password
+
+
+RealmDraw.cs
+- RealmDraw
+  - open settings first
+  - add Settings property to wrap getting settings from Realm, refactored from currentColor
+  - bump config number
+  	

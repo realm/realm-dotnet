@@ -33,7 +33,7 @@ namespace DrawXShared
 
     Login
     -----
-    */ 
+    */
     public class RealmDraw
     {
         private Realm _realm;
@@ -47,32 +47,40 @@ namespace DrawXShared
         #endregion
 
         #region LoginState
-        public string RealmObjectServerAddress {get;set;} = "192.168.0.51:9080";
-        public string Username {get;set;} = "foo@foo.com";
-        public string Password {get;set;} = "bar";
+        public string RealmObjectServerAddress { get; set; } = "192.168.0.51:9080";
+        public string Username { get; set; } = "foo@foo.com";
+        public string Password { get; set; } = "bar";
         private bool _waitingForLogin = false;
         #endregion
 
         #region Settings
         private Realm _realmLocalSettings;
         private DrawXSettings _savedSettings;
+        public DrawXSettings Settings
+        {
+            get
+            {
+                if (_savedSettings == null)
+                    _savedSettings = _realmLocalSettings.All<DrawXSettings>().FirstOrDefault();
+                if (_savedSettings == null)
+                {
+                    _realmLocalSettings.Write(() =>
+                    {
+                        _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
+                        _savedSettings.LastColorUsed = SwatchColor.Indigo.name;
+                    });
+                }
+                return _savedSettings;
+            }
+        }
         private SwatchColor _currentColorCache;
         private SwatchColor currentColor
         {
             get
             {
-                if (_savedSettings == null)
+                if (String.IsNullOrEmpty(_currentColorCache.name))
                 {
-                    _savedSettings = _realmLocalSettings.All<DrawXSettings>().FirstOrDefault();
-                    if (_savedSettings == null)
-                    {
-                        _realmLocalSettings.Write(() =>
-                        {
-                            _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
-                            _savedSettings.LastColorUsed = SwatchColor.Indigo.name;
-                        });
-                    }
-                    _currentColorCache = SwatchColor.colors[_savedSettings.LastColorUsed];
+                    _currentColorCache = SwatchColor.colors[Settings.LastColorUsed];
                 }
                 return _currentColorCache;
             }
@@ -81,7 +89,7 @@ namespace DrawXShared
                 if (!_currentColorCache.name.Equals(value.name))
                 {
                     _currentColorCache = value;
-                    _realmLocalSettings.Write(() => _savedSettings.LastColorUsed = _currentColorCache.name);
+                    _realmLocalSettings.Write(() => Settings.LastColorUsed = _currentColorCache.name);
                 }
 
             }
@@ -90,6 +98,17 @@ namespace DrawXShared
 
         public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
+            var settingsConf = new RealmConfiguration("DrawXsettings.realm");
+            settingsConf.ObjectClasses = new[] { typeof(DrawXSettings) };
+            settingsConf.SchemaVersion = 2;  // set explicitly and bump as we add setting properties
+            _realmLocalSettings = Realm.GetInstance(settingsConf);
+
+            if (string.IsNullOrEmpty(Settings.ServerIP)) 
+            {
+                // new launch or upgrade from prev version which didn't save credentials
+
+            }
+
             // TODO close the Realm
             // TODO allow entering credentials
             _canvasWidth = inWidth;
@@ -99,10 +118,6 @@ namespace DrawXShared
             LoginToServerAsync();  // comment out to allow launch and login on first touch, useful for debugging wrappers with XCode
             // simple local open            
             //_realm = Realm.GetInstance("DrawX.realm");
-            var settingsConf = new RealmConfiguration("DrawXsettings.realm");
-            settingsConf.ObjectClasses = new[] { typeof(DrawXSettings) };
-            settingsConf.SchemaVersion = 1;  // set explicitly and bump as we add setting properties
-            _realmLocalSettings = Realm.GetInstance(settingsConf);
         }
 
         private async void LoginToServerAsync()
@@ -139,7 +154,7 @@ namespace DrawXShared
 
             if (_realm == null)
                 return;  // too early to have finished login
-            
+
             // TODO avoid clear and build up new paths incrementally fron the unfinished ones
             canvas.Clear(SKColors.White);
 
@@ -182,7 +197,8 @@ namespace DrawXShared
 
         public void StartDrawing(float inX, float inY)
         {
-            if (_realm == null) {
+            if (_realm == null)
+            {
                 if (!_waitingForLogin)
                     LoginToServerAsync();
                 return;  // not yet logged into server, let next touch invoke us
