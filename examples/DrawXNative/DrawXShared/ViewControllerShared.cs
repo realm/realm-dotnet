@@ -19,6 +19,7 @@
 using UIKit;
 using Foundation;
 using System;
+using System.Diagnostics;
 using SkiaSharp.Views.iOS;
 using DrawXShared;
 
@@ -37,8 +38,13 @@ namespace DrawX.iOS
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            _drawer = new RealmDraw( (sender, args) => {
-                View?.SetNeedsDisplay();  // just refresh on notification
+            Debug.WriteLine($"Opened view with bounds {View.Bounds.Size}");
+            // scale bounds to match the pixel dimensions of the SkiaSurface
+            _drawer = new RealmDraw( 
+                2.0f * (float)View.Bounds.Width, 
+                2.0f * (float)View.Bounds.Height,
+                (sender, args) => {
+                    View?.SetNeedsDisplay();  // just refresh on notification
             });
             // relies on override to point its canvas at our OnPaintSample
         }
@@ -53,7 +59,7 @@ namespace DrawX.iOS
 
         protected void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
-            _drawer.DrawTouches(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+            _drawer.DrawTouches(e.Surface.Canvas);
         }
 
 
@@ -64,7 +70,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StartDrawing(point.X * 2.0, point.Y * 2.0);
+                _drawer.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }
@@ -77,7 +83,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.AddPoint(point.X * 2.0, point.Y * 2.0);
+                _drawer.AddPoint((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }
@@ -102,7 +108,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StopDrawing(point.X * 2.0, point.Y * 2.0);
+                _drawer.StopDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }

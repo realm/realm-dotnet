@@ -36,14 +36,22 @@ namespace DrawXShared
     */ 
     public class RealmDraw
     {
-        private bool _isDrawing = false;
         private Realm _realm;
-        private DrawPath _drawPath;
         private Realm.RealmChangedEventHandler _refreshOnRealmUpdate;
+
+        #region DrawingState
+        private bool _isDrawing = false;
+        private DrawPath _drawPath;
+        float _canvasWidth, _canvasHeight;
+        const float NORMALISE_TO = 4000.0f;
+        #endregion
+
+        #region LoginState
         public string RealmObjectServerAddress {get;set;} = "192.168.0.51:9080";
         public string Username {get;set;} = "foo@foo.com";
         public string Password {get;set;} = "bar";
         private bool _waitingForLogin = false;
+        #endregion
 
         #region Settings
         private Realm _realmLocalSettings;
@@ -80,10 +88,12 @@ namespace DrawXShared
         }
         #endregion Settings
 
-        public RealmDraw(Realm.RealmChangedEventHandler refreshOnRealmUpdate)
+        public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
             // TODO close the Realm
             // TODO allow entering credentials
+            _canvasWidth = inWidth;
+            _canvasHeight = inHeight;
             _refreshOnRealmUpdate = refreshOnRealmUpdate;
 
             LoginToServerAsync();  // comment out to allow launch and login on first touch, useful for debugging wrappers with XCode
@@ -110,9 +120,23 @@ namespace DrawXShared
             _waitingForLogin = false;
         }
 
-        // replaces the CanvasView.drawRect of the original
-        public void DrawTouches(SKCanvas canvas, int width, int height)
+        private void ScalePointsToStore(ref float w, ref float h)
         {
+            w *= NORMALISE_TO / _canvasWidth;
+            h *= NORMALISE_TO / _canvasHeight;
+        }
+
+        private void ScalePointsToDraw(ref float w, ref float h)
+        {
+            w *= _canvasWidth / NORMALISE_TO;
+            h *= _canvasHeight / NORMALISE_TO;
+        }
+
+        // replaces the CanvasView.drawRect of the original
+        public void DrawTouches(SKCanvas canvas)
+        {
+            Debug.WriteLine($"Drawing canvas with bounds {canvas.ClipBounds.Size}");
+
             if (_realm == null)
                 return;  // too early to have finished login
             
@@ -135,9 +159,10 @@ namespace DrawXShared
                         bool isFirst = true;
                         foreach (var point in drawPath.points)
                         {
-                            // for compatibility with iOS Realm, stores doubles
+                            // for compatibility with iOS Realm, stores floats, normalised to NORMALISE_TO
                             float fx = (float)point.x;
                             float fy = (float)point.y;
+                            ScalePointsToDraw(ref fx, ref fy);
                             if (isFirst)
                             {
                                 isFirst = false;
@@ -155,13 +180,14 @@ namespace DrawXShared
         }
 
 
-        public void StartDrawing(double inX, double inY)
+        public void StartDrawing(float inX, float inY)
         {
             if (_realm == null) {
                 if (!_waitingForLogin)
                     LoginToServerAsync();
                 return;  // not yet logged into server, let next touch invoke us
             }
+            ScalePointsToStore(ref inX, ref inY);
             _isDrawing = true;
             // TODO smarter guard against _realm null
             _realm.Write(() =>
@@ -172,7 +198,7 @@ namespace DrawXShared
             });
         }
 
-        public void AddPoint(double inX, double inY)
+        public void AddPoint(float inX, float inY)
         {
             if (_realm == null)
                 return;  // not yet logged into server
@@ -182,17 +208,19 @@ namespace DrawXShared
                 StartDrawing(inX, inY);
                 return;
             }
+            ScalePointsToStore(ref inX, ref inY);
             //TODO add check if _drawPath.IsInvalidated
             _realm.Write(() =>
             {
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
             });
         }
-        public void StopDrawing(double inX, double inY)
+        public void StopDrawing(float inX, float inY)
         {
             _isDrawing = false;
             if (_realm == null)
                 return;  // not yet logged into server
+            ScalePointsToStore(ref inX, ref inY);
             _realm.Write(() =>
             {
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
