@@ -33,7 +33,9 @@ namespace DrawX.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            _drawer = new RealmDraw();
+            _drawer = new RealmDraw((sender, args) => {
+                _canvas?.Invalidate();
+            });
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);

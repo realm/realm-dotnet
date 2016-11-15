@@ -27,11 +27,23 @@ using System.Threading.Tasks;
 
 namespace DrawXShared
 {
+    /**
+     Class that does everything for the demo that can be shared.
+     It combines drawing with logging in and connecting to the server.
+
+    Login
+    -----
+    */ 
     public class RealmDraw
     {
         private bool _isDrawing = false;
         private Realm _realm;
         private DrawPath _drawPath;
+        private Realm.RealmChangedEventHandler _refreshOnRealmUpdate;
+        public string RealmObjectServerAddress {get;set;} = "192.168.0.51:9080";
+        public string Username {get;set;} = "foo@foo.com";
+        public string Password {get;set;} = "bar";
+        private bool _waitingForLogin = false;
 
         #region Settings
         private Realm _realmLocalSettings;
@@ -68,11 +80,11 @@ namespace DrawXShared
         }
         #endregion Settings
 
-
-        public RealmDraw()
+        public RealmDraw(Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
             // TODO close the Realm
             // TODO allow entering credentials
+            _refreshOnRealmUpdate = refreshOnRealmUpdate;
 
             LoginToServerAsync();  // comment out to allow launch and login on first touch, useful for debugging wrappers with XCode
             // simple local open            
@@ -85,11 +97,17 @@ namespace DrawXShared
 
         private async void LoginToServerAsync()
         {
-            var credentials = Credentials.UsernamePassword("foo@foo.com", "bar", false);
-            var user = await User.LoginAsync(credentials, new Uri("http://192.168.0.64:9080"));
-            var loginConf = new SyncConfiguration(user, new Uri("realm://192.168.0.6:9080/~/Draw"));
+            _waitingForLogin = true;
+            var credentials = Credentials.UsernamePassword(Username, Password, false);
+            var user = await User.LoginAsync(credentials, new Uri($"http://{RealmObjectServerAddress}"));
+            Debug.WriteLine($"Got user logged in with refresh token {user.RefreshToken}");
+
+            var loginConf = new SyncConfiguration(user, new Uri($"realm://{RealmObjectServerAddress}/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
-            System.Diagnostics.Debug.WriteLine($"Got realm at {loginConf.DatabasePath}");
+            Debug.WriteLine($"Got realm at {loginConf.DatabasePath}");
+            _realm.RealmChanged += _refreshOnRealmUpdate;
+            _refreshOnRealmUpdate(_realm, null);  // force initial draw on login
+            _waitingForLogin = false;
         }
 
         // replaces the CanvasView.drawRect of the original
@@ -140,7 +158,8 @@ namespace DrawXShared
         public void StartDrawing(double inX, double inY)
         {
             if (_realm == null) {
-                LoginToServerAsync();
+                if (!_waitingForLogin)
+                    LoginToServerAsync();
                 return;  // not yet logged into server, let next touch invoke us
             }
             _isDrawing = true;

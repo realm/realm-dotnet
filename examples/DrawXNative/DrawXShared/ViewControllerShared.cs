@@ -37,7 +37,9 @@ namespace DrawX.iOS
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            _drawer = new RealmDraw();
+            _drawer = new RealmDraw( (sender, args) => {
+                View?.SetNeedsDisplay();  // just refresh on notification
+            });
             // relies on override to point its canvas at our OnPaintSample
         }
 
