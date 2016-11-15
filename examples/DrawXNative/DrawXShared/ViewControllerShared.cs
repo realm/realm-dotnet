@@ -47,11 +47,17 @@ namespace DrawX.iOS
                     View?.SetNeedsDisplay();  // just refresh on notification
             });
             // relies on override to point its canvas at our OnPaintSample
+        }
 
+        public override void ViewDidLayoutSubviews()
+        {
+            base.ViewDidLayoutSubviews();
+            // this is the earliest we can show the modal login
             bool canLogin = DrawXSettingsManager.HasCredentials();
             if (!canLogin)
             {
-                canLogin = EditCredentials();
+                EditCredentials();
+                canLogin = DrawXSettingsManager.HasCredentials();
             }
             if (canLogin)
             {
@@ -133,16 +139,13 @@ namespace DrawX.iOS
             }
         }
 
-        private bool EditCredentials()
+        private void EditCredentials()
         {
-            // quick fake editor just supplying hardcoded
-            var s = DrawXSettingsManager.Settings;
-            DrawXSettingsManager.Write( () => {
-                s.ServerIP = "192.168.0.51:9080";
-                s.Username = "foo@foo.com";
-                s.Password = "bar";
-            });
-            return true;
+            // TODO generalise this to work in either this or DrawX.iOS project
+            var sb = UIStoryboard.FromName("LoginScreen", null);
+            var loginVC = sb.InstantiateViewController("Login") as LoginViewController;
+            loginVC.Invoker = this;
+            PresentViewController(loginVC, false, null);
         }
     }
 }
