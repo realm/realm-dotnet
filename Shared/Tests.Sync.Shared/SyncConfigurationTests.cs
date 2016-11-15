@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -29,10 +30,10 @@ namespace Tests.Sync.Shared
         private Realm _realm;
 
         [SetUp]
-        public async void SetUp()
+        public void SetUp()
         {
             var credentials = Credentials.AccessToken("token", Guid.NewGuid().ToString());
-            var user = await User.LoginAsync(credentials, null);
+            var user = Task.Run(() => User.LoginAsync(credentials, null)).Result;
             _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080")));
         }
 
