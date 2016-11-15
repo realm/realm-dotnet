@@ -33,23 +33,26 @@ namespace DrawX.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            _drawer = new RealmDraw((sender, args) => {
-                _canvas?.Invalidate();
-            });
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
-            // Get our button from the layout resource,
-            // and attach an event to it
             _canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
+            var bounds = _canvas.ClipBounds;
+            _drawer = new RealmDraw(
+                bounds.Width(),
+                bounds.Height(),
+                (sender, args) => {
+                _canvas?.Invalidate();
+            });
+
             _canvas.PaintSurface += OnPaintSample;
             _canvas.Touch += OnTouch;
         }
 
         private void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
-            _drawer.DrawTouches(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+            _drawer.DrawTouches(e.Surface.Canvas);
         }
 
         private void OnTouch(object sender, View.TouchEventArgs touchEventArgs)

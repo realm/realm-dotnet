@@ -24,3 +24,27 @@ MainActivity.cs
 - OnCreate pass in a lambda to RealmDraw
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-15 Scale Drawing to Viewport
+
+info.plist
+- change to only allow portrait, so don't have to cope with rotation
+
+
+ViewControllerShared.cs
+- ViewDidLoad - pass bounds to RealmDraw
+- OnPaintSample don't pass in bounds
+- TouchesMoved, TouchesBegan, TouchesCancelled 
+  - cast points to float
+
+RealmDraw.cs
+- replace double with float
+- NORMALISE_TO added
+- ScalePointsToStore added
+- StartDrawing, StopDrawing, AddPoint call ScalePointsToStore
+- ScalePointsToDraw added
+- DrawTouches call ScalePointsToDraw
+
+MainActivity.cs
+- OnCreate pass bounds to RealmDraw
+- OnPaintSample don't pass in bounds
