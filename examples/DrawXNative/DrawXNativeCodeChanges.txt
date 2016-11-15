@@ -73,7 +73,15 @@ AppDelegate.cs
 
 ViewControllerShared.cs
 - ViewDidLoad - invoke DrawXSettingsManager.InitLocalSettings
+- ViewDidLayoutSubviews - added to invoke EditCredentials
+- EditCredentials added
+
 
 MainActivity.cs
 - OnCreate - invoke DrawXSettingsManager.InitLocalSettings
-  	
+
+LoginScreen.Storyboard - added
+
+LoginViewController.cs
+- added  	
+

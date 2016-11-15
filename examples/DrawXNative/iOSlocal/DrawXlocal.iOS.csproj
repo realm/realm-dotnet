@@ -114,6 +114,7 @@
   <ItemGroup>
     <InterfaceDefinition Include="..\iOS\LaunchScreen.storyboard" />
     <InterfaceDefinition Include="..\iOS\Main.storyboard" />
+    <InterfaceDefinition Include="LoginScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -131,6 +132,10 @@
     </Compile>
     <Compile Include="..\DrawXShared\ViewControllerShared.cs">
       <Link>ViewControllerShared.cs</Link>
+    </Compile>
+    <Compile Include="LoginViewController.cs" />
+    <Compile Include="LoginViewController.designer.cs">
+      <DependentUpon>LoginViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
