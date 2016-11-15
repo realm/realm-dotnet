@@ -296,20 +296,6 @@ namespace Realms
         }
 
         /// <summary>
-        /// Deletes all files associated with a realm. 
-        /// </summary>
-        /// <param name="databasePath"></param>
-        public static void DeleteRealm(string databasePath)
-        {
-            if (databasePath == null)
-            {
-                throw new ArgumentNullException(nameof(databasePath));
-            }
-
-            DeleteRealm(RealmConfiguration.DefaultConfiguration.ConfigWithPath(databasePath));
-        }
-
-        /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
