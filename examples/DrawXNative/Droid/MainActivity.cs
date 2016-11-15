@@ -39,6 +39,8 @@ namespace DrawX.Droid
             _canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
             _canvas.PaintSurface += OnPaintSample;
             _canvas.Touch += OnTouch;
+
+            DrawXSettingsManager.InitLocalSettings();
         }
 
         public override void OnWindowFocusChanged(bool hasFocus)

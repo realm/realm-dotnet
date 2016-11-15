@@ -59,7 +59,21 @@ DrawXSettings.cs
 
 RealmDraw.cs
 - RealmDraw
-  - open settings first
-  - add Settings property to wrap getting settings from Realm, refactored from currentColor
+  - migrated settings to DrawXSettingsManager.InitLocalSettings
   - bump config number
+  - Settings property just forward to DrawXSettingsManager.Settings
+  - refactored RealmObjectServerAddress, Username, Password out to use Settings
+
+DrawXSettingsManager.cs
+- added
+
+AppDelegate.cs
+- FinishedLaunching - invoke DrawXSettingsManager.InitLocalSettings
+
+
+ViewControllerShared.cs
+- ViewDidLoad - invoke DrawXSettingsManager.InitLocalSettings
+
+MainActivity.cs
+- OnCreate - invoke DrawXSettingsManager.InitLocalSettings
   	

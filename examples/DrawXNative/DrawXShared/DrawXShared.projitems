@@ -14,5 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)DrawPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SwatchColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DrawXSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DrawXSettingsManager.cs" />
   </ItemGroup>
 </Project>
