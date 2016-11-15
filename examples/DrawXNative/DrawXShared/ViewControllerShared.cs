@@ -47,6 +47,16 @@ namespace DrawX.iOS
                     View?.SetNeedsDisplay();  // just refresh on notification
             });
             // relies on override to point its canvas at our OnPaintSample
+
+            bool canLogin = DrawXSettingsManager.HasCredentials();
+            if (!canLogin)
+            {
+                canLogin = EditCredentials();
+            }
+            if (canLogin)
+            {
+                _drawer.LoginToServerAsync();
+            }
         }
 
 
@@ -121,6 +131,18 @@ namespace DrawX.iOS
                 _drawer.ErasePaths();
                 View.SetNeedsDisplay();
             }
+        }
+
+        private bool EditCredentials()
+        {
+            // quick fake editor just supplying hardcoded
+            var s = DrawXSettingsManager.Settings;
+            DrawXSettingsManager.Write( () => {
+                s.ServerIP = "192.168.0.51:9080";
+                s.Username = "foo@foo.com";
+                s.Password = "bar";
+            });
+            return true;
         }
     }
 }

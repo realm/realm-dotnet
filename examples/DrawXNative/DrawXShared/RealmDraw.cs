@@ -22,17 +22,20 @@ using SkiaSharp;
 using Realms;
 using Realms.Sync;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+
 
 namespace DrawXShared
 {
     /**
-     Class that does everything for the demo that can be shared.
+     Class that does almost everything for the demo that can be shared.
      It combines drawing with logging in and connecting to the server.
+
+     DrawXSettingsManager provides a singleton to wrap settings and their local Realm.
 
     Login
     -----
+    Credentials come from DrawXSettings.
+    
     */
     public class RealmDraw
     {
@@ -47,32 +50,11 @@ namespace DrawXShared
         #endregion
 
         #region LoginState
-        public string RealmObjectServerAddress { get; set; } = "192.168.0.51:9080";
-        public string Username { get; set; } = "foo@foo.com";
-        public string Password { get; set; } = "bar";
         private bool _waitingForLogin = false;
         #endregion
 
         #region Settings
-        private Realm _realmLocalSettings;
-        private DrawXSettings _savedSettings;
-        public DrawXSettings Settings
-        {
-            get
-            {
-                if (_savedSettings == null)
-                    _savedSettings = _realmLocalSettings.All<DrawXSettings>().FirstOrDefault();
-                if (_savedSettings == null)
-                {
-                    _realmLocalSettings.Write(() =>
-                    {
-                        _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
-                        _savedSettings.LastColorUsed = SwatchColor.Indigo.name;
-                    });
-                }
-                return _savedSettings;
-            }
-        }
+        private DrawXSettings Settings => DrawXSettingsManager.Settings;
         private SwatchColor _currentColorCache;
         private SwatchColor currentColor
         {
@@ -89,7 +71,7 @@ namespace DrawXShared
                 if (!_currentColorCache.name.Equals(value.name))
                 {
                     _currentColorCache = value;
-                    _realmLocalSettings.Write(() => Settings.LastColorUsed = _currentColorCache.name);
+                    DrawXSettingsManager.Write(() => Settings.LastColorUsed = _currentColorCache.name);
                 }
 
             }
@@ -98,10 +80,6 @@ namespace DrawXShared
 
         public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
-            var settingsConf = new RealmConfiguration("DrawXsettings.realm");
-            settingsConf.ObjectClasses = new[] { typeof(DrawXSettings) };
-            settingsConf.SchemaVersion = 2;  // set explicitly and bump as we add setting properties
-            _realmLocalSettings = Realm.GetInstance(settingsConf);
 
             if (string.IsNullOrEmpty(Settings.ServerIP)) 
             {
@@ -115,21 +93,20 @@ namespace DrawXShared
             _canvasHeight = inHeight;
             _refreshOnRealmUpdate = refreshOnRealmUpdate;
 
-            LoginToServerAsync();  // comment out to allow launch and login on first touch, useful for debugging wrappers with XCode
             // simple local open            
             //_realm = Realm.GetInstance("DrawX.realm");
         }
 
-        private async void LoginToServerAsync()
+        internal async void LoginToServerAsync()
         {
             _waitingForLogin = true;
-            var credentials = Credentials.UsernamePassword(Username, Password, false);
-            var user = await User.LoginAsync(credentials, new Uri($"http://{RealmObjectServerAddress}"));
+            var s = Settings;
+            var credentials = Credentials.UsernamePassword(s.Username, s.Password, false);
+            var user = await User.LoginAsync(credentials, new Uri($"http://{s.ServerIP}"));
             Debug.WriteLine($"Got user logged in with refresh token {user.RefreshToken}");
 
-            var loginConf = new SyncConfiguration(user, new Uri($"realm://{RealmObjectServerAddress}/~/Draw"));
+            var loginConf = new SyncConfiguration(user, new Uri($"realm://{s.ServerIP}/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
-            Debug.WriteLine($"Got realm at {loginConf.DatabasePath}");
             _realm.RealmChanged += _refreshOnRealmUpdate;
             _refreshOnRealmUpdate(_realm, null);  // force initial draw on login
             _waitingForLogin = false;
@@ -150,7 +127,6 @@ namespace DrawXShared
         // replaces the CanvasView.drawRect of the original
         public void DrawTouches(SKCanvas canvas)
         {
-            Debug.WriteLine($"Drawing canvas with bounds {canvas.ClipBounds.Size}");
 
             if (_realm == null)
                 return;  // too early to have finished login

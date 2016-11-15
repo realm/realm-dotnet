@@ -1,5 +1,6 @@
 ﻿using Foundation;
 using UIKit;
+using DrawXShared;
 
 namespace DrawX.iOS
 {
@@ -20,7 +21,7 @@ namespace DrawX.iOS
         {
             // Override point for customization after application launch.
             // If not required for your application you can safely delete this method
-
+            DrawXSettingsManager.InitLocalSettings();
             return true;
         }
 
