@@ -48,7 +48,7 @@ namespace DrawXShared
         private DrawPath _drawPath;
         private float _canvasWidth, _canvasHeight;
         private const float NORMALISE_TO = 4000.0f;
-        private             const float PENCIL_MARGIN = 4.0f;
+        private const float PENCIL_MARGIN = 4.0f;
         #endregion
 
         #region Touch Area
@@ -166,6 +166,11 @@ namespace DrawXShared
                 Debug.WriteLine($"Loading image {swatchName}");
                 var swatchBM = EmbeddedMedia.BitmapNamed(swatchName + ".png");
                 var pencilRect = new SKRect(runningLeft, _pencilsTop, runningLeft + _pencilWidth, pencilsBottom);
+                if (swatchName.Equals(currentColor.name))
+                {
+                    var offsetY = -Math.Max(20.0f, pencilHeight / 4.0f);
+                    pencilRect.Offset(0.0f, offsetY);  // show selected color
+                }
                 canvas.DrawBitmap(swatchBM, pencilRect, paint);
                 runningLeft += PENCIL_MARGIN + _pencilWidth;
             }
