@@ -21,7 +21,6 @@ namespace DrawX.iOS
         {
             // Override point for customization after application launch.
             // If not required for your application you can safely delete this method
-            DrawXSettingsManager.InitLocalSettings();
             return true;
         }
 

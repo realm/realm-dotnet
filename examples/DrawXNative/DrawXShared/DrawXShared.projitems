@@ -29,5 +29,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Peach.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\SexySalmon.png" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Ultramarine.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\CloudIcon.png" />
   </ItemGroup>
 </Project>

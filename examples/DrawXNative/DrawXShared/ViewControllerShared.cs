@@ -29,6 +29,7 @@ namespace DrawX.iOS
     {
 
         RealmDraw _drawer;
+        bool _hasShownCredentials = false;  // flag to show on initial layout only
 
         public ViewControllerShared(IntPtr handle) : base(handle)
         {
@@ -39,29 +40,44 @@ namespace DrawX.iOS
         {
             base.ViewDidLoad();
             Debug.WriteLine($"Opened view with bounds {View.Bounds.Size}");
-            // scale bounds to match the pixel dimensions of the SkiaSurface
-            _drawer = new RealmDraw( 
-                2.0f * (float)View.Bounds.Width, 
-                2.0f * (float)View.Bounds.Height,
-                (sender, args) => {
-                    View?.SetNeedsDisplay();  // just refresh on notification
-            });
             // relies on override to point its canvas at our OnPaintSample
+            // see ViewDidLayoutSubviews for triggering EditCredentials
+            DrawXSettingsManager.InitLocalSettings();
+            if (DrawXSettingsManager.HasCredentials())
+            {
+                // assume we can login and be able to draw
+                // TODO handle initial failure to login despite saved credentials
+                SetupDrawer();
+            }
+        }
+
+        private void SetupDrawer()
+        {
+            // scale bounds to match the pixel dimensions of the SkiaSurface
+            _drawer = new RealmDraw(
+                                    2.0f * (float)View.Bounds.Width,
+                                    2.0f * (float)View.Bounds.Height,
+                                    (sender, args) =>
+                                    {
+                                        View?.SetNeedsDisplay();  // just refresh on notification
+                                    });
+            _drawer.CredentialsEditor = async () =>
+            {
+                InvokeOnMainThread(() => EditCredentials());
+            };
         }
 
         public override void ViewDidLayoutSubviews()
         {
             base.ViewDidLayoutSubviews();
             // this is the earliest we can show the modal login
-            bool canLogin = DrawXSettingsManager.HasCredentials();
-            if (!canLogin)
+
+            // show unconditionally on launch
+            //if (!DrawXSettingsManager.HasCredentials())
+            if (!_hasShownCredentials)
             {
                 EditCredentials();
-                canLogin = DrawXSettingsManager.HasCredentials();
-            }
-            if (canLogin)
-            {
-                _drawer.LoginToServerAsync();
+                _hasShownCredentials = true;
             }
         }
 
@@ -75,7 +91,7 @@ namespace DrawX.iOS
 
         protected void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
-            _drawer.DrawTouches(e.Surface.Canvas);
+            _drawer?.DrawTouches(e.Surface.Canvas);
         }
 
 
@@ -86,7 +102,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
+                _drawer?.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }
@@ -99,7 +115,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.AddPoint((float)point.X * 2.0f, (float)point.Y * 2.0f);
+                _drawer?.AddPoint((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }
@@ -111,7 +127,7 @@ namespace DrawX.iOS
             var touch = touches.AnyObject as UITouch;
             if (touch != null)
             {
-                _drawer.CancelDrawing();
+                _drawer?.CancelDrawing();
             }
             //TODO             View.SetNeedsDisplay();  ????
         }
@@ -124,7 +140,7 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer.StopDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
+                _drawer?.StopDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
             View.SetNeedsDisplay();
         }
@@ -144,7 +160,20 @@ namespace DrawX.iOS
             // TODO generalise this to work in either this or DrawX.iOS project
             var sb = UIStoryboard.FromName("LoginScreen", null);
             var loginVC = sb.InstantiateViewController("Login") as LoginViewController;
-            loginVC.Invoker = this;
+            loginVC.OnCloseLogin = (bool changedServer) =>
+            {
+                DismissModalViewController(false);
+                if (changedServer || _drawer == null)
+                {
+                    if (DrawXSettingsManager.HasCredentials())
+                    {
+                        SetupDrawer();  // pointless unless contact server
+                        _drawer.LoginToServerAsync();
+                    }
+
+                }
+                View.SetNeedsDisplay();
+            };
             PresentViewController(loginVC, false, null);
         }
     }

@@ -118,12 +118,45 @@ SwatchColor
 - added _indexedColors
 - refactored out named static colours into _indexedColors
 
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 2016-11-16 iOS Login Improvements
-
 
 DrawXSettingsManager.cs
 - UpdateCredentials added with default port added if not specified
 
 LoginViewController.cs
 - ViewDidLoad use UpdateCredentials instead of explicit write
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS Login Button on screen and always login prompt on launch
+
+RealmDraw.cs
+- _loginIconRect and _loginIconTouchRect added
+- CredentialsEditor added
+- DrawBackground 
+  - factored out DrawPencils
+  - call DrawLoginIcon
+- DrawLoginIcon added
+- LoginToServerAsync disconnect _refreshOnRealmUpdate from existing Realm in case re-logging in
+
+ViewControllerShared.cs
+- _hasShownCredentials added
+- ViewDidLoad 
+  - set CredentialsEditor
+  - refactored out to SetupDrawer, invoked only if credentials OK
+  - moved InitLocalSettings here from AppDelegate.FinishedLaunching
+- OnPaintSample - cope if _drawer not set  
+- ViewDidLayoutSubviews - login unconditionally but check & set _hasShownCredentials
+  
+LoginViewController.cs
+- Invoker replaced by OnCloseLogin
+- ViewDidLoad - use OnCloseLogin, check if changed server
+
+DrawXSettingsManager.cs
+- UpdateCredentials return flag if changed servers, inc initial login
+
+LoginScreen.storyboard
+- changed the entry field return key properties to "default" as was not implementing
+  the "next" or "Go" behaviours and especially Go was confusing
+- login button title changed back from Save to Login  

@@ -41,6 +41,7 @@ namespace DrawXShared
     {
         private Realm _realm;
         private Realm.RealmChangedEventHandler _refreshOnRealmUpdate;
+        internal Action CredentialsEditor {get;set;}
 
         #region DrawingState
         private bool _isDrawing = false;
@@ -51,11 +52,13 @@ namespace DrawXShared
         private const float PENCIL_MARGIN = 4.0f;
         #endregion
 
-        #region Touch Area
+        #region Touch Areas
+        private SKRect _loginIconRect;
+        private SKRect _loginIconTouchRect;
         // setup in DrawBackground
         float _pencilWidth;
         float _pencilsTop;
-        float _numPencils;
+        int _numPencils;
         #endregion
 
         #region LoginState
@@ -107,6 +110,11 @@ namespace DrawXShared
 
         internal async void LoginToServerAsync()
         {
+            if (_realm != null)
+            {
+                // TODO more logout?
+                _realm.RealmChanged -= _refreshOnRealmUpdate;  // don't want old event notifications from unused Realm
+            }
             _waitingForLogin = true;
             var s = Settings;
             // TODO allow entering Create User flag on credentials to pass in here instead of false
@@ -136,6 +144,11 @@ namespace DrawXShared
 
         private bool TouchInControlArea(float inX, float inY)
         {
+            if (_loginIconTouchRect.Contains(inX, inY))
+            {
+                CredentialsEditor();
+                return true;
+            }
             if (inY < _pencilsTop)
                 return false;
             int pencilIndex = (int)(inX / (_pencilWidth + PENCIL_MARGIN));
@@ -152,7 +165,13 @@ namespace DrawXShared
         private void DrawWBackground(SKCanvas canvas, SKPaint paint)
         {
             canvas.Clear(SKColors.White);
+            DrawPencils(canvas, paint);
+            DrawLoginIcon(canvas, paint);
+        }
 
+
+        private void DrawPencils(SKCanvas canvas, SKPaint paint)
+        {
             // draw pencils, assigning the fields used for touch detection
             _numPencils = SwatchColor.colors.Count;
             var marginAlloc = (_numPencils + 1) * PENCIL_MARGIN;
@@ -174,6 +193,28 @@ namespace DrawXShared
                 canvas.DrawBitmap(swatchBM, pencilRect, paint);
                 runningLeft += PENCIL_MARGIN + _pencilWidth;
             }
+        }
+
+
+        private void DrawLoginIcon(SKCanvas canvas, SKPaint paint)
+        {
+            if (_loginIconRect.Width <= 0.1f)
+            {
+                const float ICON_WIDTH = 84.0f;
+                const float ICON_HEIGHT = 54.0f;
+                #if __IOS__
+                const float TOP_BAR_OFFSET = 48.0f;
+                #else
+                const float TOP_BAR_OFFSET = 8.0f;
+                #endif
+                _loginIconRect = new SKRect(8.0f, TOP_BAR_OFFSET, 8.0f + ICON_WIDTH, TOP_BAR_OFFSET + ICON_HEIGHT);
+                _loginIconTouchRect = new SKRect(0.0f, 0.0f,
+                                                 Math.Max(_loginIconRect.Right + 4.0f, 44.0f),
+                                                 Math.Max(_loginIconRect.Bottom + 4.0f, 44.0f)
+                                                );
+            }
+            var iconBM = EmbeddedMedia.BitmapNamed("CloudIcon.png");
+            canvas.DrawBitmap(iconBM, _loginIconRect, paint);
         }
 
 
