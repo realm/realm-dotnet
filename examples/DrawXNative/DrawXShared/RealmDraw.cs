@@ -88,7 +88,6 @@ namespace DrawXShared
             }
 
             // TODO close the Realm
-            // TODO allow entering credentials
             _canvasWidth = inWidth;
             _canvasHeight = inHeight;
             _refreshOnRealmUpdate = refreshOnRealmUpdate;
@@ -101,6 +100,7 @@ namespace DrawXShared
         {
             _waitingForLogin = true;
             var s = Settings;
+            // TODO allow entering Create User flag on credentials to pass in here instead of false
             var credentials = Credentials.UsernamePassword(s.Username, s.Password, false);
             var user = await User.LoginAsync(credentials, new Uri($"http://{s.ServerIP}"));
             Debug.WriteLine($"Got user logged in with refresh token {user.RefreshToken}");

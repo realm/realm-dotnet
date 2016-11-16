@@ -16,4 +16,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)DrawXSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DrawXSettingsManager.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Charcoal.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Dove.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Elephant.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Flamingo.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\GrapeJelly.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Indigo.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Melon.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Mulberry.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Peach.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\SexySalmon.png" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Media\Ultramarine.png" />
+  </ItemGroup>
 </Project>

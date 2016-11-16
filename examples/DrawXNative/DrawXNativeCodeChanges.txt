@@ -85,3 +85,20 @@ LoginScreen.Storyboard - added
 LoginViewController.cs
 - added  	
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS Colour Picking
+
+Copied Pencil images  from objc to DrawXShared.Media.
+
+Added images to DrawXShared.shproj as EmbeddedResource compilation actions (explicitly set)
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS App icon
+
+Copied Images.xcassets/AppIcon from objc to Assets.xcassets
+
+Info.pist
+- corrected icon reference to point to shared one
+
