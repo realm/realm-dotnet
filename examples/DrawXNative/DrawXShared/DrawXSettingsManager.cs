@@ -39,7 +39,7 @@ namespace DrawXShared
                     _realmLocalSettings.Write(() =>
                     {
                         _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
-                        _savedSettings.LastColorUsed = SwatchColor.Indigo.name;
+                        _savedSettings.LastColorUsed = "Indigo";
                     });
                 }
                 return _savedSettings;

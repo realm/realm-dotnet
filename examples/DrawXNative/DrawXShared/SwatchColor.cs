@@ -25,39 +25,44 @@ namespace DrawXShared
         public string name;
         public SKColor color;
         private static Dictionary<string, SwatchColor>  _colors;
-
-        public static readonly SwatchColor Charcoal = new SwatchColor() { name = "Charcoal", color = new SKColor(28, 35, 63) };
-        public static readonly SwatchColor Elephant = new SwatchColor() { name = "Elephant", color = new SKColor(154, 155, 165) };
-        public static readonly SwatchColor Dove = new SwatchColor() { name = "Dove", color = new SKColor(235, 235, 242) };
-        public static readonly SwatchColor Ultramarine = new SwatchColor() { name = "Ultramarine", color = new SKColor(57, 71, 127) };
-        public static readonly SwatchColor Indigo = new SwatchColor() { name = "Indigo", color = new SKColor(89, 86, 158) };
-        public static readonly SwatchColor GrapeJelly = new SwatchColor() { name = "GrapeJelly", color = new SKColor(154, 80, 165) };
-        public static readonly SwatchColor Mulberry = new SwatchColor() { name = "Mulberry", color = new SKColor(211, 76, 163) };
-        public static readonly SwatchColor Flamingo = new SwatchColor() { name = "Flamingo", color = new SKColor(242, 81, 146) };
-        public static readonly SwatchColor SexySalmon = new SwatchColor() { name = "SexySalmon", color = new SKColor(247, 124, 136) };
-        public static readonly SwatchColor Peach = new SwatchColor() { name = "Peach", color = new SKColor(252, 159, 149) };
-        public static readonly SwatchColor Melon = new SwatchColor() { name = "Melon", color = new SKColor(252, 195, 151) };
+        private static SwatchColor[] _indexedColors;
 
         public static Dictionary<string, SwatchColor> colors
         {
             get
             {
                 if (_colors == null)
-                {
-                    _colors = new Dictionary<string, SwatchColor> ();
-                    _colors["Charcoal"] = Charcoal;
-                    _colors["Elephant"] = Elephant;
-                    _colors["Dove"] = Dove;
-                    _colors["Ultramarine"] = Ultramarine;
-                    _colors["Indigo"] = Indigo;
-                    _colors["GrapeJelly"] = GrapeJelly;
-                    _colors["Mulberry"] = Mulberry;
-                    _colors["Flamingo"] = Flamingo;
-                    _colors["SexySalmon"] = SexySalmon;
-                    _colors["Peach"] = Peach;
-                    _colors["Melon"] = Melon;
-                }
+                    InitColors();
                 return _colors;
+            }
+        }
+
+        public static SwatchColor Color(int i)
+        {
+            if (_colors == null)
+                InitColors();
+            return _indexedColors[i];
+        }
+
+        private static void InitColors()
+        {
+            _indexedColors = new SwatchColor[] {
+                new SwatchColor() { name = "Charcoal", color = new SKColor(28, 35, 63) },
+                new SwatchColor() { name = "Elephant", color = new SKColor(154, 155, 165) },
+                new SwatchColor() { name = "Dove", color = new SKColor(235, 235, 242) },
+                new SwatchColor() { name = "Ultramarine", color = new SKColor(57, 71, 127) },
+                new SwatchColor() { name = "Indigo", color = new SKColor(89, 86, 158) },
+                new SwatchColor() { name = "GrapeJelly", color = new SKColor(154, 80, 165) },
+                new SwatchColor() { name = "Mulberry", color = new SKColor(211, 76, 163) },
+                new SwatchColor() { name = "Flamingo", color = new SKColor(242, 81, 146) },
+                new SwatchColor() { name = "SexySalmon", color = new SKColor(247, 124, 136) },
+                new SwatchColor() { name = "Peach", color = new SKColor(252, 159, 149) },
+                new SwatchColor() { name = "Melon", color = new SKColor(252, 195, 151) }
+            };
+            _colors = new Dictionary<string, SwatchColor> ();
+            foreach (var color in _indexedColors)
+            {
+                _colors[color.name] = color;
             }
         }
     }

@@ -103,6 +103,20 @@ Copied Images.xcassets/AppIcon from objc to Assets.xcassets
 Info.pist
 - corrected icon reference to point to shared one
 
+RealmDraw.cs
+- _ignoringTouches added
+- _pencilWidth, _pencilsTop, _numPencils added
+- DrawBackground added
+- DrawTouches call DrawWBackground
+- TouchInControlArea added
+- StartDrawing - invoke TouchInControlArea and set _ignoringTouches
+- AddPoint - check _ignoringTouches
+- StopDrawing, CancelDrawing - clear _ignoringTouches
+
+SwatchColor
+- added Color public way to get indexed color
+- added _indexedColors
+- refactored out named static colours into _indexedColors
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 2016-11-16 iOS Login Improvements

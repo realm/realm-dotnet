@@ -44,9 +44,18 @@ namespace DrawXShared
 
         #region DrawingState
         private bool _isDrawing = false;
+        private bool _ignoringTouches = false;
         private DrawPath _drawPath;
-        float _canvasWidth, _canvasHeight;
-        const float NORMALISE_TO = 4000.0f;
+        private float _canvasWidth, _canvasHeight;
+        private const float NORMALISE_TO = 4000.0f;
+        private             const float PENCIL_MARGIN = 4.0f;
+        #endregion
+
+        #region Touch Area
+        // setup in DrawBackground
+        float _pencilWidth;
+        float _pencilsTop;
+        float _numPencils;
         #endregion
 
         #region LoginState
@@ -125,17 +134,40 @@ namespace DrawXShared
         }
 
 
-        public void DrawWBackground(SKCanvas canvas)
+        private bool TouchInControlArea(float inX, float inY)
+        {
+            if (inY < _pencilsTop)
+                return false;
+            int pencilIndex = (int)(inX / (_pencilWidth + PENCIL_MARGIN));
+            // see opposite calc in DrawBackground
+            var selectecColor = SwatchColor.Color(pencilIndex);
+            if (!selectecColor.name.Equals(currentColor.name))
+            {
+                currentColor = selectecColor;  // will update saved settings
+            }
+            return true;  // if in this area even if didn't actually change
+        }
+
+
+        private void DrawWBackground(SKCanvas canvas, SKPaint paint)
         {
             canvas.Clear(SKColors.White);
-            var paint = new SKPaint();
-            const float w = 56.0f;
-            const float h = 167.0f;
+
+            // draw pencils, assigning the fields used for touch detection
+            _numPencils = SwatchColor.colors.Count;
+            var marginAlloc = (_numPencils + 1) * PENCIL_MARGIN;
+            _pencilWidth = (canvas.ClipBounds.Width - marginAlloc) / _numPencils;  // see opposite calc in TouchInControlArea
+            var pencilHeight = _pencilWidth * 334.0f / 112.0f;  // scale as per originals
+            float runningLeft = PENCIL_MARGIN;
+            float pencilsBottom = canvas.ClipBounds.Height;
+            _pencilsTop = pencilsBottom - pencilHeight;
             foreach (var swatchName in SwatchColor.colors.Keys)
             {
                 Debug.WriteLine($"Loading image {swatchName}");
-                var swatchBM = EmbeddedMedia.BitmapNamed(swatchName+".png");
-                canvas.DrawBitmap(swatchBM, w, h, paint);
+                var swatchBM = EmbeddedMedia.BitmapNamed(swatchName + ".png");
+                var pencilRect = new SKRect(runningLeft, _pencilsTop, runningLeft + _pencilWidth, pencilsBottom);
+                canvas.DrawBitmap(swatchBM, pencilRect, paint);
+                runningLeft += PENCIL_MARGIN + _pencilWidth;
             }
         }
 
@@ -148,10 +180,10 @@ namespace DrawXShared
                 return;  // too early to have finished login
 
             // TODO avoid clear and build up new paths incrementally fron the unfinished ones
-            DrawWBackground(canvas);
 
             using (SKPaint paint = new SKPaint())
             {
+                DrawWBackground(canvas, paint);
                 paint.Style = SKPaintStyle.Stroke;
                 paint.StrokeWidth = 10;
                 paint.IsAntialias = true;
@@ -189,6 +221,12 @@ namespace DrawXShared
 
         public void StartDrawing(float inX, float inY)
         {
+            if (TouchInControlArea(inX, inY))
+            {
+                _ignoringTouches = true;
+                return;
+            }
+            _ignoringTouches = false;
             if (_realm == null)
             {
                 if (!_waitingForLogin)
@@ -208,6 +246,8 @@ namespace DrawXShared
 
         public void AddPoint(float inX, float inY)
         {
+            if (_ignoringTouches)
+                return;  // probably touched in pencil area
             if (_realm == null)
                 return;  // not yet logged into server
             if (!_isDrawing)
@@ -223,8 +263,13 @@ namespace DrawXShared
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
             });
         }
+
+
         public void StopDrawing(float inX, float inY)
         {
+            if (_ignoringTouches)
+                return;  // probably touched in pencil area
+            _ignoringTouches = false;
             _isDrawing = false;
             if (_realm == null)
                 return;  // not yet logged into server
@@ -239,6 +284,7 @@ namespace DrawXShared
         public void CancelDrawing()
         {
             _isDrawing = false;
+            _ignoringTouches = false;
             // TODO wipe current path
         }
 
