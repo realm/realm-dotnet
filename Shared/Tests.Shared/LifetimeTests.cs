@@ -56,7 +56,7 @@ namespace IntegrationTests.Shared
             Assert.That(person.IsValid);
 
             // TearDown
-            ((Realm)realm.Target).Close();
+            ((Realm)realm.Target).Dispose();
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace IntegrationTests.Shared
             Assert.That(person.IsValid);
 
             // TearDown
-            realm.Close();
+            realm.Dispose();
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace IntegrationTests.Shared
             Assert.That(realm.IsAlive);
 
             // TearDown
-            ((Realm)realm.Target).Close();
+            ((Realm)realm.Target).Dispose();
         }
     }
 }

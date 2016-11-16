@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -19,7 +19,7 @@
 namespace Realms
 {
     /// <summary>
-    /// Exception thrown when you're trying to use Manage but the object has already been added to this Realm.
+    /// Exception thrown when you're trying to use <c>Add</c> but the object has already been added to this Realm.
     /// </summary>
     public class RealmObjectAlreadyManagedByRealmException : RealmException
     {

@@ -16,25 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Runtime.InteropServices;
+using NUnit.Framework;
+using Realms;
 
-namespace Realms
+namespace IntegrationTests
 {
-    internal static class RealmResultsNativeHelper
+    [TestFixture, Preserve(AllMembers = true)]
+    public class ObjectSchemaTests
     {
-        internal interface Interface
+        private class RequiredPropertyClass : RealmObject
         {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
+            [Required]
+            public string FooRequired { get; set; }
         }
 
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallbackDelegate))]
-#endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
+        [Test]
+        public void Property_WhenRequired_ShouldBeNonNullable()
         {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+            var schema = Realms.Schema.ObjectSchema.FromType(typeof(RequiredPropertyClass));
+
+            Realms.Schema.Property prop;
+            if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out prop))
+            {
+                Assert.Fail("Could not find property");
+            }
+
+            Assert.That(prop.IsNullable, Is.False);
         }
     }
 }

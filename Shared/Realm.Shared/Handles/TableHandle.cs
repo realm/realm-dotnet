@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -180,7 +180,7 @@ namespace Realms
             return result;
         }
 
-        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, string id)
+        internal IntPtr Find(SharedRealmHandle realmHandle, string id)
         {
             if (id == null)
             {
@@ -193,7 +193,7 @@ namespace Realms
             return result;
         }
 
-        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, long? id)
+        internal IntPtr Find(SharedRealmHandle realmHandle, long? id)
         {
             NativeException nativeException;
             IntPtr result;

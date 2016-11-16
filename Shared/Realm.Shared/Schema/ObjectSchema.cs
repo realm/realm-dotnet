@@ -133,6 +133,11 @@ namespace Realms.Schema
                 schemaProperty.ObjectType = innerType?.Name;
                 schemaProperty.IsNullable = isNullable;
 
+                if (property.GetCustomAttribute<RequiredAttribute>() != null)
+                {
+                    schemaProperty.IsNullable = false;
+                }
+
                 builder.Add(schemaProperty);
             }
 

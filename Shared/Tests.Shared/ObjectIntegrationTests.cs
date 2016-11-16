@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -156,20 +156,20 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ManageOutsideTransactionShouldFail()
+        public void AddOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Manage(obj));
+            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Add(obj));
         }
 
         [Test]
-        public void ManageNullObjectShouldFail()
+        public void AddNullObjectShouldFail()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.Manage(null as Person));
+            Assert.Throws<ArgumentNullException>(() => _realm.Add(null as Person));
         }
 
         [Test]
-        public void ManageAnObjectFromAnotherRealmShouldFail()
+        public void AddAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -178,25 +178,12 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            var secondaryConfig = new RealmConfiguration("ManageAnObjectFromAnotherRealmShouldFail");
+            var secondaryConfig = new RealmConfiguration("AddAnObjectFromAnotherRealmShouldFail");
             Realm.DeleteRealm(secondaryConfig);
             using (var otherRealm = Realm.GetInstance(secondaryConfig))
             {
-                Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Manage(p));
+                Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Add(p));
             }
-        }
-
-        [Test]
-        public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
-        {
-            Person p;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p = _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
-
-            Assert.DoesNotThrow(() => _realm.Manage(p));
         }
 
         [Test]
@@ -254,7 +241,7 @@ namespace IntegrationTests
 
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
-            string[] emails = { "john@smith.com", "john@doe.com", "peter@jameson.net" };
+            var emails = new[] { "john@smith.com", "john@doe.com", "peter@jameson.net" };
             foreach (var p in _realm.All<Person>())
             {
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));

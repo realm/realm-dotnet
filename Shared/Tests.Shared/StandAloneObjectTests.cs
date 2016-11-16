@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -63,7 +63,7 @@ namespace IntegrationTests.Shared
             {
                 using (var transaction = realm.BeginWrite())
                 {
-                    realm.Manage(_person);
+                    realm.Add(_person);
                     transaction.Commit();
                 }
 
@@ -93,38 +93,38 @@ namespace IntegrationTests.Shared
             {
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new NoListProperties());
-                }), $"{nameof(NoListProperties)} manage failed.");
+                    realm.Add(new NoListProperties());
+                }), $"{nameof(NoListProperties)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OnlyListProperties());
-                }), $"{nameof(OnlyListProperties)} manage failed.");
+                    realm.Add(new OnlyListProperties());
+                }), $"{nameof(OnlyListProperties)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new MixedProperties1());
-                }), $"{nameof(MixedProperties1)} manage failed.");
+                    realm.Add(new MixedProperties1());
+                }), $"{nameof(MixedProperties1)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new MixedProperties2());
-                }), $"{nameof(MixedProperties2)} manage failed.");
+                    realm.Add(new MixedProperties2());
+                }), $"{nameof(MixedProperties2)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OneNonListProperty());
-                }), $"{nameof(OneNonListProperty)} manage failed.");
+                    realm.Add(new OneNonListProperty());
+                }), $"{nameof(OneNonListProperty)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OneListProperty());
-                }), $"{nameof(OneListProperty)} manage failed.");
+                    realm.Add(new OneListProperty());
+                }), $"{nameof(OneListProperty)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new AllTypesObject());
-                }), $"{nameof(AllTypesObject)} manage failed.");
+                    realm.Add(new AllTypesObject());
+                }), $"{nameof(AllTypesObject)} add failed.");
             }
         }
 

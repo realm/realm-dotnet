@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -38,7 +38,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -89,7 +89,7 @@ namespace IntegrationTests.Shared
 
             await _realm.WriteAsync(realm =>
             {
-                var dataObj = realm.ObjectForPrimaryKey<MyDataObject>(path);
+                var dataObj = realm.Find<MyDataObject>(path);
                 dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
             });
 

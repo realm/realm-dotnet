@@ -45,7 +45,7 @@ namespace IntegrationTests
 
         public static void CopyBundledDatabaseToDocuments(string realmName, string destPath = null, bool overwrite = true)
         {
-            destPath = RealmConfiguration.PathToRealm(destPath);  // any relative subdir or filename works
+            destPath = RealmConfiguration.GetPathToRealm(destPath);  // any relative subdir or filename works
 
 #if __ANDROID__
             using (var asset = Android.App.Application.Context.Assets.Open(realmName))
