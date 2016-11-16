@@ -81,7 +81,7 @@ namespace DrawXShared
         public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
 
-            if (string.IsNullOrEmpty(Settings.ServerIP)) 
+            if (string.IsNullOrEmpty(Settings.ServerIP))
             {
                 // new launch or upgrade from prev version which didn't save credentials
 
@@ -124,6 +124,22 @@ namespace DrawXShared
             h *= _canvasHeight / NORMALISE_TO;
         }
 
+
+        public void DrawWBackground(SKCanvas canvas)
+        {
+            canvas.Clear(SKColors.White);
+            var paint = new SKPaint();
+            const float w = 56.0f;
+            const float h = 167.0f;
+            foreach (var swatchName in SwatchColor.colors.Keys)
+            {
+                Debug.WriteLine($"Loading image {swatchName}");
+                var swatchBM = EmbeddedMedia.BitmapNamed(swatchName+".png");
+                canvas.DrawBitmap(swatchBM, w, h, paint);
+            }
+        }
+
+
         // replaces the CanvasView.drawRect of the original
         public void DrawTouches(SKCanvas canvas)
         {
@@ -132,7 +148,7 @@ namespace DrawXShared
                 return;  // too early to have finished login
 
             // TODO avoid clear and build up new paths incrementally fron the unfinished ones
-            canvas.Clear(SKColors.White);
+            DrawWBackground(canvas);
 
             using (SKPaint paint = new SKPaint())
             {

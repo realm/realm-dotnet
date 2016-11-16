@@ -37,7 +37,6 @@ namespace DrawXShared
         public static readonly SwatchColor SexySalmon = new SwatchColor() { name = "SexySalmon", color = new SKColor(247, 124, 136) };
         public static readonly SwatchColor Peach = new SwatchColor() { name = "Peach", color = new SKColor(252, 159, 149) };
         public static readonly SwatchColor Melon = new SwatchColor() { name = "Melon", color = new SKColor(252, 195, 151) };
-        public static readonly SwatchColor Black = new SwatchColor() { name = "Black", color = new SKColor(0, 0, 0) };
 
         public static Dictionary<string, SwatchColor> colors
         {
@@ -57,7 +56,6 @@ namespace DrawXShared
                     _colors["SexySalmon"] = SexySalmon;
                     _colors["Peach"] = Peach;
                     _colors["Melon"] = Melon;
-                    _colors["Black"] = Black;
                 }
                 return _colors;
             }

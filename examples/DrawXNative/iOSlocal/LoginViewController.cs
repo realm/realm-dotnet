@@ -27,12 +27,7 @@ namespace DrawX.iOS
 
             LoginButton.TouchUpInside += (sender, e) =>
             {
-                DrawXSettingsManager.Write(() =>
-                {
-                    s.ServerIP = ServerEntry.Text;
-                    s.Username = UsernameEntry.Text;
-                    s.Password = PasswordEntry.Text;
-                });
+                DrawXSettingsManager.UpdateCredentials(ServerEntry.Text,  UsernameEntry.Text, PasswordEntry.Text);
                 Invoker?.DismissModalViewController(false);
             };
 

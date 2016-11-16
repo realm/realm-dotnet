@@ -60,6 +60,23 @@ namespace DrawXShared
             _realmLocalSettings.Write(writer);
         }
 
+
+        internal static void UpdateCredentials(string serverIP, string username, string password)
+        {
+            if (!serverIP.Contains(":"))
+            {
+                // assume they forgot port so add standard port
+                serverIP += ":9080";
+            }
+            _realmLocalSettings.Write(() =>
+            {
+                _savedSettings.ServerIP = serverIP;
+                _savedSettings.Username = username;
+                _savedSettings.Password = password;
+            });
+        }
+
+
         internal static bool HasCredentials()
         {
             return _savedSettings != null &&
