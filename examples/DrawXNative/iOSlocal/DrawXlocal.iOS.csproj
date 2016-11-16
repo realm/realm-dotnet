@@ -106,7 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="..\iOS\Assets.xcassets\AppIcon.appiconset\Contents.json" />
-    <ImageAsset Include="..\iOS\Assets.xcassets\Contents.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\iOS\Resources\" />

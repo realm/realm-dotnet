@@ -85,3 +85,31 @@ LoginScreen.Storyboard - added
 LoginViewController.cs
 - added  	
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS Colour Picking
+
+Copied Pencil images  from objc to DrawXShared.Media.
+
+Added images to DrawXShared.shproj as EmbeddedResource compilation actions (explicitly set)
+
+SwatchColor.cs
+- removed Black as don't have a pencil image that name
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS App icon
+
+Copied Images.xcassets/AppIcon from objc to Assets.xcassets
+
+Info.pist
+- corrected icon reference to point to shared one
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-16 iOS Login Improvements
+
+
+DrawXSettingsManager.cs
+- UpdateCredentials added with default port added if not specified
+
+LoginViewController.cs
+- ViewDidLoad use UpdateCredentials instead of explicit write
