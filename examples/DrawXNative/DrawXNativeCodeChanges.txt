@@ -176,3 +176,25 @@ info.plist
 - add iTunes Metadata image links to DrawXOtherMedia
 
 DawX_adhoc_iTunesMetadata.plist added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-17 Optimise Redraw - caching bitmaps
+
+SwatchColor
+- Color(i) replaced with Colors property
+- colors renamed ColorsByName
+- name and color capitalised
+
+RealmDraw
+- _currentColorCache renamed _currentColor to be more standard
+- _currentColorIndex added
+- color set _currentColorIndex
+- _pencilBitmaps added
+- _loginIconBitmap added
+- RealmDraw load _pencilBitmaps and _loginIconBitmap once on creation
+- DrawPencils 
+  - iterate _pencilBitmaps instead of loading each time
+  - use _currentColorIndex to check current
+- DrawLoginIcon - use _loginIconBitmap instead of loading each time  
+

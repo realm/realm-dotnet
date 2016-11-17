@@ -6,10 +6,6 @@
 	<string>DrawX</string>
 	<key>CFBundleIdentifier</key>
 	<string>io.realm.drawx</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>
@@ -42,5 +38,9 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>../iOS/Assets.xcassets/AppIcon.appiconset</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.1</string>
 </dict>
 </plist>

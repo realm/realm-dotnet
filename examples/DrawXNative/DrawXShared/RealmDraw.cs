@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using SkiaSharp;
 using Realms;
 using Realms.Sync;
-using System.Linq;
 
 
 namespace DrawXShared
@@ -35,6 +35,15 @@ namespace DrawXShared
     Login
     -----
     Credentials come from DrawXSettings.
+    It is the responsibility of external GUI classes to get credentials entered and delay
+    starting RealmDraw until connection is made.
+
+    Drawing
+    -------
+    There are three components to drawing:
+    - the background images for "controls"
+    - previously drawn, and cached, paths
+    - the currently growing paths (one per app updating the shared Realm).
     
     */
     public class RealmDraw
@@ -56,9 +65,11 @@ namespace DrawXShared
         private SKRect _loginIconRect;
         private SKRect _loginIconTouchRect;
         // setup in DrawBackground
-        float _pencilWidth;
-        float _pencilsTop;
-        int _numPencils;
+        private float _pencilWidth;
+        private float _pencilsTop;
+        private int _numPencils;
+        private List<SKBitmap> _pencilBitmaps;
+        private SKBitmap _loginIconBitmap;
         #endregion
 
         #region LoginState
@@ -67,23 +78,26 @@ namespace DrawXShared
 
         #region Settings
         private DrawXSettings Settings => DrawXSettingsManager.Settings;
-        private SwatchColor _currentColorCache;
+        private int _currentColorIndex;  // for quick check if pencil we draw is current color
+        private SwatchColor _currentColor;
         private SwatchColor currentColor
         {
             get
             {
-                if (String.IsNullOrEmpty(_currentColorCache.name))
+                if (String.IsNullOrEmpty(_currentColor.Name))
                 {
-                    _currentColorCache = SwatchColor.colors[Settings.LastColorUsed];
+                    _currentColor = SwatchColor.ColorsByName[Settings.LastColorUsed];
+                    _currentColorIndex = SwatchColor.Colors.IndexOf(_currentColor);
                 }
-                return _currentColorCache;
+                return _currentColor;
             }
             set
             {
-                if (!_currentColorCache.name.Equals(value.name))
+                if (!_currentColor.Name.Equals(value.Name))
                 {
-                    _currentColorCache = value;
-                    DrawXSettingsManager.Write(() => Settings.LastColorUsed = _currentColorCache.name);
+                    _currentColor = value;
+                    DrawXSettingsManager.Write(() => Settings.LastColorUsed = _currentColor.Name);
+                    _currentColorIndex = SwatchColor.Colors.IndexOf(_currentColor);
                 }
 
             }
@@ -92,13 +106,6 @@ namespace DrawXShared
 
         public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
         {
-
-            if (string.IsNullOrEmpty(Settings.ServerIP))
-            {
-                // new launch or upgrade from prev version which didn't save credentials
-
-            }
-
             // TODO close the Realm
             _canvasWidth = inWidth;
             _canvasHeight = inHeight;
@@ -106,6 +113,13 @@ namespace DrawXShared
 
             // simple local open            
             //_realm = Realm.GetInstance("DrawX.realm");
+
+            _pencilBitmaps = new List<SKBitmap>(SwatchColor.Colors.Count);
+            foreach (var swatch in SwatchColor.Colors)
+            {
+                _pencilBitmaps.Add( EmbeddedMedia.BitmapNamed(swatch.Name + ".png") );
+            }
+            _loginIconBitmap = EmbeddedMedia.BitmapNamed("CloudIcon.png");
         }
 
         internal async void LoginToServerAsync()
@@ -153,8 +167,8 @@ namespace DrawXShared
                 return false;
             int pencilIndex = (int)(inX / (_pencilWidth + PENCIL_MARGIN));
             // see opposite calc in DrawBackground
-            var selectecColor = SwatchColor.Color(pencilIndex);
-            if (!selectecColor.name.Equals(currentColor.name))
+            var selectecColor = SwatchColor.Colors[pencilIndex];
+            if (!selectecColor.Name.Equals(currentColor.Name))
             {
                 currentColor = selectecColor;  // will update saved settings
             }
@@ -173,19 +187,18 @@ namespace DrawXShared
         private void DrawPencils(SKCanvas canvas, SKPaint paint)
         {
             // draw pencils, assigning the fields used for touch detection
-            _numPencils = SwatchColor.colors.Count;
+            _numPencils = SwatchColor.ColorsByName.Count;
             var marginAlloc = (_numPencils + 1) * PENCIL_MARGIN;
             _pencilWidth = (canvas.ClipBounds.Width - marginAlloc) / _numPencils;  // see opposite calc in TouchInControlArea
             var pencilHeight = _pencilWidth * 334.0f / 112.0f;  // scale as per originals
             float runningLeft = PENCIL_MARGIN;
             float pencilsBottom = canvas.ClipBounds.Height;
             _pencilsTop = pencilsBottom - pencilHeight;
-            foreach (var swatchName in SwatchColor.colors.Keys)
+            int _pencilIndex = 0;
+            foreach (var swatchBM in _pencilBitmaps)
             {
-                Debug.WriteLine($"Loading image {swatchName}");
-                var swatchBM = EmbeddedMedia.BitmapNamed(swatchName + ".png");
                 var pencilRect = new SKRect(runningLeft, _pencilsTop, runningLeft + _pencilWidth, pencilsBottom);
-                if (swatchName.Equals(currentColor.name))
+                if (_pencilIndex++ == _currentColorIndex)
                 {
                     var offsetY = -Math.Max(20.0f, pencilHeight / 4.0f);
                     pencilRect.Offset(0.0f, offsetY);  // show selected color
@@ -213,8 +226,7 @@ namespace DrawXShared
                                                  Math.Max(_loginIconRect.Bottom + 4.0f, 44.0f)
                                                 );
             }
-            var iconBM = EmbeddedMedia.BitmapNamed("CloudIcon.png");
-            canvas.DrawBitmap(iconBM, _loginIconRect, paint);
+            canvas.DrawBitmap(_loginIconBitmap, _loginIconRect, paint);
         }
 
 
@@ -239,7 +251,7 @@ namespace DrawXShared
                 {
                     using (SKPath path = new SKPath())
                     {
-                        var pathColor = SwatchColor.colors[drawPath.color].color;
+                        var pathColor = SwatchColor.ColorsByName[drawPath.color].Color;
                         paint.Color = pathColor;
                         bool isFirst = true;
                         foreach (var point in drawPath.points)
@@ -284,7 +296,7 @@ namespace DrawXShared
             // TODO smarter guard against _realm null
             _realm.Write(() =>
             {
-                _drawPath = new DrawPath() { color = currentColor.name };
+                _drawPath = new DrawPath() { color = currentColor.Name };  // Realm saves name of color
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
                 _realm.Manage(_drawPath);
             });
