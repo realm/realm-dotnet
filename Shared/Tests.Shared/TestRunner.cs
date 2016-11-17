@@ -35,7 +35,7 @@ namespace IntegrationTests.Shared
             testExecutionContext.WorkDirectory = Environment.CurrentDirectory;
 
             #if __IOS__
-            var workItem = suite.CreateWorkItem(TestFilter.Empty, null);
+            var workItem = suite.CreateWorkItem(TestFilter.Empty, new FinallyDelegate());
             #else
             var workItem = suite.CreateWorkItem(TestFilter.Empty);
             #endif
