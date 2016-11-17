@@ -154,9 +154,25 @@ LoginViewController.cs
 - ViewDidLoad - use OnCloseLogin, check if changed server
 
 DrawXSettingsManager.cs
-- UpdateCredentials return flag if changed servers, inc initial login
+- UpdateCredentials 
+  - return flag if changed servers, inc initial login
+  - cope with blank settings
 
 LoginScreen.storyboard
 - changed the entry field return key properties to "default" as was not implementing
   the "next" or "Go" behaviours and especially Go was confusing
 - login button title changed back from Save to Login  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-17 Allow Release Builds
+
+DrawXlocal.ios.csproj
+- add configuration ReleaseAdhoc | iPhone
+- add provisioning profiles and certs to Release and ReleaseAdHoc
+
+DrawXOtherMedia - add folder with two images
+
+info.plist
+- add iTunes Metadata image links to DrawXOtherMedia
+
+DawX_adhoc_iTunesMetadata.plist added
