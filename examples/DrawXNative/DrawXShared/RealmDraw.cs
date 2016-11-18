@@ -19,6 +19,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
 using SkiaSharp;
 using Realms;
 using Realms.Sync;
@@ -49,8 +51,8 @@ namespace DrawXShared
     public class RealmDraw
     {
         private Realm _realm;
-        private Realm.RealmChangedEventHandler _refreshOnRealmUpdate;
-        internal Action CredentialsEditor {get;set;}
+        internal Realm.RealmChangedEventHandler RefreshOnRealmUpdate { get; set;}
+        internal Action CredentialsEditor { get; set; }
 
         #region DrawingState
         private bool _isDrawing = false;
@@ -59,6 +61,12 @@ namespace DrawXShared
         private float _canvasWidth, _canvasHeight;
         private const float NORMALISE_TO = 4000.0f;
         private const float PENCIL_MARGIN = 4.0f;
+        #endregion
+
+        #region CachedCanvas
+        private Int32 _canvasSaveCount;  // from SaveLayer
+        private bool _hasSavedBitmap = false;  // separate flag so we don't rely on any given value in _canvasSaveCount
+        private bool _redrawPathsAtNextDraw = true;
         #endregion
 
         #region Touch Areas
@@ -104,12 +112,11 @@ namespace DrawXShared
         }
         #endregion Settings
 
-        public RealmDraw(float inWidth, float inHeight, Realm.RealmChangedEventHandler refreshOnRealmUpdate)
+        public RealmDraw(float inWidth, float inHeight)
         {
             // TODO close the Realm
             _canvasWidth = inWidth;
             _canvasHeight = inHeight;
-            _refreshOnRealmUpdate = refreshOnRealmUpdate;
 
             // simple local open            
             //_realm = Realm.GetInstance("DrawX.realm");
@@ -117,9 +124,16 @@ namespace DrawXShared
             _pencilBitmaps = new List<SKBitmap>(SwatchColor.Colors.Count);
             foreach (var swatch in SwatchColor.Colors)
             {
-                _pencilBitmaps.Add( EmbeddedMedia.BitmapNamed(swatch.Name + ".png") );
+                _pencilBitmaps.Add(EmbeddedMedia.BitmapNamed(swatch.Name + ".png"));
             }
             _loginIconBitmap = EmbeddedMedia.BitmapNamed("CloudIcon.png");
+        }
+
+
+        internal void InvalidateCachedPaths()
+        {
+            _redrawPathsAtNextDraw = true;
+            _hasSavedBitmap = false;
         }
 
         internal async void LoginToServerAsync()
@@ -127,7 +141,7 @@ namespace DrawXShared
             if (_realm != null)
             {
                 // TODO more logout?
-                _realm.RealmChanged -= _refreshOnRealmUpdate;  // don't want old event notifications from unused Realm
+                _realm.RealmChanged -= RefreshOnRealmUpdate;  // don't want old event notifications from unused Realm
             }
             _waitingForLogin = true;
             var s = Settings;
@@ -138,8 +152,8 @@ namespace DrawXShared
 
             var loginConf = new SyncConfiguration(user, new Uri($"realm://{s.ServerIP}/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
-            _realm.RealmChanged += _refreshOnRealmUpdate;
-            _refreshOnRealmUpdate(_realm, null);  // force initial draw on login
+            _realm.RealmChanged += RefreshOnRealmUpdate;
+            RefreshOnRealmUpdate(_realm, null);  // force initial draw on login
             _waitingForLogin = false;
         }
 
@@ -160,6 +174,7 @@ namespace DrawXShared
         {
             if (_loginIconTouchRect.Contains(inX, inY))
             {
+                InvalidateCachedPaths();
                 CredentialsEditor();
                 return true;
             }
@@ -172,15 +187,8 @@ namespace DrawXShared
             {
                 currentColor = selectecColor;  // will update saved settings
             }
+            InvalidateCachedPaths();
             return true;  // if in this area even if didn't actually change
-        }
-
-
-        private void DrawWBackground(SKCanvas canvas, SKPaint paint)
-        {
-            canvas.Clear(SKColors.White);
-            DrawPencils(canvas, paint);
-            DrawLoginIcon(canvas, paint);
         }
 
 
@@ -215,11 +223,11 @@ namespace DrawXShared
             {
                 const float ICON_WIDTH = 84.0f;
                 const float ICON_HEIGHT = 54.0f;
-                #if __IOS__
+#if __IOS__
                 const float TOP_BAR_OFFSET = 48.0f;
-                #else
+#else
                 const float TOP_BAR_OFFSET = 8.0f;
-                #endif
+#endif
                 _loginIconRect = new SKRect(8.0f, TOP_BAR_OFFSET, 8.0f + ICON_WIDTH, TOP_BAR_OFFSET + ICON_HEIGHT);
                 _loginIconTouchRect = new SKRect(0.0f, 0.0f,
                                                  Math.Max(_loginIconRect.Right + 4.0f, 44.0f),
@@ -230,50 +238,71 @@ namespace DrawXShared
         }
 
 
+        private void DrawAPath(SKCanvas canvas, SKPaint paint, DrawPath drawPath)
+        {
+            using (SKPath path = new SKPath())
+            {
+                var pathColor = SwatchColor.ColorsByName[drawPath.color].Color;
+                paint.Color = pathColor;
+                bool isFirst = true;
+                foreach (var point in drawPath.points)
+                {
+                    // for compatibility with iOS Realm, stores floats, normalised to NORMALISE_TO
+                    float fx = (float)point.x;
+                    float fy = (float)point.y;
+                    ScalePointsToDraw(ref fx, ref fy);
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                        path.MoveTo(fx, fy);
+                    }
+                    else
+                    {
+                        path.LineTo(fx, fy);
+                    }
+                }
+                canvas.DrawPath(path, paint);
+            }
+        }
+
+
         // replaces the CanvasView.drawRect of the original
         public void DrawTouches(SKCanvas canvas)
         {
-
             if (_realm == null)
                 return;  // too early to have finished login
-
-            // TODO avoid clear and build up new paths incrementally fron the unfinished ones
+            if (_hasSavedBitmap)
+            {
+                canvas.RestoreToCount(_canvasSaveCount);  // use up the offscreen bitmap regardless
+            }
 
             using (SKPaint paint = new SKPaint())
             {
-                DrawWBackground(canvas, paint);
                 paint.Style = SKPaintStyle.Stroke;
                 paint.StrokeWidth = 10;
                 paint.IsAntialias = true;
                 paint.StrokeCap = SKStrokeCap.Round;
                 paint.StrokeJoin = SKStrokeJoin.Round;
-                foreach (var drawPath in _realm.All<DrawPath>())
+                if (_redrawPathsAtNextDraw)
                 {
-                    using (SKPath path = new SKPath())
+                    canvas.Clear(SKColors.White);
+                    DrawPencils(canvas, paint);
+                    DrawLoginIcon(canvas, paint);
+                    foreach (var drawPath in _realm.All<DrawPath>().Where(path => path.drawerID != null))
                     {
-                        var pathColor = SwatchColor.ColorsByName[drawPath.color].Color;
-                        paint.Color = pathColor;
-                        bool isFirst = true;
-                        foreach (var point in drawPath.points)
-                        {
-                            // for compatibility with iOS Realm, stores floats, normalised to NORMALISE_TO
-                            float fx = (float)point.x;
-                            float fy = (float)point.y;
-                            ScalePointsToDraw(ref fx, ref fy);
-                            if (isFirst)
-                            {
-                                isFirst = false;
-                                path.MoveTo(fx, fy);
-                            }
-                            else
-                            {
-                                path.LineTo(fx, fy);
-                            }
-                        }
-                        canvas.DrawPath(path, paint);
+                        DrawAPath(canvas, paint, drawPath);
                     }
+                    _canvasSaveCount = canvas.SaveLayer(paint);  // cache everything but the paths in progress
+                    _hasSavedBitmap = true;
+                }
+
+                // current paths being drawn, here or by other devices
+                foreach (var drawPath in _realm.All<DrawPath>().Where(path => path.drawerID == null))
+                {
+                    DrawAPath(canvas, paint, drawPath);
                 }
             } // SKPaint
+            _redrawPathsAtNextDraw = false;
         }
 
 
@@ -343,11 +372,13 @@ namespace DrawXShared
         {
             _isDrawing = false;
             _ignoringTouches = false;
+            InvalidateCachedPaths();
             // TODO wipe current path
         }
 
         public void ErasePaths()
         {
+            InvalidateCachedPaths();
             _realm.Write(() => _realm.RemoveAll<DrawPath>());
         }
     }

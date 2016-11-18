@@ -198,3 +198,25 @@ RealmDraw
   - use _currentColorIndex to check current
 - DrawLoginIcon - use _loginIconBitmap instead of loading each time  
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-17 Optimise Redraw - caching finished paths
+
+RealmDraw
+- _redrawPathsAtNextDraw, _hasSavedBitmap & _canvasSaveCount added
+- RealmDraw ctor don't take event handler, so it can be a lambda referring to the draw
+- DrawTouches 
+  - refactored out draw loop to DrawAPath
+  - DrawBackground calls moved here
+  - applies and regenerates saved layer
+- InvalidateCachedPaths added
+- TouchInControlArea
+- ErasePaths
+- CancelDrawing
+  - call InvalidateCachedPaths
+
+
+ViewControllerShared.cs
+- SetupDrawer
+  - two-stage init to pass in lambda after create RealmDraw
+  - lambda for RefreshOnRealmUpdate also calls InvalidateCachedPaths

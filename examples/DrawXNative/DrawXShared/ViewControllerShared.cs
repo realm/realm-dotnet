@@ -56,15 +56,17 @@ namespace DrawX.iOS
             // scale bounds to match the pixel dimensions of the SkiaSurface
             _drawer = new RealmDraw(
                                     2.0f * (float)View.Bounds.Width,
-                                    2.0f * (float)View.Bounds.Height,
-                                    (sender, args) =>
-                                    {
-                                        View?.SetNeedsDisplay();  // just refresh on notification
-                                    });
+                                    2.0f * (float)View.Bounds.Height);
             _drawer.CredentialsEditor = async () =>
             {
                 InvokeOnMainThread(() => EditCredentials());
             };
+            _drawer.RefreshOnRealmUpdate = (sender, args) =>
+            {
+                _drawer.InvalidateCachedPaths();
+                View?.SetNeedsDisplay();  // just refresh on notification
+            };
+
         }
 
         public override void ViewDidLayoutSubviews()

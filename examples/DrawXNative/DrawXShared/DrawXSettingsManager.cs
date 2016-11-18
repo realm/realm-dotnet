@@ -68,7 +68,10 @@ namespace DrawXShared
                 // assume they forgot port so add standard port
                 serverIP += ":9080";
             }
-            bool changedServer = string.IsNullOrEmpty(_savedSettings.ServerIP) || !_savedSettings.ServerIP.Equals(serverIP);
+            // crashes if ServerIP is null            bool changedServer = string.IsNullOrEmpty(_savedSettings.ServerIP) || !_savedSettings.ServerIP.Equals(serverIP);
+            bool changedServer = _savedSettings.ServerIP == null ||
+                                 _savedSettings.ServerIP.Length == 0 ||
+                                 !_savedSettings.ServerIP.Equals(serverIP);
             _realmLocalSettings.Write(() =>
             {
                 _savedSettings.ServerIP = serverIP;
