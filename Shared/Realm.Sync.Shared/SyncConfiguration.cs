@@ -31,8 +31,8 @@ namespace Realms.Sync
 
         public SyncConfiguration(User user, Uri serverUri)
         {
-            this.User = user;
-            this.ServerUri = serverUri;
+            User = user;
+            ServerUri = serverUri;
         }
 
         internal override Realm CreateRealm(RealmSchema schema)

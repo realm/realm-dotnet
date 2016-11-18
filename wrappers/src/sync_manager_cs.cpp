@@ -50,17 +50,17 @@ REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t ba
 
     s_refresh_access_token_callback = refresh_callback;
 }
-    
-    
+
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
-        // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
-        if (encryption_key)
-          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
+        if (encryption_key) {
+            config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+        }
 
         config.schema = create_schema(objects, objects_length, properties);
         config.schema_version = configuration.schema_version;
