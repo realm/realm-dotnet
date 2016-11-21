@@ -50,10 +50,6 @@ namespace binding {
         return -1;
     }
     
-    inline void* get_managed_object_handle(void* info) {
-        return static_cast<ObservedObjectDetails*>(info)->managed_object_handle;
-    }
-    
     inline CSharpBindingContext* get_or_set_managed_context(SharedRealm& realm, void* managed_realm_handle)
     {
         if (realm->m_binding_context == nullptr) {
@@ -65,7 +61,7 @@ namespace binding {
 
     CSharpBindingContext::CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle)
     {
-        observed_rows = std::vector<ObserverState>();
+        m_observed_rows = std::vector<ObserverState>();
     }
     
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated)
@@ -88,7 +84,7 @@ namespace binding {
     
     std::vector<CSharpBindingContext::ObserverState> CSharpBindingContext::get_observed_rows()
     {
-        return observed_rows;
+        return m_observed_rows;
     }
     
     void CSharpBindingContext::add_observed_row(const Object& object, void* managed_object_handle)
@@ -97,42 +93,31 @@ namespace binding {
         observer_state.row_ndx = object.row().get_index();
         observer_state.table_ndx = object.row().get_table()->get_index_in_group();
         observer_state.info = new ObservedObjectDetails(object.get_object_schema(), managed_object_handle);
-        observed_rows.push_back(observer_state);
+        m_observed_rows.push_back(std::move(observer_state));
     }
     
     void CSharpBindingContext::remove_observed_row(void* managed_object_handle)
     {
-        if (!observed_rows.empty()) {
-            for (auto it = observed_rows.begin(); it != observed_rows.end();) {
-                if (get_managed_object_handle(it->info) == managed_object_handle) {
-                    it = observed_rows.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-    
-    void* CSharpBindingContext::get_managed_realm_handle()
-    {
-        return m_managed_realm_handle;
+        remove_observed_rows([&](auto const* observer, auto const* details) {
+            return details->managed_object_handle == managed_object_handle;
+        });
     }
     
     void CSharpBindingContext::notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index)
     {
-        for (auto const& o : observed_rows) {
+        for (auto const& o : m_observed_rows) {
             if (o.row_ndx == row_ndx && o.table_ndx == table_ndx) {
-                notify_realm_object_changed(get_managed_object_handle(o.info), property_index);
+                auto const& details = static_cast<ObservedObjectDetails*>(o.info);
+                notify_realm_object_changed(details->managed_object_handle, property_index);
             }
         }
     }
     
     void CSharpBindingContext::notify_removed(const size_t row_ndx, const size_t table_ndx)
     {
-        if (!observed_rows.empty()) {
-            observed_rows.erase(std::remove_if(observed_rows.begin(), observed_rows.end(),
-                                               [&](auto const& row) { return row.row_ndx == row_ndx && row.table_ndx == table_ndx; }));
-        }
+        remove_observed_rows([&](auto const* observer, auto const* details) {
+            return observer->row_ndx == row_ndx && observer->table_ndx == table_ndx;
+        });
     }
 }
     

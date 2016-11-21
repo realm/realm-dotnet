@@ -44,12 +44,12 @@ namespace Realms
         #if __IOS__
         [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
         #endif
-        public static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        internal static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
         {
             var gch = GCHandle.FromIntPtr(realmObjectHandle);
             var realmObject = (RealmObject)gch.Target;
-            var propertyName = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex).PropertyInfo.Name;
-            realmObject.RaisePropertyChanged(propertyName);
+            var property = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex);
+            realmObject.RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
         }
 
         #endregion
@@ -610,8 +610,12 @@ namespace Realms
         {
             Debug.Assert(_notificationsHandle.HasValue, "Notification handle must not be null to unsubscribe");
 
-            _realm.SharedRealmHandle.RemoveObservedObject(GCHandle.ToIntPtr(_notificationsHandle.Value));
-            _notificationsHandle = null;
+            if (_notificationsHandle.HasValue)
+            {
+                _realm.SharedRealmHandle.RemoveObservedObject(GCHandle.ToIntPtr(_notificationsHandle.Value));
+                _notificationsHandle.Value.Free();
+                _notificationsHandle = null;
+            }
         }
     }
 }
