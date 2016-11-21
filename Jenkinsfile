@@ -43,10 +43,12 @@ node('xamarin-mac') {
       sh "\"${mono}\" \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
       publishTests 'TestResult.xml'
     }
+    stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
   }
 
   stage('Build PCL') {
     sh "\"${xbuild}\" Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
+    stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.xml", name: 'nuget-pcl'
   }
 }
 
@@ -66,6 +68,8 @@ stage('Build') {
         timeout(time: 8, unit: 'MINUTES') {
           sh "\"${mdtool}\" build -c:${configuration}\\|iPhoneSimulator Realm.sln -p:Tests.XamarinIOS"
         }
+
+        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.dll", name: 'nuget-ios'
 
         dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
           sh 'zip -r iOS.zip Tests.XamarinIOS.app'
@@ -93,6 +97,7 @@ stage('Build') {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
         }
+        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/{configuration}/Realm.dll,wrappers/build/${configuration}-android/*/libwrappers.so", name: 'nuget-android'
       }
     }
   )
@@ -122,6 +127,40 @@ stage('Test') {
       }
     }
   )
+}
+
+stage('NuGet') {
+  node('xamarin-mac') {
+    getArchive()
+
+    unstash 'nuget-weaver'
+    unstash 'nuget-pcl'
+    unstash 'nuget-ios'
+    unstash 'nuget-android'
+
+    dir('NuGet/NuGet.Library') {
+      def version = readAssemblyVersion();
+      def versionString = "${version.major}.${version.minor}.${version.patch}"
+      sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+
+      archive "Realm.${versionString}.nupkg"
+    }
+  }
+}
+
+def readAssemblyVersion() {
+  def assemblyInfo = readFile 'RealmAssemblyInfo.cs'
+
+  def match = (assemblyInfo =~ /\[assembly: AssemblyVersion\("(\d*).(\d*).(\d*).0"\)\]/)
+  if (match) {
+    return [
+      major: match[0][1],
+      minor: match[0][2],
+      patch: match[0][3]
+    ]
+  } else {
+    throw new Exception('Could not match Realm assembly version')
+  }
 }
 
 def publishTests(filePattern='TestResults.*.xml') {
