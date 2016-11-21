@@ -35,6 +35,8 @@ namespace Realms
     {
         public delegate void NotifyRealmCallback(IntPtr realmHandle);
 
+        public delegate void NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
+
 #if DEBUG
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
 
@@ -56,6 +58,9 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_object_changed", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void register_notify_realm_object_changed(NotifyRealmObjectCallback callback);
 
         public static void Initialize()
         {

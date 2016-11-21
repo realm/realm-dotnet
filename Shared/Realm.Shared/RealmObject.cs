@@ -18,10 +18,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+#if __IOS__
+using ObjCRuntime;
+#endif
 
 namespace Realms
 {
@@ -32,11 +37,53 @@ namespace Realms
     /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
     /// </remarks>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : IReflectableType
+    public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
+        #region static
+
+        #if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+        #endif
+        internal static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        {
+            var gch = GCHandle.FromIntPtr(realmObjectHandle);
+            var realmObject = (RealmObject)gch.Target;
+            var property = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex);
+            realmObject.RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+        }
+
+        #endregion
+
         private Realm _realm;
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
+        private GCHandle? _notificationsHandle;
+
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (IsManaged && _propertyChanged == null)
+                {
+                    SubscribeForNotifications();
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (IsManaged &&
+                    _propertyChanged == null)
+                {
+                    UnsubscribeFromNotifications();
+                }
+            }
+        }
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -70,6 +117,11 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
+
+            if (_propertyChanged != null)
+            {
+                SubscribeForNotifications();
+            }
         }
 
         internal class Metadata
@@ -535,9 +587,35 @@ namespace Realms
             return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
         }
 
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         TypeInfo IReflectableType.GetTypeInfo()
         {
             return RealmObjectTypeInfo.FromType(this.GetType());
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(!_notificationsHandle.HasValue, "Notification handle must be null before subscribing");
+
+            var managedRealmHandle = GCHandle.Alloc(_realm, GCHandleType.Weak);
+            _notificationsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            _realm.SharedRealmHandle.AddObservedObject(GCHandle.ToIntPtr(managedRealmHandle), this.ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            Debug.Assert(_notificationsHandle.HasValue, "Notification handle must not be null to unsubscribe");
+
+            if (_notificationsHandle.HasValue)
+            {
+                _realm.SharedRealmHandle.RemoveObservedObject(GCHandle.ToIntPtr(_notificationsHandle.Value));
+                _notificationsHandle.Value.Free();
+                _notificationsHandle = null;
+            }
         }
     }
 }

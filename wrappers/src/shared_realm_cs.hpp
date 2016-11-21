@@ -21,6 +21,8 @@
 
 #include "shared_realm.hpp"
 #include "schema_cs.hpp"
+#include "object-store/src/binding_context.hpp"
+#include "object_accessor.hpp"
 
 class ManagedExceptionDuringMigration : public std::runtime_error
 {
@@ -45,5 +47,57 @@ struct Configuration
     bool (*migration_callback)(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
     void* managed_migration_handle;
 };
+
+namespace realm {
+namespace binding {
+    
+    struct ObservedObjectDetails {
+        ObservedObjectDetails(const ObjectSchema& schema, void* managed_object_handle) : schema(schema), managed_object_handle(managed_object_handle) {}
+
+        const ObjectSchema& schema;
+        void* managed_object_handle;
+    };
+    
+    class CSharpBindingContext: public BindingContext {
+    public:
+        CSharpBindingContext(void* managed_realm_handle);
+        void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated) override;
+        void add_observed_row(const Object& object, void* managed_object_handle);
+        void remove_observed_row(void* managed_object_handle);
+        void notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index);
+        void notify_removed(const size_t row_ndx, const size_t table_ndx);
+        
+        void* get_managed_realm_handle()
+        {
+            return m_managed_realm_handle;
+        }
+        
+        std::vector<CSharpBindingContext::ObserverState> get_observed_rows() override
+        {
+            return m_observed_rows;
+        }
+    private:
+        void* m_managed_realm_handle;
+        std::vector<BindingContext::ObserverState> m_observed_rows;
+
+        inline void remove_observed_rows(std::function<bool (const BindingContext::ObserverState*, const ObservedObjectDetails*)> filter)
+        {
+            if (!m_observed_rows.empty()) {
+                for (auto it = m_observed_rows.begin(); it != m_observed_rows.end();) {
+                    auto const& details = static_cast<ObservedObjectDetails*>(it->info);
+                    if (filter(&*it, details)) {
+                        delete(details);
+                        it = m_observed_rows.erase(it);
+                    } else {
+                        ++it;
+                    }
+                    
+                }
+            }
+        }
+    };
+}
+    
+}
 
 #endif /* defined(SHARED_REALM_CS_HPP) */

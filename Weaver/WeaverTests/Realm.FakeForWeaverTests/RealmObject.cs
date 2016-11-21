@@ -18,14 +18,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Realms
 {
-    public class RealmObject
+    public class RealmObject : INotifyPropertyChanged
     {
         public List<string> LogList = new List<string>();
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        
         private void LogString(string s)
         {
             LogList.Add(s);
@@ -358,6 +361,11 @@ namespace Realms
         protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

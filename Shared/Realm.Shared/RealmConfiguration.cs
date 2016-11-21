@@ -242,7 +242,7 @@ namespace Realms
             var configuration = new Native.Configuration
             {
                 Path = DatabasePath,
-                read_only = ReadOnly,
+                read_only = IsReadOnly,
                 delete_if_migration_needed = ShouldDeleteIfMigrationNeeded,
                 schema_version = SchemaVersion
             };

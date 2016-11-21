@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
 using Realms.Weaving;
@@ -81,11 +82,21 @@ namespace RealmWeaver
 
         private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
         {
+            // Disable CheckForEquality, because this will rewrite all our properties and some tests will
+            // behave differently based on whether PropertyChanged is weaved or not.
+            // Those differences will be unlikely to affect real world scenarios, but affect the tests:
+            //   WovenCopyToRealm_ShouldAlwaysSetNullableProperties -> does not call native methods
+            //   ShouldFollowMapToAttribute -> checks for (value != this.Email_) which adds two extra entries in the LogList
+            // Additionally, the tests don't test the exact behavior of Realm + PropertyChanged, because the check for
+            // Fody.PropertyChanged will always return 'false' (ModuleWeaver.cs@214).
+            var config = new XElement("PropertyChanged");
+            config.SetAttributeValue("CheckForEquality", false);
             new propertychanged::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
                 AssemblyResolver = moduleDefinition.AssemblyResolver,
-                LogWarning = s => _warnings.Add(s)
+                LogWarning = s => _warnings.Add(s),
+                Config = config
             }.Execute();
         }
 
@@ -279,11 +290,14 @@ namespace RealmWeaver
         }
 
         [TestCaseSource(nameof(RandomAndDefaultValues))]
-        public void SetValueManagedShouldRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
+        public void SetValueManagedShouldNotRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
         {
+            // We no longer manually raise PropertyChanged in the setter for managed objects.
+            // Instead, we subscribe for notificaitons from core, and propagate those.
+
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObjectPropertyChanged"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             o.IsManaged = true;
 
             var eventRaised = false;
@@ -302,6 +316,27 @@ namespace RealmWeaver
                 "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+            Assert.That(eventRaised, Is.False);
+        }
+
+        [TestCaseSource(nameof(RandomValues))]
+        public void SetValueUnmanagedShouldRaisePropertyChanged(string typeName, object propertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+
+            var eventRaised = false;
+            o.PropertyChanged += new PropertyChangedEventHandler((s, e) =>
+            {
+                eventRaised |= e.PropertyName == propertyName;
+            });
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
             Assert.That(eventRaised, Is.True);
         }
 
@@ -536,7 +571,6 @@ namespace RealmWeaver
                                            };
                                        })
                                        .ToList();
-
             Assert.That(instance.LogList, Is.EqualTo(targetList));
         }
 

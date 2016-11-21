@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "object_accessor.hpp"
+#include "shared_realm_cs.hpp"
+
+using namespace realm;
+using namespace realm::binding;
 
 namespace realm {
     inline void verify_can_get(const Object& object) {
@@ -39,7 +43,14 @@ namespace realm {
         object.realm()->verify_in_write();
     }
     
-    inline size_t get_column_index(const Object& object, size_t property_index) {
+    inline size_t get_column_index(const Object& object, const size_t property_index) {
         return object.get_object_schema().persisted_properties[property_index].table_column;
+    }
+    
+    inline void notify_changes(const Object& object, const size_t property_index) {
+        if (object.realm()->m_binding_context != nullptr) {
+            auto const& csharp_context = static_cast<binding::CSharpBindingContext*>(object.realm()->m_binding_context.get());
+            csharp_context->notify_change(object.row().get_index(), object.row().get_table()->get_index_in_group(), property_index);
+        }
     }
 }
