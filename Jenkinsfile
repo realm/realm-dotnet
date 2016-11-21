@@ -15,18 +15,21 @@ stage('Checkout') {
         $class: 'GitSCM',
         branches: scm.branches,
         gitTool: 'native git',
-        extensions: scm.extensions + [[$class: 'CleanCheckout']],
+        extensions: scm.extensions + [
+          [$class: 'CleanCheckout'],
+          [$class: 'SubmoduleOption', recursiveSubmodules: true]
+        ],
         userRemoteConfigs: scm.userRemoteConfigs
       ])
-      sh 'git archive -o dotnet.zip HEAD'
-      stash includes: 'dotnet.zip', name: 'dotnet-source'
+      sh 'tar -czf dotnet.tgz --exclude=*.git *'
+      stash includes: 'dotnet.tgz', name: 'dotnet-source'
   }
 }
 
 def getArchive() {
     sh 'rm -rf *'
     unstash 'dotnet-source'
-    sh 'unzip -o -q dotnet.zip'
+    sh 'tar -xzf dotnet.tgz'
 }
 
 node('xamarin-mac') {
@@ -85,7 +88,7 @@ stage('Build') {
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           // define the SolutionDir build setting because Fody depends on it to discover weavers
-          sh "\"${xbuild}\" Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}\""
+          sh "\"${xbuild}\" Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
@@ -112,7 +115,7 @@ stage('Test') {
     'Android': {
       node('android-hub') {
         sh 'rm -rf *'
-        unstash 'test-apk'
+        unstash 'android-tests'
         sh 'adb devices'
         sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
         publishTests()
