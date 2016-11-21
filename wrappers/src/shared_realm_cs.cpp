@@ -59,10 +59,7 @@ namespace binding {
         return static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
     }
 
-    CSharpBindingContext::CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle)
-    {
-        m_observed_rows = std::vector<ObserverState>();
-    }
+    CSharpBindingContext::CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle) {}
     
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated)
     {
@@ -80,11 +77,6 @@ namespace binding {
         }
         
         notify_realm_changed(m_managed_realm_handle);
-    }
-    
-    std::vector<CSharpBindingContext::ObserverState> CSharpBindingContext::get_observed_rows()
-    {
-        return m_observed_rows;
     }
     
     void CSharpBindingContext::add_observed_row(const Object& object, void* managed_object_handle)

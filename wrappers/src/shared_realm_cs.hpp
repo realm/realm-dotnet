@@ -62,7 +62,6 @@ namespace binding {
     public:
         CSharpBindingContext(void* managed_realm_handle);
         void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated) override;
-        std::vector<ObserverState> get_observed_rows() override;
         void add_observed_row(const Object& object, void* managed_object_handle);
         void remove_observed_row(void* managed_object_handle);
         void notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index);
@@ -71,6 +70,11 @@ namespace binding {
         void* get_managed_realm_handle()
         {
             return m_managed_realm_handle;
+        }
+        
+        std::vector<CSharpBindingContext::ObserverState> get_observed_rows() override
+        {
+            return m_observed_rows;
         }
     private:
         void* m_managed_realm_handle;
