@@ -3,17 +3,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">ARM</Platform>
-    <ProjectGuid>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</ProjectGuid>
+    <ProjectGuid>{3379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Realms</RootNamespace>
-    <AssemblyName>Realm</AssemblyName>
+    <RootNamespace>Realms.Sync</RootNamespace>
+    <AssemblyName>Realm.Sync</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM' ">
@@ -37,37 +37,26 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Remotion.Linq">
-      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj">
-      <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
-      <Name>RealmWeaver.Fody</Name>
+    <ProjectReference Include="..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
+      <Project>{2379d669-4f4b-4ff6-af8a-49fea981efc3}</Project>
+      <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Realm.Shared\Realm.Shared.projitems')" />
+  <Import Project="..\..\Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

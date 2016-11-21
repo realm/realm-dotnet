@@ -19,11 +19,31 @@
 #ifndef SHARED_REALM_CS_HPP
 #define SHARED_REALM_CS_HPP
 
+#include "shared_realm.hpp"
+#include "schema_cs.hpp"
+
 class ManagedExceptionDuringMigration : public std::runtime_error
 {
 public:
     ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
     }
+};
+
+struct Configuration
+{
+    uint16_t* path;
+    size_t path_len;
+    
+    bool read_only;
+    
+    bool in_memory;
+    
+    bool delete_if_migration_needed;
+    
+    uint64_t schema_version;
+    
+    bool (*migration_callback)(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    void* managed_migration_handle;
 };
 
 #endif /* defined(SHARED_REALM_CS_HPP) */

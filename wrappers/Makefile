@@ -1,15 +1,33 @@
 # vim:fdm=marker
 
+# Dependencies
+
+CORE_VER=2.1.1
+SYNC_VER=1.0.0-BETA-3.1
+
+REALM_ENABLE_SYNC ?= 1
+
+ifeq ($(REALM_ENABLE_SYNC),1)
+	APPLE_PREPROCESSOR_DEFINITIONS="REALM_ENABLE_SYNC=true"
+	WRAPPERS_XCODE_TARGET=wrappers-sync
+	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(SYNC_VER).tar.xz
+	APPLE_BUNDLE_URL="http://static.realm.io/downloads/sync/$(APPLE_BUNDLE_NAME)"
+	ANDROID_BUNDLE_NAME=realm-sync-android-$(SYNC_VER).tar.gz
+	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/sync/$(ANDROID_BUNDLE_NAME)"
+else
+	APPLE_PREPROCESSOR_DEFINITIONS=""
+	WRAPPERS_XCODE_TARGET=wrappers
+	APPLE_BUNDLE_NAME=realm-core-$(CORE_VER).tar.xz
+	APPLE_BUNDLE_URL="http://static.realm.io/downloads/core/$(APPLE_BUNDLE_NAME)"
+	ANDROID_BUNDLE_NAME=realm-core-android-$(CORE_VER).tar.gz
+	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/core/$(ANDROID_BUNDLE_NAME)"
+endif
+
 OS_SRCS=$(wildcard src/object-store/src/*.cpp) $(wildcard src/object-store/src/impl/*.cpp)
 APPLE_SRCS=$(wildcard src/object-store/src/impl/apple/*.cpp)
 ANDROID_SRCS=$(wildcard src/object-store/src/impl/android/*.cpp)
 SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 
-SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
-CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -Isrc/object-store/src -Isrc/object-store/src/impl -Isrc/object-store/src/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=2.1.1
-CORE_ANDROID_VER=2.1.1
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -20,37 +38,31 @@ clean: ## Remove all build artefacts
 	rm -fr libs-dbg
 	rm -fr core
 	rm -fr core-android
+	rm -fr obj
  
 all: ios iosdbg android androiddbg ## Make all the libs except osx broken - see issue 249
 
 .PHONY: all help clean
 
-# OSX and iOS ============ {{{
-
-osx: build/Release-osx/libwrappers.dylib 
+# iOS ============ {{{
 
 ios: build/Release-ios-universal/libwrappers.a 
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
-core: realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
-	tar xjf realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
+$(APPLE_BUNDLE_NAME):
+	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(APPLE_BUNDLE_NAME) $(APPLE_BUNDLE_URL); export ec=$$?; done'
+
+core: $(APPLE_BUNDLE_NAME)
+	tar xjf $(APPLE_BUNDLE_NAME)
 	touch core
 
-realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2:
-	curl -o realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2"
+build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphoneos -configuration Release -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
+	xcrun --sdk iphoneos bitcode_strip build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a -r -o build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a
 
-build/Release-osx:
-	mkdir -p build/Release-osx
-
-build/Release-osx/libwrappers.dylib: core $(SRCS) $(APPLE_SRCS) | build/Release-osx
-	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) $(APPLE_SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
-
-build/Release-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
-
-build/Release-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
+build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphonesimulator -configuration Release -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
 build:
 	mkdir build
@@ -58,20 +70,20 @@ build:
 build/Release-ios-universal: | build
 	mkdir -p build/Release-ios-universal
 
-build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
-	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
+build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Release-ios-universal
+	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
-build/Debug-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers"
+build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphoneos -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
-build/Debug-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers"
+build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphonesimulator -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
 build/Debug-ios-universal: | build
 	mkdir -p build/Debug-ios-universal
 
-build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a build/Debug-iphonesimulator/libwrappers.a | build/Debug-ios-universal
-	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers.a" "build/Debug-iphonesimulator/libwrappers.a"
+build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Debug-ios-universal
+	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
 .PHONY: osx ios iosdbg
 
@@ -79,97 +91,19 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 
 # Android ==================== {{{
 
-android: \
-	build/Release-android/armeabi-v7a/libwrappers.so \
-	build/Release-android/x86/libwrappers.so \
-	build/Release-android/x86_64/libwrappers.so \
-	build/Release-android/arm64-v8a/libwrappers.so 
-
-androiddbg: \
-	build/Debug-android/armeabi-v7a/libwrappers.so \
-	build/Debug-android/x86/libwrappers.so \
-	build/Debug-android/x86_64/libwrappers.so \
-	build/Debug-android/arm64-v8a/libwrappers.so 
-
-core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz | jni/Android.mk jni/Application.mk
+core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk
 	mkdir -p core-android
-	tar xzf realm-core-android-$(CORE_ANDROID_VER).tar.gz -C core-android/
-	mkdir -p core-android/armeabi
-	mv core-android/librealm-android-arm.a core-android/armeabi/librealm-android.a
-	mv core-android/librealm-android-arm-dbg.a core-android/armeabi/librealm-android-dbg.a
-	mkdir -p core-android/armeabi-v7a
-	mv core-android/librealm-android-arm-v7a.a core-android/armeabi-v7a/librealm-android.a
-	mv core-android/librealm-android-arm-v7a-dbg.a core-android/armeabi-v7a/librealm-android-dbg.a
-	mkdir -p core-android/x86
-	mv core-android/librealm-android-x86.a core-android/x86/librealm-android.a
-	mv core-android/librealm-android-x86-dbg.a core-android/x86/librealm-android-dbg.a
-	mkdir -p core-android/arm64-v8a
-	mv core-android/librealm-android-arm64.a core-android/arm64-v8a/librealm-android.a
-	mv core-android/librealm-android-arm64-dbg.a core-android/arm64-v8a/librealm-android-dbg.a
-	mkdir -p core-android/x86_64
-	mv core-android/librealm-android-x86_64.a core-android/x86_64/librealm-android.a
-	mv core-android/librealm-android-x86_64-dbg.a core-android/x86_64/librealm-android-dbg.a
-	mkdir -p core-android/mips
-	mv core-android/librealm-android-mips.a core-android/mips/librealm-android.a
-	mv core-android/librealm-android-mips-dbg.a core-android/mips/librealm-android-dbg.a
+	tar xzf $(ANDROID_BUNDLE_NAME) -C core-android/
 	touch core-android
 
-realm-core-android-$(CORE_ANDROID_VER).tar.gz:
-	curl -o realm-core-android-$(CORE_ANDROID_VER).tar.gz "http://static.realm.io/downloads/core/realm-core-android-$(CORE_ANDROID_VER).tar.gz"
+$(ANDROID_BUNDLE_NAME):
+	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL); export ec=$$?; done'
 
-build/Release-android/armeabi/libwrappers.so: | libs
-	mkdir -p build/Release-android/armeabi
-	cp ./libs/armeabi/librealm-android.so ./build/Release-android/armeabi/libwrappers.so
-
-build/Debug-android/armeabi/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/armeabi
-	cp ./libs-dbg/armeabi/librealm-android-dbg.so ./build/Debug-android/armeabi/libwrappers.so
-
-build/Release-android/armeabi-v7a/libwrappers.so: | libs
-	mkdir -p build/Release-android/armeabi-v7a
-	cp ./libs/armeabi-v7a/librealm-android.so ./build/Release-android/armeabi-v7a/libwrappers.so
-
-build/Debug-android/armeabi-v7a/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/armeabi-v7a
-	cp ./libs-dbg/armeabi-v7a/librealm-android-dbg.so ./build/Debug-android/armeabi-v7a/libwrappers.so
-
-build/Release-android/x86/libwrappers.so: | libs
-	mkdir -p build/Release-android/x86
-	cp ./libs/x86/librealm-android.so ./build/Release-android/x86/libwrappers.so
-
-build/Debug-android/x86/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/x86
-	cp ./libs-dbg/x86/librealm-android-dbg.so ./build/Debug-android/x86/libwrappers.so
-
-build/Release-android/x86_64/libwrappers.so: | libs
-	mkdir -p build/Release-android/x86_64
-	cp ./libs/x86_64/librealm-android.so ./build/Release-android/x86_64/libwrappers.so
-
-build/Debug-android/x86_64/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/x86_64
-	cp ./libs-dbg/x86_64/librealm-android-dbg.so ./build/Debug-android/x86_64/libwrappers.so
-
-build/Release-android/arm64-v8a/libwrappers.so: | libs
-	mkdir -p build/Release-android/arm64-v8a
-	cp ./libs/arm64-v8a/librealm-android.so ./build/Release-android/arm64-v8a/libwrappers.so
-
-build/Debug-android/arm64-v8a/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/arm64-v8a
-	cp ./libs-dbg/arm64-v8a/librealm-android-dbg.so ./build/Debug-android/arm64-v8a/libwrappers.so
-
-build/Release-android/mips/libwrappers.so: | libs
-	mkdir -p build/Release-android/mips
-	cp ./libs/mips/librealm-android.so ./build/Release-android/mips/libwrappers.so
-
-build/Debug-android/mips/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/mips
-	cp ./libs-dbg/mips/librealm-android-dbg.so ./build/Debug-android/mips/libwrappers.so
-
-libs: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 -j$(shell sysctl -n hw.ncpu)
+android: | core-android $(SRCS) $(ANDROID_SRCS)
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LIBS_OUT=build/Release-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
 	
-libs-dbg: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_DEBUG=1 NDK_LIBS_OUT=libs-dbg -j$(shell sysctl -n hw.ncpu)
+androiddbg: | core-android $(SRCS) $(ANDROID_SRCS)
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LOG=1 NDK_DEBUG=1 NDK_LIBS_OUT=build/Debug-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
 	
 
 .PHONY: android androiddbg

@@ -20,11 +20,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <MtouchArch>i386</MtouchArch>
+    <MtouchArch>x86_64</MtouchArch>
     <MtouchDebug>true</MtouchDebug>
     <MtouchProfiling>true</MtouchProfiling>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
-    <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
@@ -34,10 +33,10 @@
     <DefineConstants>ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
@@ -46,7 +45,7 @@
     <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <MtouchArch>i386</MtouchArch>
+    <MtouchArch>x86_64</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
@@ -60,9 +59,9 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchProfiling>true</MtouchProfiling>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
@@ -72,7 +71,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
     <Reference Include="MonoTouch.NUnitLite" />
@@ -80,9 +78,6 @@
     <Reference Include="Remotion.Linq">
       <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -96,6 +91,7 @@
     <Compile Include="RunLoopTests.cs" />
   </ItemGroup>
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
@@ -106,6 +102,10 @@
     <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
       <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
       <Name>PurePCLBuildableTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj">
+      <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
+      <Name>Realm.Sync.XamarinIOS</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

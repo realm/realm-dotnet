@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>76990168-1696-4f96-8eda-3dcf173a0e00</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Realms.Sync</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Credentials.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)User.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\SyncUserHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandleExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Session.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Native\" />
+  </ItemGroup>
+</Project>

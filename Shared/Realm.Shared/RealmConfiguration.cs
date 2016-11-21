@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 namespace Realms
@@ -201,11 +202,6 @@ namespace Realms
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
-            if (obj == null)
-            {
-                return false;
-            }
-
             return Equals(obj as RealmConfiguration);
         }
 
@@ -222,7 +218,7 @@ namespace Realms
                 return false;
             }
 
-            if (GC.ReferenceEquals(this, rhs))
+            if (ReferenceEquals(this, rhs))
             {
                 return true;
             }
@@ -238,6 +234,39 @@ namespace Realms
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>
         public override int GetHashCode() => DatabasePath.GetHashCode();
+
+        internal virtual Realm CreateRealm(RealmSchema schema)
+        {
+            var srHandle = new SharedRealmHandle();
+
+            var configuration = new Native.Configuration
+            {
+                Path = DatabasePath,
+                read_only = ReadOnly,
+                delete_if_migration_needed = ShouldDeleteIfMigrationNeeded,
+                schema_version = SchemaVersion
+            };
+
+            Migration migration = null;
+            if (MigrationCallback != null)
+            {
+                migration = new Migration(this, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
+            var srPtr = IntPtr.Zero;
+            try
+            {
+                srPtr = srHandle.Open(configuration, schema, EncryptionKey);
+            }
+            catch (ManagedExceptionDuringMigrationException)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
+            }
+
+            srHandle.SetHandle(srPtr);
+            return new Realm(srHandle, this, schema);
+        }
 
         #region Obsolete members
 

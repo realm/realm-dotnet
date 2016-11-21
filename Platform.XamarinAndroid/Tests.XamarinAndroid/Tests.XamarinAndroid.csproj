@@ -12,7 +12,7 @@
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidApplication>True</AndroidApplication>
-    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
+    <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
     <AssemblyName>Tests.XamarinAndroid</AssemblyName>
     <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
@@ -78,6 +78,7 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Tests.Shared\Tests.Shared.projitems')" />
+  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -116,6 +117,10 @@
     <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
       <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
       <Name>PurePCLBuildableTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.Sync.XamarinAndroid\Realm.Sync.XamarinAndroid.csproj">
+      <Project>{3379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
+      <Name>Realm.Sync.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
