@@ -31,5 +31,8 @@ namespace DrawXShared
                 return null;
             }}
 
+        // raw field used just to count known points - see RealmDraw.cs explanation
+        public int NumPointsDrawnLocally = 0;
+
     }
 }

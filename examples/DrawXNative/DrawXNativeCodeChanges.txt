@@ -226,3 +226,35 @@ ViewControllerShared.cs
 2016-11-18 Android Credentials GUI
 
 LoginLayout - added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-18 Optimise Redraw - limit amount of redrawing
+
+RealmDraw.cs
+- _lastX, _lastY and INVALID_LAST_COORD added
+- ErasePaths remove InvalidateCachedPaths() as is triggered by Realm update
+- StartDrawing
+  - update _lastX, _lastY
+  - take a ref param to pass back if needs redisplay due touching Pencils
+- AddPoint
+  - update _lastX, _lastY
+- StopDrawing 
+  - check _lastX, _lastY and only add a point if actually moved
+  - reset _lastX, _lastY
+- DrawAPathUndrawnBits added
+- DrawAPath - update NumPointsDrawnLocally
+- DrawTouches 
+  - cache everything drawn
+  - invoke DrawAPathUndrawnBits for the partial paths
+  
+ViewControllerShared.cs
+- TouchesBegan
+  - move the SetNeedsDisplay inside the if block - don't do it if failed to get touch
+  - pass a flag to StartDrawing so only trigger redisplay if touch control area
+- TouchesMoved and TouchesEnded
+  - suppress SetNeedsDisplay 
+- MotionBegan
+  - remove the View.SetNeedsDisplay because it is triggered by the Realm changes
+  
+  

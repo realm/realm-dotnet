@@ -57,13 +57,14 @@ namespace DrawX.iOS
             _drawer = new RealmDraw(
                                     2.0f * (float)View.Bounds.Width,
                                     2.0f * (float)View.Bounds.Height);
-            _drawer.CredentialsEditor = async () =>
+            _drawer.CredentialsEditor = () =>
             {
                 InvokeOnMainThread(() => EditCredentials());
             };
             _drawer.RefreshOnRealmUpdate = (sender, args) =>
             {
-                _drawer.InvalidateCachedPaths();
+                Debug.WriteLine("Refresh callback triggered by Realm");
+                //_drawer.InvalidateCachedPaths();
                 View?.SetNeedsDisplay();  // just refresh on notification
             };
 
@@ -104,9 +105,12 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                _drawer?.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
+                bool needsRefresh = false;
+                _drawer?.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f, ref needsRefresh);
+                // currently rely on the Realm refresh to do this for drawing
+                if (needsRefresh)
+                    View.SetNeedsDisplay();  // probably after touching Pencils
             }
-            View.SetNeedsDisplay();
         }
 
 
@@ -118,8 +122,9 @@ namespace DrawX.iOS
             {
                 var point = touch.LocationInView(View);
                 _drawer?.AddPoint((float)point.X * 2.0f, (float)point.Y * 2.0f);
+                Debug.WriteLine("TouchesMoved returned from AddPoint, about to SetNeedsDisplay.");
+                // currently rely on the Realm refresh to do this View.SetNeedsDisplay();
             }
-            View.SetNeedsDisplay();
         }
 
 
@@ -131,7 +136,6 @@ namespace DrawX.iOS
             {
                 _drawer?.CancelDrawing();
             }
-            //TODO             View.SetNeedsDisplay();  ????
         }
 
 
@@ -144,7 +148,7 @@ namespace DrawX.iOS
                 var point = touch.LocationInView(View);
                 _drawer?.StopDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
-            View.SetNeedsDisplay();
+            // currently rely on the Realm refresh to do this View.SetNeedsDisplay();
         }
 
 
@@ -153,7 +157,7 @@ namespace DrawX.iOS
             if (eType == UIEventSubtype.MotionShake)
             {
                 _drawer.ErasePaths();
-                View.SetNeedsDisplay();
+                // let major Realm change prompt redisplay
             }
         }
 
