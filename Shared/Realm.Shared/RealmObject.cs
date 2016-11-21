@@ -41,15 +41,10 @@ namespace Realms
     {
         #region static
 
-        static RealmObject()
-        {
-            NativeCommon.register_notify_realm_object_changed(NotifyRealmObjectPropertyChanged);
-        }
-
         #if __IOS__
         [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
         #endif
-        private static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        public static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
         {
             var gch = GCHandle.FromIntPtr(realmObjectHandle);
             var realmObject = (RealmObject)gch.Target;

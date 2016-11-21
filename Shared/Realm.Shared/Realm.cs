@@ -46,6 +46,7 @@ namespace Realms
         {
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
+            NativeCommon.register_notify_realm_object_changed(RealmObject.NotifyRealmObjectPropertyChanged);
         }
 
         #if __IOS__
