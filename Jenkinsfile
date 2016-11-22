@@ -21,46 +21,31 @@ stage('Checkout') {
         ],
         userRemoteConfigs: scm.userRemoteConfigs
       ])
-      sh 'tar -czf dotnet.tgz --exclude=*.git *'
-      stash includes: 'dotnet.tgz', name: 'dotnet-source'
+      stash includes: '**/*', name: 'dotnet-source'
   }
 }
 
 def getArchive() {
     sh 'rm -rf *'
     unstash 'dotnet-source'
-    sh 'tar -xzf dotnet.tgz'
-}
-
-node('xamarin-mac') {
-  getArchive()
-  def workspace = pwd()
-  sh "${nuget} restore Realm.sln"
-  
-  stage('Test Weaver') {
-    dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-      sh "\"${xbuild}\" RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
-      sh "\"${mono}\" \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
-      publishTests 'TestResult.xml'
-    }
-    stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
-  }
-
-  stage('Build PCL') {
-    sh "\"${xbuild}\" Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
-    stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.XML", name: 'nuget-pcl'
-  }
 }
 
 stage('Build') {
   parallel(
     'iOS': {
-      node('xamarin-mac') {
+      node('osx') {
         getArchive()
-        
+
         dir('wrappers') {
           sh "make ios${wrapperConfigurations[configuration]}"
         }
+
+        stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
+      }
+      node('xamarin-mac') {
+        getArchive()
+
+        unstash 'ios-wrappers-sync'
 
         sh "${nuget} restore Realm.sln"
 
@@ -72,8 +57,7 @@ stage('Build') {
         stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.dll", name: 'nuget-ios'
 
         dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
-          sh 'zip -r iOS.zip Tests.XamarinIOS.app'
-          stash includes: 'iOS.zip', name: 'ios-tests'
+          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests'
         }
       }
     },
@@ -92,12 +76,20 @@ stage('Build') {
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           // define the SolutionDir build setting because Fody depends on it to discover weavers
-          sh "\"${xbuild}\" Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
+          sh "${xbuild} Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
         }
         stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.dll,wrappers/build/${configuration}-android/*/libwrappers.so", name: 'nuget-android'
+      }
+    },
+    'PCL': {
+      node('xamarin-mac') {
+        getArchive()
+        sh "${nuget} restore Realm.sln"
+        sh "${xbuild} Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
+        stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.XML", name: 'nuget-pcl'
       }
     }
   )
@@ -108,7 +100,6 @@ stage('Test') {
     'iOS': {
       node('osx') {
         unstash 'ios-tests'
-        sh 'unzip iOS.zip'
 
         dir('Tests.XamarinIOS.app') {
           sh 'mkdir -p fakehome/Documents'
@@ -124,6 +115,20 @@ stage('Test') {
         sh 'adb devices'
         sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
         publishTests()
+      }
+    },
+    'Weaver': {
+      node('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
+        sh "${nuget} restore Realm.sln"
+
+        dir('Weaver/WeaverTests/RealmWeaver.Tests') {
+          sh "${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
+          sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          publishTests 'TestResult.xml'
+        }
+        stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
       }
     }
   )
