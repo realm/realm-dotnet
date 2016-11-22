@@ -206,18 +206,25 @@ namespace DrawXShared
                 int numInserted = changes.InsertedIndices.Length;
                 int numChanged = changes.ModifiedIndices.Length;
                 Debug.WriteLine($"Realm notifier: {numInserted} inserts, {numChanged} changes");
-                if ( (numInserted == 0 && numChanged == 1 &&_allPaths.ElementAt(changes.ModifiedIndices[0]) == _drawPath) ||
-                    (numInserted == 1 && numChanged == 0 &&_allPaths.ElementAt(changes.InsertedIndices[0]) == _drawPath) )
+                if ((numInserted == 0 && numChanged == 1 && _allPaths.ElementAt(changes.ModifiedIndices[0]) == _drawPath) ||
+                    (numInserted == 1 && numChanged == 0 && _allPaths.ElementAt(changes.InsertedIndices[0]) == _drawPath))
                 {
                     // current path is drawn by immediate action, not by a callback
                     Debug.WriteLine("Realm notifier: no action because is just current path");
-                    return;  
+                    return;
                 }
                 _pathsToDraw = new List<DrawPath>();
                 foreach (var index in changes.InsertedIndices)
+                {
+                    Debug.WriteLine($"Realm notifier: caching path object inserted at {index}");
                     _pathsToDraw.Add(_allPaths.ElementAt(index));
+                }
                 foreach (var index in changes.ModifiedIndices)
+                {
+                    Debug.WriteLine($"Realm notifier: caching object modified at {index}");
                     _pathsToDraw.Add(_allPaths.ElementAt(index));
+                }
+                RefreshOnRealmUpdate();
             });
             _waitingForLogin = false;
         }
@@ -367,15 +374,19 @@ namespace DrawXShared
                     {
                         DrawAPath(canvas, paint, drawPath);
                     }
+                    _pathsToDraw = null;
                 }
                 else
                 {
-                    Debug.WriteLine($"DrawTouches - just redrawing paths in progress");
                     // current paths being drawn, by other devices
-                    foreach (var drawPath in _pathsToDraw)
+                    if (_pathsToDraw != null)
                     {
-                        Debug.WriteLine($"DrawTouches - drawing path from Realm starting at {drawPath.points[0]}");
-                        DrawAPath(canvas, paint, drawPath);
+                        Debug.WriteLine($"DrawTouches - drawing remote paths in progress");
+                        foreach (var drawPath in _pathsToDraw)
+                        {
+                            Debug.WriteLine($"DrawTouches - drawing path from Realm starting at {drawPath.points[0]}");
+                            DrawAPath(canvas, paint, drawPath);
+                        }
                     }
                 }
                 if (_currentlyDrawing != null)
