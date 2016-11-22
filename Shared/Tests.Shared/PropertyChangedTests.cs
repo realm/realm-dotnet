@@ -61,7 +61,7 @@ namespace IntegrationTests.Shared
 
             // Subscribed - should trigger
             person.FirstName = "Peter";
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
 
             notifiedPropertyName = null;
@@ -69,7 +69,7 @@ namespace IntegrationTests.Shared
 
             // Unsubscribed - should not trigger
             person.FirstName = "George";
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyName, Is.Null);
         }
 
@@ -88,7 +88,7 @@ namespace IntegrationTests.Shared
             };
 
             person.FirstName = "Peter";
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifications, Is.EqualTo(1));
 
             _realm.Write(() =>
@@ -98,7 +98,7 @@ namespace IntegrationTests.Shared
 
             // When calling Realm.Add, all properties are persisted, which causes a notification to be sent out.
             // We're using SomeClass because Person has nullable properties, which are set always, so it interferes with the test.
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifications, Is.EqualTo(2));
 
             _realm.Write(() =>
@@ -106,7 +106,7 @@ namespace IntegrationTests.Shared
                 person.FirstName = "George";
             });
 
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifications, Is.EqualTo(3));
         }
 
@@ -190,14 +190,14 @@ namespace IntegrationTests.Shared
                     var otherInstance = otherRealm.All<Person>().First();
                     otherInstance.FirstName = "Peter";
 
-                    TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+                    TestHelpers.RunEventLoop();
                     Assert.That(notifiedPropertyNames, Is.Empty);
 
                     transaction.Rollback();
                 }
             }).Wait();
 
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
@@ -410,14 +410,14 @@ namespace IntegrationTests.Shared
 
             // Subscribed - regular set should trigger
             writeFirstNameAction(person, "Peter");
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
             // Subscribed - setting the same value for the property should trigger again
             // This is different from .NET's usual behavior, but is a limitation due to the fact that we don't
             // check the previous value of the property before setting it.
             writeFirstNameAction(person, "Peter");
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
 
             notifiedPropertyNames.Clear();
@@ -425,7 +425,7 @@ namespace IntegrationTests.Shared
 
             // Unsubscribed - should not trigger
             writeFirstNameAction(person, "George");
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
@@ -447,13 +447,13 @@ namespace IntegrationTests.Shared
             {
                 writeFirstNameAction(person, "Peter");
 
-                TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+                TestHelpers.RunEventLoop();
                 Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
                 transaction.Rollback();
             }
 
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(1));
+            TestHelpers.RunEventLoop();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
         }
     }

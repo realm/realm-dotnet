@@ -21,18 +21,18 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Results object.
+    // A NotificationToken in object-store references a Collection object.
     // We need to mirror this same relationship here.
     internal class NotificationTokenHandle : RealmHandle
     {
-        internal NotificationTokenHandle(ResultsHandle root) : base(root)
+        internal NotificationTokenHandle(CollectionHandleBase root) : base(root)
         {
         }
 
         protected override void Unbind()
         {
-            var managedResultsHandle = ResultsHandle.DestroyNotificationtoken(handle);
-            GCHandle.FromIntPtr(managedResultsHandle).Free();
+            var managedCollectionHandle = ((CollectionHandleBase)Root).DestroyNotificationToken(handle);
+            GCHandle.FromIntPtr(managedCollectionHandle).Free();
         }
     }
 }

@@ -26,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\ExpressionVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\IRealmResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsNativeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmCollectionNativeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SortDescriptorBuilder.cs" />
@@ -82,6 +82,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenPropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenGetterMethodInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenSetterMethodInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmCollectionBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\CollectionHandleBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

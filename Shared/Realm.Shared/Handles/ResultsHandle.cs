@@ -21,27 +21,8 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ResultsHandle : RealmHandle
+    internal class ResultsHandle : CollectionHandleBase
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct CollectionChangeSet
-        {
-            public MarshaledVector<IntPtr> Deletions;
-            public MarshaledVector<IntPtr> Insertions;
-            public MarshaledVector<IntPtr> Modifications;
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct Move
-            {
-                public IntPtr From;
-                public IntPtr To;
-            }
-
-            public MarshaledVector<Move> Moves;
-        }
-
-        internal delegate void NotificationCallbackDelegate(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
-
         public static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
@@ -101,7 +82,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallbackDelegate callback)
+        public override IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallbackDelegate callback)
         {
             NativeException nativeException;
             var result = NativeMethods.add_notification_callback(this, managedResultsHandle, callback, out nativeException);
@@ -109,7 +90,7 @@ namespace Realms
             return result;
         }
 
-        public static IntPtr DestroyNotificationtoken(IntPtr token)
+        public override IntPtr DestroyNotificationToken(IntPtr token)
         {
             NativeException nativeException;
             var result = NativeMethods.destroy_notificationtoken(token, out nativeException);

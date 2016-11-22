@@ -21,11 +21,11 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal static class RealmResultsNativeHelper
+    internal static class RealmCollectionNativeHelper
     {
         internal interface Interface
         {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
+            void NotifyCallbacks(CollectionHandleBase.CollectionChangeSet? changes, NativeException? exception);
         }
 
 #if __IOS__
@@ -34,7 +34,7 @@ namespace Realms
         internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+            results.NotifyCallbacks(new PtrTo<CollectionHandleBase.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }
