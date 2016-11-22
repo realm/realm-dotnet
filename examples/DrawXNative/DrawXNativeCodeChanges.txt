@@ -257,4 +257,12 @@ ViewControllerShared.cs
 - MotionBegan
   - remove the View.SetNeedsDisplay because it is triggered by the Realm changes
   
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-21 Optimise Redraw - trigger from collection notifications
+
+RealmDraw.cs
+- RefreshOnRealmUpdate changed type to simple Action
+- _allPaths added
+- _currentlyDrawing added
+- LoginToServerAsync setup  __allPaths
+- DrawTouches use _activePaths  

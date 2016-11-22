@@ -47,6 +47,9 @@ namespace DrawXShared
     - previously drawn completed, paths which will no longer grow,
     - the currently growing paths (one per app updating the shared Realm).
 
+    However, with the paths, if we only worry about drawing _added_ or _changed_ paths
+    then we don't care if they are completed or not, just what more we have to draw of them.
+
     Caching and Responsiveness
     --------------------------
     Ideally, we want to have almost all the drawn content cached in a bitmap for redisplay, 
@@ -59,27 +62,38 @@ namespace DrawXShared
     - Many small, single "dab" strokes being drawn, say from someone tapping a display, 
       which mean we have, at least, a TouchesBegan and TouchesEnded and probably AddPoint in between.
     
-    We make use of some non-persistent properties to help a given Draw differentiate which 
-    points it has processed from those 
+    We make use of a non-persistent field to help a given Draw differentiate which 
+    points it has processed - in the case of an incoming path it may have multiple points 
+    we have not yet seen.
+
+    Most importantly, to get the fastest possible response as the user moves their finger,
+    we draw the local line immediately as a continuation of the path they started drawing 
+    earlier. (See _currentlyDrawing)
     
     */
     public class RealmDraw
     {
+        #region Synchronised data
         private Realm _realm;
-        internal Realm.RealmChangedEventHandler RefreshOnRealmUpdate { get; set; }
+        private RealmResults<DrawPath> _allPaths;  // we observe all and filter based on changes
+        #endregion
+
+        #region GUI Callbacks
+        internal Action RefreshOnRealmUpdate { get; set; }
         internal Action CredentialsEditor { get; set; }
+        #endregion
 
         #region DrawingState
         private bool _isDrawing = false;
         private bool _ignoringTouches = false;
         private DrawPath _drawPath;
+        private SKPath _currentlyDrawing;  // caches for responsive drawing on this device
         private float _canvasWidth, _canvasHeight;
         private const float NORMALISE_TO = 4000.0f;
         private const float PENCIL_MARGIN = 4.0f;
         private const float INVALID_LAST_COORD = -1.0f;
         private float _lastX = INVALID_LAST_COORD;
         private float _lastY = INVALID_LAST_COORD;
-
         #endregion
 
         #region CachedCanvas
@@ -153,15 +167,14 @@ namespace DrawXShared
         {
             _redrawPathsAtNextDraw = true;
             _hasSavedBitmap = false;
+            _currentlyDrawing =  null;
         }
 
         internal async void LoginToServerAsync()
         {
-            if (_realm != null)
-            {
-                // TODO more logout?
-                _realm.RealmChanged -= RefreshOnRealmUpdate;  // don't want old event notifications from unused Realm
-            }
+            // in case have lingering subscriptions, clear by clearing the results to which we subscribe
+            _allPaths = null;
+
             _waitingForLogin = true;
             var s = Settings;
             // TODO allow entering Create User flag on credentials to pass in here instead of false
@@ -171,8 +184,35 @@ namespace DrawXShared
 
             var loginConf = new SyncConfiguration(user, new Uri($"realm://{s.ServerIP}/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
-            _realm.RealmChanged += RefreshOnRealmUpdate;
-            RefreshOnRealmUpdate(_realm, null);  // force initial draw on login
+            _allPaths = _realm.All<DrawPath>() as RealmResults<DrawPath>;
+            _allPaths.SubscribeForNotifications((sender, changes, error) => { 
+                if (changes==null)  // initial call
+                {
+                    RefreshOnRealmUpdate();  // force initial draw on login
+                    return;
+                }
+                if (_allPaths.Count() == 0 || changes.DeletedIndices.Length > 0)
+                {
+                    Debug.WriteLine($"Invalidating on Realm change as paths deleted or none");
+                    // TODO do I need to draw here or just invalidate?
+                    InvalidateCachedPaths();  // someone erased their tablet
+                    RefreshOnRealmUpdate();
+                }
+                else
+                {   
+                    int numInserted = changes.InsertedIndices.Length;
+                    int numChanged = changes.ModifiedIndices.Length;
+                    Debug.WriteLine($"Realm prompted minor change, {numInserted} inserts, {numChanged} changes");
+                    /*
+                    if (numInserted == 0)
+                    {
+                        if (numChanged == 1)
+                            var changedPath = 
+                    }*/
+                    // do nothing for now to avoid redraws
+                    // DrawSomePaths(changes.InsertedIndices, changes.ModifiedIndices);
+                }
+            });
             _waitingForLogin = false;
         }
 
@@ -324,7 +364,19 @@ namespace DrawXShared
         }
 
 
+        private void InitPaint(SKPaint paint)
+        {
+            paint.Style = SKPaintStyle.Stroke;
+            paint.StrokeWidth = 10;  // TODO scale width depending on device width
+            paint.IsAntialias = true;
+            paint.StrokeCap = SKStrokeCap.Round;
+            paint.StrokeJoin = SKStrokeJoin.Round;
+        }
+
+
         // replaces the CanvasView.drawRect of the original
+        // draw routine called when screen refreshed
+        // Note the canvas only exists during this call
         public void DrawTouches(SKCanvas canvas)
         {
             if (_realm == null)
@@ -337,11 +389,7 @@ namespace DrawXShared
 
             using (SKPaint paint = new SKPaint())
             {
-                paint.Style = SKPaintStyle.Stroke;
-                paint.StrokeWidth = 10;
-                paint.IsAntialias = true;
-                paint.StrokeCap = SKStrokeCap.Round;
-                paint.StrokeJoin = SKStrokeJoin.Round;
+                InitPaint(paint);
                 if (_redrawPathsAtNextDraw)
                 {
                     Debug.WriteLine($"DrawTouches - Redrawing all paths");
@@ -356,14 +404,20 @@ namespace DrawXShared
                 else
                 {
                     Debug.WriteLine($"DrawTouches - just redrawing paths in progress");
-                    // current paths being drawn, here or by other devices
-                    foreach (var drawPath in _realm.All<DrawPath>().Where(path => path.drawerID == null))
+                    // current paths being drawn, by other devices
+                    /*foreach (var drawPath in _activePaths)
                     {
                         if (drawPath.NumPointsDrawnLocally == 0)
                             DrawAPath(canvas, paint, drawPath);
                         else
                             DrawAPathUndrawnBits(canvas, paint, drawPath);
-                    }
+                    }*/
+                }
+                if (_currentlyDrawing != null)
+                {
+                    Debug.WriteLine($"DrawTouches - drawing current in-memory path");
+                    paint.Color = currentColor.Color;
+                    canvas.DrawPath(_currentlyDrawing, paint);
                 }
                 _canvasSaveCount = canvas.SaveLayer(paint);  // cache everything to-date
                 _hasSavedBitmap = true;
@@ -390,15 +444,24 @@ namespace DrawXShared
             _lastX = inX;
             _lastY = inY;
             Debug.WriteLine($"Writing a new path starting at {inX}, {inY}");
+            // start a local path for responsive drawing
+            _currentlyDrawing = new SKPath();
+            _currentlyDrawing.MoveTo(inX, inY);
+
             ScalePointsToStore(ref inX, ref inY);
             _isDrawing = true;
-            // TODO smarter guard against _realm null
             _realm.Write(() =>
             {
-                _drawPath = new DrawPath() { color = currentColor.Name, NumPointsDrawnLocally = 0 };  // Realm saves name of color
+                _drawPath = new DrawPath() { color = currentColor.Name, NumPointsDrawnLocally = 1 };  // Realm saves name of color
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
                 _realm.Add(_drawPath);
             });
+/*            var ignoredTask = _realm.WriteAsync((asyncRealm) =>
+            {
+                _drawPath = new DrawPath() { color = currentColor.Name, NumPointsDrawnLocally = 1 };  // Realm saves name of color
+                _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+                asyncRealm.Add(_drawPath);
+            });*/
         }
 
         public void AddPoint(float inX, float inY)
@@ -417,13 +480,19 @@ namespace DrawXShared
             _lastX = inX;
             _lastY = inY;
             Debug.WriteLine($"Adding a point at {inX}, {inY}");
+            _currentlyDrawing.LineTo(inX, inY);
+
             ScalePointsToStore(ref inX, ref inY);
             //TODO add check if _drawPath.IsInvalidated
             _realm.Write(() =>
             {
                 _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
             });
-            Debug.WriteLine("AddPoint - Just after adding a point to the Realm");
+/*            _realm.WriteAsync((asyncRealm) =>
+            {
+                _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+            });*/
+            //Debug.WriteLine("AddPoint - Just after adding a point to the Realm");
         }
 
 
@@ -433,23 +502,36 @@ namespace DrawXShared
                 return;  // probably touched in pencil area
             _ignoringTouches = false;
             _isDrawing = false;
+            _currentlyDrawing = null;
+
             if (_realm == null)
                 return;  // not yet logged into server
 
-            bool stoppedWithoutMoving = (_lastX == inX) && (_lastY == inY);
+            bool movedWhilstStopping = (_lastX == inX) && (_lastY == inY);
             _lastX = INVALID_LAST_COORD;
             _lastY = INVALID_LAST_COORD;
 
+            if (movedWhilstStopping) 
+                _currentlyDrawing.LineTo(inX, inY);
+
             Debug.WriteLine($"Ending a path at {inX}, {inY}");
             ScalePointsToStore(ref inX, ref inY);
-            _realm.Write(() =>
+            _realm.Write(()  =>
             {
-                if (!stoppedWithoutMoving) 
+                if (movedWhilstStopping) 
                 {
                     _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
                 }
-                _drawPath.drawerID = "";  // TODO work out what the intent is here in original Draw sample!
+                _drawPath.drawerID = "";  // objc original uses this to detect a "finished" path
             });
+/*            _realm.WriteAsync((asyncRealm)  =>
+            {
+                if (movedWhilstStopping) 
+                {
+                    _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+                }
+                _drawPath.drawerID = "";  // objc original uses this to detect a "finished" path
+            });*/
         }
 
         public void CancelDrawing()
