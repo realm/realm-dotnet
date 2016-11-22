@@ -104,12 +104,9 @@ namespace DrawX.iOS
             if (touch != null)
             {
                 var point = touch.LocationInView(View);
-                bool needsRefresh = false;
-                _drawer?.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f, ref needsRefresh);
-                // currently rely on the Realm refresh to do this for drawing
-                //if (needsRefresh)
+                _drawer?.StartDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
                 Debug.WriteLine("TouchesBegan before SetNeedsDisplay");
-                    View.SetNeedsDisplay();  // probably after touching Pencils
+                View.SetNeedsDisplay();  // probably after touching Pencils
                 Debug.WriteLine("TouchesBegan afer SetNeedsDisplay");
             }
         }
@@ -178,7 +175,7 @@ namespace DrawX.iOS
                         SetupDrawer();  // pointless unless contact server
                         _drawer.LoginToServerAsync();
                     }
-
+                    // TODO allow user to launch locally if server not available
                 }
                 View.SetNeedsDisplay();
             };

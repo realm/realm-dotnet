@@ -258,11 +258,35 @@ ViewControllerShared.cs
   - remove the View.SetNeedsDisplay because it is triggered by the Realm changes
   
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-21 Optimise Redraw - immediate drawing for local touches
+
+RealmDraw.cs
+- _drawPath and _currentlyDrawing added
+- DrawAPathUndrawnBits removed
+- StartDrawing 
+  - remove ref param needsRefres
+  - init _currentlyDrawing
+- AddPoint and StopDrawing
+  -  add a line to _currentlyDrawing  
+- InvalidateCachedPaths - clear _currentlyDrawing
+
+ViewControllerShared.cs
+- TouchesBegan, TouchesMoved and TouchesEnded
+  - unconditionally call SetNeedsDisplay
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 2016-11-21 Optimise Redraw - trigger from collection notifications
 
 RealmDraw.cs
+- _pathsToDraw member added
 - RefreshOnRealmUpdate changed type to simple Action
 - _allPaths added
-- _currentlyDrawing added
-- LoginToServerAsync setup  __allPaths
-- DrawTouches use _activePaths  
+- LoginToServerAsync setup  __allPaths in callback
+- DrawTouches draw from _pathsToDraw unless redrawing all  
+- DrawAPath don't update NumPointsDrawnLocally
+
+
+DrawPath.cs
+- NumPointsDrawnLocally removed as realised we won't have same proxy object 
+  for callbacks so original intent not possible
+- path unused property removed

@@ -27,12 +27,5 @@ namespace DrawXShared
         public string drawerID {get; set;}
         public string color {get;set;}
         public IList<DrawPoint> points {get;}
-        public SKPath path { get {
-                return null;
-            }}
-
-        // raw field used just to count known points - see RealmDraw.cs explanation
-        public int NumPointsDrawnLocally = 0;
-
     }
 }
