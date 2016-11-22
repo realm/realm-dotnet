@@ -81,32 +81,18 @@
   <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\armeabi-v7a\librealm-wrappers.so">
+      <Link>wrappers\armeabi-v7a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\x86\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86\librealm-wrappers.so">
+      <Link>wrappers\x86\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\arm64-v8a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\arm64-v8a\librealm-wrappers.so">
+      <Link>wrappers\arm64-v8a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\x86_64\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\arm64-v8a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86_64\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86_64\librealm-wrappers.so">
+      <Link>wrappers\x86_64\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>

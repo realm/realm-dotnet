@@ -9,6 +9,9 @@ def mdtool = '/Applications/Xamarin Studio.app/Contents/MacOS/mdtool'
 def xbuild = '/usr/local/bin/xbuild'
 def mono = '/usr/local/bin/mono'
 
+def version
+def versionString
+
 stage('Checkout') {
   node {
     checkout([
@@ -21,7 +24,11 @@ stage('Checkout') {
         ],
         userRemoteConfigs: scm.userRemoteConfigs
       ])
-      stash includes: '**/*', name: 'dotnet-source'
+
+      version = readAssemblyVersion()
+      versionString = "${version.major}.${version.minor}.${version.patch}"
+
+      stash includes: '**', name: 'dotnet-source'
   }
 }
 
@@ -33,15 +40,31 @@ def getArchive() {
 stage('Build') {
   parallel(
     'iOS': {
-      node('osx') {
-        getArchive()
+      parallel(
+        'sync': {
+          node('osx') {
+            getArchive()
 
-        dir('wrappers') {
-          sh "make ios${wrapperConfigurations[configuration]}"
+            dir('wrappers') {
+              sh "make ios${wrapperConfigurations[configuration]}"
+            }
+
+            stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
+          }
+        },
+        'nosync': {
+          node('osx') {
+            getArchive()
+
+            dir('wrappers') {
+              sh "make ios${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
+            }
+
+            stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
+          }
         }
+      )
 
-        stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
-      }
       node('xamarin-mac') {
         getArchive()
 
@@ -54,7 +77,8 @@ stage('Build') {
           sh "\"${mdtool}\" build -c:${configuration}\\|iPhoneSimulator Realm.sln -p:Tests.XamarinIOS"
         }
 
-        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.dll", name: 'nuget-ios'
+        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
+        stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
 
         dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests'
@@ -62,15 +86,40 @@ stage('Build') {
       }
     },
     'Android': {
+      parallel(
+        'sync': {
+          node('xamarin-mac') {
+            getArchive()
+
+            dir('wrappers') {
+              withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
+                sh "make android${wrapperConfigurations[configuration]}"
+              }
+            }
+
+            stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
+          }
+        },
+        'nosync': {
+          node('xamarin-mac') {
+            getArchive()
+
+            dir('wrappers') {
+              withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
+                sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
+              }
+            }
+
+            stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
+          }
+        }
+      )
+
       node('xamarin-mac') {
         getArchive()
         def workspace = pwd()
 
-        dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]}"
-          }
-        }
+        unstash 'android-wrappers-sync'
 
         sh "${nuget} restore Realm.sln"
 
@@ -81,15 +130,17 @@ stage('Build') {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
         }
-        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.dll,wrappers/build/${configuration}-android/*/libwrappers.so", name: 'nuget-android'
+        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
+        stash includes: "Platform.XamarinAndroid/Realm.Sync.XamarinAndroid/bin/${configuration}/Realm.Sync.*", name: 'nuget-android-sync'
       }
     },
     'PCL': {
       node('xamarin-mac') {
         getArchive()
         sh "${nuget} restore Realm.sln"
-        sh "${xbuild} Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
-        stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.XML", name: 'nuget-pcl'
+        sh "${xbuild} Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}"
+        stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
+        stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
     }
   )
@@ -135,22 +186,45 @@ stage('Test') {
 }
 
 stage('NuGet') {
-  node('xamarin-mac') {
-    getArchive()
+  parallel(
+    'Realm.Database': {
+      node('xamarin-mac') {
+        getArchive()
 
-    unstash 'nuget-weaver'
-    unstash 'nuget-pcl'
-    unstash 'nuget-ios'
-    unstash 'nuget-android'
+        unstash 'nuget-weaver'
+        unstash 'nuget-pcl-database'
+        unstash 'ios-wrappers-nosync'
+        unstash 'nuget-ios-database'
+        unstash 'android-wrappers-nosync'
+        unstash 'nuget-android-database'
 
-    def version = readAssemblyVersion()
-    def versionString = "${version.major}.${version.minor}.${version.patch}"
+        dir('NuGet/Realm.Database') {
+          sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          archive "Realm.Database.${versionString}.nupkg"
+        }
+      }
+    },
+    'Realm': {
+      node('xamarin-mac') {
+        getArchive()
 
-    dir('NuGet/NuGet.Library') {
-      sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
-      archive "Realm.${versionString}.nupkg"
+        unstash 'nuget-weaver'
+        unstash 'nuget-pcl-database'
+        unstash 'nuget-pcl-sync'
+        unstash 'ios-wrappers-sync'
+        unstash 'nuget-ios-database'
+        unstash 'nuget-ios-sync'
+        unstash 'android-wrappers-sync'
+        unstash 'nuget-android-database'
+        unstash 'nuget-android-sync'
+
+        dir('NuGet/Realm') {
+          sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          archive "Realm.${versionString}.nupkg"
+        }
+      }
     }
-  }
+  )
 }
 
 def readAssemblyVersion() {

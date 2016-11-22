@@ -46,9 +46,9 @@ all: ios iosdbg android androiddbg ## Make all the libs except osx broken - see 
 
 # iOS ============ {{{
 
-ios: build/Release-ios-universal/libwrappers.a 
+ios: build/Release-ios-universal/librealm-wrappers.a 
 
-iosdbg: build/Debug-ios-universal/libwrappers.a  
+iosdbg: build/Debug-ios-universal/librealm-wrappers.a  
 
 $(APPLE_BUNDLE_NAME):
 	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(APPLE_BUNDLE_NAME) $(APPLE_BUNDLE_URL); export ec=$$?; done'
@@ -64,14 +64,11 @@ build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
 build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Release -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
-build:
-	mkdir build
-
-build/Release-ios-universal: | build
+build/Release-ios-universal:
 	mkdir -p build/Release-ios-universal
 
-build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Release-ios-universal
-	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
+build/Release-ios-universal/librealm-wrappers.a: build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Release-ios-universal
+	lipo -create -output "build/Release-ios-universal/librealm-wrappers.a" "build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
 build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphoneos -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
@@ -79,11 +76,11 @@ build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
 build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
-build/Debug-ios-universal: | build
+build/Debug-ios-universal:
 	mkdir -p build/Debug-ios-universal
 
-build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Debug-ios-universal
-	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
+build/Debug-ios-universal/librealm-wrappers.a: build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Debug-ios-universal
+	lipo -create -output "build/Debug-ios-universal/librealm-wrappers.a" "build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
 .PHONY: osx ios iosdbg
 

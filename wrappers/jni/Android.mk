@@ -35,7 +35,7 @@ endif
 
 # And finally make wrappers
 include $(CLEAR_VARS)
-LOCAL_MODULE := wrappers
+LOCAL_MODULE := realm-wrappers
 
 LOCAL_CFLAGS := 
 LOCAL_SRC_FILES := src/object-store/src/collection_notifications.cpp
