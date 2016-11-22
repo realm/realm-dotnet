@@ -120,7 +120,7 @@ namespace DrawXShared
 
         #region Settings
         private DrawXSettings Settings => DrawXSettingsManager.Settings;
-        private int _currentColorIndex;  // for quick check if pencil we draw is current color
+        private int _currentColorIndex = -1;  // for quick check if pencil we draw is current color
         private SwatchColor _currentColor;
         private SwatchColor currentColor
         {
@@ -268,6 +268,10 @@ namespace DrawXShared
         {
             // draw pencils, assigning the fields used for touch detection
             _numPencils = SwatchColor.ColorsByName.Count;
+            if (_currentColorIndex == -1) 
+            {
+                var getToSetIndex = currentColor;  // use getter to ensure is set consistently
+            }
             var marginAlloc = (_numPencils + 1) * PENCIL_MARGIN;
             _pencilWidth = (canvas.ClipBounds.Width - marginAlloc) / _numPencils;  // see opposite calc in TouchInControlArea
             var pencilHeight = _pencilWidth * 334.0f / 112.0f;  // scale as per originals

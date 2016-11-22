@@ -290,3 +290,12 @@ DrawPath.cs
 - NumPointsDrawnLocally removed as realised we won't have same proxy object 
   for callbacks so original intent not possible
 - path unused property removed
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+2016-11-21 Fix initial pencil shown
+
+RealmDraw.cs
+- init _currentColorIndex to -1
+- DrawPencils check _currentColorIndex and ensure is updated from saved settings
+
