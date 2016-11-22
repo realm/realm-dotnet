@@ -48,7 +48,7 @@ node('xamarin-mac') {
 
   stage('Build PCL') {
     sh "\"${xbuild}\" Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
-    stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.xml", name: 'nuget-pcl'
+    stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.dll,Platform.PCL/Realm.PCL/bin/${configuration}/Realm.XML", name: 'nuget-pcl'
   }
 }
 
@@ -97,7 +97,7 @@ stage('Build') {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
         }
-        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/{configuration}/Realm.dll,wrappers/build/${configuration}-android/*/libwrappers.so", name: 'nuget-android'
+        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.dll,wrappers/build/${configuration}-android/*/libwrappers.so", name: 'nuget-android'
       }
     }
   )
@@ -138,11 +138,11 @@ stage('NuGet') {
     unstash 'nuget-ios'
     unstash 'nuget-android'
 
-    dir('NuGet/NuGet.Library') {
-      def version = readAssemblyVersion();
-      def versionString = "${version.major}.${version.minor}.${version.patch}"
-      sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+    def version = readAssemblyVersion()
+    def versionString = "${version.major}.${version.minor}.${version.patch}"
 
+    dir('NuGet/NuGet.Library') {
+      sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
       archive "Realm.${versionString}.nupkg"
     }
   }
