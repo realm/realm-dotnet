@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -21,7 +21,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <MtouchArch>i386, x86_64</MtouchArch>
     <MtouchArch>x86_64</MtouchArch>
     <MtouchDebug>true</MtouchDebug>
     <MtouchProfiling>true</MtouchProfiling>
@@ -47,7 +46,6 @@
     <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <MtouchArch>i386, x86_64</MtouchArch>
     <MtouchArch>x86_64</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <MtouchLink>Full</MtouchLink>
@@ -82,7 +80,6 @@
       <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />

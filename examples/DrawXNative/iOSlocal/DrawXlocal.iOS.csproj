@@ -173,8 +173,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ITunesArtwork Include="iTunesArtwork" />
-    <ITunesArtwork Include="iTunesArtwork%402x" />
+    <ITunesArtwork Include="..\iOS\DrawXOtherMedia\DrawX 512x512 iTunes Artwork.png" />
+    <ITunesArtwork Include="..\iOS\DrawXOtherMedia\DrawX 1024x1024 iTunes Artwork.png" />
   </ItemGroup>
   <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
