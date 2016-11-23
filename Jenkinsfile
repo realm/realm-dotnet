@@ -80,16 +80,17 @@ stage('Build without sync') {
       }
     },
     'Android': {
-      node('xamarin-mac') {
+      node('docker') {
         getArchive()
 
-        dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-          }
+        def buildEnv = docker.build('realm-dotnet-android:snapshot', '-f android.Dockerfile .')
+        buildEnv.inside {
+          sh """
+            cd wrappers
+            make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0 NUMBER_OF_ANDROID_PARALLEL_BUILD_JOBS=1
+          """
+          stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
         }
-
-        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
       }
       node('xamarin-mac') {
         getArchive()
@@ -148,16 +149,17 @@ stage('Build with sync') {
       }
     },
     'Android': {
-      node('xamarin-mac') {
+      node('docker') {
         getArchive()
 
-        dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]}"
-          }
+        def buildEnv = docker.build('realm-dotnet-android:snapshot', '-f android.Dockerfile .')
+        buildEnv.inside {
+          sh """
+            cd wrappers
+            make android${wrapperConfigurations[configuration]} NUMBER_OF_ANDROID_PARALLEL_BUILD_JOBS=1
+          """
+          stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
         }
-
-        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
       }
       node('xamarin-mac') {
         getArchive()

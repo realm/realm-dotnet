@@ -88,6 +88,8 @@ build/Debug-ios-universal/librealm-wrappers.a: build/Debug-iphoneos/lib$(WRAPPER
 
 # Android ==================== {{{
 
+NUMBER_OF_ANDROID_PARALLEL_BUILD_JOBS ?= $(shell sysctl -n hw.ncpu)
+
 core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk
 	mkdir -p core-android
 	tar xzf $(ANDROID_BUNDLE_NAME) -C core-android/
@@ -97,10 +99,10 @@ $(ANDROID_BUNDLE_NAME):
 	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL); export ec=$$?; done'
 
 android: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LIBS_OUT=build/Release-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LIBS_OUT=build/Release-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(NUMBER_OF_ANDROID_PARALLEL_BUILD_JOBS)
 	
 androiddbg: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LOG=1 NDK_DEBUG=1 NDK_LIBS_OUT=build/Debug-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LOG=1 NDK_DEBUG=1 NDK_LIBS_OUT=build/Debug-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(NUMBER_OF_ANDROID_PARALLEL_BUILD_JOBS)
 	
 
 .PHONY: android androiddbg
