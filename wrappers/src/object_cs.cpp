@@ -250,6 +250,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_link(column_ndx, target_object.row().get_index());
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -260,6 +262,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().nullify_link(column_ndx);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -273,6 +277,8 @@ extern "C" {
                 throw std::invalid_argument("Column is not nullable");
             
             object.row().set_null(column_ndx);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -295,6 +301,8 @@ extern "C" {
                 }
                 
                 object.row().set_null_unique(column_ndx);
+                
+                notify_changes(object, property_ndx);
             }
         });
     }
@@ -303,9 +311,10 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
-            
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_bool(column_ndx, size_t_to_bool(value));
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -316,6 +325,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_int(column_ndx, value);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -336,6 +347,8 @@ extern "C" {
                 }
                 
                 object.row().set_int_unique(column_ndx, value);
+                
+                notify_changes(object, property_ndx);
             }
         });
     }
@@ -347,6 +360,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_float(column_ndx, value);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -356,6 +371,8 @@ extern "C" {
             verify_can_set(object);
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_double(column_ndx, value);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -367,6 +384,8 @@ extern "C" {
             const size_t column_ndx = get_column_index(object, property_ndx);
             Utf16StringAccessor str(value, value_len);
             object.row().set_string(column_ndx, str);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -388,6 +407,8 @@ extern "C" {
                 }
                 
                 object.row().set_string_unique(column_ndx, str);
+                
+                notify_changes(object, property_ndx);
             }
         });
     }
@@ -399,6 +420,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_binary(column_ndx, BinaryData(value, value_len));
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -409,6 +432,8 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             object.row().set_timestamp(column_ndx, from_ticks(value));
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -421,7 +446,14 @@ extern "C" {
             
             verify_can_set(object);
             
-            object.row().get_table()->move_last_over(object.row().get_index());
+            auto const row_index = object.row().get_index();
+            auto const table_index = object.row().get_table()->get_index_in_group();
+            object.row().get_table()->move_last_over(row_index);
+            
+            if (realm->m_binding_context != nullptr) {
+                auto const& csharp_context = static_cast<binding::CSharpBindingContext*>(object.realm()->m_binding_context.get());
+                csharp_context->notify_removed(row_index, table_index);
+            }
         });
     }
     

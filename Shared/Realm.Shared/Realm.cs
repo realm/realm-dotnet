@@ -46,21 +46,17 @@ namespace Realms
         {
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
+            NativeCommon.register_notify_realm_object_changed(RealmObject.NotifyRealmObjectPropertyChanged);
         }
 
-#if __IOS__
+        #if __IOS__
         [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
-#endif
+        #endif
         private static void NotifyRealmChanged(IntPtr realmHandle)
         {
             var gch = GCHandle.FromIntPtr(realmHandle);
             ((Realm)gch.Target).NotifyChanged(EventArgs.Empty);
         }
-
-        /// <summary>
-        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
-        /// </summary>
-        public RealmConfiguration Config { get; private set; }
 
         /// <summary>
         /// Factory for a Realm instance for this thread.
@@ -127,6 +123,11 @@ namespace Realms
         /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
         /// </summary>
         public RealmSchema Schema { get; }
+
+        /// <summary>
+        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
+        /// </summary>
+        public RealmConfiguration Config { get; private set; }
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {

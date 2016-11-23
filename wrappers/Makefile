@@ -51,7 +51,7 @@ ios: build/Release-ios-universal/libwrappers.a
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
 $(APPLE_BUNDLE_NAME):
-	curl -o $(APPLE_BUNDLE_NAME) $(APPLE_BUNDLE_URL)
+	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(APPLE_BUNDLE_NAME) $(APPLE_BUNDLE_URL); export ec=$$?; done'
 
 core: $(APPLE_BUNDLE_NAME)
 	tar xjf $(APPLE_BUNDLE_NAME)
@@ -97,7 +97,7 @@ core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk
 	touch core-android
 
 $(ANDROID_BUNDLE_NAME):
-	curl -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL)
+	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL); export ec=$$?; done'
 
 android: | core-android $(SRCS) $(ANDROID_SRCS)
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LIBS_OUT=build/Release-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)

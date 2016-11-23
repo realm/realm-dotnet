@@ -47,6 +47,7 @@ public class ModuleWeaver
     private MethodReference _realmObjectIsManagedGetter;
     private MethodReference _realmObjectRealmGetter;
     private MethodReference _realmAddGenericReference;
+    private MethodReference _realmObjectRaisePropertyChanged;
 
     private AssemblyDefinition _corLib;
     private TypeReference _system_Object;
@@ -56,10 +57,6 @@ public class ModuleWeaver
     private TypeReference _system_DateTimeOffset;
     private TypeReference _system_Int32;
     private MethodReference _system_DatetimeOffset_Op_Inequality;
-
-    private MethodReference _propChangedEventArgsConstructor;
-    private MethodReference _propChangedEventHandlerInvokeReference;
-    private TypeReference _propChangedEventHandlerReference;
 
     private MethodReference _propChangedDoNotNotifyAttributeConstructorDefinition;
 
@@ -169,6 +166,7 @@ public class ModuleWeaver
         _realmObject = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         _realmObjectIsManagedGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         _realmObjectRealmGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(p => p.Name == "Realm").GetMethod);
+        _realmObjectRaisePropertyChanged = ModuleDefinition.ImportReference(_realmObject.Methods.Single(m => m.Name == "RaisePropertyChanged"));
 
         var realm = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "Realm");
         _realmAddGenericReference = ModuleDefinition.ImportReference(realm.Methods.First(x => x.Name == "Add" && x.HasGenericParameters));
@@ -212,16 +210,6 @@ public class ModuleWeaver
             _system_IList = ModuleDefinition.ImportReference(listTypeDefinition);
         }
 
-        var systemAssembly = AssemblyResolver.Resolve("System");
-        var systemObjectModelAssembly = AssemblyResolver.Resolve("System.ObjectModel");
-
-        var propertyChangedEventArgs = TypeHelper.LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
-        _propChangedEventArgsConstructor = ModuleDefinition.ImportReference(propertyChangedEventArgs.GetConstructors().First());
-
-        var propChangedEventHandlerDefinition = TypeHelper.LookupType("PropertyChangedEventHandler", systemObjectModelAssembly, systemAssembly);
-        _propChangedEventHandlerReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition);
-        _propChangedEventHandlerInvokeReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition.Methods.First(x => x.Name == "Invoke"));
-
         // If the solution has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
         var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
         if (usesPropertyChangedFody)
@@ -250,24 +238,12 @@ public class ModuleWeaver
     {
         Debug.WriteLine("Weaving " + type.Name);
 
-        var typeImplementsPropertyChanged =
-            type.Interfaces.Any(t => t.FullName == "System.ComponentModel.INotifyPropertyChanged");
-
-        EventDefinition propChangedEventDefinition = null;
-        FieldDefinition propChangedFieldDefinition = null;
-
-        if (typeImplementsPropertyChanged)
-        {
-            propChangedEventDefinition = type.Events.First(X => X.FullName.EndsWith("::PropertyChanged"));
-            propChangedFieldDefinition = type.Fields.First(X => X.FullName.EndsWith("::PropertyChanged"));
-        }
-
         var persistedProperties = new List<WeaveResult>();
         foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
         {
             try
             {
-                var weaveResult = WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+                var weaveResult = WeaveProperty(prop, type, methodTable);
                 if (weaveResult.Woven)
                 {
                     persistedProperties.Add(weaveResult);
@@ -345,9 +321,7 @@ public class ModuleWeaver
         Debug.WriteLine(string.Empty);
     }
 
-    private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
-                               bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
-                               FieldDefinition propChangedFieldDefinition)
+    private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable)
     {
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
@@ -396,7 +370,7 @@ public class ModuleWeaver
             }
 
             ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
-            ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+            ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2);
         }
 
         // treat IList and RealmList similarly but IList gets a default so is useable as standalone
@@ -440,8 +414,7 @@ public class ModuleWeaver
             ReplaceGetter(prop, columnName,
                 new GenericInstanceMethod(_genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
             ReplaceSetter(prop, backingField, columnName,
-                new GenericInstanceMethod(_genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } },
-                typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+                new GenericInstanceMethod(_genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
@@ -566,7 +539,7 @@ public class ModuleWeaver
         Debug.Write("[get list] ");
     }
 
-    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool weavePropertyChanged, EventDefinition propChangedEventDefinition, FieldDefinition propChangedFieldDefinition)
+    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
     {
         //// A synthesized property setter looks like this:
         ////   0: ldarg.0
@@ -574,47 +547,7 @@ public class ModuleWeaver
         ////   2: stfld <backingField>
         ////   3: ret
         ////   
-        //// If we want to weave support for INotifyPropertyChanged as well, we want to change it so it looks like this:
-        ////   0. ldarg.0
-        ////   1. call Realms.RealmObject.get_IsManaged
-        ////   2. ldc.i4.0
-        ////   3. ceq
-        ////   4. stloc.1
-        ////   5. ldloc.1
-        ////   6. brfalse.s 11
-        ////   7. ldarg.0
-        ////   8. ldarg.1
-        ////   9. stfld <backingField>
-        ////   10. br.s 15
-        ////   11. ldarg.0
-        ////   12. ldstr <columnName>
-        ////   13. ldarg.1
-        ////   14. call Realms.RealmObject.SetValue<T>
-        ////   15. ldarg.0
-        ////   16. ldfld PropertyChanged
-        ////   17. stloc.0
-        ////   18. ldloc.0
-        ////   19. ldnull
-        ////   20. cgt.un
-        ////   21. stloc.2
-        ////   22. ldloc.2
-        ////   23. brfalse.s 30
-        ////   24. ldarg.0
-        ////   25. ldfld PropertyChanged
-        ////   26. ldarg.0
-        ////   27. ldstr <columnName>
-        ////   28. newobj PropertyChangedEventArgs
-        ////   29. callvirt PropertyChangedEventHandler.Invoke
-        ////   30. ret
-        ////   
-        //// This is roughly equivalent to:
-        ////   if (!base.IsManaged) this.<backingField> = value;
-        ////   else base.SetValue<T>(<columnName>, value);
-        ////     
-        ////   if (PropertyChanged != null)
-        ////     PropertyChanged(this, new PropertyChangedEventArgs(<columnName>);
-        ////  
-        //// If we want to only weave support for Realm (without INotifyPropertyChanged), we want to change it so it looks like this:
+        //// We want to change it so it looks like this:
         ////   0: ldarg.0
         ////   1: call Realms.RealmObject.get_IsManaged
         ////   2: brfalse.s 8
@@ -637,162 +570,39 @@ public class ModuleWeaver
             throw new ArgumentNullException(nameof(setValueReference));
         }
 
-        if (!weavePropertyChanged)
+        // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+        // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
+        var il = prop.SetMethod.Body.GetILProcessor();
+        prop.SetMethod.Body.Instructions.Clear();
+        prop.SetMethod.Body.Variables.Clear();
+
+        // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
+        // if they're the last one in.
+        // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
+        // the property such that PropertyChanged.Fody won't touch it.
+        if (_propChangedDoNotNotifyAttributeConstructorDefinition != null)
         {
-            var start = prop.SetMethod.Body.Instructions.First();
-            var il = prop.SetMethod.Body.GetILProcessor();
-
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
-            il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
-            il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
-            il.InsertBefore(start, il.Create(OpCodes.Ret));
+            prop.CustomAttributes.Add(new CustomAttribute(_propChangedDoNotNotifyAttributeConstructorDefinition));
         }
-        else
-        {
-            if (propChangedEventDefinition == null)
-            {
-                throw new ArgumentNullException(nameof(propChangedEventDefinition));
-            }
 
-            if (propChangedFieldDefinition == null)
-            {
-                throw new ArgumentNullException(nameof(propChangedFieldDefinition));
-            }
+        var managedSetStart = il.Create(OpCodes.Ldarg_0);
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
+        il.Append(il.Create(OpCodes.Brtrue_S, managedSetStart));
 
-            if (_realmObjectIsManagedGetter == null)
-            {
-                throw new ArgumentNullException(nameof(_realmObjectIsManagedGetter));
-            }
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Ldarg_1));
+        il.Append(il.Create(OpCodes.Stfld, backingField));
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Ldstr, prop.Name));
+        il.Append(il.Create(OpCodes.Call, _realmObjectRaisePropertyChanged));
+        il.Append(il.Create(OpCodes.Ret));
 
-            if (setValueReference == null)
-            {
-                throw new ArgumentNullException(nameof(setValueReference));
-            }
-
-            if (_propChangedEventArgsConstructor == null)
-            {
-                throw new ArgumentNullException(nameof(_propChangedEventArgsConstructor));
-            }
-
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
-            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
-            var il = prop.SetMethod.Body.GetILProcessor();
-            prop.SetMethod.Body.Instructions.Clear();
-            prop.SetMethod.Body.Variables.Clear();
-
-            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_propChangedDoNotNotifyAttributeConstructorDefinition != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_propChangedDoNotNotifyAttributeConstructorDefinition));
-            }
-
-            if (_system_Boolean == null)
-            {
-                throw new ApplicationException("System_Boolean is null");
-            }
-
-            prop.SetMethod.Body.Variables.Add(new VariableDefinition("handler", _propChangedEventHandlerReference));
-            prop.SetMethod.Body.Variables.Add(new VariableDefinition(_system_Boolean));
-            prop.SetMethod.Body.Variables.Add(new VariableDefinition(_system_Boolean));
-
-            var ret = il.Create(OpCodes.Ret);
-
-            /*
-                ldarg.0
-                call instance bool TestingILGeneration._realmObject::get_IsManaged()
-                ldc.i4.0
-                ceq
-                stloc.1
-                ldloc.1
-                brfalse.s IL_0017
-            */
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
-            il.Append(il.Create(OpCodes.Ldc_I4_0));
-            il.Append(il.Create(OpCodes.Ceq));
-            il.Append(il.Create(OpCodes.Stloc_1));
-            il.Append(il.Create(OpCodes.Ldloc_1));
-            var jumpToLabelA = il.Create(OpCodes.Nop);
-            il.Append(jumpToLabelA); // Jump to A
-
-            /*
-                ldarg.0
-                ldarg.1
-                stfld int32 TestingILGeneration.TestClass1::_myProperty
-                br.s IL_0024
-            */
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Stfld, backingField));
-            var jumpToLabelB = il.Create(OpCodes.Nop);
-            il.Append(jumpToLabelB);
-
-            /*
-                ldarg.0
-                ldstr "MyProperty"
-                ldarg.1
-                call instance void TestingILGeneration._realmObject::SetValue<int32>(string, !!0)
-            */
-            var labelA = il.Create(OpCodes.Ldarg_0);
-            il.Append(labelA); /* A */
-            il.Append(il.Create(OpCodes.Ldstr, columnName));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Call, setValueReference));
-
-            /*
-                ldarg.0
-                ldfld class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs> TestingILGeneration.TestClass1::PropertyChanged
-                stloc.0
-                ldloc.0
-                ldnull
-                cgt.un
-                stloc.2
-                ldloc.2
-                brfalse.s IL_004a
-            */
-            var labelB = il.Create(OpCodes.Ldarg_0);
-            il.Append(labelB); /* B */
-            il.Append(il.Create(OpCodes.Ldfld, propChangedFieldDefinition));
-            il.Append(il.Create(OpCodes.Stloc_0));
-            il.Append(il.Create(OpCodes.Ldloc_0));
-            il.Append(il.Create(OpCodes.Ldnull));
-            il.Append(il.Create(OpCodes.Cgt_Un));
-            il.Append(il.Create(OpCodes.Stloc_2));
-            il.Append(il.Create(OpCodes.Ldloc_2));
-            il.Append(il.Create(OpCodes.Brfalse, ret)); /* JUMP TO RET */
-
-            /*
-                ldarg.0
-                ldfld class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs> TestingILGeneration.TestClass1::PropertyChanged
-                ldarg.0
-                ldstr "MyProperty"
-                newobj instance void [System]System.ComponentModel.PropertyChangedEventArgs::.ctor(string)
-                callvirt instance void class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs>::Invoke(object, !0)
-            */
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldfld, propChangedFieldDefinition));
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldstr, columnName));
-            il.Append(il.Create(OpCodes.Newobj, _propChangedEventArgsConstructor));
-            il.Append(il.Create(OpCodes.Callvirt, _propChangedEventHandlerInvokeReference));
-
-            // Replace jumps above now that we've injected everything.
-            il.Replace(jumpToLabelA, il.Create(OpCodes.Brfalse, labelA));
-            il.Replace(jumpToLabelB, il.Create(OpCodes.Br, labelB));
-
-            // Finish with a return.
-            il.Append(ret);
-
-            // Let Cecil optimize things for us. 
-            prop.SetMethod.Body.OptimizeMacros();
-        }
+        il.Append(managedSetStart);
+        il.Append(il.Create(OpCodes.Ldstr, columnName));
+        il.Append(il.Create(OpCodes.Ldarg_1));
+        il.Append(il.Create(OpCodes.Call, setValueReference));
+        il.Append(il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
     }

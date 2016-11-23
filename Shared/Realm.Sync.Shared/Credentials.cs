@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Json;
 
 namespace Realms.Sync
@@ -51,13 +52,13 @@ namespace Realms.Sync
         }
 
         public static Credentials Custom(string identityProvider, string userIdentifier,
-            IReadOnlyDictionary<string, object> userInfo)
+            IDictionary<string, object> userInfo)
         {
             return new Credentials
             {
                 IdentityProvider = identityProvider,
                 Token = userIdentifier,
-                UserInfo = userInfo
+                UserInfo = new ReadOnlyDictionary<string, object>(userInfo)
             };
         }
 

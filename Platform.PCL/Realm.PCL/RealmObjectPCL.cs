@@ -20,16 +20,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Realms
 {
     /// <summary>
     /// Base for any object that can be persisted in a Realm.
     /// </summary>
-    public class RealmObject : IReflectableType
+    public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
         private Realm _realm;  // may not be used but wanted it included in definition of IsManaged below.
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            }
+
+            remove
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            }
+        }
 
         /// <summary>
         /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Add.
@@ -334,6 +349,11 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
+        }
+
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
         TypeInfo IReflectableType.GetTypeInfo()
