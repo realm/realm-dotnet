@@ -9,7 +9,7 @@ using System;
 using System.CodeDom.Compiler;
 using UIKit;
 
-namespace DrawX.iOS
+namespace DrawX.IOS
 {
     [Register ("LoginViewController")]
     partial class LoginViewController

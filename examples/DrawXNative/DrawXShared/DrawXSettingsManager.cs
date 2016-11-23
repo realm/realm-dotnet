@@ -33,7 +33,10 @@ namespace DrawXShared
             get
             {
                 if (_savedSettings == null)
+                {
                     _savedSettings = _realmLocalSettings.All<DrawXSettings>().FirstOrDefault();
+                }
+
                 if (_savedSettings == null)
                 {
                     _realmLocalSettings.Write(() =>
@@ -42,10 +45,10 @@ namespace DrawXShared
                         _savedSettings.LastColorUsed = "Indigo";
                     });
                 }
+
                 return _savedSettings;
             }
         }
-
 
         internal static void InitLocalSettings()
         {
@@ -60,7 +63,6 @@ namespace DrawXShared
             _realmLocalSettings.Write(writer);
         }
 
-
         internal static bool UpdateCredentials(string serverIP, string username, string password)
         {
             if (!serverIP.Contains(":"))
@@ -68,6 +70,7 @@ namespace DrawXShared
                 // assume they forgot port so add standard port
                 serverIP += ":9080";
             }
+
             // crashes if ServerIP is null            bool changedServer = string.IsNullOrEmpty(_savedSettings.ServerIP) || !_savedSettings.ServerIP.Equals(serverIP);
             bool changedServer = _savedSettings.ServerIP == null ||
                                  _savedSettings.ServerIP.Length == 0 ||
@@ -81,7 +84,6 @@ namespace DrawXShared
             return changedServer;
         }
 
-
         internal static bool HasCredentials()
         {
             return _savedSettings != null &&
@@ -89,6 +91,5 @@ namespace DrawXShared
                 !string.IsNullOrEmpty(_savedSettings.Password) &&
                 !string.IsNullOrEmpty(_savedSettings.ServerIP);
         }
-
     }
 }

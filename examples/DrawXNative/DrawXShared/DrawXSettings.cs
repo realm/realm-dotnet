@@ -23,9 +23,12 @@ namespace DrawXShared
     // just stash one instance
     public class DrawXSettings : RealmObject
     {
-        public string LastColorUsed {get;set;}
-        public string ServerIP {get;set;}  // without prefix ie no http://
-        public string Username {get;set;}
-        public string Password {get;set;}
+        public string LastColorUsed { get; set; }
+
+        public string ServerIP { get; set; }  // without prefix ie no http://
+
+        public string Username { get; set; }
+
+        public string Password { get; set; }
     }
 }

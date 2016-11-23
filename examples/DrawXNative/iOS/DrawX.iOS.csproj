@@ -6,8 +6,8 @@
     <ProjectGuid>{F4CDEB98-E11E-4453-9921-149A4BD99954}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>DrawX.iOS</RootNamespace>
-    <AssemblyName>DrawX.iOS</AssemblyName>
+    <RootNamespace>DrawX.IOS</RootNamespace>
+    <AssemblyName>DrawX.IOS</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
@@ -126,6 +126,7 @@
     <Compile Include="AppDelegate.cs" />
     <Compile Include="ViewController.cs" />
     <Compile Include="ViewController.designer.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>      
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>

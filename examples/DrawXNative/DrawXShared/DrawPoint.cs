@@ -16,12 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Diagnostics.CodeAnalysis;
 using Realms;
+
 namespace DrawXShared
 {
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter", 
+        Justification = "Conform to same schema as other Realm samples")]
     public class DrawPoint : RealmObject
     {
-        public double x {get; set;}
-        public double y {get; set;}
+        public double x { get; set; }
+
+        public double y { get; set; }
     }
 }

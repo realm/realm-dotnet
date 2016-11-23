@@ -22,7 +22,7 @@ using UIKit;
 using Foundation;
 using DrawXShared;
 
-namespace DrawX.iOS
+namespace DrawX.IOS
 {
     public partial class ViewController : UIViewController
     {

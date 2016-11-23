@@ -24,7 +24,6 @@ using SkiaSharp;
 
 namespace DrawXShared
 {
-
     // based on the SkiaSharpSample class SampleMedia
     internal static class EmbeddedMedia
     {
@@ -47,9 +46,9 @@ namespace DrawXShared
             {
                 stream = assembly.GetManifestResourceStream(name);
             }
+
             return stream;
         }
-
 
         internal static SKBitmap BitmapNamed(string filename)
         {

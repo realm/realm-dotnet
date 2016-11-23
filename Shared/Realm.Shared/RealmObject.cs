@@ -42,7 +42,7 @@ namespace Realms
         #region static
 
         #if __IOS__
-        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
         #endif
         internal static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
         {

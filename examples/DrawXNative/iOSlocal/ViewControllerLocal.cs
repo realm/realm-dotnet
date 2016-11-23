@@ -16,20 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Foundation;
 using System;
+using Foundation;
 using UIKit;
 
-namespace DrawX.iOS
+namespace DrawX.IOS
 {
-
     // local subclass per project because of the way the designer files are generated
     public partial class ViewControllerLocal : ViewControllerShared
     {
         public ViewControllerLocal(IntPtr handle) : base(handle)
         {
         }
-
 
         public override void ViewDidLoad()
         {

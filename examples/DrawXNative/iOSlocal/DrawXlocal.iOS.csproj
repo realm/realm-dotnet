@@ -6,8 +6,8 @@
     <ProjectGuid>{F4CDEB98-E11E-4453-9921-149A4BD99954}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>DrawX.iOS</RootNamespace>
-    <AssemblyName>DrawX.iOS</AssemblyName>
+    <RootNamespace>DrawX.IOS</RootNamespace>
+    <AssemblyName>DrawX.IOS</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
@@ -30,7 +30,7 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType></DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -152,6 +152,7 @@
     <Compile Include="..\iOS\AppDelegate.cs" />
     <Compile Include="ViewControllerLocal.cs" />
     <Compile Include="ViewControllerLocal.designer.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>      
       <DependentUpon>ViewControllerLocal.cs</DependentUpon>
     </Compile>
     <Compile Include="..\DrawXShared\ViewControllerShared.cs">
@@ -159,6 +160,7 @@
     </Compile>
     <Compile Include="LoginViewController.cs" />
     <Compile Include="LoginViewController.designer.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
       <DependentUpon>LoginViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -179,4 +181,8 @@
   <Import Project="..\DrawXShared\DrawXShared.projitems" Label="Shared" Condition="Exists('..\DrawXShared\DrawXShared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
+  <Import Project="..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" />
+  <Target Name="EnsureLatestFodyCopied" BeforeTargets="PrepareForBuild">
+    <Copy SourceFiles="..\..\..\Tools\RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)Tools" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

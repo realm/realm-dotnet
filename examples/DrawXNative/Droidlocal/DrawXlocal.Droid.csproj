@@ -65,7 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Droid\MainActivity.cs" />
-    <Compile Include="Resources\Resource.designer.cs" />
+    <Compile Include="Resources\Resource.designer.cs" >
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>      
+    </Compile>
     <Compile Include="..\Droid\Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -127,4 +129,8 @@
       <Link>wrappers\arm64-v8a\libwrappers.so</Link>
     </AndroidNativeLibrary>
   </ItemGroup>
+  <Import Project="..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" />
+  <Target Name="EnsureLatestFodyCopied" BeforeTargets="PrepareForBuild">
+    <Copy SourceFiles="..\..\..\Tools\RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)Tools" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

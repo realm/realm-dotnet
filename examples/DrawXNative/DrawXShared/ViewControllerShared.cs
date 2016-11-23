@@ -16,30 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using UIKit;
-using Foundation;
 using System;
 using System.Diagnostics;
-using SkiaSharp.Views.iOS;
 using DrawXShared;
+using Foundation;
+using SkiaSharp.Views.iOS;
+using UIKit;
 
-namespace DrawX.iOS
+namespace DrawX.IOS
 {
     public class ViewControllerShared : UIViewController
     {
-
-        RealmDraw _drawer;
-        bool _hasShownCredentials = false;  // flag to show on initial layout only
+        private RealmDraw _drawer;
+        private bool _hasShownCredentials = false;  // flag to show on initial layout only
 
         public ViewControllerShared(IntPtr handle) : base(handle)
         {
         }
 
-
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
             Debug.WriteLine($"Opened view with bounds {View.Bounds.Size}");
+
             // relies on override to point its canvas at our OnPaintSample
             // see ViewDidLayoutSubviews for triggering EditCredentials
             DrawXSettingsManager.InitLocalSettings();
@@ -66,16 +65,14 @@ namespace DrawX.iOS
                 Debug.WriteLine("Refresh callback triggered by Realm");
                 View?.SetNeedsDisplay();  // just refresh on notification
             };
-
         }
 
         public override void ViewDidLayoutSubviews()
         {
             base.ViewDidLayoutSubviews();
-            // this is the earliest we can show the modal login
 
+            // this is the earliest we can show the modal login
             // show unconditionally on launch
-            //if (!DrawXSettingsManager.HasCredentials())
             if (!_hasShownCredentials)
             {
                 EditCredentials();
@@ -83,19 +80,16 @@ namespace DrawX.iOS
             }
         }
 
-
         public override void DidReceiveMemoryWarning()
         {
             base.DidReceiveMemoryWarning();
-            // Release any cached data, images, etc that aren't in use.        
+            //// Release any cached data, images, etc that aren't in use.        
         }
-
 
         protected void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
             _drawer?.DrawTouches(e.Surface.Canvas);
         }
-
 
         public override void TouchesBegan(NSSet touches, UIEvent evt)
         {
@@ -111,7 +105,6 @@ namespace DrawX.iOS
             }
         }
 
-
         public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
             base.TouchesMoved(touches, evt);
@@ -126,7 +119,6 @@ namespace DrawX.iOS
             }
         }
 
-
         public override void TouchesCancelled(NSSet touches, UIEvent evt)
         {
             base.TouchesCancelled(touches, evt);
@@ -137,7 +129,6 @@ namespace DrawX.iOS
             }
         }
 
-
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
             base.TouchesEnded(touches, evt);
@@ -147,16 +138,16 @@ namespace DrawX.iOS
                 var point = touch.LocationInView(View);
                 _drawer?.StopDrawing((float)point.X * 2.0f, (float)point.Y * 2.0f);
             }
+
             View.SetNeedsDisplay();
         }
-
 
         public override void MotionBegan(UIEventSubtype eType, UIEvent evt)
         {
             if (eType == UIEventSubtype.MotionShake)
             {
                 _drawer.ErasePaths();
-                // let major Realm change prompt redisplay
+                //// unlike other gesture actions, don't call View.SetNeedsDisplay but let major Realm change prompt redisplay
             }
         }
 
@@ -175,8 +166,9 @@ namespace DrawX.iOS
                         SetupDrawer();  // pointless unless contact server
                         _drawer.LoginToServerAsync();
                     }
-                    // TODO allow user to launch locally if server not available
+                    //// TODO allow user to launch locally if server not available
                 }
+
                 View.SetNeedsDisplay();
             };
             PresentViewController(loginVC, false, null);

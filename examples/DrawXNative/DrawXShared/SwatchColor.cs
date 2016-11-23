@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using SkiaSharp;
 using System.Collections.Generic;
+using SkiaSharp;
+
 namespace DrawXShared
 {
     public struct SwatchColor
@@ -32,7 +33,10 @@ namespace DrawXShared
             get
             {
                 if (_colors == null)
+                {
                     InitColors();
+                }
+
                 return _colors;
             }
         }
@@ -42,15 +46,19 @@ namespace DrawXShared
         {
             get
             {
-                if (_colors == null)
+                if (_colors == null) 
+                {
                     InitColors();
+                }
+
                 return _indexedColors;
             }
         }
 
         private static void InitColors()
         {
-            _indexedColors = new List<SwatchColor> {
+            _indexedColors = new List<SwatchColor> 
+            {
                 new SwatchColor() { Name = "Charcoal", Color = new SKColor(28, 35, 63) },
                 new SwatchColor() { Name = "Elephant", Color = new SKColor(154, 155, 165) },
                 new SwatchColor() { Name = "Dove", Color = new SKColor(235, 235, 242) },

@@ -19,8 +19,8 @@
 using Android.App;
 using Android.Views;
 using Android.OS;
-using SkiaSharp.Views.Android;
 using DrawXShared;
+using SkiaSharp.Views.Android;
 
 namespace DrawX.Droid
 {
@@ -49,13 +49,16 @@ namespace DrawX.Droid
             if (_drawer == null)
             {
                 // deferred update until can get view bounds
-                _drawer = new RealmDraw(
-                    _canvas.CanvasSize.Width,
-                    _canvas.CanvasSize.Height,
-                    (sender, args) =>
-                    {
-                        _canvas.Invalidate();
-                    });
+                _drawer = new RealmDraw(_canvas.CanvasSize.Width, _canvas.CanvasSize.Height);
+                _drawer.CredentialsEditor = () =>
+                {
+                    ////TODO Android eqivalent InvokeOnMainThread(() => EditCredentials());
+                };
+                _drawer.RefreshOnRealmUpdate = () =>
+                {
+                    Debug.WriteLine("Refresh callback triggered by Realm");
+                    _canvas.Invalidate();
+                };
             }
         }
 
