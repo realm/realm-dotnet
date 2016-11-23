@@ -5,7 +5,6 @@ def wrapperConfigurations = [
 def configuration = 'Debug'
 
 def nuget = '/usr/local/bin/nuget'
-def mdtool = '/Applications/Xamarin Studio.app/Contents/MacOS/mdtool'
 def xbuild = '/usr/local/bin/xbuild'
 def mono = '/usr/local/bin/mono'
 
@@ -37,34 +36,101 @@ def getArchive() {
     unstash 'dotnet-source'
 }
 
-stage('Build') {
+stage('RealmWeaver') {
+  node('xamarin-mac') {
+    getArchive()
+    def workspace = pwd()
+    sh "${nuget} restore Realm.sln"
+
+    dir('Weaver/WeaverTests/RealmWeaver.Tests') {
+      sh "${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
+      sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+      publishTests 'TestResult.xml'
+    }
+    stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
+  }
+}
+
+stage('Build without sync') {
   parallel(
     'iOS': {
-      parallel(
-        'sync': {
-          node('osx') {
-            getArchive()
+      node('osx') {
+        getArchive()
 
-            dir('wrappers') {
-              sh "make ios${wrapperConfigurations[configuration]}"
-            }
+        dir('wrappers') {
+          sh "make ios${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
+        }
 
-            stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
-          }
-        },
-        'nosync': {
-          node('osx') {
-            getArchive()
+        stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
+      }
+      node('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
+        unstash 'ios-wrappers-nosync'
 
-            dir('wrappers') {
-              sh "make ios${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-            }
+        sh "${nuget} restore Realm.sln"
 
-            stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
+        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:OutputPath=\"${workspace}\"/Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}/ /p:SolutionDir=\"${workspace}/\""
+
+        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
+
+        dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
+          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-nosync'
+        }
+      }
+    },
+    'Android': {
+      node('xamarin-mac') {
+        getArchive()
+
+        dir('wrappers') {
+          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
+            sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
           }
         }
-      )
 
+        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
+      }
+      node('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
+
+        unstash 'android-wrappers-nosync'
+
+        sh "${nuget} restore Realm.sln"
+
+        dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
+          sh "${xbuild} Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
+          dir("bin/${configuration}") {
+            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
+          }
+        }
+        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
+      }
+    },
+    'PCL': {
+      node('xamarin-mac') {
+        getArchive()
+        sh "${nuget} restore Realm.sln"
+        sh "${xbuild} Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
+        stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
+      }
+    }
+  )
+}
+
+stage('Build with sync') {
+  parallel(
+    'iOS': {
+      node('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          sh "make ios${wrapperConfigurations[configuration]}"
+        }
+
+        stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
+      }
       node('xamarin-mac') {
         getArchive()
 
@@ -72,49 +138,27 @@ stage('Build') {
 
         sh "${nuget} restore Realm.sln"
 
-        // mdtool occasionally hangs, so put a timeout on it
-        timeout(time: 8, unit: 'MINUTES') {
-          sh "\"${mdtool}\" build -c:${configuration}\\|iPhoneSimulator Realm.sln -p:Tests.XamarinIOS"
-        }
+        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:OutputPath=\"${workspace}\"/Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}/ /p:SolutionDir=\"${workspace}/\""
 
-        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
         stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
 
         dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
-          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests'
+          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-sync'
         }
       }
     },
     'Android': {
-      parallel(
-        'sync': {
-          node('xamarin-mac') {
-            getArchive()
+      node('xamarin-mac') {
+        getArchive()
 
-            dir('wrappers') {
-              withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-                sh "make android${wrapperConfigurations[configuration]}"
-              }
-            }
-
-            stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
-          }
-        },
-        'nosync': {
-          node('xamarin-mac') {
-            getArchive()
-
-            dir('wrappers') {
-              withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-                sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-              }
-            }
-
-            stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
+        dir('wrappers') {
+          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
+            sh "make android${wrapperConfigurations[configuration]}"
           }
         }
-      )
 
+        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
+      }
       node('xamarin-mac') {
         getArchive()
         def workspace = pwd()
@@ -124,13 +168,12 @@ stage('Build') {
         sh "${nuget} restore Realm.sln"
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
-          // define the SolutionDir build setting because Fody depends on it to discover weavers
           sh "${xbuild} Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
           dir("bin/${configuration}") {
-            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
+            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
         }
-        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
+
         stash includes: "Platform.XamarinAndroid/Realm.Sync.XamarinAndroid/bin/${configuration}/Realm.Sync.*", name: 'nuget-android-sync'
       }
     },
@@ -139,18 +182,17 @@ stage('Build') {
         getArchive()
         sh "${nuget} restore Realm.sln"
         sh "${xbuild} Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}"
-        stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
     }
   )
 }
 
-stage('Test') {
+stage('Test without sync') {
   parallel(
     'iOS': {
       node('osx') {
-        unstash 'ios-tests'
+        unstash 'ios-tests-nosync'
 
         dir('Tests.XamarinIOS.app') {
           sh 'mkdir -p fakehome/Documents'
@@ -162,24 +204,35 @@ stage('Test') {
     'Android': {
       node('android-hub') {
         sh 'rm -rf *'
-        unstash 'android-tests'
+        unstash 'android-tests-nosync'
         sh 'adb devices'
         sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
         publishTests()
       }
-    },
-    'Weaver': {
-      node('xamarin-mac') {
-        getArchive()
-        def workspace = pwd()
-        sh "${nuget} restore Realm.sln"
+    }
+  )
+}
 
-        dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-          sh "${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
-          sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
-          publishTests 'TestResult.xml'
+stage('Test with sync') {
+  parallel(
+    'iOS': {
+      node('osx') {
+        unstash 'ios-tests-sync'
+
+        dir('Tests.XamarinIOS.app') {
+          sh 'mkdir -p fakehome/Documents'
+          sh "HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.XamarinIOS --headless"
+          publishTests 'fakehome/Documents/TestResults.iOS.xml'
         }
-        stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
+      }
+    },
+    'Android': {
+      node('android-hub') {
+        sh 'rm -rf *'
+        unstash 'android-tests-sync'
+        sh 'adb devices'
+        sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
+        publishTests()
       }
     }
   )
