@@ -70,7 +70,7 @@ stage('Build without sync') {
 
         sh "${nuget} restore Realm.sln"
 
-        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:OutputPath=\"${workspace}\"/Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}/ /p:SolutionDir=\"${workspace}/\""
+        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\""
 
         stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
 
@@ -139,7 +139,7 @@ stage('Build with sync') {
 
         sh "${nuget} restore Realm.sln"
 
-        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:OutputPath=\"${workspace}\"/Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}/ /p:SolutionDir=\"${workspace}/\""
+        sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\""
 
         stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
 
