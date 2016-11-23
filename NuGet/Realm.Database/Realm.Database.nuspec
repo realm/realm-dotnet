@@ -31,6 +31,7 @@
     <file src="../../Platform.PCL/Realm.PCL/bin/$Configuration$/Realm.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- IOS file -->
     <file src="../../Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.*" target="lib/Xamarin.iOS10" />
+    <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="lib/Xamarin.iOS10" />
 <!-- Targets file adds references to native libs and copies RealmWeaver -->
     <file src="Realm.Database.targets" target="build" />
 <!-- Android files -->
