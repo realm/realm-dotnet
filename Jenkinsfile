@@ -261,14 +261,10 @@ stage('NuGet') {
       node('xamarin-mac') {
         getArchive()
 
-        unstash 'nuget-weaver'
-        unstash 'nuget-pcl-database'
         unstash 'nuget-pcl-sync'
         unstash 'ios-wrappers-sync'
-        unstash 'nuget-ios-database'
         unstash 'nuget-ios-sync'
         unstash 'android-wrappers-sync'
-        unstash 'nuget-android-database'
         unstash 'nuget-android-sync'
 
         dir('NuGet/Realm') {
