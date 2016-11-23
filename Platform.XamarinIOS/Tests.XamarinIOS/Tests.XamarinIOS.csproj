@@ -126,7 +126,7 @@
     </BundleResource>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\..\wrappers\build\Debug-ios-universal\librealm-wrappers.a">
+    <NativeReference Include="..\..\wrappers\build\$(Configuration)-ios-universal\librealm-wrappers.a">
       <Kind>Static</Kind>
       <SmartLink>True</SmartLink>
 	  <IsCxx>True</IsCxx>
