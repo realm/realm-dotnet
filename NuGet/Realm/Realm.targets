@@ -11,7 +11,7 @@
       <LinkerFlags>-lz</LinkerFlags>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Android'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
     <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../lib/MonoAndroid44/armeabi-v7a/librealm-wrappers.so">
         <Link>$(MSBuildThisFileDirectory)../lib/MonoAndroid44/armeabi-v7a/librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
