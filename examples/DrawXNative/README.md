@@ -6,7 +6,7 @@ Any number of users may draw on a single shared canvas in any given moment, with
 
 This version is a write from scratch using Xamarin and the [SkiaSharp](https://github.com/mono/SkiaSharp) drawing framework, to interoperate with the iOS version written in Objective-C. It uses native UI projects with common PCL logic.
 
-To allow testers to have both this and the original on the same device, it is called DrawX.
+To allow testers to have both this and the original on the same iOS device, it is called DrawX.
 
 ## Local Versions of projects
 
@@ -18,5 +18,6 @@ Note for our testing purposes, the `DrawXNativeLocal` variants use an adjacent R
 
 1. [Download the macOS version](https://realm.io/docs/realm-mobile-platform/get-started/) of the Realm Mobile Platform.
 2. Run a local instance of the Realm Mobile Platform.
-3. Create a user with the email 'demo@realm.io' and the password 'demo'.
-4. Build the Draw app and deploy it to iOS or Android devices on the same network as your Mac.
+3. Create any users you wish to use from the apps, in the web dashboard that appears when you launch the server. They do not need to be admin users.
+4. Build the Draw app and deploy it to iOS or Android devices able to reach your Mac, either on the same network or from other locations provided your firewall allows ports 9080 and 27800.
+5. Login from those devices using the URL of your server from 2. and the usernames and passwords you created.
