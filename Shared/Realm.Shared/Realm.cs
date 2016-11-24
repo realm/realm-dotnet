@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -211,11 +212,13 @@ namespace Realms
             _realmChanged?.Invoke(this, e);
         }
 
-        public event ErrorEventHandler OnError;
+        public event ErrorEventHandler Error;
 
         internal void NotifyError(Exception ex)
         {
-            OnError?.Invoke(this, new ErrorEventArgs(ex));
+            Debug.Assert(Error != null, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+
+            Error?.Invoke(this, new ErrorEventArgs(ex));
         }
 
         /// <summary>

@@ -107,7 +107,7 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
@@ -195,7 +195,7 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
@@ -252,7 +252,7 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
