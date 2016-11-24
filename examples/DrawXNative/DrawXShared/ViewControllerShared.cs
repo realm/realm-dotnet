@@ -28,7 +28,7 @@ namespace DrawX.IOS
     public class ViewControllerShared : UIViewController
     {
         private RealmDraw _drawer;
-        private bool _hasShownCredentials = false;  // flag to show on initial layout only
+        private bool _hasShownCredentials;  // flag to show on initial layout only
 
         public ViewControllerShared(IntPtr handle) : base(handle)
         {
@@ -58,7 +58,7 @@ namespace DrawX.IOS
                                     2.0f * (float)View.Bounds.Height);
             _drawer.CredentialsEditor = () =>
             {
-                InvokeOnMainThread(() => EditCredentials());
+                InvokeOnMainThread(EditCredentials);
             };
             _drawer.RefreshOnRealmUpdate = () =>
             {
@@ -78,12 +78,6 @@ namespace DrawX.IOS
                 EditCredentials();
                 _hasShownCredentials = true;
             }
-        }
-
-        public override void DidReceiveMemoryWarning()
-        {
-            base.DidReceiveMemoryWarning();
-            //// Release any cached data, images, etc that aren't in use.        
         }
 
         protected void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)

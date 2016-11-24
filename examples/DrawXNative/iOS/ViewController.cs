@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -17,100 +17,22 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using SkiaSharp.Views;
-using UIKit;
 using Foundation;
-using DrawXShared;
+using UIKit;
 
 namespace DrawX.IOS
 {
-    public partial class ViewController : UIViewController
+    // local subclass per project because of the way the designer files are generated
+    public partial class ViewController : ViewControllerShared
     {
-        RealmDraw _drawer;
-
         public ViewController(IntPtr handle) : base(handle)
         {
         }
-
 
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
             canvas.PaintSurface += OnPaintSample;
-            _drawer = new RealmDraw();
-            // TODO draw the 
-        }
-
-
-        public override void DidReceiveMemoryWarning()
-        {
-            base.DidReceiveMemoryWarning();
-            // Release any cached data, images, etc that aren't in use.        
-        }
-
-        private void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
-        {
-            _drawer.DrawTouches(e.Surface.Canvas, e.Info.Width, e.Info.Height);
-        }
-
-
-        public override void TouchesBegan(NSSet touches, UIEvent evt)
-        {
-            base.TouchesBegan(touches, evt);
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null)
-            {
-                var point = touch.LocationInView(View);
-                _drawer.StartDrawing(point.X*2.0, point.Y*2.0);
-            }
-            View.SetNeedsDisplay();
-        }
-
-
-        public override void TouchesMoved(NSSet touches, UIEvent evt)
-        {
-            base.TouchesMoved(touches, evt);
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null)
-            {
-                var point = touch.LocationInView(View);
-                _drawer.AddPoint(point.X*2.0, point.Y*2.0);
-            }
-            View.SetNeedsDisplay();
-        }
-
-
-        public override void TouchesCancelled(NSSet touches, UIEvent evt)
-        {
-            base.TouchesCancelled(touches, evt);
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null)
-            {
-                _drawer.CancelDrawing();
-            }
-            //TODO             View.SetNeedsDisplay();  ????
-        }
-
-
-        public override void TouchesEnded(NSSet touches, UIEvent evt)
-        {
-            base.TouchesEnded(touches, evt);
-            var touch = touches.AnyObject as UITouch;
-            if (touch != null)
-            {
-                var point = touch.LocationInView(View);
-                _drawer.StopDrawing(point.X*2.0, point.Y*2.0);
-            }
-            View.SetNeedsDisplay();
-        }
-
-        public override void MotionBegan(UIEventSubtype eType, UIEvent evt)
-        {
-            if (eType == UIEventSubtype.MotionShake)
-            {
-                _drawer.ErasePaths();
-                View.SetNeedsDisplay();
-            }
         }
     }
 }

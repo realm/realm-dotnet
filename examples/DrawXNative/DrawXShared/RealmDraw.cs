@@ -132,8 +132,7 @@ namespace DrawXShared
             {
                 if (string.IsNullOrEmpty(_currentColor.Name))
                 {
-                    _currentColor = SwatchColor.ColorsByName[Settings.LastColorUsed];
-                    _currentColorIndex = SwatchColor.Colors.IndexOf(_currentColor);
+                    InitCurrentColor();
                 }
 
                 return _currentColor;
@@ -148,6 +147,12 @@ namespace DrawXShared
                     _currentColorIndex = SwatchColor.Colors.IndexOf(_currentColor);
                 }
             }
+        }
+
+        private void InitCurrentColor()
+        {
+            _currentColor = SwatchColor.ColorsByName [Settings.LastColorUsed];
+            _currentColorIndex = SwatchColor.Colors.IndexOf(_currentColor);
         }
         #endregion Settings
 
@@ -214,8 +219,8 @@ namespace DrawXShared
                     return;
                 }
 
-                int numInserted = changes.InsertedIndices.Length;
-                int numChanged = changes.ModifiedIndices.Length;
+                var numInserted = changes.InsertedIndices.Length;
+                var numChanged = changes.ModifiedIndices.Length;
                 Debug.WriteLine($"Realm notifier: {numInserted} inserts, {numChanged} changes");
                 if ((numInserted == 0 && numChanged == 1 && _allPaths.ElementAt(changes.ModifiedIndices[0]) == _drawPath) ||
                     (numInserted == 1 && numChanged == 0 && _allPaths.ElementAt(changes.InsertedIndices[0]) == _drawPath))
@@ -260,7 +265,7 @@ namespace DrawXShared
             if (_loginIconTouchRect.Contains(inX, inY))
             {
                 InvalidateCachedPaths();
-                CredentialsEditor();  // TODO only invalidate if changed server??
+                CredentialsEditor.Invoke();  // TODO only invalidate if changed server??
                 return true;
             }
 
@@ -270,7 +275,7 @@ namespace DrawXShared
             }
 
             // see opposite calc in DrawBackground
-            int pencilIndex = (int)(inX / (_pencilWidth + PENCIL_MARGIN));
+            var pencilIndex = (int)(inX / (_pencilWidth + PENCIL_MARGIN));
             var selectecColor = SwatchColor.Colors[pencilIndex];
             if (!selectecColor.Name.Equals(CurrentColor.Name))
             {
@@ -287,14 +292,14 @@ namespace DrawXShared
             _numPencils = SwatchColor.ColorsByName.Count;
             if (_currentColorIndex == -1) 
             {
-                var getToSetIndex = CurrentColor;  // use getter to ensure is set consistently
+                InitCurrentColor();
             }
 
             var marginAlloc = (_numPencils + 1) * PENCIL_MARGIN;
             _pencilWidth = (canvas.ClipBounds.Width - marginAlloc) / _numPencils;  // see opposite calc in TouchInControlArea
             var pencilHeight = _pencilWidth * 334.0f / 112.0f;  // scale as per originals
-            float runningLeft = PENCIL_MARGIN;
-            float pencilsBottom = canvas.ClipBounds.Height;
+            var runningLeft = PENCIL_MARGIN;
+            var pencilsBottom = canvas.ClipBounds.Height;
             _pencilsTop = pencilsBottom - pencilHeight;
             int _pencilIndex = 0;
             foreach (var swatchBM in _pencilBitmaps)
@@ -333,16 +338,16 @@ namespace DrawXShared
 
         private void DrawAPath(SKCanvas canvas, SKPaint paint, DrawPath drawPath)
         {
-            using (SKPath path = new SKPath())
+            using (var path = new SKPath())
             {
                 var pathColor = SwatchColor.ColorsByName[drawPath.color].Color;
                 paint.Color = pathColor;
-                bool isFirst = true;
+                var isFirst = true;
                 foreach (var point in drawPath.points)
                 {
                     // for compatibility with iOS Realm, stores floats, normalised to NORMALISE_TO
-                    float fx = (float)point.x;
-                    float fy = (float)point.y;
+                    var fx = (float)point.x;
+                    var fy = (float)point.y;
                     ScalePointsToDraw(ref fx, ref fy);
                     if (isFirst)
                     {
@@ -384,7 +389,7 @@ namespace DrawXShared
                 canvas.RestoreToCount(_canvasSaveCount);  // use up the offscreen bitmap regardless
             }
 
-            using (SKPaint paint = new SKPaint())
+            using (var paint = new SKPaint())
             {
                 InitPaint(paint);
                 if (_redrawPathsAtNextDraw)
@@ -460,16 +465,10 @@ namespace DrawXShared
             _isDrawing = true;
             _realm.Write(() =>
             {
-                _drawPath = new DrawPath() { color = CurrentColor.Name };  // Realm saves name of color
-                _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+                _drawPath = new DrawPath { color = CurrentColor.Name };  // Realm saves name of color
+                _drawPath.points.Add(new DrawPoint { x = inX, y = inY });
                 _realm.Add(_drawPath);
             });
-            /*            var ignoredTask = _realm.WriteAsync((asyncRealm) =>
-                        {
-                            _drawPath = new DrawPath() { color = currentColor.Name, NumPointsDrawnLocally = 1 };  // Realm saves name of color
-                            _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
-                            asyncRealm.Add(_drawPath);
-                        });*/
         }
 
         public void AddPoint(float inX, float inY)
@@ -499,12 +498,8 @@ namespace DrawXShared
             ScalePointsToStore(ref inX, ref inY);
             _realm.Write(() =>
             {
-                _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+                _drawPath.points.Add(new DrawPoint { x = inX, y = inY });
             });
-            /*            _realm.WriteAsync((asyncRealm) =>
-                        {
-                            _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
-                        });*/
         }
 
         public void StopDrawing(float inX, float inY)
@@ -514,15 +509,13 @@ namespace DrawXShared
                 return;  // probably touched in pencil area
             }
 
-            _ignoringTouches = false;
             _isDrawing = false;
-
             if (_realm == null)
             {
                 return;  // not yet logged into server
             }
 
-            bool movedWhilstStopping = (_lastX == inX) && (_lastY == inY);
+            var movedWhilstStopping = (_lastX == inX) && (_lastY == inY);
             _lastX = INVALID_LAST_COORD;
             _lastY = INVALID_LAST_COORD;
 
@@ -537,20 +530,11 @@ namespace DrawXShared
             {
                 if (movedWhilstStopping)
                 {
-                    _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
+                    _drawPath.points.Add(new DrawPoint { x = inX, y = inY });
                 }
             
                 _drawPath.drawerID = "";  // objc original uses this to detect a "finished" path
             });
-            /* avoiding WriteAsync for now as it doesn't create a temp realm 
-              _realm.WriteAsync((asyncRealm)  =>
-                        {
-                            if (movedWhilstStopping) 
-                            {
-                                _drawPath.points.Add(new DrawPoint() { x = inX, y = inY });
-                            }
-                            _drawPath.drawerID = "";  // objc original uses this to detect a "finished" path
-                        });*/
         }
 
         public void CancelDrawing()
