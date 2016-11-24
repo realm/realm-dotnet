@@ -32,11 +32,11 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
         /// <returns>The a collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IQueryable<T> results) where T : RealmObject
+        public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
         {
             if (!(results is IRealmCollection<T>))
             {
-                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>", nameof(results));
+                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(results));
             }
 
             return (IRealmCollection<T>)results;
@@ -55,12 +55,7 @@ namespace Realms
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
         {
-            if (!(results is IRealmCollection<T>))
-            {
-                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>", nameof(results));
-            }
-
-            return ((IRealmCollection<T>)results).SubscribeForNotifications(callback);
+            return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
 
         /// <summary>

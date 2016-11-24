@@ -22,7 +22,7 @@ using System.Collections.Specialized;
 
 namespace Realms
 {
-    internal interface IRealmResults
+    public interface IRealmCollection
     {
         Schema.ObjectSchema ObjectSchema { get; }
     }
@@ -72,7 +72,7 @@ namespace Realms
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
     /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged
+    public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection
     {
         /// <summary>
         /// Register a callback to be invoked each time this <see cref="RealmResults{T}"/> changes.

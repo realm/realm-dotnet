@@ -60,6 +60,8 @@ namespace Realms
 
         public abstract int Count { get; }
 
+        public Schema.ObjectSchema ObjectSchema => TargetMetadata.Schema;
+
         protected readonly Realm Realm;
         protected readonly Lazy<CollectionHandleBase> Handle;
         protected readonly RealmObject.Metadata TargetMetadata;

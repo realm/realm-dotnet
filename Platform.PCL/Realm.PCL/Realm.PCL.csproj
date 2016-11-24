@@ -117,8 +117,8 @@
     <Compile Include="..\..\Shared\Realm.Shared\Exceptions\RealmClosedException.cs">
       <Link>Exceptions\RealmClosedException.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Shared\Linq\IRealmResults.cs">
-      <Link>IRealmResults.cs</Link>
+    <Compile Include="..\..\Shared\Realm.Shared\Linq\IRealmCollection.cs">
+      <Link>IRealmCollection.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

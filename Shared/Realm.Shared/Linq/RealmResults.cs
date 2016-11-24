@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 
 namespace Realms
 {
-    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IRealmResults
+    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>
     {
         private readonly RealmResultsProvider _provider;
         private readonly bool _allRecords;
@@ -33,8 +33,6 @@ namespace Realms
         public Type ElementType => typeof(T);
 
         public Expression Expression { get; } // null if _allRecords
-
-        public Schema.ObjectSchema ObjectSchema => TargetMetadata.Schema;
 
         public IQueryProvider Provider => _provider;
 

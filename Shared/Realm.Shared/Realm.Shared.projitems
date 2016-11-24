@@ -25,7 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\ExpressionVisitor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\IRealmResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\IRealmCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmCollectionNativeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
