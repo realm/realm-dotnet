@@ -10,6 +10,7 @@
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Realm.Sync</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <DocumentationFile>bin\$(Platform)\$(Configuration)\Realm.Sync.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -74,28 +75,9 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="libwrappers.linkwith.cs">
-      <DependentUpon>libwrappers.a</DependentUpon>
-    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
-  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems')" />
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
-  <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected
-     <ObjcBindingNativeLibrary Include="..\..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
- -->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Debug-ios-universal\libwrappers.a">
-      <Link>libwrappers.a</Link>
-    </ObjcBindingNativeLibrary>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-ios-universal\libwrappers.a">
-      <Link>libwrappers.a</Link>
-    </ObjcBindingNativeLibrary>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
       <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>

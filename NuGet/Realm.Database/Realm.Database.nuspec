@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
-    <id>Realm</id>
+    <id>Realm.Database</id>
     <version>$version$</version>
-    <title>Realm</title>
+    <title>Realm.Database</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
     <developmentDependency>true</developmentDependency>
@@ -27,19 +27,18 @@
 <!-- Our XML config file for Fody -->     
      <file src="FodyWeavers.xml.install.xdt" target="content"/>
      <file src="FodyWeavers.xml.uninstall.xdt" target="content"/>
-<!-- Inline documentation file -->
-    <file src="../../Platform.PCL/Realm.PCL/bin/$Configuration$/Realm.XML" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- PCL file -->
-    <file src="../../Platform.PCL/Realm.PCL/bin/$Configuration$/Realm.dll" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+    <file src="../../Platform.PCL/Realm.PCL/bin/$Configuration$/Realm.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- IOS file -->
-    <file src="../../Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.dll" target="lib/Xamarin.iOS10" />
-<!-- Targets file adds copying step for RealmWeaver.Fody.dll to all targets and Android-specific libs -->
-    <file src="Realm.targets" target="build" />
+    <file src="../../Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.*" target="lib/Xamarin.iOS10" />
+    <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="lib/Xamarin.iOS10" />
+<!-- Targets file adds references to native libs and copies RealmWeaver -->
+    <file src="Realm.Database.targets" target="build" />
 <!-- Android files -->
-    <file src="../../Platform.XamarinAndroid/Realm.XamarinAndroid/bin/$Configuration$/Realm.dll" target="lib/MonoAndroid44" />
-    <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/libwrappers.so" target="lib/MonoAndroid44/armeabi-v7a" />
-    <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/libwrappers.so" target="lib/MonoAndroid44/arm64-v8a" />
-    <file src="../../wrappers/build/$Configuration$-android/x86/libwrappers.so" target="lib/MonoAndroid44/x86" />
-    <file src="../../wrappers/build/$Configuration$-android/x86_64/libwrappers.so" target="lib/MonoAndroid44/x86_64" />
+    <file src="../../Platform.XamarinAndroid/Realm.XamarinAndroid/bin/$Configuration$/Realm.*" target="lib/MonoAndroid44" />
+    <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/librealm-wrappers.so" target="lib/MonoAndroid44/armeabi-v7a" />
+    <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="lib/MonoAndroid44/arm64-v8a" />
+    <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="lib/MonoAndroid44/x86" />
+    <file src="../../wrappers/build/$Configuration$-android/x86_64/librealm-wrappers.so" target="lib/MonoAndroid44/x86_64" />
   </files>
 </package>
