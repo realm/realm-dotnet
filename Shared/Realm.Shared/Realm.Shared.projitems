@@ -50,7 +50,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmMigrationNeededException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmMismatchedConfigException.cs" />

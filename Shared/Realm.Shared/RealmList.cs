@@ -172,48 +172,6 @@ namespace Realms
 
         #endregion
 
-        public override IEnumerator<T> GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
-
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
-
-        public class Enumerator : IEnumerator<T>
-        {
-            private readonly RealmList<T> _enumerating;
-            private int _index;
-
-            internal Enumerator(RealmList<T> parent)
-            {
-                _index = -1;
-                _enumerating = parent;
-            }
-
-            public T Current => _enumerating[_index];
-
-            object IEnumerator.Current => Current;
-
-            public bool MoveNext()
-            {
-                var index = _index + 1;
-                if (index >= _enumerating.Count)
-                {
-                    return false;
-                }
-
-                _index = index;
-                return true;
-            }
-
-            public void Reset()
-            {
-                _index = -1;  // by definition BEFORE first item
-            }
-
-            public void Dispose()
-            {
-            }
-        }
     }
 }

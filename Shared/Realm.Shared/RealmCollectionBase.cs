@@ -240,7 +240,7 @@ namespace Realms
             }
         }
 
-        public abstract IEnumerator<T> GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(); // using our class generic type, just redirect the legacy get
 
@@ -260,6 +260,43 @@ namespace Realms
                 _collection.UnsubscribeFromNotifications(_callback);
                 _callback = null;
                 _collection = null;
+            }
+        }
+
+        public class Enumerator : IEnumerator<T>
+        {
+            private readonly RealmCollectionBase<T> _enumerating;
+            private int _index;
+
+            internal Enumerator(RealmCollectionBase<T> parent)
+            {
+                _index = -1;
+                _enumerating = parent;
+            }
+
+            public T Current => _enumerating[_index];
+
+            object IEnumerator.Current => Current;
+
+            public bool MoveNext()
+            {
+                var index = _index + 1;
+                if (index >= _enumerating.Count)
+                {
+                    return false;
+                }
+
+                _index = index;
+                return true;
+            }
+
+            public void Reset()
+            {
+                _index = -1; // by definition BEFORE first item
+            }
+
+            public void Dispose()
+            {
             }
         }
     }

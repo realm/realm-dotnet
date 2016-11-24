@@ -62,10 +62,5 @@ namespace Realms
             var sortHandle = qv.OptionalSortDescriptorBuilder;
             return Realm.MakeResultsForQuery(queryHandle, sortHandle);
         }
-
-        public override IEnumerator<T> GetEnumerator()
-        {
-            return new RealmResultsEnumerator<T>(Realm, ResultsHandle, ObjectSchema);
-        }
     }
 }
