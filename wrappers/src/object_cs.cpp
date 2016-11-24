@@ -21,7 +21,6 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "object_accessor.hpp"
-#include "shared_linklist.hpp"
 #include "timestamp_helpers.hpp"
 #include "object_cs.hpp"
 
@@ -68,15 +67,13 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT SharedLinkViewRef* object_get_linklist(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT List* object_get_linklist(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() -> SharedLinkViewRef* {
+        return handle_errors(ex, [&]() -> List* {
             verify_can_get(object);
             
             const size_t column_ndx = get_column_index(object, property_ndx);
-            return new SharedLinkViewRef {
-                std::make_shared<LinkViewRef>(object.row().get_linklist(column_ndx))
-            };  // weird double-layering necessary to get a raw pointer to a shared_ptr
+            return new List(object.realm(), object.row().get_linklist(column_ndx));
         });
     }
     

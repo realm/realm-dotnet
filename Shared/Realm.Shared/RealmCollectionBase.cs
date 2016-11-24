@@ -58,7 +58,18 @@ namespace Realms
             }
         }
 
-        public abstract int Count { get; }
+        public int Count
+        {
+            get
+            {
+                if (Handle.Value.IsInvalid)
+                {
+                    return 0;
+                }
+
+                return Handle.Value.Count();
+            }
+        }
 
         public Schema.ObjectSchema ObjectSchema => TargetMetadata.Schema;
 

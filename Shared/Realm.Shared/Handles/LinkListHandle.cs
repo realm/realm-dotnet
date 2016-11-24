@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class LinkListHandle : RealmHandle
+    internal class LinkListHandle : CollectionHandleBase
     {
         private static class NativeMethods
         {
@@ -38,10 +38,10 @@ namespace Realms
             public static extern void clear(LinkListHandle linklistHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_get", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get(LinkListHandle linklistHandle, SharedRealmHandle realmHandle, IntPtr link_ndx, out NativeException ex);
+            public static extern IntPtr get(LinkListHandle linklistHandle, IntPtr link_ndx, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find(LinkListHandle linklistHandle, ObjectHandle objectHandle, IntPtr start_from, out NativeException ex);
+            public static extern IntPtr find(LinkListHandle linklistHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_size", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr size(LinkListHandle linklistHandle, out NativeException ex);
@@ -87,23 +87,33 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr Get(IntPtr linkIndex, SharedRealmHandle realmHandle)
+        public IntPtr Find(ObjectHandle objectHandle)
         {
             NativeException nativeException;
-            var result = NativeMethods.get(this, realmHandle, linkIndex, out nativeException);
+            var result = NativeMethods.find(this, objectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public IntPtr Find(ObjectHandle objectHandle, IntPtr startFrom)
+        public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IntPtr DestroyNotificationToken(IntPtr token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IntPtr GetObjectAtIndex(int index)
         {
             NativeException nativeException;
-            var result = NativeMethods.find(this, objectHandle, startFrom, out nativeException);
+            var result = NativeMethods.get(this, (IntPtr)index, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public int Size()
+        public override int Count()
         {
             NativeException nativeException;
             var result = NativeMethods.size(this, out nativeException);

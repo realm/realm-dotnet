@@ -25,7 +25,7 @@ namespace Realms
     // This is now more of a skinny wrapper on top of the ObjectStore Results class.
     internal class RealmResultsEnumerator<T> : IEnumerator<T>
     {
-        private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
+        private int _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
         private readonly Schema.ObjectSchema _schema;

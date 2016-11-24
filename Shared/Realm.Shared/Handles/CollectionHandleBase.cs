@@ -42,10 +42,16 @@ namespace Realms
 
         internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
+        protected CollectionHandleBase(RealmHandle root) : base(root)
+        {
+        }
+
         public abstract IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback);
 
         public abstract IntPtr DestroyNotificationToken(IntPtr token);
 
-        public abstract IntPtr GetObjectAtIndex(long index);
+        public abstract IntPtr GetObjectAtIndex(int index);
+
+        public abstract int Count();
     }
 }

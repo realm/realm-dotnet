@@ -16,20 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-#ifndef SHARED_LINKLIST_HPP
-#define SHARED_LINKLIST_HPP
+#ifndef COLLECTION_CS_HPP
+#define COLLECTION_CS_HPP
 
 #include <memory>
+#include "collection_notifications.hpp"
 
 namespace realm {
-  
-  /**
-   Wrapper class used to hang onto the smart pointer LinkViewRef
-   so we can pass a raw pointer back to C#.
-   
-   @see table_destroy_linklist
-  */
-  typedef std::shared_ptr<LinkViewRef> SharedLinkViewRef;
+    struct MarshallableCollectionChangeSet {
+        struct MarshallableIndexSet {
+            size_t* indices;
+            size_t count;
+        };
+        
+        MarshallableIndexSet deletions;
+        MarshallableIndexSet insertions;
+        MarshallableIndexSet modifications;
+        
+        struct {
+            CollectionChangeSet::Move* moves;
+            size_t count;
+        } moves;
+    };
+    
+    typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
+    
+    struct ManagedNotificationTokenContext {
+        NotificationToken token;
+        void* managed_results;
+        ManagedNotificationCallback callback;
+    };
 }
 
 #endif  // SHARED_LINKLIST_HPP

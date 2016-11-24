@@ -19,6 +19,7 @@
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
+#include "collection_cs.hpp"
 #include "realm_export_decls.hpp"
 #include "results.hpp"
 #include "object_accessor.hpp"
@@ -79,30 +80,6 @@ REALM_EXPORT size_t results_count(Results* results_ptr, NativeException::Marshal
     });
 }
 
-struct MarshallableCollectionChangeSet {
-    struct MarshallableIndexSet {
-        size_t* indices;
-        size_t count;
-    };
-    
-    MarshallableIndexSet deletions;
-    MarshallableIndexSet insertions;
-    MarshallableIndexSet modifications;
-    
-    struct {
-        CollectionChangeSet::Move* moves;
-        size_t count;
-    } moves;
-};
-
-typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
-
-struct ManagedNotificationTokenContext {
-    NotificationToken token;
-    void* managed_results;
-    ManagedNotificationCallback callback;
-};
-    
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results_ptr, void* managed_results, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {

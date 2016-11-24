@@ -36,8 +36,6 @@ namespace Realms
 
         public IQueryProvider Provider => _provider;
 
-        public override int Count => ResultsHandle.Count();
-
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll) : base(realm, metadata)
         {
             _provider = realmResultsProvider;
