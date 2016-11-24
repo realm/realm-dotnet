@@ -151,7 +151,7 @@ namespace Realms
             {
                 using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                 {
-                    var objectPtr = rh.GetObject(index);
+                    var objectPtr = rh.GetObjectAtIndex(index);
                     obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
                 }
             }
@@ -225,7 +225,7 @@ namespace Realms
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            firstObjectPtr = rh.GetObject(0);
+                            firstObjectPtr = rh.GetObjectAtIndex(0);
                         }
                     }
 
@@ -295,7 +295,7 @@ namespace Realms
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
                         {
-                            lastObjectPtr = rh.GetObject(lastIndex);
+                            lastObjectPtr = rh.GetObjectAtIndex(lastIndex);
                         }
                     }
 

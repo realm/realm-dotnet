@@ -19,8 +19,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Realms
@@ -28,20 +26,41 @@ namespace Realms
     public static class RealmResultsCollectionChanged
     {
         /// <summary>
-        /// A convenience method that casts <c>IOrderedQueryable{T}</c> to <see cref="RealmResults{T}"/> which implements INotifyCollectionChanged.
+        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
-        /// <param name="results">The <see cref="RealmResults{T}" /> to observe for changes.</param>
+        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
-        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallbackDelegate)"/>
-        /// <returns>The <see cref="RealmResults{T}"/> instance cast to <see cref="INotifyCollectionChanged"/>.</returns>
-        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results) where T : RealmObject
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        /// <returns>The a collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IQueryable<T> results) where T : RealmObject
         {
-            if (!(results is RealmResults<T>))
+            if (!(results is IRealmCollection<T>))
             {
-                throw new ArgumentException($"{nameof(results)} must be an instance of RealmResults<{typeof(T).Name}>", nameof(results));
+                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>", nameof(results));
             }
 
-            return (RealmResults<T>)results;
+            return (IRealmCollection<T>)results;
+        }
+
+        /// <summary>
+        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="RealmResults{T}" />.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
+        /// </returns>
+        public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
+        {
+            if (!(results is IRealmCollection<T>))
+            {
+                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>", nameof(results));
+            }
+
+            return ((IRealmCollection<T>)results).SubscribeForNotifications(callback);
         }
 
         /// <summary>
@@ -51,8 +70,8 @@ namespace Realms
         /// <param name="errorCallback">An error callback that will be invoked if the observing thread raises an error.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
-        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallbackDelegate)"/>
-        [Obsolete("RealmResults now implements INotifyPropertyChanged, so this method is no longer needed.")]
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        [Obsolete("Use .ToNotifyCollectionChanged without arguments. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
         {
             return ToNotifyCollectionChanged(results, errorCallback, coalesceMultipleChangesIntoReset: false);
@@ -69,8 +88,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
-        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallbackDelegate)"/>
-        [Obsolete("RealmResults now implements INotifyPropertyChanged, so this method is no longer needed.")]
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        [Obsolete("Use .ToNotifyCollectionChanged without arguments. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
             if (results == null)

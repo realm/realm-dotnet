@@ -18,14 +18,11 @@
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -84,8 +81,8 @@ namespace IntegrationTests.Shared
         public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();
-            RealmResults<Person>.ChangeSet changes = null;
-            RealmResults<Person>.NotificationCallbackDelegate cb = (s, c, e) => changes = c;
+            ChangeSet changes = null;
+            NotificationCallbackDelegate<Person> cb = (s, c, e) => changes = c;
 
             using (query.SubscribeForNotifications(cb))
             {
@@ -115,7 +112,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -203,7 +200,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -260,7 +257,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
 
             try

@@ -61,7 +61,7 @@ namespace Realms
             }
 
             ++_index;
-            var rowPtr = _enumeratingResults.GetObject(_index);
+            var rowPtr = _enumeratingResults.GetObjectAtIndex(_index);
             if (rowPtr == IntPtr.Zero)
             {
                 Current = (T)(object)null;
