@@ -35,12 +35,13 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
         {
-            if (!(results is IRealmCollection<T>))
+            var collection = results as IRealmCollection<T>;
+            if (collection == null)
             {
                 throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(results));
             }
 
-            return (IRealmCollection<T>)results;
+            return collection;
         }
 
         /// <summary>
@@ -68,12 +69,13 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list) where T : RealmObject
         {
-            if (!(list is IRealmCollection<T>))
+            var collection = list as IRealmCollection<T>;
+            if (collection == null)
             {
                 throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
             }
 
-            return (IRealmCollection<T>)list;
+            return collection;
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
-        [Obsolete("Use .ToNotifyCollectionChanged without arguments. For error callback, use Realm.Error.")]
+        [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
         {
             return ToNotifyCollectionChanged(results, errorCallback, coalesceMultipleChangesIntoReset: false);
@@ -118,25 +120,15 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
-        [Obsolete("Use .ToNotifyCollectionChanged without arguments. For error callback, use Realm.Error.")]
+        [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
-
-            if (!(results is RealmResults<T>))
-            {
-                throw new ArgumentException($"{nameof(results)} must be an instance of RealmResults<{typeof(T).Name}>", nameof(results));
-            }
-
             if (errorCallback == null)
             {
                 throw new ArgumentNullException(nameof(errorCallback));
             }
 
-            return (RealmResults<T>)results;
+            return results.AsRealmCollection();
         }
     }
 }
