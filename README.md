@@ -7,7 +7,7 @@ This repository holds the source code for the .NET / C# versions of Realm. Curre
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 3 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject, RealmResults and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 2 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 
