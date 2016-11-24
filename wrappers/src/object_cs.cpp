@@ -67,7 +67,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT List* object_get_linklist(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT List* object_get_list(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() -> List* {
             verify_can_get(object);
@@ -77,7 +77,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT size_t object_linklist_is_empty(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t object_list_is_empty(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_get(object);

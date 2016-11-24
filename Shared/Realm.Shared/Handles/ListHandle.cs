@@ -21,36 +21,39 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class LinkListHandle : CollectionHandleBase
+    internal class ListHandle : CollectionHandleBase
     {
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_add", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add(LinkListHandle linklistHandle, ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_insert", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert(LinkListHandle linklistHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_erase", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void erase(LinkListHandle linklistHandle, IntPtr rowIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_erase", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void erase(ListHandle listHandle, IntPtr rowIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_clear", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void clear(LinkListHandle linklistHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_clear", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void clear(ListHandle listHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_get", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get(LinkListHandle linklistHandle, IntPtr link_ndx, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find(LinkListHandle linklistHandle, ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_size", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr size(LinkListHandle linklistHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_size", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr size(ListHandle listHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_destroy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void destroy(IntPtr linklistInternalHandle);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr listInternalHandle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, NotificationCallbackDelegate callback, out NativeException ex);
         }
 
-        internal LinkListHandle(RealmHandle root) : base(root)
+        internal ListHandle(RealmHandle root) : base(root)
         {
         }
 
@@ -97,12 +100,10 @@ namespace Realms
 
         public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
         {
-            throw new NotImplementedException();
-        }
-
-        public override IntPtr DestroyNotificationToken(IntPtr token)
-        {
-            throw new NotImplementedException();
+            NativeException nativeException;
+            var result = NativeMethods.add_notification_callback(this, managedCollectionHandle, callback, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
 
         public override IntPtr GetObjectAtIndex(int index)

@@ -69,11 +69,11 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_linklist_is_empty", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr linklist_is_empty(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_list_is_empty", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr list_is_empty(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_linklist", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_linklist(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -186,11 +186,11 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        // acquire a LinkListHandle from object_get_linklist And set root in an atomic fashion 
+        // acquire a ListHandle from object_get_list And set root in an atomic fashion 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal LinkListHandle TableLinkList(IntPtr propertyIndex)
+        internal ListHandle TableLinkList(IntPtr propertyIndex)
         {
-            var listHandle = new LinkListHandle(Root ?? this);
+            var listHandle = new ListHandle(Root ?? this);
 
             // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             // a finalize at this point will not leak anything and the handle will not do anything
@@ -306,7 +306,7 @@ namespace Realms
         public IntPtr GetLinklist(IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = NativeMethods.get_linklist(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_list(this, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -314,7 +314,7 @@ namespace Realms
         public bool LinklistIsEmpty(IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = NativeMethods.linklist_is_empty(this, propertyIndex, out nativeException);
+            var result = NativeMethods.list_is_empty(this, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }

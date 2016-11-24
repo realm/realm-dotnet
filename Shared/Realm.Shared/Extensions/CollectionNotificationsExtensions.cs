@@ -17,13 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
 namespace Realms
 {
-    public static class RealmResultsCollectionChanged
+    public static class CollectionNotificationsExtensions
     {
         /// <summary>
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
@@ -31,7 +32,7 @@ namespace Realms
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
-        /// <returns>The a collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
         {
             if (!(results is IRealmCollection<T>))
@@ -48,12 +49,45 @@ namespace Realms
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
-        /// <param name="callback">The callback to be invoked with the updated <see cref="RealmResults{T}" />.</param>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
+        {
+            return results.AsRealmCollection().SubscribeForNotifications(callback);
+        }
+
+        /// <summary>
+        /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
+        /// </summary>
+        /// <param name="list">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
+        public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list) where T : RealmObject
+        {
+            if (!(list is IRealmCollection<T>))
+            {
+                throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
+            }
+
+            return (IRealmCollection<T>)list;
+        }
+
+        /// <summary>
+        /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// </summary>
+        /// <param name="results">The <see cref="IList{T}" /> to observe for changes.</param>
+        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
+        /// </returns>
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }

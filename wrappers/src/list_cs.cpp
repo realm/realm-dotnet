@@ -23,20 +23,21 @@
 #include "realm_export_decls.hpp"
 #include "wrapper_exceptions.hpp"
 #include "object_accessor.hpp"
+#include "collection_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 extern "C" {
   
-REALM_EXPORT void linklist_add(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         list->add(object_ptr.row().get_index());
     });
 }
 
-REALM_EXPORT void linklist_insert(List* list, size_t link_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert(List* list, size_t link_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list->size();
@@ -46,7 +47,7 @@ REALM_EXPORT void linklist_insert(List* list, size_t link_ndx, const Object& obj
     });
 }
 
-REALM_EXPORT Object* linklist_get(List* list, size_t link_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* list_get(List* list, size_t link_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
         const size_t count = list->size();
@@ -57,14 +58,14 @@ REALM_EXPORT Object* linklist_get(List* list, size_t link_ndx, NativeException::
     });
 }
 
-REALM_EXPORT size_t linklist_find(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return list->find(object_ptr.row());
     });
 }
 
-REALM_EXPORT void linklist_erase(List* list, size_t link_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void list_erase(List* list, size_t link_ndx, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list->size();
@@ -75,23 +76,32 @@ REALM_EXPORT void linklist_erase(List* list, size_t link_ndx, NativeException::M
     });
 }
 
-REALM_EXPORT void linklist_clear(List* list, NativeException::Marshallable& ex)
+REALM_EXPORT void list_clear(List* list, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         list->remove_all();
     });
 }
 
-REALM_EXPORT size_t linklist_size(List* list, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_size(List* list, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return list->size();
     });
 }
   
-REALM_EXPORT void linklist_destroy(List* list)
+REALM_EXPORT void list_destroy(List* list)
 {
     delete list;
+}
+    
+REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [=]() {
+        return subscribe_for_notifications(managed_list, callback, [list](CollectionChangeCallback callback) {
+            return list->add_notification_callback(callback);
+        });
+    });
 }
 
 }   // extern "C"

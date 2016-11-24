@@ -41,9 +41,9 @@ namespace Realms
     internal class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
     {
         private Realm _realm;
-        private LinkListHandle _listHandle;
+        private ListHandle _listHandle;
 
-        internal RealmList(Realm realm, LinkListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
+        internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
         {
             _realm = realm;
             _listHandle = adoptedList;

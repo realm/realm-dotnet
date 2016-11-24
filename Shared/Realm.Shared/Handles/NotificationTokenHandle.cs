@@ -25,13 +25,18 @@ namespace Realms
     // We need to mirror this same relationship here.
     internal class NotificationTokenHandle : RealmHandle
     {
-        internal NotificationTokenHandle(CollectionHandleBase root) : base(root)
+        private CollectionHandleBase _collectionHandle;
+
+        internal NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
         {
+            // We save this because RealmHandle doesn't support a parent chain like
+            // NotificationToken -> List -> Realm
+            _collectionHandle = root;
         }
 
         protected override void Unbind()
         {
-            var managedCollectionHandle = ((CollectionHandleBase)Root).DestroyNotificationToken(handle);
+            var managedCollectionHandle = _collectionHandle.DestroyNotificationToken(handle);
             GCHandle.FromIntPtr(managedCollectionHandle).Free();
         }
     }
