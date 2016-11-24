@@ -1,10 +1,13 @@
 0.8x.x (TBD)
 -------------------
 ### Breaking Changes
+* The `IQueryable<T>.ToNotifyCollectionChanged` extension methods that accept parameters are now deprecated. There is a new parameterless one that you should use instead. If you want to handle errors, you can do so by subscribing to the `Realm.OnError` event. (#938)
 
 ### Enhancements
 * In data-binding scenarios, if a setter is invoked by the binding outside of write transaction, we'll create an implicit one and commit it. This enables two-way data bindings without keeping around long-lived transactions. (#901)
 * The Realm schema can now express non-nullable reference type properties with the new `[Required]` attribute. (#349)
+* Exposed a new `Realm.OnError` event that you can subscribe for to get notified for exceptions that occur outside user code. (#938)
+* The runtime collection, returned from `Realm.All` now implements `INotifyCollectionChanged` so you can pass it for data-binding without any additional casting. (#938)
 
 ### Bug fixes
 

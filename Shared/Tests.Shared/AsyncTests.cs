@@ -59,7 +59,7 @@ namespace IntegrationTests.Shared
             });
 
             // see #564
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
+            TestHelpers.RunEventLoop();
 
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
             Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
@@ -94,7 +94,7 @@ namespace IntegrationTests.Shared
             });
 
             // see #564
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
+            TestHelpers.RunEventLoop();
 
             Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
         }
