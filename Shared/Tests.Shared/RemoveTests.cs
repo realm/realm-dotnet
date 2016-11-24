@@ -98,7 +98,7 @@ namespace IntegrationTests.Shared
             });
 
             // Act
-            _realm.Write(() => _realm.RemoveRange<Person>((RealmResults<Person>)_realm.All<Person>().Where(p => !p.IsInteresting)));
+            _realm.Write(() => _realm.RemoveRange<Person>(_realm.All<Person>().Where(p => !p.IsInteresting)));
 
             // Assert
             Assert.That(_realm.All<Person>().ToList().Select(p => p.FirstName).ToArray(),

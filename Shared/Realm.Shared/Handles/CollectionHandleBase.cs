@@ -45,5 +45,7 @@ namespace Realms
         public abstract IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback);
 
         public abstract IntPtr DestroyNotificationToken(IntPtr token);
+
+        public abstract IntPtr GetObjectAtIndex(long index);
     }
 }

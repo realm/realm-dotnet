@@ -151,7 +151,7 @@ namespace Realms
             {
                 using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                 {
-                    var objectPtr = rh.GetObject(index);
+                    var objectPtr = rh.GetObjectAtIndex(index);
                     obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
                 }
             }
@@ -225,7 +225,7 @@ namespace Realms
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            firstObjectPtr = rh.GetObject(0);
+                            firstObjectPtr = rh.GetObjectAtIndex(0);
                         }
                     }
 
@@ -295,7 +295,7 @@ namespace Realms
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
                         {
-                            lastObjectPtr = rh.GetObject(lastIndex);
+                            lastObjectPtr = rh.GetObjectAtIndex(lastIndex);
                         }
                     }
 
@@ -866,7 +866,7 @@ namespace Realms
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
         {
-            var results = c.Value as IRealmResults;
+            var results = c.Value as IRealmCollection;
             if (results != null)
             {
                 // assume constant nodes w/ IQueryables are table references

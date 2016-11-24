@@ -59,7 +59,7 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr GetObject(long index)
+        public override IntPtr GetObjectAtIndex(long index)
         {
             NativeException nativeException;
             var result = NativeMethods.get_row(this, (IntPtr)index, out nativeException);
@@ -82,10 +82,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallbackDelegate callback)
+        public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
         {
             NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedResultsHandle, callback, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedCollectionHandle, callback, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

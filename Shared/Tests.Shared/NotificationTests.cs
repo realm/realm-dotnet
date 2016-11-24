@@ -18,14 +18,11 @@
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -81,11 +78,25 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
+        {
+            using (var sw = new StringWriter())
+            {
+                var original = Console.Error;
+                Console.SetError(sw);
+                _realm.NotifyError(new Exception());
+
+                Assert.That(sw.ToString(), Contains.Substring("exception").And.ContainsSubstring("Realm.Error"));
+                Console.SetError(original);
+            }
+        }
+
+        [Test]
         public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();
-            RealmResults<Person>.ChangeSet changes = null;
-            RealmResults<Person>.NotificationCallbackDelegate cb = (s, c, e) => changes = c;
+            ChangeSet changes = null;
+            NotificationCallbackDelegate<Person> cb = (s, c, e) => changes = c;
 
             using (query.SubscribeForNotifications(cb))
             {
@@ -110,12 +121,12 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -198,12 +209,12 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -255,12 +266,12 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            _realm.OnError += (sender, e) =>
+            _realm.Error += (sender, e) =>
             {
                 error = e.GetException();
             };
 
-            var query = (RealmResults<OrderedObject>)_realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
 
             try

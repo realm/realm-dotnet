@@ -90,16 +90,6 @@ namespace IntegrationTests
             Assert.That(c4, Is.EqualTo(2));
         }
 
-        // added to pick up a nasty side-effect from casting
-        [Test]
-        public void CountFoundWithCasting()
-        {
-            var r0 = _realm.All<Person>().Where(p => p.Score == 42.42f);
-            var r1 = r0 as RealmResults<Person>;  // this is its runtime type but r0's Compile Time type is IQueryable<Person>
-            var c0 = r1.Count();  // invokes RealmResults<T>.Count() shortcut method
-            Assert.That(c0, Is.EqualTo(1));
-        }
-
         [Test]
         public void CountFails()
         {

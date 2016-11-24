@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -211,11 +212,16 @@ namespace Realms
             _realmChanged?.Invoke(this, e);
         }
 
-        public event ErrorEventHandler OnError;
+        public event ErrorEventHandler Error;
 
         internal void NotifyError(Exception ex)
         {
-            OnError?.Invoke(this, new ErrorEventArgs(ex));
+            if (Error == null)
+            {
+                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+            }
+
+            Error?.Invoke(this, new ErrorEventArgs(ex));
         }
 
         /// <summary>
@@ -254,9 +260,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
+        /// Generic override determines whether the specified <see cref="object"/> is equal to the current Realm.
         /// </summary>
-        /// <param name="obj">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <param name="obj">The <see cref="object"/> to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(object obj) => Equals(obj as Realm);
 
@@ -673,7 +679,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T : RealmObject
+        public IQueryable<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -691,7 +697,7 @@ namespace Realms
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> All(string className)
+        public IQueryable<dynamic> All(string className)
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
@@ -787,7 +793,7 @@ namespace Realms
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
+        /// <exception cref="ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
             if (obj == null)
@@ -808,14 +814,20 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
-        public void RemoveRange<T>(RealmResults<T> range)
+        public void RemoveRange<T>(IQueryable<T> range)
         {
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
             }
 
-            range.ResultsHandle.Clear(SharedRealmHandle);
+            if (!(range is RealmResults<T>))
+            {
+                throw new ArgumentException("range should be the return value of .All or a LINQ query applied to it.", nameof(range));
+            }
+
+            var results = (RealmResults<T>)range;
+            results.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>
