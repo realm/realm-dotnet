@@ -78,6 +78,20 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
+        {
+            using (var sw = new StringWriter())
+            {
+                var original = Console.Error;
+                Console.SetError(sw);
+                _realm.NotifyError(new Exception());
+
+                Assert.That(sw.ToString(), Contains.Substring("exception").And.ContainsSubstring("Realm.Error"));
+                Console.SetError(original);
+            }
+        }
+
+        [Test]
         public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();
@@ -112,7 +126,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -200,7 +214,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
             try
             {
@@ -257,7 +271,7 @@ namespace IntegrationTests.Shared
                 error = e.GetException();
             };
 
-            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).ToNotifyCollectionChanged();
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
             var handle = GCHandle.Alloc(query); // prevent this from being collected across event loops
 
             try

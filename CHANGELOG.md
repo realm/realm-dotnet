@@ -7,8 +7,8 @@
 ### Enhancements
 * In data-binding scenarios, if a setter is invoked by the binding outside of write transaction, we'll create an implicit one and commit it. This enables two-way data bindings without keeping around long-lived transactions. (#901)
 * The Realm schema can now express non-nullable reference type properties with the new `[Required]` attribute. (#349)
-* Exposed a new `Realm.OnError` event that you can subscribe for to get notified for exceptions that occur outside user code. (#938)
-* The runtime collection, returned from `Realm.All` now implements `INotifyCollectionChanged` so you can pass it for data-binding without any additional casting. (#938)
+* Exposed a new `Realm.Error` event that you can subscribe for to get notified for exceptions that occur outside user code. (#938)
+* The runtime type of the collection, returned from `Realm.All` now implements `INotifyCollectionChanged` so you can pass it for data-binding without any additional casting. (#938)
 
 ### Bug fixes
 

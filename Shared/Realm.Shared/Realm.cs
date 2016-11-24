@@ -216,7 +216,10 @@ namespace Realms
 
         internal void NotifyError(Exception ex)
         {
-            Debug.Assert(Error != null, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+            if (Error == null)
+            {
+                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+            }
 
             Error?.Invoke(this, new ErrorEventArgs(ex));
         }
