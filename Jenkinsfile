@@ -32,7 +32,7 @@ stage('Checkout') {
 }
 
 def getArchive() {
-    sh 'rm -rf *'
+    deleteDir()
     unstash 'dotnet-source'
 }
 
@@ -190,52 +190,45 @@ stage('Build with sync') {
 
 stage('Test without sync') {
   parallel(
-    'iOS': {
-      node('osx') {
-        unstash 'ios-tests-nosync'
-
-        dir('Tests.XamarinIOS.app') {
-          sh 'mkdir -p fakehome/Documents'
-          sh "HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.XamarinIOS --headless"
-          publishTests 'fakehome/Documents/TestResults.iOS.xml'
-        }
-      }
-    },
-    'Android': {
-      node('android-hub') {
-        sh 'rm -rf *'
-        unstash 'android-tests-nosync'
-        sh 'adb devices'
-        sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
-        publishTests()
-      }
-    }
+    'iOS': iOSTest('ios-tests-nosync'),
+    'Android': AndroidTest('android-tests-nosync')
   )
 }
 
 stage('Test with sync') {
   parallel(
-    'iOS': {
-      node('osx') {
-        unstash 'ios-tests-sync'
+    'iOS': iOSTest('ios-tests-sync'),
+    'Android': AndroidTest('android-tests-sync')
+  )
+}
 
-        dir('Tests.XamarinIOS.app') {
-          sh 'mkdir -p fakehome/Documents'
-          sh "HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.XamarinIOS --headless"
-          publishTests 'fakehome/Documents/TestResults.iOS.xml'
-        }
-      }
-    },
-    'Android': {
-      node('android-hub') {
-        sh 'rm -rf *'
-        unstash 'android-tests-sync'
-        sh 'adb devices'
-        sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
-        publishTests()
+def iOSTest(stashName) {
+  return {
+    node('osx') {
+      deleteDir()
+      unstash stashName
+
+      dir('Tests.XamarinIOS.app') {
+        sh '''
+          mkdir -p fakehome/Documents
+          HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.XamarinIOS --headless
+        '''
+        publishTests 'fakehome/Documents/TestResults.iOS.xml'
       }
     }
-  )
+  }
+}
+
+def AndroidTest(stashName) {
+  return {
+    node('android-hub') {
+      deleteDir()
+      unstash stashName
+      sh 'adb devices'
+      sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
+      publishTests()
+    }
+  }
 }
 
 stage('NuGet') {
