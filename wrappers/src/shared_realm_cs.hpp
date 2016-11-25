@@ -67,11 +67,6 @@ namespace binding {
         void notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index);
         void notify_removed(const size_t row_ndx, const size_t table_ndx);
         
-        void* get_managed_realm_handle()
-        {
-            return m_managed_realm_handle;
-        }
-        
         std::vector<CSharpBindingContext::ObserverState> get_observed_rows() override
         {
             return m_observed_rows;
@@ -91,7 +86,6 @@ namespace binding {
                     } else {
                         ++it;
                     }
-                    
                 }
             }
         }

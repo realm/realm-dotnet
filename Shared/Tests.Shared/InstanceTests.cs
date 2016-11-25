@@ -96,7 +96,7 @@ namespace IntegrationTests
             t.Join();
 
             // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
+            Assert.False(object.ReferenceEquals(realm1, realm2));
             Assert.False(realm1.IsSameInstance(realm2));
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
 
@@ -112,24 +112,10 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.That(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(object.ReferenceEquals(realm1, realm2));
                 Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
                 Assert.That(realm1.IsSameInstance(realm2));
                 Assert.That(realm1, Is.EqualTo(realm2));
-            }
-        }
-
-        [Test]
-        public void InstancesHaveDifferentHashes()
-        {
-            // Arrange
-            using (var realm1 = Realm.GetInstance())
-            using (var realm2 = Realm.GetInstance())
-            {
-                // Assert
-                Assert.True(GC.ReferenceEquals(realm1, realm2));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
         }
 

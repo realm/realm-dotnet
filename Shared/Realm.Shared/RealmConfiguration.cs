@@ -225,7 +225,8 @@ namespace Realms
 
             return ShouldDeleteIfMigrationNeeded == rhs.ShouldDeleteIfMigrationNeeded &&
                 DatabasePath == rhs.DatabasePath &&
-                ((EncryptionKey == null && rhs.EncryptionKey == null) || EncryptionKey.SequenceEqual(rhs.EncryptionKey));
+                ((EncryptionKey == null && rhs.EncryptionKey == null) || EncryptionKey.SequenceEqual(rhs.EncryptionKey)) &&
+                SchemaVersion == rhs.SchemaVersion;
         }
 
         /// <summary>
