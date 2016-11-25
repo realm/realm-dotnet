@@ -221,6 +221,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void Results_WhenTransactionHasBothAddAndRemove_ShouldReset()
         {
+            // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
+            // as that would mess up the indices a lot. That's why when we have both removed and added items,
+            // we should raise a Reset.
             var first = new OrderedObject
             {
                 Order = 0,
@@ -316,6 +319,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void List_WhenTransactionHasBothAddAndRemove_ShouldReset()
         {
+            // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
+            // as that would mess up the indices a lot. That's why when we have both removed and added items,
+            // we should raise a Reset.
             var container = new OrderedContainer();
             container.Items.Add(new OrderedObject());
             _realm.Write(() => _realm.Add(container));
@@ -345,10 +351,7 @@ namespace IntegrationTests.Shared
             var container = new OrderedContainer();
             foreach (var i in initial)
             {
-                container.Items.Add(new OrderedObject
-                {
-                    Order = i
-                });
+                container.Items.Add(new OrderedObject { Order = i });
             }
 
             _realm.Write(() => _realm.Add(container));
@@ -504,6 +507,8 @@ namespace IntegrationTests.Shared
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4 }, 3);
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4, 5 }, 3);
             yield return new TestCaseData(new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 3, 4 }, 2);
+
+            // When we have non-consecutive adds/removes, we should raise Reset, indicated by -1 here.
             yield return new TestCaseData(new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1);
             yield return new TestCaseData(new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 2, 4 }, -1);
         }
