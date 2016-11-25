@@ -86,7 +86,7 @@ namespace IntegrationTests
 
         public static void RunEventLoop()
         {
-            RunEventLoop(1);
+            RunEventLoop(100);
         }
 
 #if __ANDROID__
