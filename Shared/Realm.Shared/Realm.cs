@@ -678,7 +678,7 @@ namespace Realms
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this realm.</returns>
         public IQueryable<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
@@ -696,7 +696,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
         public IQueryable<dynamic> All(string className)
         {
             RealmObject.Metadata metadata;

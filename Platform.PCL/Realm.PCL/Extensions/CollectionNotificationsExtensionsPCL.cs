@@ -35,13 +35,8 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
         {
-            var collection = results as IRealmCollection<T>;
-            if (collection == null)
-            {
-                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(results));
-            }
-
-            return collection;
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -57,7 +52,8 @@ namespace Realms
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
         {
-            return results.AsRealmCollection().SubscribeForNotifications(callback);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -69,13 +65,8 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list) where T : RealmObject
         {
-            var collection = list as IRealmCollection<T>;
-            if (collection == null)
-            {
-                throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
-            }
-
-            return collection;
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -91,41 +82,39 @@ namespace Realms
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IList<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
         {
-            return results.AsRealmCollection().SubscribeForNotifications(callback);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">The parameter is not used.</param>
+        /// <param name="errorCallback">An error callback that will be invoked if the observing thread raises an error.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
         [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
         {
-            return ToNotifyCollectionChanged(results, errorCallback, coalesceMultipleChangesIntoReset: false);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">The parameter is not used.</param>
-        /// <param name="coalesceMultipleChangesIntoReset">The parameter is not used.</param>
+        /// <param name="errorCallback">Ignored.</param>
+        /// <param name="coalesceMultipleChangesIntoReset">Ignored.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
         [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
-            if (errorCallback == null)
-            {
-                throw new ArgumentNullException(nameof(errorCallback));
-            }
-
-            return results.AsRealmCollection();
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
     }
 }
