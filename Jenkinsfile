@@ -249,7 +249,9 @@ def AndroidTest(stashName) {
           }
           archiveLog = false
         } finally {
-          stopLogCatCollector(backgroundPid, archiveLog, stashName)
+          if (backgroundPid != null) {
+            stopLogCatCollector(backgroundPid, archiveLog, stashName)
+          }
         }
       }
 
