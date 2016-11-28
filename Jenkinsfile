@@ -224,11 +224,61 @@ def AndroidTest(stashName) {
     node('android-hub') {
       deleteDir()
       unstash stashName
-      sh 'adb devices'
-      sh 'adb devices | grep -v List | grep -v ^$ | awk \'{print $1}\' | parallel \'adb -s {} uninstall io.realm.xamarintests; adb -s {} install io.realm.xamarintests-Signed.apk; adb -s {} shell am instrument -w -r io.realm.xamarintests/.TestRunner; adb -s {} shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android_{}.xml\''
+
+      lock("${env.NODE_NAME}-android") {
+        boolean archiveLog = true
+        String backgroundPid
+
+        try {
+          backgroundPid = startLogCatCollector()
+
+          sh '''
+            adb uninstall io.realm.xamarintests
+            adb install io.realm.xamarintests-Signed.apk
+          '''
+
+          def instrumentationOutput = sh script: '''
+            adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
+            adb shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android.xml
+          ''', returnStdout: true
+
+          def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
+          if (result.INSTRUMENTATION_CODE != '-1') {
+            echo instrumentationOutput
+            error result.INSTRUMENTATION_RESULT
+          }
+          archiveLog = false
+        } finally {
+          if (backgroundPid != null) {
+            stopLogCatCollector(backgroundPid, archiveLog, stashName)
+          }
+        }
+      }
+
       publishTests()
     }
   }
+}
+
+def String startLogCatCollector() {
+  sh '''
+    adb logcat -c
+    adb logcat -v time > "logcat.txt" &
+    echo $! > pid
+  '''
+  return readFile("pid").trim()
+}
+
+def stopLogCatCollector(String backgroundPid, boolean archiveLog, String archiveName) {
+  sh "kill ${backgroundPid}"
+  if (archiveLog) {
+    zip([
+      'zipFile': "${archiveName}-logcat.zip",
+      'archive': true,
+      'glob' : 'logcat.txt'
+    ])
+  }
+  sh 'rm logcat.txt'
 }
 
 stage('NuGet') {
