@@ -345,6 +345,115 @@ namespace IntegrationTests.Shared
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
         }
 
+        [Test]
+        public void A1()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) => 
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A2()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A3()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3, 4, 5 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) =>
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A4()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) =>
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
         [TestCaseSource(nameof(CollectionChangedTestCases))]
         public void TestRealmListNotifications(int[] initial, NotifyCollectionChangedAction action, int[] change, int startIndex)
         {
