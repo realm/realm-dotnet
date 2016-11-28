@@ -19,10 +19,9 @@
 using System;
 using System.IO;
 using System.Json;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Realms.Sync
@@ -43,6 +42,8 @@ namespace Realms.Sync
 
     public class User
     {
+        private const int ErrorContentTruncationLimit = 256 * 1024;
+
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
 
@@ -127,25 +128,53 @@ namespace Realms.Sync
                 request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
 
                 var response = await client.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
-                if (response.StatusCode == HttpStatusCode.OK && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
+                if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
                 {
                     using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
                     {
                         return JsonValue.Load(stream);
                     }
                 }
-                else if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
+
+                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
                 {
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
+                    if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
                     {
                         var problem = JsonValue.Load(stream);
-                        throw new Exception("AuthError"); // FIXME: parse the error details and throw a more specific exception
+
+                        ErrorCode code;
+                        if (!Enum.TryParse(problem["code"], out code))
+                        {
+                            code = ErrorCode.Unknown;
+                        }
+
+                        throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), problem["title"]);
+                    }
+
+                    var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
+                    throw new HttpException(response.StatusCode, response.ReasonPhrase, content);
+                }
+            }
+        }
+
+        private static string ReadContent(Stream stream, int maxNumberOfCharacters, string prefixIfExceeded)
+        {
+            using (var sr = new StreamReader(stream))
+            {
+                var sb = new StringBuilder();
+
+                int current;
+                while ((current = sr.Read()) > 0)
+                {
+                    sb.Append((char)current);
+                    if (sb.Length > maxNumberOfCharacters - 1)
+                    {
+                        sb.Insert(0, prefixIfExceeded);
+                        break;
                     }
                 }
-                else
-                {
-                    throw new Exception($"Unexpected response {response.StatusCode} {response.ReasonPhrase} ({response.Content?.Headers?.ContentType})");
-                }
+
+                return sb.ToString();
             }
         }
     }
