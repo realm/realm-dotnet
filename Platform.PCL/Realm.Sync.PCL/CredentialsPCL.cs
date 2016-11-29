@@ -69,5 +69,9 @@ namespace Realms.Sync
         public string Token { get; private set; }
 
         public IReadOnlyDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
+
+        private Credentials()
+        {
+        }
     }
 }
