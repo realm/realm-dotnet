@@ -18,9 +18,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\AuthenticationException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\HttpException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
     <Folder Include="$(MSBuildThisFileDirectory)Native\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
   </ItemGroup>
 </Project>

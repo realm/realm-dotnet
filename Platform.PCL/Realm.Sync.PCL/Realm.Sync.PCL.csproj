@@ -35,12 +35,20 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\ErrorCode.cs">
+      <Link>Exceptions\ErrorCode.cs</Link>
+    </Compile>
+    <Compile Include="Exceptions\AuthenticationException.cs" />
+    <Compile Include="Exceptions\HttpException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
       <Project>{261C8EB6-9508-4D6A-9BED-39A544AA2736}</Project>
       <Name>Realm.PCL</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
