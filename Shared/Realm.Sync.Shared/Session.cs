@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 
 namespace Realms.Sync
 {
@@ -26,6 +27,8 @@ namespace Realms.Sync
     /// </summary>
     public class Session
     {
+        private static readonly ConcurrentDictionary<SessionHandle, Session> _sessions = new ConcurrentDictionary<SessionHandle, Session>(new SessionHandle.Comparer());
+
         /// <summary>
         /// Gets the <see cref="SyncConfiguration"/> that is responsible for controlling the session.
         /// </summary>
@@ -34,16 +37,50 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
         /// </summary>
-        public Uri ServerUri { get; private set; }
+        public Uri ServerUri => new Uri(Handle.ServerUri);
 
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
-        public SessionState State { get; private set; }
+        public SessionState State => Handle.State;
 
         /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
-        public User User { get; private set; }
+        public User User => new User(Handle.User);
+
+        internal readonly SessionHandle Handle;
+
+        private Session(SessionHandle handle)
+        {
+            Handle = handle;
+        }
+
+        internal static Session SessionForRealm(Realm realm)
+        {
+            System.Diagnostics.Debug.Assert(realm.Config is SyncConfiguration, "Realm must be opened with a SyncConfiguration");
+
+            return SessionForPointer(SessionHandle.SessionForRealm(realm.SharedRealmHandle));
+        }
+
+        internal static Session SessionForPointer(IntPtr sessionPtr)
+        {
+            var tempHandle = new SessionHandle();
+            tempHandle.SetHandle(sessionPtr);
+
+            var shouldDispose = true;
+            var session = _sessions.GetOrAdd(tempHandle, handle =>
+            {
+                shouldDispose = false;
+                return new Session(handle);
+            });
+
+            if (shouldDispose)
+            {
+                tempHandle.Dispose();
+            }
+
+            return session;
+        }
     }
 }

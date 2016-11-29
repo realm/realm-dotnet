@@ -43,6 +43,38 @@ REALM_EXPORT void realm_syncsession_refresh_access_token(SharedSyncSession& sess
     });
 }
 
+REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_realm(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return new SharedSyncSession(SyncManager::shared().get_existing_active_session(realm->config().path));
+    });
+}
+
+REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
+{
+    return new std::shared_ptr<SyncUser>(session->user());
+}
+
+REALM_EXPORT SyncSession::PublicState realm_syncsession_get_state(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return session->state();
+    });
+}
+    
+REALM_EXPORT size_t realm_syncsession_get_uri(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        std::string uri(session->full_realm_url().value_or(session->config().realm_url));
+        return stringdata_to_csharpstringbuffer(uri, buffer, buffer_length);
+    });
+}
+    
+REALM_EXPORT SyncSession* realm_syncsession_get_raw_pointer(const SharedSyncSession& session)
+{
+    return session.get();
+}
+
 REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
 {
     delete session;

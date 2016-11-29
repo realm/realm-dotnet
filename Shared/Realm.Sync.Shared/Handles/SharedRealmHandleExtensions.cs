@@ -71,8 +71,7 @@ namespace Realms.Sync
             userHandle.SetHandle(userHandlePtr);
             var user = new User(userHandle);
 
-            var sessionHandle = new SessionHandle();
-            sessionHandle.SetHandle(sessionHandlePtr);
+            var session = Session.SessionForPointer(sessionHandlePtr);
 
             var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
 
@@ -85,8 +84,11 @@ namespace Realms.Sync
                 }
                 else
                 {
-                    sessionHandle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
+                    session.Handle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
                 }
+            }).ContinueWith(t =>
+            {
+                userHandle.Dispose();
             });
         }
     }

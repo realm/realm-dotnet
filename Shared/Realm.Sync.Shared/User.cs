@@ -26,6 +26,13 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
+public enum UserState
+    {
+        LoggedOut,
+        Active,
+        Error
+    }
+
     /// <summary>
     /// This class represents a user on the Realm Object Server. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
     /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
@@ -104,6 +111,21 @@ namespace Realms.Sync
         public void LogOut()
         {
             Handle.LogOut();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as User);
+        }
+
+        public bool Equals(User other)
+        {
+            return Identity.Equals(other?.Identity);
+        }
+
+        public override int GetHashCode()
+        {
+            return Identity.GetHashCode();
         }
 
         // returns a tuple of access token and resolved realm path

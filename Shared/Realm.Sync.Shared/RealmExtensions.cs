@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -32,9 +32,19 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>The session.</returns>
         /// <param name="this">The <see cref="Realm"/> to get a session for.</param>
-        public static Session GetSession(this Realm @this)
+        public static Session GetSyncSession(this Realm @this)
         {
-            throw new NotImplementedException();
+            if (@this == null)
+            {
+                throw new ArgumentNullException(nameof(@this));
+            }
+
+            if (!(@this.Config is SyncConfiguration))
+            {
+                throw new ArgumentException("Cannot get a Session for a Realm without a SyncConfiguration", nameof(@this));
+            }
+
+            return Session.SessionForRealm(@this);
         }
     }
 }
