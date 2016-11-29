@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -24,6 +24,9 @@ using System.Linq;
 
 namespace Realms
 {
+    /// <summary>
+    /// Realm results collection changed.
+    /// </summary>
     public static class CollectionNotificationsExtensions
     {
         /// <summary>

@@ -22,8 +22,14 @@ using System.Collections.Specialized;
 
 namespace Realms
 {
+    /// <summary>
+    /// A realm collection, exposing the ObjectSchema of the contained objects.
+    /// </summary>
     public interface IRealmCollection
     {
+        /// <summary>
+        /// Gets the object schema of the contained objects.
+        /// </summary>
         Schema.ObjectSchema ObjectSchema { get; }
     }
 

@@ -89,6 +89,10 @@ namespace Realms.Schema
             /// </summary>
             public string Name { get; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:Realms.Schema.ObjectSchema.Builder"/> class.
+            /// </summary>
+            /// <param name="name">The name of the class that will be built.</param>
             public Builder(string name)
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

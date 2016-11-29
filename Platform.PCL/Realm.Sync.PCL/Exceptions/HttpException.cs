@@ -21,12 +21,29 @@ using System.Net;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// An exception thrown when a transport error occurs during authentication. 
+    /// </summary>
     public class HttpException : Exception
     {
+        /// <summary>
+        /// Gets the <see cref="HttpStatusCode"/> of the response.
+        /// </summary>
         public HttpStatusCode StatusCode { get; }
 
+        /// <summary>
+        /// Gets the ReasonPhrase of the response.
+        /// </summary>
         public string ReasonPhrase { get; }
 
+        /// <summary>
+        /// Gets the body of the response.
+        /// </summary>
+        /// <value>The payload.</value>
         public string Payload { get; }
+
+        internal HttpException()
+        {
+        }
     }
 }

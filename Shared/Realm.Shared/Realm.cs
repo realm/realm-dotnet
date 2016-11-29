@@ -224,7 +224,7 @@ namespace Realms
                 Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
 
-            Error?.Invoke(this, new ErrorEventArgs(ex));
+            Error?.Invoke(this, ex);
         }
 
         /// <summary>
@@ -634,18 +634,23 @@ namespace Realms
         /// if they're used on the worker thread.
         /// </remarks>
         /// <example>
+        /// <c>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
-        ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
-        ///         pup.Breed = "Dalmatian";
-        ///         pup.Mum = missis;
-        ///         pup.Dad = pongo;
+        ///         tempRealm.Add(new Dog
+        ///         {
+        ///             Breed = "Dalmatian",
+        ///             Mum = missis,
+        ///             Dad = pongo
+        ///         });
         ///     }
         /// });
+        /// </c>
+        /// Note that in the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>

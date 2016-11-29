@@ -18,9 +18,12 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception, thrown when trying to write data to the Realm and you haven't begun a Write transaction or when the realm is opened as read-only.
+    /// </summary>
     public class RealmInvalidTransactionException : RealmException
     {
-        public RealmInvalidTransactionException(string message) : base(message)
+        internal RealmInvalidTransactionException(string message) : base(message)
         {
         }
     }

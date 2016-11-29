@@ -20,8 +20,9 @@ using System;
 
 namespace Realms
 {
-    // Tell the linker to preserve a class or method even if it looks like it's not invoked.
-    // Since it matches by name, it works to just declare it here.
+    /// <summary>
+    /// Prevents the MonoTouch linker from linking the target.
+    /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public sealed class PreserveAttribute : Attribute
     {
@@ -29,16 +30,31 @@ namespace Realms
         public bool AllMembers { get; set; }
         public bool Conditional { get; set; }
 #else
+        /// <summary>
+        /// Ensures that all members of this type are preserved.
+        /// </summary>
         public bool AllMembers;
+
+        /// <summary>
+        /// Flags the method as a method to preserve during linking if the container class is pulled in.
+        /// </summary>
         public bool Conditional;
 #endif
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Realms.PreserveAttribute"/> class.
+        /// </summary>
+        /// <param name="allMembers">If set to <c>true</c> all members will be preserved.</param>
+        /// <param name="conditional">If set to <c>true</c>, the method will only be preserved if the container class is preserved.</param>
         public PreserveAttribute(bool allMembers, bool conditional)
         {
             AllMembers = allMembers;
             Conditional = conditional;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Realms.PreserveAttribute"/> class.
+        /// </summary>
         public PreserveAttribute()
         {
         }

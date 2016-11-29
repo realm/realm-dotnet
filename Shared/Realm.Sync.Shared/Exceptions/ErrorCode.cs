@@ -18,6 +18,9 @@
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// Error code enumeration, indicating the type of the error.
+    /// </summary>
     public enum ErrorCode
     {
         /// <summary>

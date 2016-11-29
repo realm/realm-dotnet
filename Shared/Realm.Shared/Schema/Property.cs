@@ -27,16 +27,34 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
     public struct Property
     {
+        /// <summary>
+        /// Gets or sets the name of the property.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the property.
+        /// </summary>
         public PropertyType Type { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the object.
+        /// </summary>
         public string ObjectType { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is nullable.
+        /// </summary>
         public bool IsNullable { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is primary key.
+        /// </summary>
         public bool IsPrimaryKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is indexed.
+        /// </summary>
         public bool IsIndexed { get; set; }
 
         internal PropertyInfo PropertyInfo;
