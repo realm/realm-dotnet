@@ -21,13 +21,6 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
-    [Flags]
-    public enum LoginMode
-    {
-        UseExistingAccount = 1,
-        CreateAccount = 2
-    }
-
     public enum UserState
     {
         LoggedOut,
@@ -73,7 +66,7 @@ namespace Realms.Sync
             }
         }
 
-        public static Task<User> LoginAsync(Credentials credentials, Uri serverUrl, LoginMode loginMode = LoginMode.UseExistingAccount)
+        public static Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
