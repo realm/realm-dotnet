@@ -20,8 +20,17 @@ using System;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// An SyncConfiguration is used to setup a Realm that can be synchronized between devices using the Realm Object Server.
+    /// A valid <see cref="User"/> is required to create a SyncConfiguration.
+    /// </summary>
+    /// <seealso cref="User.LoginAsync"/>
+    /// <seealso cref="Credentials"/>
     public class SyncConfiguration : RealmConfiguration
     {
+        /// <summary>
+        /// Gets the fully disambiguated <see cref="Uri"/> for the remote Realm i.e., the /~/ placeholder has been replaced by the proper user ID.
+        /// </summary>
         public Uri ServerUri
         {
             get
@@ -31,6 +40,9 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets the user.
+        /// </summary>
         public User User
         {
             get
@@ -40,6 +52,9 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the Realm file should be deleted once the <see cref="User"/> logs out.
+        /// </summary>
         public bool ShouldDeleteRealmOnLogOut
         {
             get
@@ -49,6 +64,11 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Realms.Sync.SyncConfiguration"/> class.
+        /// </summary>
+        /// <param name="user">A valid <see cref="User"/>.</param>
+        /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
         public SyncConfiguration(User user, Uri serverUri)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

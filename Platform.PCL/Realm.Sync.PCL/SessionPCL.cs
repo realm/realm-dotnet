@@ -20,18 +20,15 @@ using System;
 
 namespace Realms.Sync
 {
-    public enum SessionState
-    {
-        Authenticating,
-        Binding,
-        Bound,
-        Initial,
-        Stopped,
-        Unbound
-    }
-
+    /// <summary>
+    /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
+    /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
+    /// </summary>
     public class Session
     {
+        /// <summary>
+        /// Gets the <see cref="SyncConfiguration"/> that is responsible for controlling the session.
+        /// </summary>
         public SyncConfiguration Configuration
         {
             get
@@ -41,6 +38,9 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
+        /// </summary>
         public Uri ServerUri
         {
             get
@@ -50,6 +50,10 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets the session’s current state.
+        /// </summary>
+        /// <value>The state.</value>
         public SessionState State
         {
             get
@@ -59,6 +63,9 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
+        /// </summary>
         public User User
         {
             get

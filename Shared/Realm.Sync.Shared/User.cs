@@ -26,13 +26,6 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
-    public enum UserState
-    {
-        LoggedOut,
-        Active,
-        Error
-    }
-
     public class User
     {
         private const int ErrorContentTruncationLimit = 256 * 1024;

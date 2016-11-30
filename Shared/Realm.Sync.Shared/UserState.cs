@@ -16,18 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms.Sync
 {
-    public class Session
+    /// <summary>
+    /// The state of the user object.
+    /// </summary>
+    public enum UserState
     {
-        public SyncConfiguration Configuration { get; private set; }
+        /// <summary>
+        /// The user is logged out. Call <see cref="User.LoginAsync"/> with valid credentials to log the user back in.
+        /// </summary>
+        LoggedOut,
 
-        public Uri ServerUri { get; private set; }
+        /// <summary>
+        /// The user is logged in, and any Realms associated with it are syncing with the Realm Object Server.
+        /// </summary>
+        Active,
 
-        public SessionState State { get; private set; }
-
-        public User User { get; private set; }
+        /// <summary>
+        /// The user has encountered a fatal error state, and cannot be used.
+        /// </summary>
+        Error
     }
 }

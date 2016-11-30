@@ -110,7 +110,7 @@ namespace Realms.Sync
             };
         }
 
-        public static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
+        internal static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
         {
             return new Credentials
             {

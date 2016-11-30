@@ -16,18 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms.Sync
 {
-    public class Session
+    /// <summary>
+    /// The current state of a sync session object.
+    /// </summary>
+    public enum SessionState
     {
-        public SyncConfiguration Configuration { get; private set; }
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Authenticating,
 
-        public Uri ServerUri { get; private set; }
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Binding,
 
-        public SessionState State { get; private set; }
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Bound,
 
-        public User User { get; private set; }
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Initial,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Stopped,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Unbound
     }
 }
