@@ -39,10 +39,10 @@ namespace DrawXShared
 
                 if (_savedSettings == null)
                 {
-                    _realmLocalSettings.Write(() =>
+                    Write(() =>
                     {
-                        _savedSettings = _realmLocalSettings.CreateObject<DrawXSettings>();
-                        _savedSettings.LastColorUsed = "Indigo";
+                        _savedSettings = new DrawXSettings { LastColorUsed = "Indigo" };
+                        _realmLocalSettings.Add(_savedSettings);
                     });
                 }
 
@@ -58,6 +58,7 @@ namespace DrawXShared
             _realmLocalSettings = Realm.GetInstance(settingsConf);
         }
 
+        // bit of a hack which only works when the caller has objects already on the _realmLocalSettings Realm
         internal static void Write(Action writer)
         {
             _realmLocalSettings.Write(writer);
@@ -72,8 +73,7 @@ namespace DrawXShared
             }
 
             // crashes if ServerIP is null            bool changedServer = string.IsNullOrEmpty(_savedSettings.ServerIP) || !_savedSettings.ServerIP.Equals(serverIP);
-            bool changedServer = _savedSettings.ServerIP == null ||
-                                 _savedSettings.ServerIP.Length == 0 ||
+            var changedServer = _savedSettings.ServerIP == null ||
                                  !_savedSettings.ServerIP.Equals(serverIP);
             _realmLocalSettings.Write(() =>
             {

@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 // Change them to the values specific to your project.
 
 [assembly: AssemblyTitle("DrawX")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Realm sample Drawing app in Xamarin")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Realm Inc.")]
 [assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("andydent")]
+[assembly: AssemblyCopyright("2016 Realm Inc.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

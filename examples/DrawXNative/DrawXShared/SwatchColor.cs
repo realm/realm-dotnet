@@ -41,7 +41,7 @@ namespace DrawXShared
             }
         }
 
-        // iterating this array gives you the colours in our desired order
+        // iterating this list gives you the colours in our desired order
         public static List<SwatchColor> Colors
         {
             get
@@ -59,17 +59,17 @@ namespace DrawXShared
         {
             _indexedColors = new List<SwatchColor> 
             {
-                new SwatchColor() { Name = "Charcoal", Color = new SKColor(28, 35, 63) },
-                new SwatchColor() { Name = "Elephant", Color = new SKColor(154, 155, 165) },
-                new SwatchColor() { Name = "Dove", Color = new SKColor(235, 235, 242) },
-                new SwatchColor() { Name = "Ultramarine", Color = new SKColor(57, 71, 127) },
-                new SwatchColor() { Name = "Indigo", Color = new SKColor(89, 86, 158) },
-                new SwatchColor() { Name = "GrapeJelly", Color = new SKColor(154, 80, 165) },
-                new SwatchColor() { Name = "Mulberry", Color = new SKColor(211, 76, 163) },
-                new SwatchColor() { Name = "Flamingo", Color = new SKColor(242, 81, 146) },
-                new SwatchColor() { Name = "SexySalmon", Color = new SKColor(247, 124, 136) },
-                new SwatchColor() { Name = "Peach", Color = new SKColor(252, 159, 149) },
-                new SwatchColor() { Name = "Melon", Color = new SKColor(252, 195, 151) }
+                new SwatchColor { Name = "Charcoal", Color = new SKColor(28, 35, 63) },
+                new SwatchColor { Name = "Elephant", Color = new SKColor(154, 155, 165) },
+                new SwatchColor { Name = "Dove", Color = new SKColor(235, 235, 242) },
+                new SwatchColor { Name = "Ultramarine", Color = new SKColor(57, 71, 127) },
+                new SwatchColor { Name = "Indigo", Color = new SKColor(89, 86, 158) },
+                new SwatchColor { Name = "GrapeJelly", Color = new SKColor(154, 80, 165) },
+                new SwatchColor { Name = "Mulberry", Color = new SKColor(211, 76, 163) },
+                new SwatchColor { Name = "Flamingo", Color = new SKColor(242, 81, 146) },
+                new SwatchColor { Name = "SexySalmon", Color = new SKColor(247, 124, 136) },
+                new SwatchColor { Name = "Peach", Color = new SKColor(252, 159, 149) },
+                new SwatchColor { Name = "Melon", Color = new SKColor(252, 195, 151) }
             };
             _colors = new Dictionary<string, SwatchColor>();
             foreach (var color in _indexedColors)

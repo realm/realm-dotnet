@@ -195,12 +195,6 @@ namespace DrawXShared
 
             var loginConf = new SyncConfiguration(user, new Uri($"realm://{s.ServerIP}/~/Draw"));
             _realm = Realm.GetInstance(loginConf);
-            #if DEBUG
-            _realm.RealmChanged += (sender, e) => 
-            {
-                Debug.WriteLine("Extra Realm Update callback invoked");
-            };
-            #endif
             _allPaths = _realm.All<DrawPath>() as RealmResults<DrawPath>;
             _allPaths.SubscribeForNotifications((sender, changes, error) =>
             {
