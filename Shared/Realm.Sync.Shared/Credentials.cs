@@ -23,6 +23,9 @@ using System.Json;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// A class, representing the credentials used for authenticating a <see cref="User"/>.
+    /// </summary>
     public class Credentials
     {
         internal static class Providers
@@ -51,6 +54,13 @@ namespace Realms.Sync
             internal const string IsAdmin = "isAdmin";
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="Credentials"/> with a custom provider and user identifier.
+        /// </summary>
+        /// <param name="identityProvider">Provider used to verify the credentials.</param>
+        /// <param name="userIdentifier">String identifying the user. Usually a username of id.</param>
+        /// <param name="userInfo">Data describing the user further or null if the user does not have any extra data. The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Custom(string identityProvider, string userIdentifier,
             IDictionary<string, object> userInfo)
         {
@@ -62,6 +72,10 @@ namespace Realms.Sync
             };
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="Credentials"/> to be used during development. Not enabled for Realm Object Server configured for production.
+        /// </summary>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Debug()
         {
             return new Credentials
@@ -70,6 +84,11 @@ namespace Realms.Sync
             };
         }
 
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// </summary>
+        /// <param name="facebookToken">A Facebook authentication  token, obtained by logging into Facebook.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Facebook(string facebookToken)
         {
             if (facebookToken == null)
@@ -80,6 +99,11 @@ namespace Realms.Sync
             return new Credentials { IdentityProvider = Providers.Facebook, Token = facebookToken };
         }
 
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Google login.
+        /// </summary>
+        /// <param name="googleToken">A Facebook authentication  token, obtained by logging into Google.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Google(string googleToken)
         {
             if (googleToken == null)
@@ -90,6 +114,11 @@ namespace Realms.Sync
             return new Credentials { IdentityProvider = Providers.Google, Token = googleToken };
         }
 
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Twitter login.
+        /// </summary>
+        /// <param name="twitterToken">A Facebook authentication  token, obtained by logging into Twitter.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Twitter(string twitterToken)
         {
             if (twitterToken == null)
@@ -100,6 +129,13 @@ namespace Realms.Sync
             return new Credentials { IdentityProvider = Providers.Twitter, Token = twitterToken };
         }
 
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a login with a username and a password.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="password">The user's password.</param>
+        /// <param name="createUser"><c>true</c> if the user should be created, <c>false</c> otherwise. It is not possible to create a user twice when logging in, so this flag should only be set to true the first time a user logs in.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials UsernamePassword(string username, string password, bool createUser)
         {
             return new Credentials 
@@ -120,10 +156,19 @@ namespace Realms.Sync
             };
         }
 
+        /// <summary>
+        /// Gets the identity provider for the credentials.
+        /// </summary>
         public string IdentityProvider { get; private set; }
 
+        /// <summary>
+        /// Gets the access token.
+        /// </summary>
         public string Token { get; private set; }
 
+        /// <summary>
+        /// Gets additional user information associated with the credentials.
+        /// </summary>
         public IReadOnlyDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
 
         private Credentials()

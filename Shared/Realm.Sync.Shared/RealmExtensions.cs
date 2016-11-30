@@ -20,8 +20,16 @@ using System;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
+    /// </summary>
     public static class RealmExtensions
     {
+        /// <summary>
+        /// Gets the current session for the specified Realm.
+        /// </summary>
+        /// <returns>The session.</returns>
+        /// <param name="this">The <see cref="Realm"/> to get a session for.</param>
         public static Session GetSession(this Realm @this)
         {
             throw new NotImplementedException();

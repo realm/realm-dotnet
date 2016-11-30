@@ -135,7 +135,7 @@ namespace IntegrationTests
         }
 
         /// <summary>
-        /// Check if ToList can be invoked on a related RealmResults
+        /// Check if ToList can be invoked on a related RealmResults.
         /// </summary>
         [Test]
         public void TimHasTwoIterableDogsListed()
