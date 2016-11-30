@@ -53,7 +53,6 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
-        /// <value>The state.</value>
         public SessionState State
         {
             get

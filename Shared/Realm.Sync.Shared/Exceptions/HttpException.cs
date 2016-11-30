@@ -39,7 +39,6 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the body of the response.
         /// </summary>
-        /// <value>The payload.</value>
         public string Payload { get; }
 
         internal HttpException(HttpStatusCode code, string reasonPhrase, string payload) :

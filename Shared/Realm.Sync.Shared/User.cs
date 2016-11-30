@@ -46,7 +46,6 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
         /// </summary>
-        /// <value>The identity.</value>
         public string Identity => Handle.Identity;
 
         /// <summary>
