@@ -22,33 +22,36 @@ namespace Realms.Sync
 {
     public class SyncConfiguration : RealmConfiguration
     {
-        public Uri ServerUri { get; private set; }
+        public Uri ServerUri
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
+            }
+        }
 
-        public User User { get; private set; }
+        public User User
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
+            }
+        }
 
-        public bool ShouldDeleteRealmOnLogOut { get; private set; }
+        public bool ShouldDeleteRealmOnLogOut
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return false;
+            }
+        }
 
         public SyncConfiguration(User user, Uri serverUri)
         {
-            User = user;
-            ServerUri = serverUri;
-        }
-
-        internal override Realm CreateRealm(RealmSchema schema)
-        {
-            var configuration = new Realms.Native.Configuration
-            {
-                schema_version = SchemaVersion
-            };
-
-            var syncConfiguration = new Native.SyncConfiguration
-            {
-                SyncUserHandle = User.Handle,
-                Url = ServerUri.ToString()
-            };
-
-            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            return new Realm(srHandle, this, schema);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
     }
 }

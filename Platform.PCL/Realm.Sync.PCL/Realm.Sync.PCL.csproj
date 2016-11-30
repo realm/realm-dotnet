@@ -40,6 +40,14 @@
     </Compile>
     <Compile Include="Exceptions\AuthenticationException.cs" />
     <Compile Include="Exceptions\HttpException.cs" />
+    <Compile Include="CredentialsPCL.cs" />
+    <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
+      <Link>RealmPCLHelpers.cs</Link>
+    </Compile>
+    <Compile Include="RealmExtensionsPCL.cs" />
+    <Compile Include="SessionPCL.cs" />
+    <Compile Include="SyncConfigurationPCL.cs" />
+    <Compile Include="UserPCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
