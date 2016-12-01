@@ -29,7 +29,7 @@ namespace Realms.Sync
     public class User
     {
         /// <summary>
-        /// Gets this user's refresh token. This is the users credential for accessing the Realm Object Server and should be treated as sensitive data.
+        /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
         public string RefreshToken
         {

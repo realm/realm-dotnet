@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.ComponentModel;
+
 namespace Realms.Sync
 {
     /// <summary>
     /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class RealmExtensions
     {
         /// <summary>

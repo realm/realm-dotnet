@@ -39,7 +39,7 @@ namespace Realms.Sync
         private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
 
         /// <summary>
-        /// Gets this user's refresh token. This is the users credential for accessing the Realm Object Server and should be treated as sensitive data.
+        /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
         public string RefreshToken => Handle.RefreshToken;
 
