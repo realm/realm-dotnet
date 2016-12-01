@@ -29,12 +29,12 @@ namespace Realms.Sync
     public class SyncConfiguration : RealmConfiguration
     {
         /// <summary>
-        /// Gets the fully disambiguated <see cref="Uri"/> for the remote Realm i.e., the /~/ placeholder has been replaced by the proper user ID.
+        /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
         /// </summary>
         public Uri ServerUri { get; private set; }
 
         /// <summary>
-        /// Gets the user.
+        /// Gets the user used to create this SyncConfiguration.
         /// </summary>
         public User User { get; private set; }
 
