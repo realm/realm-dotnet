@@ -280,13 +280,13 @@ namespace IntegrationTests.Shared
         [Test]
         public void CanGetNameOfPrimaryKeyFromSchema()
         {
-            int classesWithPK = 0;
-            int classesWitoutPK = 0;
+            var classesWithPK = 0;
+            var classesWithoutPK = 0;
             foreach (var objSchema in _realm.Schema)
             {
-                var primaryKeyProp = objSchema.Where(prop => prop.IsPrimaryKey).FirstOrDefault();
+                var primaryKeyProp = objSchema.FirstOrDefault(prop => prop.IsPrimaryKey);
                 if (string.IsNullOrEmpty(primaryKeyProp.Name))
-                    classesWitoutPK++;
+                    classesWithoutPK++;
                 else
                 {
                     classesWithPK++;
@@ -294,7 +294,7 @@ namespace IntegrationTests.Shared
                     // Debug.WriteLine($"PK test - {objSchema.Name} has a PK {primaryKeyProp.Name}");
                 }
             }
-            Assert.That(classesWitoutPK > classesWithPK);  // simple assertion likely to remain valid regardless how many classes in test suite overall
+            Assert.That(classesWithoutPK > classesWithPK);  // simple assertion likely to remain valid regardless how many classes in test suite overall
         }
             
     }
