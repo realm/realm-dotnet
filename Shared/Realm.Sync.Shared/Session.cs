@@ -18,9 +18,21 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace Realms.Sync
 {
+    public enum SessionState
+    {
+        WaitingForAccessToken = 0,
+        Active,
+        Dying,
+        Inactive,
+        Error,
+    }
+
     /// <summary>
     /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
     /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
@@ -28,6 +40,24 @@ namespace Realms.Sync
     public class Session
     {
         private static readonly ConcurrentDictionary<SessionHandle, Session> _sessions = new ConcurrentDictionary<SessionHandle, Session>(new SessionHandle.Comparer());
+
+        private List<ErrorEventArgs> _aggregatedErrors = new List<ErrorEventArgs>();
+
+        private event ErrorEventHandler _error;
+
+        public event ErrorEventHandler Error
+        {
+            add
+            {
+                Interlocked.Exchange(ref _aggregatedErrors, null)?.ForEach(error => value(this, error));
+                _error += value;
+            }
+
+            remove
+            {
+                _error -= value;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="SyncConfiguration"/> that is responsible for controlling the session.
@@ -54,6 +84,13 @@ namespace Realms.Sync
         private Session(SessionHandle handle)
         {
             Handle = handle;
+        }
+
+        internal void RaiseError(Exception error)
+        {
+            var args = new ErrorEventArgs(error);
+            _error?.Invoke(this, args);
+            _aggregatedErrors?.Add(args);
         }
 
         internal static Session SessionForRealm(Realm realm)

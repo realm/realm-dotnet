@@ -176,8 +176,8 @@ public enum UserState
                     {
                         var problem = JsonValue.Load(stream);
 
-                        ErrorCode code;
-                        if (!Enum.TryParse(problem["code"], out code))
+                        var code = (ErrorCode)(int)problem["code"];
+                        if (!Enum.IsDefined(typeof(ErrorCode), code))
                         {
                             code = ErrorCode.Unknown;
                         }

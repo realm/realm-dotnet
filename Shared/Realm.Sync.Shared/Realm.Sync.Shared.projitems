@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\IPermissionObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SessionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />

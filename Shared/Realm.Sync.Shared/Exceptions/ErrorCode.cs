@@ -28,6 +28,34 @@ namespace Realms.Sync
         /// </summary>
         Unknown = -1,
 
+        SessionClosed = 200,
+
+        OtherSessionError = 201,
+
+        AccessTokenExpired = 202,
+
+        BadUserAuthentication = 203,
+
+        IllegalRealmPath = 204,
+
+        NoSuchRealm = 205,
+
+        PermissionSenied = 206,
+
+        BadServerFileIdentifier = 207,
+
+        BadClientFileIdentifier = 208,
+
+        BadServerVersion = 209,
+
+        BadClientVersion = 210,
+
+        DivergingHistories = 211,
+
+        BadChangeset = 212,
+
+        DisabledSession = 213,
+
         /// <summary>
         /// Your request parameters did not validate.
         /// </summary>

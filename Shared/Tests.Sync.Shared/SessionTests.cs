@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -58,6 +61,53 @@ namespace Tests.Sync.Shared
                 var session1 = realm.GetSyncSession();
                 var session2 = realm.GetSyncSession();
                 Assert.That(session1, Is.SameAs(session2));
+            }
+        }
+
+        [Test, Explicit, Timeout(1000)]
+        public async void Session_Error_WhenInvalidRefreshToken()
+        {
+            var errors = new List<Exception>();
+
+            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: false), new Uri("http://localhost:9080"));
+            var serverUri = new Uri("realm://localhost:9080/foobar");
+            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            {
+                var session = realm.GetSyncSession();
+                session.Error += (o, e) => errors.Add(e.GetException());
+
+                while (!errors.Any())
+                {
+                    await Task.Yield();
+                }
+
+                var authErrors = errors.OfType<AuthenticationException>().ToList();
+                Assert.That(authErrors.Count, Is.EqualTo(1));
+                Assert.That(authErrors[0].ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
+            }
+        }
+
+        [Test, Explicit, Timeout(1000)]
+        public async void Session_Error_WhenInvalidAccessToken()
+        {
+            var errors = new List<Exception>();
+
+            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://localhost:9080"));
+            var serverUri = new Uri("realm://localhost:9080/foobar");
+            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            {
+                var session = realm.GetSyncSession();
+                session.Error += (o, e) => errors.Add(e.GetException());
+
+                while (!errors.Any())
+                {
+                    await Task.Yield();
+                }
+
+                var sessionErrors = errors.OfType<SessionErrorException>().ToList();
+                Assert.That(sessionErrors.Count, Is.EqualTo(1));
+                Assert.That(sessionErrors[0].Kind, Is.EqualTo(SessionErrorKind.UserFatal));
+                Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
             }
         }
     }
