@@ -21,7 +21,7 @@ using System.Linq;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.Shared
+namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class AddOrUpdateTests

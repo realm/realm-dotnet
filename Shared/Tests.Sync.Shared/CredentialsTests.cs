@@ -20,7 +20,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Sync;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class CredentialsTests

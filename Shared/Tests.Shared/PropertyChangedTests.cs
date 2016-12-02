@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.Shared
+namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class PropertyChangedTests

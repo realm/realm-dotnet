@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -19,7 +19,7 @@
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.Shared
+namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectSchemaTests
