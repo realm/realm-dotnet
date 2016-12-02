@@ -37,11 +37,11 @@ namespace Realms.Sync.Permissions
 
         /// <summary>
         /// Gets or sets when the object was updated the last time.
-        /// This should be filled
-        /// by the client with the <see cref="CreatedAt"/>
-        /// date and is updated by the server
-        /// with the current object when the object is processed.
         /// </summary>
+        /// <remarks>
+        /// This should be filled by the client with the <see cref="CreatedAt"/>
+        /// date and is updated by the server with the current object when the object is processed.
+        /// </remarks>
         DateTimeOffset UpdatedAt { get; set; }
 
         /// <summary>
