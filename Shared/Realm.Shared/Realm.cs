@@ -224,7 +224,7 @@ namespace Realms
                 Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
 
-            Error?.Invoke(this, ex);
+            Error?.Invoke(this, new ErrorEventArgs(ex));
         }
 
         /// <summary>
