@@ -20,6 +20,9 @@ using System;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// Different kinds of errors a <see cref="Session"/> object can emit.
+    /// </summary>
     public enum SessionErrorKind
     {
         /// <summary>
@@ -43,10 +46,19 @@ namespace Realms.Sync
         UserFatal
     }
 
+    /// <summary>
+    /// An exception type that describes a session-level error condition.
+    /// </summary>
     public class SessionErrorException : Exception
     {
+        /// <summary>
+        /// Gets the kind of session error this exception represents.
+        /// </summary>
         public SessionErrorKind Kind { get; private set; }
 
+        /// <summary>
+        /// Gets the error code that describes the session error this exception represents.
+        /// </summary>
         public ErrorCode ErrorCode { get; private set; }
 
         internal SessionErrorException(string message, SessionErrorKind kind, ErrorCode errorCode) : base(message)
