@@ -43,17 +43,17 @@ namespace Realms.Schema
         public string ObjectType { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is nullable.
+        /// Gets or sets a value indicating whether this <see cref="Property"/> is nullable.
         /// </summary>
         public bool IsNullable { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is primary key.
+        /// Gets or sets a value indicating whether this <see cref="Property"/> is primary key.
         /// </summary>
         public bool IsPrimaryKey { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="T:Realms.Schema.Property"/> is indexed.
+        /// Gets or sets a value indicating whether this <see cref="Property"/> is indexed.
         /// </summary>
         public bool IsIndexed { get; set; }
 

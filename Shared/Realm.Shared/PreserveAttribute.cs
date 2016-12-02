@@ -42,7 +42,7 @@ namespace Realms
 #endif
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Realms.PreserveAttribute"/> class.
+        /// Initializes a new instance of the <see cref="PreserveAttribute"/> class.
         /// </summary>
         /// <param name="allMembers">If set to <c>true</c> all members will be preserved.</param>
         /// <param name="conditional">If set to <c>true</c>, the method will only be preserved if the container class is preserved.</param>
@@ -53,7 +53,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Realms.PreserveAttribute"/> class.
+        /// Initializes a new instance of the <see cref="PreserveAttribute"/> class.
         /// </summary>
         public PreserveAttribute()
         {

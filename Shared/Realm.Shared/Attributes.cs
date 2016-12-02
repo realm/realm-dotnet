@@ -77,7 +77,7 @@ namespace Realms
         public string Mapping { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Realms.MapToAttribute"/> class.
+        /// Initializes a new instance of the <see cref="MapToAttribute"/> class.
         /// </summary>
         /// <param name="mapping">The name of the property in the database.</param>
         public MapToAttribute(string mapping)
@@ -96,7 +96,7 @@ namespace Realms
         internal Type HelperType { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Realms.WovenAttribute"/> class.
+        /// Initializes a new instance of the <see cref="WovenAttribute"/> class.
         /// </summary>
         /// <param name="helperType">The type of the generated RealmObjectHelper for that class.</param>
         public WovenAttribute(Type helperType)

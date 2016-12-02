@@ -65,7 +65,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Realms.Sync.SyncConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
         /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>

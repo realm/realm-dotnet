@@ -90,7 +90,7 @@ namespace Realms.Schema
             public string Name { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="T:Realms.Schema.ObjectSchema.Builder"/> class.
+            /// Initializes a new instance of the <see cref="ObjectSchema.Builder"/> class.
             /// </summary>
             /// <param name="name">The name of the class that will be built.</param>
             public Builder(string name)
