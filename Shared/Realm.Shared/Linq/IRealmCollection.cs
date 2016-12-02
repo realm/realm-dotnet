@@ -74,9 +74,6 @@ namespace Realms
     /// <summary>
     /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All()"/> or from a LINQ query expression.
     /// </summary>
-    /// <remarks>Implements <a hlink="https://msdn.microsoft.com/en-us/library/system.linq.iorderedqueryable">IOrderedQueryable</a>.  <br />
-    /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
-    /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection
     {
