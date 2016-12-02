@@ -41,5 +41,11 @@ namespace Tests.Sync.Shared
                 Assert.That(configuration.ServerUri.ToString(), Is.EqualTo(string.Format(UriPattern + "/~/__management", syncScheme)));
             }
         }
+
+        [Test]
+        public void PermissionChange_ShouldNotBeInDefaultSchema()
+        {
+            Assert.That(RealmSchema.Default.Find(nameof(PermissionChange)), Is.Null);
+        }
     }
 }
