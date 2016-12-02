@@ -36,7 +36,7 @@ namespace Tests.Sync.Shared
             var serverUri = new Uri("realm://localhost:9080/foobar");
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
-                var session = realm.GetSyncSession();
+                var session = realm.GetSession();
                 Assert.That(session.User, Is.EqualTo(user));
                 Assert.That(session.ServerUri, Is.EqualTo(serverUri));
             }
@@ -47,7 +47,7 @@ namespace Tests.Sync.Shared
         {
             using (var realm = Realm.GetInstance())
             {
-                Assert.Throws<ArgumentException>(() => realm.GetSyncSession());
+                Assert.Throws<ArgumentException>(() => realm.GetSession());
             }
         }
 
@@ -58,8 +58,8 @@ namespace Tests.Sync.Shared
             var serverUri = new Uri("realm://localhost:9080/foobar");
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
-                var session1 = realm.GetSyncSession();
-                var session2 = realm.GetSyncSession();
+                var session1 = realm.GetSession();
+                var session2 = realm.GetSession();
                 Assert.That(session1, Is.SameAs(session2));
             }
         }
@@ -73,7 +73,7 @@ namespace Tests.Sync.Shared
             var serverUri = new Uri("realm://localhost:9080/foobar");
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
-                var session = realm.GetSyncSession();
+                var session = realm.GetSession();
                 session.Error += (o, e) => errors.Add(e.GetException());
 
                 while (!errors.Any())
@@ -96,7 +96,7 @@ namespace Tests.Sync.Shared
             var serverUri = new Uri("realm://localhost:9080/foobar");
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
-                var session = realm.GetSyncSession();
+                var session = realm.GetSession();
                 session.Error += (o, e) => errors.Add(e.GetException());
 
                 while (!errors.Any())

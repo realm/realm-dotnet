@@ -15,7 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SyncUserHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandleExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Session.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmSyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCode.cs" />

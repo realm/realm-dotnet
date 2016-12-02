@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -24,14 +24,14 @@ namespace Realms.Sync
     /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class RealmExtensions
+    public static class RealmSyncExtensions
     {
         /// <summary>
-        /// Gets the current session for the specified Realm.
+        /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
-        /// <returns>The session.</returns>
-        /// <param name="this">The <see cref="Realm"/> to get a session for.</param>
-        public static Session GetSession(this Realm @this)
+        /// <returns>The <see cref="Session"/> that is responsible for synchronizing with a Realm Object Server instance.</returns>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
+        public static Session GetSession(this Realm realm)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
