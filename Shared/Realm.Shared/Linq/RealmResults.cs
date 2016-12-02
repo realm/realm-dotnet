@@ -36,8 +36,6 @@ namespace Realms
 
         public IQueryProvider Provider => _provider;
 
-        public override int Count => ResultsHandle.Count();
-
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll) : base(realm, metadata)
         {
             _provider = realmResultsProvider;
@@ -63,11 +61,6 @@ namespace Realms
             var queryHandle = qv.CoreQueryHandle; // grab out the built query definition
             var sortHandle = qv.OptionalSortDescriptorBuilder;
             return Realm.MakeResultsForQuery(queryHandle, sortHandle);
-        }
-
-        public override IEnumerator<T> GetEnumerator()
-        {
-            return new RealmResultsEnumerator<T>(Realm, ResultsHandle, ObjectSchema);
         }
     }
 }

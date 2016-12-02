@@ -23,6 +23,12 @@ namespace Realms
 {
     internal abstract class CollectionHandleBase : RealmHandle
     {
+        private static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "collection_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
         {
@@ -42,10 +48,22 @@ namespace Realms
 
         internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
+        protected CollectionHandleBase(RealmHandle root) : base(root)
+        {
+        }
+
         public abstract IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback);
 
-        public abstract IntPtr DestroyNotificationToken(IntPtr token);
+        public abstract IntPtr GetObjectAtIndex(int index);
 
-        public abstract IntPtr GetObjectAtIndex(long index);
+        public abstract int Count();
+
+        public IntPtr DestroyNotificationToken(IntPtr token)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.destroy_notificationtoken(token, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
     }
 }

@@ -7,13 +7,11 @@ The main classes you will use are:
 
 - [Realm](@ref Realms.Realm)
 - [RealmObject](@ref Realms.RealmObject)
-- [RealmList](@ref Realms.RealmList)
 - [Transaction](@ref Realms.Transaction)
 
 Helper classes you may use are:
 
 - [RealmConfiguration](@ref Realms.RealmConfiguration)
-- [RealmResults](@ref Realms.RealmResults)
 
 Querying and Sorting are provided on a [Realm](@ref Realms.Realm) using standard LINQ syntax including `Where` and `OrderBy`.
 To see what is supported, refer to the [LINQ Support](linq-support.md) page.

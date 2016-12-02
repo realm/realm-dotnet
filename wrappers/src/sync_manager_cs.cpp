@@ -76,7 +76,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
                 s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
             }
         };
-        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url.to_string(), SyncSessionStopPolicy::AfterChangesUploaded, handler);
+        config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url.to_string(), SyncSessionStopPolicy::AfterChangesUploaded, handler, nullptr});
         config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url.to_string());
         return new SharedRealm(Realm::get_shared_realm(config));
     });

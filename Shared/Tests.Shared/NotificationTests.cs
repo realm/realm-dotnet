@@ -37,6 +37,11 @@ namespace IntegrationTests.Shared
         private string _databasePath;
         private Realm _realm;
 
+        private class OrderedContainer : RealmObject
+        {
+            public IList<OrderedObject> Items { get; }
+        }
+
         private class OrderedObject : RealmObject
         {
             public int Order { get; set; }
@@ -109,7 +114,25 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void CollectionChanged_WhenUnsubscribed_ShouldStopReceivingNotifications()
+        public void ListShouldSendNotifications()
+        {
+            var container = new OrderedContainer();
+            _realm.Write(() => _realm.Add(container));
+            ChangeSet changes = null;
+            NotificationCallbackDelegate<OrderedObject> cb = (s, c, e) => changes = c;
+        
+            using (container.Items.SubscribeForNotifications(cb))
+            {
+                _realm.Write(() => container.Items.Add(_realm.CreateObject<OrderedObject>()));
+        
+                TestHelpers.RunEventLoop();
+                Assert.That(changes, Is.Not.Null);
+                Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+            }
+        }
+
+        [Test]
+        public void Results_WhenUnsubscribed_ShouldStopReceivingNotifications()
         {
             _realm.Write(() =>
             {
@@ -196,8 +219,11 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void CollectionChanged_WhenTransactionHasBothAddAndRemove_ShouldReset()
+        public void Results_WhenTransactionHasBothAddAndRemove_ShouldReset()
         {
+            // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
+            // as that would mess up the indices a lot. That's why when we have both removed and added items,
+            // we should raise a Reset.
             var first = new OrderedObject
             {
                 Order = 0,
@@ -249,6 +275,252 @@ namespace IntegrationTests.Shared
             finally
             {
                 handle.Free();
+            }
+        }
+
+        [Test]
+        public void List_WhenUnsubscribed_ShouldStopReceivingNotifications()
+        {
+            var container = new OrderedContainer();
+            _realm.Write(() => _realm.Add(container));
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var handler = new NotifyCollectionChangedEventHandler((sender, e) =>
+            {
+                eventArgs.Add(e);
+            });
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += handler;
+
+            _realm.Write(() =>
+            {
+                container.Items.Add(new OrderedObject());
+            });
+
+            TestHelpers.RunEventLoop();
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+
+            collection.CollectionChanged -= handler;
+
+            _realm.Write(() =>
+            {
+                container.Items.Add(new OrderedObject());
+            });
+
+            TestHelpers.RunEventLoop();
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+        }
+
+        [Test]
+        public void List_WhenTransactionHasBothAddAndRemove_ShouldReset()
+        {
+            // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
+            // as that would mess up the indices a lot. That's why when we have both removed and added items,
+            // we should raise a Reset.
+            var container = new OrderedContainer();
+            container.Items.Add(new OrderedObject());
+            _realm.Write(() => _realm.Add(container));
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) =>
+            {
+                eventArgs.Add(e);
+            };
+
+            _realm.Write(() =>
+            {
+                container.Items.Clear();
+                container.Items.Add(new OrderedObject());
+            });
+
+            TestHelpers.RunEventLoop();
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+        }
+
+        [Test]
+        public void A1()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) => 
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A2()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A3()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3, 4, 5 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) =>
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [Test]
+        public void A4()
+        {
+            var container = new OrderedContainer();
+            foreach (var i in new[] { 1, 2, 3 })
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) =>
+            {
+                Console.WriteLine(e.Action);
+            };
+
+            _realm.Write(() =>
+            {
+                foreach (var i in new[] { 5, 9 })
+                {
+                    container.Items.Add(new OrderedObject { Order = i });
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Console.WriteLine("success");
+        }
+
+        [TestCaseSource(nameof(CollectionChangedTestCases))]
+        public void TestRealmListNotifications(int[] initial, NotifyCollectionChangedAction action, int[] change, int startIndex)
+        {
+            var container = new OrderedContainer();
+            foreach (var i in initial)
+            {
+                container.Items.Add(new OrderedObject { Order = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            Exception error = null;
+            _realm.Error += (sender, e) =>
+            {
+                error = e.GetException();
+            };
+
+            var collection = container.Items.AsRealmCollection();
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            collection.CollectionChanged += (o, e) => eventArgs.Add(e);
+
+            Assert.That(error, Is.Null);
+            _realm.Write(() =>
+            {
+                if (action == NotifyCollectionChangedAction.Add)
+                {
+                    foreach (var value in change)
+                    {
+                        container.Items.Add(new OrderedObject
+                        {
+                            Order = value
+                        });
+                    }
+                }
+                else if (action == NotifyCollectionChangedAction.Remove)
+                {
+                    foreach (var value in change)
+                    {
+                        container.Items.Remove(_realm.All<OrderedObject>().Single(o => o.Order == value));
+                    }
+                }
+            });
+
+            TestHelpers.RunEventLoop();
+            Assert.That(error, Is.Null);
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            var arg = eventArgs[0];
+            if (action == NotifyCollectionChangedAction.Add)
+            {
+                Assert.That(arg.Action == action);
+                Assert.That(arg.NewStartingIndex, Is.EqualTo(initial.Length));
+                Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
+            }
+            else if (action == NotifyCollectionChangedAction.Remove)
+            {
+                if (startIndex < 0)
+                {
+                    Assert.That(arg.Action == NotifyCollectionChangedAction.Reset);
+                }
+                else
+                {
+                    Assert.That(arg.Action == action);
+                    Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
+                    Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
+                }
             }
         }
 
@@ -344,6 +616,8 @@ namespace IntegrationTests.Shared
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4 }, 3);
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Add, new int[] { 4, 5 }, 3);
             yield return new TestCaseData(new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 3, 4 }, 2);
+
+            // When we have non-consecutive adds/removes, we should raise Reset, indicated by -1 here.
             yield return new TestCaseData(new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1);
             yield return new TestCaseData(new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 2, 4 }, -1);
         }
