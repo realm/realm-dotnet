@@ -34,7 +34,7 @@ namespace IntegrationTests.XamarinIOS
             {
                 using (var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml")))
                 {
-                    IntegrationTests.Shared.TestRunner.Run("iOS", output);
+                    IntegrationTests.TestRunner.Run("iOS", output);
                 }
 
                 return;

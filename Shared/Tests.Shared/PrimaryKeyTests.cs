@@ -24,7 +24,7 @@ using System.Threading;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.Shared
+namespace IntegrationTests
 {
     // using classes from TestObjects.cs
     [TestFixture, Preserve(AllMembers = true)]

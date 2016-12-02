@@ -202,11 +202,14 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed. Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Add<T>(T obj, bool update) where T : RealmObject
+        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
+        public T Add<T>(T obj, bool update) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return default(T);
         }
 
         /// <summary>
@@ -218,6 +221,7 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         public void Add(RealmObject obj, bool update = false)
