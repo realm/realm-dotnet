@@ -753,6 +753,7 @@ public class ModuleWeaver
                         il.Append(il.Create(OpCodes.Ldfld, field));
                         il.Append(il.Create(OpCodes.Ldarg_2));
                         il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { field.FieldType } }));
+                        il.Append(il.Create(OpCodes.Pop));
                     }
                     else if (!property.IsNullable())
                     {
