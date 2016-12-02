@@ -74,7 +74,7 @@ namespace Tests.Sync.Shared
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
                 var session = realm.GetSession();
-                session.Error += (o, e) => errors.Add(e.GetException());
+                session.Error += (o, e) => errors.Add(e.Exception);
 
                 while (!errors.Any())
                 {
@@ -97,7 +97,7 @@ namespace Tests.Sync.Shared
             using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
             {
                 var session = realm.GetSession();
-                session.Error += (o, e) => errors.Add(e.GetException());
+                session.Error += (o, e) => errors.Add(e.Exception);
 
                 while (!errors.Any())
                 {

@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 
 namespace Realms.Sync
@@ -43,9 +42,9 @@ namespace Realms.Sync
 
         private List<ErrorEventArgs> _aggregatedErrors = new List<ErrorEventArgs>();
 
-        private event ErrorEventHandler _error;
+        private event EventHandler<ErrorEventArgs> _error;
 
-        public event ErrorEventHandler Error
+        public event EventHandler<ErrorEventArgs> Error
         {
             add
             {
