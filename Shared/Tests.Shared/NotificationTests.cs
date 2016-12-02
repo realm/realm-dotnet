@@ -146,7 +146,7 @@ namespace IntegrationTests
             Exception error = null;
             _realm.Error += (sender, e) =>
             {
-                error = e.GetException();
+                error = e.Exception;
             };
 
             var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
@@ -237,7 +237,7 @@ namespace IntegrationTests
             Exception error = null;
             _realm.Error += (sender, e) =>
             {
-                error = e.GetException();
+                error = e.Exception;
             };
 
             var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
@@ -468,7 +468,7 @@ namespace IntegrationTests
             Exception error = null;
             _realm.Error += (sender, e) =>
             {
-                error = e.GetException();
+                error = e.Exception;
             };
 
             var collection = container.Items.AsRealmCollection();
@@ -540,7 +540,7 @@ namespace IntegrationTests
             Exception error = null;
             _realm.Error += (sender, e) =>
             {
-                error = e.GetException();
+                error = e.Exception;
             };
 
             var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
