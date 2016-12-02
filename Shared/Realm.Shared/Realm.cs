@@ -212,7 +212,10 @@ namespace Realms
             _realmChanged?.Invoke(this, e);
         }
 
-        public event ErrorEventHandler Error;
+        /// <summary>
+        /// Triggered when a Realm-level exception has occurred.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
 
         internal void NotifyError(Exception ex)
         {

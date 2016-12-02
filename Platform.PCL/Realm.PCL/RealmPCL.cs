@@ -95,6 +95,11 @@ namespace Realms
         public event RealmChangedEventHandler RealmChanged;
 
         /// <summary>
+        /// Triggered when a Realm-level exception has occurred.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
+
+        /// <summary>
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>

@@ -83,6 +83,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenSetterMethodInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmCollectionBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\CollectionHandleBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />
