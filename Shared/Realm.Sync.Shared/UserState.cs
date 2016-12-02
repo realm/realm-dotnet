@@ -29,7 +29,7 @@ namespace Realms.Sync
         LoggedOut,
 
         /// <summary>
-        /// The user is logged in, and any Realms associated with it are syncing with the Realm Object Server.
+        /// The user is logged in, and any Realms associated with it are synchronizing with the Realm Object Server.
         /// </summary>
         Active,
 

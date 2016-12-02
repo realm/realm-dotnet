@@ -87,7 +87,7 @@ namespace Realms.Sync
         /// <summary>
         /// Creates <see cref="Credentials"/> based on a Facebook login.
         /// </summary>
-        /// <param name="facebookToken">A Facebook authentication  token, obtained by logging into Facebook.</param>
+        /// <param name="facebookToken">A Facebook authentication token, obtained by logging into Facebook.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Facebook(string facebookToken)
         {
@@ -102,7 +102,7 @@ namespace Realms.Sync
         /// <summary>
         /// Creates <see cref="Credentials"/> based on a Google login.
         /// </summary>
-        /// <param name="googleToken">A Facebook authentication  token, obtained by logging into Google.</param>
+        /// <param name="googleToken">A Google authentication token, obtained by logging into Google.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Google(string googleToken)
         {
@@ -117,7 +117,7 @@ namespace Realms.Sync
         /// <summary>
         /// Creates <see cref="Credentials"/> based on a Twitter login.
         /// </summary>
-        /// <param name="twitterToken">A Facebook authentication  token, obtained by logging into Twitter.</param>
+        /// <param name="twitterToken">A Twitter authentication token, obtained by logging into Twitter.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Twitter(string twitterToken)
         {

@@ -23,8 +23,8 @@ namespace Realms.Sync
 {
     /// <summary>
     /// This class represents a user on the Realm Object Server. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
-    /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm.Moreover, synchronization is halted when the user is logged out.
-    /// It is possible to persist a user.By retrieving a user, there is no need to log in to the 3rd party provider again.Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
+    /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
+    /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
     public class User
     {

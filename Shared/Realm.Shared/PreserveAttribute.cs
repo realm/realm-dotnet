@@ -31,7 +31,7 @@ namespace Realms
         public bool Conditional { get; set; }
 #else
         /// <summary>
-        /// Ensures that all members of this type are preserved.
+        /// When used on a class rather than a property, ensures that all members of this type are preserved.
         /// </summary>
         public bool AllMembers;
 

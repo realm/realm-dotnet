@@ -650,7 +650,7 @@ namespace Realms
         ///     }
         /// });
         /// </c>
-        /// Note that in the action, we use <c>tempRealm</c>.
+        /// Note that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>

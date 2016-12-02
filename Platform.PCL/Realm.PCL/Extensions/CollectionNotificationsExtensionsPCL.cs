@@ -19,13 +19,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Realms
 {
-    /// <summary>
-    /// Realm results collection changed.
-    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class CollectionNotificationsExtensions
     {
         /// <summary>

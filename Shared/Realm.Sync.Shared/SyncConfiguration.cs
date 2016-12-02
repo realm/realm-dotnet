@@ -22,7 +22,7 @@ namespace Realms.Sync
 {
     /// <summary>
     /// An SyncConfiguration is used to setup a Realm that can be synchronized between devices using the Realm Object Server.
-    /// A valid <see cref="User"/> is required to create a SyncConfiguration.
+    /// A valid <see cref="User"/> is required to create a <see cref="SyncConfiguration"/>.
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
