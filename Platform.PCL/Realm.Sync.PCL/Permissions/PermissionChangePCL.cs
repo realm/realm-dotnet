@@ -33,7 +33,6 @@ namespace Realms.Sync.Permissions
     /// side-effect this causes that the default permissions are permanently
     /// materialized for the affected Realm files and the affected user.
     /// </remarks>
-    [Preserve(AllMembers = true)]
     public class PermissionChange : RealmObject, IPermissionObject
     {
         /// <inheritdoc />
