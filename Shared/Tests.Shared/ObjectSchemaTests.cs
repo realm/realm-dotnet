@@ -44,7 +44,7 @@ namespace IntegrationTests
             Assert.That(prop.IsNullable, Is.False);
         }
 
-        [Explicit]
+        [Realms.Explicit]
         private class ExplicitClass : RealmObject
         {
             public int Foo { get; set; }
