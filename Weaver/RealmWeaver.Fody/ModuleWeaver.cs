@@ -858,6 +858,7 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
                     il.Append(il.Create(OpCodes.Ldarg_2));
                     il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
+                    il.Append(il.Create(OpCodes.Pop));
 
                     // Property.Add(list[i]);
                     il.Append(il.Create(OpCodes.Ldloc_0));

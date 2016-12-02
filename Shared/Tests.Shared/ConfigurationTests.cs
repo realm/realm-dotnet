@@ -21,7 +21,7 @@ using System.IO;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace IntegrationTests.Shared
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ConfigurationTests

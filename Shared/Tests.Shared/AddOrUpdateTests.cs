@@ -667,6 +667,92 @@ namespace IntegrationTests.Shared
             Assert.That(_realm.All<NullablePrimaryKeyObject>().Count(), Is.EqualTo(1));
         }
 
+        [Test]
+        public void Add_ShouldReturnPassedInObject()
+        {
+            var first = new Person
+            {
+                FirstName = "Peter"
+            };
+
+            Person added = null;
+            _realm.Write(() =>
+            {
+                added = _realm.Add(first, update: false);
+            });
+
+            Assert.That(added, Is.SameAs(first));
+        }
+
+        [Test]
+        public void AddOrUpdate_ShouldReturnPassedInObject()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "1"
+            };
+
+            PrimaryKeyObject firstAdded = null;
+            _realm.Write(() =>
+            {
+                firstAdded = _realm.Add(first, update: true);
+            });
+
+            Assert.That(firstAdded, Is.SameAs(first));
+
+            var second = new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "2"
+            };
+
+            PrimaryKeyObject secondAdded = null;
+            _realm.Write(() =>
+            {
+                secondAdded = _realm.Add(second, update: true);
+            });
+
+            Assert.That(secondAdded, Is.SameAs(second));
+            Assert.That(first.StringValue, Is.EqualTo("2"));
+            Assert.That(firstAdded.StringValue, Is.EqualTo("2"));
+            Assert.That(second.StringValue, Is.EqualTo("2"));
+            Assert.That(secondAdded.StringValue, Is.EqualTo("2"));
+        }
+
+        [Test]
+        public void Add_ShouldReturnManaged()
+        {
+            Person person = null;
+            _realm.Write(() =>
+            {
+                person = _realm.Add(new Person
+                {
+                    FirstName = "Peter"
+                });
+            });
+
+            Assert.That(person.IsManaged);
+            Assert.That(person.FirstName == "Peter");
+        }
+
+        [Test]
+        public void AddOrUpdate_ShouldReturnManaged()
+        {
+            PrimaryKeyObject item = null;
+            _realm.Write(() =>
+            {
+                item = _realm.Add(new PrimaryKeyObject
+                {
+                    Id = 1,
+                    StringValue = "1"
+                }, update: true);
+            });
+
+            Assert.That(item.IsManaged);
+            Assert.That(item.StringValue == "1");
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]
