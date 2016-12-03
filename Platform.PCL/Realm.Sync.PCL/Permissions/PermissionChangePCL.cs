@@ -79,10 +79,5 @@ namespace Realms.Sync.Permissions
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
         public bool? MayManage { get; set; }
-
-        public PermissionChange()
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
     }
 }
