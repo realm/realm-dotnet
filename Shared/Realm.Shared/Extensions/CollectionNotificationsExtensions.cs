@@ -24,6 +24,9 @@ using System.Linq;
 
 namespace Realms
 {
+    /// <summary>
+    /// A set of extensions methods exposing notification-related functionality over collections.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class CollectionNotificationsExtensions
     {
@@ -102,7 +105,7 @@ namespace Realms
         /// <param name="errorCallback">The parameter is not used.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
         {

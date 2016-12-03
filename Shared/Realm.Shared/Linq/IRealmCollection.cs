@@ -72,7 +72,7 @@ namespace Realms
     public delegate void NotificationCallbackDelegate<T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All()"/> or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All"/> or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection

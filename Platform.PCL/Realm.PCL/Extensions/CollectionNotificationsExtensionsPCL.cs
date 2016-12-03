@@ -24,6 +24,9 @@ using System.Linq;
 
 namespace Realms
 {
+    /// <summary>
+    /// A set of extensions methods exposing notification-related functionality over collections.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class CollectionNotificationsExtensions
     {
