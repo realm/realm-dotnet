@@ -18,9 +18,12 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception, thrown when you try to open a Realm file with a different RealmConfiguration.
+    /// </summary>
     public class RealmMismatchedConfigException : RealmException
     {
-        public RealmMismatchedConfigException(string message) : base(message)
+        internal RealmMismatchedConfigException(string message) : base(message)
         {
         }
     }

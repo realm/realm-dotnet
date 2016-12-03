@@ -16,15 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Sync
 {
     /// <summary>
-    /// An exception thrown when trying to lookup an object by primary key, when the object doesn't have PrimaryKey specified.
+    /// The current state of a sync session object.
     /// </summary>
-    public class RealmClassLacksPrimaryKeyException : RealmException
+    public enum SessionState
     {
-        internal RealmClassLacksPrimaryKeyException(string message) : base(message)
-        {
-        }
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Authenticating,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Binding,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Bound,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Initial,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Stopped,
+
+        /// <summary>
+        /// Will be changed soon.
+        /// </summary>
+        Unbound
     }
 }

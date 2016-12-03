@@ -20,14 +20,34 @@ using System;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// An SyncConfiguration is used to setup a Realm that can be synchronized between devices using the Realm Object Server.
+    /// A valid <see cref="User"/> is required to create a <see cref="SyncConfiguration"/>.
+    /// </summary>
+    /// <seealso cref="User.LoginAsync"/>
+    /// <seealso cref="Credentials"/>
     public class SyncConfiguration : RealmConfiguration
     {
+        /// <summary>
+        /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
+        /// </summary>
         public Uri ServerUri { get; private set; }
 
+        /// <summary>
+        /// Gets the user used to create this SyncConfiguration.
+        /// </summary>
         public User User { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the Realm file should be deleted once the <see cref="User"/> logs out.
+        /// </summary>
         public bool ShouldDeleteRealmOnLogOut { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
+        /// </summary>
+        /// <param name="user">A valid <see cref="User"/>.</param>
+        /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
         public SyncConfiguration(User user, Uri serverUri)
         {
             User = user;

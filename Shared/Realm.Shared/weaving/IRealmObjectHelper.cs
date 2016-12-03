@@ -18,12 +18,30 @@
 
 namespace Realms.Weaving
 {
+    /// <summary>
+    /// A helper class for internal use. Helper classes are generated automatically and provide strongly typed class-specific convenience methods.
+    /// </summary>
     public interface IRealmObjectHelper
     {
+        /// <summary>
+        /// Creates an instance of a RealmObject.
+        /// </summary>
+        /// <returns>The RealmObject.</returns>
         RealmObject CreateInstance();
 
+        /// <summary>
+        /// A strongly typed, optimized method to add a RealmObject to the realm.
+        /// </summary>
+        /// <param name="instance">The RealmObject to add.</param>
+        /// <param name="update">If set to <c>true</c>, update the existing value (if any). Otherwise, try to add and throw if an object with the same primary key already exists.</param>
         void CopyToRealm(RealmObject instance, bool update);
 
+        /// <summary>
+        /// Tries the get primary key value from a RealmObject.
+        /// </summary>
+        /// <returns><c>true</c>, if the class has primary key, <c>false</c> otherwise.</returns>
+        /// <param name="instance">The RealmObject instance.</param>
+        /// <param name="value">The value of the primary key.</param>
         bool TryGetPrimaryKeyValue(RealmObject instance, out object value);
     }
 }

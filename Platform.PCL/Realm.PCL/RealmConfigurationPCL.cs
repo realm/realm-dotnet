@@ -83,8 +83,21 @@ namespace Realms
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
         public ulong SchemaVersion { get; set; }
 
+        /// <summary>
+        /// In order to handle manual migrations, you need to supply one of these to your <c>RealmConfiguration</c>.
+        /// It will be called with a <c>Migration</c> instance containing the pre- and the post-migration realm.
+        /// You should make sure that the <c>NewRealm</c> property on it contains a database that is up
+        /// to date when returning.
+        /// The <c>oldSchemaVersion</c> parameter will tell you which version the user is migrating *from*.
+        /// They should always be migrating to the current version.
+        /// </summary>
+        /// <param name="migration">The <see cref="Migration"/> instance, containing information about the old and the new realm.</param>
+        /// <param name="oldSchemaVersion">An unsigned long value indicating the schema version of the old realm.</param>
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
+        /// <summary>
+        /// Gets or sets the migration callback.
+        /// </summary>
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         /// <summary>

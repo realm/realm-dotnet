@@ -18,8 +18,18 @@
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// An exception thrown when an error has occurred during authentication. It usually indicates a logical problem with the request that can be investigated by inspecting the ErrorCode property.
+    /// </summary>
     public class AuthenticationException : HttpException
     {
+        /// <summary>
+        /// Gets the <see cref="ErrorCode"/> of the error.
+        /// </summary>
         public ErrorCode ErrorCode { get; }
+
+        internal AuthenticationException()
+        {
+        }
     }
 }

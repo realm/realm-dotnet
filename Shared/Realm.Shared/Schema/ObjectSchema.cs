@@ -45,7 +45,7 @@ namespace Realms.Schema
         /// </summary>
         public int Count => _properties.Count;
 
-        public Property? PrimaryKeyProperty { get; }
+        internal Property? PrimaryKeyProperty { get; }
 
         internal Type Type;
 
@@ -156,6 +156,10 @@ namespace Realms.Schema
             /// </summary>
             public string Name { get; }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ObjectSchema.Builder"/> class.
+            /// </summary>
+            /// <param name="name">The name of the class that will be built.</param>
             public Builder(string name)
             {
                 if (string.IsNullOrEmpty(name))

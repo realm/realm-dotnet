@@ -22,8 +22,14 @@ using System.Collections.Specialized;
 
 namespace Realms
 {
+    /// <summary>
+    /// A realm collection, exposing the ObjectSchema of the contained objects.
+    /// </summary>
     public interface IRealmCollection
     {
+        /// <summary>
+        /// Gets the object schema of the contained objects.
+        /// </summary>
         Schema.ObjectSchema ObjectSchema { get; }
     }
 
@@ -66,11 +72,8 @@ namespace Realms
     public delegate void NotificationCallbackDelegate<T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All()"/> or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All"/> or from a LINQ query expression.
     /// </summary>
-    /// <remarks>Implements <a hlink="https://msdn.microsoft.com/en-us/library/system.linq.iorderedqueryable">IOrderedQueryable</a>.  <br />
-    /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
-    /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection
     {

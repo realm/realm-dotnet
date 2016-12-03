@@ -53,6 +53,12 @@
     </Compile>
     <Compile Include="Permissions\PermissionChangePCL.cs" />
     <Compile Include="Permissions\UserPermissionsExtensionsPCL.cs" />
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\SessionState.cs">
+      <Link>SessionState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\UserState.cs">
+      <Link>UserState.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

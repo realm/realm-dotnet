@@ -78,7 +78,7 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
-        }  // GetInstance
+        }
 
         #endregion
 
@@ -90,7 +90,7 @@ namespace Realms
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
         /// <summary>
-        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// Triggered when a realm has changed (i.e. a transaction was committed).
         /// </summary>
         public event RealmChangedEventHandler RealmChanged;
 
@@ -285,18 +285,23 @@ namespace Realms
         /// if they're used on the worker thread.
         /// </remarks>
         /// <example>
+        /// <c>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
-        ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
-        ///         pup.Breed = "Dalmatian";
-        ///         pup.Mum = missis;
-        ///         pup.Dad = pongo;
+        ///         tempRealm.Add(new Dog
+        ///         {
+        ///             Breed = "Dalmatian",
+        ///             Mum = missis,
+        ///             Dad = pongo
+        ///         });
         ///     }
         /// });
+        /// </c>
+        /// Note that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>
@@ -330,7 +335,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Get a view of all the objects of a particular type
+        /// Get a view of all the objects of a particular type.
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>

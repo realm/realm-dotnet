@@ -18,12 +18,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Realms
 {
+    /// <summary>
+    /// A set of extensions methods exposing notification-related functionality over collections.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class CollectionNotificationsExtensions
     {
         /// <summary>
@@ -90,7 +94,7 @@ namespace Realms
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">An error callback that will be invoked if the observing thread raises an error.</param>
+        /// <param name="errorCallback">The parameter is not used.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>
@@ -105,8 +109,8 @@ namespace Realms
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">Ignored.</param>
-        /// <param name="coalesceMultipleChangesIntoReset">Ignored.</param>
+        /// <param name="errorCallback">The parameter is not used.</param>
+        /// <param name="coalesceMultipleChangesIntoReset">The parameter is not used.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications(NotificationCallbackDelegate{T})"/>

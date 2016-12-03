@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,15 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Sync
 {
     /// <summary>
-    /// An exception, raised when file decryption is unsuccessful, most likely due to invalid EncryptionKey.
+    /// The state of the user object.
     /// </summary>
-    public class RealmDecryptionFailedException : RealmFileAccessErrorException
+    public enum UserState
     {
-        internal RealmDecryptionFailedException(string message) : base(message)
-        {
-        }
+        /// <summary>
+        /// The user is logged out. Call <see cref="User.LoginAsync"/> with valid credentials to log the user back in.
+        /// </summary>
+        LoggedOut,
+
+        /// <summary>
+        /// The user is logged in, and any Realms associated with it are synchronizing with the Realm Object Server.
+        /// </summary>
+        Active,
+
+        /// <summary>
+        /// The user has encountered a fatal error state, and cannot be used.
+        /// </summary>
+        Error
     }
 }

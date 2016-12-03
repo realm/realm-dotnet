@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.ComponentModel;
 
 namespace Realms.Sync.Permissions
 {
+    /// <summary>
+    /// A set of extensions methods over the <see cref="User"/> class that expose functionality for managing synchronized Realm permissions.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class UserPermissionsExtensions
     {
@@ -32,8 +34,8 @@ namespace Realms.Sync.Permissions
         /// giving other users access to Realms.
         /// </remarks>
         /// <seealso cref="!:https://realm.io/docs/realm-object-server/#permissions">How to control permissions</seealso>
-        /// <param name="user">The user whose Management Realm to get</param>
-        /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user</returns>
+        /// <param name="user">The user whose Management Realm to get.</param>
+        /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
         public static Realm GetManagementRealm(this User user)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
