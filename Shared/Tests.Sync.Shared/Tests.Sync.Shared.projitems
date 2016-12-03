@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CredentialsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PermissionsTests.cs" />
   </ItemGroup>
 </Project>

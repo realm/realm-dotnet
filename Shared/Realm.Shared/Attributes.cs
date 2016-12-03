@@ -74,4 +74,13 @@ namespace Realms
     public class WovenPropertyAttribute : Attribute
     {
     }
+
+    /// <summary>
+    /// Do not implicitly add the type decorated by this attribute to a Realm's schema unless it has been explicitly set.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    internal class ExplicitAttribute : Attribute
+    {
+    }
 }

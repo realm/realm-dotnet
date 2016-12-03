@@ -43,5 +43,17 @@ namespace IntegrationTests
 
             Assert.That(prop.IsNullable, Is.False);
         }
+
+        [Realms.Explicit]
+        private class ExplicitClass : RealmObject
+        {
+            public int Foo { get; set; }
+        }
+
+        [Test]
+        public void Class_WhenExplicit_ShouldNotBeInDefaultSchema()
+        {
+            Assert.That(RealmSchema.Default.Find(nameof(ExplicitClass)), Is.Null);
+        }
     }
 }

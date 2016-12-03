@@ -21,10 +21,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\AuthenticationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\HttpException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\UserPermissionsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\IPermissionObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
     <Folder Include="$(MSBuildThisFileDirectory)Native\" />
     <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Permissions\" />
   </ItemGroup>
 </Project>
