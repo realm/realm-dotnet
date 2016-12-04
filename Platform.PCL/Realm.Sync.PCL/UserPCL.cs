@@ -31,7 +31,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
-        public string RefreshToken
+        public virtual string RefreshToken
         {
             get
             {
@@ -43,7 +43,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
         /// </summary>
-        public string Identity
+        public virtual string Identity
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the server URI that was used for authentication.
         /// </summary>
-        public Uri ServerUri
+        public virtual Uri ServerUri
         {
             get
             {
@@ -67,7 +67,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the current state of the user.
         /// </summary>
-        public UserState State
+        public virtual UserState State
         {
             get
             {

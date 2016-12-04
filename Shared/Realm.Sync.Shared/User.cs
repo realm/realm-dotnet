@@ -51,7 +51,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the server URI that was used for authentication.
         /// </summary>
-        public Uri ServerUri
+        public virtual Uri ServerUri
         {
             get
             {

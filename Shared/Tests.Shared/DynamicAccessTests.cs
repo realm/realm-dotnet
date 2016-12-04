@@ -34,7 +34,7 @@ namespace IntegrationTests
     public class DynamicAccessTests
     {
         protected Realm _realm;
-        private RealmConfiguration _configuration = new RealmConfiguration
+        private RealmConfigurationBase _configuration = new RealmConfiguration
         {
             ObjectClasses = new[] { typeof(AllTypesObject) },
             Dynamic = true

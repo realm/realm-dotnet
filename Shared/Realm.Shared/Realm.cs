@@ -70,7 +70,7 @@ namespace Realms
         /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error preventing file creation.</exception>
         public static Realm GetInstance(string databasePath)
         {
-            var config = RealmConfiguration.DefaultConfiguration;
+            var config = (RealmConfigurationBase)RealmConfiguration.DefaultConfiguration;
             if (!string.IsNullOrEmpty(databasePath))
             {
                 config = config.ConfigWithPath(databasePath);
@@ -85,13 +85,13 @@ namespace Realms
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error, preventing file creation.</exception>
-        public static Realm GetInstance(RealmConfiguration config = null)
+        public static Realm GetInstance(RealmConfigurationBase config = null)
         {
             return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static Realm GetInstance(RealmConfiguration config, RealmSchema schema)
+        internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
         {
             if (config == null)
             {
@@ -126,11 +126,11 @@ namespace Realms
         public RealmSchema Schema { get; }
 
         /// <summary>
-        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
+        /// Gets the <see cref="RealmConfigurationBase"/> that controls this realm's path and other settings.
         /// </summary>
-        public RealmConfiguration Config { get; private set; }
+        public RealmConfigurationBase Config { get; private set; }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
@@ -316,7 +316,7 @@ namespace Realms
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
-        public static void DeleteRealm(RealmConfiguration configuration)
+        public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
             // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread

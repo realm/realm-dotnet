@@ -84,14 +84,14 @@ namespace IntegrationTests
         {
             // Arrange
             var config = new RealmConfiguration();
-            RealmConfiguration.DefaultConfiguration = config.ConfigWithPath("fred.realm");
+            RealmConfiguration.DefaultConfiguration = (RealmConfiguration)config.ConfigWithPath("fred.realm");
 
             // Assert
             Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
         }
 
         [Test]
-        public void ConfigurationsAreSame()
+        public void ConfigurationsAreEquals()
         {
             // Arrange
             var config1 = new RealmConfiguration("fred.realm");
@@ -99,6 +99,10 @@ namespace IntegrationTests
 
             // Assert
             Assert.That(config1, Is.EqualTo(config2));
+
+            var base1 = (RealmConfigurationBase)config1;
+            Assert.That(base1, Is.EqualTo(config2));
+            Assert.That(config2, Is.EqualTo(base1));
         }
 
         [Test]
@@ -107,7 +111,10 @@ namespace IntegrationTests
             // Arrange
             var config1 = new RealmConfiguration("fred.realm");
             var config2 = new RealmConfiguration("barney.realm");
-            var config1b = new RealmConfiguration("fred.realm", true);
+            var config1b = new RealmConfiguration("fred.realm")
+            {
+                ShouldDeleteIfMigrationNeeded = true
+            };
 
             // Assert
             Assert.That(config1, Is.Not.EqualTo(config2));
@@ -127,6 +134,18 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void ConfigurationsHaveTheSameHashes()
+        {
+            // Arrange
+            var config1 = new RealmConfiguration("ConfigurationsHaveTheSameHashes.realm");
+            var config2 = new RealmConfiguration("ConfigurationsHaveTheSameHashes.realm");
+
+            // Assert
+            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));
+            Assert.That(config1.GetHashCode(), Is.EqualTo(config2.GetHashCode()));
+        }
+
+        [Test]
         public void EncryptionKeyMustBe64Bytes()
         {
             ReliesOnEncryption();
@@ -142,7 +161,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ValidEncryptionKeyAcceoted()
+        public void ValidEncryptionKeyAccepted()
         {
             ReliesOnEncryption();
 

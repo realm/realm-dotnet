@@ -61,7 +61,7 @@ namespace IntegrationTests
             public IList<DynamicDog> Dogs { get; }
         }
 
-        private RealmConfiguration _configuration;
+        private RealmConfigurationBase _configuration;
         private Realm _realm;
 
         public DynamicRelationshipTests(DynamicTestObjectType mode)
