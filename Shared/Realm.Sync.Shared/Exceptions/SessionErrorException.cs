@@ -21,32 +21,6 @@ using System;
 namespace Realms.Sync
 {
     /// <summary>
-    /// Different kinds of errors a <see cref="Session"/> object can emit.
-    /// </summary>
-    public enum SessionErrorKind
-    {
-        /// <summary>
-        /// An informational error, nothing to do. Only for debug purposes.
-        /// </summary>
-        Debug = 0,
-
-        /// <summary>
-        /// The session is invalid and should be killed.
-        /// </summary>
-        SessionFatal,
-
-        /// <summary>
-        /// Permissions error with the session.
-        /// </summary>
-        AccessDenied,
-
-        /// <summary>
-        /// The user associated with the session is invalid.
-        /// </summary>
-        UserFatal
-    }
-
-    /// <summary>
     /// An exception type that describes a session-level error condition.
     /// </summary>
     public class SessionErrorException : Exception
@@ -54,12 +28,12 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the kind of session error this exception represents.
         /// </summary>
-        public SessionErrorKind Kind { get; private set; }
+        public SessionErrorKind Kind { get; }
 
         /// <summary>
         /// Gets the error code that describes the session error this exception represents.
         /// </summary>
-        public ErrorCode ErrorCode { get; private set; }
+        public ErrorCode ErrorCode { get; }
 
         internal SessionErrorException(string message, SessionErrorKind kind, ErrorCode errorCode) : base(message)
         {

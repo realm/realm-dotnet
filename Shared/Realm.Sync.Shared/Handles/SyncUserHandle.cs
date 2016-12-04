@@ -50,51 +50,39 @@ namespace Realms.Sync
             public static extern void destroy(IntPtr syncuserHandle);
         }
 
-        public string Identity
+        public string GetIdentity()
         {
-            get
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
-                return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                {
-                    isNull = false;
-                    return NativeMethods.get_identity(this, buffer, length, out ex);
-                });
-            }
+                isNull = false;
+                return NativeMethods.get_identity(this, buffer, length, out ex);
+            });
         }
 
-        public string RefreshToken
+        public string GetRefreshToken()
         {
-            get
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
-                return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                {
-                    isNull = false;
-                    return NativeMethods.get_refresh_token(this, buffer, length, out ex);
-                });
-            }
+                isNull = false;
+                return NativeMethods.get_refresh_token(this, buffer, length, out ex);
+            });
         }
 
-        public string ServerUrl
+        public string GetServerUrl()
         {
-            get
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
-                return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                {
-                    isNull = false;
-                    return NativeMethods.get_server_url(this, buffer, length, out ex);
-                });
-            }
+                isNull = false;
+                return NativeMethods.get_server_url(this, buffer, length, out ex);
+            });
         }
 
-        public UserState State
+        public UserState GetState()
         {
-            get
-            {
-                NativeException ex;
-                var result = NativeMethods.get_state(this, out ex);
-                ex.ThrowIfNecessary();
-                return result;
-            }
+            NativeException ex;
+            var result = NativeMethods.get_state(this, out ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         public void LogOut()

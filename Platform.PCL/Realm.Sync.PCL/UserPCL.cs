@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
     /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
-    public class User
+    public class User : IEquatable<User>
     {
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
@@ -94,6 +94,13 @@ namespace Realms.Sync
         public void LogOut()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <inheritdoc />
+        public bool Equals(User other)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return false;
         }
     }
 }

@@ -26,19 +26,12 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
-public enum UserState
-    {
-        LoggedOut,
-        Active,
-        Error
-    }
-
     /// <summary>
     /// This class represents a user on the Realm Object Server. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
     /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
     /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
-    public class User
+    public class User : IEquatable<User>
     {
         private const int ErrorContentTruncationLimit = 256 * 1024;
 
@@ -48,12 +41,12 @@ public enum UserState
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
-        public string RefreshToken => Handle.RefreshToken;
+        public string RefreshToken => Handle.GetRefreshToken();
 
         /// <summary>
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
         /// </summary>
-        public string Identity => Handle.Identity;
+        public string Identity => Handle.GetIdentity();
 
         /// <summary>
         /// Gets the server URI that was used for authentication.
@@ -62,7 +55,7 @@ public enum UserState
         {
             get
             {
-                var serverUrl = Handle.ServerUrl;
+                var serverUrl = Handle.GetServerUrl();
                 if (string.IsNullOrEmpty(serverUrl))
                 {
                     return null;
@@ -75,7 +68,7 @@ public enum UserState
         /// <summary>
         /// Gets the current state of the user.
         /// </summary>
-        public UserState State => Handle.State;
+        public UserState State => Handle.GetState();
 
         internal readonly SyncUserHandle Handle;
 
@@ -113,16 +106,19 @@ public enum UserState
             Handle.LogOut();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             return Equals(obj as User);
         }
 
+        /// <inheritdoc />
         public bool Equals(User other)
         {
             return Identity.Equals(other?.Identity);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Identity.GetHashCode();

@@ -23,15 +23,6 @@ using System.Threading;
 
 namespace Realms.Sync
 {
-    public enum SessionState
-    {
-        WaitingForAccessToken = 0,
-        Active,
-        Dying,
-        Inactive,
-        Error,
-    }
-
     /// <summary>
     /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
     /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
@@ -44,6 +35,9 @@ namespace Realms.Sync
 
         private event EventHandler<ErrorEventArgs> _error;
 
+        /// <summary>
+        /// Triggered when an error occurs on this session.
+        /// </summary>
         public event EventHandler<ErrorEventArgs> Error
         {
             add
@@ -66,17 +60,17 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
         /// </summary>
-        public Uri ServerUri => new Uri(Handle.ServerUri);
+        public Uri ServerUri => new Uri(Handle.GetServerUri());
 
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
-        public SessionState State => Handle.State;
+        public SessionState State => Handle.GetState();
 
         /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
-        public User User => new User(Handle.User);
+        public User User => new User(Handle.GetUser());
 
         internal readonly SessionHandle Handle;
 

@@ -19,33 +19,28 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// The current state of a sync session object.
+    /// Different kinds of errors a <see cref="Session"/> object can emit.
     /// </summary>
-    public enum SessionState
+    public enum SessionErrorKind
     {
         /// <summary>
-        /// The session is waiting for an access token.
+        /// An informational error, nothing to do. Only for debug purposes.
         /// </summary>
-        WaitingForAccessToken = 0,
+        Debug = 0,
 
         /// <summary>
-        /// The session is connected to the Realm Object Server and is actively transferring data.
+        /// The session is invalid and should be killed.
         /// </summary>
-        Active,
+        SessionFatal,
 
         /// <summary>
-        /// The session is performing clean-up work in preparation to be destroyed.
+        /// Permissions error with the session.
         /// </summary>
-        Dying,
+        AccessDenied,
 
         /// <summary>
-        /// The user owning this session has logged out and the sesion has disconnected from the Realm Object Server.
+        /// The user associated with the session is invalid.
         /// </summary>
-        Inactive,
-
-        /// <summary>
-        /// A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created with a different configuration.
-        /// </summary>
-        Error,
+        UserFatal
     }
 }

@@ -24,6 +24,8 @@ using NUnit.Framework;
 using Realms;
 using Realms.Sync;
 
+using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
+
 namespace Tests.Sync.Shared
 {
     [TestFixture, Preserve(AllMembers = true)]

@@ -51,38 +51,29 @@ namespace Realms.Sync
             public static extern void destroy(IntPtr handle);
         }
 
-        public SyncUserHandle User
+        public SyncUserHandle GetUser()
         {
-            get
-            {
-                var handle = new SyncUserHandle();
-                var ptr = NativeMethods.get_user(this);
-                handle.SetHandle(ptr);
-                return handle;
-            }
+            var handle = new SyncUserHandle();
+            var ptr = NativeMethods.get_user(this);
+            handle.SetHandle(ptr);
+            return handle;
         }
 
-        public string ServerUri
+        public string GetServerUri()
         {
-            get
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
-                return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                {
-                    isNull = false;
-                    return NativeMethods.get_uri(this, buffer, length, out ex);
-                });
-            }
+                isNull = false;
+                return NativeMethods.get_uri(this, buffer, length, out ex);
+            });
         }
 
-        public SessionState State
+        public SessionState GetState()
         {
-            get
-            {
-                NativeException ex;
-                var state = NativeMethods.get_state(this, out ex);
-                ex.ThrowIfNecessary();
-                return state;
-            }
+            NativeException ex;
+            var state = NativeMethods.get_state(this, out ex);
+            ex.ThrowIfNecessary();
+            return state;
         }
 
         public void RefreshAccessToken(string accessToken, string serverPath)
@@ -105,7 +96,7 @@ namespace Realms.Sync
             NativeMethods.destroy(handle);
         }
 
-        internal class Comparer : IEqualityComparer<SessionHandle>
+        public class Comparer : IEqualityComparer<SessionHandle>
         {
             public bool Equals(SessionHandle x, SessionHandle y)
             {
