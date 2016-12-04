@@ -284,4 +284,11 @@ REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm, NativeException::Ma
     });
 }
 
+REALM_EXPORT size_t shared_realm_compact(SharedRealm* realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return bool_to_size_t((*realm)->compact());
+    });
+}
+    
 }

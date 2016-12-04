@@ -83,6 +83,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_observed_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmObjectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_compact", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool compact(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
         [Preserve]
@@ -190,6 +194,14 @@ namespace Realms
         {
             NativeException nativeException;
             var result = NativeMethods.get_schema_version(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public bool Compact()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.compact(this, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -226,6 +227,140 @@ namespace IntegrationTests
                 Realm.GetInstance(config);
             },
             "Can't have classes in the list which are not RealmObjects");
+        }
+
+        [Test]
+        public void Compact_ShouldReduceSize()
+        {
+            TestCompact();
+        }
+
+        [Test]
+        public void Compact_WhenInTransaction_ShouldThrow()
+        {
+            var realm = Realm.GetInstance();
+
+            Assert.That(() =>
+            {
+                realm.Write(() =>
+                {
+                    realm.Compact();
+                });
+            }, Throws.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void Compact_WhenOtherInstancesOpen_ShouldReturnFalse()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                AddDummyData(realm);
+
+                long? initialSize = null;
+                long? finalSize = null;
+                bool? success = null;
+
+                Task.Run(() =>
+                {
+                    using (var other = Realm.GetInstance())
+                    {
+                        initialSize = new FileInfo(other.Config.DatabasePath).Length;
+                        success = other.Compact();
+                        finalSize = new FileInfo(other.Config.DatabasePath).Length;
+                    }
+                }).Wait();
+
+                Assert.That(success.Value, Is.False);
+                Assert.That(finalSize.Value, Is.EqualTo(initialSize.Value));
+            }
+        }
+
+        [Test]
+        public void Compact_WhenEncrypted_ShouldReduceSize()
+        {
+            var key = new byte[64];
+            key[0] = 5;
+            var config = new RealmConfiguration
+            {
+                EncryptionKey = key
+            };
+
+            TestCompact(config);
+        }
+
+        [Test]
+        public void Compact_WhenOpenOnSameThread_ShouldReduceSize()
+        {
+            using (var existing = Realm.GetInstance())
+            {
+                TestCompact();
+            }
+        }
+
+        [Test]
+        public void Compact_WhenResultsAreOpen_ShouldReturnFalse()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                var token = realm.All<Person>().SubscribeForNotifications((sender, changes, error) =>
+                {
+                    Console.WriteLine(changes?.InsertedIndices);
+                });
+
+                var success = realm.Compact();
+                Assert.That(success, Is.False);
+                token.Dispose();
+            }
+
+            TestCompact();
+        }
+
+        private static void TestCompact(RealmConfiguration config = null)
+        {
+            using (var realm = Realm.GetInstance(config))
+            {
+                AddDummyData(realm);
+
+                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+
+                var success = realm.Compact();
+                Assert.That(success);
+
+                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.That(initialSize >= finalSize);
+            }
+        }
+
+        private static void AddDummyData(Realm realm)
+        {
+            for (var i = 0; i < 1000; i++)
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new IntPrimaryKeyObject
+                    {
+                        Id = i,
+                        StringValue = "Super secret product " + i
+                    });
+                });
+            }
+
+            for (var i = 0; i < 500; i++)
+            {
+                realm.Write(() =>
+                {
+                    var item = realm.Find<IntPrimaryKeyObject>(2 * i);
+                    realm.Remove(item);
+                });
+            }
+        }
+
+        private class IntPrimaryKeyObject : RealmObject
+        {
+            [PrimaryKey]
+            public int Id { get; set; }
+
+            public string StringValue { get; set; }
         }
     }
 }
