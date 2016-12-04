@@ -31,8 +31,8 @@ namespace IntegrationTests
     {
         private const string SpecialRealmName = "EnterTheMagic.realm";
 
-        [TestFixtureSetUp]
-        public void SetUp()
+        [TearDown]
+        public void TearDown()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
@@ -229,24 +229,53 @@ namespace IntegrationTests
             "Can't have classes in the list which are not RealmObjects");
         }
 
-        [Test]
-        public void Compact_ShouldReduceSize()
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            TestCompact();
+            var config = new RealmConfiguration($"compactrealm_{encrypt}_{populate}.realm");
+            if (encrypt)
+            {
+                config.EncryptionKey = new byte[64];
+                config.EncryptionKey[0] = 5;
+            }
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                if (populate)
+                {
+                    AddDummyData(realm);
+                }
+            }
+
+            var initialSize = new FileInfo(config.DatabasePath).Length;
+
+            Assert.That(Realm.Compact(config));
+
+            var finalSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(initialSize >= finalSize);
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                Assert.That(realm.All<IntPrimaryKeyObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+            }
         }
 
         [Test]
         public void Compact_WhenInTransaction_ShouldThrow()
         {
-            var realm = Realm.GetInstance();
-
-            Assert.That(() =>
+            using (var realm = Realm.GetInstance())
             {
-                realm.Write(() =>
+                Assert.That(() =>
                 {
-                    realm.Compact();
-                });
-            }, Throws.TypeOf<RealmInvalidTransactionException>());
+                    realm.Write(() =>
+                    {
+                        Realm.Compact();
+                    });
+                }, Throws.TypeOf<RealmInvalidTransactionException>());
+            }
         }
 
         [Test]
@@ -256,44 +285,29 @@ namespace IntegrationTests
             {
                 AddDummyData(realm);
 
-                long? initialSize = null;
-                long? finalSize = null;
-                bool? success = null;
+                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.IsFalse(Task.Run(() => Realm.Compact(realm.Config)).Result);
+                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
 
-                Task.Run(() =>
-                {
-                    using (var other = Realm.GetInstance())
-                    {
-                        initialSize = new FileInfo(other.Config.DatabasePath).Length;
-                        success = other.Compact();
-                        finalSize = new FileInfo(other.Config.DatabasePath).Length;
-                    }
-                }).Wait();
-
-                Assert.That(success.Value, Is.False);
-                Assert.That(finalSize.Value, Is.EqualTo(initialSize.Value));
+                Assert.That(finalSize, Is.EqualTo(initialSize));
             }
         }
 
-        [Test]
-        public void Compact_WhenEncrypted_ShouldReduceSize()
+        [Test, Ignore("Currently doesn't work. Ref #947")]
+        public void Compact_WhenOpenOnSameThread_ShouldThrow()
         {
-            var key = new byte[64];
-            key[0] = 5;
-            var config = new RealmConfiguration
+            // TODO: enable when we implement instance caching (#947)
+            // This works because of caching of native instances in ObjectStore.
+            // Technically, we get the same native instance, so Compact goes through.
+            // However, this invalidates the opened realm, but we have no way of communicating that.
+            // That is why, things seem fine until we try to run queries on the opened realm.
+            // Once we handle caching in managed, we should reenable the test.
+            using (var realm = Realm.GetInstance())
             {
-                EncryptionKey = key
-            };
-
-            TestCompact(config);
-        }
-
-        [Test]
-        public void Compact_WhenOpenOnSameThread_ShouldReduceSize()
-        {
-            using (var existing = Realm.GetInstance())
-            {
-                TestCompact();
+                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.IsFalse(Realm.Compact());
+                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.That(finalSize, Is.EqualTo(initialSize));
             }
         }
 
@@ -307,27 +321,8 @@ namespace IntegrationTests
                     Console.WriteLine(changes?.InsertedIndices);
                 });
 
-                var success = realm.Compact();
-                Assert.That(success, Is.False);
+                Assert.IsFalse(Realm.Compact());
                 token.Dispose();
-            }
-
-            TestCompact();
-        }
-
-        private static void TestCompact(RealmConfiguration config = null)
-        {
-            using (var realm = Realm.GetInstance(config))
-            {
-                AddDummyData(realm);
-
-                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-
-                var success = realm.Compact();
-                Assert.That(success);
-
-                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
-                Assert.That(initialSize >= finalSize);
             }
         }
 

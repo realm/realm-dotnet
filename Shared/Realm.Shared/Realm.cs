@@ -113,6 +113,25 @@ namespace Realms
             return config.CreateRealm(schema);
         }
 
+        /// <summary>
+        /// Compacts a Realm file. A Realm file usually contain free/unused space. This method removes this free space and the file size is thereby reduced. Objects within the Realm files are untouched.
+        /// </summary>
+        /// <remarks>
+        /// The realm file must not be open on other threads.
+        /// The file system should have free space for at least a copy of the Realm file.
+        /// This method must not be called inside a transaction.
+        /// The Realm file is left untouched if any file operation fails.
+        /// </remarks>
+        /// <param name="config">Optional configuration.</param>
+        /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
+        public static bool Compact(RealmConfiguration config = null)
+        {
+            using (var realm = GetInstance(config))
+            {
+                return realm.SharedRealmHandle.Compact();
+            }
+        }
+
         #endregion
 
         internal readonly SharedRealmHandle SharedRealmHandle;
@@ -260,21 +279,6 @@ namespace Realms
             }
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
-        }
-
-        /// <summary>
-        /// Compacts a Realm file. A Realm file usually contain free/unused space. This method removes this free space and the file size is thereby reduced. Objects within the Realm files are untouched.
-        /// </summary>
-        /// <remarks>
-        /// The realm file must not be open on other threads.
-        /// The file system should have free space for at least a copy of the Realm file.
-        /// This method must not be called inside a transaction.
-        /// The Realm file is left untouched if any file operation fails.
-        /// </remarks>
-        /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
-        public bool Compact()
-        {
-            return this.SharedRealmHandle.Compact();
         }
 
         /// <summary>
