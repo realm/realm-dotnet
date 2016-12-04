@@ -279,7 +279,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void Compact_WhenOtherInstancesOpen_ShouldReturnFalse()
+        public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
             using (var realm = Realm.GetInstance())
             {
@@ -294,7 +294,7 @@ namespace IntegrationTests
         }
 
         [Test, Ignore("Currently doesn't work. Ref #947")]
-        public void Compact_WhenOpenOnSameThread_ShouldThrow()
+        public void Compact_WhenOpenOnSameThread_ShouldReturnFalse()
         {
             // TODO: enable when we implement instance caching (#947)
             // This works because of caching of native instances in ObjectStore.
