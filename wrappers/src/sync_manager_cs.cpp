@@ -41,16 +41,36 @@ struct SyncConfiguration
 };
 
 void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
+void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, SyncSessionError);
 
 extern "C" {
-REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len, decltype(s_refresh_access_token_callback) refresh_callback)
+REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len, decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback)
 {
     Utf16StringAccessor base_path(base_path_buf, base_path_len);
     SyncManager::shared().configure_file_system(base_path, SyncManager::MetadataMode::NoEncryption);
 
     s_refresh_access_token_callback = refresh_callback;
+    s_session_error_callback = session_error_callback;
 }
 
+static void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
+{
+    if (config.user->is_admin()) {
+        std::async([session, user=config.user]() {
+            session->bind_with_admin_token(user->refresh_token(), user->server_url());
+        });
+    }
+    else {
+        s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
+    }
+}
+
+static void handle_session_error(std::shared_ptr<SyncSession> session, int error_code, std::string message, SyncSessionError error)
+{
+    s_session_error_callback(new std::shared_ptr<SyncSession>(session), error_code, message.c_str(), message.length(), error);
+}
+    
+    
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -65,19 +85,10 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         config.schema = create_schema(objects, objects_length, properties);
         config.schema_version = configuration.schema_version;
 
-        Utf16StringAccessor realm_url(sync_configuration.url, sync_configuration.url_len);
-        auto handler = [=](const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
-            if (config.user->is_admin()) {
-                std::async([session, user=config.user]() {
-                    session->refresh_access_token(user->refresh_token(), user->server_url());
-                });
-            }
-            else {
-                s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
-            }
-        };
-        config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url.to_string(), SyncSessionStopPolicy::AfterChangesUploaded, handler, nullptr});
-        config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url.to_string());
+        std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
+        
+        config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error});
+        config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url);
         return new SharedRealm(Realm::get_shared_realm(config));
     });
 }

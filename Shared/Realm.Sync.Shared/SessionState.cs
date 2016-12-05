@@ -24,33 +24,28 @@ namespace Realms.Sync
     public enum SessionState
     {
         /// <summary>
-        /// Will be changed soon.
+        /// The session is waiting for an access token.
         /// </summary>
-        Authenticating,
+        WaitingForAccessToken = 0,
 
         /// <summary>
-        /// Will be changed soon.
+        /// The session is connected to the Realm Object Server and is actively transferring data.
         /// </summary>
-        Binding,
+        Active,
 
         /// <summary>
-        /// Will be changed soon.
+        /// The session is performing clean-up work in preparation to be destroyed.
         /// </summary>
-        Bound,
+        Dying,
 
         /// <summary>
-        /// Will be changed soon.
+        /// The user owning this session has logged out and the sesion has disconnected from the Realm Object Server.
         /// </summary>
-        Initial,
+        Inactive,
 
         /// <summary>
-        /// Will be changed soon.
+        /// A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created with a different configuration.
         /// </summary>
-        Stopped,
-
-        /// <summary>
-        /// Will be changed soon.
-        /// </summary>
-        Unbound
+        Error,
     }
 }

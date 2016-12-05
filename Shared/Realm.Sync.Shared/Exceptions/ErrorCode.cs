@@ -29,6 +29,76 @@ namespace Realms.Sync
         Unknown = -1,
 
         /// <summary>
+        /// Session has been closed (no error).
+        /// </summary>
+        SessionClosed = 200,
+
+        /// <summary>
+        /// Other session level error has occurred.
+        /// </summary>
+        OtherSessionError = 201,
+
+        /// <summary>
+        /// Access token has already expired.
+        /// </summary>
+        AccessTokenExpired = 202,
+
+        /// <summary>
+        /// Failed to authenticate user.
+        /// </summary>
+        BadUserAuthentication = 203,
+
+        /// <summary>
+        /// Path to Realm is invalid.
+        /// </summary>
+        IllegalRealmPath = 204,
+
+        /// <summary>
+        /// Path points to non-existing Realm.
+        /// </summary>
+        NoSuchRealm = 205,
+
+        /// <summary>
+        /// Permission to Realm has been denied.
+        /// </summary>
+        PermissionDenied = 206,
+
+        /// <summary>
+        /// The server file identifier is invalid.
+        /// </summary>
+        BadServerFileIdentifier = 207,
+
+        /// <summary>
+        /// The client file identifier is invalid.
+        /// </summary>
+        BadClientFileIdentifier = 208,
+
+        /// <summary>
+        /// The server version is invalid.
+        /// </summary>
+        BadServerVersion = 209,
+
+        /// <summary>
+        /// The client version is invalid.
+        /// </summary>
+        BadClientVersion = 210,
+
+        /// <summary>
+        /// Histories have diverged and cannot be merged.
+        /// </summary>
+        DivergingHistories = 211,
+
+        /// <summary>
+        /// The changeset is invalid.
+        /// </summary>
+        BadChangeset = 212,
+
+        /// <summary>
+        /// The session has been disabled.
+        /// </summary>
+        DisabledSession = 213,
+
+        /// <summary>
         /// Your request parameters did not validate.
         /// </summary>
         InvalidParameters = 601,

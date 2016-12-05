@@ -16,25 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.ComponentModel;
-
 namespace Realms.Sync
 {
     /// <summary>
-    /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
+    /// Different kinds of errors a <see cref="Session"/> object can emit.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class RealmExtensions
+    public enum SessionErrorKind
     {
         /// <summary>
-        /// Gets the current session for the specified Realm.
+        /// An informational error, nothing to do. Only for debug purposes.
         /// </summary>
-        /// <returns>The session.</returns>
-        /// <param name="this">The <see cref="Realm"/> to get a session for.</param>
-        public static Session GetSession(this Realm @this)
-        {
-            throw new NotImplementedException();
-        }
+        Debug = 0,
+
+        /// <summary>
+        /// The session is invalid and should be killed.
+        /// </summary>
+        SessionFatal,
+
+        /// <summary>
+        /// Permissions error with the session.
+        /// </summary>
+        AccessDenied,
+
+        /// <summary>
+        /// The user associated with the session is invalid.
+        /// </summary>
+        UserFatal
     }
 }

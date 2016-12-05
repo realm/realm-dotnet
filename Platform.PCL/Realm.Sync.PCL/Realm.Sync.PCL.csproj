@@ -44,7 +44,7 @@
     <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
       <Link>RealmPCLHelpers.cs</Link>
     </Compile>
-    <Compile Include="RealmExtensionsPCL.cs" />
+    <Compile Include="RealmSyncExtensionsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
     <Compile Include="UserPCL.cs" />
@@ -58,6 +58,12 @@
     </Compile>
     <Compile Include="..\..\Shared\Realm.Sync.Shared\UserState.cs">
       <Link>UserState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionErrorException.cs">
+      <Link>Exceptions\SessionErrorException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionErrorKind.cs">
+      <Link>Exceptions\SessionErrorKind.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

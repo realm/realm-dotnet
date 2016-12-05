@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync
@@ -31,8 +32,48 @@ namespace Realms.Sync
                                                            [MarshalAs(UnmanagedType.LPWStr)] string server_path, IntPtr server_path_len,
                                                            out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_user(SessionHandle session);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_uri", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_uri(SessionHandle session, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_state", CallingConvention = CallingConvention.Cdecl)]
+            public static extern SessionState get_state(SessionHandle session, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_from_realm", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_from_realm(SharedRealmHandle realm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_raw_pointer", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_raw_pointer(SessionHandle session);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
+        }
+
+        public SyncUserHandle GetUser()
+        {
+            var handle = new SyncUserHandle();
+            var ptr = NativeMethods.get_user(this);
+            handle.SetHandle(ptr);
+            return handle;
+        }
+
+        public string GetServerUri()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_uri(this, buffer, length, out ex);
+            });
+        }
+
+        public SessionState GetState()
+        {
+            NativeException ex;
+            var state = NativeMethods.get_state(this, out ex);
+            ex.ThrowIfNecessary();
+            return state;
         }
 
         public void RefreshAccessToken(string accessToken, string serverPath)
@@ -42,9 +83,30 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        public static IntPtr SessionForRealm(SharedRealmHandle realm)
+        {
+            NativeException ex;
+            var ptr = NativeMethods.get_from_realm(realm, out ex);
+            ex.ThrowIfNecessary();
+            return ptr;
+        }
+
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        public class Comparer : IEqualityComparer<SessionHandle>
+        {
+            public bool Equals(SessionHandle x, SessionHandle y)
+            {
+                return NativeMethods.get_raw_pointer(x) == NativeMethods.get_raw_pointer(y);
+            }
+
+            public int GetHashCode(SessionHandle obj)
+            {
+                return NativeMethods.get_raw_pointer(obj).GetHashCode();
+            }
         }
     }
 }

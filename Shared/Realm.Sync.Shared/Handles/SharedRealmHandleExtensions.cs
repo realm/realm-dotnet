@@ -35,13 +35,15 @@ namespace Realms.Sync
 
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr user_handle_ptr, IntPtr session_handle_ptr, sbyte* url_buf, IntPtr url_len);
 
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, SessionErrorKind error);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_initialize_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void initialize_sync([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, RefreshAccessTokenCallbackDelegate refresh_callback);
+            public static extern void initialize_sync([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback session_error_callback);
         }
 
         static unsafe SharedRealmHandleExtensions()
         {
-            InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), RefreshAccessTokenCallback);
+            InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), RefreshAccessTokenCallback, HandleSessionError);
         }
 
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -57,9 +59,9 @@ namespace Realms.Sync
             return handle;
         }
 
-        private static void InitializeSync(string basePath, NativeMethods.RefreshAccessTokenCallbackDelegate refreshCallback)
+        private static void InitializeSync(string basePath, NativeMethods.RefreshAccessTokenCallbackDelegate refreshCallback, NativeMethods.SessionErrorCallback sessionErrorCallback)
         {
-            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, refreshCallback);
+            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, refreshCallback, sessionErrorCallback);
         }
 
         #if __IOS__
@@ -71,8 +73,7 @@ namespace Realms.Sync
             userHandle.SetHandle(userHandlePtr);
             var user = new User(userHandle);
 
-            var sessionHandle = new SessionHandle();
-            sessionHandle.SetHandle(sessionHandlePtr);
+            var session = Session.SessionForPointer(sessionHandlePtr);
 
             var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
 
@@ -81,13 +82,26 @@ namespace Realms.Sync
             {
                 if (t.IsFaulted)
                 {
-                    // TODO: raise error event on the session
+                    session.RaiseError(t.Exception.GetBaseException());
                 }
                 else
                 {
-                    sessionHandle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
+                    session.Handle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
                 }
+            }).ContinueWith(t =>
+            {
+                userHandle.Dispose();
             });
+        }
+
+        #if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
+        #endif
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, SessionErrorKind error)
+        {
+            var session = Session.SessionForPointer(sessionHandlePtr);
+            var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
+            session.RaiseError(new SessionErrorException(message, error, errorCode));
         }
     }
 }

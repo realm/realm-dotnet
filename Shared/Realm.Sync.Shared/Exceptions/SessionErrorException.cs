@@ -16,25 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
+using System;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
+    /// An exception type that describes a session-level error condition.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class RealmExtensions
+    public class SessionErrorException : Exception
     {
         /// <summary>
-        /// Gets the current session for the specified Realm.
+        /// Gets the kind of session error this exception represents.
         /// </summary>
-        /// <returns>The session.</returns>
-        /// <param name="this">The <see cref="Realm"/> to get a session for.</param>
-        public static Session GetSession(this Realm @this)
+        public SessionErrorKind Kind { get; }
+
+        /// <summary>
+        /// Gets the error code that describes the session error this exception represents.
+        /// </summary>
+        public ErrorCode ErrorCode { get; }
+
+        internal SessionErrorException(string message, SessionErrorKind kind, ErrorCode errorCode) : base(message)
         {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
+            Kind = kind;
+            ErrorCode = errorCode;
         }
     }
 }

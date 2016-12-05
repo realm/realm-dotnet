@@ -27,6 +27,11 @@ namespace Realms.Sync
     public class Session
     {
         /// <summary>
+        /// Triggered when an error occurs on this session.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
+
+        /// <summary>
         /// Gets the <see cref="SyncConfiguration"/> that is responsible for controlling the session.
         /// </summary>
         public SyncConfiguration Configuration
