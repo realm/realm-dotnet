@@ -221,7 +221,7 @@ def iOSTest(stashName) {
 
 def AndroidTest(stashName) {
   return {
-    node('android') {
+    node('android-hub') {
       deleteDir()
       unstash stashName
 
