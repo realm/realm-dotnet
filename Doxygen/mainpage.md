@@ -57,17 +57,19 @@ class Hero : RealmObject
 
 /// put this code in an OnLoad or simple button-press handler
 
-    var _realm = Realm.GetInstance();
-    using (var trans = _realm.BeginWrite())
+    using (var realm = Realm.GetInstance())
     {
-        var hero = _realm.CreateObject<Hero>();
-        hero.SuperName = "Thor";
-        hero.SuperScore = 100;
-        trans.Commit();
+        realm.Write(() =>
+        {
+            realm.Add(new Hero
+            {
+                SuperName = "Thor",
+                SuperScore = 100
+            });
+        });
+        var numAwe = _realm.All<Hero>().Count();
+        System.Diagnostics.Debug.WriteLine($"Created {numAwe} heroes");
     }
-    var numAwe = _realm.All<Hero>().Count();
-    System.Diagnostics.Debug.WriteLine($"Created {numAwe} heroes");
-    _realm.Close();
 ```
 
 
