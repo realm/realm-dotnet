@@ -96,7 +96,7 @@ namespace IntegrationTests
             t.Join();
 
             // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
+            Assert.False(object.ReferenceEquals(realm1, realm2));
             Assert.False(realm1.IsSameInstance(realm2));
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
 
@@ -112,24 +112,10 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(object.ReferenceEquals(realm1, realm2));
                 Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
                 Assert.That(realm1.IsSameInstance(realm2));
                 Assert.That(realm1, Is.EqualTo(realm2));
-            }
-        }
-
-        [Test]
-        public void InstancesHaveDifferentHashes()
-        {
-            // Arrange
-            using (var realm1 = Realm.GetInstance())
-            using (var realm2 = Realm.GetInstance())
-            {
-                // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
         }
 
@@ -226,6 +212,52 @@ namespace IntegrationTests
                 Realm.GetInstance(config);
             },
             "Can't have classes in the list which are not RealmObjects");
+        }
+
+        [Test]
+        public void RealmChangedShouldFireForEveryInstance()
+        {
+            using (var realm1 = Realm.GetInstance())
+            using (var realm2 = Realm.GetInstance())
+            {
+                var changed1 = 0;
+                realm1.RealmChanged += (sender, e) =>
+                {
+                    changed1++;
+                };
+
+                var changed2 = 0;
+                realm2.RealmChanged += (sender, e) =>
+                {
+                    changed2++;
+                };
+
+                realm1.Write(() =>
+                {
+                    realm1.Add(new Person());
+                });
+
+                TestHelpers.RunEventLoop();
+
+                Assert.That(changed1, Is.EqualTo(1));
+                Assert.That(changed2, Is.EqualTo(1));
+
+                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
+                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
+
+                realm2.Write(() =>
+                {
+                    realm2.Add(new Person());
+                });
+
+                TestHelpers.RunEventLoop();
+
+                Assert.That(changed1, Is.EqualTo(2));
+                Assert.That(changed2, Is.EqualTo(2));
+
+                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
+                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
+            }
         }
     }
 }
