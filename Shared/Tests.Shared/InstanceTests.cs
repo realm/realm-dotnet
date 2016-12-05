@@ -78,7 +78,7 @@ namespace IntegrationTests
             // Assert 
             Assert.That(File.Exists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
-            Assert.False(File.Exists(config.DatabasePath));
+            Assert.That(File.Exists(config.DatabasePath), Is.False);
         }
 
         [Test]
@@ -97,8 +97,8 @@ namespace IntegrationTests
             t.Join();
 
             // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.False(realm1.IsSameInstance(realm2));
+            Assert.That(ReferenceEquals(realm1, realm2), Is.False);
+            Assert.That(realm1.IsSameInstance(realm2), Is.False);
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
 
             realm1.Dispose();
@@ -113,7 +113,7 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(ReferenceEquals(realm1, realm2), Is.False);
                 Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
                 Assert.That(realm1.IsSameInstance(realm2));
                 Assert.That(realm1, Is.EqualTo(realm2));
@@ -128,7 +128,7 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(ReferenceEquals(realm1, realm2), Is.False);
                 Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
                 Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
@@ -242,6 +242,8 @@ namespace IntegrationTests
                 config.EncryptionKey[0] = 5;
             }
 
+            Realm.DeleteRealm(config);
+
             using (var realm = Realm.GetInstance(config))
             {
                 if (populate)
@@ -286,7 +288,7 @@ namespace IntegrationTests
                 AddDummyData(realm);
 
                 var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-                Assert.IsFalse(Task.Run(() => Realm.Compact(realm.Config)).Result);
+                Assert.That(() => Task.Run(() => Realm.Compact(realm.Config)).Result, Is.False);
                 var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
 
                 Assert.That(finalSize, Is.EqualTo(initialSize));
@@ -305,7 +307,7 @@ namespace IntegrationTests
             using (var realm = Realm.GetInstance())
             {
                 var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-                Assert.IsFalse(Realm.Compact());
+                Assert.That(() => Realm.Compact(), Is.False);
                 var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
                 Assert.That(finalSize, Is.EqualTo(initialSize));
             }
@@ -321,7 +323,7 @@ namespace IntegrationTests
                     Console.WriteLine(changes?.InsertedIndices);
                 });
 
-                Assert.IsFalse(Realm.Compact());
+                Assert.That(() => Realm.Compact(), Is.False);
                 token.Dispose();
             }
         }
