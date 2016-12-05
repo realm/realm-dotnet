@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync
@@ -46,8 +48,17 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_log_out", CallingConvention = CallingConvention.Cdecl)]
             public static extern void log_out(SyncUserHandle user, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_current_sync_user", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_current_user(out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_logged_in_users", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_logged_in_users(IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void reset_for_testing();
         }
 
         public string GetIdentity()
@@ -101,14 +112,48 @@ namespace Realms.Sync
                                                       isAdmin, out ex);
             ex.ThrowIfNecessary();
 
-            var handle = new SyncUserHandle();
-            handle.SetHandle(userPtr);
-            return handle;
+            return GetHandle(userPtr);
+        }
+
+        public static SyncUserHandle GetCurrentUser()
+        {
+            NativeException ex;
+            var userPtr = NativeMethods.get_current_user(out ex);
+            ex.ThrowIfNecessary();
+
+            return GetHandle(userPtr);
+        }
+
+        public static IEnumerable<SyncUserHandle> GetAllLoggedInUsers()
+        {
+            return MarshalHelpers.GetArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_logged_in_users(buffer, bufferLength, out ex);
+            }, bufferSize: 8)
+                                 .Select(GetHandle);
+        }
+
+        public static void ResetForTesting()
+        {
+            NativeMethods.reset_for_testing();
         }
 
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        private static SyncUserHandle GetHandle(IntPtr ptr)
+        {
+            if (ptr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var handle = new SyncUserHandle();
+            handle.SetHandle(ptr);
+            return handle;
         }
     }
 }

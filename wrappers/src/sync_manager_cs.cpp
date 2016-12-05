@@ -104,6 +104,11 @@ REALM_EXPORT size_t realm_syncmanager_get_path_for_realm(SharedSyncUser& user, u
         return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
     });
 }
+    
+REALM_EXPORT void realm_reset_for_testing()
+{
+    SyncManager::shared().reset_for_testing();
+}
 
 }
 

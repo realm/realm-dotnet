@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using DotNetCross.Memory;
 
 namespace Realms
 {
@@ -98,45 +100,79 @@ namespace Realms
             throw new NotImplementedException("Type " + columnType.FullName + " not supported");
         }
 
-        public delegate IntPtr NativeStringGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
-
-        public static string GetString(NativeStringGetter getter)
+        public static string GetString(NativeCollectionGetter getter)
         {
-            var bufferSizeNeededChars = 128;
+            return GetCollection<string>(getter, 128, sizeof(char), (buffer, size, isNull) =>
+            {
+                if (size == 0)
+                {
+                    return isNull ? null : string.Empty;
+                }
 
-            // First alloc this thread
-            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-            var stringGetBufferLen = bufferSizeNeededChars;
+                return Marshal.PtrToStringUni(buffer, size);
+            });
+        }
+
+        public static unsafe IntPtr[] GetArray(NativeCollectionGetter getter, int bufferSize)
+        {
+            var intPtrSize = Unsafe.SizeOf<IntPtr>();
+
+            return GetCollection(getter, bufferSize, intPtrSize, (buffer, size, isNull) =>
+            {
+                if (size == 0)
+                {
+                    return isNull ? null : new IntPtr[0];
+                }
+
+                return Enumerable.Range(0, size)
+                                 .Select(i => MarshalElement<IntPtr>(i, buffer, intPtrSize))
+                                 .ToArray();
+            });
+        }
+
+        public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
+
+        private delegate TCollection Marshaller<TCollection>(IntPtr buffer, int size, bool isNull);
+
+        private static TCollection GetCollection<TCollection>(NativeCollectionGetter getter, int bufferSize, int structSize, Marshaller<TCollection> marshaller) 
+        {
+            var buffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * structSize));
 
             bool isNull;
             NativeException nativeException;
 
-            // try to read
-            var bytesRead = (int)getter(stringGetBuffer, (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+            var itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out isNull, out nativeException);
             nativeException.ThrowIfNecessary();
-            if (bytesRead == -1)
+            if (itemsRead == -1)
             {
-                throw new RealmInvalidDatabaseException("Corrupted string data");
+                throw new RealmInvalidDatabaseException("Corrupted data");
             }
 
-            if (bytesRead > stringGetBufferLen) // need a bigger buffer
+            if (itemsRead > bufferSize)
             {
-                Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
-                stringGetBufferLen = bytesRead;
+                Marshal.FreeHGlobal(buffer);
+                buffer = Marshal.AllocHGlobal((IntPtr)(itemsRead * structSize));
+                bufferSize = itemsRead;
 
-                // try to read with big buffer
-                bytesRead = (int)getter(stringGetBuffer, (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+                itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
-                if (bytesRead == -1) // bad UTF-8 in full string
+
+                if (itemsRead == -1)
                 {
-                    throw new RealmInvalidDatabaseException("Corrupted string data");
+                    throw new RealmInvalidDatabaseException("Corrupted data");
                 }
 
-                Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
-            } // needed re-read with expanded buffer
+                Debug.Assert(itemsRead <= bufferSize, "Buffer must have overflowed.");
+            }
 
-            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+            return marshaller(buffer, itemsRead, isNull);
+        }
+
+        private static unsafe T MarshalElement<T>(int elementIndex, IntPtr buffer, int structSize)
+        {
+            var @struct = default(T);
+            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(buffer, elementIndex * structSize).ToPointer(), (uint)structSize);
+            return @struct;
         }
     }
 }
