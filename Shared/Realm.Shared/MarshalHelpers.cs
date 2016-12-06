@@ -93,86 +93,80 @@ namespace Realms
 
             /*
             TODO
-                    Table = 5, // type_Table for sub-tables, not relatinoships????
+                    Table = 5, // type_Table for sub-tables, not relationships????
                     Mixed = 6, // type_Mixed
 
             */
             throw new NotImplementedException("Type " + columnType.FullName + " not supported");
         }
 
-        public static string GetString(NativeCollectionGetter getter)
+        public delegate IntPtr NativeStringGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
+
+        public static string GetString(NativeStringGetter getter)
         {
-            return GetCollection<string>(getter, 128, sizeof(char), (buffer, size, isNull) =>
-            {
-                if (size == 0)
-                {
-                    return isNull ? null : string.Empty;
-                }
+            // TODO: rework to use GetCollection
+            var bufferSize = 128;
 
-                return Marshal.PtrToStringUni(buffer, size);
-            });
-        }
-
-        public static unsafe IntPtr[] GetArray(NativeCollectionGetter getter, int bufferSize)
-        {
-            var intPtrSize = Unsafe.SizeOf<IntPtr>();
-
-            return GetCollection(getter, bufferSize, intPtrSize, (buffer, size, isNull) =>
-            {
-                if (size == 0)
-                {
-                    return isNull ? null : new IntPtr[0];
-                }
-
-                return Enumerable.Range(0, size)
-                                 .Select(i => MarshalElement<IntPtr>(i, buffer, intPtrSize))
-                                 .ToArray();
-            });
-        }
-
-        public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
-
-        private delegate TCollection Marshaller<TCollection>(IntPtr buffer, int size, bool isNull);
-
-        private static TCollection GetCollection<TCollection>(NativeCollectionGetter getter, int bufferSize, int structSize, Marshaller<TCollection> marshaller) 
-        {
-            var buffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * structSize));
+            // First alloc this thread
+            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
 
             bool isNull;
             NativeException nativeException;
 
-            var itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out isNull, out nativeException);
+            // try to read
+            var bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
             nativeException.ThrowIfNecessary();
-            if (itemsRead == -1)
+
+            if (bytesRead == -1)
             {
-                throw new RealmInvalidDatabaseException("Corrupted data");
+                throw new RealmInvalidDatabaseException("Corrupted string data");
             }
+
+            if (bytesRead > bufferSize) // need a bigger buffer
+            {
+                bufferSize = bytesRead;
+
+                Marshal.FreeHGlobal(stringGetBuffer);
+                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
+
+                // try to read with big buffer
+                bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
+                nativeException.ThrowIfNecessary();
+                if (bytesRead == -1) // bad UTF-8 in full string
+                {
+                    throw new RealmInvalidDatabaseException("Corrupted string data");
+                }
+
+                Debug.Assert(bytesRead <= bufferSize, "Buffer must have overflowed.");
+            } // needed re-read with expanded buffer
+
+            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+        }
+
+        public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
+
+        public static T[] GetCollection<T>(NativeCollectionGetter<T> getter, int bufferSize) where T : struct 
+        {
+            var buffer = new T[bufferSize];
+
+            NativeException nativeException;
+
+            var itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out nativeException);
+            nativeException.ThrowIfNecessary();
 
             if (itemsRead > bufferSize)
             {
-                Marshal.FreeHGlobal(buffer);
-                buffer = Marshal.AllocHGlobal((IntPtr)(itemsRead * structSize));
                 bufferSize = itemsRead;
+                buffer = new T[bufferSize];
 
-                itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out isNull, out nativeException);
+                itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out nativeException);
                 nativeException.ThrowIfNecessary();
-
-                if (itemsRead == -1)
-                {
-                    throw new RealmInvalidDatabaseException("Corrupted data");
-                }
 
                 Debug.Assert(itemsRead <= bufferSize, "Buffer must have overflowed.");
             }
 
-            return marshaller(buffer, itemsRead, isNull);
-        }
-
-        private static unsafe T MarshalElement<T>(int elementIndex, IntPtr buffer, int structSize)
-        {
-            var @struct = default(T);
-            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(buffer, elementIndex * structSize).ToPointer(), (uint)structSize);
-            return @struct;
+            Array.Resize(ref buffer, itemsRead);
+            return buffer;
         }
     }
 }

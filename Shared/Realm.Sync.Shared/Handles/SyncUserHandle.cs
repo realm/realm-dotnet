@@ -52,7 +52,7 @@ namespace Realms.Sync
             public static extern IntPtr get_current_user(out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_logged_in_users", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_logged_in_users(IntPtr buffer, IntPtr bufsize, out NativeException ex);
+            public static extern IntPtr get_logged_in_users([Out] IntPtr[] users, IntPtr bufsize, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
@@ -126,11 +126,7 @@ namespace Realms.Sync
 
         public static IEnumerable<SyncUserHandle> GetAllLoggedInUsers()
         {
-            return MarshalHelpers.GetArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
-            {
-                isNull = false;
-                return NativeMethods.get_logged_in_users(buffer, bufferLength, out ex);
-            }, bufferSize: 8)
+            return MarshalHelpers.GetCollection<IntPtr>(NativeMethods.get_logged_in_users, bufferSize: 8)
                                  .Select(GetHandle);
         }
 
