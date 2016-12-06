@@ -30,7 +30,7 @@ namespace Tests.Sync.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests
     {
-        [Explicit]
+        [Ignore("Due to #976, compact doesn't work with synced realms.")]
         [TestCase(true, true)]
         [TestCase(true, false)]
         [TestCase(false, true)]

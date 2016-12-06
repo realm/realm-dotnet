@@ -114,7 +114,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Compacts a Realm file. A Realm file usually contain free/unused space. This method removes this free space and the file size is thereby reduced. Objects within the Realm files are untouched.
+        /// Compacts a Realm file. A Realm file usually contains free/unused space. This method removes this free space and the file size is thereby reduced. Objects within the Realm file are untouched.
         /// </summary>
         /// <remarks>
         /// The realm file must not be open on other threads.
@@ -124,7 +124,7 @@ namespace Realms
         /// </remarks>
         /// <param name="config">Optional configuration.</param>
         /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
-        public static bool Compact(RealmConfiguration config = null)
+        public static bool Compact(RealmConfigurationBase config = null)
         {
             using (var realm = GetInstance(config))
             {
