@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
+using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
+
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
@@ -61,16 +63,6 @@ namespace IntegrationTests
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-        }
-
-        [Test]
-        public void CreateObjectFromPCLTest()
-        {
-            // Arrange and act
-            _realm.Write(() => _realm.CreateObject<PurePCLBuildableTest.ObjectInPCL>());
-
-            // Assert
-            Assert.That(_realm.All<PurePCLBuildableTest.ObjectInPCL>().Count(), Is.EqualTo(1));
         }
 
         [Test]

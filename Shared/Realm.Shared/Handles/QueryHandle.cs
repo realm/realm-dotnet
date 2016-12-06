@@ -231,7 +231,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// If the user hasn't specified it, should be caseSensitive=true
+        /// If the user hasn't specified it, should be caseSensitive=true.
         /// </summary>
         public void StringContains(IntPtr columnIndex, string value, bool caseSensitive)
         {

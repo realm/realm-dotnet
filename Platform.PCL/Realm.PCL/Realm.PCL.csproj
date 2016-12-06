@@ -11,6 +11,7 @@
     <TargetFrameworkProfile>Profile78</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <DocumentationFile>bin\$(Configuration)\Realm.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Debug\Realm.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -29,7 +29,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Release\Realm.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\RealmAssemblyInfo.cs">
@@ -80,7 +79,6 @@
     <Compile Include="..\..\Shared\Realm.Shared\Attributes.cs">
       <Link>Attributes.cs</Link>
     </Compile>
-    <Compile Include="RealmResultsPCL.cs" />
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmMismatchedConfigException.cs">
       <Link>Exceptions\RealmMismatchedConfigException.cs</Link>
     </Compile>
@@ -93,7 +91,7 @@
     <Compile Include="..\..\Shared\Realm.Shared\PreserveAttribute.cs">
       <Link>PreserveAttribute.cs</Link>
     </Compile>
-    <Compile Include="Extensions\RealmResultsCollectionChangedPCL.cs" />
+    <Compile Include="Extensions\CollectionNotificationsExtensionsPCL.cs" />
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
       <Link>Exceptions\RealmInvalidObjectException.cs</Link>
     </Compile>
@@ -117,6 +115,12 @@
     <Compile Include="MigrationPCL.cs" />
     <Compile Include="..\..\Shared\Realm.Shared\Exceptions\RealmClosedException.cs">
       <Link>Exceptions\RealmClosedException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Linq\IRealmCollection.cs">
+      <Link>IRealmCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\ErrorEventArgs.cs">
+      <Link>Exceptions\ErrorEventArgs.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

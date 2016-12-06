@@ -25,8 +25,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\ExpressionVisitor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\IRealmResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsNativeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\IRealmCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmCollectionNativeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SortDescriptorBuilder.cs" />
@@ -46,11 +46,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Handles\LinkListHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\ListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmMigrationNeededException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmMismatchedConfigException.cs" />
@@ -58,7 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmInvalidTransactionException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\RealmResultsCollectionChanged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionNotificationsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\RealmSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
@@ -82,6 +81,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenPropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenGetterMethodInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenSetterMethodInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmCollectionBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\CollectionHandleBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

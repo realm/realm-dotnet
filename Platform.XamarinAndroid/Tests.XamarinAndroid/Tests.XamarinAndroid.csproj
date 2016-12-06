@@ -14,7 +14,7 @@
     <AndroidApplication>True</AndroidApplication>
     <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
     <AssemblyName>Tests.XamarinAndroid</AssemblyName>
-    <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a;x86_64</AndroidSupportedAbis>
     <AndroidLinkMode>Full</AndroidLinkMode>
@@ -78,35 +78,21 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Tests.Shared\Tests.Shared.projitems')" />
-  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\armeabi-v7a\librealm-wrappers.so">
+      <Link>wrappers\armeabi-v7a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\x86\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86\librealm-wrappers.so">
+      <Link>wrappers\x86\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\arm64-v8a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\arm64-v8a\librealm-wrappers.so">
+      <Link>wrappers\arm64-v8a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\x86_64\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\arm64-v8a\libwrappers.so">
-      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86_64\libwrappers.so">
-      <Link>wrappers\x86\libwrappers.so</Link>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86_64\librealm-wrappers.so">
+      <Link>wrappers\x86_64\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>
@@ -114,11 +100,7 @@
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
-      <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
-      <Name>PurePCLBuildableTest</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Realm.Sync.XamarinAndroid\Realm.Sync.XamarinAndroid.csproj">
+    <ProjectReference Include="..\Realm.Sync.XamarinAndroid\Realm.Sync.XamarinAndroid.csproj" Condition="'$(RealmNoSync)' != 'true'">
       <Project>{3379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.Sync.XamarinAndroid</Name>
     </ProjectReference>

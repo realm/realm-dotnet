@@ -1,7 +1,7 @@
 LINQ support in Realm Xamarin
 =============================
 
-To make a query with Realm, you use the `Realm.All<>()` method to get a `RealmResults` instance. 
+To make a query with Realm, you use the `Realm.All<T>()` method to get a `IQueryable<T>` instance. 
 On this you can then apply the operators listed below.
 
 

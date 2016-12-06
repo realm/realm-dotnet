@@ -221,7 +221,7 @@ namespace Realms
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ReleaseHandle()
         {
-            // Invalid handles might occour if we throw in construction of one, after root is set, but before the handle has been acquired.
+            // Invalid handles might occur if we throw in construction of one, after root is set, but before the handle has been acquired.
             // In that case, release should just do nothing at all - there is nothing to release.
             // Also, of course if we were called somehow with an invalid handle (should never happen except as stated above), it would not be a good idea to pass it to core
             if (IsInvalid)

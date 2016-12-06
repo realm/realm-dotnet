@@ -18,6 +18,9 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception thrown when an object with the same primary key has already been added.
+    /// </summary>
     public class RealmDuplicatePrimaryKeyValueException : RealmException
     {
         internal RealmDuplicatePrimaryKeyValueException(string message) : base(message)

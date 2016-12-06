@@ -18,17 +18,59 @@
 
 namespace Realms.Schema
 {
+    /// <summary>
+    /// An enum, containing the possible property types.
+    /// </summary>
     public enum PropertyType : byte
     {
+        /// <summary>
+        /// Integer property, combining all integral types.
+        /// </summary>
         Int = 0,
+
+        /// <summary>
+        /// Boolean property.
+        /// </summary>
         Bool = 1,
+
+        /// <summary>
+        /// 32 bit floating point property.
+        /// </summary>
         Float = 9,
+
+        /// <summary>
+        /// 64 bit floating point property.
+        /// </summary>
         Double = 10,
+
+        /// <summary>
+        /// String property.
+        /// </summary>
         String = 2,
+
+        /// <summary>
+        /// Binary data (byte[]) property.
+        /// </summary>
         Data = 4,
+
+        /// <summary>
+        /// Any property type.
+        /// </summary>
         Any = 6,
+
+        /// <summary>
+        /// DateTimeOffset property.
+        /// </summary>
         Date = 8,
+
+        /// <summary>
+        /// Related object property, representing a one-to-one or many-to-one relationship.
+        /// </summary>
         Object = 12,
+
+        /// <summary>
+        /// A collection of related objects property, representing one-to-many relationship.
+        /// </summary>
         Array = 13
     }
 }

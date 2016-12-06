@@ -18,8 +18,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -62,17 +62,6 @@ namespace IntegrationTests
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
             Realm.GetInstance(SpecialRealmName).Dispose();
-        }
-
-        [Test]
-        public void GetInstanceFromPCLTest()
-        {
-            // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL())
-            {
-                Assert.IsNotNull(realmFromPCL);
-                Assert.That(realmFromPCL.IsClosed, Is.False);
-            }
         }
 
         [Test]

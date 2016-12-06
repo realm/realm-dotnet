@@ -91,7 +91,7 @@
     <Compile Include="RunLoopTests.cs" />
   </ItemGroup>
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
-  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
@@ -99,11 +99,7 @@
       <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
       <Name>Realm.XamarinIOS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
-      <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
-      <Name>PurePCLBuildableTest</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj">
+    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj" Condition="'$(RealmNoSync)' != 'true'">
       <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
       <Name>Realm.Sync.XamarinIOS</Name>
     </ProjectReference>
@@ -124,6 +120,14 @@
       <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\..\wrappers\build\$(Configuration)-ios-universal\librealm-wrappers.a">
+      <Kind>Static</Kind>
+      <SmartLink>True</SmartLink>
+      <IsCxx>True</IsCxx>
+      <LinkerFlags>-lz</LinkerFlags>
+    </NativeReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

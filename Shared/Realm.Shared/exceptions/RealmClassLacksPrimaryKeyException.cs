@@ -18,6 +18,9 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception thrown when trying to lookup an object by primary key, when the object doesn't have PrimaryKey specified.
+    /// </summary>
     public class RealmClassLacksPrimaryKeyException : RealmException
     {
         internal RealmClassLacksPrimaryKeyException(string message) : base(message)
