@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
-    public class SyncConfiguration : RealmConfigurationBase, IEquatable<SyncConfiguration>
+    public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
         /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
@@ -73,19 +73,6 @@ namespace Realms.Sync
         public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        /// <summary>
-        /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
-        /// </summary>
-        /// <param name="other">The <see cref="SyncConfiguration"/> to compare with the current configuration.</param>
-        /// <returns><c>true</c> if the specified <see cref="SyncConfiguration"/> is equal to the current
-        /// <see cref="SyncConfiguration"/>; otherwise, <c>false</c>.</returns>
-        public bool Equals(SyncConfiguration other)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-
-            return false;
         }
     }
 }
