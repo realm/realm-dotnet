@@ -44,7 +44,7 @@ namespace Realms.Sync
         /// <param name="user">A valid <see cref="User"/>.</param>
         /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user.Identity, serverUri))
+        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
         {
             if (user == null)
             {

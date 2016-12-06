@@ -32,7 +32,7 @@ namespace Realms
     /// </summary>
     public class Migration
     {
-        private readonly RealmConfigurationBase _configuration;
+        private readonly RealmConfiguration _configuration;
         private readonly RealmSchema _schema;
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Realms
 
         internal Exception MigrationException;
 
-        internal Migration(RealmConfigurationBase configuration, RealmSchema schema)
+        internal Migration(RealmConfiguration configuration, RealmSchema schema)
         {
             _configuration = configuration;
             _schema = schema;

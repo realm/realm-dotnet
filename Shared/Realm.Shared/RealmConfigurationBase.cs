@@ -66,7 +66,7 @@ namespace Realms
                 optionalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
             }
 
-            if (optionalPath[optionalPath.Length - 1] == Path.DirectorySeparatorChar)   // ends with dir sep
+            if (optionalPath[optionalPath.Length - 1] == Path.DirectorySeparatorChar) // ends with dir sep
             {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);
             }

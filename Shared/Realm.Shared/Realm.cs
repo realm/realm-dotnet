@@ -128,7 +128,7 @@ namespace Realms
         /// <summary>
         /// Gets the <see cref="RealmConfigurationBase"/> that controls this realm's path and other settings.
         /// </summary>
-        public RealmConfigurationBase Config { get; private set; }
+        public RealmConfigurationBase Config { get; }
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
         {

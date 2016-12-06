@@ -32,6 +32,8 @@
 using namespace realm;
 using namespace realm::binding;
 
+using SharedSyncUser = std::shared_ptr<SyncUser>;
+
 struct SyncConfiguration
 {
     std::shared_ptr<SyncUser>* user;
@@ -93,12 +95,11 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
     });
 }
     
-REALM_EXPORT size_t shared_realm_get_path(uint16_t* identity, size_t identity_len, uint16_t* url, size_t url_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_syncmanager_get_path_for_realm(SharedSyncUser& user, uint16_t* url, size_t url_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         std::string realm_url(Utf16StringAccessor(url, url_len));
-        std::string user_identity(Utf16StringAccessor(identity, identity_len));
-        auto path = SyncManager::shared().path_for_realm(user_identity, realm_url);
+        auto path = SyncManager::shared().path_for_realm(user->identity(), realm_url);
         
         return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
     });
