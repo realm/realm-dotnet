@@ -114,7 +114,10 @@ namespace IntegrationTests
         public void MigrationTriggersDelete()
         {
             // Arrange
-            var config = new RealmConfiguration("MigrateWWillRecreate.realm", true);
+            var config = new RealmConfiguration("MigrateWWillRecreate.realm")
+            {
+                ShouldDeleteIfMigrationNeeded = true
+            };
             Realm.DeleteRealm(config);
             Assert.False(File.Exists(config.DatabasePath));
 

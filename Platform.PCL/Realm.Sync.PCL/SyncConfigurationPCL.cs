@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
-    public class SyncConfiguration : RealmConfiguration
+    public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
         /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
@@ -69,7 +69,8 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
         /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
-        public SyncConfiguration(User user, Uri serverUri)
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
+        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

@@ -47,7 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\ListHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmConfigurationBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmMigrationNeededException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsVisitor.cs" />
@@ -84,6 +84,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmCollectionBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\CollectionHandleBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

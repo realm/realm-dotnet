@@ -91,42 +91,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ConfigurationsAreSame()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("fred.realm");
-
-            // Assert
-            Assert.That(config1, Is.EqualTo(config2));
-        }
-
-        [Test]
-        public void ConfigurationsAreDifferent()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("barney.realm");
-            var config1b = new RealmConfiguration("fred.realm", true);
-
-            // Assert
-            Assert.That(config1, Is.Not.EqualTo(config2));
-            Assert.That(config1, Is.Not.EqualTo(config1b));
-        }
-
-        [Test]
-        public void ConfigurationsHaveDifferentHashes()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("ConfigurationsHaveDifferentHashes1.realm");
-            var config2 = new RealmConfiguration("ConfigurationsHaveDifferentHashes2.realm");
-
-            // Assert
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode()));
-        }
-
-        [Test]
         public void EncryptionKeyMustBe64Bytes()
         {
             ReliesOnEncryption();
@@ -142,7 +106,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ValidEncryptionKeyAcceoted()
+        public void ValidEncryptionKeyAccepted()
         {
             ReliesOnEncryption();
 

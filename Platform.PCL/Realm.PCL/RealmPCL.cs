@@ -43,9 +43,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
+        /// Gets the <see cref="RealmConfigurationBase"/> that controls this realm's path and other settings.
         /// </summary>
-        public RealmConfiguration Config { get; private set; }
+        public RealmConfigurationBase Config { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
@@ -74,7 +74,7 @@ namespace Realms
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error, preventing file creation.</exception>
         //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(RealmConfiguration config = null)
+        public static Realm GetInstance(RealmConfigurationBase config = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -164,7 +164,7 @@ namespace Realms
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
-        public static void DeleteRealm(RealmConfiguration configuration)
+        public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

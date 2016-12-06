@@ -39,11 +39,14 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_initialize_sync", CallingConvention = CallingConvention.Cdecl)]
             public static extern void initialize_sync([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback session_error_callback);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
         {
-            InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), RefreshAccessTokenCallback, HandleSessionError);
+            InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.Personal), RefreshAccessTokenCallback, HandleSessionError);
         }
 
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -57,6 +60,15 @@ namespace Realms.Sync
             var handle = new SharedRealmHandle();
             handle.SetHandle(result);
             return handle;
+        }
+
+        public static string GetRealmPath(User user, Uri serverUri)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_path_for_realm(user.Handle, serverUri.AbsoluteUri, (IntPtr)serverUri.AbsoluteUri.Length, buffer, bufferLength, out ex);
+            });
         }
 
         private static void InitializeSync(string basePath, NativeMethods.RefreshAccessTokenCallbackDelegate refreshCallback, NativeMethods.SessionErrorCallback sessionErrorCallback)
