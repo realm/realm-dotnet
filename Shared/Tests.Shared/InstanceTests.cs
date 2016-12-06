@@ -261,7 +261,7 @@ namespace IntegrationTests
 
             using (var realm = Realm.GetInstance(config))
             {
-                Assert.That(realm.All<IntPrimaryKeyObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
             }
         }
 
@@ -334,7 +334,7 @@ namespace IntegrationTests
             {
                 realm.Write(() =>
                 {
-                    realm.Add(new IntPrimaryKeyObject
+                    realm.Add(new IntPrimaryKeyWithValueObject
                     {
                         Id = i,
                         StringValue = "Super secret product " + i
@@ -346,18 +346,10 @@ namespace IntegrationTests
             {
                 realm.Write(() =>
                 {
-                    var item = realm.Find<IntPrimaryKeyObject>(2 * i);
+                    var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i);
                     realm.Remove(item);
                 });
             }
-        }
-
-        private class IntPrimaryKeyObject : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public string StringValue { get; set; }
         }
     }
 }
