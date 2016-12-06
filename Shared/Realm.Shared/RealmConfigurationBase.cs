@@ -35,9 +35,9 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Gets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
+        /// Gets or sets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
-        public string DatabasePath { get; private set; }
+        public string DatabasePath { get; protected set; }
 
         internal bool Dynamic;
 
@@ -124,62 +124,6 @@ namespace Realms
         internal RealmConfigurationBase(string optionalPath)
         {
             DatabasePath = GetPathToRealm(optionalPath);
-        }
-
-        /// <summary>
-        /// Clone method allowing you to override or customize the current path.
-        /// </summary>
-        /// <returns>An object with a fully-specified, canonical path.</returns>
-        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public RealmConfigurationBase ConfigWithPath(string newConfigPath)
-        {
-            var ret = (RealmConfigurationBase)MemberwiseClone();
-            string candidatePath;  // may need canonicalising
-            if (!string.IsNullOrEmpty(newConfigPath))
-            {
-                if (Path.IsPathRooted(newConfigPath))
-                {
-                    candidatePath = newConfigPath;
-                }
-                else
-                {  // append a relative path, maybe just a relative subdir needing filename
-                    var usWithoutFile = Path.GetDirectoryName(DatabasePath);
-                    if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar) // ends with separator
-                    {
-                        newConfigPath = Path.Combine(newConfigPath, DefaultRealmName);  // add filename to relative subdir
-                    }
-
-                    candidatePath = Path.Combine(usWithoutFile, newConfigPath);
-                }
-
-                ret.DatabasePath = Path.GetFullPath(candidatePath);  // canonical version, removing embedded ../ and other relative artifacts
-            }
-
-            return ret;
-        }
-
-        internal bool Equals(RealmConfigurationBase rhs)
-        {
-            return DatabasePath == rhs.DatabasePath &&
-                ((EncryptionKey == null && rhs.EncryptionKey == null) || EncryptionKey.SequenceEqual(rhs.EncryptionKey)) &&
-                SchemaVersion == rhs.SchemaVersion;
-        }
-
-        /// <summary>
-        /// Serves as a hash function for a RealmConfiguration based on its path.
-        /// </summary>
-        /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
-        /// hash table.</returns>
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hash = 17;
-                hash = (hash * 23) + DatabasePath.GetHashCode();
-                hash = (hash * 23) + (EncryptionKey?.GetHashCode() ?? 0);
-                hash = (hash * 23) + SchemaVersion.GetHashCode();
-                return hash;
-            }
         }
 
         internal abstract Realm CreateRealm(RealmSchema schema);

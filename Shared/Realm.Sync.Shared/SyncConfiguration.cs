@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
-    public class SyncConfiguration : RealmConfigurationBase, IEquatable<SyncConfiguration>
+    public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
         /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
@@ -44,7 +44,7 @@ namespace Realms.Sync
         /// <param name="user">A valid <see cref="User"/>.</param>
         /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath)
+        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user.Identity, serverUri))
         {
             if (user == null)
             {
@@ -76,47 +76,6 @@ namespace Realms.Sync
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             return new Realm(srHandle, this, schema);
-        }
-
-        /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as SyncConfiguration);
-        }
-
-        /// <summary>
-        /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
-        /// </summary>
-        /// <param name="other">The <see cref="SyncConfiguration"/> to compare with the current configuration.</param>
-        /// <returns><c>true</c> if the specified <see cref="SyncConfiguration"/> is equal to the current
-        /// <see cref="SyncConfiguration"/>; otherwise, <c>false</c>.</returns>
-        public bool Equals(SyncConfiguration other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return base.Equals(other) &&
-                       ServerUri == other.ServerUri &&
-                       User.Equals(other.User);
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hash = base.GetHashCode();
-                hash = (23 * hash) + ServerUri.GetHashCode();
-                hash = (23 * hash) + User.GetHashCode();
-                return hash;
-            }
         }
     }
 }

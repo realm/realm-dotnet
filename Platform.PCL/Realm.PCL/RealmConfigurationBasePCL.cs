@@ -89,16 +89,5 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return string.Empty;
         }
-
-        /// <summary>
-        /// Clone method allowing you to override or customize the current path.
-        /// </summary>
-        /// <returns>An object with a fully-specified, canonical path.</returns>
-        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public RealmConfigurationBase ConfigWithPath(string newConfigPath)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
     }
 }

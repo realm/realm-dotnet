@@ -84,65 +84,10 @@ namespace IntegrationTests
         {
             // Arrange
             var config = new RealmConfiguration();
-            RealmConfiguration.DefaultConfiguration = (RealmConfiguration)config.ConfigWithPath("fred.realm");
+            RealmConfiguration.DefaultConfiguration = config.ConfigWithPath("fred.realm");
 
             // Assert
             Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
-        }
-
-        [Test]
-        public void ConfigurationsAreEquals()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("fred.realm");
-
-            // Assert
-            Assert.That(config1, Is.EqualTo(config2));
-
-            var base1 = (RealmConfigurationBase)config1;
-            Assert.That(base1, Is.EqualTo(config2));
-            Assert.That(config2, Is.EqualTo(base1));
-        }
-
-        [Test]
-        public void ConfigurationsAreDifferent()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("barney.realm");
-            var config1b = new RealmConfiguration("fred.realm")
-            {
-                ShouldDeleteIfMigrationNeeded = true
-            };
-
-            // Assert
-            Assert.That(config1, Is.Not.EqualTo(config2));
-            Assert.That(config1, Is.Not.EqualTo(config1b));
-        }
-
-        [Test]
-        public void ConfigurationsHaveDifferentHashes()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("ConfigurationsHaveDifferentHashes1.realm");
-            var config2 = new RealmConfiguration("ConfigurationsHaveDifferentHashes2.realm");
-
-            // Assert
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode()));
-        }
-
-        [Test]
-        public void ConfigurationsHaveTheSameHashes()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("ConfigurationsHaveTheSameHashes.realm");
-            var config2 = new RealmConfiguration("ConfigurationsHaveTheSameHashes.realm");
-
-            // Assert
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));
-            Assert.That(config1.GetHashCode(), Is.EqualTo(config2.GetHashCode()));
         }
 
         [Test]

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 
 namespace Realms
 {
@@ -26,7 +27,7 @@ namespace Realms
     /// <remarks>
     /// Its main role is generating a canonical path from whatever absolute, relative subdirectory or just filename the user supplies.
     /// </remarks>
-    public class RealmConfiguration : RealmConfigurationBase, IEquatable<RealmConfiguration>
+    public class RealmConfiguration : RealmConfigurationBase
     {
         /// <summary>
         /// Gets or sets a value indicating whether the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
@@ -49,6 +50,38 @@ namespace Realms
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         public RealmConfiguration(string optionalPath = null) : base(optionalPath)
         {
+        }
+
+        /// <summary>
+        /// Clone method allowing you to override or customize the current path.
+        /// </summary>
+        /// <returns>An object with a fully-specified, canonical path.</returns>
+        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
+        public RealmConfiguration ConfigWithPath(string newConfigPath)
+        {
+            var ret = (RealmConfiguration)MemberwiseClone();
+            string candidatePath;  // may need canonicalising
+            if (!string.IsNullOrEmpty(newConfigPath))
+            {
+                if (Path.IsPathRooted(newConfigPath))
+                {
+                    candidatePath = newConfigPath;
+                }
+                else
+                {  // append a relative path, maybe just a relative subdir needing filename
+                    var usWithoutFile = Path.GetDirectoryName(DatabasePath);
+                    if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar) // ends with separator
+                    {
+                        newConfigPath = Path.Combine(newConfigPath, DefaultRealmName);  // add filename to relative subdir
+                    }
+
+                    candidatePath = Path.Combine(usWithoutFile, newConfigPath);
+                }
+
+                ret.DatabasePath = Path.GetFullPath(candidatePath);  // canonical version, removing embedded ../ and other relative artifacts
+            }
+
+            return ret;
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -82,47 +115,6 @@ namespace Realms
 
             srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
-        }
-
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as RealmConfiguration);
-        }
-
-        /// <summary>
-        /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
-        /// </summary>
-        /// <param name="other">The <see cref="RealmConfiguration"/> to compare with the current configuration.</param>
-        /// <returns><c>true</c> if the specified <see cref="RealmConfiguration"/> is equal to the current
-        /// <see cref="RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
-        public bool Equals(RealmConfiguration other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            return base.Equals(other) &&
-                       ShouldDeleteIfMigrationNeeded == other.ShouldDeleteIfMigrationNeeded &&
-                       IsReadOnly == other.IsReadOnly;
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hash = base.GetHashCode();
-                hash = (23 * hash) + ShouldDeleteIfMigrationNeeded.GetHashCode();
-                hash = (23 * hash) + IsReadOnly.GetHashCode();
-                return hash;
-            }
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Realms
     /// <remarks>
     /// Its main role is generating a canonical path from whatever absolute, relative subdirectory or just filename the user supplies.
     /// </remarks>
-    public class RealmConfiguration : RealmConfigurationBase, IEquatable<RealmConfiguration>
+    public class RealmConfiguration : RealmConfigurationBase
     {
         /// <summary>
         /// Gets or sets a value indicating whether the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
@@ -41,7 +41,7 @@ namespace Realms
         /// <summary>
         /// Gets or sets the configuration that is used when creating a new Realm without specifying a configuration.
         /// </summary>
-        public static RealmConfigurationBase DefaultConfiguration
+        public static RealmConfiguration DefaultConfiguration
         {
             get
             {
@@ -73,6 +73,17 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
+        }
+
+        /// <summary>
+        /// Clone method allowing you to override or customize the current path.
+        /// </summary>
+        /// <returns>An object with a fully-specified, canonical path.</returns>
+        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
+        public RealmConfiguration ConfigWithPath(string newConfigPath)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
     }
 }

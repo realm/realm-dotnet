@@ -88,8 +88,19 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
         
         config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error});
-        config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url);
+        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         return new SharedRealm(Realm::get_shared_realm(config));
+    });
+}
+    
+REALM_EXPORT size_t shared_realm_get_path(uint16_t* identity, size_t identity_len, uint16_t* url, size_t url_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        std::string realm_url(Utf16StringAccessor(url, url_len));
+        std::string user_identity(Utf16StringAccessor(identity, identity_len));
+        auto path = SyncManager::shared().path_for_realm(user_identity, realm_url);
+        
+        return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
     });
 }
 

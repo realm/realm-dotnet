@@ -70,7 +70,7 @@ namespace Realms
         /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error preventing file creation.</exception>
         public static Realm GetInstance(string databasePath)
         {
-            var config = (RealmConfigurationBase)RealmConfiguration.DefaultConfiguration;
+            var config = RealmConfiguration.DefaultConfiguration;
             if (!string.IsNullOrEmpty(databasePath))
             {
                 config = config.ConfigWithPath(databasePath);

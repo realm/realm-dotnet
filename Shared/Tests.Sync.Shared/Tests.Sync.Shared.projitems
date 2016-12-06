@@ -14,6 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CredentialsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PermissionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SessionTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncConfigurationTests.cs" />
   </ItemGroup>
 </Project>
