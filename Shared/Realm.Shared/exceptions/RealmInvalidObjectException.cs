@@ -18,6 +18,9 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception, thrown when the object is no longer managed by the Realm.
+    /// </summary>
     public class RealmInvalidObjectException : RealmException
     {
         internal RealmInvalidObjectException(string message) : base(message)

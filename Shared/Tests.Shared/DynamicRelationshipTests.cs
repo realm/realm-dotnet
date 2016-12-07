@@ -26,7 +26,7 @@ using Realms;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
-namespace IntegrationTests.Shared
+namespace IntegrationTests
 {
 #if ENABLE_INTERNAL_NON_PCL_TESTS    
     [Preserve(AllMembers = true)]
@@ -135,7 +135,7 @@ namespace IntegrationTests.Shared
         }
 
         /// <summary>
-        /// Check if ToList can be invoked on a related RealmResults
+        /// Check if ToList can be invoked on a related RealmResults.
         /// </summary>
         [Test]
         public void TimHasTwoIterableDogsListed()

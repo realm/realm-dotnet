@@ -83,7 +83,7 @@ namespace Realms.Schema
             if (type.IsGenericType)
             {
                 var definition = type.GetGenericTypeDefinition();
-                if (definition == typeof(IList<>) || definition == typeof(RealmList<>))
+                if (definition == typeof(IList<>))
                 {
                     innerType = type.GetGenericArguments().Single();
                     return PropertyType.Array;

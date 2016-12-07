@@ -19,6 +19,7 @@
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
+#include "collection_cs.hpp"
 #include "realm_export_decls.hpp"
 #include "results.hpp"
 #include "object_accessor.hpp"
@@ -79,72 +80,21 @@ REALM_EXPORT size_t results_count(Results* results_ptr, NativeException::Marshal
     });
 }
 
-struct MarshallableCollectionChangeSet {
-    struct MarshallableIndexSet {
-        size_t* indices;
-        size_t count;
-    };
-    
-    MarshallableIndexSet deletions;
-    MarshallableIndexSet insertions;
-    MarshallableIndexSet modifications;
-    
-    struct {
-        CollectionChangeSet::Move* moves;
-        size_t count;
-    } moves;
-};
-
-typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
-
-struct ManagedNotificationTokenContext {
-    NotificationToken token;
-    void* managed_results;
-    ManagedNotificationCallback callback;
-};
-    
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results_ptr, void* managed_results, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        auto context = new ManagedNotificationTokenContext();
-        context->managed_results = managed_results;
-        context->callback = callback;
-        context->token = std::move(results_ptr->add_notification_callback([context](CollectionChangeSet changes, std::exception_ptr e) {
-            if (e) {
-                try {
-                    std::rethrow_exception(e);
-                } catch (...) {
-                    auto exception = convert_exception();
-                    auto marshallable_exception = exception.for_marshalling();
-                    context->callback(context->managed_results, nullptr, &marshallable_exception);
-                }
-            } else if (changes.empty()) {
-                context->callback(context->managed_results, nullptr, nullptr);
-            } else {
-                std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
-                std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
-                std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
-        
-                MarshallableCollectionChangeSet marshallable_changes {
-                    { deletions.data(), deletions.size() },
-                    { insertions.data(), insertions.size() },
-                    { modifications.data(), modifications.size() },
-                    { changes.moves.data(), changes.moves.size() }
-                };
-                context->callback(context->managed_results, &marshallable_changes, nullptr);
-            }
-        }));
-
-        return context;
+        return subscribe_for_notifications(managed_results, callback, [results_ptr](CollectionChangeCallback callback) {
+            return results_ptr->add_notification_callback(callback);
+        });
     });
 }
 
-REALM_EXPORT void* results_destroy_notificationtoken(ManagedNotificationTokenContext* token_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void* collection_destroy_notificationtoken(ManagedNotificationTokenContext* token_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        void* managed_results = token_ptr->managed_results;
+        void* managed_collection = token_ptr->managed_collection;
         delete token_ptr;
-        return managed_results;
+        return managed_collection;
     });
 }
 

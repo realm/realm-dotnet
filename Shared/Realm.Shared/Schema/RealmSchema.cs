@@ -136,7 +136,8 @@ namespace Realms
                                               // exclude the Realm assembly
                                               .Where(a => a != typeof(Realm).Assembly)
                                               .SelectMany(a => a.GetTypes())
-                                              .Where(t => t.IsSubclassOf(typeof(RealmObject)));
+                                              .Where(t => t.IsSubclassOf(typeof(RealmObject)))
+                                              .Where(t => t.GetCustomAttributes(typeof(ExplicitAttribute), false).Length == 0);
 
             return CreateSchemaForClasses(realmObjectClasses);
         }

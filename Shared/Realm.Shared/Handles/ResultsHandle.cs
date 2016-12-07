@@ -21,28 +21,9 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ResultsHandle : RealmHandle
+    internal class ResultsHandle : CollectionHandleBase
     {
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct CollectionChangeSet
-        {
-            public MarshaledVector<IntPtr> Deletions;
-            public MarshaledVector<IntPtr> Insertions;
-            public MarshaledVector<IntPtr> Modifications;
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct Move
-            {
-                public IntPtr From;
-                public IntPtr To;
-            }
-
-            public MarshaledVector<Move> Moves;
-        }
-
-        internal delegate void NotificationCallbackDelegate(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
-
-        public static class NativeMethods
+        private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
@@ -61,15 +42,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallbackDelegate callback, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
         }
 
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
-        public ResultsHandle()
+        public ResultsHandle() : base(null)
         {
         }
 
@@ -78,7 +56,7 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr GetObject(long index)
+        public override IntPtr GetObjectAtIndex(int index)
         {
             NativeException nativeException;
             var result = NativeMethods.get_row(this, (IntPtr)index, out nativeException);
@@ -86,7 +64,7 @@ namespace Realms
             return result;
         }
 
-        public int Count()
+        public override int Count()
         {
             NativeException nativeException;
             var result = NativeMethods.count(this, out nativeException);
@@ -101,18 +79,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallbackDelegate callback)
+        public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
         {
             NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedResultsHandle, callback, out nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public static IntPtr DestroyNotificationtoken(IntPtr token)
-        {
-            NativeException nativeException;
-            var result = NativeMethods.destroy_notificationtoken(token, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedCollectionHandle, callback, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

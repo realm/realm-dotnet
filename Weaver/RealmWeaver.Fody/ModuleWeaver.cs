@@ -19,27 +19,36 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
+[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
 public class ModuleWeaver
 {
     // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
 
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
 
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
 
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogError { get; set; } = m => { };
 
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string, SequencePoint> LogErrorPoint { get; set; } = (m, p) => { };
 
     // An instance of Mono.Cecil.ModuleDefinition for processing
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public ModuleDefinition ModuleDefinition { get; set; }
 
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public IAssemblyResolver AssemblyResolver { get; set; }
 
     private AssemblyDefinition _realmAssembly;
@@ -753,6 +762,7 @@ public class ModuleWeaver
                         il.Append(il.Create(OpCodes.Ldfld, field));
                         il.Append(il.Create(OpCodes.Ldarg_2));
                         il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { field.FieldType } }));
+                        il.Append(il.Create(OpCodes.Pop));
                     }
                     else if (!property.IsNullable())
                     {
@@ -858,6 +868,7 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
                     il.Append(il.Create(OpCodes.Ldarg_2));
                     il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
+                    il.Append(il.Create(OpCodes.Pop));
 
                     // Property.Add(list[i]);
                     il.Append(il.Create(OpCodes.Ldloc_0));

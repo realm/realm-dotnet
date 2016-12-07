@@ -23,6 +23,8 @@ using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 using Realms;
 
+using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
+
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]

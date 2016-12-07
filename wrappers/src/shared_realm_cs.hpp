@@ -61,7 +61,7 @@ namespace binding {
     class CSharpBindingContext: public BindingContext {
     public:
         CSharpBindingContext(void* managed_realm_handle);
-        void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated) override;
+        void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed) override;
         void add_observed_row(const Object& object, void* managed_object_handle);
         void remove_observed_row(void* managed_object_handle);
         void notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index);

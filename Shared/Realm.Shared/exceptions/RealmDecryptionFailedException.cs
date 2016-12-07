@@ -18,9 +18,12 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception, raised when file decryption is unsuccessful, most likely due to invalid EncryptionKey.
+    /// </summary>
     public class RealmDecryptionFailedException : RealmFileAccessErrorException
     {
-        public RealmDecryptionFailedException(string message) : base(message)
+        internal RealmDecryptionFailedException(string message) : base(message)
         {
         }
     }

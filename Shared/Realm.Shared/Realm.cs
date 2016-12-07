@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -212,6 +213,21 @@ namespace Realms
         }
 
         /// <summary>
+        /// Triggered when a Realm-level exception has occurred.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
+
+        internal void NotifyError(Exception ex)
+        {
+            if (Error == null)
+            {
+                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+            }
+
+            Error?.Invoke(this, new ErrorEventArgs(ex));
+        }
+
+        /// <summary>
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>
@@ -247,9 +263,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
+        /// Generic override determines whether the specified <see cref="object"/> is equal to the current Realm.
         /// </summary>
-        /// <param name="obj">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <param name="obj">The <see cref="object"/> to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(object obj) => Equals(obj as Realm);
 
@@ -444,12 +460,15 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed. Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Add<T>(T obj, bool update = false) where T : RealmObject
+        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
+        public T Add<T>(T obj, bool update = false) where T : RealmObject
         {
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
             AddInternal(obj, typeof(T), update);
+            return obj;
         }
 
         /// <summary>
@@ -461,6 +480,7 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         public void Add(RealmObject obj, bool update = false)
@@ -614,18 +634,23 @@ namespace Realms
         /// if they're used on the worker thread.
         /// </remarks>
         /// <example>
+        /// <c>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
-        ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
-        ///         pup.Breed = "Dalmatian";
-        ///         pup.Mum = missis;
-        ///         pup.Dad = pongo;
+        ///         tempRealm.Add(new Dog
+        ///         {
+        ///             Breed = "Dalmatian",
+        ///             Mum = missis,
+        ///             Dad = pongo
+        ///         });
         ///     }
         /// });
+        /// </c>
+        /// Note that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>
@@ -665,8 +690,8 @@ namespace Realms
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T : RealmObject
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        public IQueryable<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -683,8 +708,8 @@ namespace Realms
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> All(string className)
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
+        public IQueryable<dynamic> All(string className)
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
@@ -780,7 +805,7 @@ namespace Realms
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
+        /// <exception cref="ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
             if (obj == null)
@@ -801,14 +826,20 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
-        public void RemoveRange<T>(RealmResults<T> range)
+        public void RemoveRange<T>(IQueryable<T> range)
         {
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
             }
 
-            range.ResultsHandle.Clear(SharedRealmHandle);
+            if (!(range is RealmResults<T>))
+            {
+                throw new ArgumentException("range should be the return value of .All or a LINQ query applied to it.", nameof(range));
+            }
+
+            var results = (RealmResults<T>)range;
+            results.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>

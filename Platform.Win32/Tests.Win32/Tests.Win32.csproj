@@ -89,10 +89,6 @@
       <Project>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</Project>
       <Name>wrappers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
-      <Project>{c33439ad-387d-4f86-9db8-9d4b48ec6750}</Project>
-      <Name>PurePCLBuildableTest</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />

@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/**
-@file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
-*/
+// file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;

@@ -18,9 +18,12 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An exception thrown when trying to invoke members of a closed Realm.
+    /// </summary>
     public class RealmClosedException : RealmException
     {
-        public RealmClosedException(string message) : base(message)
+        internal RealmClosedException(string message) : base(message)
         {
         }
     }

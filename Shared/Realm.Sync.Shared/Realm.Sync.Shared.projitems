@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -18,9 +18,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\AuthenticationException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\HttpException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\UserPermissionsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\IPermissionObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SessionState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserState.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
     <Folder Include="$(MSBuildThisFileDirectory)Native\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Permissions\" />
   </ItemGroup>
 </Project>

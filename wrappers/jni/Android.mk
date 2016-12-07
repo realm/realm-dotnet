@@ -35,7 +35,7 @@ endif
 
 # And finally make wrappers
 include $(CLEAR_VARS)
-LOCAL_MODULE := wrappers
+LOCAL_MODULE := realm-wrappers
 
 LOCAL_CFLAGS := 
 LOCAL_SRC_FILES := src/object-store/src/collection_notifications.cpp
@@ -56,10 +56,10 @@ LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/handover.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/android/external_commit_helper.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
 
 LOCAL_SRC_FILES += src/error_handling.cpp
-LOCAL_SRC_FILES += src/linklist_cs.cpp
+LOCAL_SRC_FILES += src/list_cs.cpp
 LOCAL_SRC_FILES += src/marshalling.cpp
 LOCAL_SRC_FILES += src/query_cs.cpp
 LOCAL_SRC_FILES += src/results_cs.cpp

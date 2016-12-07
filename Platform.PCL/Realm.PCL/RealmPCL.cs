@@ -20,6 +20,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 //// using System.Runtime.ConstrainedExecution;
 
@@ -77,7 +78,7 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
-        }  // GetInstance
+        }
 
         #endregion
 
@@ -89,9 +90,14 @@ namespace Realms
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
         /// <summary>
-        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// Triggered when a realm has changed (i.e. a transaction was committed).
         /// </summary>
         public event RealmChangedEventHandler RealmChanged;
+
+        /// <summary>
+        /// Triggered when a Realm-level exception has occurred.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Checks if database has been closed.
@@ -201,11 +207,14 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed. Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Add<T>(T obj, bool update) where T : RealmObject
+        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
+        public T Add<T>(T obj, bool update) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return default(T);
         }
 
         /// <summary>
@@ -217,6 +226,7 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         public void Add(RealmObject obj, bool update = false)
@@ -275,18 +285,23 @@ namespace Realms
         /// if they're used on the worker thread.
         /// </remarks>
         /// <example>
+        /// <c>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
-        ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
-        ///         pup.Breed = "Dalmatian";
-        ///         pup.Mum = missis;
-        ///         pup.Dad = pongo;
+        ///         tempRealm.Add(new Dog
+        ///         {
+        ///             Breed = "Dalmatian",
+        ///             Mum = missis,
+        ///             Dad = pongo
+        ///         });
         ///     }
         /// });
+        /// </c>
+        /// Note that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>
@@ -312,20 +327,20 @@ namespace Realms
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T : RealmObject
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        public IQueryable<T> All<T>() where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
 
         /// <summary>
-        /// Get a view of all the objects of a particular type
+        /// Get a view of all the objects of a particular type.
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> All(string className)
+        /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
+        public IQueryable<dynamic> All(string className)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -399,7 +414,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
-        public void RemoveRange<T>(RealmResults<T> range) where T : RealmObject
+        public void RemoveRange<T>(IQueryable<T> range)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
