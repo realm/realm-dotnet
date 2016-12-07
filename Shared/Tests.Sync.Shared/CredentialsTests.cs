@@ -24,13 +24,13 @@ using Realms.Sync;
 
 namespace Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true)]
+    [TestFixture, Preserve(AllMembers = true), Ignore("Reset for testing doesn't delete persisted users. OS: #207")]
     public class CredentialsTests
     {
         [SetUp]
         public void SetUp()
         {
-            SyncUserHandle.ResetForTesting();
+            SharedRealmHandleExtensions.ResetForTesting();
         }
 
         [Test]

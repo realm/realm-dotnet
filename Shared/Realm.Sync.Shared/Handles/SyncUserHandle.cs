@@ -56,9 +56,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void reset_for_testing();
         }
 
         public string GetIdentity()
@@ -128,11 +125,6 @@ namespace Realms.Sync
         {
             return MarshalHelpers.GetCollection<IntPtr>(NativeMethods.get_logged_in_users, bufferSize: 8)
                                  .Select(GetHandle);
-        }
-
-        public static void ResetForTesting()
-        {
-            NativeMethods.reset_for_testing();
         }
 
         protected override void Unbind()

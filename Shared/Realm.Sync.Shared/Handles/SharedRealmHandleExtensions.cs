@@ -42,6 +42,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void reset_for_testing();
         }
 
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -70,6 +73,13 @@ namespace Realms.Sync
         {
             var basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, RefreshAccessTokenCallback, HandleSessionError);
+        }
+
+        public static void ResetForTesting()
+        {
+            // TODO: this should kill all active sessions (although no idea how we're supposed to do that).
+            NativeMethods.reset_for_testing();
+            InitializeSync();
         }
 
         #if __IOS__
