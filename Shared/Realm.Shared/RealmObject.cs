@@ -56,6 +56,7 @@ namespace Realms
                 return true;
             }
 
+            gch.Free();
             return false;
         }
 
