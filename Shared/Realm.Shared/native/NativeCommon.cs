@@ -33,7 +33,8 @@ namespace Realms
     {
         public delegate void NotifyRealmCallback(IntPtr realmHandle);
 
-        public delegate void NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
+        [return: MarshalAs(UnmanagedType.I1)]
+        public delegate bool NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
 
 #if DEBUG
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);

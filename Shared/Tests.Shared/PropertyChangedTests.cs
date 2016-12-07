@@ -394,6 +394,51 @@ namespace IntegrationTests
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { "Email_" }));
         }
 
+        [Test]
+        public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
+        {
+            var notifiedPropertyNames = new List<string>();
+            WeakReference personReference = null;
+            new Action(() =>
+            {
+                var person = new Person();
+                _realm.Write(() => _realm.Add(person));
+
+                person.PropertyChanged += (sender, e) =>
+                {
+                    notifiedPropertyNames.Add(e.PropertyName);
+                };
+
+                personReference = new WeakReference(person);
+
+                _realm.Write(() => person.FirstName = "Peter");
+
+                // Sanity check
+                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+            })();
+
+            notifiedPropertyNames.Clear();
+
+            while (personReference.IsAlive)
+            {
+                TestHelpers.RunEventLoop(10);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            Assert.That(personReference.IsAlive, Is.False);
+
+            _realm.Write(() =>
+            {
+                var peter = _realm.All<Person>().Single();
+                Assert.That(peter.FirstName, Is.EqualTo("Peter"));
+                peter.FirstName = "George";
+            });
+
+            // person was garbage collected, so we should not be notified and no exception should be thrown.
+            Assert.That(notifiedPropertyNames, Is.Empty);
+        }
+
         private void TestManaged(Action<Person, string> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
