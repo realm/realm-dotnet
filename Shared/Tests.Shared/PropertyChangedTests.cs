@@ -31,24 +31,34 @@ namespace IntegrationTests
     public class PropertyChangedTests
     {
         private string _databasePath;
-        private Realm _realm;
 
+        private Lazy<Realm> _lazyRealm;
+
+        private Realm _realm => _lazyRealm.Value;
+
+        // We capture the current SynchronizationContext when opening a Realm.
+        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
+        // That's why we make sure we open the Realm in the test method by accessing it lazily.
         [SetUp]
         public void SetUp()
         {
             _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
+            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_databasePath));
         }
 
         [TearDown]
         public void TearDown()
         {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
+            if (_lazyRealm.IsValueCreated)
+            {
+                _realm.Dispose();
+            }
+
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration.ConfigWithPath(_databasePath));
         }
 
         [Test]
-        public void UnmanagedObject()
+        public async void UnmanagedObject()
         {
             string notifiedPropertyName = null;
             var person = new Person();
@@ -61,7 +71,7 @@ namespace IntegrationTests
 
             // Subscribed - should trigger
             person.FirstName = "Peter";
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
 
             notifiedPropertyName = null;
@@ -69,12 +79,12 @@ namespace IntegrationTests
 
             // Unsubscribed - should not trigger
             person.FirstName = "George";
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifiedPropertyName, Is.Null);
         }
 
         [Test]
-        public void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
+        public async void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
         {
             var notifications = 0;
             var person = new Person();
@@ -88,7 +98,7 @@ namespace IntegrationTests
             };
 
             person.FirstName = "Peter";
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifications, Is.EqualTo(1));
 
             _realm.Write(() =>
@@ -98,7 +108,7 @@ namespace IntegrationTests
 
             // When calling Realm.Add, all properties are persisted, which causes a notification to be sent out.
             // We're using SomeClass because Person has nullable properties, which are set always, so it interferes with the test.
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifications, Is.EqualTo(2));
 
             _realm.Write(() =>
@@ -106,61 +116,63 @@ namespace IntegrationTests
                 person.FirstName = "George";
             });
 
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifications, Is.EqualTo(3));
         }
 
         [Test]
-        public void ManagedObject_WhenSameInstanceChanged()
+        public async void ManagedObject_WhenSameInstanceChanged()
         {
-            TestManaged((person, name) =>
+            await TestManaged((person, name) =>
             {
                 _realm.Write(() =>
                 {
                     person.FirstName = name;
                 });
+                return Task.CompletedTask;
             });
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherInstanceChanged()
+        public async void ManagedObject_WhenAnotherInstanceChanged()
         {
-            TestManaged((_, name) =>
+            await TestManaged((_, name) =>
             {
                 _realm.Write(() =>
                 {
                     var otherPersonInstance = _realm.All<Person>().First();
                     otherPersonInstance.FirstName = name;
                 });
+                return Task.CompletedTask;
             });
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherThreadInstanceChanged()
+        public async void ManagedObject_WhenAnotherThreadInstanceChanged()
         {
-            TestManaged((_, name) =>
+            await TestManaged(async (_, name) =>
             {
-                _realm.WriteAsync(otherRealm =>
+                await _realm.WriteAsync(otherRealm =>
                 {
                     var otherPersonInstance = otherRealm.All<Person>().First();
                     otherPersonInstance.FirstName = name;
-                }).Wait();
+                });
             });
         }
 
         [Test]
-        public void ManagedObject_WhenSameInstanceTransactionRollback()
+        public async void ManagedObject_WhenSameInstanceTransactionRollback()
         {
-            TestManagedRollback((person, name) =>
+            await TestManagedRollback((person, name) =>
             {
                 person.FirstName = name;
             }, _realm.BeginWrite);
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherInstaceTransactionRollback()
+        public async void ManagedObject_WhenAnotherInstaceTransactionRollback()
         {
-            TestManagedRollback((_, name) =>
+            await TestManagedRollback((_, name) =>
             {
                 var otherInstance = _realm.All<Person>().First();
                 otherInstance.FirstName = name;
@@ -168,7 +180,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
+        public async void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
         {
             var notifiedPropertyNames = new List<string>();
             var person = new Person();
@@ -182,7 +194,7 @@ namespace IntegrationTests
                 notifiedPropertyNames.Add(e.PropertyName);
             };
 
-            Task.Run(() =>
+            await Task.Run(() =>
             {
                 var otherRealm = Realm.GetInstance(_databasePath);
                 using (var transaction = otherRealm.BeginWrite())
@@ -190,14 +202,13 @@ namespace IntegrationTests
                     var otherInstance = otherRealm.All<Person>().First();
                     otherInstance.FirstName = "Peter";
 
-                    TestHelpers.RunEventLoop();
                     Assert.That(notifiedPropertyNames, Is.Empty);
 
                     transaction.Rollback();
                 }
-            }).Wait();
+            });
 
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
@@ -395,7 +406,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
+        public async void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
         {
             var notifiedPropertyNames = new List<string>();
             WeakReference personReference = null;
@@ -421,7 +432,7 @@ namespace IntegrationTests
 
             while (personReference.IsAlive)
             {
-                TestHelpers.RunEventLoop(10);
+                await Task.Yield();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
@@ -439,7 +450,7 @@ namespace IntegrationTests
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
-        private void TestManaged(Action<Person, string> writeFirstNameAction)
+        private async Task TestManaged(Func<Person, string, Task> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
             var person = new Person();
@@ -454,27 +465,27 @@ namespace IntegrationTests
             person.PropertyChanged += handler;
 
             // Subscribed - regular set should trigger
-            writeFirstNameAction(person, "Peter");
-            TestHelpers.RunEventLoop();
+            await writeFirstNameAction(person, "Peter");
+            await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
             // Subscribed - setting the same value for the property should trigger again
             // This is different from .NET's usual behavior, but is a limitation due to the fact that we don't
             // check the previous value of the property before setting it.
-            writeFirstNameAction(person, "Peter");
-            TestHelpers.RunEventLoop();
+            await writeFirstNameAction(person, "Peter");
+            await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
 
             notifiedPropertyNames.Clear();
             person.PropertyChanged -= handler;
 
             // Unsubscribed - should not trigger
-            writeFirstNameAction(person, "George");
-            TestHelpers.RunEventLoop();
+            await writeFirstNameAction(person, "George");
+            await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
-        private void TestManagedRollback(Action<Person, string> writeFirstNameAction, Func<Transaction> transactionFactory)
+        private async Task TestManagedRollback(Action<Person, string> writeFirstNameAction, Func<Transaction> transactionFactory)
         {
             var notifiedPropertyNames = new List<string>();
             var person = new Person();
@@ -492,13 +503,13 @@ namespace IntegrationTests
             {
                 writeFirstNameAction(person, "Peter");
 
-                TestHelpers.RunEventLoop();
+                await Task.Yield();
                 Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
                 transaction.Rollback();
             }
 
-            TestHelpers.RunEventLoop();
+            await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
         }
     }
