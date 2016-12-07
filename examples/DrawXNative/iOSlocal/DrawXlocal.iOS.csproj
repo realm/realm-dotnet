@@ -118,9 +118,6 @@
     <Reference Include="Remotion.Linq">
       <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="/SkiaSharp.Views.iOS">
-      <HintPath>..\packages\SkiaSharp.Views.1.54.1-beta1\lib\XamariniOS\SkiaSharp.Views.iOS.dll</HintPath>
-    </Reference>
     <Reference Include="SkiaSharp">
       <HintPath>..\packages\SkiaSharp.1.55.0\lib\XamariniOS\SkiaSharp.dll</HintPath>
     </Reference>
@@ -137,7 +134,7 @@
   <ItemGroup>
     <InterfaceDefinition Include="..\iOS\LaunchScreen.storyboard" />
     <InterfaceDefinition Include="..\iOS\Main.storyboard" />
-    <InterfaceDefinition Include="LoginScreen.storyboard" />
+    <InterfaceDefinition Include="..\iOS\LoginScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -158,7 +155,7 @@
     <Compile Include="..\DrawXShared\ViewControllerShared.cs">
       <Link>ViewControllerShared.cs</Link>
     </Compile>
-    <Compile Include="LoginViewController.cs" />
+    <Compile Include="..\iOS\LoginViewController.cs" />
     <Compile Include="LoginViewController.designer.cs">
       <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
       <DependentUpon>LoginViewController.cs</DependentUpon>

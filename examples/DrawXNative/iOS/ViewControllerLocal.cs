@@ -23,9 +23,9 @@ using UIKit;
 namespace DrawX.IOS
 {
     // local subclass per project because of the way the designer files are generated
-    public partial class ViewController : ViewControllerShared
+    public partial class ViewControllerLocal : ViewControllerShared
     {
-        public ViewController(IntPtr handle) : base(handle)
+        public ViewControllerLocal(IntPtr handle) : base(handle)
         {
         }
 
