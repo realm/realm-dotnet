@@ -280,7 +280,7 @@ namespace IntegrationTests
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
         }
 
@@ -434,6 +434,49 @@ namespace IntegrationTests
 
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
                         Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally" }));
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsNegative_ShouldThrow()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(-1, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsMoreThanCount_ShouldThrow()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(1, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            realm.Write(() => person.Dogs.Add(new Dog()));
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(2, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsEqualToCount_ShouldWork()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            realm.Write(() => person.Dogs.Insert(0, new Dog()));
+            Assert.That(person.Dogs.Count, Is.EqualTo(1));
+
+            realm.Write(() => person.Dogs.Insert(1, new Dog()));
+            Assert.That(person.Dogs.Count, Is.EqualTo(2));
         }
 
         #region DeleteRelated

@@ -284,7 +284,7 @@ namespace IntegrationTests
             var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
         }
 

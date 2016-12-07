@@ -41,8 +41,9 @@ REALM_EXPORT void list_insert(List* list, size_t link_ndx, const Object& object_
 {
     handle_errors(ex, [&]() {
         const size_t count = list->size();
-        if (link_ndx >= count)
+        if (link_ndx > count) {
             throw IndexOutOfRangeException("Insert into RealmList", link_ndx, count);
+        }
         list->insert(link_ndx, object_ptr.row().get_index());
     });
 }
