@@ -44,11 +44,6 @@ namespace Realms.Sync
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
         }
 
-        static unsafe SharedRealmHandleExtensions()
-        {
-            InitializeSync(Environment.GetFolderPath(Environment.SpecialFolder.Personal), RefreshAccessTokenCallback, HandleSessionError);
-        }
-
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
@@ -71,9 +66,10 @@ namespace Realms.Sync
             });
         }
 
-        private static void InitializeSync(string basePath, NativeMethods.RefreshAccessTokenCallbackDelegate refreshCallback, NativeMethods.SessionErrorCallback sessionErrorCallback)
+        public static unsafe void InitializeSync()
         {
-            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, refreshCallback, sessionErrorCallback);
+            var basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, RefreshAccessTokenCallback, HandleSessionError);
         }
 
         #if __IOS__

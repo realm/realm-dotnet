@@ -88,6 +88,13 @@ namespace Realms.Sync
             return new User(SyncUserHandle.GetSyncUser(refresh_token["token_data"]["identity"], refresh_token["token"], serverUrl.AbsoluteUri, false));
         }
 
+        static User()
+        {
+            // We call InitializeSync here because creating the User is a prerequisite for getting a synced Realm.
+            // In Native, InitializeSync will initialize the user metadata store that will allow us to persist users between reboots.
+            SharedRealmHandleExtensions.InitializeSync();
+        }
+
         #endregion
 
         private const int ErrorContentTruncationLimit = 256 * 1024;
