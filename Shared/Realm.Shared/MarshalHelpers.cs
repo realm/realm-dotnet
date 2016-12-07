@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using DotNetCross.Memory;
 
 namespace Realms
 {
@@ -91,7 +93,7 @@ namespace Realms
 
             /*
             TODO
-                    Table = 5, // type_Table for sub-tables, not relatinoships????
+                    Table = 5, // type_Table for sub-tables, not relationships????
                     Mixed = 6, // type_Mixed
 
             */
@@ -102,41 +104,69 @@ namespace Realms
 
         public static string GetString(NativeStringGetter getter)
         {
-            var bufferSizeNeededChars = 128;
+            // TODO: rework to use GetCollection
+            var bufferSize = 128;
 
             // First alloc this thread
-            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-            var stringGetBufferLen = bufferSizeNeededChars;
+            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
 
             bool isNull;
             NativeException nativeException;
 
             // try to read
-            var bytesRead = (int)getter(stringGetBuffer, (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+            var bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
             nativeException.ThrowIfNecessary();
+
             if (bytesRead == -1)
             {
                 throw new RealmInvalidDatabaseException("Corrupted string data");
             }
 
-            if (bytesRead > stringGetBufferLen) // need a bigger buffer
+            if (bytesRead > bufferSize) // need a bigger buffer
             {
+                bufferSize = bytesRead;
+
                 Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
-                stringGetBufferLen = bytesRead;
+                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
 
                 // try to read with big buffer
-                bytesRead = (int)getter(stringGetBuffer, (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+                bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
                 if (bytesRead == -1) // bad UTF-8 in full string
                 {
                     throw new RealmInvalidDatabaseException("Corrupted string data");
                 }
 
-                Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
+                Debug.Assert(bytesRead <= bufferSize, "Buffer must have overflowed.");
             } // needed re-read with expanded buffer
 
             return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+        }
+
+        public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
+
+        public static T[] GetCollection<T>(NativeCollectionGetter<T> getter, int bufferSize) where T : struct 
+        {
+            var buffer = new T[bufferSize];
+
+            NativeException nativeException;
+
+            var itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            if (itemsRead > bufferSize)
+            {
+                bufferSize = itemsRead;
+                buffer = new T[bufferSize];
+
+                itemsRead = (int)getter(buffer, (IntPtr)bufferSize, out nativeException);
+                nativeException.ThrowIfNecessary();
+
+                Debug.Assert(itemsRead <= bufferSize, "Buffer must have overflowed.");
+            }
+
+            Array.Resize(ref buffer, itemsRead);
+            return buffer;
         }
     }
 }

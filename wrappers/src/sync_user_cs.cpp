@@ -47,6 +47,38 @@ REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, s
         return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, is_admin));
     });
 }
+    
+REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        auto ptr = SyncManager::shared().get_current_user();
+        if (ptr == nullptr) {
+            return (SharedSyncUser*)nullptr;
+        }
+        
+        return new SharedSyncUser(std::move(ptr));
+    });
+}
+    
+REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t buffer_length, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> size_t {
+        auto users = SyncManager::shared().all_logged_in_users();
+        if (users.size() > buffer_length) {
+            return users.size();
+        }
+        
+        if (users.size() <= 0) {
+            return 0;
+        }
+        
+        for (size_t i = 0; i < users.size(); i++) {
+            buffer[i] = new SharedSyncUser(users.at(i));
+        }
+        
+        return users.size();
+    });
+}
 
 REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
 {

@@ -28,6 +28,46 @@ namespace Realms.Sync
     /// </summary>
     public class User : IEquatable<User>
     {
+        #region static
+
+        /// <summary>
+        /// Gets the currently logged-in user. If none exists, null is returned. If more than one user is currently logged in, an exception is thrown.
+        /// </summary>
+        public static User Current
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets all currently logged in users.
+        /// </summary>
+        public static User[] AllLoggedIn
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Logs the user in to the Realm Object Server.
+        /// </summary>
+        /// <param name="credentials">The credentials to use for authentication.</param>
+        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
+        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
+        public static Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
@@ -74,18 +114,6 @@ namespace Realms.Sync
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
                 return default(UserState);
             }
-        }
-
-        /// <summary>
-        /// Logs the user in to the Realm Object Server.
-        /// </summary>
-        /// <param name="credentials">The credentials to use for authentication.</param>
-        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
-        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
-        public static Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
         }
 
         /// <summary>

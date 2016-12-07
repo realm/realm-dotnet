@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Json;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -33,6 +35,68 @@ namespace Realms.Sync
     /// </summary>
     public class User : IEquatable<User>
     {
+        #region static
+
+        /// <summary>
+        /// Gets the currently logged-in user. If none exists, null is returned. If more than one user is currently logged in, an exception is thrown.
+        /// </summary>
+        public static User Current
+        {
+            get
+            {
+                var handle = SyncUserHandle.GetCurrentUser();
+                if (handle == null)
+                {
+                    return null;
+                }
+
+                return new User(handle);
+            }
+        }
+
+        /// <summary>
+        /// Gets all currently logged in users.
+        /// </summary>
+        public static User[] AllLoggedIn
+        {
+            get
+            {
+                return SyncUserHandle.GetAllLoggedInUsers()
+                                     .Select(handle => new User(handle))
+                                     .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Logs the user in to the Realm Object Server.
+        /// </summary>
+        /// <param name="credentials">The credentials to use for authentication.</param>
+        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
+        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
+        public static async Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
+        {
+            if (credentials.IdentityProvider == Credentials.Providers.AccessToken)
+            {
+                var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
+                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
+                return new User(SyncUserHandle.GetSyncUser(identity, credentials.Token, serverUrl?.AbsoluteUri, isAdmin));
+            }
+
+            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToJson(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+            var refresh_token = result["refresh_token"];
+
+            return new User(SyncUserHandle.GetSyncUser(refresh_token["token_data"]["identity"], refresh_token["token"], serverUrl.AbsoluteUri, false));
+        }
+
+        static User()
+        {
+            // We call InitializeSync here because creating the User is a prerequisite for getting a synced Realm.
+            // In Native, InitializeSync will initialize the user metadata store that will allow us to persist users between reboots.
+            SharedRealmHandleExtensions.InitializeSync();
+        }
+
+        #endregion
+
         private const int ErrorContentTruncationLimit = 256 * 1024;
 
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
@@ -75,27 +139,6 @@ namespace Realms.Sync
         internal User(SyncUserHandle handle)
         {
             Handle = handle;
-        }
-
-        /// <summary>
-        /// Logs the user in to the Realm Object Server.
-        /// </summary>
-        /// <param name="credentials">The credentials to use for authentication.</param>
-        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
-        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
-        public static async Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
-        {
-            if (credentials.IdentityProvider == Credentials.Providers.AccessToken)
-            {
-                var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
-                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
-                return new User(SyncUserHandle.GetSyncUser(identity, credentials.Token, serverUrl?.AbsoluteUri, isAdmin));
-            }
-
-            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToJson(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            var refresh_token = result["refresh_token"];
-
-            return new User(SyncUserHandle.GetSyncUser(refresh_token["token_data"]["identity"], refresh_token["token"], serverUrl.AbsoluteUri, false));
         }
 
         /// <summary>
