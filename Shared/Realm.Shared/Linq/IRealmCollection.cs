@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Realms
 {
@@ -75,7 +76,7 @@ namespace Realms
     /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All"/> or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection
+    public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection, INotifyPropertyChanged
     {
         /// <summary>
         /// Register a callback to be invoked each time this <see cref="IRealmCollection{T}"/> changes.
