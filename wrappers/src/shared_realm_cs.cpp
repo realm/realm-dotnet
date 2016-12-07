@@ -31,11 +31,11 @@
 using namespace realm;
 using namespace realm::binding;
 
-using NotifyRealmChangedT = void(*)(void* managed_realm_handle);
-NotifyRealmChangedT notify_realm_changed = nullptr;
+using NotifyRealmChangedDelegate = void(void* managed_realm_handle);
+NotifyRealmChangedDelegate* notify_realm_changed = nullptr;
 
-using NotifyRealmObjectChangedT = void(*)(void* managed_realm_object_handle, size_t property_ndx);
-NotifyRealmObjectChangedT notify_realm_object_changed = nullptr;
+using NotifyRealmObjectChangedDelegate = bool(void* managed_realm_object_handle, size_t property_ndx);
+NotifyRealmObjectChangedDelegate* notify_realm_object_changed = nullptr;
 
 namespace realm {
 namespace binding {
@@ -58,7 +58,15 @@ namespace binding {
         
         return static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
     }
-
+    
+    inline void notify_and_remove_if_needed(CSharpBindingContext* context, void* managed_realm_object_handle, size_t property_ndx)
+    {
+        auto object_alive = notify_realm_object_changed(managed_realm_object_handle, property_ndx);
+        if (!object_alive) {
+            context->remove_observed_row(managed_realm_object_handle);
+        }
+    }
+    
     CSharpBindingContext::CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle) {}
     
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
@@ -67,7 +75,7 @@ namespace binding {
             for (auto const& change : o.changes) {
                 if (change.kind == CSharpBindingContext::ColumnInfo::Kind::Set) {
                     auto const& observed_object_details = static_cast<ObservedObjectDetails*>(o.info);
-                    notify_realm_object_changed(observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index));
+                    notify_and_remove_if_needed(this, observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index));
                 }
             }
         }
@@ -100,7 +108,7 @@ namespace binding {
         for (auto const& o : m_observed_rows) {
             if (o.row_ndx == row_ndx && o.table_ndx == table_ndx) {
                 auto const& details = static_cast<ObservedObjectDetails*>(o.info);
-                notify_realm_object_changed(details->managed_object_handle, property_index);
+                notify_and_remove_if_needed(this, details->managed_object_handle, property_index);
             }
         }
     }
@@ -118,12 +126,12 @@ namespace binding {
 extern "C" {
     
     
-REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
+REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedDelegate notifier)
 {
     notify_realm_changed = notifier;
 }
     
-REALM_EXPORT void register_notify_realm_object_changed(NotifyRealmObjectChangedT notifier)
+REALM_EXPORT void register_notify_realm_object_changed(NotifyRealmObjectChangedDelegate notifier)
 {
     notify_realm_object_changed = notifier;
 }

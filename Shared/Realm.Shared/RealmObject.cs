@@ -45,12 +45,18 @@ namespace Realms
         #if __IOS__
         [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
         #endif
-        internal static void NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        internal static bool NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
         {
             var gch = GCHandle.FromIntPtr(realmObjectHandle);
             var realmObject = (RealmObject)gch.Target;
-            var property = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex);
-            realmObject.RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+            if (realmObject != null)
+            {
+                var property = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex);
+                realmObject.RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
