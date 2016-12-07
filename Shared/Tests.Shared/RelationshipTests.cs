@@ -280,7 +280,7 @@ namespace IntegrationTests
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
         }
 
