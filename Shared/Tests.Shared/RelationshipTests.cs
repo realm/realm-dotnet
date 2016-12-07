@@ -436,6 +436,49 @@ namespace IntegrationTests
                         Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally" }));
         }
 
+        [Test]
+        public void Insert_WhenIndexIsNegative_ShouldThrow()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(-1, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsMoreThanCount_ShouldThrow()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(1, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            realm.Write(() => person.Dogs.Add(new Dog()));
+            Assert.That(() =>
+            {
+                realm.Write(() => person.Dogs.Insert(2, new Dog()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsEqualToCount_ShouldWork()
+        {
+            var person = new Owner();
+            realm.Write(() => realm.Add(person));
+
+            realm.Write(() => person.Dogs.Insert(0, new Dog()));
+            Assert.That(person.Dogs.Count, Is.EqualTo(1));
+
+            realm.Write(() => person.Dogs.Insert(1, new Dog()));
+            Assert.That(person.Dogs.Count, Is.EqualTo(2));
+        }
+
         #region DeleteRelated
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
