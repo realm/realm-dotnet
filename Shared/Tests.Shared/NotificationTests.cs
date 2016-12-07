@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -157,11 +158,13 @@ namespace IntegrationTests
                 TestHelpers.RunEventLoop();
 
                 var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-                var handler = new NotifyCollectionChangedEventHandler((sender, e) =>
-                {
-                    eventArgs.Add(e);
-                });
+                var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
+
+                var propertyEventArgs = new List<string>();
+                var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
+
                 query.CollectionChanged += handler;
+                query.PropertyChanged += propertyHandler;
 
                 Assert.That(error, Is.Null);
 
@@ -179,6 +182,8 @@ namespace IntegrationTests
                 Assert.That(error, Is.Null);
                 Assert.That(eventArgs.Count, Is.EqualTo(1));
                 Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
 
                 _realm.Write(() =>
                 {
@@ -194,8 +199,11 @@ namespace IntegrationTests
                 Assert.That(error, Is.Null);
                 Assert.That(eventArgs.Count, Is.EqualTo(2));
                 Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
-
+                Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
+                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
+                
                 query.CollectionChanged -= handler;
+                query.PropertyChanged -= propertyHandler;
 
                 _realm.Write(() =>
                 {
@@ -211,6 +219,8 @@ namespace IntegrationTests
                 Assert.That(error, Is.Null);
                 Assert.That(eventArgs.Count, Is.EqualTo(2));
                 Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
+                Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
+                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
             }
             finally
             {
@@ -248,10 +258,10 @@ namespace IntegrationTests
                 TestHelpers.RunEventLoop();
 
                 var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-                query.CollectionChanged += (sender, e) =>
-                {
-                    eventArgs.Add(e);
-                };
+                query.CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+                var propertyEventArgs = new List<string>();
+                query.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
 
                 Assert.That(error, Is.Null);
 
@@ -271,6 +281,8 @@ namespace IntegrationTests
                 Assert.That(error, Is.Null);
                 Assert.That(eventArgs.Count, Is.EqualTo(1));
                 Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
             }
             finally
             {
@@ -290,8 +302,12 @@ namespace IntegrationTests
                 eventArgs.Add(e);
             });
 
+            var propertyEventArgs = new List<string>();
+            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
+
             var collection = container.Items.AsRealmCollection();
             collection.CollectionChanged += handler;
+            collection.PropertyChanged += propertyHandler;
 
             _realm.Write(() =>
             {
@@ -302,9 +318,12 @@ namespace IntegrationTests
 
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+            
             collection.CollectionChanged -= handler;
-
+            collection.PropertyChanged -= propertyHandler;
+            
             _realm.Write(() =>
             {
                 container.Items.Add(new OrderedObject());
@@ -314,6 +333,8 @@ namespace IntegrationTests
 
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
         }
 
         [Test]
@@ -327,11 +348,11 @@ namespace IntegrationTests
             _realm.Write(() => _realm.Add(container));
 
             var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
             var collection = container.Items.AsRealmCollection();
-            collection.CollectionChanged += (sender, e) =>
-            {
-                eventArgs.Add(e);
-            };
+            collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
 
             _realm.Write(() =>
             {
@@ -343,115 +364,8 @@ namespace IntegrationTests
 
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
-        }
-
-        [Test]
-        public void A1()
-        {
-            var container = new OrderedContainer();
-            foreach (var i in new[] { 1, 2 })
-            {
-                container.Items.Add(new OrderedObject { Order = i });
-            }
-
-            _realm.Write(() => _realm.Add(container));
-
-            var collection = container.Items.AsRealmCollection();
-            collection.CollectionChanged += (sender, e) => 
-            {
-                Console.WriteLine(e.Action);
-            };
-
-            _realm.Write(() =>
-            {
-                foreach (var i in new[] { 5, 9 })
-                {
-                    container.Items.Add(new OrderedObject { Order = i });
-                }
-            });
-
-            TestHelpers.RunEventLoop();
-            Console.WriteLine("success");
-        }
-
-        [Test]
-        public void A2()
-        {
-            var container = new OrderedContainer();
-            foreach (var i in new[] { 1, 2, 3 })
-            {
-                container.Items.Add(new OrderedObject { Order = i });
-            }
-
-            _realm.Write(() => _realm.Add(container));
-
-            _realm.Write(() =>
-            {
-                foreach (var i in new[] { 5, 9 })
-                {
-                    container.Items.Add(new OrderedObject { Order = i });
-                }
-            });
-
-            TestHelpers.RunEventLoop();
-            Console.WriteLine("success");
-        }
-
-        [Test]
-        public void A3()
-        {
-            var container = new OrderedContainer();
-            foreach (var i in new[] { 1, 2, 3, 4, 5 })
-            {
-                container.Items.Add(new OrderedObject { Order = i });
-            }
-
-            _realm.Write(() => _realm.Add(container));
-
-            var collection = container.Items.AsRealmCollection();
-            collection.CollectionChanged += (sender, e) =>
-            {
-                Console.WriteLine(e.Action);
-            };
-
-            _realm.Write(() =>
-            {
-                foreach (var i in new[] { 5, 9 })
-                {
-                    container.Items.Add(new OrderedObject { Order = i });
-                }
-            });
-
-            TestHelpers.RunEventLoop();
-            Console.WriteLine("success");
-        }
-
-        [Test]
-        public void A4()
-        {
-            var container = new OrderedContainer();
-            foreach (var i in new[] { 1, 2, 3 })
-            {
-                container.Items.Add(new OrderedObject { Order = i });
-            }
-
-            _realm.Write(() => _realm.Add(container));
-            var collection = container.Items.AsRealmCollection();
-            collection.CollectionChanged += (sender, e) =>
-            {
-                Console.WriteLine(e.Action);
-            };
-
-            _realm.Write(() =>
-            {
-                foreach (var i in new[] { 5, 9 })
-                {
-                    container.Items.Add(new OrderedObject { Order = i });
-                }
-            });
-
-            TestHelpers.RunEventLoop();
-            Console.WriteLine("success");
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
         }
 
         [TestCaseSource(nameof(CollectionChangedTestCases))]
@@ -474,7 +388,10 @@ namespace IntegrationTests
             var collection = container.Items.AsRealmCollection();
 
             var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
             collection.CollectionChanged += (o, e) => eventArgs.Add(e);
+            collection.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
 
             Assert.That(error, Is.Null);
             _realm.Write(() =>
@@ -522,6 +439,9 @@ namespace IntegrationTests
                     Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
                 }
             }
+
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
         }
 
         [TestCaseSource(nameof(CollectionChangedTestCases))]
@@ -552,7 +472,10 @@ namespace IntegrationTests
                 TestHelpers.RunEventLoop();
 
                 var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+                var propertyEventArgs = new List<string>();
+
                 query.CollectionChanged += (o, e) => eventArgs.Add(e);
+                query.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
 
                 Assert.That(error, Is.Null);
                 _realm.Write(() =>
@@ -598,6 +521,9 @@ namespace IntegrationTests
                         Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
                     }
                 }
+
+                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
             }
             finally
             {

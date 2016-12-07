@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -27,7 +28,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class RealmCollectionBase<T> : RealmCollectionNativeHelper.Interface, IRealmCollection<T>, INotifyCollectionChanged
+    internal abstract class RealmCollectionBase<T> : RealmCollectionNativeHelper.Interface, IRealmCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
@@ -35,14 +36,13 @@ namespace Realms
 
         private event NotifyCollectionChangedEventHandler _collectionChanged;
 
+        private event PropertyChangedEventHandler _propertyChanged;
+
         public event NotifyCollectionChangedEventHandler CollectionChanged
         {
             add
             {
-                if (_collectionChanged == null)
-                {
-                    SubscribeForNotifications(OnChange);
-                }
+                UpdateCollectionChangedSubscriptionIfNecessary(isSubscribed: true);
 
                 _collectionChanged += value;
             }
@@ -51,10 +51,24 @@ namespace Realms
             {
                 _collectionChanged -= value;
 
-                if (_collectionChanged == null)
-                {
-                    UnsubscribeFromNotifications(OnChange);
-                }
+                UpdateCollectionChangedSubscriptionIfNecessary(isSubscribed: false);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                UpdateCollectionChangedSubscriptionIfNecessary(isSubscribed: true);
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                UpdateCollectionChangedSubscriptionIfNecessary(isSubscribed: false);
             }
         }
 
@@ -177,17 +191,20 @@ namespace Realms
                         (raiseRemoved && removedItems == null))
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                        RaisePropertyChanged();
                         return;
                     }
 
                     if (removedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, removedStartIndex));
+                        RaisePropertyChanged();
                     }
 
                     if (addedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems, addedStartIndex));
+                        RaisePropertyChanged();
                     }
                 }
             }
@@ -196,6 +213,12 @@ namespace Realms
         protected void RaiseCollectionChanged(NotifyCollectionChangedEventArgs args)
         {
             _collectionChanged?.Invoke(this, args);
+        }
+
+        protected void RaisePropertyChanged()
+        {
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
         private static bool TryGetConsecutive(int[] indices, Func<int, T> getter, out IList items, out int startIndex)
@@ -217,6 +240,21 @@ namespace Realms
 
             startIndex = -1;
             return false;
+        }
+
+        private void UpdateCollectionChangedSubscriptionIfNecessary(bool isSubscribed)
+        {
+            if (_collectionChanged == null && _propertyChanged == null)
+            {
+                if (isSubscribed)
+                {
+                    SubscribeForNotifications(OnChange);
+                }
+                else
+                {
+                    UnsubscribeFromNotifications(OnChange);
+                }
+            }
         }
 
         #endregion
