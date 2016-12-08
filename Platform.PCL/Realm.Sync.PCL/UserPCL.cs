@@ -66,6 +66,26 @@ namespace Realms.Sync
             return null;
         }
 
+        /// <summary>
+        /// Configures user persistence. If you need to call this, be sure to do so before accessing any other Realm API.
+        /// </summary>
+        /// <param name="mode">The persistence mode.</param>
+        /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
+        /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
+        /// <remarks>
+        /// Users are persisted in a realm file within the application's sandbox.
+        /// <para>
+        /// By default <see cref="User"/> objects are persisted and are additionaly protected with an encryption key stored
+        /// in the iOS Keychain when running on an iOS device (but not on a Simulator).
+        /// On Android users are persisted in plaintext, because the AndroidKeyStore API is only supported on API level 18 and up.
+        /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
+        /// </para>
+        /// </remarks>
+        public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
         #endregion
 
         /// <summary>

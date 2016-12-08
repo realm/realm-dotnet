@@ -45,33 +45,47 @@ struct SyncConfiguration
 void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
 void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, SyncSessionError);
 
-extern "C" {
-REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len, decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback)
-{
-    Utf16StringAccessor base_path(base_path_buf, base_path_len);
-    SyncManager::shared().configure_file_system(base_path, SyncManager::MetadataMode::NoEncryption);
-
-    s_refresh_access_token_callback = refresh_callback;
-    s_session_error_callback = session_error_callback;
-}
-
 static void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
 {
-    if (config.user->is_admin()) {
-        std::async([session, user=config.user]() {
-            session->bind_with_admin_token(user->refresh_token(), user->server_url());
-        });
-    }
-    else {
-        s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
-    }
+    s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
 }
 
 static void handle_session_error(std::shared_ptr<SyncSession> session, int error_code, std::string message, SyncSessionError error)
 {
     s_session_error_callback(new std::shared_ptr<SyncSession>(session), error_code, message.c_str(), message.length(), error);
 }
+
+extern "C" {
+REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_path_buf, size_t base_path_len,
+                                                          const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
+                                                          NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor base_path(base_path_buf, base_path_len);
+
+        auto metadata_mode = SyncManager::MetadataMode::NoEncryption;
+        if (mode) {
+            metadata_mode = *mode;
+        } else {
+#if REALM_PLATFORM_APPLE
+            metadata_mode = SyncManager::MetadataMode::Encryption;
+#endif
+        }
+
+        util::Optional<std::vector<char>> encryption_key;
+        if (encryption_key_buf) {
+            encryption_key = std::vector<char>(encryption_key_buf, encryption_key_buf + 64);
+        }
+
+        SyncManager::shared().configure_file_system(base_path, metadata_mode, encryption_key, reset_on_error);
+    });
+}
     
+REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback)
+{
+    s_refresh_access_token_callback = refresh_callback;
+    s_session_error_callback = session_error_callback;
+}
     
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
