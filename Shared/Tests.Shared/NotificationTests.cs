@@ -143,7 +143,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void UnsubscribeInNotificationCallback()
+        public async void UnsubscribeInNotificationCallback()
         {
             var query = _realm.All<Person>();
             IDisposable notificationToken = null;
@@ -158,7 +158,7 @@ namespace IntegrationTests
             for (int i = 0; i < 2; i++)
             {
                 _realm.Write(() => _realm.CreateObject<Person>());
-                TestHelpers.RunEventLoop();
+                await Task.Delay(MillisecondsToWaitForCollectionNotification);
                 Assert.That(notificationCount, Is.EqualTo(1));
             }
         }
