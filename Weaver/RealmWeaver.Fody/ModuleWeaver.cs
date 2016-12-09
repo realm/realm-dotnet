@@ -346,7 +346,7 @@ public class ModuleWeaver
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
         }
 
-        var isPrimaryKey = prop.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
+        var isPrimaryKey = prop.IsPrimaryKey();
         if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
@@ -720,7 +720,7 @@ public class ModuleWeaver
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties)
+            foreach (var prop in properties.OrderByDescending(p => p.Property.IsPrimaryKey()))
             {
                 var property = prop.Property;
                 var field = prop.Field;
@@ -764,7 +764,7 @@ public class ModuleWeaver
                         il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { field.FieldType } }));
                         il.Append(il.Create(OpCodes.Pop));
                     }
-                    else if (!property.IsNullable())
+                    else if (!property.IsNullable() && !property.IsPrimaryKey())
                     {
                         il.Append(il.Create(OpCodes.Ldarg_2));
                         updatePlaceholder = il.Create(OpCodes.Nop);
@@ -807,7 +807,7 @@ public class ModuleWeaver
                             il.Replace(addPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
                     }
-                    else if (!property.IsNullable())
+                    else if (!property.IsNullable() && !property.IsPrimaryKey())
                     {
                         // Branching instruction to check if we're trying to set the default value of a property.
                         if (property.IsSingle() || property.IsDouble())

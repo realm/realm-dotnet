@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Mono.Cecil;
@@ -72,6 +73,12 @@ internal static class PropertyDefinitionExtensions
             .Select(o => o.Operand)
             .OfType<FieldReference>()
             .SingleOrDefault();
+    }
+
+    internal static bool IsPrimaryKey(this PropertyDefinition property)
+    {
+        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Primary key properties only make sense on RealmObject classes");
+        return property.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
     }
 
     private static bool IsType(this PropertyDefinition property, string name, string @namespace)

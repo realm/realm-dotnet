@@ -574,6 +574,39 @@ namespace RealmWeaver
             Assert.That(instance.LogList, Is.EqualTo(targetList));
         }
 
+        [TestCase("Char")]
+        [TestCase("Byte")]
+        [TestCase("Int16")]
+        [TestCase("Int32")]
+        [TestCase("Int64")]
+        [TestCase("String")]
+        public void WovenCopyToRealm_ShouldAlwaysSetPrimaryKeyProperties(string type)
+        {
+            var objectType = _assembly.GetType($"AssemblyToProcess.PrimaryKey{type}Object");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            CopyToRealm(objectType, instance);
+
+            var propertyType = objectType.GetProperty(type + "Property").PropertyType;
+            var defaultValue = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
+            Assert.That(instance.LogList, Is.EqualTo(new List<string> { "IsManaged", $"RealmObject.Set{type}ValueUnique(propertyName = \"{type}Property\", value = {defaultValue})" }));
+        }
+
+        [TestCase("PKObjectOne")]
+        [TestCase("PKObjectTwo")]
+        [TestCase("PKObjectThree")]
+        public void WovenCopyToRealm_ShouldSetPrimaryKeysFirst(string @class)
+        {
+            var objectType = _assembly.GetType($"AssemblyToProcess.{@class}");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            CopyToRealm(objectType, instance);
+
+            Assert.That(((IEnumerable<string>)instance.LogList).Take(2), Is.EqualTo(new[] { "IsManaged", "RealmObject.SetInt32ValueUnique(propertyName = \"Id\", value = 0)" }));
+        }
+
         private static void CopyToRealm(Type objectType, dynamic instance)
         {
             var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");

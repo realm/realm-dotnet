@@ -69,4 +69,33 @@ namespace AssemblyToProcess
 
         public bool? Boolean { get; set; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PKObjectOne : RealmObject
+    {
+        public string Foo { get; set; } = Guid.NewGuid().ToString();
+
+        [PrimaryKey]
+        public int Id { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PKObjectTwo : RealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public string Foo { get; set; } = Guid.NewGuid().ToString();
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PKObjectThree : RealmObject
+    {
+        public string Foo { get; set; } = Guid.NewGuid().ToString();
+
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public string Bar { get; set; } = Guid.NewGuid().ToString();
+    }
 }
