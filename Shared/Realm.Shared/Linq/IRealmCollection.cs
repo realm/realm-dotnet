@@ -24,17 +24,6 @@ using System.ComponentModel;
 namespace Realms
 {
     /// <summary>
-    /// A realm collection, exposing the ObjectSchema of the contained objects.
-    /// </summary>
-    public interface IRealmCollection
-    {
-        /// <summary>
-        /// Gets the object schema of the contained objects.
-        /// </summary>
-        Schema.ObjectSchema ObjectSchema { get; }
-    }
-
-    /// <summary>
     /// A <see cref="ChangeSet" /> describes the changes inside a <see cref="IRealmCollection{T}" /> since the last time the notification callback was invoked.
     /// </summary>
     public class ChangeSet
@@ -70,14 +59,19 @@ namespace Realms
     /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>, or <c>null</c> if an error occured.</param>
     /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors occured.</param>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public delegate void NotificationCallbackDelegate<T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
+    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
     /// <summary>
     /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All"/> or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public interface IRealmCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, IRealmCollection, INotifyPropertyChanged
+    public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Gets the object schema of the contained objects.
+        /// </summary>
+        Schema.ObjectSchema ObjectSchema { get; }
+
         /// <summary>
         /// Register a callback to be invoked each time this <see cref="IRealmCollection{T}"/> changes.
         /// </summary>

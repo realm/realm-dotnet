@@ -717,7 +717,7 @@ namespace Realms
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
             }
 
-            return new RealmResults<dynamic>(this, metadata, true);
+            return new RealmResults<RealmObject>(this, metadata, true);
         }
 
         #region Quick Find using primary key
