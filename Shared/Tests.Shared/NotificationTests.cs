@@ -133,6 +133,27 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void UnsubscribeInNotificationCallback()
+        {
+            var query = _realm.All<Person>();
+            IDisposable notificationToken = null;
+
+            int notificationCount = 0;
+            notificationToken = query.SubscribeForNotifications(delegate
+            {
+                notificationCount++;
+                notificationToken.Dispose();
+            });
+
+            for (int i = 0; i < 2; i++)
+            {
+                _realm.Write(() => _realm.CreateObject<Person>());
+                TestHelpers.RunEventLoop();
+                Assert.That(notificationCount, Is.EqualTo(1));
+            }
+        }
+
+        [Test]
         public void Results_WhenUnsubscribed_ShouldStopReceivingNotifications()
         {
             _realm.Write(() =>
