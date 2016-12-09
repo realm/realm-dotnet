@@ -71,6 +71,15 @@ namespace IntegrationTests
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class IntPrimaryKeyWithValueObject : RealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public string StringValue { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]

@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -30,8 +31,8 @@ namespace IntegrationTests
     {
         private const string SpecialRealmName = "EnterTheMagic.realm";
 
-        [TestFixtureSetUp]
-        public void SetUp()
+        [TearDown]
+        public void TearDown()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
@@ -77,7 +78,7 @@ namespace IntegrationTests
             // Assert 
             Assert.That(File.Exists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
-            Assert.False(File.Exists(config.DatabasePath));
+            Assert.That(File.Exists(config.DatabasePath), Is.False);
         }
 
         [Test]
@@ -96,8 +97,8 @@ namespace IntegrationTests
             t.Join();
 
             // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.False(realm1.IsSameInstance(realm2));
+            Assert.That(ReferenceEquals(realm1, realm2), Is.False);
+            Assert.That(realm1.IsSameInstance(realm2), Is.False);
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
 
             realm1.Dispose();
@@ -112,7 +113,7 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(ReferenceEquals(realm1, realm2), Is.False);
                 Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
                 Assert.That(realm1.IsSameInstance(realm2));
                 Assert.That(realm1, Is.EqualTo(realm2));
@@ -127,7 +128,7 @@ namespace IntegrationTests
             using (var realm2 = Realm.GetInstance())
             {
                 // Assert
-                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(ReferenceEquals(realm1, realm2), Is.False);
                 Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
                 Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
@@ -226,6 +227,129 @@ namespace IntegrationTests
                 Realm.GetInstance(config);
             },
             "Can't have classes in the list which are not RealmObjects");
+        }
+
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
+        {
+            var config = new RealmConfiguration($"compactrealm_{encrypt}_{populate}.realm");
+            if (encrypt)
+            {
+                config.EncryptionKey = new byte[64];
+                config.EncryptionKey[0] = 5;
+            }
+
+            Realm.DeleteRealm(config);
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                if (populate)
+                {
+                    AddDummyData(realm);
+                }
+            }
+
+            var initialSize = new FileInfo(config.DatabasePath).Length;
+
+            Assert.That(Realm.Compact(config));
+
+            var finalSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(initialSize >= finalSize);
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+            }
+        }
+
+        [Test]
+        public void Compact_WhenInTransaction_ShouldThrow()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                Assert.That(() =>
+                {
+                    realm.Write(() =>
+                    {
+                        Realm.Compact();
+                    });
+                }, Throws.TypeOf<RealmInvalidTransactionException>());
+            }
+        }
+
+        [Test]
+        public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                AddDummyData(realm);
+
+                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.That(() => Task.Run(() => Realm.Compact(realm.Config)).Result, Is.False);
+                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+
+                Assert.That(finalSize, Is.EqualTo(initialSize));
+            }
+        }
+
+        [Test, Ignore("Currently doesn't work. Ref #947")]
+        public void Compact_WhenOpenOnSameThread_ShouldReturnFalse()
+        {
+            // TODO: enable when we implement instance caching (#947)
+            // This works because of caching of native instances in ObjectStore.
+            // Technically, we get the same native instance, so Compact goes through.
+            // However, this invalidates the opened realm, but we have no way of communicating that.
+            // That is why, things seem fine until we try to run queries on the opened realm.
+            // Once we handle caching in managed, we should reenable the test.
+            using (var realm = Realm.GetInstance())
+            {
+                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.That(() => Realm.Compact(), Is.False);
+                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                Assert.That(finalSize, Is.EqualTo(initialSize));
+            }
+        }
+
+        [Test]
+        public void Compact_WhenResultsAreOpen_ShouldReturnFalse()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                var token = realm.All<Person>().SubscribeForNotifications((sender, changes, error) =>
+                {
+                    Console.WriteLine(changes?.InsertedIndices);
+                });
+
+                Assert.That(() => Realm.Compact(), Is.False);
+                token.Dispose();
+            }
+        }
+
+        private static void AddDummyData(Realm realm)
+        {
+            for (var i = 0; i < 1000; i++)
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = i,
+                        StringValue = "Super secret product " + i
+                    });
+                });
+            }
+
+            for (var i = 0; i < 500; i++)
+            {
+                realm.Write(() =>
+                {
+                    var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i);
+                    realm.Remove(item);
+                });
+            }
         }
     }
 }
