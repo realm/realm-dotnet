@@ -77,7 +77,7 @@ internal static class PropertyDefinitionExtensions
 
     internal static bool IsPrimaryKey(this PropertyDefinition property)
     {
-        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Primary key properties on make sense on RealmObject classes");
+        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Primary key properties only make sense on RealmObject classes");
         return property.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
     }
 
