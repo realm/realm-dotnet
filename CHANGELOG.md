@@ -11,10 +11,12 @@
 * The runtime types of the collection, returned from `Realm.All` and the collection created for `IList<T>` properties on `RealmObject` now implement `INotifyCollectionChanged` so you can pass them for data-binding without any additional casting. (#938, #909)
 * All RealmObjects implement `INotifyPropertyChanged`. This allows you to pass them directly for data-binding.
 * Added `Realm.Compact` method that allows you to reclaim the space used by the Realm. (#968)
+* `Realm.Add` returns the added object. (#931)
 
 ### Bug fixes
 * Subscribing to `PropertyChanged` on a RealmObject and changing an instance of the same object on a different thread will now properly raise the event. (#909)
-* Using `Insert` to insert items at the end of an `IList` property will no longer throw an exception. (#982)
+* Using `Insert` to insert items at the end of an `IList` property will no longer throw an exception. (#978)
+* `Realm.Add` will always generate the correct `Set*Unique` calls when adding objects if they have primary keys. (#988)
 
 0.80.0 (2016-10-27)
 -------------------
