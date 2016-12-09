@@ -272,7 +272,7 @@ namespace Realms
                     deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray());
             }
 
-            foreach (var callback in _callbacks)
+            foreach (var callback in _callbacks.ToArray())
             {
                 callback(this, changeset, managedException);
             }
