@@ -866,7 +866,7 @@ namespace Realms
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
         {
-            var results = c.Value as IRealmCollection;
+            var results = c.Value as IRealmCollection<RealmObject>;
             if (results != null)
             {
                 // assume constant nodes w/ IQueryables are table references
