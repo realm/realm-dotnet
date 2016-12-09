@@ -18,12 +18,16 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Realms;
 
 namespace Realms.Sync
 {
     internal static class SharedRealmHandleExtensions
     {
+        // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
+        private static int _fileSystemConfigured = 0;
+
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
@@ -37,8 +41,14 @@ namespace Realms.Sync
 
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, SessionErrorKind error);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_initialize_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void initialize_sync([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback session_error_callback);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
+            public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
+                                                                   UserPersistenceMode* userPersistence, byte[] encryptionKey,
+                                                                   [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
+                                                                   out NativeException exception);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback session_error_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
@@ -47,8 +57,15 @@ namespace Realms.Sync
             public static extern void reset_for_testing();
         }
 
+        static unsafe SharedRealmHandleExtensions()
+        {
+            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError);
+        }
+
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
+            DoInitialFileSystemConfiguration();
+
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
             NativeException nativeException;
@@ -62,6 +79,7 @@ namespace Realms.Sync
 
         public static string GetRealmPath(User user, Uri serverUri)
         {
+            DoInitialFileSystemConfiguration();
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
@@ -69,17 +87,41 @@ namespace Realms.Sync
             });
         }
 
-        public static unsafe void InitializeSync()
+        // Configure the SyncMetadataManager with default values if it hasn't been configured already
+        public static void DoInitialFileSystemConfiguration()
         {
+            if (Interlocked.Exchange(ref _fileSystemConfigured, 1) == 0)
+            {
+                ConfigureFileSystem(null, null, false);
+            }
+        }
+
+        public static unsafe void ConfigureFileSystem(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError)
+        {
+            // mark the file system as configured in case this is called directly
+            // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
+            Interlocked.Exchange(ref _fileSystemConfigured, 1);
+
             var basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length, RefreshAccessTokenCallback, HandleSessionError);
+
+            UserPersistenceMode mode;
+            UserPersistenceMode* modePtr = null;
+            if (userPersistenceMode.HasValue)
+            {
+                mode = userPersistenceMode.Value;
+                modePtr = &mode;
+            }
+
+            NativeException ex;
+            NativeMethods.configure_file_system(basePath, (IntPtr)basePath.Length, modePtr, encryptionKey, resetMetadataOnError, out ex);
+            ex.ThrowIfNecessary();
         }
 
         public static void ResetForTesting()
         {
             // TODO: this should kill all active sessions (although no idea how we're supposed to do that).
             NativeMethods.reset_for_testing();
-            InitializeSync();
+            ConfigureFileSystem(null, null, false);
         }
 
         #if __IOS__

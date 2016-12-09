@@ -44,6 +44,8 @@ namespace Realms.Sync
         {
             get
             {
+                SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+
                 var handle = SyncUserHandle.GetCurrentUser();
                 if (handle == null)
                 {
@@ -61,6 +63,7 @@ namespace Realms.Sync
         {
             get
             {
+                SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
                 return SyncUserHandle.GetAllLoggedInUsers()
                                      .Select(handle => new User(handle))
                                      .ToArray();
@@ -75,6 +78,8 @@ namespace Realms.Sync
         /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
         public static async Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
         {
+            SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+
             if (credentials.IdentityProvider == Credentials.Providers.AccessToken)
             {
                 var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
@@ -88,11 +93,29 @@ namespace Realms.Sync
             return new User(SyncUserHandle.GetSyncUser(refresh_token["token_data"]["identity"], refresh_token["token"], serverUrl.AbsoluteUri, false));
         }
 
-        static User()
+        /// <summary>
+        /// Configures user persistence. If you need to call this, be sure to do so before accessing any other Realm API.
+        /// </summary>
+        /// <param name="mode">The persistence mode.</param>
+        /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
+        /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
+        /// <remarks>
+        /// Users are persisted in a realm file within the application's sandbox.
+        /// <para>
+        /// By default <see cref="User"/> objects are persisted and are additionaly protected with an encryption key stored
+        /// in the iOS Keychain when running on an iOS device (but not on a Simulator).
+        /// On Android users are persisted in plaintext, because the AndroidKeyStore API is only supported on API level 18 and up.
+        /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
+        /// </para>
+        /// </remarks>
+        public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false)
         {
-            // We call InitializeSync here because creating the User is a prerequisite for getting a synced Realm.
-            // In Native, InitializeSync will initialize the user metadata store that will allow us to persist users between reboots.
-            SharedRealmHandleExtensions.InitializeSync();
+            if (mode == UserPersistenceMode.Encrypted && encryptionKey != null && encryptionKey.Length != 64)
+            {
+                throw new ArgumentException("The encryption key must be 64 bytes long", nameof(encryptionKey));
+            }
+
+            SharedRealmHandleExtensions.ConfigureFileSystem(mode, encryptionKey, resetOnError);
         }
 
         #endregion
