@@ -720,7 +720,7 @@ public class ModuleWeaver
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties)
+            foreach (var prop in properties.OrderByDescending(p => p.Property.IsPrimaryKey()))
             {
                 var property = prop.Property;
                 var field = prop.Field;
