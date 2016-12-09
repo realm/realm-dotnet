@@ -16,7 +16,6 @@
 ### Bug fixes
 * Subscribing to `PropertyChanged` on a RealmObject and changing an instance of the same object on a different thread will now properly raise the event. (#909)
 * Using `Insert` to insert items at the end of an `IList` property will no longer throw an exception. (#978)
-* `Realm.Add` will always generate the correct `Set*Unique` calls when adding objects if they have primary keys. (#988)
 
 0.80.0 (2016-10-27)
 -------------------
