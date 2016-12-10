@@ -51,6 +51,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, NotificationCallbackDelegate callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_move", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr move(ListHandle listHandle, ObjectHandle objectHandle, IntPtr targetIndex, out NativeException ex);
         }
 
         internal ListHandle(RealmHandle root) : base(root)
@@ -96,6 +99,13 @@ namespace Realms
             var result = NativeMethods.find(this, objectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
+        }
+
+        public void Move(ObjectHandle objectHandle, IntPtr targetIndex)
+        {
+            NativeException nativeException;
+            NativeMethods.move(this, objectHandle, targetIndex, out nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)

@@ -1,0 +1,169 @@
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
+using Realms;
+
+namespace IntegrationTests
+{
+    [TestFixture, Preserve(AllMembers = true)]
+    public class CollectionTests
+    {
+        private Realm _realm;
+
+        [SetUp]
+        public void SetUp()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            _realm = Realm.GetInstance();
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsNegative_ShouldThrow()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items.Insert(-1, new IntPropertyObject()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsMoreThanCount_ShouldThrow()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items.Insert(1, new IntPropertyObject()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            _realm.Write(() => container.Items.Add(new IntPropertyObject()));
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items.Insert(2, new IntPropertyObject()));
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Insert_WhenIndexIsEqualToCount_ShouldWork()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() => container.Items.Insert(0, new IntPropertyObject()));
+            Assert.That(container.Items.Count, Is.EqualTo(1));
+
+            _realm.Write(() => container.Items.Insert(1, new IntPropertyObject()));
+            Assert.That(container.Items.Count, Is.EqualTo(2));
+        }
+
+        [TestCase(0, 3, "12304")]
+        [TestCase(0, 4, "12340")]
+        [TestCase(4, 0, "40123")]
+        [TestCase(2, 4, "01342")]
+        [TestCase(3, 1, "03124")]
+        [TestCase(4, 4, "01234")]
+        [TestCase(1, 1, "01234")]
+        public void Move_WhenUnmanaged_ShouldMoveTheItem(int from, int to, string expected)
+        {
+            var list = new List<IntPropertyObject>();
+
+            for (var i = 0; i < 5; i++)
+            {
+                list.Add(new IntPropertyObject { Int = i });
+            }
+
+            var item = list[from];
+            list.Move(item, to);
+            Assert.That(string.Join(string.Empty, list.Select(i => i.Int)), Is.EqualTo(expected));
+        }
+
+        [TestCase(0, -1)]
+        [TestCase(4, 5)]
+        [TestCase(1, 5)]
+        [TestCase(3, -3)]
+        public void Move_WhenUnmanagedAndDestinationIndexIsInvalid_ShouldThrow(int from, int to)
+        {
+            var list = new List<IntPropertyObject>();
+
+            for (var i = 0; i < 5; i++)
+            {
+                list.Add(new IntPropertyObject { Int = i });
+            }
+
+            var item = list[from];
+            Assert.That(() => list.Move(item, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [TestCase(0, 3, "12304")]
+        [TestCase(0, 4, "12340")]
+        [TestCase(4, 0, "40123")]
+        [TestCase(2, 4, "01342")]
+        [TestCase(3, 1, "03124")]
+        [TestCase(4, 4, "01234")]
+        [TestCase(1, 1, "01234")]
+        public void Move_WhenManaged_ShouldMoveTheItem(int from, int to, string expected)
+        {
+            var container = new ContainerObject();
+
+            for (var i = 0; i < 5; i++)
+            {
+                container.Items.Add(new IntPropertyObject { Int = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() =>
+            {
+                var item = container.Items[from];
+                container.Items.Move(item, to);
+            });
+
+            Assert.That(string.Join(string.Empty, container.Items.Select(i => i.Int)), Is.EqualTo(expected));
+        }
+
+        [TestCase(0, -1)]
+        [TestCase(4, 5)]
+        [TestCase(1, 5)]
+        [TestCase(3, -3)]
+        public void Move_WhenManagedAndDestinationIndexIsInvalid_ShouldThrow(int from, int to)
+        {
+            var container = new ContainerObject();
+
+            for (var i = 0; i < 5; i++)
+            {
+                container.Items.Add(new IntPropertyObject { Int = i });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() =>
+            {
+                var item = container.Items[from];
+                Assert.That(() => container.Items.Move(item, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+            });
+        }
+    }
+}

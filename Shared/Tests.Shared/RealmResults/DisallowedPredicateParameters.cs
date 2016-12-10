@@ -23,7 +23,7 @@ using System.Text;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.RealmResults
+namespace IntegrationTests
 {
     [TestFixture]
     public class DisallowedPredicateParameters

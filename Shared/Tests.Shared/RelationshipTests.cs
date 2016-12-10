@@ -437,49 +437,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void Insert_WhenIndexIsNegative_ShouldThrow()
-        {
-            var person = new Owner();
-            realm.Write(() => realm.Add(person));
-
-            Assert.That(() =>
-            {
-                realm.Write(() => person.Dogs.Insert(-1, new Dog()));
-            }, Throws.TypeOf<ArgumentOutOfRangeException>());
-        }
-
-        [Test]
-        public void Insert_WhenIndexIsMoreThanCount_ShouldThrow()
-        {
-            var person = new Owner();
-            realm.Write(() => realm.Add(person));
-
-            Assert.That(() =>
-            {
-                realm.Write(() => person.Dogs.Insert(1, new Dog()));
-            }, Throws.TypeOf<ArgumentOutOfRangeException>());
-
-            realm.Write(() => person.Dogs.Add(new Dog()));
-            Assert.That(() =>
-            {
-                realm.Write(() => person.Dogs.Insert(2, new Dog()));
-            }, Throws.TypeOf<ArgumentOutOfRangeException>());
-        }
-
-        [Test]
-        public void Insert_WhenIndexIsEqualToCount_ShouldWork()
-        {
-            var person = new Owner();
-            realm.Write(() => realm.Add(person));
-
-            realm.Write(() => person.Dogs.Insert(0, new Dog()));
-            Assert.That(person.Dogs.Count, Is.EqualTo(1));
-
-            realm.Write(() => person.Dogs.Insert(1, new Dog()));
-            Assert.That(person.Dogs.Count, Is.EqualTo(2));
-        }
-
-        [Test]
         public void Backlinks()
         {
             var tim = realm.All<Owner>().Single(o => o.Name == "Tim");

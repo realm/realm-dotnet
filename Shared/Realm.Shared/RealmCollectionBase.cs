@@ -176,6 +176,44 @@ namespace Realms
             }
             else if (change != null)
             {
+                if (change.Moves.Length > 0 && 
+                    change.Moves.Length == change.InsertedIndices.Length &&
+                    change.Moves.Length == change.DeletedIndices.Length)
+                {
+                    var ordered = change.Moves.OrderBy(m => m.From);
+                    var movedPositions = -1;
+                    var isConsecutiveMove = true;
+                    foreach (var item in ordered)
+                    {
+                        if (movedPositions == -1)
+                        {
+                            movedPositions = item.To - item.From;
+                        }
+                        else if (item.To - item.From != movedPositions)
+                        {
+                            isConsecutiveMove = false;
+                            break;
+                        }
+                    }
+
+                    if (isConsecutiveMove)
+                    {
+                        var initialItem = ordered.First();
+                        var movedItems = Enumerable.Range(initialItem.To, change.Moves.Length)
+                                                   .Select(i => sender[i])
+                                                   .ToList();
+
+                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, movedItems, initialItem.To, initialItem.From));
+                    }
+                    else
+                    {
+                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    }
+
+                    RaisePropertyChanged();
+                    return;
+                }
+
                 IList removedItems;
                 int removedStartIndex;
                 var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default(T), out removedItems, out removedStartIndex);
@@ -269,7 +307,8 @@ namespace Realms
                 changeset = new ChangeSet(
                     insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
-                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray());
+                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray(),
+                    moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray());
             }
 
             foreach (var callback in _callbacks.ToArray())

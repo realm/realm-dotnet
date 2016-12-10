@@ -67,7 +67,7 @@ namespace Realms
         /// <summary>
         /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
-        /// <param name="list">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
@@ -96,6 +96,31 @@ namespace Realms
         public static IDisposable SubscribeForNotifications<T>(this IList<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
+        }
+
+        /// <summary>
+        /// Move the specified item to a new position within the list.
+        /// </summary>
+        /// <param name="list">The list where the move should occur.</param>
+        /// <param name="item">The item that will be moved.</param>
+        /// <param name="index">The new position to which the item will be moved.</param>
+        /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
+        /// <remarks>
+        /// This extension method will work for standalone lists as well by calling <c>Remove</c> and then <c>Insert</c>.
+        /// </remarks>
+        public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
+        {
+            var realmList = list as RealmList<T>;
+
+            if (realmList != null)
+            {
+                realmList.Move(item, index);
+            }
+            else
+            {
+                list.Remove(item);
+                list.Insert(index, item);
+            }
         }
 
         /// <summary>

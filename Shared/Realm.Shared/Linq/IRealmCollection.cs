@@ -29,26 +29,57 @@ namespace Realms
     public class ChangeSet
     {
         /// <summary>
-        /// The indices in the new version of the <see cref="IRealmCollection{T}" /> which were newly inserted.
+        /// Gets the indices in the new version of the <see cref="IRealmCollection{T}" /> which were newly inserted.
         /// </summary>
-        public readonly int[] InsertedIndices;
+        public int[] InsertedIndices { get; }
 
         /// <summary>
-        /// The indices in the new version of the <see cref="IRealmCollection{T}"/> which were modified. This means that the property of an object at that index was modified
+        /// Gets the indices in the new version of the <see cref="IRealmCollection{T}"/> which were modified. This means that the property of an object at that index was modified
         /// or the property of another object it's related to.
         /// </summary>
-        public readonly int[] ModifiedIndices;
+        public int[] ModifiedIndices { get; }
 
         /// <summary>
-        /// The indices of objects in the previous version of the <see cref="IRealmCollection{T}"/> which have been removed from this one.
+        /// Gets the indices of objects in the previous version of the <see cref="IRealmCollection{T}"/> which have been removed from this one.
         /// </summary>
-        public readonly int[] DeletedIndices;
+        public int[] DeletedIndices { get; }
 
-        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices)
+        /// <summary>
+        /// Gets the rows in the collection which moved..
+        /// </summary>
+        /// <remarks>
+        /// Every <c>From</c> index will be present in <c>DeletedIndices</c> and every <c>To</c> index will be present in <c>InsertedIndices</c>.
+        /// </remarks>
+        public Move[] Moves { get; }
+
+        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices, Move[] moves)
         {
             InsertedIndices = insertedIndices;
             ModifiedIndices = modifiedIndices;
             DeletedIndices = deletedIndices;
+            Moves = moves;
+        }
+
+        /// <summary>
+        /// A <see cref="Move" /> contains information about objects that moved within the same <see cref="IRealmCollection{T}"/>.
+        /// </summary>
+        public class Move
+        {
+            /// <summary>
+            /// Gets the index in the old version of the <see cref="IRealmCollection{T}" /> from which the object has moved.
+            /// </summary>
+            public int From { get; }
+
+            /// <summary>
+            /// Gets the index in the new version of the <see cref="IRealmCollection{T}" /> to which the object has moved.
+            /// </summary>
+            public int To { get; }
+
+            internal Move(int from, int to)
+            {
+                From = from;
+                To = to;
+            }
         }
     }
 

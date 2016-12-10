@@ -214,4 +214,14 @@ namespace IntegrationTests
         [Required]
         public string String { get; set; }
     }
+
+    public class ContainerObject : RealmObject
+    {
+        public IList<IntPropertyObject> Items { get; }
+    }
+
+    public class IntPropertyObject : RealmObject
+    {
+        public int Int { get; set; }
+    }
 }
