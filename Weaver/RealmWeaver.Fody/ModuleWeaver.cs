@@ -764,7 +764,7 @@ public class ModuleWeaver
                         il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { field.FieldType } }));
                         il.Append(il.Create(OpCodes.Pop));
                     }
-                    else if (!property.IsNullable() && !property.IsPrimaryKey())
+                    else if (!property.IsNullable() && !property.IsPrimaryKey() && !property.IsRequired())
                     {
                         il.Append(il.Create(OpCodes.Ldarg_2));
                         updatePlaceholder = il.Create(OpCodes.Nop);
@@ -807,7 +807,7 @@ public class ModuleWeaver
                             il.Replace(addPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
                     }
-                    else if (!property.IsNullable() && !property.IsPrimaryKey())
+                    else if (!property.IsNullable() && !property.IsPrimaryKey() && !property.IsRequired())
                     {
                         // Branching instruction to check if we're trying to set the default value of a property.
                         if (property.IsSingle() || property.IsDouble())
