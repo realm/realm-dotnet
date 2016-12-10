@@ -46,8 +46,25 @@ namespace IntegrationTests
             public string Color { get; set; }
 
             public bool Vaccinated { get; set; }
-            
-            // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+
+            private IQueryable<DynamicOwner> _owners;
+
+            [Backlink(typeof(DynamicOwner), nameof(DynamicOwner.Dogs))]
+            [Ignored]
+            [WovenProperty]
+            [Preserve]
+            public IQueryable<DynamicOwner> Owners
+            {
+                get
+                {
+                    if (_owners == null)
+                    {
+                        _owners = this.GetBacklinks<DynamicOwner>(nameof(Owners));
+                    }
+
+                    return _owners;
+                }
+            }
         }
 
         private class DynamicOwner : RealmObject
@@ -310,6 +327,23 @@ namespace IntegrationTests
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => scratch = tim.Dogs[99]);
+        }
+
+        [Test]
+        public void Backlinks()
+        {
+            var tim = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
+            foreach (var dog in tim.Dogs)
+            {
+                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim }));
+            }
+
+            var dani = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
+            var maggie = _realm.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
+            Assert.That(maggie.Owners, Is.Empty);
+
+            _realm.Write(() => dani.Dogs.Add(maggie));
+            Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
         }
     }
 #endif

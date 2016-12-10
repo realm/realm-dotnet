@@ -26,11 +26,15 @@ namespace Realms.Dynamic
 {
     internal class MetaRealmObject : DynamicMetaObject
     {
+        private const BindingFlags PrivateBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
-        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", PrivateBindingFlags);
+        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", PrivateBindingFlags);
+        private static readonly MethodInfo RealmObjectGetBacklinksMethod = typeof(RealmObject).GetMethod("GetBacklinks", PrivateBindingFlags, null, new[] { typeof(string), typeof(ResultsHandle) }, null)
+                                                                                              .MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
 
@@ -128,17 +132,27 @@ namespace Realms.Dynamic
                     arguments.Add(Expression.Constant(property.ObjectType));
                     getter = GetGetMethod(dummyHandle.GetList<DynamicRealmObject>);
                     break;
+                case Schema.PropertyType.LinkingObjects:
+                    getter = GetGetMethod(dummyHandle.GetBacklinks);
+                    break;
             }
 
-            var instance = Expression.Field(GetLimitedSelf(), RealmObjectObjectHandleField);
+            var self = GetLimitedSelf();
+            var instance = Expression.Field(self, RealmObjectObjectHandleField);
             Expression expression = Expression.Call(instance, getter, arguments);
+
+            if (property.Type == Schema.PropertyType.LinkingObjects)
+            {
+                expression = Expression.Call(self, RealmObjectGetBacklinksMethod, Expression.Constant(binder.Name), expression);
+            }
+
             if (binder.ReturnType != expression.Type)
             {
                 expression = Expression.Convert(expression, binder.ReturnType);
             }
 
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(GetLimitedSelf(), RealmObjectRealmField), _realm);
+            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
             return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
         }
 

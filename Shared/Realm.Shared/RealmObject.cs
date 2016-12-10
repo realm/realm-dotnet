@@ -343,11 +343,16 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
+            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
+            return GetBacklinks<T>(propertyName, resultsHandle);
+        }
+
+        internal RealmResults<T> GetBacklinks<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
+        {
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
-            ResultsHandle resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
