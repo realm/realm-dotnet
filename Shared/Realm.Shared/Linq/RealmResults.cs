@@ -27,6 +27,7 @@ namespace Realms
     {
         private readonly RealmResultsProvider _provider;
         private readonly bool _allRecords;
+        private readonly ResultsHandle _handle;
 
         internal ResultsHandle ResultsHandle => (ResultsHandle)Handle.Value;
 
@@ -48,8 +49,19 @@ namespace Realms
         {
         }
 
+        internal RealmResults(Realm realm, ResultsHandle handle, RealmObject.Metadata metadata)
+            : this(realm, new RealmResultsProvider(realm, metadata), null, metadata, false)
+        {
+            _handle = handle;
+        }
+
         protected override CollectionHandleBase CreateHandle()
         {
+            if (_handle != null)
+            {
+                return _handle;
+            }
+
             if (_allRecords)
             {
                 return Realm.MakeResultsForTable(TargetMetadata);

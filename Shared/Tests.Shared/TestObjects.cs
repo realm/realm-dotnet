@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Realms;
 
 namespace IntegrationTests
@@ -192,6 +193,24 @@ namespace IntegrationTests
         public string Color { get; set; }
 
         public bool Vaccinated { get; set; }
+
+        private IQueryable<Owner> _owners;
+
+        [Backlink(typeof(Owner), nameof(Owner.Dogs))]
+        [Ignored]
+        [WovenProperty]
+        public IQueryable<Owner> Owners
+        {
+            get
+            {
+                if (_owners == null)
+                {
+                    _owners = this.GetBacklinks<Owner>(nameof(Owners));
+                }
+
+                return _owners;
+            }
+        }
 
         // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
     }
