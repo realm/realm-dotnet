@@ -127,11 +127,23 @@ namespace Realms.Schema
                     PropertyInfo = property
                 };
 
-                Type innerType;
-                bool isNullable;
-                schemaProperty.Type = property.PropertyType.ToPropertyType(out isNullable, out innerType);
-                schemaProperty.ObjectType = innerType?.Name;
-                schemaProperty.IsNullable = isNullable;
+                var backlinks = property.GetCustomAttribute<BacklinkAttribute>();
+                if (backlinks != null)
+                {
+                    var linkOriginProperty = backlinks.Type.GetProperty(backlinks.Property);
+
+                    schemaProperty.Type = PropertyType.LinkingObjects;
+                    schemaProperty.ObjectType = backlinks.Type.Name;
+                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetCustomAttribute<MapToAttribute>()?.Mapping ?? linkOriginProperty.Name;
+                }
+                else
+                {
+                    Type innerType;
+                    bool isNullable;
+                    schemaProperty.Type = property.PropertyType.ToPropertyType(out isNullable, out innerType);
+                    schemaProperty.ObjectType = innerType?.Name;
+                    schemaProperty.IsNullable = isNullable;
+                }
 
                 if (property.GetCustomAttribute<RequiredAttribute>() != null)
                 {

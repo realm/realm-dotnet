@@ -29,6 +29,7 @@ struct SchemaProperty
     const char* name;
     realm::PropertyType type;
     const char* object_type;
+    const char* link_origin_property_name;
     bool is_nullable;
     bool is_primary;
     bool is_indexed;
@@ -60,6 +61,7 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const realm::Pr
         property.name.c_str(),
         property.type,
         property.object_type.c_str(),
+        property.link_origin_property_name.c_str(),
         property.is_nullable,
         property.is_primary,
         property.is_indexed
@@ -73,6 +75,9 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const realm::Object
     
     ret.properties_start = static_cast<int>(properties.size());
     for (const auto& property : object.persisted_properties) {
+        properties.push_back(SchemaProperty::for_marshalling(property));
+    }
+    for (const auto& property : object.computed_properties) {
         properties.push_back(SchemaProperty::for_marshalling(property));
     }
     ret.properties_end = static_cast<int>(properties.size());
