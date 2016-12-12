@@ -606,17 +606,17 @@ namespace RealmWeaver
             List<string> targetList;
             if (required)
             {
-                targetList = ((Type)instance.GetType()).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                                       .Where(p => p.Name != "IsManaged" && p.Name != "Realm")
-                                                       .SelectMany(p =>
-                                                       {
-                                                           return new[]
-                                                           {
-                                                               "IsManaged",
-                                                               $"RealmObject.Set{p.Name}Value(propertyName = \"{p.Name}\", value = )"
-                                                           };
-                                                       })
-                                                       .ToList();
+                targetList = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                       .Where(p => p.Name != "IsManaged" && p.Name != "Realm")
+                                       .SelectMany(p =>
+                                       {
+                                           return new[]
+                                           {
+                                               "IsManaged",
+                                               $"RealmObject.Set{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                           };
+                                       })
+                                       .ToList();
             }
             else
             {

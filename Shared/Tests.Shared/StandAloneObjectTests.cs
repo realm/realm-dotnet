@@ -123,7 +123,7 @@ namespace IntegrationTests
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Add(new AllTypesObject());
+                    realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
                 }), $"{nameof(AllTypesObject)} add failed.");
             }
         }
