@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,16 +29,28 @@ namespace IntegrationTests
     [TestFixture, Preserve(AllMembers = true)]
     public class AsyncTests
     {
+        private Lazy<Realm> _lazyRealm;
+
+        private Realm _realm => _lazyRealm.Value;
+
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
         // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        private Realm _realm;
+        [SetUp]
+        public void SetUp()
+        {
+            var databasePath = Path.GetTempFileName();
+            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(databasePath));
+        }
 
         [TearDown]
         public void TearDown()
         {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
+            if (_lazyRealm.IsValueCreated)
+            {
+                _realm.Dispose();
+                Realm.DeleteRealm(_realm.Config);
+            }
         }
 
         [Test]
@@ -46,9 +59,7 @@ namespace IntegrationTests
 #endif
         public async void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
-            _realm = Realm.GetInstance();
-
-            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+           var currentThreadId = Thread.CurrentThread.ManagedThreadId;
             var otherThreadId = currentThreadId;
 
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
@@ -78,8 +89,6 @@ namespace IntegrationTests
 #endif
         public async void AsyncWrite_UpdateViaPrimaryKey()
         {
-            _realm = Realm.GetInstance();
-
             var path = "/path/to/some/item";
             MyDataObject obj = null;
             _realm.Write(() =>

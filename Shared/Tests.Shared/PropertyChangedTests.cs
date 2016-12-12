@@ -52,9 +52,8 @@ namespace IntegrationTests
             if (_lazyRealm.IsValueCreated)
             {
                 _realm.Dispose();
+                Realm.DeleteRealm(_realm.Config);
             }
-
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration.ConfigWithPath(_databasePath));
         }
 
         [Test]

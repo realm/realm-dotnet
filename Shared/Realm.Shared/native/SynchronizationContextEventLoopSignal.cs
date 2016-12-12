@@ -41,7 +41,7 @@ namespace Realms
 
         private class EventLoop
         {
-            private readonly SynchronizationContext _context;
+            private SynchronizationContext _context;
 
             private volatile bool _isReleased = false;
 
@@ -66,6 +66,7 @@ namespace Realms
             internal void Invalidate()
             {
                 _isReleased = true;
+                _context = null;
             }
         }
 
@@ -102,9 +103,9 @@ namespace Realms
         {
             if (eventloop != IntPtr.Zero)
             {
-                var gCHandle = GCHandle.FromIntPtr(eventloop);
-                ((EventLoop)gCHandle.Target).Invalidate();
-                gCHandle.Free();
+                var gcHandle = GCHandle.FromIntPtr(eventloop);
+                ((EventLoop)gcHandle.Target).Invalidate();
+                gcHandle.Free();
             }
         }
 
