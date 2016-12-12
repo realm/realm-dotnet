@@ -63,7 +63,7 @@ namespace Realms
         /// <summary>
         /// A <see cref="Move" /> contains information about objects that moved within the same <see cref="IRealmCollection{T}"/>.
         /// </summary>
-        public class Move
+        public struct Move
         {
             /// <summary>
             /// Gets the index in the old version of the <see cref="IRealmCollection{T}" /> from which the object has moved.
