@@ -391,7 +391,7 @@ namespace IntegrationTests
         [TestCase(0, 2, 0, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> c a b d e
         [TestCase(4, 2, 4, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> a b d e c
         [TestCase(1, 3, 1, 3, NotifyCollectionChangedAction.Move)] // a b c d e -> c d a b e
-        public void List_WhenTransactionHasMultipleMoves(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
+        public void ListMove_MultipleMovedItemssTests(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
         {
             OrderedObject object1 = null;
             OrderedObject object2 = null;
@@ -432,7 +432,7 @@ namespace IntegrationTests
         [TestCase(2, 0)]
         [TestCase(1, 2)]
         [TestCase(2, 1)]
-        public void List_WhenTransactionHasSingleMove(int oldIndex, int newIndex)
+        public void ListMove_SingleMovedItemTests(int oldIndex, int newIndex)
         {
             OrderedObject movedObject = null;
             var args = TestMoves(items =>
@@ -447,6 +447,7 @@ namespace IntegrationTests
             Assert.That(args.NewItems, Is.EquivalentTo(new[] { movedObject }));
         }
 
+        // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
         private NotifyCollectionChangedEventArgs TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
         {
             var container = new OrderedContainer();

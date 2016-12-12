@@ -72,11 +72,15 @@ namespace IntegrationTests
             var container = new ContainerObject();
             _realm.Write(() => _realm.Add(container));
 
-            _realm.Write(() => container.Items.Insert(0, new IntPropertyObject()));
+            var toInsert1 = new IntPropertyObject();
+            _realm.Write(() => container.Items.Insert(0, toInsert1));
             Assert.That(container.Items.Count, Is.EqualTo(1));
+            Assert.That(container.Items[0], Is.EqualTo(toInsert1));
 
-            _realm.Write(() => container.Items.Insert(1, new IntPropertyObject()));
+            var toInsert2 = new IntPropertyObject();
+            _realm.Write(() => container.Items.Insert(1, toInsert2));
             Assert.That(container.Items.Count, Is.EqualTo(2));
+            Assert.That(container.Items[1], Is.EqualTo(toInsert2));
         }
 
         [TestCase(0, 3, "12304")]

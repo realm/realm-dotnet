@@ -45,7 +45,7 @@ namespace Realms
         public int[] DeletedIndices { get; }
 
         /// <summary>
-        /// Gets the rows in the collection which moved..
+        /// Gets the rows in the collection which moved.
         /// </summary>
         /// <remarks>
         /// Every <c>From</c> index will be present in <c>DeletedIndices</c> and every <c>To</c> index will be present in <c>InsertedIndices</c>.
