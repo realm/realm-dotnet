@@ -100,7 +100,7 @@ namespace Realms
         /// <remarks>
         /// This extension method will work for standalone lists as well by calling <c>Remove</c> and then <c>Insert</c>.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than Count.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than Count - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
