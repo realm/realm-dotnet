@@ -194,25 +194,8 @@ namespace IntegrationTests
 
         public bool Vaccinated { get; set; }
 
-        private IQueryable<Owner> _owners;
-
-        [Backlink(typeof(Owner), nameof(Owner.Dogs))]
-        [Ignored]
-        [WovenProperty]
-        public IQueryable<Owner> Owners
-        {
-            get
-            {
-                if (_owners == null)
-                {
-                    _owners = this.GetBacklinks<Owner>(nameof(Owners));
-                }
-
-                return _owners;
-            }
-        }
-
-        // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+        [Backlink(nameof(Owner.Dogs))]
+        public IQueryable<Owner> Owners { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

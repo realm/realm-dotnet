@@ -130,18 +130,14 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class BacklinkAttribute : Attribute
     {
-        internal Type Type { get; }
-
         internal string Property { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BacklinkAttribute"/> class.
         /// </summary>
-        /// <param name="type">The class that is on the other end of the relationship.</param>
-        /// <param name="property">The property that is on the other end of the relationship</param>
-        public BacklinkAttribute(Type type, string property)
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        public BacklinkAttribute(string property)
         {
-            Type = type;
             Property = property;
         }
     }

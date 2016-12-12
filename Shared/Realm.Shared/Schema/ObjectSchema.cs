@@ -130,10 +130,11 @@ namespace Realms.Schema
                 var backlinks = property.GetCustomAttribute<BacklinkAttribute>();
                 if (backlinks != null)
                 {
-                    var linkOriginProperty = backlinks.Type.GetProperty(backlinks.Property);
+                    var innerType = property.PropertyType.GetGenericArguments().Single();
+                    var linkOriginProperty = innerType.GetProperty(backlinks.Property);
 
                     schemaProperty.Type = PropertyType.LinkingObjects;
-                    schemaProperty.ObjectType = backlinks.Type.Name;
+                    schemaProperty.ObjectType = innerType.Name;
                     schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetCustomAttribute<MapToAttribute>()?.Mapping ?? linkOriginProperty.Name;
                 }
                 else

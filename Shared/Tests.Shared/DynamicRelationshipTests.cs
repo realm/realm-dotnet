@@ -47,24 +47,8 @@ namespace IntegrationTests
 
             public bool Vaccinated { get; set; }
 
-            private IQueryable<DynamicOwner> _owners;
-
-            [Backlink(typeof(DynamicOwner), nameof(DynamicOwner.Dogs))]
-            [Ignored]
-            [WovenProperty]
-            [Preserve]
-            public IQueryable<DynamicOwner> Owners
-            {
-                get
-                {
-                    if (_owners == null)
-                    {
-                        _owners = this.GetBacklinks<DynamicOwner>(nameof(Owners));
-                    }
-
-                    return _owners;
-                }
-            }
+            [Backlink(nameof(DynamicOwner.Dogs))]
+            public IQueryable<DynamicOwner> Owners { get; }
         }
 
         private class DynamicOwner : RealmObject
