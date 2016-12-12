@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Realms;
 
 namespace AssemblyToProcess
@@ -29,6 +30,12 @@ namespace AssemblyToProcess
         public string Kind { get; set; }
 
         public string Number { get; set; }
+
+        [Backlink(nameof(Person.PrimaryNumber))]
+        public IQueryable<Person> PrimaryPersons { get; }
+
+        [Backlink(nameof(Person.PhoneNumbers))]
+        public IQueryable<Person> Persons { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

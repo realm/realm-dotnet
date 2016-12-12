@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Realms;
 
 namespace AssemblyToProcess
@@ -134,5 +135,17 @@ namespace AssemblyToProcess
             Value1,
             Value2
         }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class InvalidBacklinkRelationships : RealmObject
+    {
+        public InvalidBacklinkRelationships OneToOne { get; set; }
+
+        [Backlink(nameof(OneToOne))]
+        public IQueryable<InvalidBacklinkRelationships> WritableBacklinksProperty { get; set; }
+
+        [Backlink(nameof(Person.PhoneNumbers))]
+        public IQueryable<Person> NoSuchRelationshipProperty { get; }
     }
 }

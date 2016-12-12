@@ -481,6 +481,25 @@ namespace RealmWeaver
         }
 
         [Test]
+        public void ShouldWeaveBacklinksGetters()
+        {
+            var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+
+            Assert.That(instance.Persons, Is.TypeOf(typeof(EnumerableQuery<>).MakeGenericType(_assembly.GetType("AssemblyToProcess.Person"))));
+            Assert.That(instance.Persons, Is.SameAs(instance.Persons)); // should cache instances
+
+            instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            var persons = instance.Persons;
+            persons = instance.Persons;
+
+            // the getter is invoked only once because the result is cached
+            Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
+        }
+
+        [Test]
         public void MatchErrorsAndWarnings()
         {
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
@@ -505,7 +524,9 @@ namespace RealmWeaver
                 "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored."
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "Backlink properties must be read-only.",
+                "The property 'Person.PhoneNumbers' does not constitute a link to 'InvalidBacklinkRelationships' as described by 'InvalidBacklinkRelationships.NoSuchRelationshipProperty'."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
@@ -605,6 +626,19 @@ namespace RealmWeaver
             CopyToRealm(objectType, instance);
 
             Assert.That(((IEnumerable<string>)instance.LogList).Take(2), Is.EqualTo(new[] { "IsManaged", "RealmObject.SetInt32ValueUnique(propertyName = \"Id\", value = 0)" }));
+        }
+
+        [Test]
+        public void WovenCopyToRealm_ShouldResetBacklinks()
+        {
+            var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            CopyToRealm(objectType, instance);
+            var persons = instance.Persons;
+
+            Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
         }
 
         private static void CopyToRealm(Type objectType, dynamic instance)
