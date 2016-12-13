@@ -88,26 +88,10 @@
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Platform)' == 'x64'">
-    <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
-      <Link>wrappersx64-Debug.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup Condition="'$(Platform)' == 'x86'">
-    <Content Include="..\..\wrappers\build\wrappersx86-Debug.dll">
-      <Link>wrappersx86-Debug.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\wrappers\wrappers.vcxproj">
-      <Project>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</Project>
-      <Name>wrappers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
