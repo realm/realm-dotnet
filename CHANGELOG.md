@@ -12,6 +12,7 @@
 * All RealmObjects implement `INotifyPropertyChanged`. This allows you to pass them directly for data-binding.
 * Added `Realm.Compact` method that allows you to reclaim the space used by the Realm. (#968)
 * `Realm.Add` returns the added object. (#931)
+* Support for backlinks aka `LinkingObjects`. (#219)
 
 ### Bug fixes
 * Subscribing to `PropertyChanged` on a RealmObject and changing an instance of the same object on a different thread will now properly raise the event. (#909)
