@@ -85,6 +85,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\CollectionHandleBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Native\SynchronizationContextEventLoopSignal.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

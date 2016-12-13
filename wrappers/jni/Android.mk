@@ -48,6 +48,7 @@ LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_confined.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/generic/event_loop_signal.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
@@ -69,6 +70,7 @@ LOCAL_SRC_FILES += src/table_cs.cpp
 LOCAL_SRC_FILES += src/schema_cs.cpp
 LOCAL_SRC_FILES += src/debug.cpp
 LOCAL_SRC_FILES += src/object_cs.cpp
+LOCAL_SRC_FILES += src/event_loop_signal_cs.cpp
 
 
 ifeq ($(REALM_ENABLE_SYNC),1)

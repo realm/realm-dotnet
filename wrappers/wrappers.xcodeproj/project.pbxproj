@@ -34,6 +34,8 @@
 		48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
 		48EE96C61D75D60600666046 /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48EE96C51D75D60600666046 /* schema_cs.cpp */; };
 		51A51F261DAEB5660057BAE6 /* object_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51A51F251DAEB5660057BAE6 /* object_cs.cpp */; };
+		850F7D671DF730650068B584 /* event_loop_signal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 850F7D661DF730650068B584 /* event_loop_signal.cpp */; };
+		850F7D691DF735290068B584 /* event_loop_signal_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */; };
 		8522B2B31CD11DC000E5C1F3 /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */; };
 		8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B51CD11EA900E5C1F3 /* collection_change_builder.cpp */; };
 		8522B2BF1CD11EA900E5C1F3 /* collection_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B71CD11EA900E5C1F3 /* collection_notifier.cpp */; };
@@ -119,6 +121,9 @@
 		519B58381DB0F8E7000CB2BB /* object_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_cs.hpp; path = src/object_cs.hpp; sourceTree = "<group>"; };
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
+		850F7D651DF72EFD0068B584 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/generic/event_loop_signal.hpp"; sourceTree = "<group>"; };
+		850F7D661DF730650068B584 /* event_loop_signal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal.cpp; path = "src/object-store/src/util/generic/event_loop_signal.cpp"; sourceTree = "<group>"; };
+		850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal_cs.cpp; path = src/event_loop_signal_cs.cpp; sourceTree = "<group>"; };
 		8510C5001D3D1194000CAD87 /* shared_realm_cs.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = shared_realm_cs.hpp; path = src/shared_realm_cs.hpp; sourceTree = "<group>"; };
 		8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = collection_notifications.cpp; path = "src/object-store/src/collection_notifications.cpp"; sourceTree = "<group>"; };
 		8522B2B21CD11DC000E5C1F3 /* collection_notifications.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = collection_notifications.hpp; path = "src/object-store/src/collection_notifications.hpp"; sourceTree = "<group>"; };
@@ -135,7 +140,6 @@
 		8575A9291DC128FE001F78B7 /* keychain_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = keychain_helper.hpp; path = "src/object-store/src/impl/apple/keychain_helper.hpp"; sourceTree = "<group>"; };
 		8575A92C1DC12971001F78B7 /* compiler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = compiler.hpp; path = "src/object-store/src/util/compiler.hpp"; sourceTree = "<group>"; };
 		8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/event_loop_signal.hpp"; sourceTree = "<group>"; };
-		8575A92F1DC1298A001F78B7 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/apple/event_loop_signal.hpp"; sourceTree = "<group>"; };
 		8575A9301DC129AD001F78B7 /* sync_client.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_client.hpp; path = "src/object-store/src/impl/sync_client.hpp"; sourceTree = "<group>"; };
 		85C041171DCCE95F00CBF37B /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = "src/object-store/src/sync/sync_config.hpp"; sourceTree = "<group>"; };
 		85C041181DCCE95F00CBF37B /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = "src/object-store/src/sync/sync_manager.cpp"; sourceTree = "<group>"; };
@@ -177,7 +181,7 @@
 		48371F491D2294EF00B52DAB /* util */ = {
 			isa = PBXGroup;
 			children = (
-				8575A92E1DC12974001F78B7 /* apple */,
+				850F7D641DF72EE70068B584 /* generic */,
 				8575A92C1DC12971001F78B7 /* compiler.hpp */,
 				8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */,
 				48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */,
@@ -215,6 +219,7 @@
 				85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */,
 				85C041311DD229C100CBF37B /* sync_user_cs.cpp */,
 				85C041331DD4953200CBF37B /* sync_session_cs.cpp */,
+				850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */,
 				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,
 				48D101391B39902E004A4B2C /* Products */,
@@ -228,6 +233,15 @@
 				8575A9101DC123A6001F78B7 /* libwrappers-sync.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		850F7D641DF72EE70068B584 /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				850F7D661DF730650068B584 /* event_loop_signal.cpp */,
+				850F7D651DF72EFD0068B584 /* event_loop_signal.hpp */,
+			);
+			name = generic;
 			sourceTree = "<group>";
 		};
 		8522B2AE1CD11D5400E5C1F3 /* object-store */ = {
@@ -295,14 +309,6 @@
 				8575A9291DC128FE001F78B7 /* keychain_helper.hpp */,
 				48D347361C74861900CD0E02 /* external_commit_helper.hpp */,
 				48D347351C74861900CD0E02 /* external_commit_helper.cpp */,
-			);
-			name = apple;
-			sourceTree = "<group>";
-		};
-		8575A92E1DC12974001F78B7 /* apple */ = {
-			isa = PBXGroup;
-			children = (
-				8575A92F1DC1298A001F78B7 /* event_loop_signal.hpp */,
 			);
 			name = apple;
 			sourceTree = "<group>";
@@ -435,6 +441,7 @@
 				48EE96C61D75D60600666046 /* schema_cs.cpp in Sources */,
 				48D347671C74861900CD0E02 /* schema.cpp in Sources */,
 				8522B2BF1CD11EA900E5C1F3 /* collection_notifier.cpp in Sources */,
+				850F7D671DF730650068B584 /* event_loop_signal.cpp in Sources */,
 				8522B2C11CD11EA900E5C1F3 /* list_notifier.cpp in Sources */,
 				48D347691C74861900CD0E02 /* shared_realm.cpp in Sources */,
 				48D3475B1C74861900CD0E02 /* index_set.cpp in Sources */,
@@ -443,6 +450,7 @@
 				8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* list_cs.cpp in Sources */,
 				48371F4E1D22952D00B52DAB /* format.cpp in Sources */,
+				850F7D691DF735290068B584 /* event_loop_signal_cs.cpp in Sources */,
 				48ED7C681C16F9C200AF23A4 /* marshalling.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -501,6 +509,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"REALM_HAVE_CONFIG=1",
+					"REALM_USE_CF=0",
 					"$(inherited)",
 					"$(EXTRA_PREPROCESSOR_DEFINITIONS)",
 				);
@@ -552,6 +561,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"REALM_HAVE_CONFIG=1",
+					"REALM_USE_CF=0",
 					"$(EXTRA_PREPROCESSOR_DEFINITIONS)",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

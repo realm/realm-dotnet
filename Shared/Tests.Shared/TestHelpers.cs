@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 #if __IOS__
-using CoreFoundation;
 using Foundation;
 #endif
 using Realms;
@@ -65,33 +64,5 @@ namespace IntegrationTests
 
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
-
-        private static void RunEventLoop(TimeSpan duration)
-        {
-#if __IOS__
-            CFRunLoop.Current.RunInMode(CFRunLoop.ModeDefault, duration.TotalSeconds, false);
-#elif __ANDROID__
-            int fd, events;
-            IntPtr data;
-            ALooper_pollAll((int)duration.TotalMilliseconds, out fd, out events, out data);
-#else
-            throw new NotImplementedException();
-#endif
-        }
-
-        public static void RunEventLoop(int milliseconds)
-        {
-            RunEventLoop(TimeSpan.FromMilliseconds(milliseconds));
-        }
-
-        public static void RunEventLoop()
-        {
-            RunEventLoop(100);
-        }
-
-#if __ANDROID__
-        [System.Runtime.InteropServices.DllImport("android")]
-        private static extern int ALooper_pollAll(int timeoutMillis, out int fd, out int events, out IntPtr data);
-#endif
     }
 }
