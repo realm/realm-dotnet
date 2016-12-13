@@ -615,9 +615,7 @@ public class ModuleWeaver
 
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref [ -> this]
         il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField)); // [ this -> field]
-        il.InsertBefore(start, il.Create(OpCodes.Ldnull)); // [field -> field, null]
-        il.InsertBefore(start, il.Create(OpCodes.Ceq));  // [field, null -> bool result]
-        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));  // []
+        il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, start));  // []
 
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for stfld in both branches [ -> this ]
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call [ this -> this, this]
