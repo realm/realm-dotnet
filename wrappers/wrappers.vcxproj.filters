@@ -54,9 +54,6 @@
     <ClCompile Include="src\error_handling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\linklist_cs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\marshalling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -153,6 +150,12 @@
     <ClCompile Include="src\schema_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\list_cs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\util\generic\event_loop_signal.cpp">
+      <Filter>Source Files\object-store\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\error_handling.hpp">
@@ -165,9 +168,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\realm_export_decls.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\shared_linklist.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\object-store\src\binding_context.hpp">
@@ -273,6 +273,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\object_cs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\collection_cs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

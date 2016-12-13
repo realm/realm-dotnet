@@ -86,6 +86,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
+      <Link>realm-wrappers.dll</Link>
+    </Content>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
