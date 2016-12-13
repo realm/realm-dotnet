@@ -81,6 +81,12 @@ internal static class PropertyDefinitionExtensions
         return property.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
     }
 
+    internal static bool IsRequired(this PropertyDefinition property)
+    {
+        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Required properties only make sense on RealmObject classes");
+        return property.CustomAttributes.Any(a => a.AttributeType.Name == "RequiredAttribute");
+    }
+
     private static bool IsType(this PropertyDefinition property, string name, string @namespace)
     {
         return property.PropertyType.Name == name && property.PropertyType.Namespace == @namespace;

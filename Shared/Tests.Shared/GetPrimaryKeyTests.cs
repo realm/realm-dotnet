@@ -49,7 +49,8 @@ namespace IntegrationTests
         {
             var obj = new AllTypesObject
             {
-                BooleanProperty = true
+                BooleanProperty = true,
+                RequiredStringProperty = string.Empty
             };
 
             _realm.Write(() =>

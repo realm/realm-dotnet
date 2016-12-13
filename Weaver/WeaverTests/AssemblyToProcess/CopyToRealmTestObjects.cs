@@ -98,4 +98,15 @@ namespace AssemblyToProcess
 
         public string Bar { get; set; } = Guid.NewGuid().ToString();
     }
+
+    public class RequiredObject : RealmObject
+    {
+        [Required]
+        public string String { get; set; }
+    }
+
+    public class NonRequiredObject : RealmObject
+    {
+        public string String { get; set; }
+    }
 }

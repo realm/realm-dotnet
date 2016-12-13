@@ -205,4 +205,11 @@ namespace IntegrationTests
 
         public IList<Dog> Dogs { get; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RequiredStringObject : RealmObject
+    {
+        [Required]
+        public string String { get; set; }
+    }
 }

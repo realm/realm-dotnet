@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -751,6 +752,65 @@ namespace IntegrationTests
 
             Assert.That(item.IsManaged);
             Assert.That(item.StringValue == "1");
+        }
+
+        [TestCase(typeof(PrimaryKeyCharObject))]
+        [TestCase(typeof(PrimaryKeyByteObject))]
+        [TestCase(typeof(PrimaryKeyInt16Object))]
+        [TestCase(typeof(PrimaryKeyInt32Object))]
+        [TestCase(typeof(PrimaryKeyInt64Object))]
+        [TestCase(typeof(PrimaryKeyNullableCharObject))]
+        [TestCase(typeof(PrimaryKeyNullableByteObject))]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object))]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object))]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object))]
+        public void Add_WhenPKIsDefaultAndDuplicate_ShouldThrow(Type type)
+        {
+            Assert.That(() =>
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add((RealmObject)Activator.CreateInstance(type));
+                    _realm.Add((RealmObject)Activator.CreateInstance(type));
+                });
+            }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
+        }
+
+        [Test]
+        public void Add_WhenPKIsStringAndNull_ShouldThrow()
+        {
+            Assert.That(() =>
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(new PrimaryKeyStringObject());
+                });
+            }, Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void Add_WhenPKIsNotDefaultButDuplicate_ShouldThrow()
+        {
+            Assert.That(() =>
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(new PrimaryKeyStringObject { StringProperty = "1" });
+                    _realm.Add(new PrimaryKeyStringObject { StringProperty = "1" });
+                });
+            }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
+        }
+
+        [Test]
+        public void Add_WhenRequiredPropertyIsNotSet_ShouldThrow()
+        {
+            Assert.That(() =>
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(new RequiredStringObject());
+                });
+            }, Throws.TypeOf<RealmException>());
         }
 
         private class Parent : RealmObject

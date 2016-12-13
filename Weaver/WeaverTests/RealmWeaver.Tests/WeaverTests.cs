@@ -593,6 +593,39 @@ namespace RealmWeaver
             Assert.That(instance.LogList, Is.EqualTo(new List<string> { "IsManaged", $"RealmObject.Set{type}ValueUnique(propertyName = \"{type}Property\", value = {defaultValue})" }));
         }
 
+        [TestCase("RequiredObject", true)]
+        [TestCase("NonRequiredObject", false)]
+        public void WovenCopyToRealm_ShouldAlwaysSetRequiredProperties(string type, bool required)
+        {
+            var objectType = _assembly.GetType($"AssemblyToProcess.{type}");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            CopyToRealm(objectType, instance);
+
+            List<string> targetList;
+            if (required)
+            {
+                targetList = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                       .Where(p => p.Name != "IsManaged" && p.Name != "Realm")
+                                       .SelectMany(p =>
+                                       {
+                                           return new[]
+                                           {
+                                               "IsManaged",
+                                               $"RealmObject.Set{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                           };
+                                       })
+                                       .ToList();
+            }
+            else
+            {
+                targetList = new List<string>();
+            }
+
+            Assert.That(instance.LogList, Is.EqualTo(targetList));
+        }
+
         [TestCase("PKObjectOne")]
         [TestCase("PKObjectTwo")]
         [TestCase("PKObjectThree")]
