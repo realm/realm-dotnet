@@ -587,7 +587,7 @@ public class ModuleWeaver
         Debug.Write("[get list] ");
     }
 
-        // WARNING
+    // WARNING
     // This code setting the backing field only works if the field is settable after init
     // if you don't have an automatic set; on the property, it shows in the debugger with
     //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
