@@ -238,6 +238,7 @@ namespace Realms
                     name = property.Name,
                     type = property.Type,
                     object_type = property.ObjectType,
+                    link_origin_property_name = property.LinkOriginPropertyName,
                     is_nullable = property.IsNullable,
                     is_indexed = property.IsIndexed,
                     is_primary = property.IsPrimaryKey

@@ -36,6 +36,9 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.LPStr)]
         internal string object_type;
 
+        [MarshalAs(UnmanagedType.LPStr)]
+        internal string link_origin_property_name;
+
         [MarshalAs(UnmanagedType.I1)]
         internal bool is_nullable;
 

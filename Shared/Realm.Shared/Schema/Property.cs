@@ -43,6 +43,11 @@ namespace Realms.Schema
         public string ObjectType { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the property that links to the model containing this <see cref="PropertyType.LinkingObjects"/> property.
+        /// </summary>
+        public string LinkOriginPropertyName { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Property"/> is nullable.
         /// </summary>
         public bool IsNullable { get; set; }

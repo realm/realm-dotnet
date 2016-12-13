@@ -71,6 +71,11 @@ namespace Realms.Schema
         /// <summary>
         /// A collection of related objects property, representing one-to-many relationship.
         /// </summary>
-        Array = 13
+        Array = 13,
+
+        /// <summary>
+        /// A collection of objects linking to the model owning this property.
+        /// </summary>
+        LinkingObjects = 14
     }
 }

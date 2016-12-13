@@ -67,6 +67,9 @@ public class ModuleWeaver
     private TypeReference _system_Int32;
     private MethodReference _system_DatetimeOffset_Op_Inequality;
 
+    private MethodReference _system_linq_Enumerable_Empty;
+    private MethodReference _system_linq_Queryable_AsQueryable;
+
     private MethodReference _propChangedDoNotNotifyAttributeConstructorDefinition;
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
@@ -130,6 +133,7 @@ public class ModuleWeaver
     private MethodReference _genericGetObjectValueReference;
     private MethodReference _genericSetObjectValueReference;
     private MethodReference _genericGetListValueReference;
+    private MethodReference _genericGetBacklinksReference;
     private MethodReference _preserveAttributeConstructor;
     private MethodReference _preserveAttributeConstructorWithParams;
     private MethodReference _wovenAttributeConstructor;
@@ -186,6 +190,7 @@ public class ModuleWeaver
         _genericGetObjectValueReference = _realmObject.LookupMethodReference("GetObjectValue", ModuleDefinition);
         _genericSetObjectValueReference = _realmObject.LookupMethodReference("SetObjectValue", ModuleDefinition);
         _genericGetListValueReference = _realmObject.LookupMethodReference("GetListValue", ModuleDefinition);
+        _genericGetBacklinksReference = _realmObject.LookupMethodReference("GetBacklinks", ModuleDefinition);
 
         var preserveAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "PreserveAttribute");
         _preserveAttributeConstructor = ModuleDefinition.ImportReference(preserveAttributeClass.GetConstructors().Single(c => c.Parameters.Count == 0));
@@ -218,6 +223,10 @@ public class ModuleWeaver
         {
             _system_IList = ModuleDefinition.ImportReference(listTypeDefinition);
         }
+
+        var system_core = AssemblyResolver.Resolve("System.Core");
+        _system_linq_Enumerable_Empty = ModuleDefinition.ImportReference(system_core.MainModule.GetType("System.Linq.Enumerable").LookupMethodDefinition("Empty"));
+        _system_linq_Queryable_AsQueryable = ModuleDefinition.ImportReference(system_core.MainModule.GetType("System.Linq.Queryable").LookupMethodDefinition("AsQueryable"));
 
         // If the solution has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
         var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
@@ -425,6 +434,36 @@ public class ModuleWeaver
             ReplaceSetter(prop, backingField, columnName,
                 new GenericInstanceMethod(_genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });
         }
+        else if (prop.IsIQueryable())
+        {
+            var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
+            if (backlinkAttribute == null)
+            {
+                return WeaveResult.Skipped();
+            }
+
+            if (prop.SetMethod != null)
+            {
+                return WeaveResult.Error("Backlink properties must be read-only.");
+            }
+
+            var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+            var inversePropertyName = (string)backlinkAttribute.ConstructorArguments[0].Value;
+            var inverseProperty = elementType.Resolve().Properties.SingleOrDefault(p => p.Name == inversePropertyName);
+
+            if (inverseProperty == null || (!inverseProperty.PropertyType.IsSameAs(type) && !inverseProperty.IsIList(type)))
+            {
+                return WeaveResult.Error($"The property '{elementType.Name}.{inversePropertyName}' does not constitute a link to '{type.Name}' as described by '{type.Name}.{prop.Name}'.");
+            }
+
+            var backingDef = backingField as FieldDefinition;
+            if (backingDef != null)
+            {
+                backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+            }
+
+            ReplaceBacklinksGetter(prop, backingField, columnName, elementType);
+        }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
             return WeaveResult.Error($"Class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.");
@@ -537,6 +576,66 @@ public class ModuleWeaver
         il.InsertBefore(labelElse, il.Create(OpCodes.Ldstr, columnName));  // [this, this -> this, this, name ]
         il.InsertBefore(labelElse, il.Create(OpCodes.Call, getListValueReference)); // [this, this, name -> this, listRef ]
         il.InsertBefore(labelElse, il.Create(OpCodes.Stfld, backingField)); // [this, listRef -> ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Br_S, start));
+
+        // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
+        // FALL THROUGH to return the backing field.
+
+        // Let Cecil optimize things for us. 
+        // TODO prop.SetMethod.Body.OptimizeMacros();
+
+        Debug.Write("[get list] ");
+    }
+
+    // WARNING
+    // This code setting the backing field only works if the field is settable after init
+    // if you don't have an automatic set; on the property, it shows in the debugger with
+    //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
+    private void ReplaceBacklinksGetter(PropertyDefinition prop, FieldReference backingField, string columnName, TypeReference elementType)
+    {
+        // A synthesized property getter looks like this:
+        //   0: ldarg.0  // load the this pointer
+        //   1: ldfld <backingField>
+        //   2: ret
+        // We want to change it so it looks somewhat like this, in C#
+        /*
+            if (<backingField> == null)
+            {
+               if (IsManaged)
+                     <backingField> = GetBacklinks<T>(<columnName>);
+               else
+                     <backingField> = new Enumerable.Empty<T>.AsQueryable();
+            }
+            // original auto-generated getter starts here
+            return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
+        */
+
+        var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref [ -> this]
+        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField)); // [ this -> field]
+        il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, start));  // []
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for stfld in both branches [ -> this ]
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call [ this -> this, this]
+        il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));  // [ this, this -> this,  isManaged ]
+
+        // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
+
+        var labelElse = il.Create(OpCodes.Nop);  // [this]
+        il.InsertBefore(start, labelElse); // else
+        il.InsertBefore(start, il.Create(OpCodes.Call, new GenericInstanceMethod(_system_linq_Enumerable_Empty) { GenericArguments = { elementType } })); // [this, enumerable]
+        il.InsertBefore(start, il.Create(OpCodes.Call, new GenericInstanceMethod(_system_linq_Queryable_AsQueryable) { GenericArguments = { elementType } })); // [this, queryable]
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  // [this, queryable -> ]
+        // fall through to start to read it back from backing field and return
+
+        // if block before else now gets inserted
+        il.InsertBefore(labelElse, il.Create(OpCodes.Brfalse_S, labelElse));  // [this,  isManaged -> this]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Ldarg_0)); // this for call [ this -> this, this ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Ldstr, columnName));  // [this, this -> this, this, name ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Call, new GenericInstanceMethod(_genericGetBacklinksReference) { GenericArguments = { elementType } })); // [this, this, name -> this, queryable ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Stfld, backingField)); // [this, queryable -> ]
         il.InsertBefore(labelElse, il.Create(OpCodes.Br_S, start));
 
         // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
@@ -898,6 +997,12 @@ public class ModuleWeaver
                     il.InsertAfter(isUpdateCheck, il.Create(OpCodes.Brtrue_S, setterStart));
 
                     currentStloc += 2;
+                }
+                else if (property.IsIQueryable())
+                {
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldnull));
+                    il.Append(il.Create(OpCodes.Stfld, field));
                 }
                 else
                 {

@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using ObjCRuntime;
 #endif
 using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -179,12 +180,13 @@ namespace Realms
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
 
-            // build up column index in a loop so can spot and cache primary key index on the way
-            var initPropertyMap = new Dictionary<string, IntPtr>();
-            var propertyIndex = -1;
+            var initPropertyMap = new Dictionary<string, IntPtr>(schema.Count);
+            var persistedProperties = -1;
+            var computedProperties = -1;
             foreach (var prop in schema)
             {
-                initPropertyMap[prop.Name] = (IntPtr)(++propertyIndex);
+                var index = prop.Type.IsComputed() ? ++computedProperties : ++persistedProperties;
+                initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
             return new RealmObject.Metadata

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Realms;
 
 namespace IntegrationTests
@@ -193,7 +194,8 @@ namespace IntegrationTests
 
         public bool Vaccinated { get; set; }
 
-        // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+        [Backlink(nameof(Owner.Dogs))]
+        public IQueryable<Owner> Owners { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

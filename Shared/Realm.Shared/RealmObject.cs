@@ -338,6 +338,24 @@ namespace Realms
             return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
         }
 
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObject
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
+            return GetBacklinks<T>(propertyName, resultsHandle);
+        }
+
+        internal RealmResults<T> GetBacklinks<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
+        {
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var relatedMeta = _realm.Metadata[property.ObjectType];
+
+            return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
+        }
+
         #endregion
 
         #region Setters

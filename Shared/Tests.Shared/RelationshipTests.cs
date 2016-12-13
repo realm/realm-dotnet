@@ -479,6 +479,23 @@ namespace IntegrationTests
             Assert.That(person.Dogs.Count, Is.EqualTo(2));
         }
 
+        [Test]
+        public void Backlinks()
+        {
+            var tim = realm.All<Owner>().Single(o => o.Name == "Tim");
+            foreach (var dog in tim.Dogs)
+            {
+                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim })); 
+            }
+
+            var dani = realm.All<Owner>().Single(o => o.Name == "Dani");
+            var maggie = realm.All<Dog>().Single(d => d.Name == "Maggie Mongrel");
+            Assert.That(maggie.Owners, Is.Empty);
+
+            realm.Write(() => dani.Dogs.Add(maggie));
+            Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
+        }
+
         #region DeleteRelated
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh

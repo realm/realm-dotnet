@@ -36,6 +36,16 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("IList`1", "System.Collections.Generic");
     }
 
+    internal static bool IsIList(this PropertyDefinition property, TypeReference elementType)
+    {
+        return IsIList(property) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
+    }
+
+    internal static bool IsIQueryable(this PropertyDefinition property)
+    {
+        return property.IsType("IQueryable`1", "System.Linq");
+    }
+
     internal static bool IsDateTimeOffset(this PropertyDefinition property)
     {
         return property.IsType("DateTimeOffset", "System");

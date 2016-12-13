@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Realms
@@ -361,6 +362,12 @@ namespace Realms
         protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected IQueryable<T> GetBacklinks<T>(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return Enumerable.Empty<T>().AsQueryable();
         }
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)

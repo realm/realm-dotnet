@@ -44,6 +44,7 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
             p.name = property.name;
             p.type = property.type;
             p.object_type = property.object_type ? property.object_type : "";
+            p.link_origin_property_name = property.link_origin_property_name ? property.link_origin_property_name : "";
             p.is_nullable = property.is_nullable;
             p.is_indexed = property.is_indexed;
             
@@ -51,7 +52,11 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
                 o.primary_key = p.name;
             }
             
-            o.persisted_properties.push_back(std::move(p));
+            if (p.type == PropertyType::LinkingObjects) {
+                o.computed_properties.push_back(std::move(p));
+            } else {
+                o.persisted_properties.push_back(std::move(p));
+            }
         }
         
         object_schemas.push_back(std::move(o));

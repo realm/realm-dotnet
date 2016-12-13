@@ -92,5 +92,10 @@ namespace Realms.Schema
 
             throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
         }
+
+        public static bool IsComputed(this PropertyType propertyType)
+        {
+            return propertyType == PropertyType.LinkingObjects;
+        }
     }
 }

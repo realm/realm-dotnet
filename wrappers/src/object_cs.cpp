@@ -240,6 +240,22 @@ extern "C" {
         });
     }
     
+    REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            verify_can_get(object);
+            const Property& prop = object.get_object_schema().computed_properties[property_ndx];
+            REALM_ASSERT_DEBUG(prop.type == PropertyType::LinkingObjects);
+            
+            const ObjectSchema& relationship = *object.realm()->schema().find(prop.object_type);
+            const TableRef table = ObjectStore::table_for_object_type(object.realm()->read_group(), relationship.name);
+            const Property& link = *relationship.property_for_name(prop.link_origin_property_name);
+            
+            TableView backlink_view = object.row().get_table()->get_backlink_view(object.row().get_index(), table.get(), link.table_column);
+            return new Results(object.realm(), backlink_view);
+        });
+    }
+    
     REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

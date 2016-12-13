@@ -134,6 +134,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ResultsHandle get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
         }
 
         public bool IsValid
@@ -578,6 +581,15 @@ namespace Realms
 
                 this.SetLink(propertyIndex, @object.ObjectHandle);
             }
+        }
+
+        public ResultsHandle GetBacklinks(IntPtr propertyIndex)
+        {
+            NativeException nativeException;
+            var handle = NativeMethods.get_backlinks(this, propertyIndex, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return handle;
         }
     }
 }
