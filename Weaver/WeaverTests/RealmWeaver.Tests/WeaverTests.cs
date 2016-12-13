@@ -500,6 +500,15 @@ namespace RealmWeaver
         }
 
         [Test]
+        public void ShouldNotWeaveIQueryablePropertiesWithoutBacklinkAttribute()
+        {
+            var objectType = _assembly.GetType("AssemblyToProcess.Person");
+            var property = objectType.GetProperty("SomeQueryableProperty");
+
+            Assert.That(property.GetCustomAttribute<Realms.WovenPropertyAttribute>(), Is.Null);
+        }
+
+        [Test]
         public void MatchErrorsAndWarnings()
         {
             // All warnings and errors are gathered once, so in order to ensure only the correct ones

@@ -125,6 +125,14 @@ namespace AssemblyToProcess
         // Expression property
         public string LowerCaseEmail => Email_.ToLower();
 
+        public IQueryable<object> SomeQueryableProperty
+        {
+            get
+            {
+                return Enumerable.Empty<object>().AsQueryable();
+            }
+        }
+
         public Person()
         {
         }
