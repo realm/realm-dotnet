@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
-    <id>Realm.Database</id>
+    <id>Realm</id>
     <version>$version$</version>
-    <title>Realm.Database</title>
+    <title>Realm</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
     <developmentDependency>true</developmentDependency>
