@@ -376,12 +376,13 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// <b>Deprecated</b> Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
-        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Add because it avoids copying properties to the realm.</remarks>
+        /// <remarks>Scheduled for removal in the next major release, as it is dangerous to call CreateObject and then assign a PrimaryKey.</remarks>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>An object which is already managed.</returns>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        [Obsolete("Please create an object with new and pass to Add instead")]
         public T CreateObject<T>() where T : RealmObject, new()
         {
             RealmObject.Metadata metadata;
@@ -400,6 +401,7 @@ namespace Realms
         /// <returns>A dynamically-accessed Realm object.</returns>
         /// <param name="className">The type of object to create as defined in the schema.</param>
         /// <remarks>
+        /// <b>WARNING:</b> if the dynamic object has a PrimaryKey then that must be the <b>first property set</b> otherwise other property changes may be lost.<br/>
         /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
         /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
         /// </remarks>
