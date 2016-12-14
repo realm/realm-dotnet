@@ -16,13 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
+using System;
 
-namespace AssemblyToProcess
+namespace Realms
 {
-    // [MapTo("RemappedTable")] TODO: uncomment when #986 is resolved
-    public class RemappedClass : RealmObject
+    /// <summary>
+    /// An attribute that indicates an indexed property. Indexed properties slow down insertions, but can greatly speed up queries.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class IndexedAttribute : Attribute
     {
-        public int PropertyToEnsureHealthyClass { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexedAttribute"/> class.
+        /// </summary>
+        public IndexedAttribute()
+        {
+        }
     }
 }

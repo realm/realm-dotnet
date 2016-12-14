@@ -10,10 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs">
-      <ExcludeFromSourceAnalysis>True</ExcludeFromSourceAnalysis>
-      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmDecryptionFailedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmObjectManagedByAnotherRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileExistsException.cs" />
@@ -36,7 +32,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Native\PtrTo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaProperty.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmObject.cs" />
@@ -86,11 +81,23 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SynchronizationContextEventLoopSignal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\PreserveAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\IndexedAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\IgnoredAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\RequiredAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\MapToAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\Attributes.cs">
+      <ExcludeFromSourceAnalysis>True</ExcludeFromSourceAnalysis>
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\BacklinkAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />
     <Folder Include="$(MSBuildThisFileDirectory)Schema\" />
     <Folder Include="$(MSBuildThisFileDirectory)Dynamic\" />
     <Folder Include="$(MSBuildThisFileDirectory)ReflectableType\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Attributes\" />
   </ItemGroup>
 </Project>

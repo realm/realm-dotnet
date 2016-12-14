@@ -16,13 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
+using System;
 
-namespace AssemblyToProcess
+namespace Realms
 {
-    // [MapTo("RemappedTable")] TODO: uncomment when #986 is resolved
-    public class RemappedClass : RealmObject
+    /// <summary>
+    /// An attribute that indicates a required property. When persisting, the Realm will validate that the value of the property is not null.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class RequiredAttribute : Attribute
     {
-        public int PropertyToEnsureHealthyClass { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequiredAttribute"/> class.
+        /// </summary>
+        public RequiredAttribute()
+        {
+        }
     }
 }

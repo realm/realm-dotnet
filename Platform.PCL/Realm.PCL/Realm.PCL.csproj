@@ -76,9 +76,6 @@
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmPermissionDeniedException.cs">
       <Link>Exceptions\RealmPermissionDeniedException.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Shared\Attributes.cs">
-      <Link>Attributes.cs</Link>
-    </Compile>
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmMismatchedConfigException.cs">
       <Link>Exceptions\RealmMismatchedConfigException.cs</Link>
     </Compile>
@@ -87,9 +84,6 @@
     </Compile>
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidTransactionException.cs">
       <Link>Exceptions\RealmInvalidTransactionException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Shared\PreserveAttribute.cs">
-      <Link>PreserveAttribute.cs</Link>
     </Compile>
     <Compile Include="Extensions\CollectionNotificationsExtensionsPCL.cs" />
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
@@ -123,6 +117,33 @@
       <Link>Exceptions\ErrorEventArgs.cs</Link>
     </Compile>
     <Compile Include="RealmConfigurationPCL.cs" />
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\Attributes.cs">
+      <Link>Attributes\Attributes.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\BacklinkAttribute.cs">
+      <Link>Attributes\BacklinkAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\IgnoredAttribute.cs">
+      <Link>Attributes\IgnoredAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\IndexedAttribute.cs">
+      <Link>Attributes\IndexedAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\MapToAttribute.cs">
+      <Link>Attributes\MapToAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\PreserveAttribute.cs">
+      <Link>Attributes\PreserveAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\PrimaryKeyAttribute.cs">
+      <Link>Attributes\PrimaryKeyAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes\RequiredAttribute.cs">
+      <Link>Attributes\RequiredAttribute.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Attributes\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />

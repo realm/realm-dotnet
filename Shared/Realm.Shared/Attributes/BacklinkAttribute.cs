@@ -16,13 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
+using System;
 
-namespace AssemblyToProcess
+namespace Realms
 {
-    // [MapTo("RemappedTable")] TODO: uncomment when #986 is resolved
-    public class RemappedClass : RealmObject
+    /// <summary>
+    /// An attribute that indicates that the property it decorates is the inverse end of a relationship.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public class BacklinkAttribute : Attribute
     {
-        public int PropertyToEnsureHealthyClass { get; set; }
+        internal string Property { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BacklinkAttribute"/> class.
+        /// </summary>
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        public BacklinkAttribute(string property)
+        {
+            Property = property;
+        }
     }
 }
