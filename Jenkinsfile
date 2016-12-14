@@ -33,7 +33,6 @@ stage('Checkout') {
 }
 
 def getArchive() {
-    deleteDir()
     unstash 'dotnet-source'
 }
 
