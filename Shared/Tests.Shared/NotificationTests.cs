@@ -23,7 +23,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -391,11 +390,11 @@ namespace IntegrationTests
         [TestCase(0, 2, 0, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> c a b d e
         [TestCase(4, 2, 4, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> a b d e c
         [TestCase(1, 3, 1, 3, NotifyCollectionChangedAction.Move)] // a b c d e -> c d a b e
-        public void ListMove_MultipleMovedItemssTests(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
+        public async void ListMove_MultipleMovedItemssTests(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
         {
             OrderedObject object1 = null;
             OrderedObject object2 = null;
-            var args = TestMoves(items =>
+            var args = await TestMoves(items =>
             {
                 object1 = items[oldIndex1];
                 items.Move(object1, newIndex1);
@@ -432,10 +431,10 @@ namespace IntegrationTests
         [TestCase(2, 0)]
         [TestCase(1, 2)]
         [TestCase(2, 1)]
-        public void ListMove_SingleMovedItemTests(int oldIndex, int newIndex)
+        public async void ListMove_SingleMovedItemTests(int oldIndex, int newIndex)
         {
             OrderedObject movedObject = null;
-            var args = TestMoves(items =>
+            var args = await TestMoves(items =>
             {
                 movedObject = items[oldIndex];
                 items.Move(movedObject, newIndex);
@@ -448,7 +447,7 @@ namespace IntegrationTests
         }
 
         // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
-        private NotifyCollectionChangedEventArgs TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
+        private async Task<NotifyCollectionChangedEventArgs> TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
         {
             var container = new OrderedContainer();
             for (var i = 0; i < 5; i++)
@@ -470,7 +469,7 @@ namespace IntegrationTests
 
             _realm.Write(() => moveAction(container.Items));
 
-            TestHelpers.RunEventLoop();
+            await Task.Delay(MillisecondsToWaitForCollectionNotification);
 
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(expectedAction));
