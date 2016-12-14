@@ -16,13 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
+using System;
 
-namespace AssemblyToProcess
+namespace Realms
 {
-    // [MapTo("RemappedTable")] TODO: uncomment when #986 is resolved
-    public class RemappedClass : RealmObject
+    /// <summary>
+    /// An attribute that indicates an ignored property. Ignored properties will not be persisted in the Realm.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+    public class IgnoredAttribute : Attribute
     {
-        public int PropertyToEnsureHealthyClass { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IgnoredAttribute"/> class.
+        /// </summary>
+        public IgnoredAttribute()
+        {
+        }
     }
 }
