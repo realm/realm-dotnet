@@ -1,4 +1,4 @@
-0.81.0 (2016-12-XX)
+0.81.0 (2016-12-14)
 -------------------
 ### Breaking Changes
 * The `IQueryable<T>.ToNotifyCollectionChanged` extension methods that accept parameters are now deprecated. There is a new parameterless one that you should use instead. If you want to handle errors, you can do so by subscribing to the `Realm.OnError` event. (#938)
@@ -13,9 +13,10 @@
 * Added `Realm.Compact` method that allows you to reclaim the space used by the Realm. (#968)
 * `Realm.Add` returns the added object. (#931)
 * Support for backlinks aka `LinkingObjects`. (#219)
+* Added an `IList<T>.Move` extension method that allows you to reorder elements within the collection. For managed Lists, it calls a native method, so it is slightly more efficient than removing and inserting an item, but more importantly, it will raise the `CollectionChanged` with `NotifyCollectionChangedAction.Move` which will result in a nice move animation, rather than a reload of a ListView. (#995)
 
 ### Bug fixes
-* Subscribing to `PropertyChanged` on a RealmObject and changing an instance of the same object on a different thread will now properly raise the event. (#909)
+* Subscribing to `PropertyChanged` on a RealmObject and modifying an instance of the same object on a different thread will now properly raise the event. (#909)
 * Using `Insert` to insert items at the end of an `IList` property will no longer throw an exception. (#978)
 
 0.80.0 (2016-10-27)
