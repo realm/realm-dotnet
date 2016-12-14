@@ -28,6 +28,7 @@ stage('Checkout') {
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
       stash includes: '**', name: 'dotnet-source'
+      deleteDir()
   }
 }
 
@@ -37,7 +38,7 @@ def getArchive() {
 }
 
 stage('RealmWeaver') {
-  node('xamarin-mac') {
+  nodeWithCleanup('xamarin-mac') {
     getArchive()
     def workspace = pwd()
     sh "${nuget} restore Realm.sln"
@@ -54,7 +55,7 @@ stage('RealmWeaver') {
 stage('Build without sync') {
   parallel(
     'iOS': {
-      node('osx') {
+      nodeWithCleanup('osx') {
         getArchive()
 
         dir('wrappers') {
@@ -63,7 +64,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
       }
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
@@ -80,7 +81,7 @@ stage('Build without sync') {
       }
     },
     'Android': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -91,7 +92,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
       }
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
         def workspace = pwd()
 
@@ -109,7 +110,7 @@ stage('Build without sync') {
       }
     },
     'PCL': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
         sh "${nuget} restore Realm.sln"
         sh "${xbuild} Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}"
@@ -122,7 +123,7 @@ stage('Build without sync') {
 stage('Build with sync') {
   parallel(
     'iOS': {
-      node('osx') {
+      nodeWithCleanup('osx') {
         getArchive()
 
         dir('wrappers') {
@@ -131,7 +132,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
       }
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         unstash 'ios-wrappers-sync'
@@ -148,7 +149,7 @@ stage('Build with sync') {
       }
     },
     'Android': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -159,7 +160,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
       }
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
         def workspace = pwd()
 
@@ -178,7 +179,7 @@ stage('Build with sync') {
       }
     },
     'PCL': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
         sh "${nuget} restore Realm.sln"
         sh "${xbuild} Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}"
@@ -204,8 +205,7 @@ stage('Test with sync') {
 
 def iOSTest(stashName) {
   return {
-    node('osx') {
-      deleteDir()
+    nodeWithCleanup('osx') {
       unstash stashName
 
       dir('Tests.XamarinIOS.app') {
@@ -221,8 +221,7 @@ def iOSTest(stashName) {
 
 def AndroidTest(stashName) {
   return {
-    node('android-hub') {
-      deleteDir()
+    nodeWithCleanup('android-hub') {
       unstash stashName
 
       lock("${env.NODE_NAME}-android") {
@@ -284,7 +283,7 @@ def stopLogCatCollector(String backgroundPid, boolean archiveLog, String archive
 stage('NuGet') {
   parallel(
     'Realm.Database': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         unstash 'nuget-weaver'
@@ -301,7 +300,7 @@ stage('NuGet') {
       }
     },
     'Realm': {
-      node('xamarin-mac') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         unstash 'nuget-pcl-sync'
@@ -329,11 +328,21 @@ def readAssemblyVersion() {
       minor: match[0][2],
       patch: match[0][3]
     ]
-  } else {
-    throw new Exception('Could not match Realm assembly version')
   }
+
+  error 'Could not match Realm assembly version'
 }
 
 def publishTests(filePattern='TestResults.*.xml') {
 step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresholds: [[$class: 'FailedThreshold', failureNewThreshold: '', failureThreshold: '1', unstableNewThreshold: '', unstableThreshold: ''], [$class: 'SkippedThreshold', failureNewThreshold: '', failureThreshold: '', unstableNewThreshold: '', unstableThreshold: '']], tools: [[$class: 'NUnitJunitHudsonTestType', deleteOutputFiles: true, failIfNotNew: true, pattern: filePattern, skipNoTestFiles: false, stopProcessingIfError: true]]])
+}
+
+def nodeWithCleanup(String label, Closure steps) {
+  node(label) {
+    try {
+      steps()
+    } finally {
+      deleteDir()
+    }
+  }
 }
