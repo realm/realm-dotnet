@@ -171,6 +171,16 @@ namespace Realms
 
         #endregion
 
+        public void Move(T item, int targetIndex)
+        {
+            if (targetIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            _listHandle.Move(item.ObjectHandle, (IntPtr)targetIndex);
+        }
+
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
     }
 }

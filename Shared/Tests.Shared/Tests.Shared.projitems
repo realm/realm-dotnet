@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObjectSchemaTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangedTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CollectionTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />

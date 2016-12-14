@@ -91,6 +91,22 @@ namespace Realms
         }
 
         /// <summary>
+        /// Move the specified item to a new position within the list.
+        /// </summary>
+        /// <param name="list">The list where the move should occur.</param>
+        /// <param name="item">The item that will be moved.</param>
+        /// <param name="index">The new position to which the item will be moved.</param>
+        /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
+        /// <remarks>
+        /// This extension method will work for standalone lists as well by calling <c>Remove</c> and then <c>Insert</c>.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than Count - 1.</exception>
+        public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
         /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>

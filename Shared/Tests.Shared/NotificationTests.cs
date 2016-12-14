@@ -23,7 +23,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -383,6 +382,101 @@ namespace IntegrationTests
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
             Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
             Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+        }
+
+        [TestCase(0, 3, 1, 3, NotifyCollectionChangedAction.Reset)] // a b c d e -> b d a c e
+        [TestCase(0, 3, 0, 2, NotifyCollectionChangedAction.Reset)] // a b c d e -> c d b a e
+        [TestCase(0, 3, 4, 0, NotifyCollectionChangedAction.Reset)] // a b c d e -> e b c d a
+        [TestCase(0, 2, 0, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> c a b d e
+        [TestCase(4, 2, 4, 2, NotifyCollectionChangedAction.Move)] // a b c d e -> a b d e c
+        [TestCase(1, 3, 1, 3, NotifyCollectionChangedAction.Move)] // a b c d e -> c d a b e
+        public async void ListMove_MultipleMovedItemssTests(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
+        {
+            OrderedObject object1 = null;
+            OrderedObject object2 = null;
+            var args = await TestMoves(items =>
+            {
+                object1 = items[oldIndex1];
+                items.Move(object1, newIndex1);
+
+                object2 = items[oldIndex2];
+                items.Move(object2, newIndex2);
+            }, expectedAction);
+
+            if (expectedAction == NotifyCollectionChangedAction.Move)
+            {
+                var oldStartIndex = Math.Min(oldIndex1, oldIndex2);
+                var newStartIndex = Math.Min(newIndex1, newIndex2);
+                if (oldStartIndex < newStartIndex)
+                {
+                    // x was moved from before to after y, then y was moved to after x, which results in index being adjusted by -1.
+                    newStartIndex--;
+                }
+                else
+                {
+                    // x was moved from after to before y, then y was moved to before x, which results in index being adjusted by -1.
+                    oldStartIndex--;
+                }
+
+                Assert.That(args.OldStartingIndex, Is.EqualTo(oldStartIndex));
+                Assert.That(args.NewStartingIndex, Is.EqualTo(newStartIndex));
+                Assert.That(args.OldItems, Is.EquivalentTo(new[] { object1, object2 }));
+                Assert.That(args.NewItems, Is.EquivalentTo(new[] { object1, object2 }));
+            }
+        }
+
+        [TestCase(0, 4)]
+        [TestCase(4, 0)]
+        [TestCase(0, 2)]
+        [TestCase(2, 0)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        public async void ListMove_SingleMovedItemTests(int oldIndex, int newIndex)
+        {
+            OrderedObject movedObject = null;
+            var args = await TestMoves(items =>
+            {
+                movedObject = items[oldIndex];
+                items.Move(movedObject, newIndex);
+            }, NotifyCollectionChangedAction.Move);
+
+            Assert.That(args.OldStartingIndex, Is.EqualTo(oldIndex));
+            Assert.That(args.NewStartingIndex, Is.EqualTo(newIndex));
+            Assert.That(args.OldItems, Is.EquivalentTo(new[] { movedObject }));
+            Assert.That(args.NewItems, Is.EquivalentTo(new[] { movedObject }));
+        }
+
+        // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
+        private async Task<NotifyCollectionChangedEventArgs> TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
+        {
+            var container = new OrderedContainer();
+            for (var i = 0; i < 5; i++)
+            {
+                container.Items.Add(new OrderedObject
+                {
+                    Order = i
+                });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+
+            _realm.Write(() => moveAction(container.Items));
+
+            await Task.Delay(MillisecondsToWaitForCollectionNotification);
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(expectedAction));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+            return eventArgs[0];
         }
 
         [TestCaseSource(nameof(CollectionChangedTestCases))]
