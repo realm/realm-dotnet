@@ -33,7 +33,7 @@
     <file src="../../Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.*" target="lib/Xamarin.iOS10" />
     <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="lib/Xamarin.iOS10" />
 <!-- Targets file adds references to native libs and copies RealmWeaver -->
-    <file src="Realm.Database.targets" target="build" />
+    <file src="Realm.targets" target="build" />
 <!-- Android files -->
     <file src="../../Platform.XamarinAndroid/Realm.XamarinAndroid/bin/$Configuration$/Realm.*" target="lib/MonoAndroid44" />
     <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/librealm-wrappers.so" target="lib/MonoAndroid44/armeabi-v7a" />
