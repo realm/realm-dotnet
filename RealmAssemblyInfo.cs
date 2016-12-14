@@ -23,8 +23,8 @@ using System.Reflection;
 [assembly: AssemblyCompany("Realm Inc.")]
 [assembly: AssemblyProduct("Realm C#")]
 
-[assembly: AssemblyVersion("0.80.0.0")]
-[assembly: AssemblyFileVersion("0.80.0.0")]
+[assembly: AssemblyVersion("0.81.0.0")]
+[assembly: AssemblyFileVersion("0.81.0.0")]
 
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
