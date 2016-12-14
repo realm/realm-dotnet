@@ -34,6 +34,7 @@ namespace Realms
 
         private delegate void release_eventloop(IntPtr eventloop);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void EventLoopPostHandler(IntPtr user_data);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_eventloop_callbacks", CallingConvention = CallingConvention.Cdecl)]
