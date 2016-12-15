@@ -224,9 +224,11 @@ public class ModuleWeaver
             _system_IList = ModuleDefinition.ImportReference(listTypeDefinition);
         }
 
-        var system_core = AssemblyResolver.Resolve("System.Core");
-        _system_linq_Enumerable_Empty = ModuleDefinition.ImportReference(system_core.MainModule.GetType("System.Linq.Enumerable").LookupMethodDefinition("Empty"));
-        _system_linq_Queryable_AsQueryable = ModuleDefinition.ImportReference(system_core.MainModule.GetType("System.Linq.Queryable").LookupMethodDefinition("AsQueryable"));
+        var system_linq_enumerable = AssemblyResolver.LookupTypeDefinition("System.Linq.Enumerable", "System.Core", "System.Linq");
+        var system_linq_queryable = AssemblyResolver.LookupTypeDefinition("System.Linq.Queryable", "System.Core", "System.Linq.Queryable");
+
+        _system_linq_Enumerable_Empty = ModuleDefinition.ImportReference(system_linq_enumerable.LookupMethodDefinition("Empty"));
+        _system_linq_Queryable_AsQueryable = ModuleDefinition.ImportReference(system_linq_queryable.LookupMethodDefinition("AsQueryable"));
 
         // If the solution has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
         var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
