@@ -1,13 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
 using Realms;
 
 namespace QuickJournal
 {
-    public class JournalEntry : RealmObject, INotifyPropertyChanged
+    public class JournalEntry : RealmObject
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public string Title { get; set; }
         public string BodyText { get; set; }
 

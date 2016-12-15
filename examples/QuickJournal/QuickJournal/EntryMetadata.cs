@@ -4,10 +4,8 @@ using Realms;
 
 namespace QuickJournal
 {
-    public class EntryMetadata : RealmObject, INotifyPropertyChanged
+    public class EntryMetadata : RealmObject
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public DateTimeOffset Date { get; set; }
 
         public string Author { get; set; }
