@@ -215,11 +215,13 @@ namespace IntegrationTests
         public string String { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ContainerObject : RealmObject
     {
         public IList<IntPropertyObject> Items { get; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IntPropertyObject : RealmObject
     {
         public int Int { get; set; }

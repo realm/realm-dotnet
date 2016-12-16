@@ -312,11 +312,11 @@ extern "C" {
                                                                object.row().get_table()->get_column_name(column_ndx),
                                                                "null");
                 }
-                
-                object.row().set_null_unique(column_ndx);
-                
-                notify_changes(object, property_ndx);
             }
+            
+            object.row().set_null_unique(column_ndx);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -358,11 +358,11 @@ extern "C" {
                                                                util::format("%1", value)
                                                                );
                 }
-                
-                object.row().set_int_unique(column_ndx, value);
-                
-                notify_changes(object, property_ndx);
             }
+            
+            object.row().set_int_unique(column_ndx, value);
+            
+            notify_changes(object, property_ndx);
         });
     }
     
@@ -418,11 +418,11 @@ extern "C" {
                                                                str.to_string()
                                                                );
                 }
-                
-                object.row().set_string_unique(column_ndx, str);
-                
-                notify_changes(object, property_ndx);
             }
+            
+            object.row().set_string_unique(column_ndx, str);
+            
+            notify_changes(object, property_ndx);
         });
     }
     

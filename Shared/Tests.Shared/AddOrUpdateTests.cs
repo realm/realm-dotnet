@@ -813,6 +813,39 @@ namespace IntegrationTests
             }, Throws.TypeOf<RealmException>());
         }
 
+        [Test]
+        public void AddOrUpdate_WhenObjectHasNonEmptyList_ShouldNotThrow()
+        {
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 42,
+                StringValue = "value1"
+            };
+
+            first.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1
+            });
+
+            _realm.Write(() => _realm.Add(first));
+
+            var second = new PrimaryKeyWithPKList
+            {
+                Id = 42,
+                StringValue = "value2"
+            };
+
+            second.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1
+            });
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(second, update: true));
+            }, Throws.Nothing);
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]
