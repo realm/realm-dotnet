@@ -28,10 +28,12 @@ namespace Realms
             void NotifyCallbacks(CollectionHandleBase.CollectionChangeSet? changes, NativeException? exception);
         }
 
+        internal static readonly CollectionHandleBase.NotificationCallbackDelegate NotificationCallback = NotificationCallbackImpl;
+
 #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(CollectionHandleBase.NotificationCallbackDelegate))]
 #endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
+        private static void NotificationCallbackImpl(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
             results.NotifyCallbacks(new PtrTo<CollectionHandleBase.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);

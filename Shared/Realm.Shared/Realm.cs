@@ -47,8 +47,15 @@ namespace Realms
         static Realm()
         {
             NativeCommon.Initialize();
-            NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
-            NativeCommon.register_notify_realm_object_changed(RealmObject.NotifyRealmObjectPropertyChanged);
+
+            NativeCommon.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
+            NativeCommon.NotifyRealmObjectCallback notifyRealmObject = RealmObject.NotifyRealmObjectPropertyChanged;
+            GCHandle.Alloc(notifyRealm);
+            GCHandle.Alloc(notifyRealmObject);
+
+            NativeCommon.register_notify_realm_changed(notifyRealm);
+            NativeCommon.register_notify_realm_object_changed(notifyRealmObject);
+
             SynchronizationContextEventLoopSignal.Install();
         }
 
