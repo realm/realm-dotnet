@@ -841,6 +841,86 @@ namespace IntegrationTests
             }, Throws.Nothing);
         }
 
+        [Test]
+        public void AddOrUpdate_WhenListIsNull_ShouldNotThrow()
+        {
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 42
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first, update: true));
+            }, Throws.Nothing);
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenListObjectsHavePK_ShouldOverwriteList()
+        {
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 1
+            };
+
+            first.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1
+            });
+
+            _realm.Write(() => _realm.Add(first));
+
+            var second = new PrimaryKeyWithPKList
+            {
+                Id = 1
+            };
+
+            second.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 2
+            });
+
+            _realm.Write(() => _realm.Add(second, update: true));
+
+            Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
+            Assert.That(first.ListValue.Count, Is.EqualTo(1));
+            Assert.That(first.ListValue[0].Id, Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenListObjectsDontHavePK_ShouldOverwriteList()
+        {
+            var first = new PrimaryKeyWithNoPKList
+            {
+                Id = 1
+            };
+
+            first.ListValue.Add(new NonPrimaryKeyObject
+            {
+                StringValue = "1"
+            });
+
+            _realm.Write(() => _realm.Add(first));
+
+            var second = new PrimaryKeyWithNoPKList
+            {
+                Id = 1
+            };
+
+            second.ListValue.Add(new NonPrimaryKeyObject
+            {
+                StringValue = "2"
+            });
+
+            _realm.Write(() => _realm.Add(second, update: true));
+
+            Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
+            Assert.That(first.ListValue.Count, Is.EqualTo(1));
+            Assert.That(first.ListValue[0].StringValue, Is.EqualTo("2"));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]
