@@ -30,6 +30,16 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class MergeByPKTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            // We simulate a clean slate first time user login
+            foreach (var u in User.AllLoggedIn)
+            {
+                u.LogOut();
+            }
+        }
+
         [NUnit.Framework.Explicit]
         [TestCaseSource(nameof(MergeTestCases))]
         public async void WhenObjectHasPK_ShouldMergeCorrectly(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
@@ -58,8 +68,6 @@ namespace Tests.Sync
 
                     await Task.Delay(500); // A little bit of time for sync
                 }
-
-                User.Current.LogOut();
             }
 
             using (var realm = await GetSyncedRealm(objectType))
@@ -68,11 +76,6 @@ namespace Tests.Sync
                 var allObjects = realm.All(objectType.Name).ToArray();
 
                 Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
-            }
-
-            foreach (var user in User.AllLoggedIn)
-            {
-                user.LogOut();
             }
         }
 
