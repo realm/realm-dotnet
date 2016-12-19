@@ -34,8 +34,7 @@ namespace IntegrationTests
         [SetUp]
         public void Setup()
         {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
+            _realm = Realm.GetInstance(System.IO.Path.GetTempFileName());
         }
 
         [TearDown]
