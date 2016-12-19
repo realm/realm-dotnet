@@ -452,6 +452,39 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        /// <summary>
+        /// Called when a property has changed on this class.
+        /// </summary>
+        /// <param name="propertyName">Property name.</param>
+        /// <remarks>
+        /// For this method to be called, you need to have first subscribed to <see cref="PropertyChanged"/>.
+        /// This can be used to react to changes to the current object, e.g. raising `PropertyChanged` for computed properties.
+        /// </remarks>
+        /// <example>
+        /// <c>
+        /// class MyClass : RealmObject
+        /// {
+        ///     public int StatusCodeRaw { get; set; }
+        /// 
+        ///     public StatusCodeEnum StatusCode => (StatusCodeEnum)StatusCodeRaw;
+        /// 
+        ///     protected override void OnPropertyChanged(string propertyName)
+        ///     {
+        ///         if (propertyName == nameof(StatusCodeRaw))
+        ///         {
+        ///             RaisePropertyChanged(nameof(StatusCode));
+        ///         }
+        ///     }
+        /// }
+        /// </c>
+        /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
+        /// subscribers that <c>StatusCode</c> has changed, we override <c>OnPropertyChanged</c> and raise <c>PropertyChanged</c>
+        /// manually.
+        /// </example>
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+        }
+
         TypeInfo IReflectableType.GetTypeInfo()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
