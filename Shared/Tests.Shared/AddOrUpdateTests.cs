@@ -856,7 +856,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void AddOrUpdate_WhenListObjectsHavePK_ShouldOverwriteList()
+        public void AddOrUpdate_WhenNewListIsNull_ShouldNotThrow()
         {
             var first = new PrimaryKeyWithPKList
             {
@@ -875,17 +875,63 @@ namespace IntegrationTests
                 Id = 1
             };
 
-            second.ListValue.Add(new PrimaryKeyObject
+            // second.listValue is null, because the getter is never invoked.
+
+            _realm.Write(() => _realm.Add(second, update: true));
+
+            Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
+
+            // Verify that the original list was cleared 
+            Assert.That(first.ListValue.Count, Is.EqualTo(0));
+
+            // Verify that clearing the list hasn't deleted the item from the Realm.
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenListObjectsHavePK_ShouldOverwriteList()
+        {
+            // Original object - has 2 elements in the list
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 1
+            };
+
+            first.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1
+            });
+
+            first.ListValue.Add(new PrimaryKeyObject
             {
                 Id = 2
+            });
+
+            _realm.Write(() => _realm.Add(first));
+
+            // Object to update with - has 1 element in the list
+            var second = new PrimaryKeyWithPKList
+            {
+                Id = 1
+            };
+
+            second.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 3
             });
 
             _realm.Write(() => _realm.Add(second, update: true));
 
             Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
+
+            // Verify that the original list was replaced with the new one.
             Assert.That(first.ListValue.Count, Is.EqualTo(1));
-            Assert.That(first.ListValue[0].Id, Is.EqualTo(2));
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
+
+            // Verify that the list's sole element has the correct Id.
+            Assert.That(first.ListValue[0].Id, Is.EqualTo(3));
+
+            // Verify that overwriting the list hasn't deleted any elements from the Realm.
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(3));
         }
 
         [Test]
@@ -916,8 +962,14 @@ namespace IntegrationTests
             _realm.Write(() => _realm.Add(second, update: true));
 
             Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
+
+            // Verify that the original list was replaced with the new one and not merged with it.
             Assert.That(first.ListValue.Count, Is.EqualTo(1));
+
+            // Verify that the list's sole element has the correct String value.
             Assert.That(first.ListValue[0].StringValue, Is.EqualTo("2"));
+
+            // Verify that overwriting the list hasn't deleted any elements from the Realm.
             Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
