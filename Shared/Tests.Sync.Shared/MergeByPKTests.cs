@@ -42,7 +42,7 @@ namespace Tests.Sync
 
         [NUnit.Framework.Explicit]
         [TestCaseSource(nameof(MergeTestCases))]
-        public async void WhenObjectHasPK_ShouldMergeCorrectly(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
+        public async void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
             User.ConfigurePersistence(UserPersistenceMode.NotEncrypted);
 
