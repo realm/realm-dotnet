@@ -18,9 +18,6 @@
 
 using System;
 using System.IO;
-#if __IOS__
-using Foundation;
-#endif
 using Realms;
 
 namespace IntegrationTests
@@ -56,12 +53,7 @@ namespace IntegrationTests
             return;
 #endif
 
-            string sourceDir = string.Empty;
-#if __IOS__
-            sourceDir = NSBundle.MainBundle.BundlePath;
-#endif
-            // TODO add cases for Windows setting sourcedir for bundled files
-
+            var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
     }
