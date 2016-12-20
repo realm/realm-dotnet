@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -51,7 +51,19 @@ namespace Tests.Sync.Shared
             Assert.That(RealmSchema.Default.Find(nameof(PermissionChange)), Is.Null);
         }
 
-        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        [Test]
+        public void PermissionOffer_ShouldNotBeInDefaultSchema()
+        {
+            Assert.That(RealmSchema.Default.Find(nameof(PermissionOffer)), Is.Null);
+        }
+
+        [Test]
+        public void PermissionOfferResponse_ShouldNotBeInDefaultSchema()
+        {
+            Assert.That(RealmSchema.Default.Find(nameof(PermissionOfferResponse)), Is.Null);
+        }
+
+		[Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
         public async void PermissionChange_IsProcessedByServer()
         {
             var credentials = Credentials.UsernamePassword(Constants.Credentials.Username, Constants.Credentials.Password, createUser: false);
