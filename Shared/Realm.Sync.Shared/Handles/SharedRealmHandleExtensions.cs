@@ -117,11 +117,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public static void ResetForTesting()
+        public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            // TODO: this should kill all active sessions (although no idea how we're supposed to do that).
+            // TODO: this should kill all active sessions (although no idea how we're supposed to do that). #1045
             NativeMethods.reset_for_testing();
-            ConfigureFileSystem(null, null, false);
+            ConfigureFileSystem(userPersistenceMode, null, false);
         }
 
         #if __IOS__

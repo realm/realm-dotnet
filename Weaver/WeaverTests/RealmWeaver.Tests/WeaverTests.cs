@@ -688,7 +688,7 @@ namespace RealmWeaver
             var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
             var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
             var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType);
-            helper.CopyToRealm(instance, false);
+            helper.CopyToRealm(instance, update: false, setPrimaryKey: true);
         }
 
 #if(DEBUG)

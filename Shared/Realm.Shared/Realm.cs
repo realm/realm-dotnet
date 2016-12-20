@@ -557,15 +557,17 @@ namespace Realms
                 }
             }
 
+            var setPrimaryKey = false;
             if (objectPtr == IntPtr.Zero)
             {
                 objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+                setPrimaryKey = true;
             }
 
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._SetOwner(this, objectHandle, metadata);
-            metadata.Helper.CopyToRealm(obj, update);
+            metadata.Helper.CopyToRealm(obj, update, setPrimaryKey);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

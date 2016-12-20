@@ -801,6 +801,9 @@ public class ModuleWeaver
             var updateParameter = new ParameterDefinition("update", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
             copyToRealm.Parameters.Add(updateParameter);
 
+            var setPrimaryKeyParameter = new ParameterDefinition("setPrimaryKey", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
+            copyToRealm.Parameters.Add(setPrimaryKeyParameter);
+
             copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(realmObjectType)));
 
             byte currentStloc = 1;
@@ -924,6 +927,12 @@ public class ModuleWeaver
                         {
                             il.Replace(updatePlaceholder, il.Create(OpCodes.Brtrue_S, setStartPoint));
                         }
+                    }
+                    else if (property.IsPrimaryKey())
+                    {
+                        // If setPrimaryKey is false, we skip setting the property
+                        il.InsertBefore(setStartPoint, il.Create(OpCodes.Ldarg_3));
+                        il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, setEndPoint));
                     }
                 }
                 else if (property.IsIList())
