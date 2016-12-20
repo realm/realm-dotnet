@@ -128,13 +128,7 @@ namespace Realms.Sync
             MayManage = mayManage;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionChange"/> class.
-        /// </summary>
-        /// <remarks>
-        /// This constructor is used by Realm to create a new instance from C++. You should use the constructor that accepts parameters instead.
-        /// </remarks>
-        public PermissionChange()
+        private PermissionChange()
         {
         }
 

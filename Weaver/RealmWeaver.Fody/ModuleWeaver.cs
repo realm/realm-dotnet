@@ -317,7 +317,7 @@ public class ModuleWeaver
         }
 
         var objectConstructor = type.GetConstructors()
-            .SingleOrDefault(c => c.Parameters.Count == 0 && c.IsPublic && !c.IsStatic);
+            .SingleOrDefault(c => c.Parameters.Count == 0 && !c.IsStatic);
         if (objectConstructor == null)
         {
             var nonDefaultConstructor = type.GetConstructors().First();

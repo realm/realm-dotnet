@@ -22,8 +22,11 @@ namespace Tests.Sync
     {
         public static class Credentials
         {
+            // Credentials of an existing user
             public const string Username = "z@z";
             public const string Password = "z";
+
+            // The server url as visible from the testing device
             public const string ServerUrl = "localhost:9080";
         }
     }

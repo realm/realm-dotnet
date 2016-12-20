@@ -51,7 +51,7 @@ namespace Tests.Sync.Shared
             Assert.That(RealmSchema.Default.Find(nameof(PermissionChange)), Is.Null);
         }
 
-        [Test, Explicit]
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
         public async void PermissionChange_IsProcessedByServer()
         {
             var credentials = Credentials.UsernamePassword(Constants.Credentials.Username, Constants.Credentials.Password, createUser: false);
