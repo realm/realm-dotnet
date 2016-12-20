@@ -36,7 +36,7 @@ namespace Realms.Sync
     public class PermissionOffer : RealmObject, IPermissionObject
     {
         /// <inheritdoc />
-        [PrimaryKey, Required]
+        [Required]
         [MapTo("id")]
         public string Id { get; private set; } = Guid.NewGuid().ToString();
 
@@ -131,13 +131,7 @@ namespace Realms.Sync
             ExpiresAt = expiresAt;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionOffer"/> class.
-        /// </summary>
-        /// <remarks>
-        /// This constructor is used by Realm to create a new instance from C++. You should use the constructor that accepts parameters instead.
-        /// </remarks>
-        public PermissionOffer()
+        private PermissionOffer()
         {
         }
 

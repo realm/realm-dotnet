@@ -35,7 +35,7 @@ namespace Realms.Sync
     public class PermissionOfferResponse : RealmObject, IPermissionObject
     {
         /// <inheritdoc />
-        [PrimaryKey, Required]
+        [Required]
         [MapTo("id")]
         public string Id { get; private set; } = Guid.NewGuid().ToString();
 
@@ -97,14 +97,19 @@ namespace Realms.Sync
             Token = token;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionOfferResponse"/> class.
-        /// </summary>
-        /// <remarks>
-        /// This constructor is used by Realm to create a new instance from C++. You should use the constructor that accepts parameters instead.
-        /// </remarks>
-        public PermissionOfferResponse()
+        private PermissionOfferResponse()
         {
+        }
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            base.OnPropertyChanged(propertyName);
+
+            if (propertyName == nameof(StatusCode))
+            {
+                RaisePropertyChanged(nameof(ObjectStatus));
+            }
         }
     }
 }

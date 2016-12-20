@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -63,33 +62,130 @@ namespace Tests.Sync.Shared
             Assert.That(RealmSchema.Default.Find(nameof(PermissionOfferResponse)), Is.Null);
         }
 
-		[Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
         public async void PermissionChange_IsProcessedByServer()
         {
-            var credentials = Credentials.UsernamePassword(Constants.Credentials.Username, Constants.Credentials.Password, createUser: false);
-            var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.Credentials.ServerUrl}"));
+            var user = await GetUser();
+            var permissionChange = await CreatePermissionObject(user, _ => new PermissionChange("*", "*", mayRead: true));
+            Assert.That(permissionChange.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+        }
 
-            using (var realm = user.GetManagementRealm())
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionOffer_WhenValid_TokenIsSet()
+        {
+            var user = await GetUser();
+            var permissionOffer = await CreateOffer(user);
+            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Token, Is.Not.Null);
+        }
+
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionOffer_WhenExpired_ShouldGetError()
+        {
+            var user = await GetUser();
+            var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
+            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionOffer.Token, Is.Null);
+            Assert.That(permissionOffer.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
+            Assert.That(permissionOffer.StatusMessage, Is.Not.Null);
+        }
+
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionResponse_WhenOfferExpired_ShouldGetError()
+        {
+            var user = await GetUser();
+            var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddSeconds(5));
+
+            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Token, Is.Not.Null);
+
+            await Task.Delay(5000);
+            var permissionResponse = await CreateResponse(user, permissionOffer.Token);
+            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionResponse.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
+            Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
+        }
+
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionResponse_WhenTokenIsInvalid_ShouldGetError()
+        {
+            var user = await GetUser();
+            var permissionResponse = await CreateResponse(user, "Some string");
+            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionResponse.StatusCode, Is.Not.Null.And.GreaterThan(0));
+            Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
+        }
+
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionResponse_WhenOfferIsValid_ShouldSetRealmUrl()
+        {
+            var user = await GetUser();
+            var permissionOffer = await CreateOffer(user);
+
+            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Token, Is.Not.Null);
+
+            var receiver = await GetUser(Constants.UserB);
+            var permissionResponse = await CreateResponse(receiver, permissionOffer.Token);
+            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
+
+            var syncConfig = new SyncConfiguration(receiver, new Uri(permissionResponse.RealmUrl));
+            Assert.That(() => Realm.GetInstance(syncConfig), Throws.Nothing);
+        }
+
+        private static Task<User> GetUser(string username = Constants.UserA)
+        {
+            var credentials = Constants.CreateCredentials(username);
+            return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+        }
+
+        private static Task<PermissionOffer> CreateOffer(User user, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null)
+        {
+            return CreatePermissionObject(user, realmUrl =>
             {
-                var permissionChange = new PermissionChange("*", "*", mayRead: true);
-                realm.Write(() => realm.Add(permissionChange));
-                var tcs = new TaskCompletionSource<object>();
+                return new PermissionOffer(realmUrl, mayRead, mayWrite, mayManage, expiresAt);
+            });
+        }
+    
+        private static Task<PermissionOfferResponse> CreateResponse(User user, string token)
+        {
+            return CreatePermissionObject(user, _ => new PermissionOfferResponse(token));
+        }
 
-                permissionChange.PropertyChanged += (sender, e) =>
+        private static async Task<T> CreatePermissionObject<T>(User user, Func<string, T> itemFactory) where T : RealmObject, IPermissionObject
+        {
+            var realmUrl = $"realm://{Constants.ServerUrl}/{user.Identity}/offer";
+            EnsureRealmExists(user, realmUrl);
+
+            var managementRealm = user.GetManagementRealm();
+            var item = itemFactory(realmUrl);
+            managementRealm.Write(() => managementRealm.Add(item));
+            var tcs = new TaskCompletionSource<object>();
+
+            item.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(IPermissionObject.ObjectStatus))
                 {
-                    if (e.PropertyName == nameof(PermissionChange.Status))
-                    {
-                        tcs.TrySetResult(null);
-                    }
-                };
+                    tcs.TrySetResult(null);
+                }
+            };
 
-                var completedProcessingTask = await Task.WhenAny(tcs.Task, Task.Delay(10000));
+            var completedProcessingTask = await Task.WhenAny(tcs.Task, Task.Delay(10000));
 
-                Assert.That(completedProcessingTask, Is.EqualTo(tcs.Task));
+            Assert.That(completedProcessingTask, Is.EqualTo(tcs.Task));
 
-                await tcs.Task;
+            await tcs.Task;
 
-                Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
+            return item;
+        }
+
+        private static void EnsureRealmExists(User user, string realmUrl)
+        {
+            var syncConfig = new SyncConfiguration(user, new Uri(realmUrl));
+            using (var temp = Realm.GetInstance(syncConfig))
+            {
+                // Make sure the realm exists
             }
         }
     }
