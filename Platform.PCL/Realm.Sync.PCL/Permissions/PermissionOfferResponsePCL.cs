@@ -70,17 +70,7 @@ namespace Realms.Sync
         /// <param name="token">The token that was provided by the offering user.</param>
         public PermissionOfferResponse(string token)
         {
-            Token = token;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionOfferResponse"/> class.
-        /// </summary>
-        /// <remarks>
-        /// This constructor is used by Realm to create a new instance from C++. You should use the constructor that accepts parameters instead.
-        /// </remarks>
-        public PermissionOfferResponse()
-        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
     }
 }
