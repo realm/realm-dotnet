@@ -180,4 +180,19 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Import Project="$(SolutionDir)packages\MSBuild.Extension.Pack.1.8.0\build\net40\MSBuild.Extension.Pack.targets" Condition="Exists('$(SolutionDir)packages\MSBuild.Extension.Pack.1.8.0\build\net40\MSBuild.Extension.Pack.targets')" />
+  <Target Name="DownloadCore" BeforeTargets="BeforeClCompile">
+    <PropertyGroup>
+      <RealmCoreVersion>2.2.0</RealmCoreVersion>
+    </PropertyGroup>
+    <MSBuild.ExtensionPack.Web.WebClient TaskAction="DownloadFile" Url="http://static.realm.io/downloads/core/realm-core-windows-$(RealmCoreVersion).zip"
+                                         FileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip"
+                                         Condition="!Exists('$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip')" />
+    <MSBuild.ExtensionPack.Compression.Zip TaskAction="Extract" ZipFileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip"
+                                           ExtractPath="$(ProjectDir)core-windows" 
+                                           Condition="!Exists('$(ProjectDir)core-windows')" />
+  </Target>
+  <Target Name="CleanCore" BeforeTargets="Clean">
+    <RemoveDir Directories="$(ProjectDir)core-windows" />
+  </Target>
 </Project>
