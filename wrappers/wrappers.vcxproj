@@ -154,7 +154,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;PTW32_STATIC_LIB;REALM_ENABLE_REPLICATION;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;__builtin_unreachable=abort;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>core-windows\include;core-windows\include\pthread-win32;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>core-windows\include;core-windows\include\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <WarningLevel>Level3</WarningLevel>
