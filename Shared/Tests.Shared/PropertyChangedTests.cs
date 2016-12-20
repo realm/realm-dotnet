@@ -449,6 +449,78 @@ namespace IntegrationTests
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
+        [Test]
+        public async void ManagedObject_WhenChanged_CallsOnPropertyChanged()
+        {
+            var item = new AgedObject
+            {
+                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+            };
+
+            _realm.Write(() => _realm.Add(item));
+
+            var notifiedPropertyNames = new List<string>();
+            item.PropertyChanged += (sender, e) => 
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+            });
+
+            await Task.Yield();
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
+        }
+
+        [Test]
+        public async void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
+        {
+            var item = new AgedObject
+            {
+                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+            };
+
+            _realm.Write(() => _realm.Add(item));
+
+            var notifiedPropertyNames = new List<string>();
+            item.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            await _realm.WriteAsync(r =>
+            {
+                var otherThreadInstance = r.All<AgedObject>().Single();
+                otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+            });
+
+            await Task.Yield();
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
+        }
+
+        [Test]
+        public void UnmanagedObject_WhenChanged_CallsOnPropertyChanged()
+        {
+            var item = new AgedObject
+            {
+                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+            };
+
+            var notifiedPropertyNames = new List<string>();
+            item.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
+        }
+
         private async Task TestManaged(Func<Person, string, Task> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
@@ -510,6 +582,36 @@ namespace IntegrationTests
 
             await Task.Yield();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
+        }
+
+        private class AgedObject : RealmObject
+        {
+            public DateTimeOffset Birthday { get; set; }
+
+            public int Age
+            {
+                get
+                {
+                    var now = DateTimeOffset.UtcNow;
+                    var age = now.Year - Birthday.Year;
+                    if (Birthday.AddYears(age) > now)
+                    {
+                        age--;
+                    }
+
+                    return age;
+                }
+            }
+
+            protected override void OnPropertyChanged(string propertyName)
+            {
+                base.OnPropertyChanged(propertyName);
+
+                if (propertyName == nameof(Birthday))
+                {
+                    RaisePropertyChanged(nameof(Age));
+                }
+            }
         }
     }
 }
