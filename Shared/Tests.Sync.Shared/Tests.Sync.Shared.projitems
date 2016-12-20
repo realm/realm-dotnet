@@ -17,5 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SyncConfigurationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SynchronizedInstanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MergeByPKTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
   </ItemGroup>
 </Project>

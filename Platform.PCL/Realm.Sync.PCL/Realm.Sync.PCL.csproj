@@ -68,6 +68,9 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\UserPersistenceMode.cs">
       <Link>UserPersistencyMode.cs</Link>
     </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\ManagementObjectStatus.cs">
+      <Link>Permissions\ManagementObjectStatus.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
