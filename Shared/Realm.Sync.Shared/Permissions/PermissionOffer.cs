@@ -27,10 +27,14 @@ namespace Realms.Sync
     /// </summary>
     /// <remarks>
     /// When offering permissions, you should create the offer and add it to the <see cref="User"/>'s Management Realm.
-    /// Then you can subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has processed the request.
-    /// Once the request has been processed, the <see cref="ObjectStatus"/> and <see cref="StatusCode"/> will be updated accordingly.
-    /// If the request has been processed successfully, the <see cref="Token"/> will be populated and you can share it with users you wish to grant permissions to.
-    /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the failure and <see cref="StatusCode"/> will be set to a non-zero value.
+    /// Then you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has 
+    /// processed the request.
+    /// Once the request has been processed, the <see cref="ObjectStatus"/> and <see cref="StatusCode"/> 
+    /// will be updated accordingly.
+    /// If the request has been processed successfully, the <see cref="Token"/> will be populated and you can share it
+    /// with users you wish to grant permissions to.
+    /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
+    /// failure and <see cref="StatusCode"/> will be set to a non-zero value.
     /// </remarks>
     [Explicit]
     public class PermissionOffer : RealmObject, IPermissionObject
@@ -109,7 +113,7 @@ namespace Realms.Sync
         public bool MayManage { get; private set; }
 
         /// <summary>
-        /// Gets the expiration date of the offer.
+        /// Gets the expiration date and time of the offer.
         /// </summary>
         [MapTo("expiresAt")]
         public DateTimeOffset? ExpiresAt { get; private set; }
