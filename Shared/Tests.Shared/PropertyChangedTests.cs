@@ -156,6 +156,8 @@ namespace IntegrationTests
                     var otherPersonInstance = otherRealm.All<Person>().First();
                     otherPersonInstance.FirstName = name;
                 });
+
+                await Task.Delay(50);
             });
         }
 
