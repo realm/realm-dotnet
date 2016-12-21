@@ -80,6 +80,6 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="ManagementObjectStatus"/> as set by the server.
         /// </summary>
-        ManagementObjectStatus ObjectStatus { get; }
+        ManagementObjectStatus Status { get; }
     }
 }

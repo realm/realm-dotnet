@@ -65,7 +65,7 @@ namespace Tests.Sync.Shared
 
                 permissionChange.PropertyChanged += (sender, e) =>
                 {
-                    if (e.PropertyName == nameof(PermissionChange.ObjectStatus))
+                    if (e.PropertyName == nameof(PermissionChange.Status))
                     {
                         tcs.TrySetResult(null);
                     }
@@ -77,7 +77,7 @@ namespace Tests.Sync.Shared
 
                 await tcs.Task;
 
-                Assert.That(permissionChange.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+                Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
             }
         }
     }
