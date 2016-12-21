@@ -12,7 +12,7 @@ def version
 def versionString
 
 stage('Checkout') {
-  node {
+  node('xamarin-mac') {
     checkout([
         $class: 'GitSCM',
         branches: scm.branches,
@@ -27,6 +27,8 @@ stage('Checkout') {
       version = readAssemblyVersion()
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
+      sh "${nuget} restore Realm.sln"
+
       stash includes: '**', name: 'dotnet-source'
       deleteDir()
   }
@@ -40,7 +42,6 @@ stage('RealmWeaver') {
   nodeWithCleanup('xamarin-mac') {
     getArchive()
     def workspace = pwd()
-    sh "${nuget} restore Realm.sln"
 
     dir('Weaver/WeaverTests/RealmWeaver.Tests') {
       sh "${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
@@ -67,8 +68,6 @@ stage('Build without sync') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
-
-        sh "${nuget} restore Realm.sln"
 
         sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\""
 
@@ -97,8 +96,6 @@ stage('Build without sync') {
 
         unstash 'android-wrappers-nosync'
 
-        sh "${nuget} restore Realm.sln"
-
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           sh "${xbuild} Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
           dir("bin/${configuration}") {
@@ -106,6 +103,19 @@ stage('Build without sync') {
           }
         }
         stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
+      }
+    },
+    'Windows': {
+      nodeWithCleanup('windows') {
+        getArchive()
+
+        bat """
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x86 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x64 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
+        """
+
+        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'nuget-win32-database'
       }
     },
     'PCL': {
