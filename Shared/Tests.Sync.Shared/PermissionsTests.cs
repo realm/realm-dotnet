@@ -67,7 +67,7 @@ namespace Tests.Sync.Shared
         {
             var user = await GetUser();
             var permissionChange = await CreatePermissionObject(user, _ => new PermissionChange("*", "*", mayRead: true));
-            Assert.That(permissionChange.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
         }
 
         [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
@@ -75,7 +75,7 @@ namespace Tests.Sync.Shared
         {
             var user = await GetUser();
             var permissionOffer = await CreateOffer(user);
-            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionOffer.Token, Is.Not.Null);
         }
 
@@ -84,7 +84,7 @@ namespace Tests.Sync.Shared
         {
             var user = await GetUser();
             var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
-            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Error));
             Assert.That(permissionOffer.Token, Is.Null);
             Assert.That(permissionOffer.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
             Assert.That(permissionOffer.StatusMessage, Is.Not.Null);
@@ -96,12 +96,12 @@ namespace Tests.Sync.Shared
             var user = await GetUser();
             var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddSeconds(5));
 
-            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionOffer.Token, Is.Not.Null);
 
             await Task.Delay(5000);
             var permissionResponse = await CreateResponse(user, permissionOffer.Token);
-            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
             Assert.That(permissionResponse.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
             Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
         }
@@ -111,7 +111,7 @@ namespace Tests.Sync.Shared
         {
             var user = await GetUser();
             var permissionResponse = await CreateResponse(user, "Some string");
-            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Error));
+            Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
             Assert.That(permissionResponse.StatusCode, Is.Not.Null.And.GreaterThan(0));
             Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
         }
@@ -122,12 +122,12 @@ namespace Tests.Sync.Shared
             var user = await GetUser();
             var permissionOffer = await CreateOffer(user);
 
-            Assert.That(permissionOffer.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionOffer.Token, Is.Not.Null);
 
             var receiver = await GetUser(Constants.UserB);
             var permissionResponse = await CreateResponse(receiver, permissionOffer.Token);
-            Assert.That(permissionResponse.ObjectStatus, Is.EqualTo(ManagementObjectStatus.Success));
+            Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
 
             var syncConfig = new SyncConfiguration(receiver, new Uri(permissionResponse.RealmUrl));
@@ -165,7 +165,7 @@ namespace Tests.Sync.Shared
 
             item.PropertyChanged += (sender, e) =>
             {
-                if (e.PropertyName == nameof(IPermissionObject.ObjectStatus))
+                if (e.PropertyName == nameof(IPermissionObject.Status))
                 {
                     tcs.TrySetResult(null);
                 }

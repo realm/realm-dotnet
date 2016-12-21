@@ -60,7 +60,7 @@ namespace Realms.Sync
         public string StatusMessage { get; private set; }
 
         /// <inheritdoc />
-        public ManagementObjectStatus ObjectStatus
+        public ManagementObjectStatus Status
         {
             get
             {
@@ -112,7 +112,7 @@ namespace Realms.Sync
 
             if (propertyName == nameof(StatusCode))
             {
-                RaisePropertyChanged(nameof(ObjectStatus));
+                RaisePropertyChanged(nameof(Status));
             }
         }
     }

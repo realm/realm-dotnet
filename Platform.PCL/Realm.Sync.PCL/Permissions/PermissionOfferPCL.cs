@@ -54,7 +54,7 @@ namespace Realms.Sync
         public string StatusMessage { get; }
 
         /// <inheritdoc />
-        public ManagementObjectStatus ObjectStatus { get; }
+        public ManagementObjectStatus Status { get; }
 
         /// <summary>
         /// Gets the token that can be used to offer the permissions defined in this object to another user.

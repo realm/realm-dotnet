@@ -53,7 +53,7 @@ namespace Realms.Sync
         public string StatusMessage { get; }
 
         /// <inheritdoc />
-        public ManagementObjectStatus ObjectStatus { get; }
+        public ManagementObjectStatus Status { get; }
 
         /// <summary>
         /// Gets the token thas was provided by the offering user.
