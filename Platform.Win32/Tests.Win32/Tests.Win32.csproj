@@ -60,12 +60,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
-      <Link>realm-wrappers.dll</Link>
-    </Content>
+    <None Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
+      <Link>lib\win32\x86\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\$(Configuration)-x64\realm-wrappers.dll">
+      <Link>lib\win32\x64\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
