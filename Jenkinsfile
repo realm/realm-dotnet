@@ -1,8 +1,8 @@
-def wrapperConfigurations = [
+wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
 ]
-def configuration = 'Debug'
+configuration = 'Debug'
 
 def nuget = '/usr/local/bin/nuget'
 def xbuild = '/usr/local/bin/xbuild'
@@ -115,7 +115,7 @@ stage('Build without sync') {
           "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
         """
 
-        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'nuget-win32-database'
+        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'windows-tests-nosync'
       }
     },
     'PCL': {
@@ -201,7 +201,8 @@ stage('Build with sync') {
 stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
-    'Android': AndroidTest('android-tests-nosync')
+    'Android': AndroidTest('android-tests-nosync'),
+    'Windows': WindowsTest('windows-tests-nosync')
   )
 }
 
@@ -210,6 +211,27 @@ stage('Test with sync') {
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync')
   )
+}
+
+def WindowsTest(stashName) {
+  return {
+    nodeWithCleanup('windows') {
+      getArchive()
+      unstash stashName
+
+      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
+      dir("Platform.Win32/Tests.Win32/bin/${configuration}") {
+        try {
+          bat """
+            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x86.xml;transform=nunit3-junit.xslt --x86
+            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x64.xml;transform=nunit3-junit.xslt
+          """
+        } finally {
+          junit 'TestResults.*.xml'
+        }
+      }
+    }
+  }
 }
 
 def iOSTest(stashName) {
