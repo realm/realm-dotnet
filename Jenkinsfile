@@ -105,7 +105,7 @@ stage('Build without sync') {
         stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
       }
     },
-    'Windows': {
+    'Win32': {
       nodeWithCleanup('windows') {
         getArchive()
 
@@ -115,7 +115,9 @@ stage('Build without sync') {
           "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
         """
 
-        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'windows-tests-nosync'
+        stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
+        stash includes: "Platform.Win32/Realm.Win32/bin/${configuration}/Realm.*", name: 'nuget-win32-database'
+        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
       }
     },
     'PCL': {
@@ -202,7 +204,7 @@ stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
-    'Windows': WindowsTest('windows-tests-nosync')
+    'Win32': Win32Test('win32-tests-nosync')
   )
 }
 
@@ -213,7 +215,7 @@ stage('Test with sync') {
   )
 }
 
-def WindowsTest(stashName) {
+def Win32Test(stashName) {
   return {
     nodeWithCleanup('windows') {
       getArchive()
@@ -323,6 +325,8 @@ stage('NuGet') {
         unstash 'nuget-ios-database'
         unstash 'android-wrappers-nosync'
         unstash 'nuget-android-database'
+        unstash 'win32-wrappers-nosync'
+        unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
           sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
