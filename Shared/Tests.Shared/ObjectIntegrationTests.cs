@@ -65,6 +65,23 @@ namespace IntegrationTests
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
         }
 
+        // Test added to ensure there were no side-effects immedately after a Rollback
+        [Test]
+        public void CreateObjectAfterRollbackTest()
+        {
+            using (var transaction = _realm.BeginWrite())
+            {
+                _realm.Add(new Person { FirstName = "No", LastName = "Body" });
+                transaction.Rollback();
+            }
+
+            // one user bug report in 2016 led to a suspicion that a Rollback might leave a Realm in an unwritable state
+            _realm.Write(() => _realm.Add(new Person { FirstName = "Some", LastName = "Body" }));
+
+            // Assert
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+        }
+
         [Test]
         public void ReadAndWriteEqualityTest()
         {
