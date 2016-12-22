@@ -153,12 +153,5 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
         }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return 0;
-        }
     }
 }
