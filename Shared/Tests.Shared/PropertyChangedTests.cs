@@ -28,6 +28,9 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
+#if WINDOWS
+    [Ignore("Async tests are not yet supported on Windows")]
+#endif
     public class PropertyChangedTests
     {
         private string _databasePath;

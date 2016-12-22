@@ -80,6 +80,7 @@ namespace IntegrationTests
             realm.Dispose();
         }
 
+#if !WINDOWS
         [Test]
         public async void TransactionShouldHoldStrongReferenceToRealm()
         {
@@ -98,5 +99,6 @@ namespace IntegrationTests
             // TearDown
             ((Realm)realm.Target).Dispose();
         }
+#endif
     }
 }
