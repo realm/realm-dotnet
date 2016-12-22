@@ -19,63 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\debug.cpp" />
-    <ClCompile Include="src\error_handling.cpp" />
-    <ClCompile Include="src\event_loop_signal_cs.cpp" />
-    <ClCompile Include="src\list_cs.cpp" />
-    <ClCompile Include="src\marshalling.cpp" />
-    <ClCompile Include="src\object-store\src\collection_notifications.cpp" />
-    <ClCompile Include="src\object-store\src\impl\collection_change_builder.cpp" />
-    <ClCompile Include="src\object-store\src\impl\collection_notifier.cpp" />
-    <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp" />
-    <ClCompile Include="src\object-store\src\impl\handover.cpp" />
-    <ClCompile Include="src\object-store\src\impl\list_notifier.cpp" />
-    <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp" />
-    <ClCompile Include="src\object-store\src\impl\results_notifier.cpp" />
-    <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp" />
-    <ClCompile Include="src\object-store\src\impl\weak_realm_notifier.cpp" />
-    <ClCompile Include="src\object-store\src\index_set.cpp" />
-    <ClCompile Include="src\object-store\src\list.cpp" />
-    <ClCompile Include="src\object-store\src\object_schema.cpp" />
-    <ClCompile Include="src\object-store\src\object_store.cpp" />
-    <ClCompile Include="src\object-store\src\placeholder.cpp" />
-    <ClCompile Include="src\object-store\src\results.cpp" />
-    <ClCompile Include="src\object-store\src\schema.cpp" />
-    <ClCompile Include="src\object-store\src\shared_realm.cpp" />
-    <ClCompile Include="src\object-store\src\thread_confined.cpp" />
-    <ClCompile Include="src\object-store\src\util\format.cpp" />
-    <ClCompile Include="src\object-store\src\util\generic\event_loop_signal.cpp" />
-    <ClCompile Include="src\query_cs.cpp" />
-    <ClCompile Include="src\realm-csharp.cpp" />
-    <ClCompile Include="src\results_cs.cpp" />
-    <ClCompile Include="src\object_cs.cpp" />
-    <ClCompile Include="src\schema_cs.cpp" />
-    <ClCompile Include="src\shared_realm_cs.cpp" />
-    <ClCompile Include="src\table_cs.cpp" />
-    <ClCompile Include="src\win32_polyfill.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="src\collection_cs.hpp" />
     <ClInclude Include="src\debug.hpp" />
     <ClInclude Include="src\error_handling.hpp" />
+    <ClInclude Include="src\marshalable_sort_clause.hpp" />
     <ClInclude Include="src\marshalling.hpp" />
     <ClInclude Include="src\object-store\src\binding_context.hpp" />
     <ClInclude Include="src\object-store\src\collection_notifications.hpp" />
-    <ClInclude Include="src\object-store\src\impl\android\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\android\weak_realm_notifier.hpp" />
-    <ClInclude Include="src\object-store\src\impl\apple\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\apple\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\collection_change_builder.hpp" />
     <ClInclude Include="src\object-store\src\impl\collection_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\generic\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\generic\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\handover.hpp" />
     <ClInclude Include="src\object-store\src\impl\list_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\realm_coordinator.hpp" />
     <ClInclude Include="src\object-store\src\impl\results_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\transact_log_handler.hpp" />
     <ClInclude Include="src\object-store\src\impl\weak_realm_notifier.hpp" />
-    <ClInclude Include="src\object-store\src\impl\weak_realm_notifier_base.hpp" />
+    <ClInclude Include="src\object-store\src\impl\windows\external_commit_helper.hpp" />
     <ClInclude Include="src\object-store\src\index_set.hpp" />
     <ClInclude Include="src\object-store\src\list.hpp" />
     <ClInclude Include="src\object-store\src\object_accessor.hpp" />
@@ -87,14 +47,53 @@
     <ClInclude Include="src\object-store\src\shared_realm.hpp" />
     <ClInclude Include="src\object-store\src\thread_confined.hpp" />
     <ClInclude Include="src\object-store\src\util\atomic_shared_ptr.hpp" />
+    <ClInclude Include="src\object-store\src\util\compiler.hpp" />
+    <ClInclude Include="src\object-store\src\util\event_loop_signal.hpp" />
     <ClInclude Include="src\object-store\src\util\format.hpp" />
+    <ClInclude Include="src\object-store\src\util\generic\event_loop_signal.hpp" />
+    <ClInclude Include="src\object_cs.hpp" />
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\schema_cs.hpp" />
-    <ClInclude Include="src\collection_cs.hpp" />
-    <ClInclude Include="src\marshalable_sort_clause.hpp" />
+    <ClInclude Include="src\shared_realm_cs.hpp" />
     <ClInclude Include="src\timestamp_helpers.hpp" />
-    <ClInclude Include="src\object_cs.hpp" />
+    <ClInclude Include="src\wrapper_exceptions.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\debug.cpp" />
+    <ClCompile Include="src\error_handling.cpp" />
+    <ClCompile Include="src\event_loop_signal_cs.cpp" />
+    <ClCompile Include="src\list_cs.cpp" />
+    <ClCompile Include="src\marshalling.cpp" />
+    <ClCompile Include="src\object-store\src\collection_notifications.cpp" />
+    <ClCompile Include="src\object-store\src\impl\collection_change_builder.cpp" />
+    <ClCompile Include="src\object-store\src\impl\collection_notifier.cpp" />
+    <ClCompile Include="src\object-store\src\impl\handover.cpp" />
+    <ClCompile Include="src\object-store\src\impl\list_notifier.cpp" />
+    <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp" />
+    <ClCompile Include="src\object-store\src\impl\results_notifier.cpp" />
+    <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp" />
+    <ClCompile Include="src\object-store\src\impl\weak_realm_notifier.cpp" />
+    <ClCompile Include="src\object-store\src\impl\windows\external_commit_helper.cpp" />
+    <ClCompile Include="src\object-store\src\index_set.cpp" />
+    <ClCompile Include="src\object-store\src\list.cpp" />
+    <ClCompile Include="src\object-store\src\object_schema.cpp" />
+    <ClCompile Include="src\object-store\src\object_store.cpp" />
+    <ClCompile Include="src\object-store\src\placeholder.cpp" />
+    <ClCompile Include="src\object-store\src\results.cpp" />
+    <ClCompile Include="src\object-store\src\schema.cpp" />
+    <ClCompile Include="src\object-store\src\shared_realm.cpp" />
+    <ClCompile Include="src\object-store\src\thread_confined.cpp" />
+    <ClCompile Include="src\object-store\src\util\format.cpp" />
+    <ClCompile Include="src\object-store\src\util\generic\event_loop_signal.cpp" />
+    <ClCompile Include="src\object_cs.cpp" />
+    <ClCompile Include="src\query_cs.cpp" />
+    <ClCompile Include="src\realm-csharp.cpp" />
+    <ClCompile Include="src\results_cs.cpp" />
+    <ClCompile Include="src\schema_cs.cpp" />
+    <ClCompile Include="src\shared_realm_cs.cpp" />
+    <ClCompile Include="src\table_cs.cpp" />
+    <ClCompile Include="src\win32_polyfill.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Globals">
@@ -185,12 +184,8 @@
     <PropertyGroup>
       <RealmCoreVersion>2.2.0</RealmCoreVersion>
     </PropertyGroup>
-    <MSBuild.ExtensionPack.Web.WebClient TaskAction="DownloadFile" Url="http://static.realm.io/downloads/core/realm-core-windows-$(RealmCoreVersion).zip"
-                                         FileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip"
-                                         Condition="!Exists('$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip')" />
-    <MSBuild.ExtensionPack.Compression.Zip TaskAction="Extract" ZipFileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip"
-                                           ExtractPath="$(ProjectDir)core-windows" 
-                                           Condition="!Exists('$(ProjectDir)core-windows')" />
+    <MSBuild.ExtensionPack.Web.WebClient TaskAction="DownloadFile" Url="http://static.realm.io/downloads/core/realm-core-windows-$(RealmCoreVersion).zip" FileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip" Condition="!Exists('$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip')" />
+    <MSBuild.ExtensionPack.Compression.Zip TaskAction="Extract" ZipFileName="$(ProjectDir)realm-core-windows-$(RealmCoreVersion).zip" ExtractPath="$(ProjectDir)core-windows" Condition="!Exists('$(ProjectDir)core-windows')" />
   </Target>
   <Target Name="CleanCore" BeforeTargets="Clean">
     <RemoveDir Directories="$(ProjectDir)core-windows" />
