@@ -31,8 +31,11 @@ namespace Realms.Sync
         #region static
 
         /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned. If more than one user is currently logged in, an exception is thrown.
+        /// Gets the currently logged-in user. If none exists, null is returned. 
+        /// If more than one user is currently logged in, an exception is thrown.
         /// </summary>
+        /// <value>Valid user or null to indicate nobody logged in.</value>
+        /// <exception cref="RealmException">Thrown if there are more than one users logged in.</exception>
         public static User Current
         {
             get
@@ -149,6 +152,13 @@ namespace Realms.Sync
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return 0;
         }
     }
 }
