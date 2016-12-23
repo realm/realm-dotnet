@@ -343,6 +343,91 @@ namespace IntegrationTests
             }
         }
 
+        [Test]
+        public async void RealmChangedShouldFireForEveryInstance()
+        {
+            using (var realm1 = Realm.GetInstance())
+            using (var realm2 = Realm.GetInstance())
+            {
+                var changed1 = 0;
+                realm1.RealmChanged += (sender, e) =>
+                {
+                    changed1++;
+                };
+
+                var changed2 = 0;
+                realm2.RealmChanged += (sender, e) =>
+                {
+                    changed2++;
+                };
+
+                realm1.Write(() =>
+                {
+                    realm1.Add(new Person());
+                });
+
+                await Task.Delay(50);
+
+                Assert.That(changed1, Is.EqualTo(1));
+                Assert.That(changed2, Is.EqualTo(1));
+
+                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
+                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
+
+                realm2.Write(() =>
+                {
+                    realm2.Add(new Person());
+                });
+
+                await Task.Delay(50);
+
+                Assert.That(changed1, Is.EqualTo(2));
+                Assert.That(changed2, Is.EqualTo(2));
+
+                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
+                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
+            }
+        }
+
+        [Test]
+        public void Dispose_WhenOnTheSameThread_ShouldNotInvalidateOtherInstances()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = Realm.GetInstance();
+            var realm2 = Realm.GetInstance();
+
+            realm1.Write(() => realm1.Add(new Person()));
+            realm1.Dispose();
+
+            var people = realm2.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm2.Dispose();
+        }
+
+        [Test]
+        public async void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = Realm.GetInstance();
+
+            await Task.Run(() =>
+            {
+                var realm2 = Realm.GetInstance();
+                realm2.Write(() => realm2.Add(new Person()));
+                realm2.Dispose();
+            });
+
+            var people = realm1.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm1.Dispose();
+        }
+
         private static void AddDummyData(Realm realm)
         {
             for (var i = 0; i < 1000; i++)
