@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Realms.Sync.Permissions
+namespace Realms.Sync
 {
     /// <summary>
     /// Objects of this class allow to change permissions of owned Realms.
@@ -40,59 +39,108 @@ namespace Realms.Sync.Permissions
         /// <inheritdoc />
         [PrimaryKey, Required]
         [MapTo("id")]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; private set; } = Guid.NewGuid().ToString();
 
         /// <inheritdoc />
         [MapTo("createdAt")]
-        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
         /// <inheritdoc />
         [MapTo("updatedAt")]
-        public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
         /// <inheritdoc />
         [MapTo("statusCode")]
-        public int? StatusCode { get; set; }
+        public int? StatusCode { get; private set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; private set; }
+
+        /// <inheritdoc />
+        public ManagementObjectStatus Status
+        {
+            get
+            {
+                switch (StatusCode)
+                {
+                    case null:
+                        return ManagementObjectStatus.NotProcessed;
+                    case 0:
+                        return ManagementObjectStatus.Success;
+                    default:
+                        return ManagementObjectStatus.Error;
+                }
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the user or users to effect.
+        /// Gets the user or users to effect.
         /// </summary>
         /// <value><c>*</c> to change the permissions for all users.</value>
         [Required]
         [MapTo("userId")]
-        public string UserId { get; set; }
+        public string UserId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Realm to change permissions for.
+        /// Gets the Realm to change permissions for.
         /// </summary>
         /// <value><c>*</c> to change the permissions of all Realms.</value>
         [Required]
         [MapTo("realmUrl")]
-        public string RealmUrl { get; set; }
+        public string RealmUrl { get; private set; }
 
         /// <summary>
-        /// Gets or sets read access.
+        /// Gets a value indicating whether the user(s) have read access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
         [MapTo("mayRead")]
-        public bool? MayRead { get; set; }
+        public bool? MayRead { get; private set; }
 
         /// <summary>
-        /// Gets or sets write access.
+        /// Gets a value indicating whether the user(s) have write access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
         [MapTo("mayWrite")]
-        public bool? MayWrite { get; set; }
+        public bool? MayWrite { get; private set; }
 
         /// <summary>
-        /// Gets or sets manage access.
+        /// Gets a value indicating whether the user(s) have manage access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
         [MapTo("mayManage")]
-        public bool? MayManage { get; set; }
+        public bool? MayManage { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PermissionChange"/> class.
+        /// </summary>
+        /// <param name="userId">The user or users who should be granted these permission changes. Use * to change permissions for all users.</param>
+        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use `*` to change the permissions of all Realms managed by the management Realm's <see cref="User"/>.</param>
+        /// <param name="mayRead">Define read access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        /// <param name="mayWrite">Define write access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        /// <param name="mayManage">Define manage access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        public PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        {
+            UserId = userId;
+            RealmUrl = realmUrl;
+            MayRead = mayRead;
+            MayWrite = mayWrite;
+            MayManage = mayManage;
+        }
+
+        private PermissionChange()
+        {
+        }
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            base.OnPropertyChanged(propertyName);
+
+            if (propertyName == nameof(StatusCode))
+            {
+                RaisePropertyChanged(nameof(Status));
+            }
+        }
     }
 }

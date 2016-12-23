@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms.Sync.Permissions
+namespace Realms.Sync
 {
     /// <summary>
     /// Objects of this class allow to change permissions of owned Realms.
@@ -36,48 +36,67 @@ namespace Realms.Sync.Permissions
     public class PermissionChange : RealmObject, IPermissionObject
     {
         /// <inheritdoc />
-        public string Id { get; set; }
+        [PrimaryKey, Required]
+        public string Id { get; }
 
         /// <inheritdoc />
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; }
 
         /// <inheritdoc />
-        public DateTimeOffset UpdatedAt { get; set; }
+        public DateTimeOffset UpdatedAt { get; }
 
         /// <inheritdoc />
-        public int? StatusCode { get; set; }
+        public int? StatusCode { get; }
 
         /// <inheritdoc />
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; }
+
+        /// <inheritdoc />
+        public ManagementObjectStatus Status { get; }
 
         /// <summary>
-        /// Gets or sets the user or users to effect.
+        /// Gets the user or users to effect.
         /// </summary>
         /// <value><c>*</c> to change the permissions for all users.</value>
-        public string UserId { get; set; }
+        [Required]
+        public string UserId { get; }
 
         /// <summary>
-        /// Gets or sets the Realm to change permissions for.
+        /// Gets the Realm to change permissions for.
         /// </summary>
         /// <value><c>*</c> to change the permissions of all Realms.</value>
-        public string RealmUrl { get; set; }
+        [Required]
+        public string RealmUrl { get; }
 
         /// <summary>
-        /// Gets or sets read access.
+        /// Gets a value indicating whether the user(s) have read access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
-        public bool? MayRead { get; set; }
+        public bool? MayRead { get; }
 
         /// <summary>
-        /// Gets or sets write access.
+        /// Gets a value indicating whether the user(s) have write access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
-        public bool? MayWrite { get; set; }
+        public bool? MayWrite { get; }
 
         /// <summary>
-        /// Gets or sets manage access.
+        /// Gets a value indicating whether the user(s) have manage access to the specified Realm(s).
         /// </summary>
         /// <value><c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</value>
-        public bool? MayManage { get; set; }
+        public bool? MayManage { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PermissionChange"/> class.
+        /// </summary>
+        /// <param name="userId">The user or users who should be granted these permission changes. Use * to change permissions for all users.</param>
+        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use `*` to change the permissions of all Realms managed by the management Realm's <see cref="User"/>.</param>
+        /// <param name="mayRead">Define read access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        /// <param name="mayWrite">Define write access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        /// <param name="mayManage">Define manage access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
+        public PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
     }
 }

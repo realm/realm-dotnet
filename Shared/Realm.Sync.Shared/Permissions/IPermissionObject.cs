@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms.Sync.Permissions
+namespace Realms.Sync
 {
     /// <summary>
     /// Interface that describes the shared base model of all Permission classes.
@@ -26,26 +26,26 @@ namespace Realms.Sync.Permissions
     public interface IPermissionObject
     {
         /// <summary>
-        /// Gets or sets the unique identifier of this object in the Management realm.
+        /// Gets the unique identifier of this object in the Management realm.
         /// </summary>
-        string Id { get; set; }
+        string Id { get; }
 
         /// <summary>
-        /// Gets or sets the creation time of this object.
+        /// Gets the creation time of this object.
         /// </summary>
-        DateTimeOffset CreatedAt { get; set; }
+        DateTimeOffset CreatedAt { get; }
 
         /// <summary>
-        /// Gets or sets when the object was updated the last time.
+        /// Gets when the object was updated the last time.
         /// </summary>
         /// <remarks>
         /// This should be filled by the client with the <see cref="CreatedAt"/>
         /// date and is updated by the server with the current object when the object is processed.
         /// </remarks>
-        DateTimeOffset UpdatedAt { get; set; }
+        DateTimeOffset UpdatedAt { get; }
 
         /// <summary>
-        /// Gets or sets the status code.
+        /// Gets the status code.
         /// </summary>
         /// <remarks>
         /// Filled by the server after an object was processed indicating the status
@@ -66,15 +66,20 @@ namespace Realms.Sync.Permissions
         /// </listheader>
         /// </list>
         /// </remarks>
-        int? StatusCode { get; set; }
+        int? StatusCode { get; }
 
         /// <summary>
-        /// Gets or sets the status message.
+        /// Gets the status message.
         /// </summary>
         /// <remarks>
         /// Filled by the server after an object was processed with additional info
         /// explaining the status if necessary.
         /// </remarks>
-        string StatusMessage { get; set; }
+        string StatusMessage { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ManagementObjectStatus"/> as set by the server.
+        /// </summary>
+        ManagementObjectStatus Status { get; }
     }
 }

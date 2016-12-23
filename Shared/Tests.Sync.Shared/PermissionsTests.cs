@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
-using Realms.Sync.Permissions;
+
+using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync.Shared
 {
@@ -46,6 +49,36 @@ namespace Tests.Sync.Shared
         public void PermissionChange_ShouldNotBeInDefaultSchema()
         {
             Assert.That(RealmSchema.Default.Find(nameof(PermissionChange)), Is.Null);
+        }
+
+        [Test, Explicit("Update Constants.Credentials with values that work on your setup.")]
+        public async void PermissionChange_IsProcessedByServer()
+        {
+            var credentials = Credentials.UsernamePassword(Constants.Credentials.Username, Constants.Credentials.Password, createUser: false);
+            var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.Credentials.ServerUrl}"));
+
+            using (var realm = user.GetManagementRealm())
+            {
+                var permissionChange = new PermissionChange("*", "*", mayRead: true);
+                realm.Write(() => realm.Add(permissionChange));
+                var tcs = new TaskCompletionSource<object>();
+
+                permissionChange.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(PermissionChange.Status))
+                    {
+                        tcs.TrySetResult(null);
+                    }
+                };
+
+                var completedProcessingTask = await Task.WhenAny(tcs.Task, Task.Delay(10000));
+
+                Assert.That(completedProcessingTask, Is.EqualTo(tcs.Task));
+
+                await tcs.Task;
+
+                Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
+            }
         }
     }
 }

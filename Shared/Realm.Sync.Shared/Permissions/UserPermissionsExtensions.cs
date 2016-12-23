@@ -19,7 +19,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Realms.Sync.Permissions
+namespace Realms.Sync
 {
     /// <summary>
     /// A set of extensions methods over the <see cref="User"/> class that expose functionality for managing synchronized Realm permissions.
