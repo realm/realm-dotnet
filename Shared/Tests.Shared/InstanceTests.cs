@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -344,49 +345,52 @@ namespace IntegrationTests
         }
 
         [Test]
-        public async void RealmChangedShouldFireForEveryInstance()
+        public void RealmChangedShouldFireForEveryInstance()
         {
-            using (var realm1 = Realm.GetInstance())
-            using (var realm2 = Realm.GetInstance())
+            AsyncContext.Run(async () =>
             {
-                var changed1 = 0;
-                realm1.RealmChanged += (sender, e) =>
+                using (var realm1 = Realm.GetInstance())
+                using (var realm2 = Realm.GetInstance())
                 {
-                    changed1++;
-                };
+                    var changed1 = 0;
+                    realm1.RealmChanged += (sender, e) =>
+                    {
+                        changed1++;
+                    };
 
-                var changed2 = 0;
-                realm2.RealmChanged += (sender, e) =>
-                {
-                    changed2++;
-                };
+                    var changed2 = 0;
+                    realm2.RealmChanged += (sender, e) =>
+                    {
+                        changed2++;
+                    };
 
-                realm1.Write(() =>
-                {
-                    realm1.Add(new Person());
-                });
+                    realm1.Write(() =>
+                    {
+                        realm1.Add(new Person());
+                    });
 
-                await Task.Delay(50);
+                    await Task.Delay(50);
 
-                Assert.That(changed1, Is.EqualTo(1));
-                Assert.That(changed2, Is.EqualTo(1));
+                    Assert.That(changed1, Is.EqualTo(1));
+                    Assert.That(changed2, Is.EqualTo(1));
 
-                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
-                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
+                    Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
+                    Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
 
-                realm2.Write(() =>
-                {
-                    realm2.Add(new Person());
-                });
+                    realm2.Write(() =>
+                    {
+                        realm2.Add(new Person());
+                    });
 
-                await Task.Delay(50);
+                    await Task.Delay(50);
 
-                Assert.That(changed1, Is.EqualTo(2));
-                Assert.That(changed2, Is.EqualTo(2));
+                    Assert.That(changed1, Is.EqualTo(2));
+                    Assert.That(changed2, Is.EqualTo(2));
 
-                Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
-                Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
-            }
+                    Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
+                    Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
+                }
+            });
         }
 
         [Test]
@@ -408,24 +412,27 @@ namespace IntegrationTests
         }
 
         [Test]
-        public async void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
+        public void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
         {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-
-            var realm1 = Realm.GetInstance();
-
-            await Task.Run(() =>
+            AsyncContext.Run(async () =>
             {
-                var realm2 = Realm.GetInstance();
-                realm2.Write(() => realm2.Add(new Person()));
-                realm2.Dispose();
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+                var realm1 = Realm.GetInstance();
+
+                await Task.Run(() =>
+                {
+                    var realm2 = Realm.GetInstance();
+                    realm2.Write(() => realm2.Add(new Person()));
+                    realm2.Dispose();
+                });
+
+                var people = realm1.All<Person>();
+
+                Assert.That(people.Count(), Is.EqualTo(1));
+
+                realm1.Dispose();
             });
-
-            var people = realm1.All<Person>();
-
-            Assert.That(people.Count(), Is.EqualTo(1));
-
-            realm1.Dispose();
         }
 
         private static void AddDummyData(Realm realm)
