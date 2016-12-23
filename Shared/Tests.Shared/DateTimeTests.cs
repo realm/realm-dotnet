@@ -25,26 +25,8 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class DateTimeTests
+    public class DateTimeTests : RealmInstanceTest
     {
-        // TODO: this is ripe for refactoring across test fixture classes
-
-        protected Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [Test]
         public void SetAndGetPropertyTest(
             [Values(0, 11, 23)] int hour,

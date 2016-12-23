@@ -25,24 +25,8 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AddOrUpdateTests
+    public class AddOrUpdateTests : RealmInstanceTest
     {
-        protected Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [Test]
         public void AddOrUpdate_WhenDoesntExist_ShouldAdd()
         {

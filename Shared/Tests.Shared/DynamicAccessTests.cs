@@ -31,27 +31,16 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class DynamicAccessTests
+    public class DynamicAccessTests : RealmInstanceTest
     {
-        protected Realm _realm;
-        private RealmConfiguration _configuration = new RealmConfiguration
+        public override void SetUp()
         {
-            ObjectClasses = new[] { typeof(AllTypesObject) },
-            Dynamic = true
-        };
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(_configuration);
-            _realm = Realm.GetInstance(_configuration);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
+            _configuration = new RealmConfiguration(_configuration.DatabasePath)
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject) },
+                Dynamic = true
+            };
+            base.SetUp();
         }
 
         [Test]

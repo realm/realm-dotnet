@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AccessTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmInstanceTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
@@ -18,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\LINQvariableTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SimpleLINQtests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SortingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandAloneObjectTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RelationshipTests.cs" />

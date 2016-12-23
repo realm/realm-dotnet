@@ -65,6 +65,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_object_changed", CallingConvention = CallingConvention.Cdecl)]
         public static extern void register_notify_realm_object_changed(NotifyRealmObjectCallback callback);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void reset_for_testing();
+
         public static void Initialize()
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)

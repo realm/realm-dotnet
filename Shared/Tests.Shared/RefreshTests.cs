@@ -26,28 +26,13 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class RefreshTests
+    public class RefreshTests : RealmInstanceTest
     {
-        private Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         private void WriteOnDifferentThread(Action<Realm> action)
         {
             var thread = new Thread(() => 
             {
-                var r = Realm.GetInstance();
+                var r = Realm.GetInstance(_configuration);
                 r.Write(() => action(r));
                 r.Dispose();
             });
