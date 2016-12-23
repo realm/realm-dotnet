@@ -271,6 +271,9 @@ namespace IntegrationTests
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("Compact doesn't work on Windows")]
+#endif
         public void Compact_WhenInTransaction_ShouldThrow()
         {
             using (var realm = Realm.GetInstance())
@@ -286,6 +289,9 @@ namespace IntegrationTests
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("Compact doesn't work on Windows")]
+#endif
         public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
             using (var realm = Realm.GetInstance())
@@ -319,6 +325,9 @@ namespace IntegrationTests
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("Compact doesn't work on Windows")]
+#endif
         public void Compact_WhenResultsAreOpen_ShouldReturnFalse()
         {
             using (var realm = Realm.GetInstance())

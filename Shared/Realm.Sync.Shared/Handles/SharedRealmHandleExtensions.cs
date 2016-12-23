@@ -52,9 +52,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void reset_for_testing();
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -120,7 +117,7 @@ namespace Realms.Sync
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
             // TODO: this should kill all active sessions (although no idea how we're supposed to do that). #1045
-            NativeMethods.reset_for_testing();
+            NativeCommon.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
 

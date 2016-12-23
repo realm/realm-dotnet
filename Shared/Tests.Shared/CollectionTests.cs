@@ -25,24 +25,8 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class CollectionTests
+    public class CollectionTests : RealmInstanceTest
     {
-        private Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [Test]
         public void Insert_WhenIndexIsNegative_ShouldThrow()
         {

@@ -18,6 +18,12 @@
 #include "debug.hpp"
 #include "realm_export_decls.hpp"
 
+#include "impl/realm_coordinator.hpp"
+
+#if REALM_ENABLE_SYNC
+#include "sync/sync_manager.hpp"
+#endif
+
 namespace realm {
 
 using DebugLoggerT = void(*)(void* utf8Str, size_t strLen);
@@ -37,6 +43,14 @@ extern "C" {
 REALM_EXPORT void set_debug_logger(realm::DebugLoggerT debug_logger)
 {
   realm::debug_log_function = debug_logger;
+}
+
+REALM_EXPORT void realm_reset_for_testing()
+{
+    realm::_impl::RealmCoordinator::clear_all_caches();
+#if REALM_ENABLE_SYNC
+    realm::SyncManager::shared().reset_for_testing();
+#endif
 }
 
 }

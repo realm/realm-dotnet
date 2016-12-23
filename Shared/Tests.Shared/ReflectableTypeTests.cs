@@ -24,25 +24,10 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ReflectableTypeTests
+    public class ReflectableTypeTests : RealmInstanceTest
     {
         private const string DogName = "Sharo";
         private const string OwnerName = "Peter";
-
-        protected Realm _realm;
-
-        [SetUp]
-        public void Setup()
-        {
-            _realm = Realm.GetInstance(System.IO.Path.GetTempFileName());
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
 
         [Test]
         public void ReflectableGetRelatedObject_WhenObjectIsValid_ShouldReturnObject()

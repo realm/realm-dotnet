@@ -36,6 +36,12 @@ namespace IntegrationTests
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            NativeCommon.reset_for_testing();
+        }
+
         [Test]
         public void PropertyGet()
         {

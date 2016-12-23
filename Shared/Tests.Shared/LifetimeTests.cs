@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -39,6 +40,9 @@ namespace IntegrationTests
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("GC blocks on Windows")]
+#endif
         public void RealmObjectsShouldKeepRealmAlive()
         {
             // Arrange
@@ -60,6 +64,9 @@ namespace IntegrationTests
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("GC blocks on Windows")]
+#endif
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
             // Arrange
@@ -80,25 +87,29 @@ namespace IntegrationTests
             realm.Dispose();
         }
 
-#if !WINDOWS
         [Test]
-        public async void TransactionShouldHoldStrongReferenceToRealm()
-        {
-            var realm = GetWeakRealm();
-            Func<Transaction> transactionFactory = () => ((Realm)realm.Target).BeginWrite();
-            var transaction = transactionFactory();
-
-            await System.Threading.Tasks.Task.Yield();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            Assert.DoesNotThrow(transaction.Dispose);
-            Assert.That(realm.IsAlive);
-
-            // TearDown
-            ((Realm)realm.Target).Dispose();
-        }
+#if WINDOWS
+        [Ignore("GC blocks on Windows")]
 #endif
+        public void TransactionShouldHoldStrongReferenceToRealm()
+        {
+            AsyncContext.Run(async delegate
+            {
+                var realm = GetWeakRealm();
+                Func<Transaction> transactionFactory = () => ((Realm)realm.Target).BeginWrite();
+                var transaction = transactionFactory();
+
+                await System.Threading.Tasks.Task.Yield();
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                Assert.DoesNotThrow(transaction.Dispose);
+                Assert.That(realm.IsAlive);
+
+                // TearDown
+                ((Realm)realm.Target).Dispose();
+            });
+        }
     }
 }

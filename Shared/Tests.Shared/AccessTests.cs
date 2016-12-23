@@ -26,24 +26,8 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AccessTests
+    public class AccessTests : RealmInstanceTest
     {
-        protected Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [TestCaseSource(nameof(SetAndGetValueCases))]
         public void SetAndGetValue(string propertyName, object propertyValue)
         {

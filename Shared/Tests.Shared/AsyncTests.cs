@@ -17,17 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AsyncTests
+    public class AsyncTests : RealmTest
     {
         private Lazy<Realm> _lazyRealm;
 
@@ -36,41 +36,43 @@ namespace IntegrationTests
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
         // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        [SetUp]
-        public void SetUp()
+        public override void SetUp()
         {
-            var databasePath = Path.GetTempFileName();
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(databasePath));
+            base.SetUp();
+            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance());
         }
 
-        [TearDown]
-        public void TearDown()
+        public override void TearDown()
         {
             if (_lazyRealm.IsValueCreated)
             {
                 _realm.Dispose();
                 Realm.DeleteRealm(_realm.Config);
             }
+
+            base.TearDown();
         }
 
-#if !WINDOWS
         [Test]
-        public async void AsyncWrite_ShouldExecuteOnWorkerThread()
+        public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
-           var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            var otherThreadId = currentThreadId;
-
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-            await _realm.WriteAsync(realm =>
+            AsyncContext.Run(async delegate
             {
-                otherThreadId = Thread.CurrentThread.ManagedThreadId;
-                realm.CreateObject<Person>();
+                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                var otherThreadId = currentThreadId;
+
+                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+                await _realm.WriteAsync(realm =>
+                {
+                    otherThreadId = Thread.CurrentThread.ManagedThreadId;
+                    realm.CreateObject<Person>();
+                });
+
+                await Task.Yield();
+
+                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+                Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
             });
-
-            await Task.Yield();
-
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-            Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
         }
 
         internal class MyDataObject : RealmObject
@@ -82,26 +84,28 @@ namespace IntegrationTests
         }
 
         [Test]
-        public async void AsyncWrite_UpdateViaPrimaryKey()
+        public void AsyncWrite_UpdateViaPrimaryKey()
         {
-            var path = "/path/to/some/item";
-            MyDataObject obj = null;
-            _realm.Write(() =>
+            AsyncContext.Run(async delegate
             {
-                obj = _realm.CreateObject<MyDataObject>();
-                obj.Path = path;
+                var path = "/path/to/some/item";
+                MyDataObject obj = null;
+                _realm.Write(() =>
+                {
+                    obj = _realm.CreateObject<MyDataObject>();
+                    obj.Path = path;
+                });
+
+                await _realm.WriteAsync(realm =>
+                {
+                    var dataObj = realm.Find<MyDataObject>(path);
+                    dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
+                });
+
+                await Task.Yield();
+
+                Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
             });
-
-            await _realm.WriteAsync(realm =>
-            {
-                var dataObj = realm.Find<MyDataObject>(path);
-                dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
-            });
-
-            await Task.Yield();
-
-            Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
         }
-#endif
     }
 }

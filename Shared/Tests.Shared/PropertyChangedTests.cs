@@ -22,15 +22,13 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-#if WINDOWS
-    [Ignore("Async tests are not yet supported on Windows")]
-#endif
     public class PropertyChangedTests
     {
         private string _databasePath;
@@ -38,8 +36,6 @@ namespace IntegrationTests
         private Lazy<Realm> _lazyRealm;
 
         private Realm _realm => _lazyRealm.Value;
-
-        private static readonly Task _completedTask = Task.FromResult<object>(null);
 
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
@@ -62,160 +58,184 @@ namespace IntegrationTests
         }
 
         [Test]
-        public async void UnmanagedObject()
+        public void UnmanagedObject()
         {
-            string notifiedPropertyName = null;
-            var person = new Person();
-
-            var handler = new PropertyChangedEventHandler((sender, e) =>
+            AsyncContext.Run(async delegate
             {
-                notifiedPropertyName = e.PropertyName;
-            });
-            person.PropertyChanged += handler;
+                string notifiedPropertyName = null;
+                var person = new Person();
 
-            // Subscribed - should trigger
-            person.FirstName = "Peter";
-            await Task.Yield();
-            Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
-
-            notifiedPropertyName = null;
-            person.PropertyChanged -= handler;
-
-            // Unsubscribed - should not trigger
-            person.FirstName = "George";
-            await Task.Yield();
-            Assert.That(notifiedPropertyName, Is.Null);
-        }
-
-        [Test]
-        public async void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
-        {
-            var notifications = 0;
-            var person = new Person();
-
-            person.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(Person.FirstName))
+                var handler = new PropertyChangedEventHandler((sender, e) =>
                 {
-                    notifications++;
-                }
-            };
+                    notifiedPropertyName = e.PropertyName;
+                });
+                person.PropertyChanged += handler;
 
-            person.FirstName = "Peter";
-            await Task.Yield();
-            Assert.That(notifications, Is.EqualTo(1));
+                // Subscribed - should trigger
+                person.FirstName = "Peter";
+                await Task.Yield();
+                Assert.That(notifiedPropertyName, Is.EqualTo(nameof(Person.FirstName)));
 
-            _realm.Write(() =>
-            {
-                _realm.Add(person);
-            });
+                notifiedPropertyName = null;
+                person.PropertyChanged -= handler;
 
-            // When calling Realm.Add, all properties are persisted, which causes a notification to be sent out.
-            // We're using SomeClass because Person has nullable properties, which are set always, so it interferes with the test.
-            await Task.Yield();
-            Assert.That(notifications, Is.EqualTo(2));
-
-            _realm.Write(() =>
-            {
+                // Unsubscribed - should not trigger
                 person.FirstName = "George";
+                await Task.Yield();
+                Assert.That(notifiedPropertyName, Is.Null);
             });
-
-            await Task.Yield();
-            Assert.That(notifications, Is.EqualTo(3));
         }
 
         [Test]
-        public async void ManagedObject_WhenSameInstanceChanged()
+        public void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
         {
-            await TestManaged((person, name) =>
+            AsyncContext.Run(async delegate
             {
+                var notifications = 0;
+                var person = new Person();
+
+                person.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(Person.FirstName))
+                    {
+                        notifications++;
+                    }
+                };
+
+                person.FirstName = "Peter";
+                await Task.Yield();
+                Assert.That(notifications, Is.EqualTo(1));
+
                 _realm.Write(() =>
                 {
-                    person.FirstName = name;
+                    _realm.Add(person);
                 });
-                return _completedTask;
-            });
-        }
 
-        [Test]
-        public async void ManagedObject_WhenAnotherInstanceChanged()
-        {
-            await TestManaged((_, name) =>
-            {
+                // When calling Realm.Add, all properties are persisted, which causes a notification to be sent out.
+                // We're using SomeClass because Person has nullable properties, which are set always, so it interferes with the test.
+                await Task.Yield();
+                Assert.That(notifications, Is.EqualTo(2));
+
                 _realm.Write(() =>
                 {
-                    var otherPersonInstance = _realm.All<Person>().First();
-                    otherPersonInstance.FirstName = name;
+                    person.FirstName = "George";
                 });
-                return _completedTask;
+
+                await Task.Yield();
+                Assert.That(notifications, Is.EqualTo(3));
             });
         }
 
         [Test]
-        public async void ManagedObject_WhenAnotherThreadInstanceChanged()
+        public void ManagedObject_WhenSameInstanceChanged()
         {
-            await TestManaged(async (_, name) =>
+            AsyncContext.Run(delegate
             {
-                await _realm.WriteAsync(otherRealm =>
+                return TestManaged((person, name) =>
                 {
-                    var otherPersonInstance = otherRealm.All<Person>().First();
-                    otherPersonInstance.FirstName = name;
+                    _realm.Write(() =>
+                    {
+                        person.FirstName = name;
+                    });
+                    return Task.CompletedTask;
                 });
-
-                await Task.Delay(50);
             });
         }
 
         [Test]
-        public async void ManagedObject_WhenSameInstanceTransactionRollback()
+        public void ManagedObject_WhenAnotherInstanceChanged()
         {
-            await TestManagedRollback((person, name) =>
+            AsyncContext.Run(delegate
+            {
+                return TestManaged((_, name) =>
+                {
+                    _realm.Write(() =>
+                    {
+                        var otherPersonInstance = _realm.All<Person>().First();
+                        otherPersonInstance.FirstName = name;
+                    });
+                    return Task.CompletedTask;
+                });
+            });
+        }
+
+        [Test]
+        public void ManagedObject_WhenAnotherThreadInstanceChanged()
+        {
+            AsyncContext.Run(delegate
+            {
+                return TestManaged(async (_, name) =>
+                {
+                    await _realm.WriteAsync(otherRealm =>
+                    {
+                        var otherPersonInstance = otherRealm.All<Person>().First();
+                        otherPersonInstance.FirstName = name;
+                    });
+
+                    await Task.Delay(50);
+                });
+            });
+        }
+
+        [Test]
+        public void ManagedObject_WhenSameInstanceTransactionRollback()
+        {
+            AsyncContext.Run(delegate
+            {
+                return TestManagedRollback((person, name) =>
             {
                 person.FirstName = name;
             }, _realm.BeginWrite);
-        }
-
-        [Test]
-        public async void ManagedObject_WhenAnotherInstaceTransactionRollback()
-        {
-            await TestManagedRollback((_, name) =>
-            {
-                var otherInstance = _realm.All<Person>().First();
-                otherInstance.FirstName = name;
-            }, _realm.BeginWrite);
-        }
-
-        [Test]
-        public async void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
-        {
-            var notifiedPropertyNames = new List<string>();
-            var person = new Person();
-            _realm.Write(() =>
-            {
-                _realm.Add(person);
             });
+        }
 
-            person.PropertyChanged += (sender, e) =>
+        [Test]
+        public void ManagedObject_WhenAnotherInstaceTransactionRollback()
+        {
+            AsyncContext.Run(delegate
             {
-                notifiedPropertyNames.Add(e.PropertyName);
-            };
-
-            await Task.Run(() =>
-            {
-                var otherRealm = Realm.GetInstance(_databasePath);
-                using (var transaction = otherRealm.BeginWrite())
+                return TestManagedRollback((_, name) =>
                 {
-                    var otherInstance = otherRealm.All<Person>().First();
-                    otherInstance.FirstName = "Peter";
-
-                    Assert.That(notifiedPropertyNames, Is.Empty);
-
-                    transaction.Rollback();
-                }
+                    var otherInstance = _realm.All<Person>().First();
+                    otherInstance.FirstName = name;
+                }, _realm.BeginWrite);
             });
+        }
 
-            await Task.Yield();
-            Assert.That(notifiedPropertyNames, Is.Empty);
+        [Test]
+        public void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
+        {
+            AsyncContext.Run(async delegate
+            {
+                var notifiedPropertyNames = new List<string>();
+                var person = new Person();
+                _realm.Write(() =>
+                {
+                    _realm.Add(person);
+                });
+
+                person.PropertyChanged += (sender, e) =>
+                {
+                    notifiedPropertyNames.Add(e.PropertyName);
+                };
+
+                await Task.Run(() =>
+                {
+                    using (var otherRealm = Realm.GetInstance(_databasePath))
+                    using (var transaction = otherRealm.BeginWrite())
+                    {
+                        var otherInstance = otherRealm.All<Person>().First();
+                        otherInstance.FirstName = "Peter";
+
+                        Assert.That(notifiedPropertyNames, Is.Empty);
+
+                        transaction.Rollback();
+                    }
+                });
+
+                await Task.Yield();
+                Assert.That(notifiedPropertyNames, Is.Empty);
+            });
         }
 
         [Test]
@@ -412,101 +432,113 @@ namespace IntegrationTests
         }
 
         [Test]
-        public async void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
+#if WINDOWS
+        [Ignore("GC blocks on Windows")]
+#endif
+        public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
         {
-            var notifiedPropertyNames = new List<string>();
-            WeakReference personReference = null;
-            new Action(() =>
+            AsyncContext.Run(async delegate
             {
-                var person = new Person();
-                _realm.Write(() => _realm.Add(person));
+                var notifiedPropertyNames = new List<string>();
+                WeakReference personReference = null;
+                new Action(() =>
+                {
+                    var person = new Person();
+                    _realm.Write(() => _realm.Add(person));
 
-                person.PropertyChanged += (sender, e) =>
+                    person.PropertyChanged += (sender, e) =>
+                    {
+                        notifiedPropertyNames.Add(e.PropertyName);
+                    };
+
+                    personReference = new WeakReference(person);
+
+                    _realm.Write(() => person.FirstName = "Peter");
+
+                    // Sanity check
+                    Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
+                })();
+
+                notifiedPropertyNames.Clear();
+
+                while (personReference.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                Assert.That(personReference.IsAlive, Is.False);
+
+                _realm.Write(() =>
+                {
+                    var peter = _realm.All<Person>().Single();
+                    Assert.That(peter.FirstName, Is.EqualTo("Peter"));
+                    peter.FirstName = "George";
+                });
+
+                // person was garbage collected, so we should not be notified and no exception should be thrown.
+                Assert.That(notifiedPropertyNames, Is.Empty);
+            });
+        }
+
+        [Test]
+        public void ManagedObject_WhenChanged_CallsOnPropertyChanged()
+        {
+            AsyncContext.Run(async delegate
+            {
+                var item = new AgedObject
+                {
+                    Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+                };
+
+                _realm.Write(() => _realm.Add(item));
+
+                var notifiedPropertyNames = new List<string>();
+                item.PropertyChanged += (sender, e) =>
                 {
                     notifiedPropertyNames.Add(e.PropertyName);
                 };
 
-                personReference = new WeakReference(person);
+                _realm.Write(() =>
+                {
+                    item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                });
 
-                _realm.Write(() => person.FirstName = "Peter");
-
-                // Sanity check
-                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
-            })();
-
-            notifiedPropertyNames.Clear();
-
-            while (personReference.IsAlive)
-            {
                 await Task.Yield();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
 
-            Assert.That(personReference.IsAlive, Is.False);
-
-            _realm.Write(() =>
-            {
-                var peter = _realm.All<Person>().Single();
-                Assert.That(peter.FirstName, Is.EqualTo("Peter"));
-                peter.FirstName = "George";
+                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
             });
-
-            // person was garbage collected, so we should not be notified and no exception should be thrown.
-            Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
         [Test]
-        public async void ManagedObject_WhenChanged_CallsOnPropertyChanged()
+        public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
-            var item = new AgedObject
+            AsyncContext.Run(async delegate
             {
-                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
-            };
+                var item = new AgedObject
+                {
+                    Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+                };
 
-            _realm.Write(() => _realm.Add(item));
+                _realm.Write(() => _realm.Add(item));
 
-            var notifiedPropertyNames = new List<string>();
-            item.PropertyChanged += (sender, e) => 
-            {
-                notifiedPropertyNames.Add(e.PropertyName);
-            };
+                var notifiedPropertyNames = new List<string>();
+                item.PropertyChanged += (sender, e) =>
+                {
+                    notifiedPropertyNames.Add(e.PropertyName);
+                };
 
-            _realm.Write(() =>
-            {
-                item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                await _realm.WriteAsync(r =>
+                {
+                    var otherThreadInstance = r.All<AgedObject>().Single();
+                    otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                });
+
+                await Task.Yield();
+
+                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
             });
-
-            await Task.Yield();
-
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
-        }
-
-        [Test]
-        public async void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
-        {
-            var item = new AgedObject
-            {
-                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
-            };
-
-            _realm.Write(() => _realm.Add(item));
-
-            var notifiedPropertyNames = new List<string>();
-            item.PropertyChanged += (sender, e) =>
-            {
-                notifiedPropertyNames.Add(e.PropertyName);
-            };
-
-            await _realm.WriteAsync(r =>
-            {
-                var otherThreadInstance = r.All<AgedObject>().Single();
-                otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
-            });
-
-            await Task.Yield();
-
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
         [Test]

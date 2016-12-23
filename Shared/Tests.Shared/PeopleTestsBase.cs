@@ -24,27 +24,8 @@ using Realms;
 
 namespace IntegrationTests
 {
-    [Preserve(AllMembers = true)]
-    public class PeopleTestsBase
+    public abstract class PeopleTestsBase : RealmInstanceTest
     {
-        protected Realm _realm;
-
-        // Override this method in your test class instead of adding another <code>[SetUp]</code> because then NUnit will invoke both.
-        [SetUp]
-        public virtual void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        // Override this method in your test class instead of adding another <code>[TearDown]</code> because then NUnit will invoke both.
-        [TearDown]
-        public virtual void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         protected void MakeThreePeople()
         {
             Person p1, p2, p3;

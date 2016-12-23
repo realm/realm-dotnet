@@ -16,26 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IntegrationTests;
-using NUnit.Framework;
+using System.IO;
+using Realms;
 
-namespace IntegrationTests.Win32
+namespace IntegrationTests
 {
-    [TestFixture]
-    public class RunSpecificTest
+    [Preserve(AllMembers = true)]
+    public abstract class RealmInstanceTest : RealmTest
     {
-        [Test, Explicit("Use this to run a specific test once")]
-        public void RunTest()
-        {
-            var testFixture = new NotificationTests();
-            testFixture.SetUp();            
+        protected RealmConfiguration _configuration = new RealmConfiguration(Path.GetTempFileName());
 
-            testFixture.TearDown();
+        protected Realm _realm;
+
+        public override void SetUp()
+        {
+            base.SetUp();
+            _realm = Realm.GetInstance(_configuration);
+        }
+
+        public override void TearDown()
+        {
+            _realm.Dispose();
+            Realm.DeleteRealm(_realm.Config);
+            base.TearDown();
         }
     }
 }

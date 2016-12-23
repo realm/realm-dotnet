@@ -26,25 +26,8 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class RemoveTests
+    public class RemoveTests : RealmInstanceTest
     {
-        protected string _databasePath;
-        protected Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [Test]
         public void RemoveSucceedsTest()
         {
@@ -195,7 +178,7 @@ namespace IntegrationTests
         [Test]
         public void RemoveObject_FromSameRealm_ShouldWork()
         {
-            PerformWithOtherRealm(_databasePath, other =>
+            PerformWithOtherRealm(_realm.Config.DatabasePath, other =>
             {
                 Person otherPerson = null;
                 other.Write(() =>
@@ -213,7 +196,7 @@ namespace IntegrationTests
         [Test]
         public void RemoveResults_FromTheSameRealm_ShouldWork()
         {
-            PerformWithOtherRealm(_databasePath, other =>
+            PerformWithOtherRealm(_realm.Config.DatabasePath, other =>
             {
                 other.Write(() => other.CreateObject<Person>());
 

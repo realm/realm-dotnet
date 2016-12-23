@@ -28,24 +28,8 @@ namespace IntegrationTests
 {
     // using classes from TestObjects.cs
     [TestFixture, Preserve(AllMembers = true)]
-    public class PrimaryKeyTests
+    public class PrimaryKeyTests : RealmInstanceTest
     {
-        protected Realm _realm;
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-        }
-
         [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
         [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
         [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
@@ -301,7 +285,7 @@ namespace IntegrationTests
             // Act
             var t = new Thread(() =>
             {
-                using (var realm2 = Realm.GetInstance())
+                using (var realm2 = Realm.GetInstance(_configuration))
                 {
                     var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;

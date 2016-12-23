@@ -37,7 +37,7 @@ namespace IntegrationTests
     [TestFixture(DynamicTestObjectType.RealmObject)]
     [TestFixture(DynamicTestObjectType.DynamicRealmObject)]
     [Preserve(AllMembers = true)]
-    public class DynamicRelationshipTests
+    public class DynamicRelationshipTests : RealmInstanceTest
     {
         private class DynamicDog : RealmObject
         {
@@ -60,23 +60,22 @@ namespace IntegrationTests
             public IList<DynamicDog> Dogs { get; }
         }
 
-        private RealmConfiguration _configuration;
-        private Realm _realm;
+        private readonly DynamicTestObjectType _mode;
 
         public DynamicRelationshipTests(DynamicTestObjectType mode)
         {
+            _mode = mode;
+        }
+
+        public override void SetUp()
+        {
             _configuration = new RealmConfiguration { ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) } };
-            if (mode == DynamicTestObjectType.DynamicRealmObject)
+            if (_mode == DynamicTestObjectType.DynamicRealmObject)
             {
                 _configuration.Dynamic = true;
             }
-        }
 
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(_configuration);
-            _realm = Realm.GetInstance(_configuration);
+            base.SetUp();
 
             using (var trans = _realm.BeginWrite())
             {
@@ -104,13 +103,6 @@ namespace IntegrationTests
 
                 trans.Commit();
             }
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
         }
 
         [Test]
