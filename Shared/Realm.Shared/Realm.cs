@@ -49,7 +49,7 @@ namespace Realms
         {
             NativeCommon.Initialize();
 
-            NativeCommon.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
+            NativeCommon.NotifyRealmCallback notifyRealm = RealmState.NotifyRealmChanged;
             NativeCommon.NotifyRealmObjectCallback notifyRealmObject = RealmObject.NotifyRealmObjectPropertyChanged;
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(notifyRealmObject);
@@ -58,15 +58,6 @@ namespace Realms
             NativeCommon.register_notify_realm_object_changed(notifyRealmObject);
 
             SynchronizationContextEventLoopSignal.Install();
-        }
-
-        #if __IOS__
-        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
-        #endif
-        private static void NotifyRealmChanged(IntPtr realmHandle)
-        {
-            var gch = GCHandle.FromIntPtr(realmHandle);
-            ((Realm)gch.Target).NotifyChanged(EventArgs.Empty);
         }
 
         /// <summary>
@@ -171,6 +162,8 @@ namespace Realms
 
         #endregion
 
+        private RealmState _state;
+
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
 
@@ -190,6 +183,23 @@ namespace Realms
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
         {
+            RealmState state = null;
+
+            var statePtr = sharedRealmHandle.GetManagedStateHandle();
+            if (statePtr != IntPtr.Zero)
+            {
+                state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
+            }
+
+            if (state == null)
+            {
+                state = new RealmState();
+                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
+            }
+
+            state.AddRealm(this);
+            _state = state;
+
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
 
@@ -242,33 +252,14 @@ namespace Realms
         /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
-        private event RealmChangedEventHandler _realmChanged;
-
         /// <summary>
         /// Triggered when a Realm has changed (i.e. a <see cref="Transaction"/> was committed).
         /// </summary>
-        public event RealmChangedEventHandler RealmChanged
-        {
-            add
-            {
-                if (_realmChanged == null)
-                {
-                    var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    SharedRealmHandle.BindToManagedRealmHandle(GCHandle.ToIntPtr(managedRealmHandle));
-                }
-
-                _realmChanged += value;
-            }
-
-            remove
-            {
-                _realmChanged -= value;
-            }
-        }
+        public event RealmChangedEventHandler RealmChanged;
 
         private void NotifyChanged(EventArgs e)
         {
-            _realmChanged?.Invoke(this, e);
+            RealmChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -293,14 +284,13 @@ namespace Realms
         /// <value><c>true</c> if closed, <c>false</c> otherwise.</value>
         public bool IsClosed => SharedRealmHandle.IsClosed;
 
+        /// <inheritdoc />
         ~Realm()
         {
             Dispose(false);
         }
 
-        /// <summary>
-        ///  Dispose automatically closes the Realm if not already closed.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -314,10 +304,8 @@ namespace Realms
                 return;
             }
 
-            if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
-            {
-                SharedRealmHandle.CloseRealm();
-            }
+            _state.RemoveRealm(this);
+            _state = null;
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
         }
@@ -1057,5 +1045,80 @@ namespace Realms
         }
 
         #endregion
+
+        private class RealmState
+        {
+            #region static
+
+            #if __IOS__
+            [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+            #endif
+            public static void NotifyRealmChanged(IntPtr stateHandle)
+            {
+                var gch = GCHandle.FromIntPtr(stateHandle);
+                ((RealmState)gch.Target).NotifyChanged(EventArgs.Empty);
+            }
+
+            #endregion
+
+            private readonly List<WeakReference> weakRealms = new List<WeakReference>();
+
+            public readonly GCHandle GCHandle;
+
+            public RealmState()
+            {
+                GCHandle = GCHandle.Alloc(this);
+            }
+
+            private void NotifyChanged(EventArgs e)
+            {
+                foreach (var realm in GetLiveRealms())
+                {
+                    realm.NotifyChanged(e);
+                }
+            }
+
+            public void AddRealm(Realm realm)
+            {
+                // We only want to have each realm once. That should be the case as AddRealm
+                // is only called in the Realm ctor, but let's check just in case.
+                Debug.Assert(weakRealms.All(r => r.Target as Realm != realm), "Trying to add a duplicate Realm to the RealmState.");
+
+                weakRealms.Add(new WeakReference(realm));
+            }
+
+            public void RemoveRealm(Realm realm)
+            {
+                var weakRealm = weakRealms.SingleOrDefault(r => r.Target as Realm == realm);
+                weakRealms.Remove(weakRealm);
+
+                if (!weakRealms.Any())
+                {
+                    realm.SharedRealmHandle.CloseRealm();
+                    GCHandle.Free();
+                }
+            }
+
+            private IEnumerable<Realm> GetLiveRealms()
+            {
+                var shouldPurge = false;
+                foreach (var weakRealm in weakRealms)
+                {
+                    if (weakRealm.IsAlive)
+                    {
+                        yield return (Realm)weakRealm.Target;
+                    }
+                    else
+                    { 
+                        shouldPurge = true;
+                    }
+                }
+
+                if (shouldPurge)
+                {
+                    weakRealms.RemoveAll(weak => !weak.IsAlive);
+                }
+            }
+        }
     }
 }
