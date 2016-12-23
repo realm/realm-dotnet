@@ -47,8 +47,15 @@ namespace Realms
         static Realm()
         {
             NativeCommon.Initialize();
-            NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
-            NativeCommon.register_notify_realm_object_changed(RealmObject.NotifyRealmObjectPropertyChanged);
+
+            NativeCommon.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
+            NativeCommon.NotifyRealmObjectCallback notifyRealmObject = RealmObject.NotifyRealmObjectPropertyChanged;
+            GCHandle.Alloc(notifyRealm);
+            GCHandle.Alloc(notifyRealmObject);
+
+            NativeCommon.register_notify_realm_changed(notifyRealm);
+            NativeCommon.register_notify_realm_object_changed(notifyRealmObject);
+
             SynchronizationContextEventLoopSignal.Install();
         }
 
@@ -904,7 +911,7 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. <see cref="Int64"/> argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
@@ -918,7 +925,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
@@ -931,7 +938,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, long id)
@@ -944,7 +951,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, string id)

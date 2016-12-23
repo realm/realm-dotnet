@@ -19,6 +19,7 @@
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -31,12 +32,15 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
     internal static class NativeCommon
     {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotifyRealmCallback(IntPtr realmHandle);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
 
 #if DEBUG
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
 
 #if __IOS__
@@ -63,8 +67,18 @@ namespace Realms
 
         public static void Initialize()
         {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
+                var architecture = Environment.Is64BitProcess ? "x64" : "x86";
+                var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", path);
+            }
+
 #if DEBUG
-            set_debug_logger(DebugLogger);
+            DebugLoggerCallback logger = DebugLogger;
+            GCHandle.Alloc(logger);
+            set_debug_logger(logger);
 #endif
         }
     }

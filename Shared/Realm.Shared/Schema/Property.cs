@@ -48,7 +48,7 @@ namespace Realms.Schema
         public string LinkOriginPropertyName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="Property"/> is nullable.
+        /// Gets or sets a value indicating whether this <see cref="Property"/> can be null.
         /// </summary>
         public bool IsNullable { get; set; }
 

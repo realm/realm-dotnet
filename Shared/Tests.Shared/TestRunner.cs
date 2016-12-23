@@ -23,6 +23,7 @@ using NUnit.Framework.Internal;
 
 namespace IntegrationTests
 {
+    #if !WINDOWS
     internal class TestRunner
     {
         internal static void Run(string title, Stream outputStream)
@@ -48,4 +49,5 @@ namespace IntegrationTests
             }
         }
     }
+    #endif
 }

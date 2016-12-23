@@ -26,10 +26,6 @@ namespace Realms
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public sealed class PreserveAttribute : Attribute
     {
-#if WINDOWS
-        public bool AllMembers { get; set; }
-        public bool Conditional { get; set; }
-#else
         /// <summary>
         /// When used on a class rather than a property, ensures that all members of this type are preserved.
         /// </summary>
@@ -39,7 +35,6 @@ namespace Realms
         /// Flags the method as a method to preserve during linking if the container class is pulled in.
         /// </summary>
         public bool Conditional;
-#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PreserveAttribute"/> class.

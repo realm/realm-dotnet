@@ -28,6 +28,9 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
+#if WINDOWS
+    [Ignore("Async tests are not yet supported on Windows")]
+#endif
     public class PropertyChangedTests
     {
         private string _databasePath;
@@ -35,6 +38,8 @@ namespace IntegrationTests
         private Lazy<Realm> _lazyRealm;
 
         private Realm _realm => _lazyRealm.Value;
+
+        private static readonly Task _completedTask = Task.FromResult<object>(null);
 
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
@@ -128,7 +133,7 @@ namespace IntegrationTests
                 {
                     person.FirstName = name;
                 });
-                return Task.CompletedTask;
+                return _completedTask;
             });
         }
 
@@ -142,7 +147,7 @@ namespace IntegrationTests
                     var otherPersonInstance = _realm.All<Person>().First();
                     otherPersonInstance.FirstName = name;
                 });
-                return Task.CompletedTask;
+                return _completedTask;
             });
         }
 

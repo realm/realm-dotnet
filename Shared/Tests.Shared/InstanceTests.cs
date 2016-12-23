@@ -229,10 +229,15 @@ namespace IntegrationTests
             "Can't have classes in the list which are not RealmObjects");
         }
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(false, false)]
+#if !ENCRYPTION_DISABLED
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+#endif
+#if WINDOWS
+        [Ignore("Compact doesn't work on Windows")]
+#endif
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
             var config = new RealmConfiguration($"compactrealm_{encrypt}_{populate}.realm");

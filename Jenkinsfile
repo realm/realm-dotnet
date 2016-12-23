@@ -1,8 +1,8 @@
-def wrapperConfigurations = [
+wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
 ]
-def configuration = 'Debug'
+configuration = 'Debug'
 
 def nuget = '/usr/local/bin/nuget'
 def xbuild = '/usr/local/bin/xbuild'
@@ -12,7 +12,7 @@ def version
 def versionString
 
 stage('Checkout') {
-  node {
+  node('xamarin-mac') {
     checkout([
         $class: 'GitSCM',
         branches: scm.branches,
@@ -27,6 +27,8 @@ stage('Checkout') {
       version = readAssemblyVersion()
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
+      sh "${nuget} restore Realm.sln"
+
       stash includes: '**', name: 'dotnet-source'
       deleteDir()
   }
@@ -40,7 +42,6 @@ stage('RealmWeaver') {
   nodeWithCleanup('xamarin-mac') {
     getArchive()
     def workspace = pwd()
-    sh "${nuget} restore Realm.sln"
 
     dir('Weaver/WeaverTests/RealmWeaver.Tests') {
       sh "${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}"
@@ -67,8 +68,6 @@ stage('Build without sync') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
-
-        sh "${nuget} restore Realm.sln"
 
         sh "${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\""
 
@@ -97,8 +96,6 @@ stage('Build without sync') {
 
         unstash 'android-wrappers-nosync'
 
-        sh "${nuget} restore Realm.sln"
-
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           sh "${xbuild} Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\""
           dir("bin/${configuration}") {
@@ -106,6 +103,21 @@ stage('Build without sync') {
           }
         }
         stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
+      }
+    },
+    'Win32': {
+      nodeWithCleanup('windows') {
+        getArchive()
+
+        bat """
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x86 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x64 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
+        """
+
+        stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
+        stash includes: "Platform.Win32/Realm.Win32/bin/${configuration}/Realm.*", name: 'nuget-win32-database'
+        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
       }
     },
     'PCL': {
@@ -191,7 +203,8 @@ stage('Build with sync') {
 stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
-    'Android': AndroidTest('android-tests-nosync')
+    'Android': AndroidTest('android-tests-nosync'),
+    'Win32': Win32Test('win32-tests-nosync')
   )
 }
 
@@ -200,6 +213,27 @@ stage('Test with sync') {
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync')
   )
+}
+
+def Win32Test(stashName) {
+  return {
+    nodeWithCleanup('windows') {
+      getArchive()
+      unstash stashName
+
+      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
+      dir("Platform.Win32/Tests.Win32/bin/${configuration}") {
+        try {
+          bat """
+            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x86.xml;transform=nunit3-junit.xslt --x86
+            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x64.xml;transform=nunit3-junit.xslt
+          """
+        } finally {
+          junit 'TestResults.*.xml'
+        }
+      }
+    }
+  }
 }
 
 def iOSTest(stashName) {
@@ -291,6 +325,8 @@ stage('NuGet') {
         unstash 'nuget-ios-database'
         unstash 'android-wrappers-nosync'
         unstash 'nuget-android-database'
+        unstash 'win32-wrappers-nosync'
+        unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
           sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"

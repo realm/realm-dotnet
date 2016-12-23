@@ -87,8 +87,8 @@ namespace Realms
     /// A callback that will be invoked each time the contents of a <see cref="IRealmCollection{T}"/> have changed.
     /// </summary>
     /// <param name="sender">The <see cref="IRealmCollection{T}"/> being monitored for changes.</param>
-    /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>, or <c>null</c> if an error occured.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+    /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>, or <c>null</c> if an error occurred.</param>
+    /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 

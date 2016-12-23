@@ -28,10 +28,13 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
     internal static class SynchronizationContextEventLoopSignal
     {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr get_eventloop();
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void post_on_event_loop(IntPtr eventloop, EventLoopPostHandler callback, IntPtr user_data);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void release_eventloop(IntPtr eventloop);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -112,7 +115,16 @@ namespace Realms
 
         internal static void Install()
         {
-            install_eventloop_callbacks(GetCurrentSynchronizationContext, PostOnSynchronizationContext, ReleaseSynchronizationContext);
+            get_eventloop get = GetCurrentSynchronizationContext;
+            post_on_event_loop post = PostOnSynchronizationContext;
+            release_eventloop release = ReleaseSynchronizationContext;
+
+            // prevent the delegates from ever being garbage collected
+            GCHandle.Alloc(get);
+            GCHandle.Alloc(post);
+            GCHandle.Alloc(release);
+
+            install_eventloop_callbacks(get, post, release);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace realm {
         auto context = new ManagedNotificationTokenContext();
         context->managed_collection = managed_collection;
         context->callback = callback;
-        context->token = std::move(subscriber([context](CollectionChangeSet changes, std::exception_ptr e) {
+        context->token = subscriber([context](CollectionChangeSet changes, std::exception_ptr e) {
             if (e) {
                 try {
                     std::rethrow_exception(e);
@@ -76,7 +76,7 @@ namespace realm {
                 };
                 context->callback(context->managed_collection, &marshallable_changes, nullptr);
             }
-        }));
+        });
         
         return context;
     }

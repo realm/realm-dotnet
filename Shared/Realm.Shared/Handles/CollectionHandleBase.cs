@@ -46,6 +46,7 @@ namespace Realms
             public MarshaledVector<Move> Moves;
         }
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
         protected CollectionHandleBase(RealmHandle root) : base(root)
