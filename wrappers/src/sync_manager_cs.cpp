@@ -66,8 +66,8 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
         auto metadata_mode = SyncManager::MetadataMode::NoEncryption;
         if (mode) {
             metadata_mode = *mode;
+#if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR
         } else {
-#if REALM_PLATFORM_APPLE
             metadata_mode = SyncManager::MetadataMode::Encryption;
 #endif
         }
