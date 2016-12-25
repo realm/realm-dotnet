@@ -16,18 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Sync;
+
 namespace Tests.Sync
 {
     public static class Constants
     {
-        public static class Credentials
-        {
-            // Credentials of an existing user
-            public const string Username = "z@z";
-            public const string Password = "z";
+        public const string UserA = "a";
+        public const string UserB = "b";
 
-            // The server url as visible from the testing device
-            public const string ServerUrl = "localhost:9080";
+        // The server url as visible from the testing device
+        public const string ServerUrl = "localhost:9080";
+
+        public static Credentials CreateCredentials(string username = UserA)
+        {
+            return Credentials.UsernamePassword($"{username}@{username}", username, createUser: false);
         }
     }
 }
