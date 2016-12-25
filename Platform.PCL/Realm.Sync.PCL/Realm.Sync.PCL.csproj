@@ -71,8 +71,6 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\ManagementObjectStatus.cs">
       <Link>Permissions\ManagementObjectStatus.cs</Link>
     </Compile>
-    <Compile Include="Permissions\PermissionOfferPCL.cs" />
-    <Compile Include="Permissions\PermissionOfferResponsePCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

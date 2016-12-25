@@ -54,7 +54,7 @@ namespace Realms.Sync
 
             var configuration = new SyncConfiguration(user, managementUriBuilder.Uri)
             {
-                ObjectClasses = new[] { typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse) }
+                ObjectClasses = new[] { typeof(PermissionChange) }
             };
 
             return Realm.GetInstance(configuration);
