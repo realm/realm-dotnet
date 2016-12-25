@@ -30,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorKind.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserPersistenceMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\ManagementObjectStatus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOffer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOfferResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
