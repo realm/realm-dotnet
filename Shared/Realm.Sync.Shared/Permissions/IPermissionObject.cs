@@ -45,28 +45,19 @@ namespace Realms.Sync
         DateTimeOffset UpdatedAt { get; }
 
         /// <summary>
-        /// Gets the status code.
+        /// Gets the <see cref="ErrorCode"/> if any.
         /// </summary>
         /// <remarks>
-        /// Filled by the server after an object was processed indicating the status
-        /// of the operation.
-        /// The values have the following meaning:
-        /// <list type="bullet">
-        /// <listheader>
-        /// <term>no status(<c>null</c>)</term>
-        /// <description>The object has not been processed yet.</description>
-        /// </listheader>
-        /// <listheader>
-        /// <term>status equal to <c>0</c></term>
-        /// <description>The operation succeeded</description>
-        /// </listheader>
-        /// <listheader>
-        /// <term>any status greater than <c>0</c></term>
-        /// <description>The operation failed</description>
-        /// </listheader>
-        /// </list>
+        /// Filled by the server after an object was processed indicating the status of the operation. 
+        /// If <see cref="Status"/> returns <see cref="ManagementObjectStatus.Error"/>, the <see cref="ErrorCode"/> 
+        /// property can be used to get a strongly typed code for the error and handle expected error conditions, such as
+        /// expired offer or attempting to share a realm without having manage access.
         /// </remarks>
-        int? StatusCode { get; }
+        /// <value>
+        /// An <see cref="ErrorCode"/> that indicates the reason for the error during processing.
+        /// <c>null</c> if no error has occurred or the object hasn't been processed yet.
+        /// </value>
+        ErrorCode? ErrorCode { get; }
 
         /// <summary>
         /// Gets the status message.
