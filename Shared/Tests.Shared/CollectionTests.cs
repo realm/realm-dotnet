@@ -121,14 +121,7 @@ namespace IntegrationTests
         [TestCase(1, 1, "01234")]
         public void Move_WhenManaged_ShouldMoveTheItem(int from, int to, string expected)
         {
-            var container = new ContainerObject();
-
-            for (var i = 0; i < 5; i++)
-            {
-                container.Items.Add(new IntPropertyObject { Int = i });
-            }
-
-            _realm.Write(() => _realm.Add(container));
+            var container = GetPopulatedManagedContainerObject();
 
             _realm.Write(() =>
             {
@@ -145,6 +138,34 @@ namespace IntegrationTests
         [TestCase(3, -3)]
         public void Move_WhenManagedAndDestinationIndexIsInvalid_ShouldThrow(int from, int to)
         {
+            var container = GetPopulatedManagedContainerObject();
+
+            _realm.Write(() =>
+            {
+                var item = container.Items[from];
+                Assert.That(() => container.Items.Move(item, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+            });
+        }
+
+        [Test]
+        public void IList_IsReadOnly_WhenRealmIsReadOnly_ShouldBeTrue()
+        {
+            var writeableContainer = GetPopulatedManagedContainerObject();
+            Assert.That(writeableContainer.Items.IsReadOnly, Is.False);
+
+            _realm.Dispose();
+
+            var config = _configuration.ConfigWithPath(null);
+            config.IsReadOnly = true;
+
+            _realm = Realm.GetInstance(config);
+
+            var readonlyContainer = _realm.All<ContainerObject>().Single();
+            Assert.That(readonlyContainer.Items.IsReadOnly);
+        }
+
+        private ContainerObject GetPopulatedManagedContainerObject()
+        {
             var container = new ContainerObject();
 
             for (var i = 0; i < 5; i++)
@@ -154,11 +175,7 @@ namespace IntegrationTests
 
             _realm.Write(() => _realm.Add(container));
 
-            _realm.Write(() =>
-            {
-                var item = container.Items[from];
-                Assert.That(() => container.Items.Move(item, to), Throws.TypeOf<ArgumentOutOfRangeException>());
-            });
+            return container;
         }
     }
 }
