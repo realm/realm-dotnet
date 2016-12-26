@@ -56,6 +56,80 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RequiredProperties : RealmObject
+    {
+        // These should be allowed:
+
+        [Required]
+        public string StringProperty { get; set; }
+
+        [Required]
+        public byte[] ByteArrayProperty { get; set; }
+
+        [Required]
+        public char? NullableCharProperty { get; set; }
+
+        [Required]
+        public byte? NullableByteProperty { get; set; }
+
+        [Required]
+        public short? NullableInt16Property { get; set; }
+
+        [Required]
+        public int? NullableInt32Property { get; set; }
+
+        [Required]
+        public long? NullableInt64Property { get; set; }
+
+        [Required]
+        public float? NullableSingleProperty { get; set; }
+
+        [Required]
+        public double? NullableDoubleProperty { get; set; }
+
+        [Required]
+        public bool? NullableBooleanProperty { get; set; }
+
+        [Required]
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        // These should cause an error:
+
+        [Required]
+        public char CharProperty { get; set; }
+
+        [Required]
+        public byte ByteProperty { get; set; }
+
+        [Required]
+        public short Int16Property { get; set; }
+
+        [Required]
+        public int Int32Property { get; set; }
+
+        [Required]
+        public long Int64Property { get; set; }
+
+        [Required]
+        public float SingleProperty { get; set; }
+
+        [Required]
+        public double DoubleProperty { get; set; }
+
+        [Required]
+        public bool BooleanProperty { get; set; }
+
+        [Required]
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        [Required]
+        public Person ObjectProperty { get; set; }
+
+        [Required]
+        public IList<Person> ListProperty { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyProperties : RealmObject
     {
         // These should be allowed:

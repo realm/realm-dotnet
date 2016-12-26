@@ -28,6 +28,27 @@ using Mono.Cecil.Rocks;
 [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
 public class ModuleWeaver
 {
+    internal const string StringTypeName = "System.String";
+    internal const string ByteArrayTypeName = "System.Byte[]";
+    internal const string CharTypeName = "System.Char";
+    internal const string ByteTypeName = "System.Byte";
+    internal const string Int16TypeName = "System.Int16";
+    internal const string Int32TypeName = "System.Int32";
+    internal const string Int64TypeName = "System.Int64";
+    internal const string SingleTypeName = "System.Single";
+    internal const string DoubleTypeName = "System.Double";
+    internal const string BooleanTypeName = "System.Boolean";
+    internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
+    internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
+    internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
+    internal const string NullableInt16TypeName = "System.Nullable`1<System.Int16>";
+    internal const string NullableInt32TypeName = "System.Nullable`1<System.Int32>";
+    internal const string NullableInt64TypeName = "System.Nullable`1<System.Int64>";
+    internal const string NullableSingleTypeName = "System.Nullable`1<System.Single>";
+    internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
+    internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
+    internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
+    
     // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
@@ -74,53 +95,53 @@ public class ModuleWeaver
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
-        { "System.String", "String" },
-        { "System.Char", "Char" },
-        { "System.Byte", "Byte" },
-        { "System.Int16", "Int16" },
-        { "System.Int32", "Int32" },
-        { "System.Int64", "Int64" },
-        { "System.Single", "Single" },
-        { "System.Double", "Double" },
-        { "System.Boolean", "Boolean" },
-        { "System.DateTimeOffset", "DateTimeOffset" },
-        { "System.Byte[]", "ByteArray" },
-        { "System.Nullable`1<System.Char>", "NullableChar" },
-        { "System.Nullable`1<System.Byte>", "NullableByte" },
-        { "System.Nullable`1<System.Int16>", "NullableInt16" },
-        { "System.Nullable`1<System.Int32>", "NullableInt32" },
-        { "System.Nullable`1<System.Int64>", "NullableInt64" },
-        { "System.Nullable`1<System.Single>", "NullableSingle" },
-        { "System.Nullable`1<System.Double>", "NullableDouble" },
-        { "System.Nullable`1<System.Boolean>", "NullableBoolean" },
-        { "System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset" }
+        { StringTypeName, "String" },
+        { CharTypeName, "Char" },
+        { ByteTypeName, "Byte" },
+        { Int16TypeName, "Int16" },
+        { Int32TypeName, "Int32" },
+        { Int64TypeName, "Int64" },
+        { SingleTypeName, "Single" },
+        { DoubleTypeName, "Double" },
+        { BooleanTypeName, "Boolean" },
+        { DateTimeOffsetTypeName, "DateTimeOffset" },
+        { ByteArrayTypeName, "ByteArray" },
+        { NullableCharTypeName, "NullableChar" },
+        { NullableByteTypeName, "NullableByte" },
+        { NullableInt16TypeName, "NullableInt16" },
+        { NullableInt32TypeName, "NullableInt32" },
+        { NullableInt64TypeName, "NullableInt64" },
+        { NullableSingleTypeName, "NullableSingle" },
+        { NullableDoubleTypeName, "NullableDouble" },
+        { NullableBooleanTypeName, "NullableBoolean" },
+        { NullableDateTimeOffsetTypeName, "NullableDateTimeOffset" }
     };
 
-    private static readonly List<string> _primaryKeyTypes = new List<string>
+    private static readonly IEnumerable<string> _primaryKeyTypes = new[]
     {
-        "System.String",
-        "System.Char",
-        "System.Byte",
-        "System.Int16",
-        "System.Int32",
-        "System.Int64",
-        "System.Nullable`1<System.Char>",
-        "System.Nullable`1<System.Byte>",
-        "System.Nullable`1<System.Int16>",
-        "System.Nullable`1<System.Int32>",
-        "System.Nullable`1<System.Int64>",
+        StringTypeName,
+        CharTypeName,
+        ByteTypeName,
+        Int16TypeName,
+        Int32TypeName,
+        Int64TypeName,
+        NullableCharTypeName,
+        NullableByteTypeName,
+        NullableInt16TypeName,
+        NullableInt32TypeName,
+        NullableInt64TypeName,
     };
 
-    private static readonly List<string> _indexableTypes = new List<string>
+    private static readonly IEnumerable<string> _indexableTypes = new[]
     {
-        "System.String",
-        "System.Char",
-        "System.Byte",
-        "System.Int16",
-        "System.Int32",
-        "System.Int64",
-        "System.Boolean",
-        "System.DateTimeOffset"
+        StringTypeName,
+        CharTypeName,
+        ByteTypeName,
+        Int16TypeName,
+        Int32TypeName,
+        Int64TypeName,
+        BooleanTypeName,
+        DateTimeOffsetTypeName
     };
 
     private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
@@ -207,7 +228,7 @@ public class ModuleWeaver
         _system_Boolean = ModuleDefinition.TypeSystem.Boolean;
         _system_Int32 = ModuleDefinition.TypeSystem.Int32;
 
-        var dateTimeOffsetType = GetTypeFromSystemAssembly("System.DateTimeOffset");
+        var dateTimeOffsetType = GetTypeFromSystemAssembly(DateTimeOffsetTypeName);
         _system_DateTimeOffset = ModuleDefinition.ImportReference(dateTimeOffsetType);
         _system_DatetimeOffset_Op_Inequality = ModuleDefinition.ImportReference(dateTimeOffsetType.GetMethods().Single(m => m.Name == "op_Inequality"));
 
@@ -361,6 +382,15 @@ public class ModuleWeaver
         if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
+        }
+
+        var isRequired = prop.IsRequired();
+        if (isRequired && 
+            !prop.IsNullable() &&
+            prop.PropertyType.FullName != StringTypeName && 
+            prop.PropertyType.FullName != ByteArrayTypeName)
+        {
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {prop.PropertyType.FullName}.");
         }
 
         if (!prop.IsAutomatic())
