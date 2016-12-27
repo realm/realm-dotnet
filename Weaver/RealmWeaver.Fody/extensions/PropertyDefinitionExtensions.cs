@@ -23,6 +23,8 @@ using System.Runtime.CompilerServices;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using static ModuleWeaver;
+
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class PropertyDefinitionExtensions
 {
@@ -48,7 +50,7 @@ internal static class PropertyDefinitionExtensions
 
     internal static bool IsDateTimeOffset(this PropertyDefinition property)
     {
-        return property.IsType("DateTimeOffset", "System");
+        return property.PropertyType.FullName == DateTimeOffsetTypeName;
     }
 
     internal static bool IsNullable(this PropertyDefinition property)
@@ -58,17 +60,17 @@ internal static class PropertyDefinitionExtensions
 
     internal static bool IsSingle(this PropertyDefinition property)
     {
-        return property.IsType("Single", "System");
+        return property.PropertyType.FullName == SingleTypeName;
     }
 
     internal static bool IsDouble(this PropertyDefinition property)
     {
-        return property.IsType("Double", "System");
+        return property.PropertyType.FullName == DoubleTypeName;
     }
 
     internal static bool IsString(this PropertyDefinition property)
     {
-        return property.IsType("String", "System");
+        return property.PropertyType.FullName == StringTypeName;
     }
 
     internal static bool IsDescendantOf(this PropertyDefinition property, TypeReference other)
