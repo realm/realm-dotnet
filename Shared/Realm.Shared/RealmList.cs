@@ -55,11 +55,7 @@ namespace Realms
 
         #region implementing IList properties
 
-        public bool IsReadOnly => false;
-
-        public bool IsFixedSize => false;
-
-        public bool IsSynchronized => true;
+        public bool IsReadOnly => (_realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -81,7 +77,7 @@ namespace Realms
 
         public void Add(T item)
         {
-            this.AddObjectToRealmIfNeeded(item);
+            AddObjectToRealmIfNeeded(item);
             _listHandle.Add(item.ObjectHandle);
         }
 
@@ -107,7 +103,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException();
             }
 
-            if ((arrayIndex + Count) > array.Length)
+            if (arrayIndex + Count > array.Length)
             {
                 throw new ArgumentException();
             }
@@ -135,7 +131,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException();
             }
 
-            this.AddObjectToRealmIfNeeded(item);
+            AddObjectToRealmIfNeeded(item);
             _listHandle.Insert((IntPtr)index, item.ObjectHandle);
         }
 
