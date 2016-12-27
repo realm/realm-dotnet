@@ -412,6 +412,27 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void Dispose_WhenCalledMultipletimes_ShouldNotInvalidateOtherInstances()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = Realm.GetInstance();
+            var realm2 = Realm.GetInstance();
+
+            realm1.Write(() => realm1.Add(new Person()));
+            for (var i = 0; i < 5; i++)
+            {
+                realm1.Dispose();
+            }
+
+            var people = realm2.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm2.Dispose();
+        }
+
+        [Test]
         public void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
         {
             AsyncContext.Run(async () =>
@@ -433,6 +454,29 @@ namespace IntegrationTests
 
                 realm1.Dispose();
             });
+        }
+
+        [Test]
+        public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
+        {
+            var realm = Realm.GetInstance();
+            realm.Dispose();
+
+            Assert.That(realm.IsClosed);
+
+            Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.IsSameInstance(Realm.GetInstance()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.WriteAsync(_ => { }), Throws.TypeOf<ObjectDisposedException>());
         }
 
         private static void AddDummyData(Realm realm)

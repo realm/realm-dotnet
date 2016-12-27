@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -158,6 +159,42 @@ namespace Realms
                 File.Delete(fullpath + ".lock");
                 File.Delete(fullpath + ".note");
             }
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
+        {
+            var resultsHandle = new ResultsHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
+            finally
+            {
+                resultsHandle.SetHandle(resultsPtr);
+            }
+
+            return resultsHandle;
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static ObjectHandle CreateObjectHandle(IntPtr objectPtr, SharedRealmHandle sharedRealmHandle)
+        {
+            var objectHandle = new ObjectHandle(sharedRealmHandle);
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
+            finally
+            {
+                objectHandle.SetHandle(objectPtr);
+            }
+
+            return objectHandle;
         }
 
         #endregion
@@ -310,7 +347,19 @@ namespace Realms
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
         }
 
-        /// <inheritdoc />
+        private void ThrowIfDisposed()
+        {
+            if (IsClosed)
+            {
+                throw new ObjectDisposedException(typeof(Realm).FullName, "Cannot access a closed Realm.");
+            }
+        }
+
+        /// <summary>
+        /// Generic override determines whether the specified <see cref="object"/> is equal to the current Realm.
+        /// </summary>
+        /// <param name="obj">The <see cref="object"/> to compare with the current Realm.</param>
+        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(object obj) => Equals(obj as Realm);
 
         private bool Equals(Realm other)
@@ -338,12 +387,16 @@ namespace Realms
         /// <param name="other">The Realm to compare with the current Realm.</param>
         public bool IsSameInstance(Realm other)
         {
+            ThrowIfDisposed();
+
             return SharedRealmHandle.IsSameInstance(other.SharedRealmHandle);
         }
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
+            ThrowIfDisposed();
+
             return (int)SharedRealmHandle.DangerousGetHandle();
         }
 
@@ -370,6 +423,28 @@ namespace Realms
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
         /// </summary>
+        /// <remarks>Scheduled for removal in the next major release, as it is dangerous to call CreateObject and then assign a PrimaryKey.</remarks>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <returns>An object which is already managed.</returns>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        [Obsolete("Please create an object with new and pass to Add instead")]
+        public T CreateObject<T>() where T : RealmObject, new()
+        {
+            ThrowIfDisposed();
+
+            RealmObject.Metadata metadata;
+            var ret = CreateObject(typeof(T).Name, out metadata);
+            if (typeof(T) != metadata.Schema.Type)
+            {
+                throw new ArgumentException($"The type {typeof(T).FullName} does not match the original type the schema was created for - {metadata.Schema.Type?.FullName}");
+            }
+
+            return (T)ret;
+        }
+
+        /// <summary>
+        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// </summary>
         /// <returns>A dynamically-accessed Realm object.</returns>
         /// <param name="className">The type of object to create as defined in the schema.</param>
         /// <exception cref="RealmInvalidTransactionException">
@@ -389,6 +464,8 @@ namespace Realms
         /// </remarks>
         public dynamic CreateObject(string className)
         {
+            ThrowIfDisposed();
+
             RealmObject.Metadata ignored;
             return CreateObject(className, out ignored);
         }
@@ -481,6 +558,8 @@ namespace Realms
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
         public T Add<T>(T obj, bool update = false) where T : RealmObject
         {
+            ThrowIfDisposed();
+
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
             AddInternal(obj, typeof(T), update);
             return obj;
@@ -505,6 +584,8 @@ namespace Realms
         /// </remarks>
         public void Add(RealmObject obj, bool update = false)
         {
+            ThrowIfDisposed();
+
             AddInternal(obj, obj?.GetType(), update);
         }
 
@@ -566,42 +647,6 @@ namespace Realms
             metadata.Helper.CopyToRealm(obj, update, setPrimaryKey);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
-        {
-            var resultsHandle = new ResultsHandle();
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                resultsHandle.SetHandle(resultsPtr);
-            }
-
-            return resultsHandle;
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static ObjectHandle CreateObjectHandle(IntPtr objectPtr, SharedRealmHandle sharedRealmHandle)
-        {
-            var objectHandle = new ObjectHandle(sharedRealmHandle);
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                objectHandle.SetHandle(objectPtr);
-            }
-
-            return objectHandle;
-        }
-
         /// <summary>
         /// Factory for a write <see cref="Transaction"/>. Essential object to create scope for updates.
         /// </summary>
@@ -620,6 +665,8 @@ namespace Realms
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a <see cref="Realm"/>.</returns>
         public Transaction BeginWrite()
         {
+            ThrowIfDisposed();
+
             return new Transaction(this);
         }
 
@@ -650,6 +697,8 @@ namespace Realms
         /// </param>
         public void Write(Action action)
         {
+            ThrowIfDisposed();
+
             using (var transaction = BeginWrite())
             {
                 action();
@@ -691,6 +740,8 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
         {
+            ThrowIfDisposed();
+
             if (action == null)
             {
                 throw new ArgumentNullException(nameof(action));
@@ -717,6 +768,8 @@ namespace Realms
         /// </returns>
         public bool Refresh()
         {
+            ThrowIfDisposed();
+
             return SharedRealmHandle.Refresh();
         }
 
@@ -727,6 +780,8 @@ namespace Realms
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this <see cref="Realm"/>.</returns>
         public IQueryable<T> All<T>() where T : RealmObject
         {
+            ThrowIfDisposed();
+
             var type = typeof(T);
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(type.Name, out metadata) || metadata.Schema.Type != type)
@@ -745,6 +800,8 @@ namespace Realms
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
         public IQueryable<dynamic> All(string className)
         {
+            ThrowIfDisposed();
+
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
             {
@@ -770,6 +827,8 @@ namespace Realms
         /// </exception>
         public T Find<T>(long? primaryKey) where T : RealmObject
         {
+            ThrowIfDisposed();
+
             var metadata = Metadata[typeof(T).Name];
             var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
@@ -791,6 +850,8 @@ namespace Realms
         /// </exception>
         public T Find<T>(string primaryKey) where T : RealmObject
         {
+            ThrowIfDisposed();
+
             var metadata = Metadata[typeof(T).Name];
             var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
@@ -815,6 +876,8 @@ namespace Realms
         /// </exception>
         public RealmObject Find(string className, long? primaryKey)
         {
+            ThrowIfDisposed();
+
             var metadata = Metadata[className];
             var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
@@ -836,6 +899,8 @@ namespace Realms
         /// </exception>
         public RealmObject Find(string className, string primaryKey)
         {
+            ThrowIfDisposed();
+
             var metadata = Metadata[className];
             var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
@@ -859,6 +924,8 @@ namespace Realms
         /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
+            ThrowIfDisposed();
+
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj));
@@ -886,6 +953,8 @@ namespace Realms
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
         {
+            ThrowIfDisposed();
+
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
@@ -912,6 +981,8 @@ namespace Realms
         /// </exception>
         public void RemoveAll<T>() where T : RealmObject
         {
+            ThrowIfDisposed();
+
             RemoveRange(All<T>());
         }
 
@@ -927,6 +998,8 @@ namespace Realms
         /// </exception>
         public void RemoveAll(string className)
         {
+            ThrowIfDisposed();
+
             RemoveRange(All(className));
         }
 
@@ -938,6 +1011,8 @@ namespace Realms
         /// </exception>
         public void RemoveAll()
         {
+            ThrowIfDisposed();
+
             foreach (var metadata in Metadata.Values)
             {
                 var resultsHandle = MakeResultsForTable(metadata);
