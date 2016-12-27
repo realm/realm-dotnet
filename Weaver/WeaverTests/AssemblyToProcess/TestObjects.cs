@@ -140,4 +140,18 @@ namespace AssemblyToProcess
         [PrimaryKey]
         public long? Int64Property { get; set; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class GetterOnlyUnsupportedProperty : RealmObject
+    {
+        public int IntPropety { get; set; }
+
+        public MyEnum EnumValue { get; }
+
+        public MyEnum LambdaEnum => (MyEnum)IntPropety;
+
+        public enum MyEnum
+        {
+        }
+    }
 }

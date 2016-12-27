@@ -78,7 +78,6 @@ namespace Realms.Sync
         }
 
         /// <inheritdoc />
-        [Ignored]
         public ErrorCode? ErrorCode => ErrorCodeHelper.GetErrorCode(StatusCode);
 
         /// <summary>
