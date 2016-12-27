@@ -779,8 +779,15 @@ public class ModuleWeaver
                 *if* castInstace.field is a RealmObject descendant
                     castInstance.Realm.Add(castInstance.field, update);
                     castInstance.Field = castInstance.field;
-                *else*
-                    if (castInstance.field != default(fieldType))
+                *else if* property is PK
+                    if (setPrimaryKey)
+                    {
+                        castInstance.Property = castInstance.Field;
+                    }
+                *else if* property is [Required] or nullable
+                    castInstance.Property = castInstance.Field;
+                *else* 
+                    if (!setPrimaryKey || castInstance.field != default(fieldType))
                     {
                         castInstance.Property = castInstance.Field;
                     }
@@ -788,10 +795,17 @@ public class ModuleWeaver
                 *foreach* list woven property in castInstance's schema
                 var list = castInstance.field;
                 castInstance.field = null;
-                for (var i = 0; i < list.Count; i++)
+                if (!setPrimaryKey)
                 {
-                    castInstance.Realm.Add(list[i], update);
-                    castInstance.Property.Add(list[i]);
+                    castInstance.Property.Clear();
+                }
+                if (list != null)
+                {
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        castInstance.Realm.Add(list[i], update);
+                        castInstance.Property.Add(list[i]);
+                    }
                 }
             */
 
@@ -842,7 +856,7 @@ public class ModuleWeaver
                     Instruction addPlaceholder = null;
 
                     // If the property is non-nullable, we want the following code to execute:
-                    // if (update || castInstance.field != default(fieldType))
+                    // if (!setPrimaryKey || castInstance.field != default(fieldType))
                     // {
                     //     castInstance.Property = castInstance.field
                     // }
@@ -851,7 +865,7 @@ public class ModuleWeaver
                     // because we have no idea what the previous value was. If it's an add, we're certain that the row will contain the default value, so no need to set it.
                     // *updatePlaceholder* will be the Brtrue instruction that will skip the default check and move to the property setting logic.
                     // The default check branching instruction is inserted above the *setStartPoint* instruction later on.
-                    Instruction updatePlaceholder = null;
+                    Instruction setPrimaryKeyPlaceholder = null;
                     if (property.IsDescendantOf(_realmObject))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
@@ -870,9 +884,9 @@ public class ModuleWeaver
                     }
                     else if (!property.IsNullable() && !property.IsPrimaryKey() && !property.IsRequired())
                     {
-                        il.Append(il.Create(OpCodes.Ldarg_2));
-                        updatePlaceholder = il.Create(OpCodes.Nop);
-                        il.Append(updatePlaceholder);
+                        il.Append(il.Create(OpCodes.Ldarg_3));
+                        setPrimaryKeyPlaceholder = il.Create(OpCodes.Nop);
+                        il.Append(setPrimaryKeyPlaceholder);
 
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -923,9 +937,9 @@ public class ModuleWeaver
                             il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, setEndPoint));
                         }
 
-                        if (updatePlaceholder != null)
+                        if (setPrimaryKeyPlaceholder != null)
                         {
-                            il.Replace(updatePlaceholder, il.Create(OpCodes.Brtrue_S, setStartPoint));
+                            il.Replace(setPrimaryKeyPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
                     }
                     else if (property.IsPrimaryKey())
@@ -942,17 +956,19 @@ public class ModuleWeaver
                     var iList_Get_ItemMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Item", genericType);
                     var iList_AddMethodReference = GetIListMethodReference(propertyTypeDefinition, "Add", genericType);
                     var iList_Get_CountMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Count", genericType);
+                    var iList_ClearMethodReference = GetIListMethodReference(propertyTypeDefinition, "Clear", genericType);
+                    var propertyGetterMethodReference = ModuleDefinition.ImportReference(property.GetMethod);
 
                     var iteratorStLoc = (byte)(currentStloc + 1);
 
-                    // if (update ||
-                    var isUpdateCheck = il.Create(OpCodes.Ldarg_2);
-                    il.Append(isUpdateCheck);
+                    // if (!setPrimaryKey ||
+                    var isPrimaryKeyCheck = il.Create(OpCodes.Ldarg_3);
+                    il.Append(isPrimaryKeyCheck);
 
                     // castInstance.field != null)
                     il.Append(il.Create(OpCodes.Ldloc_0));
-                    var nullCheck = il.Create(OpCodes.Ldfld, field);
-                    il.Append(nullCheck);
+                    var fieldNullCheck = il.Create(OpCodes.Ldfld, field);
+                    il.Append(fieldNullCheck);
 
                     // var list = castInstance.field;
                     // castInstance.field = null;
@@ -963,13 +979,30 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Ldloc_0));
                     il.Append(il.Create(OpCodes.Ldnull));
                     il.Append(il.Create(OpCodes.Stfld, field));
+
+                    // if (!setPrimaryKey)
+                    var clearSkipPlaceholder = il.Create(OpCodes.Ldarg_3);
+                    il.Append(clearSkipPlaceholder);
+
+                    // castInstance.Property.Clear();
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_ClearMethodReference));
+
+                    // if (list == null)
+                    var localListVarNullCheck = il.Create(OpCodes.Ldloc_S, currentStloc);
+                    il.Append(localListVarNullCheck);
+
+                    // if (setPrimaryKey), skip List.Clear and jump to checking the list == null
+                    il.InsertAfter(clearSkipPlaceholder, il.Create(OpCodes.Brtrue_S, localListVarNullCheck));
+
                     il.Append(il.Create(OpCodes.Ldc_I4_0));
                     il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
 
                     var cyclePlaceholder = il.Create(OpCodes.Nop);
                     il.Append(cyclePlaceholder);
 
-                    // this.Realm.Add(list[i], update)
+                    // castInstance.Realm.Add(list[i], update)
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
                     il.Append(il.Create(OpCodes.Call, _realmObjectRealmGetter));
@@ -980,9 +1013,9 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
                     il.Append(il.Create(OpCodes.Pop));
 
-                    // Property.Add(list[i]);
+                    // castInstance.Property.Add(list[i]);
                     il.Append(il.Create(OpCodes.Ldloc_0));
-                    il.Append(il.Create(OpCodes.Callvirt, ModuleDefinition.ImportReference(property.GetMethod)));
+                    il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
                     il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
                     il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
                     il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
@@ -1003,9 +1036,9 @@ public class ModuleWeaver
 
                     var setterEnd = il.Create(OpCodes.Nop);
                     il.Append(setterEnd);
-                    il.InsertAfter(nullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
-
-                    il.InsertAfter(isUpdateCheck, il.Create(OpCodes.Brtrue_S, setterStart));
+                    il.InsertAfter(fieldNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                    il.InsertAfter(localListVarNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                    il.InsertAfter(isPrimaryKeyCheck, il.Create(OpCodes.Brfalse_S, setterStart));
 
                     currentStloc += 2;
                 }
