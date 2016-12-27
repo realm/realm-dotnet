@@ -28,12 +28,12 @@ namespace Realms.Sync
     /// and add it to the <see cref="User"/>'s ManagementRealm.
     /// After that, you should subsribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server
     /// processes the response.
-    /// Once the request has been processed, the <see cref="ObjectStatus"/> and <see cref="StatusCode"/> will be updated
-    /// accordingly.
+    /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
+    /// <see cref="ErrorCode"/> will be updated accordingly.
     /// If the request has been processed successfully, the <see cref="RealmUrl"/> will be populated and you can use it
     /// to create a new <see cref="SyncConfiguration"/>.
     /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
-    /// failure and <see cref="StatusCode"/> will be set to a non-zero value.
+    /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
     [Explicit]
     public class PermissionOfferResponse : RealmObject, IPermissionObject
@@ -51,9 +51,8 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-        /// <inheritdoc />
         [MapTo("statusCode")]
-        public int? StatusCode { get; private set; }
+        private int? StatusCode { get; set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
@@ -75,6 +74,9 @@ namespace Realms.Sync
                 }
             }
         }
+
+        /// <inheritdoc />
+        public ErrorCode? ErrorCode => ErrorCodeHelper.GetErrorCode(StatusCode);
 
         /// <summary>
         /// Gets the token thas was provided by the offering user.

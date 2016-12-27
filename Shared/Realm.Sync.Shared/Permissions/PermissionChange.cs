@@ -32,6 +32,8 @@ namespace Realms.Sync
     /// with either the existing or default permissions as applicable. As a
     /// side-effect this causes that the default permissions are permanently
     /// materialized for the affected Realm files and the affected user.
+    /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
+    /// <see cref="ErrorCode"/> will be updated accordingly.
     /// </remarks>
     [Explicit]
     public class PermissionChange : RealmObject, IPermissionObject
@@ -49,9 +51,8 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-        /// <inheritdoc />
         [MapTo("statusCode")]
-        public int? StatusCode { get; private set; }
+        private int? StatusCode { get; set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
@@ -73,6 +74,9 @@ namespace Realms.Sync
                 }
             }
         }
+
+        /// <inheritdoc />
+        public ErrorCode? ErrorCode => ErrorCodeHelper.GetErrorCode(StatusCode);
 
         /// <summary>
         /// Gets the user or users to effect.

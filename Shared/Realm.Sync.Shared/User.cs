@@ -241,11 +241,7 @@ namespace Realms.Sync
                     {
                         var problem = JsonValue.Load(stream);
 
-                        var code = (ErrorCode)(int)problem["code"];
-                        if (!Enum.IsDefined(typeof(ErrorCode), code))
-                        {
-                            code = ErrorCode.Unknown;
-                        }
+                        var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
 
                         throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), problem["title"]);
                     }

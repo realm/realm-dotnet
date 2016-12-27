@@ -29,12 +29,12 @@ namespace Realms.Sync
     /// When offering permissions, you should create the offer and add it to the <see cref="User"/>'s Management Realm.
     /// Then you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has 
     /// processed the request.
-    /// Once the request has been processed, the <see cref="ObjectStatus"/> and <see cref="StatusCode"/> 
-    /// will be updated accordingly.
+    /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
+    /// <see cref="ErrorCode"/> will be updated accordingly.
     /// If the request has been processed successfully, the <see cref="Token"/> will be populated and you can share it
     /// with users you wish to grant permissions to.
     /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
-    /// failure and <see cref="StatusCode"/> will be set to a non-zero value.
+    /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
     public class PermissionOffer : RealmObject, IPermissionObject
     {
@@ -48,13 +48,13 @@ namespace Realms.Sync
         public DateTimeOffset UpdatedAt { get; }
 
         /// <inheritdoc />
-        public int? StatusCode { get; }
-
-        /// <inheritdoc />
         public string StatusMessage { get; }
 
         /// <inheritdoc />
         public ManagementObjectStatus Status { get; }
+
+        /// <inheritdoc />
+        public ErrorCode? ErrorCode { get; }
 
         /// <summary>
         /// Gets the token that can be used to offer the permissions defined in this object to another user.

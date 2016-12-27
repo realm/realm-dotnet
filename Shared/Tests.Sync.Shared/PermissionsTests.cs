@@ -98,7 +98,7 @@ namespace Tests.Sync.Shared
                 var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Error));
                 Assert.That(permissionOffer.Token, Is.Null);
-                Assert.That(permissionOffer.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
+                Assert.That(permissionOffer.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
                 Assert.That(permissionOffer.StatusMessage, Is.Not.Null);
             });
         }
@@ -117,7 +117,7 @@ namespace Tests.Sync.Shared
                 await Task.Delay(5000);
                 var permissionResponse = await CreateResponse(user, permissionOffer.Token);
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionResponse.StatusCode, Is.EqualTo((int)ErrorCode.ExpiredPermissionOffer));
+                Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
                 Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
             });
         }
@@ -130,7 +130,7 @@ namespace Tests.Sync.Shared
                 var user = await GetUser();
                 var permissionResponse = await CreateResponse(user, "Some string");
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionResponse.StatusCode, Is.Not.Null.And.GreaterThan(0));
+                Assert.That(permissionResponse.ErrorCode, Is.Not.Null.And.GreaterThan(0));
                 Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
             });
         }

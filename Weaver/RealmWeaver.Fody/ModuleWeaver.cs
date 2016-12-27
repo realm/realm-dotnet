@@ -422,9 +422,6 @@ public class ModuleWeaver
             ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
             ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2);
         }
-
-        // treat IList and RealmList similarly but IList gets a default so is useable as standalone
-        // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
         else if (prop.IsIList())
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
@@ -455,11 +452,6 @@ public class ModuleWeaver
         }
         else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
         {
-            if (!prop.IsAutomatic())
-            {
-                return WeaveResult.Warning($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
-            }
-
             // with casting in the _realmObject methods, should just work
             ReplaceGetter(prop, columnName,
                 new GenericInstanceMethod(_genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
@@ -491,10 +483,14 @@ public class ModuleWeaver
             var backingDef = backingField as FieldDefinition;
             if (backingDef != null)
             {
-                backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+                backingDef.Attributes &= ~FieldAttributes.InitOnly; // without a set; auto property has this flag we must clear
             }
 
             ReplaceBacklinksGetter(prop, backingField, columnName, elementType);
+        }
+        else if (prop.SetMethod == null)
+        {
+            return WeaveResult.Skipped();
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
