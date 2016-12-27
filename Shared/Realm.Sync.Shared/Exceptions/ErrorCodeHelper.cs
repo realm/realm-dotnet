@@ -30,13 +30,12 @@ namespace Realms.Sync
                 case 0:
                     return null;
                 default:
-                    var errorCode = (ErrorCode)statusCode.Value;
-                    if (!Enum.IsDefined(typeof(ErrorCode), errorCode))
+                    if (!Enum.IsDefined(typeof(ErrorCode), statusCode.Value))
                     {
-                        errorCode = ErrorCode.Unknown;
+                        return ErrorCode.Unknown;
                     }
 
-                    return errorCode;
+                    return (ErrorCode)statusCode.Value;
             }
         }
     }
