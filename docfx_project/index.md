@@ -1,4 +1,75 @@
-# This is the **HOMEPAGE**.
-Refer to [Markdown](http://daringfireball.net/projects/markdown/) for how to write markdown files.
-## Quick Start Notes:
-1. Add images to the *images* folder if the file is referencing an image.
+Realm for Xamarin
+=================
+
+The C# API of Realm is incredibly simple because it leverages the power of LINQ for querying and the [Fody](https://github.com/Fody/Fody) weaver to transform plain C# class declarations into persistent objects.
+
+The main classes you will use are:
+
+- [Realm](xref:Realms.Realm)
+- [RealmObject](xref:Realms.RealmObject)
+- [Transaction](xref:Realms.Transaction)
+
+Helper classes you may use are:
+
+- [RealmConfiguration](xref:Realms.RealmConfiguration)
+
+Querying and Sorting are provided on a [Realm](xref:Realms.Realm) using standard LINQ syntax including `Where` and `OrderBy`.
+To see what is supported, refer to the [LINQ Support](articles/linqsupport.md) page.
+
+**Realm Overview Diagram**
+
+![Overview Diagram](images/UnderstandingRealmForXamarin.png)
+
+Documentation
+-------------
+The documentation can be found at [realm.io/docs/xamarin/latest](https://realm.io/docs/xamarin/latest/).
+
+The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api/).
+
+Source
+------
+Source is available [on Github](https://github.com/realm/realm-dotnet).
+
+Instructions on how to build from source are included in that repository's `README.md`. 
+
+
+Minimal Sample
+--------------
+
+This trivial sample shows the use of most of the classes mentioned above:
+
+- getting a [Realm](xref:Realms.Realm) with default name.
+- declaring a simple model with a single [RealmObject](xref:Realms.RealmObject) class - notice how it uses standard types for properties.
+- using a [Transaction](xref:Realms.Transaction) to create an object in the Realm.
+
+Note that in most debugging situations the default Realm will be retained so if you run this sample fragment multiple times you should see the number created increase. This is on purpose so you are assured the database is being persisted between runs.
+
+```csharp
+using Realms;
+
+class Hero : RealmObject
+{
+    public string SuperName { get; set; }
+    public int SuperScore { get; set; }
+}
+
+/// put this code in an OnLoad or simple button-press handler
+using (var realm = Realm.GetInstance())
+{
+    realm.Write(() =>
+    {
+        realm.Add(new Hero
+        {
+            SuperName = "Thor",
+            SuperScore = 100
+        });
+    });
+    var numAwe = _realm.All<Hero>().Count();
+    Debug.WriteLine($"Created {numAwe} heroes");
+}
+```
+
+
+Problem reports and Feature requests
+------
+The [github issue tracker](https://github.com/realm/realm-dotnet/issues) can be used to report problems or make feature requests.
