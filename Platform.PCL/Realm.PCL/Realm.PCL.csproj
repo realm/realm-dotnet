@@ -141,6 +141,7 @@
     <Compile Include="..\..\Shared\Realm.Shared\Attributes\RequiredAttribute.cs">
       <Link>Attributes\RequiredAttribute.cs</Link>
     </Compile>
+    <Compile Include="Extensions\ReadOnlyCollectionExtensionsPCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
