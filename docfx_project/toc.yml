@@ -1,6 +1,9 @@
 - name: Api Documentation
   href: api/
   homepage: api/index.md
-- name: LINQ support
-  href: articles/
-  homepage: articles/linqsupport.md
+- name: LINQ Support
+  href: linqsupport/
+  homepage: linqsupport/linqsupport.md
+- name: Changelog
+  href: changelog/
+  homepage: ../CHANGELOG.md

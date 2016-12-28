@@ -1,4 +1,9 @@
 apiRules:
+- include:
+    hasAttribute:
+      uid: System.ComponentModel.EditorBrowsableAttribute
+      ctorArguments:
+      - System.ComponentModel.EditorBrowsableState.Never
 - exclude:
     uidRegex: ^Realms\.RealmObject\.Get.*Value.*$
     type: Method
