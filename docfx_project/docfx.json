@@ -69,10 +69,7 @@
 			"_appTitle": "Realm"
 		},
 		"fileMetadataFiles": [],
-		"template": [
-			"templates/realm",
-			"default"
-		],
+		"template": [ "default", "templates/realm" ],
 		"postProcessors": [],
 		"noLangKeyword": false
 	}
