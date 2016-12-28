@@ -1,0 +1,13 @@
+apiRules:
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.Get.*Value.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.Set.*Value.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.GetBacklinks.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Weaving$
+    type: Namespace

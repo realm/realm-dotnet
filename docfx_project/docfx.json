@@ -15,7 +15,8 @@
 					]
 				}
 			],
-			"dest": "api"
+			"dest": "api",
+			"filter": "docfx_project/filterConfig.yml"
 		}
 	],
 	"build": {
@@ -63,9 +64,13 @@
 		],
 		"dest": "_site",
 		"globalMetadataFiles": [],
+		"globalMetadata": {
+			"_enableSearch": true,
+			"_appTitle": "Realm"
+		},
 		"fileMetadataFiles": [],
 		"template": [
-			"templates/default"
+			"templates/realm"
 		],
 		"postProcessors": [],
 		"noLangKeyword": false
