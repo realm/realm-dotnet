@@ -25,14 +25,34 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
     /// <summary>
     /// Base for any object that can be persisted in a Realm.
     /// </summary>
+    /// <remarks>
+    /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
+    /// </remarks>
+    [Preserve(AllMembers = true, Conditional = false)]
     public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
+        #region static
+
+        #if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
+        #endif
+        internal static bool NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return false;
+        }
+
+        #endregion
+
+        private event PropertyChangedEventHandler _propertyChanged;
+
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
@@ -46,6 +66,24 @@ namespace Realms
             remove
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            }
+        }
+
+        internal ObjectHandle ObjectHandle
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
+            }
+        }
+
+        internal Metadata ObjectMetadata
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return null;
             }
         }
 
@@ -98,6 +136,15 @@ namespace Realms
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
                 return null;
             }
+        }
+
+        internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        internal class Metadata
+        {
         }
 
         #region Getters
@@ -263,6 +310,11 @@ namespace Realms
             return null;
         }
 
+        internal RealmResults<T> GetBacklinks<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
         #endregion
 
         #region Setters
@@ -299,6 +351,12 @@ namespace Realms
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetByteValue(string propertyName, byte value)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableCharValueUnique(string propertyName, char? value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -370,6 +428,12 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetSingleValue(string propertyName, float value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -417,6 +481,8 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        // Originally a generic fallback, now used only for RealmObject To-One relationship properties
+        // most other properties handled with woven type-specific setters above
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {
@@ -489,6 +555,16 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
+        }
+        
+        private void SubscribeForNotifications()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        private void UnsubscribeFromNotifications()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
     }
 }

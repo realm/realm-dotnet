@@ -142,6 +142,19 @@
       <Link>Attributes\RequiredAttribute.cs</Link>
     </Compile>
     <Compile Include="Extensions\ReadOnlyCollectionExtensionsPCL.cs" />
+    <Compile Include="Handles\ObjectHandlePCL.cs" />
+    <Compile Include="Handles\RealmHandlePCL.cs" />
+    <Compile Include="Handles\ResultsHandlePCL.cs" />
+    <Compile Include="Handles\SharedRealmHandlePCL.cs" />
+    <Compile Include="Handles\CollectionHandleBasePCL.cs" />
+    <Compile Include="Handles\ListHandlePCL.cs" />
+    <Compile Include="RealmCollectionBasePCL.cs" />
+    <Compile Include="Linq\RealmCollectionNativeHelperPCL.cs" />
+    <Compile Include="Linq\RealmResultsPCL.cs" />
+    <Compile Include="Linq\RealmResultsProviderPCL.cs" />
+    <Compile Include="Linq\RealmResultsVisitorPCL.cs" />
+    <Compile Include="RealmListPCL.cs" />
+    <Compile Include="native\NativeExceptionPCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
