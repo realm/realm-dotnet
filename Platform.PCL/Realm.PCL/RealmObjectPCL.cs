@@ -77,7 +77,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Gets the <see cref="Realm"/> instance this object belongs to, or <code>null</code> if it is unmanaged.
+        /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         public Realm Realm
         {
@@ -461,7 +461,7 @@ namespace Realms
         /// This can be used to react to changes to the current object, e.g. raising `PropertyChanged` for computed properties.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code>
         /// class MyClass : RealmObject
         /// {
         ///     public int StatusCodeRaw { get; set; }
@@ -476,7 +476,7 @@ namespace Realms
         ///         }
         ///     }
         /// }
-        /// </c>
+        /// </code>
         /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
         /// subscribers that <c>StatusCode</c> has changed, we override <c>OnPropertyChanged</c> and raise <c>PropertyChanged</c>
         /// manually.

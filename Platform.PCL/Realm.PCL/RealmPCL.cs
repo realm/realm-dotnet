@@ -208,7 +208,7 @@ namespace Realms
         /// <remarks>
         /// <b>WARNING:</b> if the dynamic object has a PrimaryKey then that must be the <b>first property set</b> otherwise other property changes may be lost.<br/>
         /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
-        /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
+        /// If the realm has been created from a typed schema as is the default case when calling <c>Realm.GetInstance()</c> the returned object will be an instance of a user-defined class, as if created by <c>Realm.CreateObject&lt;T&gt;()</c>.
         /// </remarks>
         public dynamic CreateObject(string className)
         {
@@ -256,13 +256,17 @@ namespace Realms
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <example><c>
+        /// <example>
+        /// <code>
         /// using (var trans = realm.BeginWrite()) 
         /// { 
-        ///     var rex = realm.CreateObject&lt;Dog&gt;();
-        ///     rex.Name = "Rex";
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Name = "Rex"
+        ///     });
         ///     trans.Commit();
-        /// }</c>
+        /// }
+        /// </code>
         /// </example>
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
@@ -280,13 +284,17 @@ namespace Realms
         /// Be careful of wrapping multiple single property updates in multiple `Write` calls. It is more efficient to update several properties 
         /// or even create multiple objects in a single Write, unless you need to guarantee finer-grained updates.
         /// </remarks>
-        /// <example><c>
+        /// <example>
+        /// <code>
         /// realm.Write(() => 
         /// {
-        ///     d = realm.CreateObject&lt;Dog&gt;();
-        ///     d.Name = "Eddie";
-        ///     d.Age = 5;
-        /// });</c>
+        ///     realm.Add(new Dog
+        ///     {
+        ///         Name = "Eddie",
+        ///         Age = 5
+        ///     });
+        /// });
+        /// </code>
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         public void Write(Action action)
@@ -304,7 +312,7 @@ namespace Realms
         /// if they're used on the worker thread.
         /// </remarks>
         /// <example>
-        /// <c>
+        /// <code>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
@@ -319,7 +327,7 @@ namespace Realms
         ///         });
         ///     }
         /// });
-        /// </c>
+        /// </code>
         /// Note that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>

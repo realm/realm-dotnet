@@ -46,7 +46,15 @@ namespace Realms
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>
         /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
-        /// <example>For example: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`.</example>
+        /// <example>
+        /// <code>
+        /// config.ObjectClasses = new Type[] 
+        /// { 
+        ///     typeof(CommonClass), 
+        ///     typeof(RareClass) 
+        /// };
+        /// </code>
+        /// </example>
         /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
         public Type[] ObjectClasses { get; set; }
 
