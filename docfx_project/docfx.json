@@ -70,7 +70,8 @@
 		},
 		"fileMetadataFiles": [],
 		"template": [
-			"templates/realm"
+			"templates/realm",
+			"default"
 		],
 		"postProcessors": [],
 		"noLangKeyword": false
