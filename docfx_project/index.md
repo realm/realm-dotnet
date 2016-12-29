@@ -14,7 +14,7 @@ Helper classes you may use are:
 - [RealmConfiguration](xref:Realms.RealmConfiguration)
 
 Querying and Sorting are provided on a [Realm](xref:Realms.Realm) using standard LINQ syntax including `Where` and `OrderBy`.
-To see what is supported, refer to the [LINQ Support](linqsupport/linqsupport.md) page.
+To see what is supported, refer to the [LINQ Support](linqsupport.md) page.
 
 **Realm Overview Diagram**
 

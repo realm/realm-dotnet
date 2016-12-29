@@ -26,14 +26,14 @@
 					"**/*.yml"
 				],
 				"src": "obj/temp/api",
-				"dest": "api"
+				"dest": "reference"
 			},
 			{
 				"files": [
-					"linqsupport/*.md",
+					"linqsupport.md",
 					"toc.yml",
-					"*.md",
-					"api/index.md"
+					"index.md",
+					"reference/index.md"
 				],
 				"exclude": [
 					"obj/**",
@@ -42,8 +42,7 @@
 			},
 			{
 				"files": "CHANGELOG.md",
-				"src": "..",
-				"dest": "changelog"
+				"src": ".."
 			}
 		],
 		"resource": [
@@ -79,7 +78,14 @@
 			"_appFaviconPath": "images/favicon.ico"
 		},
 		"fileMetadataFiles": [],
-		"template": [ "default", "templates/realm" ],
+		"fileMetadata": {
+			"_disableBreadcrumb": {
+				"linqsupport.md": true,
+				"index.md": true,
+				"../CHANGELOG.md": true
+			}
+		},
+		"template": [ "default", "template" ],
 		"postProcessors": [],
 		"noLangKeyword": false
 	}
