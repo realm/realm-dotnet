@@ -16,7 +16,7 @@
 				}
 			],
 			"dest": "obj/temp/api",
-			"filter": "docfx_project/filterConfig.yml"
+			"filter": "Docs/filterConfig.yml"
 		}
 	],
 	"build": {
