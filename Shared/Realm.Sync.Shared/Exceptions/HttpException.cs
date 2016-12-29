@@ -29,16 +29,19 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="HttpStatusCode"/> of the response.
         /// </summary>
+        /// <value>A well known <see cref="HttpStatusCode"/>.</value>
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
         /// Gets the ReasonPhrase of the response.
         /// </summary>
+        /// <value>The ReasonPhrase of the response.</value>
         public string ReasonPhrase { get; }
 
         /// <summary>
         /// Gets the body of the response.
         /// </summary>
+        /// <value>The body of the response.</value>
         public string Payload { get; }
 
         internal HttpException(HttpStatusCode code, string reasonPhrase, string payload) :

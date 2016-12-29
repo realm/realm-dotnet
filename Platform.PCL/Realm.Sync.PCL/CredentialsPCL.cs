@@ -97,6 +97,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the identity provider for the credentials.
         /// </summary>
+        /// <value>The identity provider, such as Google, Facebook, etc.</value>
         public string IdentityProvider
         {
             get
@@ -109,6 +110,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the access token.
         /// </summary>
+        /// <value>The access token.</value>
         public string Token
         {
             get
@@ -121,6 +123,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets additional user information associated with the credentials.
         /// </summary>
+        /// <value>A dictionary, containing the additional information.</value>
         public IReadOnlyDictionary<string, object> UserInfo
         {
             get

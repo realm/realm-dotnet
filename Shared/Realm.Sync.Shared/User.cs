@@ -41,7 +41,7 @@ namespace Realms.Sync
         /// Gets the currently logged-in user. If none exists, null is returned. 
         /// If more than one user is currently logged in, an exception is thrown.
         /// </summary>
-        /// <value>Valid user or null to indicate nobody logged in.</value>
+        /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
         /// <exception cref="RealmException">Thrown if there are more than one users logged in.</exception>
         public static User Current
         {
@@ -62,6 +62,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets all currently logged in users.
         /// </summary>
+        /// <value>An array of valid logged in users.</value>
         public static User[] AllLoggedIn
         {
             get
@@ -131,16 +132,19 @@ namespace Realms.Sync
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
+        /// <value>A unique string that can be used for refreshing the user's credentials.</value>
         public string RefreshToken => Handle.GetRefreshToken();
 
         /// <summary>
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
         /// </summary>
+        /// <value>A string that uniquely identifies that user in Realm Object Server</value>
         public string Identity => Handle.GetIdentity();
 
         /// <summary>
         /// Gets the server URI that was used for authentication.
         /// </summary>
+        /// <value>The <see cref="Uri"/> used to connect to the authentication service.</value>
         public Uri ServerUri
         {
             get
@@ -158,6 +162,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the current state of the user.
         /// </summary>
+        /// <value>A value indicating whether the user is active, logged out, or an error has occurred.</value>
         public UserState State => Handle.GetState();
 
         internal readonly SyncUserHandle Handle;

@@ -28,11 +28,13 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the kind of session error this exception represents.
         /// </summary>
+        /// <value>An enum value, describing the root cause of the error.</value>
         public SessionErrorKind Kind { get; }
 
         /// <summary>
         /// Gets the error code that describes the session error this exception represents.
         /// </summary>
+        /// <value>An enum value, providing more detailed information for the cause of the error.</value>
         public ErrorCode ErrorCode { get; }
 
         internal SessionErrorException(string message, SessionErrorKind kind, ErrorCode errorCode) : base(message)

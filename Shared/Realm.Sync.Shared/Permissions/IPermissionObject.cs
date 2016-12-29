@@ -28,11 +28,13 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the unique identifier of this object in the Management realm.
         /// </summary>
+        /// <value>The unique id of the object.</value>
         string Id { get; }
 
         /// <summary>
         /// Gets the creation time of this object.
         /// </summary>
+        /// <value>A <see cref="DateTimeOffset"/> indicating the object's creation date and time.</value>
         DateTimeOffset CreatedAt { get; }
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace Realms.Sync
         /// This should be filled by the client with the <see cref="CreatedAt"/>
         /// date and is updated by the server with the current object when the object is processed.
         /// </remarks>
+        /// <value>A <see cref="DateTimeOffset"/> indicating the last time the object has been updated.</value>
         DateTimeOffset UpdatedAt { get; }
 
         /// <summary>
@@ -66,11 +69,14 @@ namespace Realms.Sync
         /// Filled by the server after an object was processed with additional info
         /// explaining the status if necessary.
         /// </remarks>
+        /// <value>A detailed message describing the status (success, error) of the operation. <c>null</c> if the object
+        /// has not been processed yet.</value>
         string StatusMessage { get; }
 
         /// <summary>
         /// Gets the <see cref="ManagementObjectStatus"/> as set by the server.
         /// </summary>
+        /// <value>An enum indicating whether the operation has completed successfully.</value>
         ManagementObjectStatus Status { get; }
     }
 }
