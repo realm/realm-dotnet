@@ -1,92 +1,92 @@
 {
-	"metadata": [
-		{
-			"src": [
-				{
-					"src": "../Platform.PCL/",
-					"files": [
-						"Realm.PCL/Realm.PCL.csproj",
-						"Realm.Sync.PCL/Realm.Sync.PCL.csproj"
-					],
-					"exclude": [
-						"**/obj/**",
-						"**/bin/**",
-						"_site/**"
-					]
-				}
-			],
-			"dest": "obj/temp/api",
-			"filter": "Docs/filterConfig.yml"
-		}
-	],
-	"build": {
-		"content": [
-			{
-				"files": [
-					"**/*.yml"
-				],
-				"src": "obj/temp/api",
-				"dest": "reference"
-			},
-			{
-				"files": [
-					"linqsupport.md",
-					"toc.yml",
-					"index.md",
-					"reference/index.md"
-				],
-				"exclude": [
-					"obj/**",
-					"_site/**"
-				]
-			},
-			{
-				"files": "CHANGELOG.md",
-				"src": ".."
-			}
-		],
-		"resource": [
-			{
-				"files": [
-					"images/**"
-				],
-				"exclude": [
-					"obj/**",
-					"_site/**"
-				]
-			}
-		],
-		"overwrite": [
-			{
-				"files": [
-					"apispec/*.md"
-				],
-				"exclude": [
-					"obj/**",
-					"_site/**"
-				]
-			}
-		],
-		"xref": [
-      		"../packages/msdn.4.5.2.0.1.0-alpha-1611021200/content/msdn.4.5.2.zip"
-    	],
-		"dest": "_site",
-		"globalMetadataFiles": [],
-		"globalMetadata": {
-			"_enableSearch": true,
-			"_appTitle": "Realm",
-			"_appFaviconPath": "images/favicon.ico"
-		},
-		"fileMetadataFiles": [],
-		"fileMetadata": {
-			"_disableBreadcrumb": {
-				"linqsupport.md": true,
-				"index.md": true,
-				"../CHANGELOG.md": true
-			}
-		},
-		"template": [ "default", "template" ],
-		"postProcessors": [],
-		"noLangKeyword": false
-	}
+    "metadata": [
+        {
+            "src": [
+                {
+                    "src": "../Platform.PCL/",
+                    "files": [
+                        "Realm.PCL/Realm.PCL.csproj",
+                        "Realm.Sync.PCL/Realm.Sync.PCL.csproj"
+                    ],
+                    "exclude": [
+                        "**/obj/**",
+                        "**/bin/**",
+                        "_site/**"
+                    ]
+                }
+            ],
+            "dest": "obj/temp/api",
+            "filter": "Docs/filterConfig.yml"
+        }
+    ],
+    "build": {
+        "content": [
+            {
+                "files": [
+                    "**/*.yml"
+                ],
+                "src": "obj/temp/api",
+                "dest": "reference"
+            },
+            {
+                "files": [
+                    "linqsupport.md",
+                    "toc.yml",
+                    "index.md",
+                    "reference/index.md"
+                ],
+                "exclude": [
+                    "obj/**",
+                    "_site/**"
+                ]
+            },
+            {
+                "files": "CHANGELOG.md",
+                "src": ".."
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "images/**"
+                ],
+                "exclude": [
+                    "obj/**",
+                    "_site/**"
+                ]
+            }
+        ],
+        "overwrite": [
+            {
+                "files": [
+                    "apispec/*.md"
+                ],
+                "exclude": [
+                    "obj/**",
+                    "_site/**"
+                ]
+            }
+        ],
+        "xref": [
+              "../packages/msdn.4.5.2.0.1.0-alpha-1611021200/content/msdn.4.5.2.zip"
+        ],
+        "dest": "_site",
+        "globalMetadataFiles": [],
+        "globalMetadata": {
+            "_enableSearch": true,
+            "_appTitle": "Realm",
+            "_appFaviconPath": "images/favicon.ico"
+        },
+        "fileMetadataFiles": [],
+        "fileMetadata": {
+            "_disableBreadcrumb": {
+                "linqsupport.md": true,
+                "index.md": true,
+                "../CHANGELOG.md": true
+            }
+        },
+        "template": [ "default", "template" ],
+        "postProcessors": [],
+        "noLangKeyword": false
+    }
 }
