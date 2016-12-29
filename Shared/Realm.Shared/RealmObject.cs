@@ -28,15 +28,13 @@ using System.Runtime.InteropServices;
 #if __IOS__
 using ObjCRuntime;
 #endif
+using Realms.Schema;
 
 namespace Realms
 {
     /// <summary>
-    /// Base for any object that can be persisted in a Realm.
+    /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    /// <remarks>
-    /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
-    /// </remarks>
     [Preserve(AllMembers = true, Conditional = false)]
     public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
@@ -69,9 +67,7 @@ namespace Realms
 
         private event PropertyChangedEventHandler _propertyChanged;
 
-        /// <summary>
-        /// Occurs when a property value changes.
-        /// </summary>
+        /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -101,8 +97,10 @@ namespace Realms
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
-        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via Realm.Add.
+        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via 
+        /// <see cref="Realm.Add"/>.
         /// </summary>
+        /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         public bool IsManaged => _realm != null;
 
         /// <summary>
@@ -111,17 +109,20 @@ namespace Realms
         /// will throw an exception.
         /// Unmanaged objects are always considered valid.
         /// </summary>
+        /// <value><c>true</c> if managed and part of the Realm or unmanaged; <c>false</c> if managed but deleted.</value>
         public bool IsValid => _objectHandle?.IsValid != false;
 
         /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
+        /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         public Realm Realm => _realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
-        public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
+        /// <value>A collection of properties describing the underlying schema of this object.</value>
+        public ObjectSchema ObjectSchema => _metadata?.Schema;
 
         internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
@@ -632,12 +633,7 @@ namespace Realms
 
         #endregion
 
-        /// <summary>
-        /// Compare objects with identity query for persistent objects.
-        /// </summary>
-        /// <remarks>Persisted RealmObjects map their properties directly to the realm with no caching so multiple instances of a given object always refer to the same store.</remarks>
-        /// <param name="obj">Object being compared against to see if is the same C# object or maps to the same managed object in Realm.</param>
-        /// <returns>True when objects are the same memory object or refer to the same persisted object.</returns>
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             // If parameter is null, return false. 
@@ -683,10 +679,10 @@ namespace Realms
         /// <summary>
         /// Called when a property has changed on this class.
         /// </summary>
-        /// <param name="propertyName">Property name.</param>
+        /// <param name="propertyName">The name of the property.</param>
         /// <remarks>
         /// For this method to be called, you need to have first subscribed to <see cref="PropertyChanged"/>.
-        /// This can be used to react to changes to the current object, e.g. raising `PropertyChanged` for computed properties.
+        /// This can be used to react to changes to the current object, e.g. raising <see cref="PropertyChanged"/> for computed properties.
         /// </remarks>
         /// <example>
         /// <code>
@@ -706,8 +702,8 @@ namespace Realms
         /// }
         /// </code>
         /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
-        /// subscribers that <c>StatusCode</c> has changed, we override <c>OnPropertyChanged</c> and raise <c>PropertyChanged</c>
-        /// manually.
+        /// subscribers that <c>StatusCode</c> has changed, we override <see cref="OnPropertyChanged"/> and 
+        /// raise <see cref="PropertyChanged"/> manually by calling <see cref="RaisePropertyChanged"/>.
         /// </example>
         protected virtual void OnPropertyChanged(string propertyName)
         {

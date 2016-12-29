@@ -19,7 +19,8 @@
 namespace Realms
 {
     /// <summary>
-    /// An exception, thrown when trying to write data to the Realm and you haven't begun a Write transaction or when the realm is opened as read-only.
+    /// An exception, thrown when trying to write data to the <see cref="Realm"/> and you haven't begun a Write 
+    /// <see cref="Transaction"/> or when the <see cref="Realm"/> is opened as read-only.
     /// </summary>
     public class RealmInvalidTransactionException : RealmException
     {

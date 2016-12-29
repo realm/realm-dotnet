@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Schema;
 using Realms.Sync;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;

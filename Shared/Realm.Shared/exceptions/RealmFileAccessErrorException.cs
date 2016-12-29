@@ -22,7 +22,7 @@ namespace Realms
     /// Base for catching exceptions with Realm files, typically problems from which an app would recover.
     /// </summary>
     /// <remarks>
-    /// You can catch any of the subclasses independently but any File-level error which could be handled by an application descends from these.
+    /// You can catch any of the subclasses independently but any File-level error which could be handled by an application descends from this type.
     /// </remarks>
     public class RealmFileAccessErrorException : RealmException
     {

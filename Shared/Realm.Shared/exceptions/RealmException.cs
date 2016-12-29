@@ -21,7 +21,7 @@ using System;
 namespace Realms
 {
     /// <summary>
-    /// Base for Realm specific exceptions. Use only for catching.
+    /// Base for Realm specific exceptions.
     /// </summary>
     public class RealmException : Exception
     {

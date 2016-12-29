@@ -21,7 +21,8 @@ using System;
 namespace Realms
 {
     /// <summary>
-    /// An attribute that indicates an indexed property. Indexed properties slow down insertions, but can greatly speed up queries.
+    /// An attribute that indicates an indexed property. Indexed properties slightly slow down insertions,
+    /// but can greatly speed up queries.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class IndexedAttribute : Attribute

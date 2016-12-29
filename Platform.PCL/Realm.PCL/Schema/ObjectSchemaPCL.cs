@@ -23,18 +23,20 @@ using System.Collections.Generic;
 namespace Realms.Schema
 {
     /// <summary>
-    /// Public description of a class stored in a Realm, as a collection of managed Property objects.
+    /// Public description of a class stored in a <see cref="Realm"/>, as a collection of managed <see cref="Property"/> objects.
     /// </summary>
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
         /// <summary>
         /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
+        /// <value>The name of the class.</value>
         public string Name { get; }
 
         /// <summary>
         /// Gets the number of properties in the schema, which is the persistent properties from the original class.
         /// </summary>
+        /// <value>The number of persistent properties for the object.</value>
         public int Count { get; }
 
         private ObjectSchema()
@@ -43,11 +45,13 @@ namespace Realms.Schema
         }
 
         /// <summary>
-        /// Looks for a Property by Name. Failure to find means it is not regarded as a property to persist in a Realm.
+        /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
+        /// Failure to find means it is not regarded as a property to persist in a <see cref="Realm"/>.
         /// </summary>
-        /// <returns><c>true</c>, if a property was found matching Name, <c>false</c> otherwise.</returns>
-        /// <param name="name">Name of the Property to match exactly.</param>
-        /// <param name="property">Property returned only if found matching Name.</param>
+        /// <returns><c>true</c>, if a <see cref="Property"/> was found matching <see cref="Property.Name"/>;
+        /// <c>false</c> otherwise.</returns>
+        /// <param name="name"><see cref="Property.Name"/> of the <see cref="Property"/> to match exactly.</param>
+        /// <param name="property"><see cref="Property"/> returned only if found matching Name.</param>
         public bool TryFindProperty(string name, out Property property)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -55,10 +59,7 @@ namespace Realms.Schema
             return false;
         }
 
-        /// <summary>
-        /// Property enumerator factory for an iterator to be called explicitly or used in a foreach loop.
-        /// </summary>
-        /// <returns>An enumerator over the list of Property instances described in the schema.</returns>
+        /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -68,46 +69,17 @@ namespace Realms.Schema
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
-        /// Creates a schema describing a RealmObject subclass in terms of its persisted members.
+        /// Creates a schema describing a <see cref="RealmObject"/> subclass in terms of its persisted members.
         /// </summary>
-        /// <exception cref="ArgumentException">Thrown if no class Type is provided or if it doesn't descend directly from RealmObject.</exception>
-        /// <returns>An ObjectSchema describing the specified Type.</returns>
-        /// <param name="type">Type of a RealmObject descendant for which you want a schema.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if no class Type is provided or if it doesn't descend directly from <see cref="RealmObject"/>.
+        /// </exception>
+        /// <returns>An <see cref="ObjectSchema"/> describing the specified Type.</returns>
+        /// <param name="type">Type of a <see cref="RealmObject"/> descendant for which you want a schema.</param>
         public static ObjectSchema FromType(Type type)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
-        }
-
-        /// <summary>
-        /// Helper class used to construct an ObjectSchema.
-        /// </summary>
-        public class Builder : List<Property>
-        {
-            /// <summary>
-            /// Gets the name of the class to be returned in the ObjectSchema.
-            /// </summary>
-            public string Name { get; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ObjectSchema.Builder"/> class.
-            /// </summary>
-            /// <param name="name">The name of the class that will be built.</param>
-            public Builder(string name)
-            {
-                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            }
-
-            /// <summary>
-            /// Build the ObjectSchema to include all Property instances added to this Builder.
-            /// </summary>
-            /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
-            /// <returns>A completed ObjectSchema, suitable for composing a RealmSchema that will be used to create a new Realm.</returns>
-            public ObjectSchema Build()
-            {
-                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-                return null;
-            }
         }
     }
 }

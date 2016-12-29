@@ -16,3 +16,12 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\.Weaving$
     type: Namespace
+- exclude:
+    uidRegex: ^Realms\.PreserveAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.WovenAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.WovenPropertyAttribute$
+    type: Type

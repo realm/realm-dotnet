@@ -19,7 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Realms;
+using Realms.Schema;
 
 namespace Realms.Sync
 {

@@ -18,6 +18,7 @@
 
 using NUnit.Framework;
 using Realms;
+using Realms.Schema;
 
 namespace IntegrationTests
 {
@@ -33,9 +34,9 @@ namespace IntegrationTests
         [Test]
         public void Property_WhenRequired_ShouldBeNonNullable()
         {
-            var schema = Realms.Schema.ObjectSchema.FromType(typeof(RequiredPropertyClass));
+            var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass));
 
-            Realms.Schema.Property prop;
+            Property prop;
             if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out prop))
             {
                 Assert.Fail("Could not find property");

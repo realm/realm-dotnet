@@ -19,30 +19,34 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Schema;
 
 namespace Realms
 {
     /// <summary>
     /// This class is given to you when you migrate your database from one version to another.
-    /// It contains two properties: <c>OldRealm</c> and <c>NewRealm</c>.
-    /// The <c>NewRealm</c> is the one you should make sure is up to date. It will contain
+    /// It contains two properties: <see cref="OldRealm"/> and <see cref="NewRealm"/>.
+    /// The <see cref="NewRealm"/> is the one you should make sure is up to date. It will contain
     /// models corresponding to the configuration you've supplied.
-    /// You can read from the old realm and access properties that have been removed from
-    /// the classes by using the dynamic API. See more in the migrations section in the documentation.
+    /// You can read from the <see cref="OldRealm"/> and access properties that have been removed from
+    /// the classes by using the dynamic API.
     /// </summary>
+    /// <seealso href="https://realm.io/docs/xamarin/latest/#migrations">See more in the migrations section in the documentation.</seealso>
     public class Migration
     {
         private readonly RealmConfiguration _configuration;
         private readonly RealmSchema _schema;
 
         /// <summary>
-        /// Gets the realm as it was before migrating. Use the dynamic API to access it.
+        /// Gets the <see cref="Realm"/> as it was before migrating. Use the dynamic API to access it.
         /// </summary>
+        /// <value>The <see cref="Realm"/> before the migration.</value>
         public Realm OldRealm { get; private set; }
 
         /// <summary>
-        /// Gets the realm that you should modify and make sure is up to date.
+        /// Gets the <see cref="Realm"/> that you should modify and make sure is up to date.
         /// </summary>
+        /// <value>The <see cref="Realm"/> that will be saved after the migration.</value>
         public Realm NewRealm { get; private set; }
 
         internal Exception MigrationException;

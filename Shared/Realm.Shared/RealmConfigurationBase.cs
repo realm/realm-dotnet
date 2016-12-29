@@ -18,14 +18,17 @@
 
 using System;
 using System.IO;
-using System.Linq;
+using Realms.Schema;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 namespace Realms
 {
     /// <summary>
-    /// Base class for specifying configuration specifying settings that affect the Realm's behavior.
+    /// Base class for specifying configuration settings that affect the Realm's behavior.
     /// </summary>
+    /// <remarks>
+    /// Its main role is generating a canonical path from whatever absolute, relative subdirectory, or just filename the user supplies.
+    /// </remarks>
     public abstract class RealmConfigurationBase
     {
         /// <summary>
@@ -35,8 +38,9 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Gets or sets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
+        /// Gets or sets the full path of the Realms opened with this Configuration. May be overriden by passing in a separate name.
         /// </summary>
+        /// <value>The absolute path to the Realm.</value>
         public string DatabasePath { get; protected set; }
 
         internal bool Dynamic;
@@ -44,7 +48,6 @@ namespace Realms
         /// <summary>
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>
-        /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
         /// <example>
         /// <code>
         /// config.ObjectClasses = new Type[] 
@@ -54,13 +57,13 @@ namespace Realms
         /// };
         /// </code>
         /// </example>
-        /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
+        /// <value>Typically left null so by default all <see cref="RealmObject"/>s will be able to be stored in all Realms.</value>
         public Type[] ObjectClasses { get; set; }
 
         /// <summary>
-        /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
+        /// Utility to build a path in which a Realm will be created so can consistently use filenames and relative paths.
         /// </summary>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
+        /// <param name="optionalPath">Path to the Realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <returns>A full path including name of Realm file.</returns>
         public static string GetPathToRealm(string optionalPath = null)
         {
@@ -91,7 +94,7 @@ namespace Realms
         private byte[] _encryptionKey;
 
         /// <summary>
-        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time file is used.
+        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
         public byte[] EncryptionKey
