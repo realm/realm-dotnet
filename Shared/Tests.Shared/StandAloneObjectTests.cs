@@ -39,7 +39,7 @@ namespace IntegrationTests
         [TearDown]
         public void TearDown()
         {
-            NativeCommon.reset_for_testing();
+            TestHelpers.reset_for_testing();
         }
 
         [Test]

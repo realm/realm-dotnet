@@ -49,7 +49,7 @@ namespace IntegrationTests
         public void CanSetConfigurationPartialPath()
         {
             // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan" + Path.DirectorySeparatorChar + "docs" + Path.DirectorySeparatorChar);
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan" + TestHelpers.DirectorySeparatorChar() + "docs" + TestHelpers.DirectorySeparatorChar());
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));

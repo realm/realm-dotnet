@@ -57,11 +57,11 @@ namespace Tests.Sync.Shared
                 }
             }
 
-            var initialSize = new FileInfo(config.DatabasePath).Length;
+            var initialSize = TestHelpers.FileLength(config.DatabasePath);
 
             Assert.That(Realm.Compact(config));
 
-            var finalSize = new FileInfo(config.DatabasePath).Length;
+            var finalSize = TestHelpers.FileLength(config.DatabasePath);
             Assert.That(initialSize >= finalSize);
 
             using (var realm = Realm.GetInstance(config))

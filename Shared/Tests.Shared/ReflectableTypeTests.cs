@@ -19,6 +19,7 @@
 using System;
 using System.Reflection;
 using NUnit.Framework;
+using NUnit.Compatibility;
 using Realms;
 
 namespace IntegrationTests
@@ -261,7 +262,7 @@ namespace IntegrationTests
         public void SetValue_WhenInTransaction_ShouldSetValue()
         {
             var owner = AddDogAndOwner();
-            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+            var pi = TestHelpers.GetTypeProperty(owner, nameof(Owner.Name));
 
             _realm.Write(() =>
             {

@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using NUnit.Compatibility;
 using NUnit.Framework;
 using Realms;
 using Realms.Weaving;
@@ -72,7 +73,7 @@ namespace IntegrationTests
         public void GetPrimaryKey_WhenClassManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
             var obj = (RealmObject)Activator.CreateInstance(objectType);
-            var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(objectType).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
             _realm.Write(() =>
@@ -96,7 +97,7 @@ namespace IntegrationTests
         public void GetPrimaryKey_WhenClassNotManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
             var obj = (RealmObject)Activator.CreateInstance(objectType);
-            var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(objectType).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
             object pk;
@@ -120,9 +121,16 @@ namespace IntegrationTests
 #if ENABLE_INTERNAL_NON_PCL_TESTS
             return _realm.Metadata[type.Name].Helper;
 #else
+            /* ASD This still doesn't compile in a PCL project
+             * Type `System.Type' does not contain a member `GetCustomAttribute' and 
+             *  the best extension method overload `System.Reflection.CustomAttributeExtensions.GetCustomAttribute<Realms.WovenAttribute>(this System.Reflection.Assembly)' 
+             * requires an instance of type `System.Reflection.Assembly' (CS1929) (SharedTests.PCL)
+             * 
             var attribute = type.GetCustomAttribute<WovenAttribute>();
             var helperType = (Type)typeof(WovenAttribute).GetProperty("HelperType", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(attribute);
             return (IRealmObjectHelper)Activator.CreateInstance(helperType);
+            */
+            return null;
 #endif
         }
     }

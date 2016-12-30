@@ -16,23 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using NUnit.Framework;
-using Realms;
+using System.Runtime.CompilerServices;
 
-namespace IntegrationTests
-{
-#if ENABLE_INTERNAL_NON_PCL_TESTS
-    [TestFixture, Preserve(AllMembers = true)]
-    public class APITests
-    {
-        [TestCase(typeof(IRealmCollection<Person>))]
-        [TestCase(typeof(RealmResults<Person>))]
-        [TestCase(typeof(RealmList<Person>))]
-        public void RealmCollectionContravariance(Type type)
-        {
-            Assert.That(typeof(IRealmCollection<RealmObject>).IsAssignableFrom(type));
-        }
-    }
-#endif // ENABLE_INTERNAL_NON_PCL_TESTS
-}
+[assembly: InternalsVisibleTo("SharedTests.PCL")]

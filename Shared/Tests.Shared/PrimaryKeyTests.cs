@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using NUnit.Compatibility;
 using NUnit.Framework;
 using Realms;
 
@@ -49,7 +50,7 @@ namespace IntegrationTests
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(obj));
@@ -100,7 +101,7 @@ namespace IntegrationTests
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
 
             _realm.Write(() =>
             {
@@ -136,7 +137,7 @@ namespace IntegrationTests
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             var first = (RealmObject)Activator.CreateInstance(type);
             pkProperty.SetValue(first, primaryKeyValue);
 
@@ -195,7 +196,7 @@ namespace IntegrationTests
         public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(obj));

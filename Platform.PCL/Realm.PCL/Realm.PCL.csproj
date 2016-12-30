@@ -155,6 +155,7 @@
     <Compile Include="Linq\RealmResultsVisitorPCL.cs" />
     <Compile Include="RealmListPCL.cs" />
     <Compile Include="native\NativeExceptionPCL.cs" />
+    <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />

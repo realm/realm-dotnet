@@ -63,7 +63,7 @@ namespace IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(Path.GetTempFileName()));
+            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(TestHelpers.GetTempFileName()));
         }
 
         [TearDown]

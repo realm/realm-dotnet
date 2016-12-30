@@ -212,7 +212,7 @@ namespace IntegrationTests
         private void PerformWithOtherRealm(string path, Action<Realm> action)
         {
             Realm otherRealm;
-            using (otherRealm = Realm.GetInstance(path ?? Path.GetTempFileName()))
+            using (otherRealm = Realm.GetInstance(path ?? TestHelpers.GetTempFileName()))
             {
                 action(otherRealm);
             }

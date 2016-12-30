@@ -43,7 +43,7 @@ namespace IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            _databasePath = Path.GetTempFileName();
+            _databasePath = TestHelpers.GetTempFileName();
             _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_databasePath));
         }
 

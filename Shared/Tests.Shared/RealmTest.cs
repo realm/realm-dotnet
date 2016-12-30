@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -28,13 +28,13 @@ namespace IntegrationTests
         [SetUp]
         public virtual void SetUp()
         {
-            RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+            RealmConfiguration.DefaultConfiguration = new RealmConfiguration(TestHelpers.GetTempFileName());
         }
 
         [TearDown]
         public virtual void TearDown()
         {
-            NativeCommon.reset_for_testing();
+            TestHelpers.reset_for_testing();
         }
     }
 }

@@ -40,6 +40,9 @@ namespace Tests.Sync
             }
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
+        // uses Type.GetProperties which is not available in PCL
+
         [NUnit.Framework.Explicit]
         [TestCaseSource(nameof(MergeTestCases))]
         public async void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
@@ -78,6 +81,7 @@ namespace Tests.Sync
                 Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
             }
         }
+        #endif  // ENABLE_INTERNAL_NON_PCL_TESTS
 
         public static object[] MergeTestCases =
         {

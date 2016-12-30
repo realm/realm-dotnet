@@ -119,7 +119,7 @@ namespace IntegrationTests
                 ShouldDeleteIfMigrationNeeded = true
             };
             Realm.DeleteRealm(config);
-            Assert.False(File.Exists(config.DatabasePath));
+            Assert.False(TestHelpers.FileExists(config.DatabasePath));
 
             TestHelpers.CopyBundledDatabaseToDocuments(
                 "ForMigrationsToCopyAndMigrate.realm", "MigrateWWillRecreate.realm");
@@ -128,7 +128,7 @@ namespace IntegrationTests
             var realm = Realm.GetInstance(config);
 
             // Assert
-            Assert.That(File.Exists(config.DatabasePath));
+            Assert.That(TestHelpers.FileExists(config.DatabasePath));
         }
     }
 }

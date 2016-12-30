@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -76,9 +77,9 @@ namespace IntegrationTests
             openRealm.Dispose();
 
             // Assert 
-            Assert.That(File.Exists(config.DatabasePath));
+            Assert.That(TestHelpers.FileExists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
-            Assert.That(File.Exists(config.DatabasePath), Is.False);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath), Is.False);
         }
 
         [Test]
@@ -145,17 +146,19 @@ namespace IntegrationTests
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test, Ignore("Currently doesn't work. Ref #199")]
         public void GetInstanceShouldThrowIfFileIsLocked()
         {
             // Arrange
-            var databasePath = Path.GetTempFileName();
+            var databasePath = TestHelpers.GetTempFileName();
             using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None))     // Lock the file
             {
                 // Act and assert
                 Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
             }
         }
+        #endif
 
         [Test, Ignore("Currently doesn't work. Ref #338")]
         public void GetInstanceShouldThrowWithBadPath()
@@ -257,11 +260,11 @@ namespace IntegrationTests
                 }
             }
 
-            var initialSize = new FileInfo(config.DatabasePath).Length;
+            var initialSize = TestHelpers.FileLength(config.DatabasePath);
 
             Assert.That(Realm.Compact(config));
 
-            var finalSize = new FileInfo(config.DatabasePath).Length;
+            var finalSize = TestHelpers.FileLength(config.DatabasePath);
             Assert.That(initialSize >= finalSize);
 
             using (var realm = Realm.GetInstance(config))
@@ -298,9 +301,9 @@ namespace IntegrationTests
             {
                 AddDummyData(realm);
 
-                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                var initialSize = TestHelpers.FileLength(realm.Config.DatabasePath);
                 Assert.That(() => Task.Run(() => Realm.Compact(realm.Config)).Result, Is.False);
-                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                var finalSize = TestHelpers.FileLength(realm.Config.DatabasePath);
 
                 Assert.That(finalSize, Is.EqualTo(initialSize));
             }
@@ -317,9 +320,9 @@ namespace IntegrationTests
             // Once we handle caching in managed, we should reenable the test.
             using (var realm = Realm.GetInstance())
             {
-                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                var initialSize = TestHelpers.FileLength(realm.Config.DatabasePath);
                 Assert.That(() => Realm.Compact(), Is.False);
-                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                var finalSize = TestHelpers.FileLength(realm.Config.DatabasePath);
                 Assert.That(finalSize, Is.EqualTo(initialSize));
             }
         }
@@ -334,7 +337,7 @@ namespace IntegrationTests
             {
                 var token = realm.All<Person>().SubscribeForNotifications((sender, changes, error) =>
                 {
-                    Console.WriteLine(changes?.InsertedIndices);
+                    Debug.WriteLine(changes?.InsertedIndices);
                 });
 
                 Assert.That(() => Realm.Compact(), Is.False);

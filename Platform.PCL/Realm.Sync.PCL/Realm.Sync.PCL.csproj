@@ -41,9 +41,6 @@
     <Compile Include="Exceptions\AuthenticationException.cs" />
     <Compile Include="Exceptions\HttpException.cs" />
     <Compile Include="CredentialsPCL.cs" />
-    <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
-      <Link>RealmPCLHelpers.cs</Link>
-    </Compile>
     <Compile Include="RealmSyncExtensionsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
@@ -73,6 +70,10 @@
     </Compile>
     <Compile Include="Permissions\PermissionOfferPCL.cs" />
     <Compile Include="Permissions\PermissionOfferResponsePCL.cs" />
+    <Compile Include="Handles\SessionHandlePCL.cs" />
+    <Compile Include="Handles\SharedRealmHandleExtensionsPCL.cs" />
+    <Compile Include="Handles\SyncUserHandlePCL.cs" />
+    <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

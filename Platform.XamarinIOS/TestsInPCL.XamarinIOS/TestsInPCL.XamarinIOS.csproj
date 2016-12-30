@@ -4,11 +4,11 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{B9450AD4-E48B-479B-98BA-4563B32E278A}</ProjectGuid>
+    <ProjectGuid>{B9450AD4-E48B-479B-98BA-4563B32E277A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Tests.XamarinIOS</RootNamespace>
+    <RootNamespace>TestsInPCL.XamarinIOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Tests.XamarinIOS</AssemblyName>
+    <AssemblyName>TestsInPCL.XamarinIOS</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
@@ -16,7 +16,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
-    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -30,7 +30,6 @@
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
-    <DefineConstants>ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
@@ -95,25 +94,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
-    <Compile Include="UnitTestAppDelegate.cs" />
-    <Compile Include="RunLoopTests.cs" />
+    <Compile Include="../Tests.XamarinIOS/Main.cs" />
+    <Compile Include="../Tests.XamarinIOS/UnitTestAppDelegate.cs" />
+    <Compile Include="../Tests.XamarinIOS/RunLoopTests.cs" />
   </ItemGroup>
   <Import Project="..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems')" />
-  <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
-  <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <ItemGroup>
-    <ProjectReference Include="..\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
-      <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
-      <Name>Realm.XamarinIOS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj" Condition="'$(RealmNoSync)' != 'true'">
-      <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
-      <Name>Realm.Sync.XamarinIOS</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">
       <InProject>false</InProject>
@@ -138,6 +125,12 @@
       <IsCxx>True</IsCxx>
       <LinkerFlags>-lz</LinkerFlags>
     </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Platform.PCL\SharedTests.PCL\SharedTests.PCL.csproj">
+      <Project>{29C74714-A08D-4833-A0B2-0657BA7B814B}</Project>
+      <Name>SharedTests.PCL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>
