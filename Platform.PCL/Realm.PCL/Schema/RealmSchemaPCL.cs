@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Realms.Schema;
 
 namespace Realms.Schema
 {
@@ -49,7 +49,7 @@ namespace Realms.Schema
         /// Finds the definition of a class in this schema.
         /// </summary>
         /// <param name="name">A valid class name which may be in this schema.</param>
-        /// <exception cref="System.ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
         /// <returns>An <see cref="ObjectSchema"/> or <c>null</c> to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
