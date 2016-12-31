@@ -459,7 +459,7 @@ namespace IntegrationTests
         [Test]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
-            var realm = Realm.GetInstance();
+            var realm = Realm.GetInstance(Path.GetTempFileName());
             realm.Dispose();
 
             Assert.That(realm.IsClosed);
@@ -477,6 +477,8 @@ namespace IntegrationTests
             Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
             Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
             Assert.That(() => realm.WriteAsync(_ => { }), Throws.TypeOf<ObjectDisposedException>());
+
+            Realm.DeleteRealm(realm.Config);
         }
 
         private static void AddDummyData(Realm realm)
