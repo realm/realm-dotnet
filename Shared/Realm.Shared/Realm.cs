@@ -697,7 +697,7 @@ namespace Realms
         /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">
-        /// ACtion to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
