@@ -43,6 +43,9 @@ namespace Realms
         /// <summary>
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>
+        /// <remarks>
+        /// Typically left null so by default all <see cref="RealmObject"/>s will be able to be stored in all Realms.
+        /// </remarks>
         /// <example>
         /// <code>
         /// config.ObjectClasses = new Type[] 
@@ -52,7 +55,7 @@ namespace Realms
         /// };
         /// </code>
         /// </example>
-        /// <value>Typically left null so by default all <see cref="RealmObject"/>s will be able to be stored in all Realms.</value>
+        /// <value>The classes that can be persisted in the Realm.</value>
         public Type[] ObjectClasses { get; set; }
 
         /// <summary>

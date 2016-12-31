@@ -28,7 +28,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the kind of session error this exception represents.
         /// </summary>
-        /// <value>An enum value, describing the root cause of the error.</value>
+        /// <value>An enum value, describing the error.</value>
         public SessionErrorKind Kind { get; }
 
         /// <summary>

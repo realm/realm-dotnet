@@ -33,15 +33,15 @@ namespace Realms.Sync
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Gets the ReasonPhrase of the response.
+        /// Gets the Reason-Phrase of the HTTP response.
         /// </summary>
-        /// <value>The ReasonPhrase of the response.</value>
+        /// <value>The Reason-Phrase of the HTTP response.</value>
         public string ReasonPhrase { get; }
 
         /// <summary>
-        /// Gets the body of the response.
+        /// Gets the body of the HTTP response.
         /// </summary>
-        /// <value>The body of the response.</value>
+        /// <value>The body of the HTTP response.</value>
         public string Payload { get; }
 
         internal HttpException(HttpStatusCode code, string reasonPhrase, string payload) :
