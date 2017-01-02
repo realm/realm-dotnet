@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     internal static class ErrorCodeHelper
     {

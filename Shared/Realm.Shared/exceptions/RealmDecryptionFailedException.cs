@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception, raised when file decryption is unsuccessful, most likely due to invalid

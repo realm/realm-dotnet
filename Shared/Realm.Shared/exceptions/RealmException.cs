@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// Base for Realm specific exceptions.

@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 #if __IOS__
 using ObjCRuntime;
 #endif
+using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
 

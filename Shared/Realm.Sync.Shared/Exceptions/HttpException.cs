@@ -19,7 +19,7 @@
 using System;
 using System.Net;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception thrown when a transport error occurs during authentication. 

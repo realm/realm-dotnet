@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception thrown when an object with the same primary key has already been added.

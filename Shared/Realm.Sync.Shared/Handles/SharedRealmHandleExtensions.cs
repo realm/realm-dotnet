@@ -20,6 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Realms.Schema;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {

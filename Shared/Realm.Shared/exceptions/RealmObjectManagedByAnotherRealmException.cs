@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// Exception thrown when you're trying to use <see cref="Realm.Add"/> but the object is already managed by a

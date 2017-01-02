@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Threading;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {

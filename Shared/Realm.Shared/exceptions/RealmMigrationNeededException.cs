@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Schema;
-
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when attempting to open a file whose <see cref="RealmSchema"/> differs from your current class declarations.
+    /// Exception thrown when attempting to open a file whose <see cref="Realms.Schema.RealmSchema"/> differs from your current class declarations.
     /// </summary>
     /// <seealso href="https://realm.io/docs/xamarin/latest/#migrations">Read more about Migrations.</seealso>
     public class RealmMigrationNeededException : RealmFileAccessErrorException

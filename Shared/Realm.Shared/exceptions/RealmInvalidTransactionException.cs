@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception, thrown when trying to write data to the <see cref="Realm"/> outside a <see cref="Transaction"/> 

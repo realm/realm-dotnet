@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception type that describes a session-level error condition.

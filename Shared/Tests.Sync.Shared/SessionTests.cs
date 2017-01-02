@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 

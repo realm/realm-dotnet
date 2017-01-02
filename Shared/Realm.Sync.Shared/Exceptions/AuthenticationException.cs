@@ -18,7 +18,7 @@
 
 using System.Net;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception thrown when an error has occurred during authentication. It usually indicates a logical problem

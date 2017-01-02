@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
