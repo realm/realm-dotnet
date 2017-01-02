@@ -1,6 +1,6 @@
 - name: Api Documentation
   href: reference/
-  homepage: reference/index.md
+  homepage: obj/temp/api/Realms.yml
 - name: LINQ Support
   href: linqsupport.md
 - name: Changelog

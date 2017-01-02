@@ -30,45 +30,7 @@ Source
 ------
 Source is available [on Github](https://github.com/realm/realm-dotnet).
 
-Instructions on how to build from source are included in that repository's `README.md`. 
-
-
-Minimal Sample
---------------
-
-This trivial sample shows the use of most of the classes mentioned above:
-
-- getting a [Realm](xref:Realms.Realm) with default name.
-- declaring a simple model with a single [RealmObject](xref:Realms.RealmObject) class - notice how it uses standard types for properties.
-- using a [Transaction](xref:Realms.Transaction) to create an object in the Realm.
-
-Note that in most debugging situations the default Realm will be retained so if you run this sample fragment multiple times you should see the number created increase. This is on purpose so you are assured the database is being persisted between runs.
-
-```csharp
-using Realms;
-
-class Hero : RealmObject
-{
-    public string SuperName { get; set; }
-    public int SuperScore { get; set; }
-}
-
-/// put this code in an OnLoad or simple button-press handler
-using (var realm = Realm.GetInstance())
-{
-    realm.Write(() =>
-    {
-        realm.Add(new Hero
-        {
-            SuperName = "Thor",
-            SuperScore = 100
-        });
-    });
-    var numAwe = _realm.All<Hero>().Count();
-    Debug.WriteLine($"Created {numAwe} heroes");
-}
-```
-
+Instructions on how to build from source are included in that repository's `README.md`.
 
 Problem reports and Feature requests
 ------

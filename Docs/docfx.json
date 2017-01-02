@@ -32,8 +32,7 @@
                 "files": [
                     "linqsupport.md",
                     "toc.yml",
-                    "index.md",
-                    "reference/index.md"
+                    "index.md"
                 ],
                 "exclude": [
                     "obj/**",
