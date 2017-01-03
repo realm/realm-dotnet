@@ -30,7 +30,7 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-        /*ASD
+        /* TODO - work out if PCL needs this and if so, how to build
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -60,7 +60,7 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-        /* ASD
+        /* TODO - if needed for PCL, work out alternative implementation
          * uses sbyte which is only available in unsafe
         private static  void RefreshAccessTokenCallback(IntPtr userHandlePtr, IntPtr sessionHandlePtr, sbyte* urlBuffer, IntPtr urlLength)
         {

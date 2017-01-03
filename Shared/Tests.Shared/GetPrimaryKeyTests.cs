@@ -123,7 +123,7 @@ namespace IntegrationTests
 #if ENABLE_INTERNAL_NON_PCL_TESTS
             return _realm.Metadata[type.Name].Helper;
 #else
-            /* ASD This still doesn't compile in a PCL project
+            /* TODO This still doesn't compile in a PCL project
              * Type `System.Type' does not contain a member `GetCustomAttribute' and 
              *  the best extension method overload `System.Reflection.CustomAttributeExtensions.GetCustomAttribute<Realms.WovenAttribute>(this System.Reflection.Assembly)' 
              * requires an instance of type `System.Reflection.Assembly' (CS1929) (SharedTests.PCL)

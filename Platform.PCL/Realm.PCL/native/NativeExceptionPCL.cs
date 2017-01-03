@@ -23,14 +23,9 @@ using System.Text;
 
 namespace Realms
 {
-    ////ASD  [StructLayout(LayoutKind.Sequential)]
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
-    internal struct NativeException  ////ASD  original was unsafe
+    internal struct NativeException
     {
-        ////ASD      public RealmExceptionCodes type;
-        ////ASD  public sbyte* messageBytes;
-        ////ASD  public IntPtr messageLength;
-
         internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

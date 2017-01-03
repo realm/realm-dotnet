@@ -36,7 +36,7 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-        /* ASD
+        /* TODO - if needed for PCL may need to change implementation
         public IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

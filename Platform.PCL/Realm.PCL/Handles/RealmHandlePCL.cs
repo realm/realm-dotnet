@@ -21,10 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-////ASD using System.Runtime.ConstrainedExecution;
-////ASD using System.Security.Permissions;
-////ASD using Microsoft.Win32.SafeHandles;
-
 // Replaces IntPtr as a handle to a c++ realm class
 // Using criticalHandle makes the binding more robust with regards to out-of-band exceptions and finalization
 // We also have better guarantee that our finalizer is in fact called, especially in case of an unorderly app shutdown
@@ -51,9 +47,7 @@ using System.Globalization;
 
 namespace Realms
 {
-    ////ASD   [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-    ////ASD    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    internal abstract class RealmHandle // ASD think safe to drop this base in PCL : SafeHandleZeroOrMinusOneIsInvalid
+    internal abstract class RealmHandle // NOTE base in non-PCL builds is : SafeHandleZeroOrMinusOneIsInvalid
     {
         // Every handle can potentially have an unbind list
         // If the unbind list is instantiated, this handle is a handle for a root object
@@ -110,7 +104,7 @@ namespace Realms
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal RealmHandle(RealmHandle root) ////ASD  : base(true)
+        internal RealmHandle(RealmHandle root) 
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -170,9 +164,7 @@ namespace Realms
             return null;
         }
 
-        ////ASD        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        ////ASD         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        protected RealmHandle() ////ASD : base(true)
+        protected RealmHandle() 
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -180,7 +172,6 @@ namespace Realms
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
         // see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
         // and http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx
-        ////ASD        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected virtual bool ReleaseHandle()  // in real imp is override from SafeHandleZeroOrMinusOneIsInvalid
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -196,7 +187,6 @@ namespace Realms
         // used in the case we need to set the handle as part of a larger setup operation
         // the original SetHandle method is not callable from other classes, and we need that feature
         // so we overwrite the original one to be able to call it
-        ////ASD  [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public void SetHandle(IntPtr someHandle)  // in real imp is public new from SafeHandleZeroOrMinusOneIsInvalid
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

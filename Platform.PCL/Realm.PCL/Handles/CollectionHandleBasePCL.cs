@@ -26,22 +26,8 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
         {
-            /* ASD
-            public MarshaledVector<IntPtr> Deletions;
-            public MarshaledVector<IntPtr> Insertions;
-            public MarshaledVector<IntPtr> Modifications;
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct Move
-            {
-                public IntPtr From;
-                public IntPtr To;
-            }
-
-            public MarshaledVector<Move> Moves;*/
         }
 
-        ////ASD  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
         protected CollectionHandleBase(RealmHandle root) : base(root)
