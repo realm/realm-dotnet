@@ -35,7 +35,14 @@ namespace Realms
         /// <summary>
         /// Gets the number of known classes in the schema.
         /// </summary>
-        public int Count { get; }
+        public int Count 
+        { 
+            get 
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return 0;
+            }
+        }
 
         private RealmSchema()
         {

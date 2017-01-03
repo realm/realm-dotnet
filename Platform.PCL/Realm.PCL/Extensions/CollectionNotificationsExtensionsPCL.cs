@@ -63,7 +63,7 @@ namespace Realms
         /// <summary>
         /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
-        /// <param name="list">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>

@@ -33,7 +33,7 @@ namespace Realms.Dynamic
 
         private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", PrivateBindingFlags);
         private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", PrivateBindingFlags);
-        private static readonly MethodInfo RealmObjectGetBacklinksMethod = typeof(RealmObject).GetMethod("GetBacklinks", PrivateBindingFlags, null, new[] { typeof(string), typeof(ResultsHandle) }, null)
+        private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags, null, new[] { typeof(string), typeof(ResultsHandle) }, null)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
@@ -143,7 +143,7 @@ namespace Realms.Dynamic
 
             if (property.Type == Schema.PropertyType.LinkingObjects)
             {
-                expression = Expression.Call(self, RealmObjectGetBacklinksMethod, Expression.Constant(binder.Name), expression);
+                expression = Expression.Call(self, RealmObjectGetBacklinksForHandleMethod, Expression.Constant(binder.Name), expression);
             }
 
             if (binder.ReturnType != expression.Type)
