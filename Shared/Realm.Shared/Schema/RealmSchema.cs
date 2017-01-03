@@ -163,38 +163,7 @@ namespace Realms
 
                 Contract.EndContractBlock();
 
-                var objects = new List<Native.SchemaObject>();
-                var properties = new List<Native.SchemaProperty>();
-
-                foreach (var @object in this)
-                {
-                    var start = properties.Count;
-
-                    properties.AddRange(@object.Select(ForMarshalling));
-
-                    objects.Add(new Native.SchemaObject
-                    {
-                        name = @object.Name,
-                        properties_start = start,
-                        properties_end = properties.Count
-                    }); 
-                }
-
                 return new RealmSchema(this);
-            }
-
-            private static Native.SchemaProperty ForMarshalling(Schema.Property property)
-            {
-                return new Native.SchemaProperty
-                {
-                    name = property.Name,
-                    type = property.Type,
-                    object_type = property.ObjectType,
-                    link_origin_property_name = property.LinkOriginPropertyName,
-                    is_nullable = property.IsNullable,
-                    is_indexed = property.IsIndexed,
-                    is_primary = property.IsPrimaryKey
-                };
             }
         }
     }
