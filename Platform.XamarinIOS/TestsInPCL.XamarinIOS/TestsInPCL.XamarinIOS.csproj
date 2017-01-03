@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{B9450AD4-E48B-479B-98BA-4563B32E277A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TestsInPCL.XamarinIOS</RootNamespace>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <AssemblyName>TestsInPCL.XamarinIOS</AssemblyName>
+    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;TESTS_IN_PCL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>x86_64</MtouchArch>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchProfiling>true</MtouchProfiling>
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <MtouchLink>None</MtouchLink>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;TESTS_IN_PCL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchLink>None</MtouchLink>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;ENABLE_TESTS_IN_PCL;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <MtouchArch>x86_64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <MtouchLink>None</MtouchLink>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;TESTS_IN_PCL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
+    <MtouchProfiling>true</MtouchProfiling>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchLink>None</MtouchLink>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+    <Reference Include="MonoTouch.NUnitLite" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Remotion.Linq">
+      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Info.plist" />
+    <None Include="Entitlements.plist" />
+    <None Include="FodyWeavers.xml" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Tests.XamarinIOS/Main.cs" />
+    <Compile Include="../Tests.XamarinIOS/UnitTestAppDelegate.cs" />
+    <Compile Include="../Tests.XamarinIOS/RunLoopTests.cs" />
+  </ItemGroup>
+  <Import Project="..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems')" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <ItemGroup>
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\RealmGenericFilled-60%402x.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\RealmGenericFilled-60%403x.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\..\wrappers\build\$(Configuration)-ios-universal\librealm-wrappers.a">
+      <Kind>Static</Kind>
+      <SmartLink>True</SmartLink>
+      <IsCxx>True</IsCxx>
+      <LinkerFlags>-lz</LinkerFlags>
+    </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Platform.PCL\SharedTests.PCL\SharedTests.PCL.csproj">
+      <Project>{29C74714-A08D-4833-A0B2-0657BA7B814B}</Project>
+      <Name>SharedTests.PCL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
+      <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
+      <Name>Realm.XamarinIOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj">
+      <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
+      <Name>Realm.Sync.XamarinIOS</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+</Project>

@@ -22,6 +22,7 @@ using Realms;
 
 namespace IntegrationTests
 {
+#if ENABLE_INTERNAL_NON_PCL_TESTS
     [TestFixture, Preserve(AllMembers = true)]
     public class APITests
     {
@@ -33,4 +34,5 @@ namespace IntegrationTests
             Assert.That(typeof(IRealmCollection<RealmObject>).IsAssignableFrom(type));
         }
     }
+#endif // ENABLE_INTERNAL_NON_PCL_TESTS
 }

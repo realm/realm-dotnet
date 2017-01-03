@@ -66,6 +66,8 @@ namespace Tests.Sync.Shared
             }
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
+        //// disable these for now for PCL as Timeout not apparently defined in that NUnit
         [Test, Explicit, Timeout(1000)]
         public async void Session_Error_WhenInvalidRefreshToken()
         {
@@ -112,5 +114,6 @@ namespace Tests.Sync.Shared
                 Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
             }
         }
+        #endif  // ENABLE_INTERNAL_NON_PCL_TESTS
     }
 }

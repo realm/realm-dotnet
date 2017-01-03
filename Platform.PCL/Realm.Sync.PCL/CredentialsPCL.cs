@@ -25,6 +25,32 @@ namespace Realms.Sync
     /// </summary>
     public class Credentials
     {
+        internal static class Providers
+        {
+            internal const string Debug = "debug";
+
+            internal const string Facebook = "facebook";
+
+            internal const string Google = "google";
+
+            internal const string Twitter = "twitter";
+
+            internal const string Password = "password";
+
+            internal const string AccessToken = "accessToken";
+        }
+
+        internal static class Keys
+        {
+            internal const string CreateUser = "register";
+
+            internal const string Password = "password";
+
+            internal const string Identity = "identity";
+
+            internal const string IsAdmin = "isAdmin";
+        }
+
         /// <summary>
         /// Creates an instance of <see cref="Credentials"/> with a custom provider and user identifier.
         /// </summary>
@@ -89,6 +115,12 @@ namespace Realms.Sync
         /// <param name="createUser"><c>true</c> if the user should be created, <c>false</c> otherwise. It is not possible to create a user twice when logging in, so this flag should only be set to true the first time a user logs in.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials UsernamePassword(string username, string password, bool createUser)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        internal static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

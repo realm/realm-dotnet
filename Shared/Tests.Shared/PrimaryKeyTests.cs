@@ -20,7 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
+#if TESTS_IN_PCL
+using NUnit.Compatibility;
+#endif
 using NUnit.Framework;
 using Realms;
 
@@ -49,7 +52,7 @@ namespace IntegrationTests
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(obj));
@@ -100,7 +103,7 @@ namespace IntegrationTests
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
 
             _realm.Write(() =>
             {
@@ -136,7 +139,7 @@ namespace IntegrationTests
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             var first = (RealmObject)Activator.CreateInstance(type);
             pkProperty.SetValue(first, primaryKeyValue);
 
@@ -195,7 +198,7 @@ namespace IntegrationTests
         public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var pkProperty = TestHelpers.GetTypeProperties(type).Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(obj));
@@ -231,7 +234,7 @@ namespace IntegrationTests
         private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
-            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
+            var genericMethod = TestHelpers.GetTypeMethod(_realm, nameof(Realm.Find), new[] { genericArgument });
 
             object castPKValue;
             if (isIntegerPK)
@@ -283,7 +286,7 @@ namespace IntegrationTests
             long foundValue = 0;
 
             // Act
-            var t = new Thread(() =>
+            var t = new Task(() =>
             {
                 using (var realm2 = Realm.GetInstance(_configuration))
                 {
@@ -292,7 +295,7 @@ namespace IntegrationTests
                 }
             });
             t.Start();
-            t.Join();
+            t.Wait();
 
             Assert.That(foundValue, Is.EqualTo(42000042));
         }

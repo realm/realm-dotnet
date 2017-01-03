@@ -22,7 +22,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+#if ENABLE_INTERNAL_NON_PCL_TESTS
 using Nito.AsyncEx;
+#endif
 using NUnit.Framework;
 using Realms;
 
@@ -43,7 +45,7 @@ namespace IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            _databasePath = Path.GetTempFileName();
+            _databasePath = TestHelpers.GetTempFileName();
             _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_databasePath));
         }
 
@@ -57,6 +59,7 @@ namespace IntegrationTests
             }
         }
 
+#if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test]
         public void UnmanagedObject()
         {
@@ -237,6 +240,7 @@ namespace IntegrationTests
                 Assert.That(notifiedPropertyNames, Is.Empty);
             });
         }
+#endif //ENABLE_INTERNAL_NON_PCL_TESTS
 
         [Test]
         public void ManagedObject_MultipleProperties()
@@ -431,6 +435,7 @@ namespace IntegrationTests
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { "Email_" }));
         }
 
+#if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test]
 #if WINDOWS
         [Ignore("GC blocks on Windows")]
@@ -540,6 +545,7 @@ namespace IntegrationTests
                 Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
             });
         }
+#endif // ENABLE_INTERNAL_NON_PCL_TESTS
 
         [Test]
         public void UnmanagedObject_WhenChanged_CallsOnPropertyChanged()

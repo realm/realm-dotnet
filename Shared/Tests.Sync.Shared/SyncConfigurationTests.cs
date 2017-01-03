@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using IntegrationTests;  // to pull in TestHelpers
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -36,15 +37,13 @@ namespace Tests.Sync
 
             Realm.DeleteRealm(config);
 
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath), Is.False);
 
             using (var realm = Realm.GetInstance(config))
             {
             }
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath));
         }
 
         [Test]
@@ -56,15 +55,13 @@ namespace Tests.Sync
 
             Realm.DeleteRealm(config);
 
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath), Is.False);
 
             using (var realm = Realm.GetInstance(config))
             {
             }
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath));
             Assert.That(config.DatabasePath.EndsWith("myrealm.realm"));
         }
 
@@ -74,20 +71,18 @@ namespace Tests.Sync
             var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
             var serverUri = new Uri("realm://localhost:9080/foobar");
 
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "bla.realm");
+            var path = Path.Combine(TestHelpers.DocumentsFolder(), "bla.realm");
             var config = new SyncConfiguration(user, serverUri, path);
 
             Realm.DeleteRealm(config);
 
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath), Is.False);
             
             using (var realm = Realm.GetInstance(config))
             {
             }
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
+            Assert.That(TestHelpers.FileExists(config.DatabasePath));
             Assert.That(config.DatabasePath, Is.EqualTo(path));
         }
     }

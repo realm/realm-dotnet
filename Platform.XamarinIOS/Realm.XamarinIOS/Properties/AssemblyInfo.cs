@@ -26,3 +26,4 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm.XamarinIOS")]
 [assembly: InternalsVisibleTo("Tests.XamarinIOS")]
+[assembly: InternalsVisibleTo("TestsInPCL.XamarinIOS")]

@@ -33,7 +33,7 @@ namespace IntegrationTests
         [TestCase(1000000, 100), Explicit]
         public void BindingPerformanceTest(int totalRecs, int recsPerTrans)
         {
-            Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction -------------");
+            Debug.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction -------------");
 
             var s = "String value";
 
@@ -58,14 +58,14 @@ namespace IntegrationTests
 
             sw.Stop();
 
-            Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
+            Debug.WriteLine("Time spent: " + sw.Elapsed);
+            Debug.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
         [TestCase(1000000, 1000), Explicit]
         public void BindingCreateObjectPerformanceTest(int totalRecs, int recsPerTrans)
         {
-            Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction: CreateObject -------------");
+            Debug.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction: CreateObject -------------");
 
             var sw = Stopwatch.StartNew();
             var numRecs = totalRecs / recsPerTrans;
@@ -86,14 +86,14 @@ namespace IntegrationTests
 
             sw.Stop();
 
-            Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
+            Debug.WriteLine("Time spent: " + sw.Elapsed);
+            Debug.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
         [TestCase(1000000), Explicit]
         public void BindingSetValuePerformanceTest(int count)
         {
-            Console.WriteLine($"Binding-based performance check for {count:n} entries: Set value -------------");
+            Debug.WriteLine($"Binding-based performance check for {count:n} entries: Set value -------------");
 
             var s = "String value";
 
@@ -114,8 +114,8 @@ namespace IntegrationTests
 
             sw.Stop();
 
-            Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (count / 1000) / sw.Elapsed.TotalSeconds);
+            Debug.WriteLine("Time spent: " + sw.Elapsed);
+            Debug.WriteLine("Kilo-iterations per second: {0:0.00}", (count / 1000) / sw.Elapsed.TotalSeconds);
         }
 
         [TestCase(100000), Explicit]
@@ -142,7 +142,7 @@ namespace IntegrationTests
                 }
             });
             sw.Stop();
-            Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
+            Debug.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
 
             sw.Restart();
             _realm.Write(() =>
@@ -155,7 +155,7 @@ namespace IntegrationTests
                 }
             });
 
-            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
+            Debug.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
         }
 
         [TestCase(100000), Explicit]
@@ -182,7 +182,7 @@ namespace IntegrationTests
                 }
             });
             sw.Stop();
-            Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
+            Debug.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
 
             sw.Restart();
             _realm.Write(() =>
@@ -195,7 +195,7 @@ namespace IntegrationTests
                 }
             });
 
-            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
+            Debug.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
         }
     }
 

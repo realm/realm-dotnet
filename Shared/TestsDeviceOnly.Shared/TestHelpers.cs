@@ -17,7 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 using Realms;
 
 namespace IntegrationTests
@@ -55,6 +58,52 @@ namespace IntegrationTests
 
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
+        }
+
+        public static string GetTempFileName()
+        {
+            return Path.GetTempFileName();
+        }
+
+        public static long FileLength(string path)
+        {
+            return new FileInfo(path).Length;
+        }
+
+        public static bool FileExists(string path)
+        {
+            return File.Exists(path);
+        }
+
+        public static IEnumerable<PropertyInfo> GetTypeProperties(Type type)
+        {
+            return type.GetProperties();
+        }
+
+        public static PropertyInfo GetTypeProperty(object obj, string propName)
+        {
+            return obj.GetType().GetProperty(propName);
+        }
+
+        public static MethodInfo GetTypeMethod(object obj, string methName, Type[] types)
+        {
+            return obj.GetType().GetMethod(methName, types);
+        }
+
+        public static string DocumentsFolder()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+
+        public static char DirectorySeparatorChar()
+        {
+            return Path.DirectorySeparatorChar;
+        }
+
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
+        public static void reset_for_testing()
+        {
+            NativeCommon.reset_for_testing();
         }
     }
 }

@@ -547,6 +547,8 @@ namespace IntegrationTests
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
+            #if ENABLE_INTERNAL_NON_PCL_TESTS
+            // InvariantCulture not available in PCL
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
@@ -556,6 +558,7 @@ namespace IntegrationTests
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
+            #endif
 
             Assert.That(() =>
             {

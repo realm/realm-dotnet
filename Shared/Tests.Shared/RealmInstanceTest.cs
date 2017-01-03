@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -24,7 +24,7 @@ namespace IntegrationTests
     [Preserve(AllMembers = true)]
     public abstract class RealmInstanceTest : RealmTest
     {
-        protected RealmConfiguration _configuration = new RealmConfiguration(Path.GetTempFileName());
+        protected RealmConfiguration _configuration = new RealmConfiguration(TestHelpers.GetTempFileName());
 
         protected Realm _realm;
 

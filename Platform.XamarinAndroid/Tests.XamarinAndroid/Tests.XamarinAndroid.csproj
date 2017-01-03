@@ -86,6 +86,7 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
+  <Import Project="..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\TestsDeviceOnly.Shared\TestsDeviceOnly.Shared.projitems')" />
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

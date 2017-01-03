@@ -21,7 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SortingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandAloneObjectTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RelationshipTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConfigurationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InstanceTests.cs" />
@@ -43,9 +42,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangedTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionTests.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
-    <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)nunit3-junit.xslt">
