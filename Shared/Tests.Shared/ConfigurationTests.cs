@@ -260,7 +260,7 @@ namespace IntegrationTests
             {
                 openToCreate.Write(() =>
                 {
-                    var anObject = openToCreate.CreateObject<Person>();
+                    openToCreate.Add(new Person());
                 });
             }
 
@@ -273,7 +273,7 @@ namespace IntegrationTests
                 {
                     openedReadonly.Write(() =>
                     {
-                        var neverMade = openedReadonly.CreateObject<Person>();
+                        openedReadonly.Add(new Person());
                     });
                 });
             }

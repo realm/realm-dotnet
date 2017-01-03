@@ -17,10 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using Realms;
 
@@ -44,13 +42,15 @@ namespace IntegrationTests
             _realm.Write(() =>
             {
                 // add an entry like John Doe but interesting
-                var jd = _realm.CreateObject<Person>();
-                jd.FullName = "John Jamez";
-                jd.IsInteresting = true;
-                jd.Email = "john@doe.com";
-                jd.Score = 100;
-                jd.Latitude = 40.7637286;
-                jd.Longitude = -73.9748113;
+                _realm.Add(new Person
+                {
+                    FullName = "John Jamez",
+                    IsInteresting = true,
+                    Email = "john@doe.com",
+                    Score = 100,
+                    Latitude = 40.7637286,
+                    Longitude = -73.9748113
+                });
             });
         }
 
@@ -243,8 +243,7 @@ namespace IntegrationTests
             {
                 foreach (var city in new[] { "Santo Domingo", "Åby", "Sydney", "São Paulo", "Shanghai", "A-Place", "A Place" })
                 {
-                    var co = _realm.CreateObject<Cities>();
-                    co.Name = city;
+                    _realm.Add(new Cities { Name = city });
                 }
             });
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);

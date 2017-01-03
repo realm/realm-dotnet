@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
@@ -43,15 +42,12 @@ namespace IntegrationTests
         [Test]
         public void CommittingAWriteTransactionShouldRefreshQueries()
         {
-            Person p1 = null, p2, p3;
+            Person p1 = null;
 
             _realm.Write(() =>
             {
-                p1 = _realm.CreateObject<Person>();
-                p1.FullName = "Person 1";
-
-                p2 = _realm.CreateObject<Person>();
-                p2.FullName = "Person 2";
+                p1 = _realm.Add(new Person { FullName = "Person 1" });
+                _realm.Add(new Person { FullName = "Person 2" });
             });
 
             var q = _realm.All<Person>();
@@ -61,9 +57,7 @@ namespace IntegrationTests
             _realm.Write(() =>
             {
                 p1.FullName = "Modified Person";
-
-                p3 = _realm.CreateObject<Person>();
-                p3.FullName = "Person 3";
+                _realm.Add(new Person { FullName = "Person 3" });
             });
 
             var ql2 = q.ToList().Select(p => p.FullName);
@@ -73,12 +67,9 @@ namespace IntegrationTests
         [Test]
         public void CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
         {
-            Person p1, p2;
-
             _realm.Write(() =>
             {
-                p1 = _realm.CreateObject<Person>();
-                p1.FullName = "Person 1";
+                _realm.Add(new Person { FullName = "Person 1" });
             });
 
             var q = _realm.All<Person>();
@@ -86,8 +77,7 @@ namespace IntegrationTests
 
             WriteOnDifferentThread(newRealm =>
             {
-                p2 = newRealm.CreateObject<Person>();
-                p2.FullName = "Person 2";
+                newRealm.Add(new Person { FullName = "Person 2" });
             });
 
             _realm.Refresh();
