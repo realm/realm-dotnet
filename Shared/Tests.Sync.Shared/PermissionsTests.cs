@@ -18,7 +18,9 @@
 
 using System;
 using System.Threading.Tasks;
+#if ENABLE_INTERNAL_NON_PCL_TESTS
 using Nito.AsyncEx;
+#endif
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -27,6 +29,8 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync.Shared
 {
+    #if ENABLE_INTERNAL_NON_PCL_TESTS // all tests disabled as the Nito.AysyncEx library has issues with PCL builds and iOS Linking, reporting Enlignment missing
+
     [TestFixture, Preserve(AllMembers = true)]
     public class PermissionsTests
     {
@@ -211,4 +215,5 @@ namespace Tests.Sync.Shared
             }
         }
     }
+    #endif  // ENABLE_INTERNAL_NON_PCL_TESTS
 }

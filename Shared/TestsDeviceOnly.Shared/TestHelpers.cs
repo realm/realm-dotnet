@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using Realms;
@@ -84,6 +85,11 @@ namespace IntegrationTests
             return obj.GetType().GetProperty(propName);
         }
 
+        public static MethodInfo GetTypeMethod(object obj, string methName, Type[] types)
+        {
+            return obj.GetType().GetMethod(methName, types);
+        }
+
         public static string DocumentsFolder()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -94,6 +100,7 @@ namespace IntegrationTests
             return Path.DirectorySeparatorChar;
         }
 
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
         public static void reset_for_testing()
         {
             NativeCommon.reset_for_testing();

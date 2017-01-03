@@ -20,7 +20,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+#if ENABLE_INTERNAL_NON_PCL_TESTS
 using Nito.AsyncEx;
+#endif
 using NUnit.Framework;
 using Realms;
 
@@ -53,6 +55,7 @@ namespace IntegrationTests
             base.TearDown();
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
@@ -74,6 +77,7 @@ namespace IntegrationTests
                 Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
             });
         }
+        #endif
 
         internal class MyDataObject : RealmObject
         {
@@ -83,6 +87,7 @@ namespace IntegrationTests
             public int? ExpensiveToComputeValue { get; set; }
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test]
         public void AsyncWrite_UpdateViaPrimaryKey()
         {
@@ -107,5 +112,6 @@ namespace IntegrationTests
                 Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
             });
         }
+        #endif // ENABLE_INTERNAL_NON_PCL_TESTS
     }
 }

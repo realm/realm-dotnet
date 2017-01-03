@@ -78,6 +78,12 @@ namespace IntegrationTests
             return null;
         }
 
+        public static MethodInfo GetTypeMethod(object obj, string methName, Type[] types)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
         public static string DocumentsFolder()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

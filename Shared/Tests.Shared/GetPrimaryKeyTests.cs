@@ -19,7 +19,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
+#if TESTS_IN_PCL
 using NUnit.Compatibility;
+#endif
 using NUnit.Framework;
 using Realms;
 using Realms.Weaving;

@@ -20,8 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
+#if TESTS_IN_PCL
 using NUnit.Compatibility;
+#endif
 using NUnit.Framework;
 using Realms;
 
@@ -232,7 +234,7 @@ namespace IntegrationTests
         private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
-            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
+            var genericMethod = TestHelpers.GetTypeMethod(_realm, nameof(Realm.Find), new[] { genericArgument });
 
             object castPKValue;
             if (isIntegerPK)
@@ -284,7 +286,7 @@ namespace IntegrationTests
             long foundValue = 0;
 
             // Act
-            var t = new Thread(() =>
+            var t = new Task(() =>
             {
                 using (var realm2 = Realm.GetInstance(_configuration))
                 {
@@ -293,7 +295,7 @@ namespace IntegrationTests
                 }
             });
             t.Start();
-            t.Join();
+            t.Wait();
 
             Assert.That(foundValue, Is.EqualTo(42000042));
         }

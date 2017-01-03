@@ -19,7 +19,9 @@
 using System;
 using System.Reflection;
 using NUnit.Framework;
+#if TESTS_IN_PCL
 using NUnit.Compatibility;
+#endif
 using Realms;
 
 namespace IntegrationTests
@@ -220,6 +222,7 @@ namespace IntegrationTests
             Assert.That(owner.Name, Is.EqualTo("John"));
         }
 
+        #if ENABLE_INTERNAL_NON_PCL_TESTS
         [Test]
         public void Setter_WhenNotInTransaction_ShouldThrow()
         {
@@ -257,6 +260,7 @@ namespace IntegrationTests
                 pi.SetValue(owner, "John");
             }, Throws.InnerException.TypeOf<RealmInvalidTransactionException>());
         }
+        #endif
 
         [Test]
         public void SetValue_WhenInTransaction_ShouldSetValue()
