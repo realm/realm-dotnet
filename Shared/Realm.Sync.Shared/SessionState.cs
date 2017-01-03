@@ -21,31 +21,21 @@ namespace Realms.Sync
     /// <summary>
     /// The current state of a sync session object.
     /// </summary>
-    public enum SessionState
+    public enum SessionState : byte
     {
-        /// <summary>
-        /// The session is waiting for an access token.
-        /// </summary>
-        WaitingForAccessToken = 0,
-
         /// <summary>
         /// The session is connected to the Realm Object Server and is actively transferring data.
         /// </summary>
-        Active,
+        Active = 0,
 
         /// <summary>
-        /// The session is performing clean-up work in preparation to be destroyed.
-        /// </summary>
-        Dying,
-
-        /// <summary>
-        /// The user owning this session has logged out and the sesion has disconnected from the Realm Object Server.
+        /// The session is not currently communicating with the Realm Object Server.
         /// </summary>
         Inactive,
 
         /// <summary>
-        /// A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created with a different configuration.
+        /// A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
         /// </summary>
-        Error,
+        Invalid
     }
 }

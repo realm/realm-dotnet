@@ -32,18 +32,6 @@ namespace Realms.Sync
         public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Gets the <see cref="SyncConfiguration"/> that is responsible for controlling the session.
-        /// </summary>
-        public SyncConfiguration Configuration
-        {
-            get
-            {
-                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
         /// </summary>
         public Uri ServerUri
