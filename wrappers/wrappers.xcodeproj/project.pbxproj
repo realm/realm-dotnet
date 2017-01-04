@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
 		48361AF61D62017B0051D2E6 /* placeholder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48361AF51D62017B0051D2E6 /* placeholder.cpp */; };
-		48361AF91D62019A0051D2E6 /* thread_confined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48361AF71D62019A0051D2E6 /* thread_confined.cpp */; };
-		48361AFD1D6201CB0051D2E6 /* handover.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48361AFB1D6201CB0051D2E6 /* handover.cpp */; };
 		48371F4E1D22952D00B52DAB /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48371F4B1D22952D00B52DAB /* format.cpp */; };
 		484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
@@ -51,6 +49,7 @@
 		85C041301DCCEA3700CBF37B /* sync_manager_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */; };
 		85C041321DD229C100CBF37B /* sync_user_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041311DD229C100CBF37B /* sync_user_cs.cpp */; };
 		85C041341DD4953300CBF37B /* sync_session_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041331DD4953200CBF37B /* sync_session_cs.cpp */; };
+		85EAC02F1E1D21C900F35463 /* thread_safe_reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85EAC02D1E1D21C900F35463 /* thread_safe_reference.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,10 +67,6 @@
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
 		48361AF51D62017B0051D2E6 /* placeholder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = placeholder.cpp; path = "src/object-store/src/placeholder.cpp"; sourceTree = "<group>"; };
-		48361AF71D62019A0051D2E6 /* thread_confined.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_confined.cpp; path = "src/object-store/src/thread_confined.cpp"; sourceTree = "<group>"; };
-		48361AF81D62019A0051D2E6 /* thread_confined.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_confined.hpp; path = "src/object-store/src/thread_confined.hpp"; sourceTree = "<group>"; };
-		48361AFB1D6201CB0051D2E6 /* handover.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = handover.cpp; path = "src/object-store/src/impl/handover.cpp"; sourceTree = "<group>"; };
-		48361AFC1D6201CB0051D2E6 /* handover.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = handover.hpp; path = "src/object-store/src/impl/handover.hpp"; sourceTree = "<group>"; };
 		48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = atomic_shared_ptr.hpp; path = "src/object-store/src/util/atomic_shared_ptr.hpp"; sourceTree = "<group>"; };
 		48371F4B1D22952D00B52DAB /* format.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format.cpp; path = "src/object-store/src/util/format.cpp"; sourceTree = "<group>"; };
 		48371F4C1D22952D00B52DAB /* format.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = format.hpp; path = "src/object-store/src/util/format.hpp"; sourceTree = "<group>"; };
@@ -140,7 +135,6 @@
 		8575A9291DC128FE001F78B7 /* keychain_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = keychain_helper.hpp; path = "src/object-store/src/impl/apple/keychain_helper.hpp"; sourceTree = "<group>"; };
 		8575A92C1DC12971001F78B7 /* compiler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = compiler.hpp; path = "src/object-store/src/util/compiler.hpp"; sourceTree = "<group>"; };
 		8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/event_loop_signal.hpp"; sourceTree = "<group>"; };
-		8575A9301DC129AD001F78B7 /* sync_client.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_client.hpp; path = "src/object-store/src/impl/sync_client.hpp"; sourceTree = "<group>"; };
 		85C041171DCCE95F00CBF37B /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = "src/object-store/src/sync/sync_config.hpp"; sourceTree = "<group>"; };
 		85C041181DCCE95F00CBF37B /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = "src/object-store/src/sync/sync_manager.cpp"; sourceTree = "<group>"; };
 		85C041191DCCE95F00CBF37B /* sync_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_manager.hpp; path = "src/object-store/src/sync/sync_manager.hpp"; sourceTree = "<group>"; };
@@ -156,6 +150,9 @@
 		85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager_cs.cpp; path = src/sync_manager_cs.cpp; sourceTree = "<group>"; };
 		85C041311DD229C100CBF37B /* sync_user_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_user_cs.cpp; path = src/sync_user_cs.cpp; sourceTree = "<group>"; };
 		85C041331DD4953200CBF37B /* sync_session_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_session_cs.cpp; path = src/sync_session_cs.cpp; sourceTree = "<group>"; };
+		85EAC02C1E1D21C900F35463 /* execution_context_id.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = execution_context_id.hpp; path = "src/object-store/src/execution_context_id.hpp"; sourceTree = "<group>"; };
+		85EAC02D1E1D21C900F35463 /* thread_safe_reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_safe_reference.cpp; path = "src/object-store/src/thread_safe_reference.cpp"; sourceTree = "<group>"; };
+		85EAC02E1E1D21C900F35463 /* thread_safe_reference.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = thread_safe_reference.hpp; path = "src/object-store/src/thread_safe_reference.hpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -253,6 +250,7 @@
 				48D347321C74861900CD0E02 /* binding_context.hpp */,
 				8522B2B21CD11DC000E5C1F3 /* collection_notifications.hpp */,
 				8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */,
+				85EAC02C1E1D21C900F35463 /* execution_context_id.hpp */,
 				48D3473F1C74861900CD0E02 /* index_set.hpp */,
 				48D3473E1C74861900CD0E02 /* index_set.cpp */,
 				48D347411C74861900CD0E02 /* list.hpp */,
@@ -270,8 +268,8 @@
 				48D3474A1C74861900CD0E02 /* schema.cpp */,
 				48D3474D1C74861900CD0E02 /* shared_realm.hpp */,
 				48D3474C1C74861900CD0E02 /* shared_realm.cpp */,
-				48361AF71D62019A0051D2E6 /* thread_confined.cpp */,
-				48361AF81D62019A0051D2E6 /* thread_confined.hpp */,
+				85EAC02E1E1D21C900F35463 /* thread_safe_reference.hpp */,
+				85EAC02D1E1D21C900F35463 /* thread_safe_reference.cpp */,
 			);
 			name = "object-store";
 			sourceTree = "<group>";
@@ -284,8 +282,6 @@
 				48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */,
 				48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */,
 				48D3473D1C74861900CD0E02 /* transact_log_handler.hpp */,
-				48361AFB1D6201CB0051D2E6 /* handover.cpp */,
-				48361AFC1D6201CB0051D2E6 /* handover.hpp */,
 				48D3473C1C74861900CD0E02 /* transact_log_handler.cpp */,
 				4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */,
 				484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */,
@@ -297,7 +293,6 @@
 				8522B2B91CD11EA900E5C1F3 /* list_notifier.cpp */,
 				8522B2BC1CD11EA900E5C1F3 /* results_notifier.hpp */,
 				8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */,
-				8575A9301DC129AD001F78B7 /* sync_client.hpp */,
 			);
 			name = impl;
 			sourceTree = "<group>";
@@ -424,6 +419,7 @@
 				48ED7C6E1C16F9C200AF23A4 /* realm-csharp.cpp in Sources */,
 				48D347591C74861900CD0E02 /* transact_log_handler.cpp in Sources */,
 				48361AF61D62017B0051D2E6 /* placeholder.cpp in Sources */,
+				85EAC02F1E1D21C900F35463 /* thread_safe_reference.cpp in Sources */,
 				42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */,
 				8522B2C31CD11EA900E5C1F3 /* results_notifier.cpp in Sources */,
 				48D347601C74861900CD0E02 /* object_schema.cpp in Sources */,
@@ -434,7 +430,6 @@
 				48ED7C651C16F9C200AF23A4 /* error_handling.cpp in Sources */,
 				484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */,
 				8575A92B1DC12902001F78B7 /* keychain_helper.cpp in Sources */,
-				48361AF91D62019A0051D2E6 /* thread_confined.cpp in Sources */,
 				48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */,
 				48D347651C74861900CD0E02 /* results.cpp in Sources */,
 				48D347621C74861900CD0E02 /* object_store.cpp in Sources */,
@@ -445,7 +440,6 @@
 				8522B2C11CD11EA900E5C1F3 /* list_notifier.cpp in Sources */,
 				48D347691C74861900CD0E02 /* shared_realm.cpp in Sources */,
 				48D3475B1C74861900CD0E02 /* index_set.cpp in Sources */,
-				48361AFD1D6201CB0051D2E6 /* handover.cpp in Sources */,
 				48ED7C6B1C16F9C200AF23A4 /* query_cs.cpp in Sources */,
 				8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* list_cs.cpp in Sources */,

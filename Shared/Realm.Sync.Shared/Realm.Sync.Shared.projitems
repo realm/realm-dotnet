@@ -27,7 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SessionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorKind.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserPersistenceMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\ManagementObjectStatus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOffer.cs" />

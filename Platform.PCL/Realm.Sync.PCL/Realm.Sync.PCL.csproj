@@ -60,9 +60,6 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionErrorException.cs">
       <Link>Exceptions\SessionErrorException.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionErrorKind.cs">
-      <Link>Exceptions\SessionErrorKind.cs</Link>
-    </Compile>
     <Compile Include="..\..\Shared\Realm.Sync.Shared\UserPersistenceMode.cs">
       <Link>UserPersistencyMode.cs</Link>
     </Compile>

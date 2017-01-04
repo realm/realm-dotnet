@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -26,20 +26,13 @@ namespace Realms.Sync.Exceptions
     public class SessionErrorException : Exception
     {
         /// <summary>
-        /// Gets the kind of session error this exception represents.
-        /// </summary>
-        /// <value>An enum value, describing the error.</value>
-        public SessionErrorKind Kind { get; }
-
-        /// <summary>
         /// Gets the error code that describes the session error this exception represents.
         /// </summary>
         /// <value>An enum value, providing more detailed information for the cause of the error.</value>
         public ErrorCode ErrorCode { get; }
 
-        internal SessionErrorException(string message, SessionErrorKind kind, ErrorCode errorCode) : base(message)
+        internal SessionErrorException(string message, ErrorCode errorCode) : base(message)
         {
-            Kind = kind;
             ErrorCode = errorCode;
         }
     }

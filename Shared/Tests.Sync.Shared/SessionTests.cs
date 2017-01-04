@@ -109,7 +109,6 @@ namespace Tests.Sync.Shared
 
                 var sessionErrors = errors.OfType<SessionErrorException>().ToList();
                 Assert.That(sessionErrors.Count, Is.EqualTo(1));
-                Assert.That(sessionErrors[0].Kind, Is.EqualTo(SessionErrorKind.UserFatal));
                 Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
             }
         }
