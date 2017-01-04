@@ -16,21 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Sync;
 
 namespace Tests.Sync
 {
     public static class Constants
     {
-        public const string UserA = "a";
-        public const string UserB = "b";
-
         // The server url as visible from the testing device
         public const string ServerUrl = "localhost:9080";
 
-        public static Credentials CreateCredentials(string username = UserA)
+        public static Credentials CreateCredentials()
         {
-            return Credentials.UsernamePassword($"{username}@{username}", username, createUser: false);
+            return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);
         }
     }
 }
