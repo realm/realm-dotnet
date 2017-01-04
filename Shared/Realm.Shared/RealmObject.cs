@@ -711,7 +711,7 @@ namespace Realms
 
         TypeInfo IReflectableType.GetTypeInfo()
         {
-            return RealmObjectTypeInfo.FromType(this.GetType());
+            return RealmObjectTypeInfo.FromType(GetType());
         }
 
         private void SubscribeForNotifications()
@@ -719,7 +719,7 @@ namespace Realms
             Debug.Assert(!_notificationsHandle.HasValue, "Notification handle must be null before subscribing");
 
             _notificationsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            _realm.SharedRealmHandle.AddObservedObject(this.ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
+            _realm.SharedRealmHandle.AddObservedObject(ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
         }
 
         private void UnsubscribeFromNotifications()

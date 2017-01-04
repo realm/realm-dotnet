@@ -355,11 +355,7 @@ namespace Realms
             }
         }
 
-        /// <summary>
-        /// Generic override determines whether the specified <see cref="object"/> is equal to the current Realm.
-        /// </summary>
-        /// <param name="obj">The <see cref="object"/> to compare with the current Realm.</param>
-        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
+        /// <inheritdoc />
         public override bool Equals(object obj) => Equals(obj as Realm);
 
         private bool Equals(Realm other)
@@ -421,7 +417,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
         /// </summary>
         /// <returns>A dynamically-accessed Realm object.</returns>
         /// <param name="className">The type of object to create as defined in the schema.</param>
