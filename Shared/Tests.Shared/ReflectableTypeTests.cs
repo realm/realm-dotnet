@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Reflection;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {

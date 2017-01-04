@@ -23,6 +23,30 @@ namespace Realms
     /// <summary>
     /// An attribute that indicates that the property it decorates is the inverse end of a relationship.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// class Dog : RealmObject
+    /// {
+    ///     // One to many relationship with Person.Dogs
+    ///     public Person Owner { get; set; }
+    /// }
+    /// 
+    /// class Person : RealmObject
+    /// {
+    ///     [Backlink(nameof(Dog.Owner))]
+    ///     public IQueryable&lt;Dog&gt; Dogs { get; }
+    /// 
+    ///     // Many to many relationship with Hobby.PeopleWithThatHobby
+    ///     public IList&lt;Hobby&gt; Hobbies { get; }
+    /// }
+    /// 
+    /// class Hobby : RealmObject
+    /// {
+    ///     [Backlink(nameof(Person.Hobbies))]
+    ///     public IQueryable&lt;Person&gt; PeopleWithThatHobby { get; }
+    /// }
+    /// </code>
+    /// </example>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class BacklinkAttribute : Attribute
     {

@@ -64,9 +64,6 @@
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmMigrationNeededException.cs">
       <Link>Exceptions\RealmMigrationNeededException.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmObjectAlreadyManagedByRealmException.cs">
-      <Link>Exceptions\RealmObjectAlreadyManagedByRealmException.cs</Link>
-    </Compile>
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmObjectManagedByAnotherRealmException.cs">
       <Link>Exceptions\RealmObjectManagedByAnotherRealmException.cs</Link>
     </Compile>

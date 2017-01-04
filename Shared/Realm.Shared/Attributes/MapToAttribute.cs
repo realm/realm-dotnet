@@ -30,9 +30,10 @@ namespace Realms
     public class MapToAttribute : Attribute
     {
         /// <summary>
-        /// Gets or sets the name of the property in the database.
+        /// Gets the name of the property in the database.
         /// </summary>
-        public string Mapping { get; set; }
+        /// <value>The property name.</value>
+        public string Mapping { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MapToAttribute"/> class.
@@ -40,7 +41,7 @@ namespace Realms
         /// <param name="mapping">The name of the property in the database.</param>
         public MapToAttribute(string mapping)
         {
-            this.Mapping = mapping;
+            Mapping = mapping;
         }
     }
 }

@@ -18,10 +18,10 @@
 
 using System;
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// Base for Realm specific exceptions. Use only for catching.
+    /// Base for Realm specific exceptions.
     /// </summary>
     public class RealmException : Exception
     {

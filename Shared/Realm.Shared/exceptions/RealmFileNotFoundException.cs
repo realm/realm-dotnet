@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when a file doesn't exist when trying to open without a create option.
+    /// Exception thrown when trying to open a file that does not exist.
     /// </summary>
     public class RealmFileNotFoundException : RealmFileAccessErrorException
     {

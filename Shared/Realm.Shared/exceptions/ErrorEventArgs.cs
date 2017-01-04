@@ -28,13 +28,10 @@ namespace Realms
         /// <summary>
         /// Gets the <see cref="Exception"/> that represents the error that occurred.
         /// </summary>
+        /// <value>The exception that has occurred.</value>
         public Exception Exception { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorEventArgs"/> class.
-        /// </summary>
-        /// <param name="ex">An <see cref="Exception"/> that represents the error that occurred.</param>
-        public ErrorEventArgs(Exception ex)
+        internal ErrorEventArgs(Exception ex)
         {
             Exception = ex;
         }

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync

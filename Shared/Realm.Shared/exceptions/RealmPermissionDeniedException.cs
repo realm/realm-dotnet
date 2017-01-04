@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// Exception when you can't open an existing realm file, or create a new one.

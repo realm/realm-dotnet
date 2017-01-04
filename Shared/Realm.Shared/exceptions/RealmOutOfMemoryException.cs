@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
     /// Exception when Realm's run out of memory, shut down your application rather than trying to continue.

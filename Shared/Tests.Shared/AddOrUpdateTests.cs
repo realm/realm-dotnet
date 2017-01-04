@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {

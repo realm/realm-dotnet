@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// Different kinds of errors a <see cref="Session"/> object can emit.

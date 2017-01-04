@@ -18,16 +18,18 @@
 
 using System.Net;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
-    /// An exception thrown when an error has occurred during authentication. It usually indicates a logical problem with the request that can be investigated by inspecting the ErrorCode property.
+    /// An exception thrown when an error has occurred during authentication. It usually indicates a logical problem
+    /// with the request that can be investigated by inspecting the <see cref="ErrorCode"/> property.
     /// </summary>
     public class AuthenticationException : HttpException
     {
         /// <summary>
         /// Gets the <see cref="ErrorCode"/> of the error.
         /// </summary>
+        /// <value>An enum value indicating the error code.</value>
         public ErrorCode ErrorCode { get; }
 
         internal AuthenticationException(ErrorCode errorCode, HttpStatusCode statusCode, string reasonPhrase, string payload, string message)

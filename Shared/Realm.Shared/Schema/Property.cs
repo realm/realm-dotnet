@@ -22,7 +22,7 @@ using System.Reflection;
 namespace Realms.Schema
 {
     /// <summary>
-    /// Describes a single property of a class stored in a Realm.
+    /// Describes a single property of a class stored in a <see cref="Realm"/>.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
     public struct Property
@@ -30,36 +30,51 @@ namespace Realms.Schema
         /// <summary>
         /// Gets or sets the name of the property.
         /// </summary>
+        /// <value>The name of the property.</value>
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the property.
         /// </summary>
+        /// <value>The type of the property.</value>
         public PropertyType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the object.
         /// </summary>
+        /// <value>The type of the object.</value>
         public string ObjectType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the property that links to the model containing this <see cref="PropertyType.LinkingObjects"/> property.
+        /// Gets or sets the name of the property that links to the model containing this 
+        /// <see cref="PropertyType.LinkingObjects"/> property.
         /// </summary>
+        /// <value>The name of the linking property.</value>
         public string LinkOriginPropertyName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="Property"/> can be null.
+        /// Gets or sets a value indicating whether this <see cref="Property"/> can be <c>null</c>.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the property type allows <c>null</c> values and the matching property in the class definition
+        /// is not marked with <see cref="RequiredAttribute"/>; <c>false</c> otherwise.
+        /// </value>
         public bool IsNullable { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Property"/> is primary key.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the property is primary key (the matching property in the class definition is
+        /// marked with <see cref="PrimaryKeyAttribute"/>); <c>false</c> otherwise.</value>
         public bool IsPrimaryKey { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Property"/> is indexed.
         /// </summary>
+        /// <value>
+        /// <c>true</c> if the property should be indexed (the matching property in the class definition is 
+        /// marked with <see cref="IndexedAttribute"/>); <c>false</c> otherwise.</value>
         public bool IsIndexed { get; set; }
 
         internal PropertyInfo PropertyInfo;

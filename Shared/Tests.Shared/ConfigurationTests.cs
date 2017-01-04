@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 

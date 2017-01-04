@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// Error code enumeration, indicating the type of the error.
