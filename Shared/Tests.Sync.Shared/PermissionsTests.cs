@@ -143,6 +143,7 @@ namespace Tests.Sync.Shared
             AsyncContext.Run(async () =>
             {
                 var user = await GetUser();
+
                 // Opening a synced realm with just read permission fails.
                 // OS issue: https://github.com/realm/realm-object-store/issues/312
                 var permissionOffer = await CreateOffer(user, mayWrite: true);
