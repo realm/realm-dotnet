@@ -421,28 +421,6 @@ namespace Realms
         }
 
         /// <summary>
-        /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
-        /// </summary>
-        /// <remarks>Scheduled for removal in the next major release, as it is dangerous to call CreateObject and then assign a PrimaryKey.</remarks>
-        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>An object which is already managed.</returns>
-        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        [Obsolete("Please create an object with new and pass to Add instead")]
-        public T CreateObject<T>() where T : RealmObject, new()
-        {
-            ThrowIfDisposed();
-
-            RealmObject.Metadata metadata;
-            var ret = CreateObject(typeof(T).Name, out metadata);
-            if (typeof(T) != metadata.Schema.Type)
-            {
-                throw new ArgumentException($"The type {typeof(T).FullName} does not match the original type the schema was created for - {metadata.Schema.Type?.FullName}");
-            }
-
-            return (T)ret;
-        }
-
-        /// <summary>
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
         /// <returns>A dynamically-accessed Realm object.</returns>
@@ -1109,6 +1087,8 @@ namespace Realms
         [Obsolete("Please create an object with new and pass to Add instead")]
         public T CreateObject<T>() where T : RealmObject, new()
         {
+            ThrowIfDisposed();
+
             RealmObject.Metadata metadata;
             var ret = CreateObject(typeof(T).Name, out metadata);
             if (typeof(T) != metadata.Schema.Type)
