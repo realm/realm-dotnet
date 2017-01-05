@@ -95,7 +95,7 @@ namespace Realms.Sync
             var result = await MakeAuthRequestAsync(serverUrl, credentials.ToJson(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
             var refresh_token = result["refresh_token"];
 
-            return new User(SyncUserHandle.GetSyncUser(refresh_token["token_data"]["identity"], refresh_token["token"], serverUrl.AbsoluteUri, false));
+            return new User(SyncUserHandle.GetSyncUser((string)refresh_token["token_data"]["identity"], (string)refresh_token["token"], serverUrl.AbsoluteUri, false));
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Realms.Sync
 
             var result = await MakeAuthRequestAsync(ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
             var access_token = result["access_token"];
-            return Tuple.Create<string, string>(access_token["token"], access_token["token_data"]["path"]);
+            return Tuple.Create<string, string>((string)access_token["token"], (string)access_token["token_data"]["path"]);
         }
 
         private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)
@@ -228,7 +228,7 @@ namespace Realms.Sync
             using (var client = new HttpClient { Timeout = timeout })
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
-                request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
+                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
                 request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
                 request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
 
@@ -249,7 +249,7 @@ namespace Realms.Sync
 
                         var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
 
-                        throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), problem["title"]);
+                        throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
                     }
 
                     var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
