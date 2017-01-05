@@ -52,16 +52,6 @@ namespace IntegrationTests
             }
         }
 
-        [Test]
-        public void CreateObjectTest()
-        {
-            // Arrange and act
-            _realm.Write(() => _realm.Add(new Person()));
-
-            // Assert
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-        }
-
         // Test added to ensure there were no side-effects immedately after a Rollback
         [Test]
         public void CreateObjectAfterRollbackTest()
