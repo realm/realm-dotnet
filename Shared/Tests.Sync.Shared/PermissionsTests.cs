@@ -143,24 +143,37 @@ namespace Tests.Sync.Shared
             AsyncContext.Run(async () =>
             {
                 var user = await GetUser();
-                var permissionOffer = await CreateOffer(user);
+
+                // Opening a synced realm with just read permission fails.
+                // OS issue: https://github.com/realm/realm-object-store/issues/312
+                var permissionOffer = await CreateOffer(user, mayWrite: true);
 
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
                 Assert.That(permissionOffer.Token, Is.Not.Null);
 
-                var receiver = await GetUser(Constants.UserB);
+                var receiver = await GetUser();
                 var permissionResponse = await CreateResponse(receiver, permissionOffer.Token);
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
                 Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
 
                 var syncConfig = new SyncConfiguration(receiver, new Uri(permissionResponse.RealmUrl));
-                Assert.That(() => Realm.GetInstance(syncConfig), Throws.Nothing);
+
+                Realm realm = null;
+                Assert.That(() => realm = Realm.GetInstance(syncConfig), Throws.Nothing);
+                var session = realm.GetSession();
+                session.Error += (sender, e) => 
+                {
+                    Assert.Fail("Opening the realm should not cause an error.", e.Exception);
+                };
+
+                await Task.Delay(5000);
+                realm.Dispose();
             });
         }
 
-        private static Task<User> GetUser(string username = Constants.UserA)
+        private static Task<User> GetUser()
         {
-            var credentials = Constants.CreateCredentials(username);
+            var credentials = Constants.CreateCredentials();
             return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
         }
 
