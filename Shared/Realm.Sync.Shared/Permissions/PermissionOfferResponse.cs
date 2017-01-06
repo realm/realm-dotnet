@@ -40,7 +40,7 @@ namespace Realms.Sync
     public class PermissionOfferResponse : RealmObject, IPermissionObject
     {
         /// <inheritdoc />
-        [Required]
+        [PrimaryKey, Required]
         [MapTo("id")]
         public string Id { get; private set; } = Guid.NewGuid().ToString();
 
