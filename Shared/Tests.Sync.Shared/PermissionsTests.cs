@@ -132,7 +132,7 @@ namespace Tests.Sync.Shared
                 var user = await GetUser();
                 var permissionResponse = await CreateResponse(user, "Some string");
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionResponse.ErrorCode, Is.Not.Null.And.GreaterThan(0));
+                Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
                 Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
             });
         }
