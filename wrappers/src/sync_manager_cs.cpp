@@ -43,16 +43,16 @@ struct SyncConfiguration
 };
 
 void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
-void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, SyncSessionError);
+void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len);
 
 static void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
 {
     s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
 }
 
-static void handle_session_error(std::shared_ptr<SyncSession> session, int error_code, std::string message, SyncSessionError error)
+static void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
 {
-    s_session_error_callback(new std::shared_ptr<SyncSession>(session), error_code, message.c_str(), message.length(), error);
+    s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length());
 }
 
 extern "C" {

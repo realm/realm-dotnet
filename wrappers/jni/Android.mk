@@ -46,7 +46,7 @@ LOCAL_SRC_FILES += src/object-store/src/object_store.cpp
 LOCAL_SRC_FILES += src/object-store/src/results.cpp
 LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
-LOCAL_SRC_FILES += src/object-store/src/thread_confined.cpp
+LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/generic/event_loop_signal.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
@@ -56,7 +56,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/handover.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/epoll/external_commit_helper.cpp
 
 LOCAL_SRC_FILES += src/error_handling.cpp

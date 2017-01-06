@@ -40,7 +40,7 @@ namespace Realms.Sync
 
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr user_handle_ptr, IntPtr session_handle_ptr, sbyte* url_buf, IntPtr url_len);
 
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, SessionErrorKind error);
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
@@ -155,11 +155,11 @@ namespace Realms.Sync
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         #endif
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, SessionErrorKind error)
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength)
         {
             var session = Session.SessionForPointer(sessionHandlePtr);
             var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
-            session.RaiseError(new SessionErrorException(message, error, errorCode));
+            session.RaiseError(new SessionErrorException(message, errorCode));
         }
     }
 }
