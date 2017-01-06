@@ -91,7 +91,7 @@
                 "../CHANGELOG.md": true
             }
         },
-        "template": [ "default" ],
+        "template": [ "default", "template" ],
         "postProcessors": [],
         "noLangKeyword": false
     }
