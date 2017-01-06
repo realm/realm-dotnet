@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NUnit.Framework;
 using Realms;
@@ -299,14 +298,10 @@ namespace IntegrationTests
         {
             _realm.Write(() =>
             {
-                var c1 = _realm.CreateObject<PrimaryKeyCharObject>();
-                c1.CharProperty = 'A';
-                var c2 = _realm.CreateObject<PrimaryKeyCharObject>();
-                c2.CharProperty = 'B';
-                var c3 = _realm.CreateObject<PrimaryKeyCharObject>();
-                c3.CharProperty = 'c';
-                var c4 = _realm.CreateObject<PrimaryKeyCharObject>();
-                c4.CharProperty = 'a';
+                _realm.Add(new PrimaryKeyCharObject { CharProperty = 'A' });
+                _realm.Add(new PrimaryKeyCharObject { CharProperty = 'B' });
+                _realm.Add(new PrimaryKeyCharObject { CharProperty = 'c' });
+                _realm.Add(new PrimaryKeyCharObject { CharProperty = 'a' });
             });
             var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
             Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A' }));

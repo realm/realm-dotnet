@@ -52,15 +52,15 @@ namespace IntegrationTests.XamarinIOS
         [Test]
         public void QueriesShouldAutomaticallyRefreshInRunLoop()
         {
-            Person p1, p2;
-
             var thread = new Thread(() =>
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() =>
                 {
-                    p1 = r.CreateObject<Person>();
-                    p1.FullName = "Person 1";
+                    r.Add(new Person
+                    {
+                        FullName = "Person 1"
+                    });
                 });
 
                 var q = r.All<Person>();
@@ -68,8 +68,10 @@ namespace IntegrationTests.XamarinIOS
 
                 WriteOnDifferentThread(newRealm =>
                 {
-                    p2 = newRealm.CreateObject<Person>();
-                    p2.FullName = "Person 2";
+                    newRealm.Add(new Person
+                    {
+                        FullName = "Person 2"
+                    });
                 });
 
                 // Instead of r.Refresh(), initiate the runloop which should trigger auto refresh

@@ -36,17 +36,15 @@ namespace IntegrationTests
             Person p1 = null, p2 = null, p3 = null;
             _realm.Write(() =>
             {
-                p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
-                p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
-                p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
+                p1 = _realm.Add(new Person { FirstName = "A" });
+                p2 = _realm.Add(new Person { FirstName = "B" });
+                p3 = _realm.Add(new Person { FirstName = "C" });
             });
 
             // Act
             _realm.Write(() => _realm.Remove(p2));
 
             // Assert
-            // Assert.That(!p2.InRealm);
-
             var allPeople = _realm.All<Person>().ToList();
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
@@ -56,10 +54,10 @@ namespace IntegrationTests
         {
             // Arrange
             Person p = null;
-            _realm.Write(() => p = _realm.CreateObject<Person>());
+            _realm.Write(() => p = _realm.Add(new Person()));
 
             // Act and assert
-            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Remove(p));
+            Assert.That(() => _realm.Remove(p), Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
         [Test]
@@ -68,21 +66,27 @@ namespace IntegrationTests
             // Arrange
             _realm.Write(() =>
             {
-                var p1 = _realm.CreateObject<Person>();
-                p1.FirstName = "deletable person #1";
-                p1.IsInteresting = false;
+                _realm.Add(new Person
+                {
+                    FirstName = "deletable person #1",
+                    IsInteresting = false
+                });
 
-                var p2 = _realm.CreateObject<Person>();
-                p2.FirstName = "person to keep";
-                p2.IsInteresting = true;
+                _realm.Add(new Person
+                {
+                    FirstName = "person to keep",
+                    IsInteresting = true
+                });
 
-                var p3 = _realm.CreateObject<Person>();
-                p3.FirstName = "deletable person #2";
-                p3.IsInteresting = false;
+                _realm.Add(new Person
+                {
+                    FirstName = "deletable person #2",
+                    IsInteresting = false
+                });
             });
 
             // Act
-            _realm.Write(() => _realm.RemoveRange<Person>(_realm.All<Person>().Where(p => !p.IsInteresting)));
+            _realm.Write(() => _realm.RemoveRange(_realm.All<Person>().Where(p => !p.IsInteresting)));
 
             // Assert
             Assert.That(_realm.All<Person>().ToList().Select(p => p.FirstName).ToArray(),
@@ -95,9 +99,9 @@ namespace IntegrationTests
             // Arrange
             _realm.Write(() =>
             {
-                _realm.CreateObject<Person>();
-                _realm.CreateObject<Person>();
-                _realm.CreateObject<Person>();
+                _realm.Add(new Person());
+                _realm.Add(new Person());
+                _realm.Add(new Person());
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
             });
@@ -115,9 +119,9 @@ namespace IntegrationTests
             // Arrange
             _realm.Write(() =>
             {
-                _realm.CreateObject<Person>();
-                _realm.CreateObject<Person>();
-                _realm.CreateObject<AllTypesObject>();
+                _realm.Add(new Person());
+                _realm.Add(new Person());
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(2));
                 Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(1));
@@ -139,13 +143,11 @@ namespace IntegrationTests
                 Person otherPerson = null;
                 other.Write(() =>
                 {
-                    otherPerson = other.CreateObject<Person>();
+                    otherPerson = other.Add(new Person());
                 });
 
-                Assert.That(() =>
-                {
-                    _realm.Write(() => _realm.Remove(otherPerson));
-                }, Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+                Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)),
+                            Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
             });
         }
 
@@ -154,14 +156,12 @@ namespace IntegrationTests
         {
             PerformWithOtherRealm(null, other =>
             {
-                other.Write(() => other.CreateObject<Person>());
+                other.Write(() => other.Add(new Person()));
 
                 var people = other.All<Person>();
 
-                Assert.That(() =>
-                {
-                    _realm.Write(() => _realm.RemoveRange(people));
-                }, Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+                Assert.That(() => _realm.Write(() => _realm.RemoveRange(people)), 
+                            Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
             });
         }
 
@@ -170,10 +170,7 @@ namespace IntegrationTests
         {
             var person = new Person();
 
-            Assert.That(() =>
-            {
-                _realm.Write(() => _realm.Remove(person));
-            }, Throws.TypeOf<ArgumentException>());
+            Assert.That(() => _realm.Write(() => _realm.Remove(person)), Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
@@ -184,13 +181,10 @@ namespace IntegrationTests
                 Person otherPerson = null;
                 other.Write(() =>
                 {
-                    otherPerson = other.CreateObject<Person>();
+                    otherPerson = other.Add(new Person());
                 });
 
-                Assert.That(() =>
-                {
-                    _realm.Write(() => _realm.Remove(otherPerson));
-                }, Throws.Nothing);
+                Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)), Throws.Nothing);
             });
         }
 
@@ -199,14 +193,11 @@ namespace IntegrationTests
         {
             PerformWithOtherRealm(_realm.Config.DatabasePath, other =>
             {
-                other.Write(() => other.CreateObject<Person>());
+                other.Write(() => other.Add(new Person()));
 
                 var people = other.All<Person>();
 
-                Assert.That(() =>
-                {
-                    _realm.Write(() => _realm.RemoveRange(people));
-                }, Throws.Nothing);
+                Assert.That(() => _realm.Write(() => _realm.RemoveRange(people)), Throws.Nothing);
             });
         }
 

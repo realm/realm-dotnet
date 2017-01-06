@@ -36,15 +36,15 @@ namespace IntegrationTests
         {
             var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
 
-            Person turing;
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                turing = _realm.CreateObject<Person>();
-                turing.FirstName = "Alan";
-                turing.LastName = "Turing";
-                turing.Birthday = turingsBirthday;
-                transaction.Commit();
-            }
+                _realm.Add(new Person
+                {
+                    FirstName = "Alan",
+                    LastName = "Turing",
+                    Birthday = turingsBirthday
+                });
+            });
 
             // perform a db fetch
             var turingAgain = _realm.All<Person>().First();
@@ -57,13 +57,12 @@ namespace IntegrationTests
         {
             using (var transaction = _realm.BeginWrite())
             {
-                foreach (var ms in new List<int> { 10, 999, 998, 42 })
+                foreach (var ms in new int[] { 10, 999, 998, 42 })
                 {
                     var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, ms, TimeSpan.Zero);
-                    foreach (var addMs in new List<double> { -2000.0, 1.0, -1.0, 1000.0, 100.0 })
+                    foreach (var addMs in new double[] { -2000.0, 1.0, -1.0, 1000.0, 100.0 })
                     {
-                        Person turing = _realm.CreateObject<Person>();
-                        turing.Birthday = birthday.AddMilliseconds(addMs);
+                        _realm.Add(new Person { Birthday = birthday.AddMilliseconds(addMs) });
                     }
                 }
 
@@ -86,10 +85,9 @@ namespace IntegrationTests
             var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, 0, TimeSpan.Zero);
             using (var transaction = _realm.BeginWrite())
             {
-                foreach (var addMs in new List<double> { 0.0, 1.0, -1.0 })
+                foreach (var addMs in new double[] { 0.0, 1.0, -1.0 })
                 {
-                    Person turing = _realm.CreateObject<Person>();
-                    turing.Birthday = birthday.AddMilliseconds(addMs);
+                    _realm.Add(new Person { Birthday = birthday.AddMilliseconds(addMs) });
                 }
 
                 transaction.Commit();

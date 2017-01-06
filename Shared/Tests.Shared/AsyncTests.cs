@@ -65,7 +65,7 @@ namespace IntegrationTests
                 await _realm.WriteAsync(realm =>
                 {
                     otherThreadId = Thread.CurrentThread.ManagedThreadId;
-                    realm.CreateObject<Person>();
+                    realm.Add(new Person());
                 });
 
                 await Task.Yield();
@@ -92,8 +92,7 @@ namespace IntegrationTests
                 MyDataObject obj = null;
                 _realm.Write(() =>
                 {
-                    obj = _realm.CreateObject<MyDataObject>();
-                    obj.Path = path;
+                    obj = _realm.Add(new MyDataObject { Path = path });
                 });
 
                 await _realm.WriteAsync(realm =>

@@ -543,7 +543,11 @@ namespace Realms
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            var metadata = Metadata[objectType.Name];
+            RealmObject.Metadata metadata;
+            if (!Metadata.TryGetValue(objectType.Name, out metadata))
+            {
+                throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
+            }
 
             var objectPtr = IntPtr.Zero;
 

@@ -84,7 +84,7 @@ namespace IntegrationTests
             _realm.RealmChanged += (sender, e) => { wasNotified = true; };
 
             // Act
-            _realm.Write(() => _realm.CreateObject<Person>());
+            _realm.Write(() => _realm.Add(new Person()));
 
             // Assert
             Assert.That(wasNotified, "RealmChanged notification was not triggered");
@@ -115,7 +115,7 @@ namespace IntegrationTests
 
                 using (query.SubscribeForNotifications(cb))
                 {
-                    _realm.Write(() => _realm.CreateObject<Person>());
+                    _realm.Write(() => _realm.Add(new Person()));
 
                     await Task.Delay(MillisecondsToWaitForCollectionNotification);
                     Assert.That(changes, Is.Not.Null);
@@ -136,7 +136,7 @@ namespace IntegrationTests
 
                 using (container.Items.SubscribeForNotifications(cb))
                 {
-                    _realm.Write(() => container.Items.Add(_realm.CreateObject<OrderedObject>()));
+                    _realm.Write(() => container.Items.Add(new OrderedObject()));
 
                     await Task.Delay(MillisecondsToWaitForCollectionNotification);
                     Assert.That(changes, Is.Not.Null);
@@ -162,7 +162,7 @@ namespace IntegrationTests
 
                 for (int i = 0; i < 2; i++)
                 {
-                    _realm.Write(() => _realm.CreateObject<Person>());
+                    _realm.Write(() => _realm.Add(new Person()));
                     await Task.Delay(MillisecondsToWaitForCollectionNotification);
                     Assert.That(notificationCount, Is.EqualTo(1));
                 }
@@ -589,14 +589,16 @@ namespace IntegrationTests
             AsyncContext.Run(async delegate
             {
                 _realm.Write(() =>
-            {
-                foreach (var value in initial)
                 {
-                    var obj = _realm.CreateObject<OrderedObject>();
-                    obj.Order = value;
-                    obj.IsPartOfResults = true;
-                }
-            });
+                    foreach (var value in initial)
+                    {
+                        _realm.Add(new OrderedObject
+                        {
+                            Order = value,
+                            IsPartOfResults = true
+                        });
+                    }
+                });
 
                 Exception error = null;
                 _realm.Error += (sender, e) =>
@@ -622,9 +624,11 @@ namespace IntegrationTests
                     {
                         foreach (var value in change)
                         {
-                            var obj = _realm.CreateObject<OrderedObject>();
-                            obj.Order = value;
-                            obj.IsPartOfResults = true;
+                            _realm.Add(new OrderedObject
+                            {
+                                Order = value,
+                                IsPartOfResults = true
+                            });
                         }
                     }
                     else if (action == NotifyCollectionChangedAction.Remove)
