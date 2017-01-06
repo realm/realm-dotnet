@@ -37,7 +37,7 @@ var phoneBook = realm.All<Person>().ToDictionary(person => person.PhoneNumber);
 All of the main element operators are supported:
 
 * [`First`](xref:System.Linq.Queryable.First*) and [`FirstOrDefault`](xref:System.Linq.Queryable.FirstOrDefault*)
-* [`LastFirst`](xref:System.Linq.Queryable.Last*) and [`LastOrDefault`](xref:System.Linq.Queryable.LastOrDefault*)
+* [`Last`](xref:System.Linq.Queryable.Last*) and [`LastOrDefault`](xref:System.Linq.Queryable.LastOrDefault*)
 * [`Single`](xref:System.Linq.Queryable.Single*) and [`SingleOrDefault`](xref:System.Linq.Queryable.SingleOrDefault*)
 
 These methods take an optional predicate. To see the supported operations for predicates in Realm queries, refer to the [Predicate Operations](#predicate-operations) section.
