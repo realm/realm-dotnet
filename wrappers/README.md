@@ -33,7 +33,7 @@ If you downloaded a zip of the source, you need to go back to github to identify
 Building Wrappers on macOS
 --------------------------
 
-These instructions assume you may have downloaded a zip from gitub of the realm-dotnet source, or checked out a clone and then downloaded ObjectStore as above.
+These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
 
 1. `cd wrappers` 
 1. `make clean`

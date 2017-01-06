@@ -60,6 +60,7 @@ We support the current Xamarin _Stable_ update channel, at the time of release t
     1. ensure you have an iOS device attached
     1. select platform popup **Release | iPhone**
     1. select `Realm.XamarinIOS` project and Build    
+    1. select `Realm.Sync.XamarinIOS` project and Build    
 1. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
