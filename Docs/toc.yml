@@ -1,4 +1,4 @@
-- name: Api Documentation
+- name: API Documentation
   href: reference/
   homepage: obj/temp/api/Realms.yml
 - name: LINQ Support

@@ -1,4 +1,4 @@
-Realm for Xamarin
+Realm Xamarin
 =================
 
 The C# API of Realm is incredibly simple because it leverages the power of LINQ for querying and the [Fody](https://github.com/Fody/Fody) weaver to transform plain C# class declarations into persistent objects.
