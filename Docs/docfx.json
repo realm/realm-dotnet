@@ -80,7 +80,7 @@
             "_gitContribute": {
                 "repo": "https://github.com/realm/realm-dotnet.git",
                 "branch": "master",
-                "path": ""
+                "path": "Docs/apispec"
             }
         },
         "fileMetadataFiles": [],
