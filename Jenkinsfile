@@ -386,7 +386,9 @@ def xbuildSafe(String command) {
   try {
     sh "${command}"
   } catch (err) {
-    if (!err.getMessage().contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
+    if (err.getMessage().contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
+      echo "StyleCop crashed. No big deal."
+    } else {
       throw err
     }
   }
