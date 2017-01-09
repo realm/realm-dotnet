@@ -122,7 +122,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value>If <c>null</c>, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.</value>
         [MapTo("expiresAt")]
-        public DateTimeOffset? ExpiresAt { get; private set; }
+        public DateTimeOffset? ExpiresAt { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PermissionOffer"/> class.
