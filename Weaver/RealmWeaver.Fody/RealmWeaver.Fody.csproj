@@ -64,8 +64,7 @@
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="Analytics.cs" />
     <Compile Include="TypeHelper.cs" />
-    <Compile Include="Extensions\TypeDefinitionExtensions.cs" />
-    <Compile Include="Extensions\AssemblyResolverExtensions.cs" />
+    <Compile Include="ImportedReferences.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
