@@ -36,8 +36,6 @@ namespace Realms.Sync
 
             internal const string Google = "google";
 
-            internal const string Twitter = "twitter";
-
             internal const string Password = "password";
 
             internal const string AccessToken = "accessToken";
@@ -112,21 +110,6 @@ namespace Realms.Sync
             }
 
             return new Credentials { IdentityProvider = Providers.Google, Token = googleToken };
-        }
-
-        /// <summary>
-        /// Creates <see cref="Credentials"/> based on a Twitter login.
-        /// </summary>
-        /// <param name="twitterToken">A Twitter authentication token, obtained by logging into Twitter.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials Twitter(string twitterToken)
-        {
-            if (twitterToken == null)
-            {
-                throw new ArgumentNullException(nameof(twitterToken));
-            }
-
-            return new Credentials { IdentityProvider = Providers.Twitter, Token = twitterToken };
         }
 
         /// <summary>

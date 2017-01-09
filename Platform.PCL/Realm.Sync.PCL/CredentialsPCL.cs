@@ -71,17 +71,6 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates <see cref="Credentials"/> based on a Twitter login.
-        /// </summary>
-        /// <param name="twitterToken">A Twitter authentication token, obtained by logging into Twitter.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials Twitter(string twitterToken)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        /// <summary>
         /// Creates <see cref="Credentials"/> based on a login with a username and a password.
         /// </summary>
         /// <param name="username">The username of the user.</param>
