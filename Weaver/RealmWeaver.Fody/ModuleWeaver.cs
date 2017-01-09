@@ -127,6 +127,8 @@ public class ModuleWeaver
         "MapToAttribute",
     };
 
+    private RealmWeaver.ImportedReferences _references;
+
     private IEnumerable<TypeDefinition> GetMatchingTypes()
     {
         foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject)))
@@ -141,8 +143,6 @@ public class ModuleWeaver
             }
         }
     }
-
-    private RealmWeaver.ImportedReferences _references;
 
     public void Execute()
     {
