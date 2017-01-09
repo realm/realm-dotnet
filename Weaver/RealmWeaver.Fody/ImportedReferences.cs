@@ -122,7 +122,7 @@ namespace RealmWeaver
 
             System_Type = new TypeReference("System", "Type", Module, Types.CoreLibrary);
 
-            System_DateTimeOffset = new TypeReference("System", "DateTimeOffset", Module, Types.CoreLibrary, true);
+            System_DateTimeOffset = new TypeReference("System", "DateTimeOffset", Module, Types.CoreLibrary, valueType: true);
 
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
             var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
