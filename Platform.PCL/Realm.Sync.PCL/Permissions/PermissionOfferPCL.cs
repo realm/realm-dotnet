@@ -91,7 +91,7 @@ namespace Realms.Sync
         /// Gets the expiration date and time of the offer.
         /// </summary>
         /// <value>If <c>null</c>, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.</value>
-        public DateTimeOffset? ExpiresAt { get; }
+        public DateTimeOffset? ExpiresAt { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PermissionOffer"/> class.
