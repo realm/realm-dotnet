@@ -88,7 +88,7 @@ namespace Realms.Sync
         public bool MayManage { get; }
 
         /// <summary>
-        /// Gets the expiration date and time of the offer.
+        /// Gets or sets the expiration date and time of the offer.
         /// </summary>
         /// <value>If <c>null</c>, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.</value>
         public DateTimeOffset? ExpiresAt { get; set; }
