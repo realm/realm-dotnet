@@ -117,7 +117,14 @@ namespace Realms.Sync
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            // TODO: this should kill all active sessions (although no idea how we're supposed to do that). #1045
+            foreach (var user in User.AllLoggedIn)
+            {
+                user.LogOut();
+            }
+
+            // Give it a little time to logout
+            Thread.Sleep(100);
+
             NativeCommon.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
