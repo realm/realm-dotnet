@@ -138,6 +138,9 @@
     <Compile Include="..\..\Shared\Realm.Shared\Attributes\RequiredAttribute.cs">
       <Link>Attributes\RequiredAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\..\Shared\Realm.Shared\Extensions\StringExtensions.cs">
+      <Link>Extensions\StringExtensions.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
