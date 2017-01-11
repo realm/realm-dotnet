@@ -117,14 +117,6 @@ namespace Realms.Sync
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            foreach (var user in User.AllLoggedIn)
-            {
-                user.LogOut();
-            }
-
-            // Give it a little time to logout
-            Thread.Sleep(100);
-
             NativeCommon.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }

@@ -22,6 +22,7 @@
 
 #if REALM_ENABLE_SYNC
 #include "sync/sync_manager.hpp"
+#include "sync/sync_user.hpp"
 #endif
 
 namespace realm {
@@ -48,7 +49,12 @@ REALM_EXPORT void set_debug_logger(realm::DebugLoggerT debug_logger)
 REALM_EXPORT void realm_reset_for_testing()
 {
     realm::_impl::RealmCoordinator::clear_all_caches();
+
 #if REALM_ENABLE_SYNC
+    for (auto user : realm::SyncManager::shared().all_logged_in_users()) {
+        user->log_out();
+    }
+
     realm::SyncManager::shared().reset_for_testing();
 #endif
 }
