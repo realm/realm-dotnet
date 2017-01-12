@@ -17,13 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
@@ -55,16 +53,6 @@ namespace IntegrationTests
             }
         }
 
-        [Test]
-        public void CreateObjectTest()
-        {
-            // Arrange and act
-            _realm.Write(() => _realm.CreateObject<Person>());
-
-            // Assert
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-        }
-
         // Test added to ensure there were no side-effects immedately after a Rollback
         [Test]
         public void CreateObjectAfterRollbackTest()
@@ -92,13 +80,12 @@ namespace IntegrationTests
             Assert.That(p1.Equals(p2));
 
             // Act
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 p1.Score = 99.0f;
-                Assert.That(p2.Score, Is.EqualTo(99.0f));  // value propagates despite transaction not finished
-                Assert.That(p1.Equals(p2));  // identity-based comparison holds
-                transaction.Commit();
-            }
+                Assert.That(p2.Score, Is.EqualTo(99.0f)); // value propagates despite transaction not finished
+                Assert.That(p1.Equals(p2)); // identity-based comparison holds
+            });
 
             // Assert
             Assert.That(p2.Score, Is.EqualTo(99.0f));  // value still holds after transaction finished
@@ -109,9 +96,9 @@ namespace IntegrationTests
         public void SetAndGetPropertyTest()
         {
             // Arrange
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                Person p = _realm.CreateObject<Person>();
+                var p = _realm.Add(new Person());
 
                 // Act
                 p.FirstName = "John";
@@ -119,11 +106,10 @@ namespace IntegrationTests
                 p.Score = -0.9907f;
                 p.Latitude = 51.508530;
                 p.Longitude = 0.076132;
-                transaction.Commit();
-            }
+            });
 
             var allPeople = _realm.All<Person>().ToList();
-            Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
+            var p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
             var receivedFirstName = p2.FirstName;
             var receivedIsInteresting = p2.IsInteresting;
             var receivedScore = p2.Score;
@@ -140,16 +126,14 @@ namespace IntegrationTests
         public void SetRemappedPropertyTest()
         {
             // Arrange
-            Person p;
-            using (var transaction = _realm.BeginWrite())
+            Person p = null;
+            _realm.Write(() =>
             {
-                p = _realm.CreateObject<Person>();
+                p = _realm.Add(new Person());
 
                 // Act
                 p.Email = "John@a.com";
-
-                transaction.Commit();
-            }
+            });
 
             var receivedEmail = p.Email;
 
@@ -161,37 +145,33 @@ namespace IntegrationTests
         public void CreateObjectOutsideTransactionShouldFail()
         {
             // Arrange, act and assert
-            Assert.Throws<RealmInvalidTransactionException>(() => _realm.CreateObject<Person>());
+            Assert.That(() => _realm.Add(new Person()), Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
         [Test]
         public void AddOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Add(obj));
+            Assert.That(() => _realm.Add(obj), Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
         [Test]
         public void AddNullObjectShouldFail()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.Add(null as Person));
+            Assert.That(() => _realm.Add(null as Person), Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]
         public void AddAnObjectFromAnotherRealmShouldFail()
         {
-            Person p;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p = _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
+            Person p = null;
+            _realm.Write(() => p = _realm.Add(new Person()));
 
             var secondaryConfig = new RealmConfiguration("AddAnObjectFromAnotherRealmShouldFail");
             Realm.DeleteRealm(secondaryConfig);
             using (var otherRealm = Realm.GetInstance(secondaryConfig))
             {
-                Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Add(p));
+                Assert.That(() => otherRealm.Add(p), Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
             }
         }
 
@@ -199,15 +179,11 @@ namespace IntegrationTests
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
-            Person p;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p = _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
+            Person p = null;
+            _realm.Write(() => p = _realm.Add(new Person()));
 
             // Act and assert
-            Assert.Throws<RealmInvalidTransactionException>(() => p.FirstName = "John");
+            Assert.That(() => p.FirstName = "John", Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS
@@ -222,14 +198,15 @@ namespace IntegrationTests
         [Test]
         public void NonAutomaticPropertiesShouldBeIgnored()
         {
-            using (var trans = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                var p = _realm.CreateObject<Person>();
-                p.FirstName = "Vincent";
-                p.LastName = "Adultman";
-                p.Nickname = "Vinnie";
-                trans.Commit();
-            }
+                _realm.Add(new Person
+                {
+                    FirstName = "Vincent",
+                    LastName = "Adultman",
+                    Nickname = "Vinnie"
+                });
+            });
 
             var vinnie = _realm.All<Person>().ToList().Single();
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
@@ -265,7 +242,7 @@ namespace IntegrationTests
         {
             _realm.Write(() =>
             {
-                var p1 = _realm.CreateObject<Person>();
+                var p1 = _realm.Add(new Person());
                 Assert.That(p1.IsValid);
 
                 _realm.Remove(p1);

@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// An exception thrown when trying to invoke members of a closed Realm.
+    /// An exception thrown when trying to invoke members of a closed <see cref="Realm"/>.
     /// </summary>
     public class RealmClosedException : RealmException
     {

@@ -17,25 +17,28 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Schema;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// An SyncConfiguration is used to setup a Realm that can be synchronized between devices using the Realm Object Server.
-    /// A valid <see cref="User"/> is required to create a <see cref="SyncConfiguration"/>.
+    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
+    /// Realm Object Server. A valid <see cref="User"/> is required to create a <see cref="SyncConfiguration"/>.
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
     public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
-        /// Gets the <see cref="Uri"/> used to create this SyncConfiguration. 
+        /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
+        /// <value>The <see cref="Uri"/> where the Realm Object Server is hosted.</value>
         public Uri ServerUri { get; }
 
         /// <summary>
-        /// Gets the user used to create this SyncConfiguration.
+        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
+        /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
 
         /// <summary>

@@ -19,7 +19,7 @@
 using System;
 using System.Net;
 
-namespace Realms.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception thrown when a transport error occurs during authentication. 
@@ -29,16 +29,19 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="HttpStatusCode"/> of the response.
         /// </summary>
+        /// <value>A well known <see cref="HttpStatusCode"/>.</value>
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Gets the ReasonPhrase of the response.
+        /// Gets the Reason-Phrase of the HTTP response.
         /// </summary>
+        /// <value>The Reason-Phrase of the HTTP response.</value>
         public string ReasonPhrase { get; }
 
         /// <summary>
-        /// Gets the body of the response.
+        /// Gets the body of the HTTP response.
         /// </summary>
+        /// <value>The body of the HTTP response.</value>
         public string Payload { get; }
 
         internal HttpException(HttpStatusCode code, string reasonPhrase, string payload) :

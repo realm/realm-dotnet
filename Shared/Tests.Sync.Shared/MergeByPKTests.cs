@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using IntegrationTests;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync

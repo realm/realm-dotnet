@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// An exception, thrown when the object is no longer managed by the Realm.
+    /// An exception, thrown when the object is no longer managed by the <see cref="Realm"/>.
     /// </summary>
     public class RealmInvalidObjectException : RealmException
     {

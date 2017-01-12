@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -31,25 +32,31 @@ namespace Realms
         /// <summary>
         /// Gets the indices in the new version of the <see cref="IRealmCollection{T}" /> which were newly inserted.
         /// </summary>
+        /// <value>An array, containing the indices of the inserted objects.</value>
         public int[] InsertedIndices { get; }
 
         /// <summary>
-        /// Gets the indices in the new version of the <see cref="IRealmCollection{T}"/> which were modified. This means that the property of an object at that index was modified
-        /// or the property of another object it's related to.
+        /// Gets the indices in the new version of the <see cref="IRealmCollection{T}"/> which were modified.
+        /// This means that either the property of an object at that index was modified or the property of
+        /// of an object it's related to has changed.
         /// </summary>
+        /// <value>An array, containing the indices of the modified objects.</value>
         public int[] ModifiedIndices { get; }
 
         /// <summary>
         /// Gets the indices of objects in the previous version of the <see cref="IRealmCollection{T}"/> which have been removed from this one.
         /// </summary>
+        /// <value>An array, containing the indices of the deleted objects.</value>
         public int[] DeletedIndices { get; }
 
         /// <summary>
         /// Gets the rows in the collection which moved.
         /// </summary>
         /// <remarks>
-        /// Every <c>From</c> index will be present in <c>DeletedIndices</c> and every <c>To</c> index will be present in <c>InsertedIndices</c>.
+        /// Every <see cref="Move.From"/> index will be present in <see cref="DeletedIndices"/> and every <see cref="Move.To"/>
+        /// index will be present in <see cref="InsertedIndices"/>.
         /// </remarks>
+        /// <value>An array of <see cref="Move"/> structs, indicating the source and the destination index of the moved row.</value>
         public Move[] Moves { get; }
 
         internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices, Move[] moves)
@@ -68,11 +75,13 @@ namespace Realms
             /// <summary>
             /// Gets the index in the old version of the <see cref="IRealmCollection{T}" /> from which the object has moved.
             /// </summary>
+            /// <value>The source index of the object.</value>
             public int From { get; }
 
             /// <summary>
             /// Gets the index in the new version of the <see cref="IRealmCollection{T}" /> to which the object has moved.
             /// </summary>
+            /// <value>The destination index of the object.</value>
             public int To { get; }
 
             internal Move(int from, int to)
@@ -87,31 +96,35 @@ namespace Realms
     /// A callback that will be invoked each time the contents of a <see cref="IRealmCollection{T}"/> have changed.
     /// </summary>
     /// <param name="sender">The <see cref="IRealmCollection{T}"/> being monitored for changes.</param>
-    /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>, or <c>null</c> if an error occurred.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
-    /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
+    /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>,
+    /// or <c>null</c> if an has error occurred.</param>
+    /// <param name="error">An exception that might have occurred while asynchronously monitoring a
+    /// <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors have occurred.</param>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
     public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All"/> or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.
     /// </summary>
-    /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         /// <summary>
-        /// Gets the object schema of the contained objects.
+        /// Gets the <see cref="ObjectSchema"/> of the contained objects.
         /// </summary>
-        Schema.ObjectSchema ObjectSchema { get; }
+        /// <value>The ObjectSchema of the contained objects.</value>
+        ObjectSchema ObjectSchema { get; }
 
         /// <summary>
         /// Register a callback to be invoked each time this <see cref="IRealmCollection{T}"/> changes.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The callback will be asynchronously invoked with the initial <see cref="IRealmCollection{T}" />, and then called again after each write transaction
-        /// which changes either any of the objects in the collection, or which objects are in the collection.
-        /// The <c>changes</c> parameter will be <c>null</c> the first time the callback is invoked with the initial results.
-        /// For each call after that, it will contain information about which rows in the results were added, removed or modified.
+        /// The callback will be asynchronously invoked with the initial <see cref="IRealmCollection{T}" />, and then
+        /// called again after each write transaction which changes either any of the objects in the collection, or 
+        /// which objects are in the collection. The <c>changes</c> parameter will
+        /// be <c>null</c> the first time the callback is invoked with the initial results. For each call after that, 
+        /// it will contain information about which rows in the results were added, removed or modified.
         /// </para>
         /// <para>
         /// If a write transaction did not modify any objects in this <see cref="IRealmCollection{T}" />, the callback is not invoked at all.
@@ -119,7 +132,8 @@ namespace Realms
         /// Currently the only errors that can occur are when opening the <see cref="Realms.Realm" /> on the background worker thread.
         /// </para>
         /// <para>
-        /// At the time when the block is called, the <see cref="IRealmCollection{T}" /> object will be fully evaluated and up-to-date, and as long as you do not perform a write transaction on the same thread
+        /// At the time when the block is called, the <see cref="IRealmCollection{T}" /> object will be fully evaluated 
+        /// and up-to-date, and as long as you do not perform a write transaction on the same thread
         /// or explicitly call <see cref="Realm.Refresh" />, accessing it will never perform blocking work.
         /// </para>
         /// <para>

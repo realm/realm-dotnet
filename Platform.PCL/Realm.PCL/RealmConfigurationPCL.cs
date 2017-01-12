@@ -17,47 +17,63 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Schema;
 
 namespace Realms
 {
     /// <summary>
-    /// Realm configuration specifying settings that affect the Realm's behavior.
+    /// Realm configuration specifying settings that affect the <see cref="Realm"/>'s behavior.
     /// </summary>
     /// <remarks>
-    /// Its main role is generating a canonical path from whatever absolute, relative subdirectory or just filename the user supplies.
+    /// Its main role is generating a canonical path from whatever absolute, relative subdirectory, or just filename the user supplies.
     /// </remarks>
     public class RealmConfiguration : RealmConfigurationBase
     {
         /// <summary>
-        /// In order to handle manual migrations, you need to supply one of these to your <c>RealmConfiguration</c>.
-        /// It will be called with a <c>Migration</c> instance containing the pre- and the post-migration realm.
-        /// You should make sure that the <c>NewRealm</c> property on it contains a database that is up
-        /// to date when returning.
-        /// The <c>oldSchemaVersion</c> parameter will tell you which version the user is migrating *from*.
-        /// They should always be migrating to the current version.
+        /// In order to handle manual migrations, you need to supply a migration callback to your
+        /// <see cref="RealmConfiguration"/>. It will be called with a <see cref="Migration"/> instance containing
+        /// the pre- and the post-migration <see cref="Realm"/>. You should make sure that the <see cref="Migration.NewRealm"/> 
+        /// property on it contains a database that is up to date when returning. The <c>oldSchemaVersion</c>
+        /// parameter will tell you which <see cref="RealmConfigurationBase.SchemaVersion"/> the user is migrating 
+        /// <b>from</b>. They should always be migrating to the current <see cref="RealmConfigurationBase.SchemaVersion"/>.
         /// </summary>
-        /// <param name="migration">The <see cref="Migration"/> instance, containing information about the old and the new realm.</param>
-        /// <param name="oldSchemaVersion">An unsigned long value indicating the schema version of the old realm.</param>
+        /// <param name="migration">
+        /// The <see cref="Migration"/> instance, containing information about the old and the new <see cref="Realm"/>.
+        /// </param>
+        /// <param name="oldSchemaVersion">
+        /// An unsigned long value indicating the <see cref="RealmConfigurationBase.SchemaVersion"/> of the old 
+        /// <see cref="Realm"/>.
+        /// </param>
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
-        /// Gets or sets a value indicating whether the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
+        /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/> 
+        /// mismatches the one in the code. Use this when debugging and developing your app but never release it with
+        /// this flag set to <c>true</c>.
         /// </summary>
+        /// <value><c>true</c> to delete the database on schema mismatch; <c>false</c> otherwise.</value>
         public bool ShouldDeleteIfMigrationNeeded { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether a Realm is opened as readonly. This allows opening it from locked locations such as resources, bundled with an application.
+        /// Gets or sets a value indicating whether a <see cref="Realm"/> is opened as readonly. This allows opening it 
+        /// from locked locations such as resources, bundled with an application.
         /// </summary>
+        /// <value><c>true</c> if the <see cref="Realm"/> will be opened as readonly; <c>false</c> otherwise.</value>
         public bool IsReadOnly { get; set; }
 
         /// <summary>
         /// Gets or sets the migration callback.
         /// </summary>
+        /// <value>
+        /// The <see cref="MigrationCallbackDelegate"/> that will be invoked if the <see cref="Realm"/> needs 
+        /// to be migrated.
+        /// </value>
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration that is used when creating a new Realm without specifying a configuration.
+        /// Gets or sets the <see cref="RealmConfiguration"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
+        /// <value>The default configuration.</value>
         public static RealmConfiguration DefaultConfiguration
         {
             get

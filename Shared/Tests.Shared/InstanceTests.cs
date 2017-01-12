@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {
@@ -182,8 +183,10 @@ namespace IntegrationTests
             {
                 lonelyRealm.Write(() =>
                 {
-                    var p = lonelyRealm.CreateObject<LoneClass>();
-                    p.Name = "The Singular";
+                    lonelyRealm.Add(new LoneClass
+                    {
+                        Name = "The Singular"
+                    });
                 });
 
                 // Assert
@@ -202,14 +205,11 @@ namespace IntegrationTests
             // Act and assert
             using (var lonelyRealm = Realm.GetInstance(config))
             {
-                using (var trans = lonelyRealm.BeginWrite())
+                // Can't create an object with a class not included in this Realm
+                lonelyRealm.Write(() =>
                 {
-                    Assert.Throws<ArgumentException>(() =>
-                        {
-                            lonelyRealm.CreateObject<Person>();
-                        },
-                        "Can't create an object with a class not included in this Realm");
-                }
+                    Assert.That(() => lonelyRealm.Add(new Person()), Throws.TypeOf<ArgumentException>());
+                });
             }
         }
 
@@ -222,11 +222,8 @@ namespace IntegrationTests
             config.ObjectClasses = new Type[] { typeof(LoneClass), typeof(object) };
 
             // Act and assert
-            Assert.Throws<ArgumentException>(() =>
-            {
-                Realm.GetInstance(config);
-            },
-            "Can't have classes in the list which are not RealmObjects");
+            // Can't have classes in the list which are not RealmObjects
+            Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<ArgumentException>());
         }
 
         [TestCase(false, true)]

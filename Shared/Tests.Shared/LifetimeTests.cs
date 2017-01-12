@@ -48,7 +48,10 @@ namespace IntegrationTests
             // Arrange
             var realm = GetWeakRealm();
             Person person = null;
-            ((Realm)realm.Target).Write(() => { person = ((Realm)realm.Target).CreateObject<Person>(); });
+            ((Realm)realm.Target).Write(() => 
+            { 
+                person = ((Realm)realm.Target).Add(new Person()); 
+            });
 
             // Act
             GC.Collect();
@@ -73,7 +76,10 @@ namespace IntegrationTests
             var realm = Realm.GetInstance("LifetimeTests.realm");
             var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
-            realm.Write(() => { person = realm.CreateObject<Person>(); });
+            realm.Write(() => 
+            { 
+                person = realm.Add(new Person());
+            });
 
             // Act
             GC.Collect();

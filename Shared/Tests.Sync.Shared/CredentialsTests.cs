@@ -20,11 +20,12 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true), Ignore("Reset for testing doesn't delete persisted users. OS: #207")]
+    [TestFixture, Preserve(AllMembers = true)]
     public class CredentialsTests
     {
         [SetUp]

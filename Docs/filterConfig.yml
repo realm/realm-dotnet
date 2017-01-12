@@ -1,0 +1,27 @@
+apiRules:
+- include:
+    hasAttribute:
+      uid: System.ComponentModel.EditorBrowsableAttribute
+      ctorArguments:
+      - System.ComponentModel.EditorBrowsableState.Never
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.Get.*Value.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.Set.*Value.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.GetBacklinks.*$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Weaving$
+    type: Namespace
+- exclude:
+    uidRegex: ^Realms\.PreserveAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.WovenAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.WovenPropertyAttribute$
+    type: Type

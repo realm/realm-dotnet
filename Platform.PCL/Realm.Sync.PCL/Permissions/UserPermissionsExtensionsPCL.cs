@@ -33,7 +33,7 @@ namespace Realms.Sync
         /// This Realm can be used to control access and permissions for Realms owned by the user. This includes
         /// giving other users access to Realms.
         /// </remarks>
-        /// <seealso cref="!:https://realm.io/docs/realm-object-server/#permissions">How to control permissions</seealso>
+        /// <seealso href="https://realm.io/docs/realm-object-server/#modifying-permissions">How to control permissions</seealso>
         /// <param name="user">The user whose Management Realm to get.</param>
         /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
         public static Realm GetManagementRealm(this User user)

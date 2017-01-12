@@ -40,9 +40,5 @@
     <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
     <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="native/android/x86" />
     <file src="../../wrappers/build/$Configuration$-android/x86_64/librealm-wrappers.so" target="native/android/x86_64" />
-    <!-- Win32 files -->
-    <file src="../../Platform.Win32/Realm.Win32/bin/$Configuration$/Realm.*" target="lib/net452" />
-    <file src="../../wrappers/build/$Configuration$-Win32/realm-wrappers.dll" target="native/win32/x86" />
-    <file src="../../wrappers/build/$Configuration$-x64/realm-wrappers.dll" target="native/win32/x64" />
   </files>
 </package>

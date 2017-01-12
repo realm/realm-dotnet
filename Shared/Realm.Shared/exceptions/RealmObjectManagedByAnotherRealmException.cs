@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when you're trying to use Add but the object is already managed by a different Realm.
+    /// Exception thrown when you're trying to use <see cref="Realm.Add"/> but the object is already managed by a
+    /// different <see cref="Realm"/>.
     /// </summary>
     public class RealmObjectManagedByAnotherRealmException : RealmException
     {

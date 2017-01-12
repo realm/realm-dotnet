@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
@@ -260,7 +261,7 @@ namespace IntegrationTests
             {
                 openToCreate.Write(() =>
                 {
-                    var anObject = openToCreate.CreateObject<Person>();
+                    openToCreate.Add(new Person());
                 });
             }
 
@@ -273,7 +274,7 @@ namespace IntegrationTests
                 {
                     openedReadonly.Write(() =>
                     {
-                        var neverMade = openedReadonly.CreateObject<Person>();
+                        openedReadonly.Add(new Person());
                     });
                 });
             }

@@ -17,11 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {
@@ -31,14 +29,13 @@ namespace IntegrationTests
         [TestCaseSource(nameof(SetAndGetValueCases))]
         public void SetAndGetValue(string propertyName, object propertyValue)
         {
-            AllTypesObject ato;
-            using (var transaction = _realm.BeginWrite())
+            AllTypesObject ato = null;
+            _realm.Write(() =>
             {
-                ato = _realm.CreateObject<AllTypesObject>();
+                ato = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
 
                 TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
-                transaction.Commit();
-            }
+            });
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
         }
@@ -62,22 +59,20 @@ namespace IntegrationTests
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
-            AllTypesObject ato;
-            using (var transaction = _realm.BeginWrite())
+            AllTypesObject ato = null;
+            _realm.Write(() =>
             {
-                ato = _realm.CreateObject<AllTypesObject>();
+                ato = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
 
                 TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
-                transaction.Commit();
-            }
+            });
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
 
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 TestHelpers.SetPropertyValue(ato, propertyName, null);
-                transaction.Commit();
-            }
+            });
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(null));
         }
@@ -106,10 +101,10 @@ namespace IntegrationTests
             Person p1 = null;
             _realm.Write(() =>
             {
-                p1 = _realm.CreateObject<Person>();
+                p1 = _realm.Add(new Person());
 
                 // Create another object to ensure there is a row in the db after deleting p1.
-                _realm.CreateObject<Person>();
+                _realm.Add(new Person());
 
                 _realm.Remove(p1);
             });
@@ -126,7 +121,7 @@ namespace IntegrationTests
         {
             // Arrange
             Person p1 = null;
-            _realm.Write(() => p1 = _realm.CreateObject<Person>());
+            _realm.Write(() => p1 = _realm.Add(new Person()));
             _realm.Dispose();
 
             // Act and assert
@@ -140,7 +135,7 @@ namespace IntegrationTests
         public void RealmObjectProperties_WhenNotSet_ShouldHaveDefaultValues()
         {
             AllTypesObject obj = null;
-            _realm.Write(() => obj = _realm.CreateObject<AllTypesObject>());
+            _realm.Write(() => obj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty }));
 
             Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));
             Assert.That(obj.StringProperty, Is.EqualTo(default(string)));
@@ -167,10 +162,7 @@ namespace IntegrationTests
         [Test]
         public void RealmObjectProperties_WhenNotSetAfterManage_ShouldHaveDefaultValues()
         {
-            var obj = new AllTypesObject
-            {
-                RequiredStringProperty = string.Empty
-            };
+            var obj = new AllTypesObject { RequiredStringProperty = string.Empty };
             _realm.Write(() => _realm.Add(obj));
 
             Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));

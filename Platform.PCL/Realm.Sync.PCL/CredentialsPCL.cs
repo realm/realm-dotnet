@@ -71,17 +71,6 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates <see cref="Credentials"/> based on a Twitter login.
-        /// </summary>
-        /// <param name="twitterToken">A Twitter authentication token, obtained by logging into Twitter.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials Twitter(string twitterToken)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        /// <summary>
         /// Creates <see cref="Credentials"/> based on a login with a username and a password.
         /// </summary>
         /// <param name="username">The username of the user.</param>
@@ -97,6 +86,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the identity provider for the credentials.
         /// </summary>
+        /// <value>The identity provider, such as Google, Facebook, etc.</value>
         public string IdentityProvider
         {
             get
@@ -109,6 +99,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the access token.
         /// </summary>
+        /// <value>The access token.</value>
         public string Token
         {
             get
@@ -121,6 +112,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets additional user information associated with the credentials.
         /// </summary>
+        /// <value>A dictionary, containing the additional information.</value>
         public IReadOnlyDictionary<string, object> UserInfo
         {
             get

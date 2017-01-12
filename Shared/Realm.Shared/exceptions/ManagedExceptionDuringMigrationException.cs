@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms
+namespace Realms.Exceptions
 {
     internal class ManagedExceptionDuringMigrationException : Exception
     {

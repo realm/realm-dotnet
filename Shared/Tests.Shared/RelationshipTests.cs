@@ -18,8 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms;
@@ -42,50 +40,36 @@ namespace IntegrationTests
             // we don't keep any variables pointing to these as they are all added to Realm
             using (var trans = realm.BeginWrite())
             {
-                /* syntax we want back needs ability for constructor to auto-bind to active write transaction
-                new Owner {Name = "Tim", Dogs = new IList<Dog> {
-                    new Dog {Name = "Bilbo Fleabaggins"},
-                    new Dog {Name = "Earl Yippington III" }
-                    } };
-                    */
-                Owner o1 = realm.CreateObject<Owner>();
-                o1.Name = "Tim";
+                var o1 = realm.Add(new Owner { Name = "Tim" });
 
-                Dog d1 = realm.CreateObject<Dog>();
-                d1.Name = "Bilbo Fleabaggins";
-                d1.Color = "Black";
+                var d1 = realm.Add(new Dog
+                {
+                    Name = "Bilbo Fleabaggins",
+                    Color = "Black"
+                });
+
                 o1.TopDog = d1;  // set a one-one relationship
                 o1.Dogs.Add(d1);
 
-                Dog d2 = realm.CreateObject<Dog>();
-                d2.Name = "Earl Yippington III";
-                d2.Color = "White";
+                var d2 = realm.Add(new Dog
+                {
+                    Name = "Earl Yippington III",
+                    Color = "White"
+                });
+
                 o1.Dogs.Add(d2);
 
                 // lonely people and dogs
-                Owner o2 = realm.CreateObject<Owner>();
-                o2.Name = "Dani";  // the dog-less
+                realm.Add(new Owner
+                {
+                    Name = "Dani" // the dog-less
+                });
 
-                Dog d3 = realm.CreateObject<Dog>();  // will remain unassigned
-                d3.Name = "Maggie Mongrel";
-                d3.Color = "Grey";
-
-                /*
-                These would work if we can preserve init through weaving, like:
-                public IList<Dog> Dogs { get; set; } = new IList<Dog>();
-
-                new Owner {Name = "JP", Dogs = { new Dog { Name = "Deputy Dawg", Vaccinated=false } } };
-                new Owner {Name = "Arwa", Dogs = { new Dog { Name = "Hairy Pawter", Color = "Black" } } };
-                new Owner {Name = "Joe", Dogs = { new Dog { Name = "Jabba the Mutt", Vaccinated = false } } };
-                new Owner {Name = "Alex", Dogs = { new Dog { Name = "Hairy Pawter", Color = "Black" } } };
-                new Owner {Name = "Michael", Dogs = { new Dog { Name = "Nerf Herder", Color="Red" } } };
-                new Owner {Name = "Adam", Dogs = { new Dog { Name = "Defense Secretary Waggles" } } };
-                new Owner {Name = "Samuel", Dogs = { new Dog { Name = "Salacious B. Crumb", Color="Tan" } } };
-                new Owner {Name = "Kristen"}; // Kristen's dog was abducted by Tim so she doesn't have any
-                new Owner {Name = "Emily", Dogs = { new Dog { Name = "Pickles McPorkchop" } } };
-                new Owner {Name = "Katsumi", Dogs = { new Dog { Name = "Sir Yaps-a-lot", Vaccinated = false } } };
-                new Owner {Name = "Morgan", Dogs = { new Dog { Name = "Rudy Loosebooty" } } };
-                */
+                realm.Add(new Dog // will remain unassigned
+                {
+                    Name = "Maggie Mongrel",
+                    Color = "Grey"
+                });
 
                 trans.Commit();
             }
@@ -139,10 +123,10 @@ namespace IntegrationTests
         public void TimsIterableDogsThrowExceptions()
         {
             var tim = realm.All<Owner>().First(p => p.Name == "Tim");
-            Assert.Throws<ArgumentNullException>(() => tim.Dogs.CopyTo(null, 0));
+            Assert.That(() => tim.Dogs.CopyTo(null, 0), Throws.TypeOf<ArgumentNullException>());
             var copiedDogs = new Dog[2];
-            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.CopyTo(copiedDogs, -1));
-            Assert.Throws<ArgumentException>(() => tim.Dogs.CopyTo(copiedDogs, 1));  // insuffiient room
+            Assert.That(() => tim.Dogs.CopyTo(copiedDogs, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => tim.Dogs.CopyTo(copiedDogs, 1), Throws.TypeOf<ArgumentException>()); // insuffiient room
         }
 
         [Test]
@@ -276,12 +260,12 @@ namespace IntegrationTests
         public void TestExceptionsFromEmptyListOutOfRange()
         {
             var dani = realm.All<Owner>().Where(p => p.Name == "Dani").First();
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
+            Assert.That(() => dani.Dogs.RemoveAt(0), Throws.TypeOf<ArgumentOutOfRangeException>());
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
+            Assert.That(() => dani.Dogs.Insert(-1, bilbo), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => dani.Dogs.Insert(1, bilbo), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => scratch = dani.Dogs[0], Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -293,19 +277,19 @@ namespace IntegrationTests
             var movedOnToFirstItem = iter.MoveNext();
             Assert.That(movedOnToFirstItem, Is.False);
             Dog currentDog;
-            Assert.Throws<ArgumentOutOfRangeException>(() => currentDog = iter.Current);
+            Assert.That(() => currentDog = iter.Current, Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
         public void TestExceptionsFromTimsDogsOutOfRange()
         {
             var tim = realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
+            Assert.That(() => tim.Dogs.RemoveAt(4), Throws.TypeOf<ArgumentOutOfRangeException>());
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
-            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = tim.Dogs[99]);
+            Assert.That(() => tim.Dogs.Insert(-1, bilbo), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => tim.Dogs.Insert(3, bilbo), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => scratch = tim.Dogs[99], Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -418,7 +402,7 @@ namespace IntegrationTests
                     new Person { FullName = "Joan" }
                 }
             };
-            var joanFriend = new Person()
+            var joanFriend = new Person
             {
                 FullName = "Krystal",
                 Friends = { sally }
@@ -487,13 +471,20 @@ namespace IntegrationTests
             {
                 for (var pid = 1; pid <= 4; ++pid)
                 {
-                    var p = realm.CreateObject<Product>();
-                    p.Id = pid; p.Name = $"Product {pid}";
+                    var p = realm.Add(new Product
+                    {
+                        Id = pid,
+                        Name = $"Product {pid}"
+                    });
+
                     for (var rid = 1; rid <= 5; ++rid)
                     {
-                        var r = realm.CreateObject<Report>();
-                        r.Id = rid + (pid * 1000);
-                        r.Ref = $"Report {pid}:{rid}";
+                        var r = realm.Add(new Report
+                        {
+                            Id = rid + (pid * 1000),
+                            Ref = $"Report {pid}:{rid}"
+                        });
+
                         p.Reports.Add(r);
                     }
                 }

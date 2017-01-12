@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -31,10 +31,11 @@ namespace Realms
     public static class CollectionNotificationsExtensions
     {
         /// <summary>
-        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
+        /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which
+        /// implements <see cref="INotifyCollectionChanged"/>.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
@@ -44,10 +45,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
         /// <returns>
@@ -61,10 +62,11 @@ namespace Realms
         }
 
         /// <summary>
-        /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
+        /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
+        /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>
         /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list) where T : RealmObject
@@ -74,10 +76,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// A convenience method that casts <c>IList{T}</c> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
+        /// A convenience method that casts <see cref="IList{T}" /> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="results">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
         /// <returns>
@@ -96,22 +98,23 @@ namespace Realms
         /// <param name="list">The list where the move should occur.</param>
         /// <param name="item">The item that will be moved.</param>
         /// <param name="index">The new position to which the item will be moved.</param>
-        /// <typeparam name="T">Type of the RealmObject in the list.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the list.</typeparam>
         /// <remarks>
-        /// This extension method will work for standalone lists as well by calling <c>Remove</c> and then <c>Insert</c>.
+        /// This extension method will work for standalone lists as well by calling <see cref="ICollection{T}.Remove"/>
+        /// and then <see cref="IList{T}.Insert"/>.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than Count - 1.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
         /// <summary>
-        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
+        /// <b>Deprecated</b> A convenience method that casts <see cref="IQueryable{T}" /> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <param name="errorCallback">The parameter is not used.</param>
-        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
@@ -122,12 +125,12 @@ namespace Realms
         }
 
         /// <summary>
-        /// A convenience method that casts <c>IQueryable{T}</c> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
+        /// <b>Deprecated</b> A convenience method that casts <see cref="IQueryable{T}" /> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <param name="errorCallback">The parameter is not used.</param>
         /// <param name="coalesceMultipleChangesIntoReset">The parameter is not used.</param>
-        /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]

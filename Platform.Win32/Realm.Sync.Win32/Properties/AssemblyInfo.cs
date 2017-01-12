@@ -16,24 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.ComponentModel;
-using Mono.Cecil;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class AssemblyResolverExtensions
-{
-    public static TypeDefinition LookupTypeDefinition(this IAssemblyResolver resolver, string typeName, params string[] assemblyNames)
-    {
-        foreach (var name in assemblyNames)
-        {
-            var result = resolver.Resolve(name).MainModule.GetType(typeName);
-            if (result != null)
-            {
-                return result;
-            }
-        }
-
-        throw new Exception($"{typeName} not found in {string.Join(", ", assemblyNames)}");
-    }
-}
+[assembly: AssemblyTitle("Realm.Sync.Win32")]
+[assembly: InternalsVisibleTo("Tests.Win32")]

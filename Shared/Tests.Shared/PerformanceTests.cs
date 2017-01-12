@@ -46,9 +46,11 @@ namespace IntegrationTests
                     var hangOntoObjectsUntilCommit = new List<RealmObject>();
                     for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
                     {
-                        var p = _realm.CreateObject<Person>();
-                        p.FirstName = s;
-                        p.IsInteresting = true;
+                        var p = _realm.Add(new Person
+                        {
+                            FirstName = s,
+                            IsInteresting = true
+                        });
                         hangOntoObjectsUntilCommit.Add(p);
                     }
 
@@ -76,7 +78,7 @@ namespace IntegrationTests
                     var hangOntoObjectsUntilCommit = new List<RealmObject>();
                     for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
                     {
-                        var p = _realm.CreateObject<Person>();
+                        var p = _realm.Add(new Person());
                         hangOntoObjectsUntilCommit.Add(p);
                     }
 
@@ -100,7 +102,7 @@ namespace IntegrationTests
             var sw = Stopwatch.StartNew();
             using (var trans = _realm.BeginWrite())
             {
-                var p = _realm.CreateObject<Person>();
+                var p = _realm.Add(new Person());
 
                 // inner loop this time to rewrite the value many times without committing
                 for (var rowIndex = 0; rowIndex < count; rowIndex++)
@@ -149,9 +151,11 @@ namespace IntegrationTests
             {
                 for (var i = 0; i < count; i++)
                 {
-                    var newObject = _realm.CreateObject<MiniPerson>();
-                    newObject.Name = objects[i].Name;
-                    newObject.IsInteresting = objects[i].IsInteresting;
+                    _realm.Add(new MiniPerson
+                    {
+                        Name = objects[i].Name,
+                        IsInteresting = objects[i].IsInteresting
+                    });
                 }
             });
 
@@ -189,9 +193,11 @@ namespace IntegrationTests
             {
                 for (var i = 0; i < count; i++)
                 {
-                    var newObject = _realm.CreateObject<Person>();
-                    newObject.FirstName = objects[i].FirstName;
-                    newObject.IsInteresting = objects[i].IsInteresting;
+                    _realm.Add(new Person
+                    {
+                        FirstName = objects[i].FirstName,
+                        IsInteresting = objects[i].IsInteresting
+                    });
                 }
             });
 

@@ -55,16 +55,19 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
         /// </summary>
+        /// <value>The <see cref="Uri"/> where the Realm Object Server resides.</value>
         public Uri ServerUri => new Uri(Handle.GetServerUri());
 
         /// <summary>
         /// Gets the session’s current state.
         /// </summary>
+        /// <value>An enum value indicating the state of the session.</value>
         public SessionState State => Handle.GetState();
 
         /// <summary>
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
+        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         public User User => new User(Handle.GetUser());
 
         internal readonly SessionHandle Handle;

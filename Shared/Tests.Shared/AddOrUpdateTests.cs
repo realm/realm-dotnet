@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {
@@ -338,6 +339,43 @@ namespace IntegrationTests
             Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
+        }
+
+        // confirm when we do this in a single Write that child objects correctly owned
+        [Test]
+        public void AddOrUpdate_WhenListHasPK_ShouldUpdateListItemsSingleWrite()
+        {
+            PrimaryKeyWithPKList first = null;
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    first = new PrimaryKeyWithPKList
+                    {
+                        Id = 1,
+                        StringValue = "first"
+                    };
+
+                    first.ListValue.Add(new PrimaryKeyObject
+                    {
+                        Id = 1,
+                        StringValue = "child"
+                    });
+
+                    first.ListValue.Add(new PrimaryKeyObject
+                    {
+                        Id = 2,
+                        StringValue = "secondChild"
+                    });
+
+                    _realm.Add(first, update: true);
+                }
+            });
+
+            Assert.That(first.ListValue.Count(), Is.EqualTo(2));  // did the Add keep adding dups?
+            Assert.That(_realm.Find<PrimaryKeyWithPKList>(1).ListValue.Count(), Is.EqualTo(2));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("secondChild"));
         }
 
         [Test]

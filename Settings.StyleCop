@@ -2,6 +2,7 @@
   <GlobalSettings>
     <BooleanProperty Name="ViolationsAsErrors">True</BooleanProperty>
     <CollectionProperty Name="RecognizedWords">
+      <Value>awaitable</Value>
       <Value>databinding</Value>
       <Value>finalizer</Value>
       <Value>Fody</Value>

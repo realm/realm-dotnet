@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Threading;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace IntegrationTests
 {
@@ -256,19 +257,13 @@ namespace IntegrationTests
         [Test]
         public void ExceptionIfNoPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
-            {
-                var foundObj = _realm.Find<Person>("Zaphod");
-            });
+            Assert.That(() => _realm.Find<Person>("Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]
         public void ExceptionIfNoDynamicPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
-            {
-                var foundObj = _realm.Find("Person", "Zaphod");
-            });
+            Assert.That(() => _realm.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]
@@ -276,8 +271,7 @@ namespace IntegrationTests
         {
             _realm.Write(() =>
             {
-                var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
-                obj.Int64Property = 42000042;
+                _realm.Add(new PrimaryKeyInt64Object { Int64Property = 42000042 });
             });
 
             long foundValue = 0;
@@ -302,31 +296,28 @@ namespace IntegrationTests
         {
             _realm.Write(() =>
             {
-                var o1 = _realm.CreateObject<PrimaryKeyStringObject>();
-                o1.StringProperty = "Zaphod";
+                _realm.Add(new PrimaryKeyStringObject { StringProperty = "Zaphod" });
             });
 
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
+            Assert.That(() =>
             {
                 _realm.Write(() =>
                 {
-                    var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
-                    o2.StringProperty = "Zaphod"; // deliberately reuse id
+                    _realm.Add(new PrimaryKeyStringObject { StringProperty = "Zaphod" }); // deliberately reuse id
                 });
-            });
+            }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
         [Test]
         public void NullPrimaryKeyStringObjectThrows()
         {
-            Assert.Throws<ArgumentNullException>(() =>
+            Assert.That(() =>
             {
                 _realm.Write(() =>
                 {
-                    var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
-                    o2.StringProperty = null;
+                    _realm.Add(new PrimaryKeyStringObject { StringProperty = null });
                 });
-            });
+            }, Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]
@@ -334,10 +325,8 @@ namespace IntegrationTests
         {
             _realm.Write(() =>
             {
-                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                o1.Int64Property = null;
-                var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                o2.Int64Property = 123;
+                _realm.Add(new PrimaryKeyNullableInt64Object { Int64Property = null });
+                _realm.Add(new PrimaryKeyNullableInt64Object { Int64Property = 123 });
             });
 
             Assert.That(_realm.All<PrimaryKeyNullableInt64Object>().Count, Is.EqualTo(2));
@@ -349,10 +338,7 @@ namespace IntegrationTests
             var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath("Skinny");
             conf.ObjectClasses = new[] { typeof(Person) };
             var skinny = Realm.GetInstance(conf);
-            Assert.Throws<KeyNotFoundException>(() =>
-            {
-                var obj = skinny.Find<PrimaryKeyInt64Object>(42);
-            });
+            Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());
         }
     }
 }

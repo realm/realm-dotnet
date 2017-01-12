@@ -16,15 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception when you can't open an existing realm file because the format differs from your current class declarations.
+    /// Exception thrown when attempting to open a file whose <see cref="Realms.Schema.RealmSchema"/> differs from your current class declarations.
     /// </summary>
-    /// <remarks>
-    /// Typically triggered when you open the same Realm name, or use GetInstance() with no name, 
-    /// and don't delete old files. <a href="https://realm.io/docs/xamarin/latest/#migrations">Read more at Migrations.</a>
-    /// </remarks>
+    /// <seealso href="https://realm.io/docs/xamarin/latest/#migrations">Read more about Migrations.</seealso>
     public class RealmMigrationNeededException : RealmFileAccessErrorException
     {
         internal RealmMigrationNeededException(string message) : base(message)

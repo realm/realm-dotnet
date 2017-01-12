@@ -16,28 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.ComponentModel;
 using System.Linq;
-using Mono.Cecil;
+using NUnit.Framework;
+using Realms;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class TypeDefinitionExtensions
+namespace IntegrationTests
 {
-    internal static MethodDefinition LookupMethodDefinition(this TypeDefinition typeDefinition, string methodName)
+    /// <summary>
+    /// These tests validate we don't accidentally break obsoleted API.
+    /// Only test API that are more than just proxies.
+    /// </summary>
+    [TestFixture, Preserve(AllMembers = true)]
+    public class ObsoleteAPITests : RealmInstanceTest
     {
-        var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
-
-        if (method == null)
+        [Test]
+        public void CreateObjectTest()
         {
-            throw new ApplicationException("Unable to find method: " + methodName);
+            // Arrange and act
+            _realm.Write(() => _realm.CreateObject<Person>());
+
+            // Assert
+            var people = _realm.All<Person>();
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            var person = people.Single();
+
+            _realm.Write(() => person.FirstName = "John");
+
+            Assert.That(person.FirstName, Is.EqualTo("John"));
         }
-
-        return method;
-    }
-
-    internal static MethodReference LookupMethodReference(this TypeDefinition typeDefinition, string methodName, ModuleDefinition moduleDefinition)
-    {
-        return moduleDefinition.ImportReference(typeDefinition.LookupMethodDefinition(methodName));
     }
 }

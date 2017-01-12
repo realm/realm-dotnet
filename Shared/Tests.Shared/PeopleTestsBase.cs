@@ -17,10 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
-using System.IO;
-using NUnit.Framework;
-using Realms;
 
 namespace IntegrationTests
 {
@@ -28,55 +24,57 @@ namespace IntegrationTests
     {
         protected void MakeThreePeople()
         {
-            Person p1, p2, p3;
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                p1 = _realm.CreateObject<Person>();
-                p1.FirstName = "John";
-                p1.LastName = "Smith";
-                p1.IsInteresting = true;
-                p1.Email = "john@smith.com";
-                p1.Salary = 30000;
-                p1.Score = -0.9907f;
-                p1.Latitude = 51.508530;
-                p1.Longitude = 0.076132;
-                p1.Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero);
-                p1.PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
-                p1.OptionalAddress = "12 Cosgrove St.";
-                p1.IsAmbivalent = true; 
-                transaction.Commit();
-            }
+                _realm.Add(new Person
+                {
+                    FirstName = "John",
+                    LastName = "Smith",
+                    IsInteresting = true,
+                    Email = "john@smith.com",
+                    Salary = 30000,
+                    Score = -0.9907f,
+                    Latitude = 51.508530,
+                    Longitude = 0.076132,
+                    Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero),
+                    PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe },
+                    OptionalAddress = "12 Cosgrove St.",
+                    IsAmbivalent = true
+                });
+            });
 
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                p2 = _realm.CreateObject<Person>();
-                p2.FullName = "John Doe"; // uses our setter whcih splits and maps to First/Lastname
-                p2.IsInteresting = false;
-                p2.Email = "john@doe.com";
-                p2.Salary = 60000;
-                p2.Score = 100;
-                p2.Latitude = 40.7637286;
-                p2.Longitude = -73.9748113;
-                p2.Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero);
-                p2.PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef };
-                p2.OptionalAddress = string.Empty;
-                p2.IsAmbivalent = false; 
-                transaction.Commit();
-            }
+                _realm.Add(new Person
+                {
+                    FullName = "John Doe", // uses our setter which splits and maps to First/Lastname
+                    IsInteresting = false,
+                    Email = "john@doe.com",
+                    Salary = 60000,
+                    Score = 100,
+                    Latitude = 40.7637286,
+                    Longitude = -73.9748113,
+                    Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero),
+                    PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef },
+                    OptionalAddress = string.Empty,
+                    IsAmbivalent = false
+                });
+            });
 
-            using (var transaction = _realm.BeginWrite())
+            _realm.Write(() =>
             {
-                p3 = _realm.CreateObject<Person>();
-                p3.FullName = "Peter Jameson";
-                p3.Email = "peter@jameson.net";
-                p3.Salary = 87000;
-                p3.IsInteresting = true;
-                p3.Score = 42.42f;
-                p3.Latitude = 37.7798657;
-                p3.Longitude = -122.394179;
-                p3.Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero);
-                transaction.Commit();
-            }
+                _realm.Add(new Person
+                {
+                    FullName = "Peter Jameson",
+                    Email = "peter@jameson.net",
+                    Salary = 87000,
+                    IsInteresting = true,
+                    Score = 42.42f,
+                    Latitude = 37.7798657,
+                    Longitude = -122.394179,
+                    Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero)
+                });
+            });
         }
     }
 }

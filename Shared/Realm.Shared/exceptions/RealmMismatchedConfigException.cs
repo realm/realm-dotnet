@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+namespace Realms.Exceptions
 {
     /// <summary>
-    /// An exception, thrown when you try to open a Realm file with a different RealmConfiguration.
+    /// An exception thrown when you try to open a Realm file with a different <see cref="RealmConfigurationBase"/>.
     /// </summary>
     public class RealmMismatchedConfigException : RealmException
     {
