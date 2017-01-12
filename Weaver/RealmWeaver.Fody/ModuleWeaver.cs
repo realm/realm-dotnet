@@ -166,6 +166,12 @@ public class ModuleWeaver
 
         _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
 
+        var realmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");
+        WeaveNativeCallback(realmAssembly);
+
+        var realmSyncAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm.Sync");
+        WeaveNativeCallback(realmSyncAssembly);
+
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
@@ -182,6 +188,30 @@ public class ModuleWeaver
         }
 
         submitAnalytics.Wait();
+    }
+
+    private void WeaveNativeCallback(AssemblyDefinition assembly)
+    {
+        if (_references.ActualNativeCallbackAttribute_Constructor != null && assembly != null)
+        {
+            var nativeCallbackConstructorRef = assembly.MainModule.ImportReference(_references.ActualNativeCallbackAttribute_Constructor);
+
+            var classes = assembly.MainModule.GetTypes();
+            var callbackMethods = classes.Select(c => c.Methods.Where(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "NativeCallbackAttribute")))
+                                         .SelectMany(m => m);
+
+            foreach (var method in callbackMethods)
+            {
+                var nativeCallbackAttribute = method.CustomAttributes.Single(a => a.AttributeType.Name == "NativeCallbackAttribute");
+                var actualNativeCallbackAttribute = new CustomAttribute(nativeCallbackConstructorRef);
+                actualNativeCallbackAttribute.ConstructorArguments.Add(nativeCallbackAttribute.ConstructorArguments[0]);
+        
+                method.CustomAttributes.Add(actualNativeCallbackAttribute);
+                method.CustomAttributes.Remove(nativeCallbackAttribute);
+            }
+
+            assembly.Write(assembly.MainModule.FullyQualifiedName);
+        }
     }
 
     private void WeaveType(TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable)

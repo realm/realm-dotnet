@@ -107,6 +107,8 @@ namespace RealmWeaver
 
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
+        public MethodReference ActualNativeCallbackAttribute_Constructor { get; private set; }
+
         protected ImportedReferences(ModuleDefinition module)
         {
             Module = module;
@@ -273,7 +275,7 @@ namespace RealmWeaver
             return assembly;
         }
 
-        private sealed class NETFramework : ImportedReferences
+        private class NETFramework : ImportedReferences
         {
             public override TypeReference IQueryableOfT { get; }
 
@@ -296,6 +298,20 @@ namespace RealmWeaver
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, System_Core);
 
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, System_Core);
+            }
+        }
+
+        private class XamariniOSFramework : NETFramework
+        {
+            public XamariniOSFramework(ModuleDefinition module) : base(module)
+            {
+                var xamariniOSAssemlby = module.AssemblyReferences.Single(r => r.Name == "Xamarin.iOS");
+                var MonoPInvokeCallbackAttribute = new TypeReference("ObjCRuntime", "MonoPInvokeCallbackAttribute", Module, xamariniOSAssemlby);
+                ActualNativeCallbackAttribute_Constructor = new MethodReference(".ctor", Types.Void, MonoPInvokeCallbackAttribute)
+                { 
+                    HasThis = true,
+                    Parameters = { new ParameterDefinition(System_Type) }
+                };
             }
         }
 
@@ -333,9 +349,11 @@ namespace RealmWeaver
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
-                case "Xamarin.iOS":
                 case "MonoAndroid":
                     references = new NETFramework(module);
+                    break;
+                case "Xamarin.iOS":
+                    references = new XamariniOSFramework(module);
                     break;
                 case ".NETStandard":
                 case ".NETPortable":

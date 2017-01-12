@@ -75,9 +75,6 @@
     <Compile Include="WeaverTestBase.cs" />
     <Compile Include="WeaverTests.cs" />
     <Compile Include="Verifier.cs" />
-    <Compile Include="..\..\..\Shared\Realm.Shared\Attributes\Attributes.cs">
-      <Link>Attributes\Attributes.cs</Link>
-    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
