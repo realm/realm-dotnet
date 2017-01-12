@@ -166,11 +166,8 @@ public class ModuleWeaver
 
         _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
 
-        var realmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");
-        WeaveNativeCallback(realmAssembly);
-
-        var realmSyncAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm.Sync");
-        WeaveNativeCallback(realmSyncAssembly);
+        WeaveNativeCallback("Realm");
+        WeaveNativeCallback("Realm.Sync");
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
@@ -190,10 +187,12 @@ public class ModuleWeaver
         submitAnalytics.Wait();
     }
 
-    private void WeaveNativeCallback(AssemblyDefinition assembly)
+    private void WeaveNativeCallback(string assemblyName)
     {
-        if (_references.ActualNativeCallbackAttribute_Constructor != null && assembly != null)
+        if (_references.ActualNativeCallbackAttribute_Constructor != null &&
+            ModuleDefinition.AssemblyReferences.Any(a => a.Name == assemblyName))
         {
+            var assembly = ModuleDefinition.AssemblyResolver.Resolve(assemblyName);
             var nativeCallbackConstructorRef = assembly.MainModule.ImportReference(_references.ActualNativeCallbackAttribute_Constructor);
 
             var classes = assembly.MainModule.GetTypes();
