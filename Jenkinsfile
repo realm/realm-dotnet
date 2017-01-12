@@ -224,10 +224,13 @@ def Win32Test(stashName) {
       def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
       dir("Platform.Win32/Tests.Win32/bin/${configuration}") {
         try {
-          bat """
-            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x86.xml;transform=nunit3-junit.xslt --x86
-            "${nunit}" Tests.Win32.dll --result=TestResults.win32-x64.xml;transform=nunit3-junit.xslt
-          """
+          withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
+            bat """
+              mkdir "%TMP%"
+              "${nunit}" Tests.Win32.dll --result=TestResults.win32-x86.xml;transform=nunit3-junit.xslt --x86
+              "${nunit}" Tests.Win32.dll --result=TestResults.win32-x64.xml;transform=nunit3-junit.xslt
+            """
+          }
         } finally {
           junit 'TestResults.*.xml'
         }
