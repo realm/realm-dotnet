@@ -53,7 +53,12 @@ namespace IntegrationTests
             return;
 #endif
 
+#if __IOS__
+            var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
+#else
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
+#endif
+
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
     }
