@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmokeTestNoRealms.iOS", "iOS\SmokeTestNoRealms.iOS.csproj", "{19523592-C958-4B05-A30B-72D1BDE55B9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhone = Release|iPhone
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|Any CPU.ActiveCfg = Release|iPhone
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|Any CPU.Build.0 = Release|iPhone
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|iPhone.ActiveCfg = Release|iPhone
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|iPhone.Build.0 = Release|iPhone
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{19523592-C958-4B05-A30B-72D1BDE55B9B}.Debug|iPhone.Build.0 = Debug|iPhone
+	EndGlobalSection
+EndGlobal
