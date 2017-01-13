@@ -209,7 +209,7 @@ namespace Realms
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
-        public T Add<T>(T obj, bool update) where T : RealmObject
+        public T Add<T>(T obj, bool update = false) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return default(T);
