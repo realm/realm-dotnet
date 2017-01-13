@@ -1,6 +1,16 @@
 <?xml version="1.0"  encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
+  <UsingTask
+    TaskName="BuildTasks.WeaveRealmAssembly"
+    AssemblyFile="$(MSBuildThisFileDirectory)../tools/BuildTasks.dll" />
+  <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile">
+    <BuildTasks.WeaveRealmAssembly 
+      OutputDirectory="$(ProjectDir)$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
+      OutputType="$(OutputType)" />
+  </Target>
+  <!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
   <Target Name="CopyRealmWeaver" BeforeTargets="FodyTarget">
     <Message Text="CopyRealmWeaver" />
     <Error 

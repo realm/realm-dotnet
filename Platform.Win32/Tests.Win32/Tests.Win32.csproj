@@ -91,4 +91,14 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <UsingTask
+    TaskName="BuildTasks.WeaveRealmAssembly"
+    AssemblyFile="$(SolutionDir)Tools/BuildTasks.dll" />
+  <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile">
+    <BuildTasks.WeaveRealmAssembly 
+      OutputDirectory="$(ProjectDir)$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
+      OutputType="$(OutputType)" />
+  </Target>
 </Project>

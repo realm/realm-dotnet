@@ -24,6 +24,7 @@
   <files>
 <!-- Built weaver needed by all targets -->  
     <file src="../../Weaver/RealmWeaver.Fody/bin/$Configuration$/RealmWeaver.Fody.dll" target="tools"/>
+    <file src="../../Weaver/BuildTasks/bin/$Configuration$/*.dll" target="tools"/>
 <!-- Our XML config file for Fody -->     
      <file src="FodyWeavers.xml.install.xdt" target="content"/>
      <file src="FodyWeavers.xml.uninstall.xdt" target="content"/>
