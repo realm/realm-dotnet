@@ -275,7 +275,7 @@ namespace RealmWeaver
             return assembly;
         }
 
-        private class NETFramework : ImportedReferences
+        private sealed class NETFramework : ImportedReferences
         {
             public override TypeReference IQueryableOfT { get; }
 
@@ -349,6 +349,7 @@ namespace RealmWeaver
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
+				case "Xamarin.iOS":
                 case "MonoAndroid":
                     references = new NETFramework(module);
                     break;
