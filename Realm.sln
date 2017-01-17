@@ -67,6 +67,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLRealmFreeAssemblyToProcess", "Weaver\WeaverTests\PCLRealmFreeAssemblyToProcess\PCLRealmFreeAssemblyToProcess.csproj", "{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.BuildTasks", "Weaver\Realm.BuildTasks\Realm.BuildTasks.csproj", "{9C1A39EB-953B-4732-8E14-0238E2C88A1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildTasks", "Weaver\BuildTasks\BuildTasks.csproj", "{584C7D67-7FFF-478F-81C2-615545294A51}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.BuildTasks", "Weaver\Realm.BuildTasks\Realm.BuildTasks.csproj", "{584C7D67-7FFF-478F-81C2-615545294A51}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

@@ -349,7 +349,7 @@ namespace RealmWeaver
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
-				case "Xamarin.iOS":
+                case "Xamarin.iOS":
                 case "MonoAndroid":
                     references = new NETFramework(module);
                     break;
