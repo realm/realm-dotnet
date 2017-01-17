@@ -24,7 +24,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Mono.Cecil;
 
-namespace BuildTasks
+namespace RealmBuildTasks
 {
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public class WeaveRealmAssembly : Task
@@ -39,31 +39,13 @@ namespace BuildTasks
 
         [Required]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        public string OutputType { get; set; }
-
-        [Required]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public string IntermediateDirectory { get; set; }
-
-        private string OutputExtension
-        {
-            get
-            {
-                switch (OutputType)
-                {
-                    case "Exe":
-                        return "exe";
-                    default:
-                        return "dll";
-                }
-            }
-        }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public override bool Execute()
         {
             AssemblyDefinition currentAssembly;
-            if (!TryReadAssembly(AssemblyName, out currentAssembly, OutputExtension, IntermediateDirectory))
+            if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
             {
                 return false;
             }
@@ -89,12 +71,7 @@ namespace BuildTasks
             switch (frameworkName.Identifier)
             {
                 case "Xamarin.iOS":
-                    if (OutputType == "exe")
-                    {
-                        // We only want to weave when building the application for Xamarin.iOS.
-                        WeaveiOSAssembly(currentAssembly, assemblyToWeave);
-                    }
-
+                    WeaveiOSAssembly(currentAssembly, assemblyToWeave);
                     break;
             }
         }
@@ -140,9 +117,9 @@ namespace BuildTasks
                 MessageImportance.Normal));
         }
 
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, string extension = "dll", string folder = null)
+        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
         {
-            var path = Path.Combine(folder ?? OutputDirectory, $"{name}.{extension}");
+            var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
             if (File.Exists(path))
             {
                 assembly = AssemblyDefinition.ReadAssembly(path);

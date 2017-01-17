@@ -1,10 +1,13 @@
 <?xml version="1.0"  encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask
-    TaskName="BuildTasks.WeaveRealmAssembly"
-    AssemblyFile="$(MSBuildThisFileDirectory)../tools/BuildTasks.dll" />
-  <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile">
-    <BuildTasks.WeaveRealmAssembly 
+    TaskName="RealmBuildTasks.WeaveRealmAssembly"
+    AssemblyFile="$(MSBuildThisFileDirectory)../tools/Realm.BuildTasks.dll" />
+  <Target 
+    Name="WeaveRealmAssemblyTarget" 
+    AfterTargets="AfterCompile"
+    Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
+    <RealmBuildTasks.WeaveRealmAssembly 
       OutputDirectory="$(ProjectDir)$(OutputPath)"
       AssemblyName="$(AssemblyName)"
       IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"

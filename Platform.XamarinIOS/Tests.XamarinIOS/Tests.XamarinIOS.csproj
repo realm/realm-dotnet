@@ -154,14 +154,13 @@
     </NativeReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
-  <UsingTask
-    TaskName="BuildTasks.WeaveRealmAssembly"
-    AssemblyFile="$(SolutionDir)Tools/BuildTasks.dll" />
+  <UsingTask 
+		TaskName="RealmBuildTasks.WeaveRealmAssembly"
+		AssemblyFile="$(SolutionDir)Tools/Realm.BuildTasks.dll" />
   <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile">
-    <BuildTasks.WeaveRealmAssembly 
-      OutputDirectory="$(ProjectDir)$(OutputPath)"
-      AssemblyName="$(AssemblyName)"
-      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
-      OutputType="$(OutputType)" />
+    <RealmBuildTasks.WeaveRealmAssembly 
+			OutputDirectory="$(ProjectDir)$(OutputPath)" 
+			AssemblyName="$(AssemblyName)" 
+			IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
   </Target>
 </Project>
