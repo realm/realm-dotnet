@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
-		48361AF61D62017B0051D2E6 /* placeholder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48361AF51D62017B0051D2E6 /* placeholder.cpp */; };
 		48371F4E1D22952D00B52DAB /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48371F4B1D22952D00B52DAB /* format.cpp */; };
 		484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
@@ -41,6 +40,8 @@
 		8522B2C31CD11EA900E5C1F3 /* results_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */; };
 		8575A9191DC123AD001F78B7 /* libwrappers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101381B39902E004A4B2C /* libwrappers.a */; };
 		8575A92B1DC12902001F78B7 /* keychain_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8575A9281DC128FE001F78B7 /* keychain_helper.cpp */; };
+		85AF94E51E2E30A2000BF925 /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85AF94E31E2E30A2000BF925 /* object.cpp */; };
+		85AF94E81E2E310B000BF925 /* object_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85AF94E61E2E310B000BF925 /* object_notifier.cpp */; };
 		85C041211DCCE96600CBF37B /* sync_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041181DCCE95F00CBF37B /* sync_manager.cpp */; };
 		85C041221DCCE96C00CBF37B /* sync_session.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C0411A1DCCE95F00CBF37B /* sync_session.cpp */; };
 		85C041231DCCE97000CBF37B /* sync_user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C0411C1DCCE95F00CBF37B /* sync_user.cpp */; };
@@ -66,7 +67,6 @@
 		424267201C070BE500670B1C /* librealm-ios-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-dbg.a"; path = "core/librealm-ios-dbg.a"; sourceTree = "<group>"; };
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
-		48361AF51D62017B0051D2E6 /* placeholder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = placeholder.cpp; path = "src/object-store/src/placeholder.cpp"; sourceTree = "<group>"; };
 		48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = atomic_shared_ptr.hpp; path = "src/object-store/src/util/atomic_shared_ptr.hpp"; sourceTree = "<group>"; };
 		48371F4B1D22952D00B52DAB /* format.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format.cpp; path = "src/object-store/src/util/format.cpp"; sourceTree = "<group>"; };
 		48371F4C1D22952D00B52DAB /* format.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = format.hpp; path = "src/object-store/src/util/format.hpp"; sourceTree = "<group>"; };
@@ -135,6 +135,10 @@
 		8575A9291DC128FE001F78B7 /* keychain_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = keychain_helper.hpp; path = "src/object-store/src/impl/apple/keychain_helper.hpp"; sourceTree = "<group>"; };
 		8575A92C1DC12971001F78B7 /* compiler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = compiler.hpp; path = "src/object-store/src/util/compiler.hpp"; sourceTree = "<group>"; };
 		8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/event_loop_signal.hpp"; sourceTree = "<group>"; };
+		85AF94E31E2E30A2000BF925 /* object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = "src/object-store/src/object.cpp"; sourceTree = "<group>"; };
+		85AF94E41E2E30A2000BF925 /* object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = "src/object-store/src/object.hpp"; sourceTree = "<group>"; };
+		85AF94E61E2E310B000BF925 /* object_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_notifier.cpp; path = "src/object-store/src/impl/object_notifier.cpp"; sourceTree = "<group>"; };
+		85AF94E71E2E310B000BF925 /* object_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_notifier.hpp; path = "src/object-store/src/impl/object_notifier.hpp"; sourceTree = "<group>"; };
 		85C041171DCCE95F00CBF37B /* sync_config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_config.hpp; path = "src/object-store/src/sync/sync_config.hpp"; sourceTree = "<group>"; };
 		85C041181DCCE95F00CBF37B /* sync_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager.cpp; path = "src/object-store/src/sync/sync_manager.cpp"; sourceTree = "<group>"; };
 		85C041191DCCE95F00CBF37B /* sync_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_manager.hpp; path = "src/object-store/src/sync/sync_manager.hpp"; sourceTree = "<group>"; };
@@ -257,10 +261,11 @@
 				48D347401C74861900CD0E02 /* list.cpp */,
 				48D347421C74861900CD0E02 /* object_accessor.hpp */,
 				48D347441C74861900CD0E02 /* object_schema.hpp */,
-				48361AF51D62017B0051D2E6 /* placeholder.cpp */,
 				48D347431C74861900CD0E02 /* object_schema.cpp */,
 				48D347461C74861900CD0E02 /* object_store.hpp */,
 				48D347451C74861900CD0E02 /* object_store.cpp */,
+				85AF94E41E2E30A2000BF925 /* object.hpp */,
+				85AF94E31E2E30A2000BF925 /* object.cpp */,
 				48D347471C74861900CD0E02 /* property.hpp */,
 				48D347491C74861900CD0E02 /* results.hpp */,
 				48D347481C74861900CD0E02 /* results.cpp */,
@@ -278,21 +283,23 @@
 			isa = PBXGroup;
 			children = (
 				8522B2B01CD11D7700E5C1F3 /* apple */,
-				48D347391C74861900CD0E02 /* external_commit_helper.hpp */,
-				48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */,
-				48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */,
-				48D3473D1C74861900CD0E02 /* transact_log_handler.hpp */,
-				48D3473C1C74861900CD0E02 /* transact_log_handler.cpp */,
-				4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */,
-				484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */,
 				8522B2B61CD11EA900E5C1F3 /* collection_change_builder.hpp */,
 				8522B2B51CD11EA900E5C1F3 /* collection_change_builder.cpp */,
 				8522B2B81CD11EA900E5C1F3 /* collection_notifier.hpp */,
 				8522B2B71CD11EA900E5C1F3 /* collection_notifier.cpp */,
+				48D347391C74861900CD0E02 /* external_commit_helper.hpp */,
 				8522B2BA1CD11EA900E5C1F3 /* list_notifier.hpp */,
 				8522B2B91CD11EA900E5C1F3 /* list_notifier.cpp */,
+				85AF94E71E2E310B000BF925 /* object_notifier.hpp */,
+				85AF94E61E2E310B000BF925 /* object_notifier.cpp */,
+				48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */,
+				48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */,
 				8522B2BC1CD11EA900E5C1F3 /* results_notifier.hpp */,
 				8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */,
+				48D3473D1C74861900CD0E02 /* transact_log_handler.hpp */,
+				48D3473C1C74861900CD0E02 /* transact_log_handler.cpp */,
+				4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */,
+				484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */,
 			);
 			name = impl;
 			sourceTree = "<group>";
@@ -418,9 +425,9 @@
 				48ED7C721C16F9C200AF23A4 /* shared_realm_cs.cpp in Sources */,
 				48ED7C6E1C16F9C200AF23A4 /* realm-csharp.cpp in Sources */,
 				48D347591C74861900CD0E02 /* transact_log_handler.cpp in Sources */,
-				48361AF61D62017B0051D2E6 /* placeholder.cpp in Sources */,
 				85EAC02F1E1D21C900F35463 /* thread_safe_reference.cpp in Sources */,
 				42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */,
+				85AF94E51E2E30A2000BF925 /* object.cpp in Sources */,
 				8522B2C31CD11EA900E5C1F3 /* results_notifier.cpp in Sources */,
 				48D347601C74861900CD0E02 /* object_schema.cpp in Sources */,
 				48D3475D1C74861900CD0E02 /* list.cpp in Sources */,
@@ -429,6 +436,7 @@
 				8522B2B31CD11DC000E5C1F3 /* collection_notifications.cpp in Sources */,
 				48ED7C651C16F9C200AF23A4 /* error_handling.cpp in Sources */,
 				484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */,
+				85AF94E81E2E310B000BF925 /* object_notifier.cpp in Sources */,
 				8575A92B1DC12902001F78B7 /* keychain_helper.cpp in Sources */,
 				48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */,
 				48D347651C74861900CD0E02 /* results.cpp in Sources */,

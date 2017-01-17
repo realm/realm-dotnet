@@ -54,6 +54,7 @@ namespace binding {
     {
         if (realm->m_binding_context == nullptr) {
             realm->m_binding_context = std::unique_ptr<realm::BindingContext>(new CSharpBindingContext(managed_realm_handle));
+            realm->m_binding_context->realm = realm;
         }
         
         return static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
