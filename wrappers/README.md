@@ -30,8 +30,8 @@ If you downloaded a zip of the source, you need to go back to github to identify
 1. Download a zip using the GitHub download button in that tree, eg `realm-object-store-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
 1. Unpack its contents into `wrappers/src/object-store`
 
-Building Wrappers on macOS
---------------------------
+Building iOS and Android Wrappers on macOS
+------------------------------------------
 
 These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
 
@@ -45,8 +45,15 @@ To save time for testing you may want to build only some of the wrappers librari
 
 * iOS builds `librealm-wrappers.a` - run `make ios` or `make iosdbg`. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
 * Android builds `librealm-wrappers.so` - run `make android` or `make androiddbg` Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
+
+Building Win32 wrappers
+-------------
+
 * Windows builds `realm-wrappers.dll` for x86 and x64. Open `wrappers.vcxproj` (or `Realm.sln`) and build for both architectures in the desired configuration. Sync is not supported on Windows right now.
 
+
+General Notes
+-------------
 All builds steps download the required realm components (core and sync) automatically.
 
 **Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `wrappers.xcodeproj`, `wrappers.vcxproj`, and `jni/Android.mk` for builds to work.
