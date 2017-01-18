@@ -711,16 +711,15 @@ namespace Realms
 
         TypeInfo IReflectableType.GetTypeInfo()
         {
-            return RealmObjectTypeInfo.FromType(this.GetType());
+            return RealmObjectTypeInfo.FromType(GetType());
         }
 
         private void SubscribeForNotifications()
         {
             Debug.Assert(!_notificationsHandle.HasValue, "Notification handle must be null before subscribing");
 
-            var managedRealmHandle = GCHandle.Alloc(_realm, GCHandleType.Weak);
             _notificationsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            _realm.SharedRealmHandle.AddObservedObject(GCHandle.ToIntPtr(managedRealmHandle), this.ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
+            _realm.SharedRealmHandle.AddObservedObject(ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
         }
 
         private void UnsubscribeFromNotifications()

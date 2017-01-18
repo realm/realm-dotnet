@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -28,12 +29,11 @@ using Realms.Exceptions;
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class InstanceTests
+    public class InstanceTests : RealmTest
     {
         private const string SpecialRealmName = "EnterTheMagic.realm";
 
-        [TearDown]
-        public void TearDown()
+        public override void TearDown()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
@@ -337,6 +337,145 @@ namespace IntegrationTests
                 Assert.That(() => Realm.Compact(), Is.False);
                 token.Dispose();
             }
+        }
+
+        [Test]
+        public void RealmChangedShouldFireForEveryInstance()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm1 = Realm.GetInstance())
+                using (var realm2 = Realm.GetInstance())
+                {
+                    var changed1 = 0;
+                    realm1.RealmChanged += (sender, e) =>
+                    {
+                        changed1++;
+                    };
+
+                    var changed2 = 0;
+                    realm2.RealmChanged += (sender, e) =>
+                    {
+                        changed2++;
+                    };
+
+                    realm1.Write(() =>
+                    {
+                        realm1.Add(new Person());
+                    });
+
+                    await Task.Delay(50);
+
+                    Assert.That(changed1, Is.EqualTo(1));
+                    Assert.That(changed2, Is.EqualTo(1));
+
+                    Assert.That(realm1.All<Person>().Count(), Is.EqualTo(1));
+                    Assert.That(realm2.All<Person>().Count(), Is.EqualTo(1));
+
+                    realm2.Write(() =>
+                    {
+                        realm2.Add(new Person());
+                    });
+
+                    await Task.Delay(50);
+
+                    Assert.That(changed1, Is.EqualTo(2));
+                    Assert.That(changed2, Is.EqualTo(2));
+
+                    Assert.That(realm1.All<Person>().Count(), Is.EqualTo(2));
+                    Assert.That(realm2.All<Person>().Count(), Is.EqualTo(2));
+                }
+            });
+        }
+
+        [Test]
+        public void Dispose_WhenOnTheSameThread_ShouldNotInvalidateOtherInstances()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = Realm.GetInstance();
+            var realm2 = Realm.GetInstance();
+
+            realm1.Write(() => realm1.Add(new Person()));
+            realm1.Dispose();
+
+            var people = realm2.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm2.Dispose();
+        }
+
+        [Test]
+        public void Dispose_WhenCalledMultipletimes_ShouldNotInvalidateOtherInstances()
+        {
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm1 = Realm.GetInstance();
+            var realm2 = Realm.GetInstance();
+
+            realm1.Write(() => realm1.Add(new Person()));
+            for (var i = 0; i < 5; i++)
+            {
+                realm1.Dispose();
+            }
+
+            var people = realm2.All<Person>();
+
+            Assert.That(people.Count(), Is.EqualTo(1));
+
+            realm2.Dispose();
+        }
+
+        [Test]
+        public void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
+        {
+            AsyncContext.Run(async () =>
+            {
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+                var realm1 = Realm.GetInstance();
+
+                await Task.Run(() =>
+                {
+                    var realm2 = Realm.GetInstance();
+                    realm2.Write(() => realm2.Add(new Person()));
+                    realm2.Dispose();
+                });
+
+                var people = realm1.All<Person>();
+
+                Assert.That(people.Count(), Is.EqualTo(1));
+
+                realm1.Dispose();
+            });
+        }
+
+        [Test]
+        public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
+        {
+            var realm = Realm.GetInstance();
+            realm.Dispose();
+
+            Assert.That(realm.IsClosed);
+
+            var other = Realm.GetInstance();
+
+            Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
+            Assert.That(() => realm.WriteAsync(_ => { }), Throws.TypeOf<ObjectDisposedException>());
+
+            other.Dispose();
         }
 
         private static void AddDummyData(Realm realm)

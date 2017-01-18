@@ -55,6 +55,8 @@ namespace Realms
             {
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
+                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
@@ -331,13 +333,22 @@ namespace Realms
                 }
             }
 
-            if (m.Method.DeclaringType == typeof(string))
+            if (m.Method.DeclaringType == typeof(string) ||
+                m.Method.DeclaringType == typeof(StringExtensions))
             {
                 QueryHandle.Operation<string> queryMethod = null;
+                MemberExpression member = null;
+                var stringArgumentIndex = 0;
 
                 if (m.Method == Methods.String.Contains.Value)
                 {
                     queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
+                }
+                else if (m.Method == Methods.String.ContainsStringComparison.Value)
+                {
+                    member = m.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+                    queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(m));
                 }
                 else if (m.Method == Methods.String.StartsWith.Value)
                 {
@@ -357,7 +368,7 @@ namespace Realms
                 }
                 else if (m.Method == Methods.String.IsNullOrEmpty.Value)
                 {
-                    var member = m.Arguments.SingleOrDefault() as MemberExpression;
+                    member = m.Arguments.SingleOrDefault() as MemberExpression;
                     if (member == null)
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
@@ -383,7 +394,8 @@ namespace Realms
 
                 if (queryMethod != null)
                 {
-                    var member = m.Object as MemberExpression;
+                    member = member ?? m.Object as MemberExpression;
+
                     if (member == null)
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
@@ -392,7 +404,7 @@ namespace Realms
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
-                    if (!TryExtractConstantValue(m.Arguments[0], out argument) || argument.GetType() != typeof(string))
+                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || argument.GetType() != typeof(string))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
@@ -841,7 +853,7 @@ namespace Realms
         private static bool GetComparisonCaseSensitive(MethodCallExpression m)
         {
             object argument;
-            if (!TryExtractConstantValue(m.Arguments[1], out argument) || !(argument is StringComparison))
+            if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || !(argument is StringComparison))
             {
                 throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and StringComparison constant arguments.");
             }
