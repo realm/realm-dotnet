@@ -61,7 +61,7 @@ stage('Weavers') {
         dir('Weaver/Realm.BuildTasks') {
           xbuild("Realm.BuildTasks.csproj /p:Configuration=${configuration}")
         }
-        stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'nuget-buildtasks'
+        stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'buildtasks-output'
       }
     }
   )
@@ -83,6 +83,7 @@ stage('Build without sync') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
+        unstash 'buildtasks-output'
 
         xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
@@ -162,6 +163,7 @@ stage('Build with sync') {
         getArchive()
 
         unstash 'ios-wrappers-sync'
+        unstash 'buildtasks-output'
 
         sh "${nuget} restore Realm.sln"
 
@@ -339,7 +341,7 @@ stage('NuGet') {
         getArchive()
 
         unstash 'nuget-weaver'
-        unstash 'nuget-buildtasks'
+        unstash 'buildtasks-output'
         unstash 'nuget-pcl-database'
         unstash 'ios-wrappers-nosync'
         unstash 'nuget-ios-database'
