@@ -33,7 +33,7 @@ namespace Realms
     internal static class NativeCommon
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void NotifyRealmCallback(IntPtr realmHandle);
+        public delegate void NotifyRealmCallback(IntPtr stateHandle);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]

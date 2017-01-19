@@ -44,6 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObsoleteAPITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FallbackApiTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
