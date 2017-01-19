@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Realms;
 
-namespace SmolkeTestWin32Console
+namespace SmokeTestWin32Console
 {
 
     public class Employee : RealmObject
