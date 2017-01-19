@@ -10,8 +10,7 @@
     <RealmBuildTasks.WeaveRealmAssembly 
       OutputDirectory="$(ProjectDir)$(OutputPath)"
       AssemblyName="$(AssemblyName)"
-      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)"
-      OutputType="$(OutputType)" />
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
   </Target>
   <!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
   <Target Name="CopyRealmWeaver" BeforeTargets="FodyTarget">
