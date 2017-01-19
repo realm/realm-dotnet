@@ -41,7 +41,7 @@ namespace SmokeTestWin32Console
                 }
             });
             var jakes = from d in realm.All<Employee>() where d.Name == "Jake" select d;
-            var jake = realm.All<Employee>().Single(p => p.Name == "Jake") as Employee;
+            var jake = realm.All<Employee>().Single(p => p.Name == "Jake");
             return $"There are {realm.All<Employee>().Count()} employees and the boss of Jake is {jake.Boss.Name}";
         }
 
@@ -55,7 +55,7 @@ namespace SmokeTestWin32Console
             var msg = TestRealm.SmokeTest();
             Console.WriteLine(msg);
             Console.WriteLine("Press any key to continue");
-            var ignored = Console.ReadKey();
+            Console.ReadKey();
         }
     }
 }
