@@ -556,11 +556,13 @@ namespace Realms
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Add(RealmObject obj, bool update = false)
+        /// <returns>The passed object.</returns>
+        public RealmObject Add(RealmObject obj, bool update = false)
         {
             ThrowIfDisposed();
 
             AddInternal(obj, obj?.GetType(), update);
+            return obj;
         }
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)

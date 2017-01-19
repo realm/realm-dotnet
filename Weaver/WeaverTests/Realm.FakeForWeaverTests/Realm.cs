@@ -20,12 +20,14 @@ namespace Realms
 {
     public class Realm
     {
-        public void Add<T>(T obj, bool update) where T : RealmObject
+        public T Add<T>(T obj, bool update) where T : RealmObject
         {
+            return default(T);
         }
 
-        public void Add(RealmObject obj, bool update)
+        public RealmObject Add(RealmObject obj, bool update)
         {
+            return null;
         }
     }
 }
