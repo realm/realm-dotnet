@@ -15,7 +15,7 @@ namespace SmokeTestWin32Console
 
         public IList<Employee> Reports { get; }
 
-        [Backlink(nameof(Reports))]
+        // circular reference breaks schema see issue 1163 [Backlink(nameof(Employee.Reports))]
         public Employee Boss { get; set; }
     }
 
