@@ -49,7 +49,7 @@ namespace binding {
         
         return -1;
     }
-    
+
     inline void notify_and_remove_if_needed(CSharpBindingContext* context, void* managed_realm_object_handle, size_t property_ndx)
     {
         auto object_alive = notify_realm_object_changed(managed_realm_object_handle, property_ndx);
@@ -180,6 +180,7 @@ REALM_EXPORT void shared_realm_set_managed_state_handle(SharedRealm& realm, void
     handle_errors(ex, [&]() {
         REALM_ASSERT(realm->m_binding_context == nullptr);
         realm->m_binding_context = std::unique_ptr<realm::BindingContext>(new CSharpBindingContext(managed_state_handle));
+        realm->m_binding_context->realm = realm;
     });
 }
 
