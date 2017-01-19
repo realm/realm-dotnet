@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SmolkeTestWin32Console")]
+[assembly: AssemblyTitle("SmokeTestWin32Console")]
 [assembly: AssemblyDescription("Small test program for Realm")]
 [assembly: AssemblyCompany("Realm Inc.")]
 [assembly: AssemblyProduct("Realm C#")]

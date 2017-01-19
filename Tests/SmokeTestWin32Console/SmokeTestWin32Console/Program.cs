@@ -44,7 +44,6 @@ namespace SmokeTestWin32Console
             var jake = realm.All<Employee>().Single(p => p.Name == "Jake");
             return $"There are {realm.All<Employee>().Count()} employees and the boss of Jake is {jake.Boss.Name}";
         }
-
     }
 
     class Program
