@@ -38,37 +38,39 @@ def getArchive() {
     unstash 'dotnet-source'
 }
 
-stage('RealmWeaver') {
-  nodeWithCleanup('xamarin-mac') {
-    getArchive()
-    def workspace = pwd()
+stage('Weavers') {
+  parallel(
+    'RealmWeaver': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
 
-    dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-      xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}");
-      sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
-      publishTests 'TestResult.xml'
+        dir('Weaver/WeaverTests/RealmWeaver.Tests') {
+          xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
+          sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          publishTests 'TestResult.xml'
+        }
+        stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
+      }
+    },
+    'BuildTasks': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
+
+        dir('Weaver/Realm.BuildTasks') {
+          xbuild("Realm.BuildTasks.csproj /p:Configuration=${configuration}")
+        }
+        stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'nuget-buildtasks'
+      }
     }
-
-    stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
-  }
-}
-
-stage('BuildTasks') {
-  nodeWithCleanup('xamarin-mac') {
-    getArchive()
-    def workspace = pwd()
-
-    dir('Weaver/Realm.BuildTasks') {
-      xbuildSafe("${xbuild} Realm.BuildTasks.csproj /p:Configuration=${configuration}")
-    }
-    stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'nuget-buildtasks'
-  }
+  )
 }
 
 stage('Build without sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -147,7 +149,7 @@ stage('Build without sync') {
 stage('Build with sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -255,7 +257,7 @@ def Win32Test(stashName) {
 
 def iOSTest(stashName) {
   return {
-    nodeWithCleanup('osx') {
+    nodeWithCleanup('xamarin-mac') {
       unstash stashName
 
       dir('Tests.XamarinIOS.app') {

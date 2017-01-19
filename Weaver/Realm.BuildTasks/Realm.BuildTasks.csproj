@@ -45,11 +45,5 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">
-    <ItemGroup>
-      <FilesToCopy Include="$(OutputPath)*.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(SolutionDir)Tools" />
-  </Target>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" />
 </Project>
