@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace RealmFreeAssemblyToProcess {
+namespace RealmFreeAssemblyToProcess 
+{
     /// <summary>
     /// This class serves as nothing but a way to locate the assembly in the weaver test.
     /// </summary>

@@ -37,6 +37,7 @@ It should always build without any errors and only a minor compilation warning f
 
 */
 using System;
+
 namespace RealmFreeAssemblyToProcess
 {
     public class SimpleClassWithoutRealm
