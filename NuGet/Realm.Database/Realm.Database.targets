@@ -6,40 +6,43 @@
     <Error 
       Text="Solution directory was not set. If you are building via xbuild, specify by adding a /p:SolutionDir=/path/to/solution/folder argument. See github.com/realm/realm-dotnet/issues/656"
       Condition="'$(SolutionDir)' == ''" />
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)../tools/RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)/Tools" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\tools\RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)Tools" />
   </Target>
   <ItemGroup>
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(_RealmSyncPackagePath)' == ''">
-    <NativeReference Include="$(MSBuildThisFileDirectory)../native/ios/universal/librealm-wrappers.a">
+  <PropertyGroup>
+    <_RealmNugetNativePath Condition="'$(_RealmNugetNativePath)' == ''">$(MSBuildThisFileDirectory)..\native\</_RealmNugetNativePath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">
+    <NativeReference Include="$(_RealmNugetNativePath)ios\universal\librealm-wrappers.a">
       <Kind>Static</Kind>
       <SmartLink>True</SmartLink>
       <IsCxx>True</IsCxx>
       <LinkerFlags>-lz</LinkerFlags>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid' AND '$(_RealmSyncPackagePath)' == ''">
-    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../native/android/armeabi-v7a/librealm-wrappers.so">
-      <Link>$(MSBuildThisFileDirectory)../native/android/armeabi-v7a/librealm-wrappers.so</Link>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../native/android/x86/librealm-wrappers.so">
-      <Link>$(MSBuildThisFileDirectory)../native/android/x86/librealm-wrappers.so</Link>
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\x86\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\x86\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
     <!-- 64bit -->
-    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../native/android/arm64-v8a/librealm-wrappers.so">
-      <Link>$(MSBuildThisFileDirectory)../native/android/arm64-v8a/librealm-wrappers.so</Link>
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../native/android/x86_64/librealm-wrappers.so">
-      <Link>$(MSBuildThisFileDirectory)../native/android/x86_64/librealm-wrappers.so</Link>
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\x86_64\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\x86_64\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <None Include="$(MSBuildThisFileDirectory)../native/win32/x86/realm-wrappers.dll">
+    <None Include="$(_RealmNugetNativePath)win32\x86\realm-wrappers.dll">
         <Link>lib\win32\x86\realm-wrappers.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Include="$(MSBuildThisFileDirectory)../native/win32/x64/realm-wrappers.dll">
+      <None Include="$(_RealmNugetNativePath)win32\x64\realm-wrappers.dll">
         <Link>lib\win32\x64\realm-wrappers.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
