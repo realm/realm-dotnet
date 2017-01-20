@@ -6,4 +6,4 @@ It builds for x86 and x64.
 
 Note that it only uses the standalone Realm.Database nuget.
 
-The project was created and tested under Visual Studio 2017 RC and may run into minor project issues with earlier versions.
+The project was created and tested under Visual Studio 2017 RC.
