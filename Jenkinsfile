@@ -236,8 +236,6 @@ stage('NuGet') {
         unstash 'nuget-ios-database'
         unstash 'android-wrappers-nosync'
         unstash 'nuget-android-database'
-        unstash 'win32-wrappers-nosync'
-        unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
           sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
