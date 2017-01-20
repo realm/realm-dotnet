@@ -306,10 +306,16 @@ public class ModuleWeaver
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_references.RealmObject))
             {
-                return WeaveResult.Warning($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
+                return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
             }
 
             return WeaveResult.Skipped();
+        }
+
+        var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
+        if (backlinkAttribute != null && !prop.IsIQueryable())
+        {
+            return WeaveResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
         }
 
         if (_typeTable.ContainsKey(prop.PropertyType.FullName))
@@ -350,12 +356,12 @@ public class ModuleWeaver
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
             {
-                return WeaveResult.Warning($"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.");
+                return WeaveResult.Warning($"SKIPPING {type.Name}.{prop.Name} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.");
             }
 
             if (prop.SetMethod != null)
             {
-                return WeaveResult.Error($"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} has a setter but its type is a IList which only supports getters.");
             }
 
             var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
@@ -381,15 +387,14 @@ public class ModuleWeaver
         }
         else if (prop.IsIQueryable())
         {
-            var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
             if (backlinkAttribute == null)
             {
-                return WeaveResult.Skipped();
+                return WeaveResult.Error($"{type.Name}.{prop.Name} is IQueryable, but doesn't have [Backlink] applied.");
             }
 
             if (prop.SetMethod != null)
             {
-                return WeaveResult.Error("Backlink properties must be read-only.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} has a setter but also has [Backlink] applied, which only supports getters.");
             }
 
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
@@ -404,7 +409,8 @@ public class ModuleWeaver
             var backingDef = backingField as FieldDefinition;
             if (backingDef != null)
             {
-                backingDef.Attributes &= ~FieldAttributes.InitOnly; // without a set; auto property has this flag we must clear
+                // without a set; auto property has this flag we must clear
+                backingDef.Attributes &= ~FieldAttributes.InitOnly;
             }
 
             ReplaceBacklinksGetter(prop, backingField, columnName, elementType);
@@ -415,15 +421,15 @@ public class ModuleWeaver
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
-            return WeaveResult.Error($"Class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.");
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is a DateTime which is not supported - use DateTimeOffset instead.");
         }
         else if (prop.PropertyType.FullName == "System.Nullable`1<System.DateTime>")
         {
-            return WeaveResult.Error($"Class '{type.Name}' field '{prop.Name}' is a DateTime? which is not supported - use DateTimeOffset? instead.");
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is a DateTime? which is not supported - use DateTimeOffset? instead.");
         }
         else
         {
-            return WeaveResult.Error($"Class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported.");
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported.");
         }
 
         var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);
