@@ -214,12 +214,20 @@ namespace AssemblyToProcess
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class InvalidBacklinkRelationships : RealmObject
     {
-        public InvalidBacklinkRelationships OneToOne { get; set; }
+        public int Id { get; set; }
 
-        [Backlink(nameof(OneToOne))]
+        [Backlink(nameof(ChildRelationShips))]
+        public InvalidBacklinkRelationships ParentRelationship { get; set; }
+
+        [Backlink(nameof(ParentRelationship))]
+        public IList<InvalidBacklinkRelationships> ChildRelationShips { get; }
+
+        [Backlink(nameof(ParentRelationship))]
         public IQueryable<InvalidBacklinkRelationships> WritableBacklinksProperty { get; set; }
 
         [Backlink(nameof(Person.PhoneNumbers))]
         public IQueryable<Person> NoSuchRelationshipProperty { get; }
+
+        public IQueryable<Person> BacklinkNotAppliedProperty { get; set; }
     }
 }
