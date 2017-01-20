@@ -528,6 +528,24 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void StringSearch_Contains_CaseSensitivityTests()
+        {
+            MakeThreePatricks();
+
+            // case sensitive
+            var contains_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri")).Count();
+            Assert.That(contains_atri, Is.EqualTo(2));
+
+            // case sensitive
+            var contains_ordinal_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).Count();
+            Assert.That(contains_ordinal_atri, Is.EqualTo(2));
+
+            // ignore case
+            var contains_ignorecase_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count();
+            Assert.That(contains_ignorecase_atri, Is.EqualTo(3));
+        }
+
+        [Test]
         public void StringSearch_InvalidStringComparisonTests()
         {
             MakeThreePatricks();
@@ -560,6 +578,11 @@ namespace IntegrationTests
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.CurrentCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.CurrentCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
         }
 

@@ -60,16 +60,16 @@ namespace binding {
     
     class CSharpBindingContext: public BindingContext {
     public:
-        CSharpBindingContext(void* managed_realm_handle);
+        CSharpBindingContext(void* managed_state_handle);
         void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed) override;
         void add_observed_row(const Object& object, void* managed_object_handle);
         void remove_observed_row(void* managed_object_handle);
         void notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index);
         void notify_removed(const size_t row_ndx, const size_t table_ndx);
         
-        void* get_managed_realm_handle()
+        void* get_managed_state_handle()
         {
-            return m_managed_realm_handle;
+            return m_managed_state_handle;
         }
         
         std::vector<CSharpBindingContext::ObserverState> get_observed_rows() override
@@ -77,7 +77,7 @@ namespace binding {
             return m_observed_rows;
         }
     private:
-        void* m_managed_realm_handle;
+        void* m_managed_state_handle;
         std::vector<BindingContext::ObserverState> m_observed_rows;
 
         inline void remove_observed_rows(std::function<bool (const BindingContext::ObserverState*, const ObservedObjectDetails*)> filter)

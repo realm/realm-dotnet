@@ -37,8 +37,11 @@ namespace Realms
                 byte[] encryptionKey,
                 out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_bind_to_managed_realm_handle", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void bind_to_managed_realm_handle(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_managed_state_handle", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_managed_state_handle(SharedRealmHandle sharedRealm, IntPtr managedStateHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_managed_state_handle", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_managed_state_handle(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr sharedRealm);
@@ -80,7 +83,7 @@ namespace Realms
             public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_add_observed_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
+            public static extern void add_observed_object(SharedRealmHandle sharedRealm, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_observed_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmObjectHandle, out NativeException ex);
@@ -117,17 +120,25 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void BindToManagedRealmHandle(IntPtr managedRealmHandle)
+        public void SetManagedStateHandle(IntPtr managedStateHandle)
         {
             NativeException nativeException;
-            NativeMethods.bind_to_managed_realm_handle(this, managedRealmHandle, out nativeException);
+            NativeMethods.set_managed_state_handle(this, managedStateHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void AddObservedObject(IntPtr managedRealmHandle, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle)
+        public IntPtr GetManagedStateHandle()
         {
             NativeException nativeException;
-            NativeMethods.add_observed_object(this, managedRealmHandle, objectHandle, managedRealmObjectHandle, out nativeException);
+            var result = NativeMethods.get_managed_state_handle(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public void AddObservedObject(ObjectHandle objectHandle, IntPtr managedRealmObjectHandle)
+        {
+            NativeException nativeException;
+            NativeMethods.add_observed_object(this, objectHandle, managedRealmObjectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

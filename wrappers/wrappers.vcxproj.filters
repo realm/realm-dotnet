@@ -51,6 +51,9 @@
     <ClInclude Include="src\object-store\src\object_store.hpp">
       <Filter>object-store</Filter>
     </ClInclude>
+    <ClInclude Include="src\object-store\src\object.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
     <ClInclude Include="src\object-store\src\property.hpp">
       <Filter>object-store</Filter>
     </ClInclude>
@@ -88,6 +91,9 @@
       <Filter>object-store\impl</Filter>
     </ClInclude>
     <ClInclude Include="src\object-store\src\impl\list_notifier.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\object_notifier.hpp">
       <Filter>object-store\impl</Filter>
     </ClInclude>
     <ClInclude Include="src\object-store\src\impl\realm_coordinator.hpp">
@@ -138,7 +144,7 @@
     <ClCompile Include="src\object-store\src\object_store.cpp">
       <Filter>object-store</Filter>
     </ClCompile>
-    <ClCompile Include="src\object-store\src\placeholder.cpp">
+    <ClCompile Include="src\object-store\src\object.cpp">
       <Filter>object-store</Filter>
     </ClCompile>
     <ClCompile Include="src\object-store\src\results.cpp">
@@ -163,6 +169,9 @@
       <Filter>object-store\impl</Filter>
     </ClCompile>
     <ClCompile Include="src\object-store\src\impl\list_notifier.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\object_notifier.cpp">
       <Filter>object-store\impl</Filter>
     </ClCompile>
     <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp">
