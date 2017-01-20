@@ -33,12 +33,12 @@ using Realms.Weaving;
 
 namespace RealmWeaver
 {
-    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.NotUsed)]
-    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.BeforeRealmWeaver)]
-    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.AfterRealmWeaver)]
-    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.NotUsed)]
-    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.BeforeRealmWeaver)]
-    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.AfterRealmWeaver)]
     public class Tests : WeaverTestBase
     {
         #region helpers
