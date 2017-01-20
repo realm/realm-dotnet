@@ -100,14 +100,19 @@ Furthermore, the following can be used for numerical types: [<](https://msdn.mic
 
 ## String Operators
 With strings, you can use:
-[`Contains`](xref:System.String.Contains*), [`StartsWith`](xref:System.String.StartsWith*), and [`EndsWith`](xref:System.String.EndsWith*), and [`Equals`](xref:System.String.Equals*). By default, Realm will perform a case-sensitive comparison, but you can provide [`StringComparison.OrdinalIgnoreCase`](xref:System.StringComparison.OrdinalIgnoreCase) argument to overwrite that.
+[`Contains`](xref:System.String.Contains*), [`StartsWith`](xref:System.String.StartsWith*), and [`EndsWith`](xref:System.String.EndsWith*), and [`Equals`](xref:System.String.Equals*).
 
 Example:
 
 ```csharp
-var peopleWhoseNameBeginsWithJ = realm.All<Person>.Where(person => person.FirstName.StartsWith("J"));
+var peopleWhoseNameBeginsWithJ = realm.All<Person>.Where(p => p.FirstName.StartsWith("J"));
 ```
 
+By default, Realm will perform a case-sensitive comparison, but you can provide [`StringComparison.OrdinalIgnoreCase`](xref:System.StringComparison.OrdinalIgnoreCase) argument to overwrite that. Since there is no overload for `Contains` that accepts `StringComparison`, we've provided a convenience [extension method](xref:Realms.StringExtensions.Contains*) that can be used when querying:
+
+```csharp
+var peopleWhoseNameContainsA = realm.All<Person>().Where(p => p.FirstName.Contains("a", StringComparison.OrdinalIgnoreCase));
+```
 ## Composition
 You can use parentheses and the [||](https://msdn.microsoft.com/en-us/library/6373h346.aspx) and [&&](https://msdn.microsoft.com/en-us/library/2a723cdk.aspx) operators to compose queries.
 
