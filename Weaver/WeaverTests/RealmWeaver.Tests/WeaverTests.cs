@@ -33,13 +33,13 @@ using Realms.Weaving;
 
 namespace RealmWeaver
 {
-    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.NotUsed)]
-    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.BeforeRealmWeaver)]
-    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.AfterRealmWeaver)]
-    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.NotUsed)]
-    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.BeforeRealmWeaver)]
-    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.AfterRealmWeaver)]
-    public class Tests
+    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.NotUsed)]
+    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(Tests.AssemblyType.NonPCL, Tests.PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.NotUsed)]
+    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(Tests.AssemblyType.PCL, Tests.PropertyChangedWeaver.AfterRealmWeaver)]
+    public class Tests : WeaverTestBase
     {
         #region helpers
 
@@ -68,17 +68,6 @@ namespace RealmWeaver
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
-        private void WeaveRealm(ModuleDefinition moduleDefinition)
-        {
-            new realm::ModuleWeaver
-            {
-                ModuleDefinition = moduleDefinition,
-                LogError = s => _errors.Add(s),
-                LogErrorPoint = (s, point) => _errors.Add(s),
-                LogWarningPoint = (s, point) => _warnings.Add(s)
-            }.Execute();
-        }
-
         private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
         {
             // Disable CheckForEquality, because this will rewrite all our properties and some tests will
@@ -101,12 +90,6 @@ namespace RealmWeaver
 
         #endregion
 
-        public enum AssemblyType
-        {
-            NonPCL,
-            PCL
-        }
-
         public enum PropertyChangedWeaver
         {
             NotUsed,
@@ -114,19 +97,14 @@ namespace RealmWeaver
             AfterRealmWeaver
         }
 
-        private readonly AssemblyType _assemblyType;
         private readonly PropertyChangedWeaver _propertyChangedWeaver;
 
         private Assembly _assembly;
         private string _sourceAssemblyPath;
         private string _targetAssemblyPath;
 
-        private readonly List<string> _warnings = new List<string>();
-        private readonly List<string> _errors = new List<string>();
-
-        public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
+        public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver) : base(assemblyType)
         {
-            _assemblyType = assemblyType;
             _propertyChangedWeaver = propertyChangedWeaver;
         }
 
@@ -691,52 +669,6 @@ namespace RealmWeaver
             var persons = instance.Persons;
 
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
-        }
-
-
-        [Test]
-        public void WeavingWithoutRealmsShouldBeRobust()
-        {
-            // All warnings and errors are gathered once, so in order to ensure only the correct ones
-            // were produced, we make one assertion on all of them here.
-
-            var expectedWarnings = new string[0];
-
-            var expectedErrors = new[]
-            {
-                "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
-                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
-                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean.",
-                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset.",
-                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single.",
-                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported.",
-                "Class DefaultConstructorMissing must have a public constructor that takes no parameters.",
-                "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
-                "Class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
-                "Class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "Class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
-                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
-                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "Backlink properties must be read-only.",
-                "The property 'Person.PhoneNumbers' does not constitute a link to 'InvalidBacklinkRelationships' as described by 'InvalidBacklinkRelationships.NoSuchRelationshipProperty'.",
-                "RequiredProperties.CharProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Char.",
-                "RequiredProperties.ByteProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Byte.",
-                "RequiredProperties.Int16Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int16.",
-                "RequiredProperties.Int32Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int32.",
-                "RequiredProperties.Int64Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int64.",
-                "RequiredProperties.SingleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Single.",
-                "RequiredProperties.DoubleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Double.",
-                "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Boolean.",
-                "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.DateTimeOffset.",
-                "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on AssemblyToProcess.Person.",
-                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>."
-            };
-
-            Assert.That(_errors, Is.EquivalentTo(expectedErrors));
-            Assert.That(_warnings, Is.EquivalentTo(expectedWarnings));
         }
 
         private static void CopyToRealm(Type objectType, dynamic instance)

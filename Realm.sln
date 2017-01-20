@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26014.0
+VisualStudioVersion = 15.0.26020.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "Shared\Realm.Shared\Realm.Shared.shproj", "{826C8753-5C4A-4E95-B483-179B9892C008}"
 EndProject
@@ -64,15 +64,25 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Sync.Win32", "Platfor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmFreeAssemblyToProcess", "Weaver\WeaverTests\RealmFreeAssemblyToProcess\RealmFreeAssemblyToProcess.csproj", "{3119928D-74D5-4F90-ADEA-4FE2A157126B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLRealmFreeAssemblyToProcess", "Weaver\WeaverTests\PCLRealmFreeAssemblyToProcess\PCLRealmFreeAssemblyToProcess.csproj", "{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{02c53890-5cfa-4443-b894-7d0d74301280}*SharedItemsImports = 4
 		Shared\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
+		Shared\Realm.Shared\Realm.Shared.projitems*{2379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
+		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{3379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
+		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{355bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
 		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{76990168-1696-4f96-8eda-3dcf173a0e00}*SharedItemsImports = 13
 		Shared\Realm.Shared\Realm.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
+		Shared\Realm.Shared\Realm.Shared.projitems*{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
+		Shared\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
+		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
 		Shared\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		Shared\Realm.Shared\Realm.Shared.projitems*{c211ede7-cc8e-4f53-a9df-0b105a350bbf}*SharedItemsImports = 4
 		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
+		Shared\Tests.Shared\Tests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
+		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -469,6 +479,30 @@ Global
 		{3119928D-74D5-4F90-ADEA-4FE2A157126B}.Release|x64.Build.0 = Release|Any CPU
 		{3119928D-74D5-4F90-ADEA-4FE2A157126B}.Release|x86.ActiveCfg = Release|Any CPU
 		{3119928D-74D5-4F90-ADEA-4FE2A157126B}.Release|x86.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|ARM.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|x64.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Debug|x86.Build.0 = Debug|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|ARM.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|ARM.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|iPhone.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|x64.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|x64.Build.0 = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|x86.ActiveCfg = Release|Any CPU
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -497,5 +531,6 @@ Global
 		{361C8EB6-9508-4D6A-9BED-39A544AA2736} = {1CC5276B-0F47-49B2-BB78-E7F3D21F7801}
 		{02C53890-5CFA-4443-B894-7D0D74301280} = {47976A90-8275-430B-AB85-2999A4C32098}
 		{3119928D-74D5-4F90-ADEA-4FE2A157126B} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
+		{C273AC40-9B87-4A5B-A4B4-F4F8A7870BF0} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
 	EndGlobalSection
 EndGlobal
