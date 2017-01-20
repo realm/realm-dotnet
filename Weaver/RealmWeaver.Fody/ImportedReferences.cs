@@ -347,13 +347,15 @@ namespace RealmWeaver
 
             references.InitializeFrameworkMethods();
 
+            references.InitializeRealm(module.AssemblyReferences.Single(r => r.Name == "Realm"));
+            /* ASD temp disable to replicate bug.
             // weaver may be run on an assembly which has no importing *yet* of Realm, if someone just adds nuget and builds
             var realmAssembly = module.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
             if (realmAssembly != null)
             {
                 references.InitializeRealm(realmAssembly);
             }
-
+            */
             return references;
         }
     }
