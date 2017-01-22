@@ -19,11 +19,18 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
     internal class SessionHandle : RealmHandle
     {
+        internal static class NativeCallbacks
+        {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void NotifyProgressCallback(ulong transferred, ulong transferable);
+        }
+
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_refresh_access_token", CallingConvention = CallingConvention.Cdecl)]
@@ -49,6 +56,15 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_register_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ulong register_progress_notifier(SessionHandle session,
+                                                                  NativeCallbacks.NotifyProgressCallback callback,
+                                                                  ProgressDirection direction,
+                                                                  [MarshalAs(UnmanagedType.I1)] bool is_streaming,
+                                                                  out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
         }
 
         public SyncUserHandle GetUser()
@@ -80,6 +96,25 @@ namespace Realms.Sync
         {
             NativeException ex;
             NativeMethods.refresh_access_token(this, accessToken, (IntPtr)accessToken.Length, serverPath, (IntPtr)serverPath.Length, out ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public ulong RegisterProgressNotifier(NativeCallbacks.NotifyProgressCallback callback, ProgressDirection direction, ProgressMode mode)
+        {
+            NativeException ex;
+            var isStreaming = mode == ProgressMode.ReportIndefinitely;
+            var token = NativeMethods.register_progress_notifier(this, (transferred, transferrable) =>
+            {
+                Task.Run(() => callback(transferred, transferrable));
+            }, direction, isStreaming, out ex);
+            ex.ThrowIfNecessary();
+            return token;
+        }
+
+        public void UnregisterProgressNotifier(ulong token)
+        {
+            NativeException ex;
+            NativeMethods.unregister_progress_notifier(this, token, out ex);
             ex.ThrowIfNecessary();
         }
 

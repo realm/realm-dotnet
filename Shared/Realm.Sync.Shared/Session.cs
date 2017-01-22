@@ -70,6 +70,19 @@ namespace Realms.Sync
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         public User User => new User(Handle.GetUser());
 
+        /// <summary>
+        /// Lorem ipsum.
+        /// </summary>
+        /// <returns>The for progress notifications.</returns>
+        /// <param name="direction">Direction Lorem ipsum.</param>
+        /// <param name="mode">Mode Lorem ipsum.</param>
+        /// <param name="callback">Callback Lorem ipsum.</param>
+        public IDisposable SubscribeForProgressNotifications(ProgressDirection direction, ProgressMode mode, Action<ulong, ulong> callback)
+        {
+            var token = Handle.RegisterProgressNotifier((t, tt) => callback(t, tt), direction, mode);
+            return new ProgressNotificationToken(this, token);
+        }
+
         internal readonly SessionHandle Handle;
 
         private Session(SessionHandle handle)
@@ -109,6 +122,27 @@ namespace Realms.Sync
             }
 
             return session;
+        }
+
+        private class ProgressNotificationToken : IDisposable
+        {
+            private readonly ulong _token;
+            private readonly WeakReference<Session> _sessionReference;
+
+            public ProgressNotificationToken(Session session, ulong token)
+            {
+                _token = token;
+                _sessionReference = new WeakReference<Session>(session);
+            }
+
+            public void Dispose()
+            {
+                Session session;
+                if (_sessionReference.TryGetTarget(out session))
+                {
+                    session.Handle.UnregisterProgressNotifier(_token);
+                }
+            }
         }
     }
 }

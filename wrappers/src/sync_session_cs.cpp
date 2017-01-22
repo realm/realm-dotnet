@@ -28,6 +28,7 @@ using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
+using ProgressNotificationDelegate = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
 extern "C" {
 REALM_EXPORT void realm_syncsession_refresh_access_token(SharedSyncSession& session, const uint16_t* token_buf, size_t token_len, const uint16_t* server_path_buf, size_t server_path_len, NativeException::Marshallable& ex)
@@ -95,5 +96,29 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
 {
     delete session;
 }
+    
+enum class CSharpNotifierType : uint8_t {
+    Upload = 0,
+    Download
+};
+    
+REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedSyncSession& session, SyncProgressNotifierCallback callback, CSharpNotifierType direction, bool is_streaming, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        auto notifier_direction = direction == CSharpNotifierType::Upload
+                                  ? SyncSession::NotifierType::upload
+                                  : SyncSession::NotifierType::download;
+        
+        return session->register_progress_notifier(callback, notifier_direction, is_streaming);
+    });
+}
+    
+REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyncSession& session, uint64_t token, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        session->unregister_progress_notifier(token);
+    });
+}
+    
 }
 

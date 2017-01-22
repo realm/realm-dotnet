@@ -29,10 +29,10 @@ using Realms.Sync.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class PermissionsTests
+    public class PermissionsTests : SyncTestBase
     {
         [TestCase("http", "realm")]
         [TestCase("https", "realms")]
@@ -196,12 +196,6 @@ namespace Tests.Sync.Shared
 
                 await ValidateWriteAndSync(alicesUrl, bob, charlie, 3, 4);
             });
-        }
-
-        private static Task<User> GetUser()
-        {
-            var credentials = Constants.CreateCredentials();
-            return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
         }
 
         private static async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)

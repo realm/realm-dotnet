@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -27,10 +28,10 @@ using Realms.Sync.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SessionTests
+    public class SessionTests : SyncTestBase
     {
         [Test]
         public async void Realm_GetSession_WhenSyncedRealm()
@@ -111,6 +112,37 @@ namespace Tests.Sync.Shared
                 Assert.That(sessionErrors.Count, Is.EqualTo(1));
                 Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
             }
+        }
+    
+        [Test, Explicit]
+        public void TestStreamingUploadNotifier()
+        {
+            // TODO
+            AsyncContext.Run(async () =>
+            {
+                var user = await GetUser();
+                var config = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/progress"));
+                using (var realm = Realm.GetInstance(config))
+                {
+                    var session = realm.GetSession();
+                    var token = session.SubscribeForProgressNotifications(ProgressDirection.Upload, ProgressMode.ReportIndefinitely, (transferred, transferrable) =>
+                    {
+                        Console.WriteLine($"Transferred: {transferred}, transferrable: {transferrable}");
+                    });
+
+                    for (var i = 0; i < 2; i++)
+                    {
+                        realm.Write(() =>
+                        {
+                            realm.Add(new HugeSyncObject(1000000));
+                        });
+                    }
+
+                    await Task.Delay(10000);
+
+                    token.Dispose();
+                }
+            });
         }
     }
 }
