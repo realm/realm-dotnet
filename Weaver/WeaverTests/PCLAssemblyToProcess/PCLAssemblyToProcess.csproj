@@ -61,7 +61,6 @@
       <Link>TestObjects.cs</Link>
     </Compile>
     <Compile Include="PCLModuleLocator.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="..\AssemblyToProcess\CopyToRealmTestObjects.cs">
       <Link>CopyToRealmTestObjects.cs</Link>
     </Compile>

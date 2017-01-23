@@ -38,7 +38,6 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
     <Compile Include="..\..\..\Shared\Realm.Shared\weaving\IRealmObjectHelper.cs">

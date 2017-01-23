@@ -25,7 +25,7 @@ namespace RealmWeaver
     extern alias realm;
 
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1304:NonPrivateReadonlyFieldsMustBeginWithUpperCaseLetter")]
-    public class WeaverTestBase
+    public abstract class WeaverTestBase
     {
         protected readonly List<string> _warnings = new List<string>();
         protected readonly List<string> _errors = new List<string>();

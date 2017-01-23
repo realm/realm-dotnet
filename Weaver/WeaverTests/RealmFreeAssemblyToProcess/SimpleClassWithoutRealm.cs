@@ -33,7 +33,7 @@ This is a trivial and fleeting state but must be robust.
 So, this project exists with (fake) Realm included but doing nothing with it, and no `RealmObject`
 subclasses.
 
-It should always build without any errors and only a minor compilation warning from Fody
+It should always build without any errors and only a minor compilation warning from Fody.
 
 */
 using System;
@@ -42,8 +42,5 @@ namespace RealmFreeAssemblyToProcess
 {
     public class SimpleClassWithoutRealm
     {
-        public SimpleClassWithoutRealm()
-        {
-        }
     }
 }

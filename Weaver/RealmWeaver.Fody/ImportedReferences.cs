@@ -347,7 +347,7 @@ namespace RealmWeaver
 
             references.InitializeFrameworkMethods();
 
-            // weaver may be run on an assembly which has no importing *yet* of Realm, if someone just adds nuget and builds
+            // Weaver may be run on an assembly which is not **yet** using Realm, if someone just adds nuget and builds.
             var realmAssembly = module.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
             if (realmAssembly != null)
             {
