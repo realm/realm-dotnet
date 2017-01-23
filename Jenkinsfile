@@ -2,7 +2,7 @@ wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
 ]
-configuration = 'Release'
+configuration = 'Debug'
 
 def nuget = '/usr/local/bin/nuget'
 def xbuild = '/usr/local/bin/xbuild'
@@ -105,6 +105,21 @@ stage('Build without sync') {
         stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
       }
     },
+    'Win32': {
+      nodeWithCleanup('windows') {
+        getArchive()
+
+        bat """
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x86 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x64 /t:"Platform_Win32\\wrappers"
+          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
+        """
+
+        stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
+        stash includes: "Platform.Win32/Realm.Win32/bin/${configuration}/Realm.*", name: 'nuget-win32-database'
+        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
+      }
+    },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
@@ -116,10 +131,87 @@ stage('Build without sync') {
   )
 }
 
+stage('Build with sync') {
+  parallel(
+    'iOS': {
+      nodeWithCleanup('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          sh "make ios${wrapperConfigurations[configuration]}"
+        }
+
+        stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
+      }
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+
+        unstash 'ios-wrappers-sync'
+
+        sh "${nuget} restore Realm.sln"
+
+        xbuildSafe("${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+
+        stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
+
+        dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
+          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-sync'
+        }
+      }
+    },
+    'Android': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+
+        dir('wrappers') {
+          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
+            sh "make android${wrapperConfigurations[configuration]}"
+          }
+        }
+
+        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
+      }
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        def workspace = pwd()
+
+        unstash 'android-wrappers-sync'
+
+        sh "${nuget} restore Realm.sln"
+
+        dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
+          xbuildSafe("${xbuild} Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+          dir("bin/${configuration}") {
+            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
+          }
+        }
+
+        stash includes: "Platform.XamarinAndroid/Realm.Sync.XamarinAndroid/bin/${configuration}/Realm.Sync.*", name: 'nuget-android-sync'
+      }
+    },
+    'PCL': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        sh "${nuget} restore Realm.sln"
+        xbuildSafe("${xbuild} Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
+        stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
+      }
+    }
+  )
+}
+
 stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
-    'Android': AndroidTest('android-tests-nosync')
+    'Android': AndroidTest('android-tests-nosync'),
+    'Win32': Win32Test('win32-tests-nosync')
+  )
+}
+
+stage('Test with sync') {
+  parallel(
+    'iOS': iOSTest('ios-tests-sync'),
+    'Android': AndroidTest('android-tests-sync')
   )
 }
 
@@ -236,8 +328,26 @@ stage('NuGet') {
         unstash 'nuget-ios-database'
         unstash 'android-wrappers-nosync'
         unstash 'nuget-android-database'
+        unstash 'win32-wrappers-nosync'
+        unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
+          sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          archive "Realm.Database.${versionString}.nupkg"
+        }
+      }
+    },
+    'Realm': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+
+        unstash 'nuget-pcl-sync'
+        unstash 'ios-wrappers-sync'
+        unstash 'nuget-ios-sync'
+        unstash 'android-wrappers-sync'
+        unstash 'nuget-android-sync'
+
+        dir('NuGet/Realm') {
           sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
           archive "Realm.${versionString}.nupkg"
         }
