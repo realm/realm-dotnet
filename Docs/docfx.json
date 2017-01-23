@@ -3,9 +3,9 @@
         {
             "src": [
                 {
-                    "src": "../Platform.Win32/",
+                    "src": "../Platform.Win32/Realm.Win32/",
                     "files": [
-                        "Realm.Win32/Realm.Win32.csproj"
+                        "Realm.Win32.csproj"
                     ],
                     "exclude": [
                         "**/obj/**",
