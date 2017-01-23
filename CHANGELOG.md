@@ -1,6 +1,24 @@
-0.82.0 (TBD)
+0.82.0 (2017-01-23)
 -------------------
+### Breaking Changes
+- Moved all exceptions under the `Realms.Exceptions` namespace. (#1075)
+- Moved `RealmSchema` to `Realms.Schema` namespace. (#1075)
+- Made the `ErrorEventArgs` constructor internal. (#1075)
+- Made `ObjectSchema.Builder` and `RealmSchema.Builder` internal. (#1075)
+- Passing an object that has `IList` properties to `Add(obj, update: true)` will no longer merge the lists. Instead, the `IList` property will contain only the items in the object. (#1040)
 
+### Enhancements
+- Added virtual `OnPropertyChanged` method in `RealmObject` that you can override to be notified of changes to the current object. (#1047)
+- Added compile time checks that `[Required]` is applied on correct property types. (#1072)
+- `Realm.Add(RealmObject obj)` will now return the passed in object, similarly to `Realm.Add<T>(T obj)`. (#1162)
+- Added an extension method for `string.Contains` that accepts `StringComparison` argument and can be used in queries. When querying, only `StringComparison.Ordinal` and `StringComparison.OrdinalIgnoreCase` can be used. When not used in queries, all values for `StringComparison` are valid. (#1141)
+
+### Bug fixes
+- Adding a standalone object, that has an `IList<T>` property that has never been accessed, to the Realm will no longer throw a `NullReferenceException`. (#1040)
+- `IList<T>` properties will now correctly return `IsReadOnly = true` when managed by a readonly Realm. (#1070)
+- The weaver should now correctly resolve references in PCL and netstandard assemblies. (#1117)
+- Add some missing methods to the PCL reference assembly. (#1093)
+- Disposed realms will not throw `ObjectDisposedException` when trying to access their members. Additionally, disposing a realm will not invalidate other instances on the same thread. (#1063)
 
 0.81.0 (2016-12-14)
 -------------------

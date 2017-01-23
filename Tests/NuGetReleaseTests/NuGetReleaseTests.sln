@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinAn
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tests.Shared", "..\..\Shared\Tests.Shared\Tests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurePCLBuildableTest", "..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj", "{C33439AD-387D-4F86-9DB8-9D4B48EC6750}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|iPhoneSimulator = Debug|iPhoneSimulator
@@ -31,17 +29,5 @@ Global
 		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Debug|ARM.Build.0 = Debug|ARM
 		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Release|ARM.ActiveCfg = Release|ARM
 		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Release|ARM.Build.0 = Release|ARM
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|iPhone.Build.0 = Release|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Debug|ARM.Build.0 = Debug|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|ARM.ActiveCfg = Release|Any CPU
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750}.Release|ARM.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
