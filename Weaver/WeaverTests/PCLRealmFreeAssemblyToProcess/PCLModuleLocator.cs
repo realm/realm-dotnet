@@ -16,20 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-[assembly: AssemblyTitle("Realm.FakeForWeaverTests")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Realm.FakeForWeaverTests")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: ComVisible(false)]
-[assembly: Guid("e6d5d6d7-4af6-46e0-9c6a-efb120d7f01d")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("RealmWeaver.Tests")]
+namespace PCLRealmFreeAssemblyToProcess 
+{
+    /// <summary>
+    /// This class serves as nothing but a way to locate the assembly in the weaver test.
+    /// </summary>
+    public class PCLModuleLocator
+    {
+    }
+}
