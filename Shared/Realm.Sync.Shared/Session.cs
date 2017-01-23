@@ -76,11 +76,9 @@ namespace Realms.Sync
         /// <returns>The for progress notifications.</returns>
         /// <param name="direction">Direction Lorem ipsum.</param>
         /// <param name="mode">Mode Lorem ipsum.</param>
-        /// <param name="callback">Callback Lorem ipsum.</param>
-        public IDisposable SubscribeForProgressNotifications(ProgressDirection direction, ProgressMode mode, Action<ulong, ulong> callback)
+        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
         {
-            var token = Handle.RegisterProgressNotifier((t, tt) => callback(t, tt), direction, mode);
-            return new ProgressNotificationToken(this, token);
+            return new SyncProgressObservable(this, direction, mode);
         }
 
         internal readonly SessionHandle Handle;
@@ -122,27 +120,6 @@ namespace Realms.Sync
             }
 
             return session;
-        }
-
-        private class ProgressNotificationToken : IDisposable
-        {
-            private readonly ulong _token;
-            private readonly WeakReference<Session> _sessionReference;
-
-            public ProgressNotificationToken(Session session, ulong token)
-            {
-                _token = token;
-                _sessionReference = new WeakReference<Session>(session);
-            }
-
-            public void Dispose()
-            {
-                Session session;
-                if (_sessionReference.TryGetTarget(out session))
-                {
-                    session.Handle.UnregisterProgressNotifier(_token);
-                }
-            }
         }
     }
 }

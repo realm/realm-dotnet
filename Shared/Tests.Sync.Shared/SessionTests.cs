@@ -125,12 +125,13 @@ namespace Tests.Sync
                 using (var realm = Realm.GetInstance(config))
                 {
                     var session = realm.GetSession();
-                    var token = session.SubscribeForProgressNotifications(ProgressDirection.Upload, ProgressMode.ReportIndefinitely, (transferred, transferrable) =>
+                    var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
+                    var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p => 
                     {
-                        Console.WriteLine($"Transferred: {transferred}, transferrable: {transferrable}");
-                    });
+                        Console.WriteLine($"Transferred: {p.TransferredBytes}, transferrable: {p.TransferrableBytes}");
+                    }));
 
-                    for (var i = 0; i < 2; i++)
+                    for (var i = 0; i < 5; i++)
                     {
                         realm.Write(() =>
                         {
@@ -143,6 +144,31 @@ namespace Tests.Sync
                     token.Dispose();
                 }
             });
+        }
+
+        private class SimpleObserver<T> : IObserver<T>
+        {
+            private readonly Action<T> _onNext;
+
+            public SimpleObserver(Action<T> onNext)
+            {
+                _onNext = onNext;
+            }
+
+            public void OnCompleted()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnError(Exception error)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnNext(T value)
+            {
+                _onNext(value);
+            }
         }
     }
 }
