@@ -71,6 +71,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WeaveEmptyTests.cs" />
+    <Compile Include="WeaverTestBase.cs" />
     <Compile Include="WeaverTests.cs" />
     <Compile Include="Verifier.cs" />
     <Compile Include="..\..\..\Shared\Realm.Shared\Attributes\Attributes.cs">
@@ -93,9 +95,17 @@
       <Project>{f65e66c8-a3a0-40dc-aee4-1bff3174b9e7}</Project>
       <Name>PCLAssemblyToProcess</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PCLRealmFreeAssemblyToProcess\PCLRealmFreeAssemblyToProcess.csproj">
+      <Project>{c273ac40-9b87-4a5b-a4b4-f4f8a7870bf0}</Project>
+      <Name>PCLRealmFreeAssemblyToProcess</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
       <Project>{a80a308a-3aff-43f8-9186-383aaf148ca4}</Project>
       <Name>Realm.FakeForWeaverTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RealmFreeAssemblyToProcess\RealmFreeAssemblyToProcess.csproj">
+      <Project>{3119928d-74d5-4f90-adea-4fe2a157126b}</Project>
+      <Name>RealmFreeAssemblyToProcess</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -105,8 +115,6 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Attributes\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

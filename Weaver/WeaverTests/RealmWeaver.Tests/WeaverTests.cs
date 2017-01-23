@@ -39,7 +39,7 @@ namespace RealmWeaver
     [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.NotUsed)]
     [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.BeforeRealmWeaver)]
     [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.AfterRealmWeaver)]
-    public class Tests
+    public class Tests : WeaverTestBase
     {
         #region helpers
 
@@ -68,17 +68,6 @@ namespace RealmWeaver
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
-        private void WeaveRealm(ModuleDefinition moduleDefinition)
-        {
-            new realm::ModuleWeaver
-            {
-                ModuleDefinition = moduleDefinition,
-                LogError = s => _errors.Add(s),
-                LogErrorPoint = (s, point) => _errors.Add(s),
-                LogWarningPoint = (s, point) => _warnings.Add(s)
-            }.Execute();
-        }
-
         private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
         {
             // Disable CheckForEquality, because this will rewrite all our properties and some tests will
@@ -101,12 +90,6 @@ namespace RealmWeaver
 
         #endregion
 
-        public enum AssemblyType
-        {
-            NonPCL,
-            PCL
-        }
-
         public enum PropertyChangedWeaver
         {
             NotUsed,
@@ -114,19 +97,14 @@ namespace RealmWeaver
             AfterRealmWeaver
         }
 
-        private readonly AssemblyType _assemblyType;
         private readonly PropertyChangedWeaver _propertyChangedWeaver;
 
         private Assembly _assembly;
         private string _sourceAssemblyPath;
         private string _targetAssemblyPath;
 
-        private readonly List<string> _warnings = new List<string>();
-        private readonly List<string> _errors = new List<string>();
-
-        public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
+        public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver) : base(assemblyType)
         {
-            _assemblyType = assemblyType;
             _propertyChangedWeaver = propertyChangedWeaver;
         }
 
