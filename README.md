@@ -40,9 +40,9 @@ Prerequisites:
 
 We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
 
-* Xamarin iOS version 10.2.1.5
-* Xamarin Android version 7.0.2.37
-* Xamarin Studio version 6.1.2
+* Xamarin iOS version 10.3.1.8
+* Xamarin Android version 7.0.2.42
+* Xamarin Studio version 6.1.4
 
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
