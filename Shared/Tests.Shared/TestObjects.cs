@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using Realms;
 
 namespace IntegrationTests
@@ -206,6 +207,25 @@ namespace IntegrationTests
         public Dog TopDog { get; set; }
 
         public IList<Dog> Dogs { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Employee : RealmObject
+    {
+        public string Name { get; set; }
+
+        public IList<Employee> Reports { get; }
+
+        [Backlink(nameof(Employee.Reports))]
+        public IQueryable<Employee> Bosses { get; }
+
+        public Employee Boss
+        {
+            get
+            {
+                return Bosses.ToList().SingleOrDefault();
+            }
+        }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
