@@ -114,35 +114,85 @@ namespace Tests.Sync
             }
         }
     
-        [Test, Explicit]
-        public void TestStreamingUploadNotifier()
+        [Explicit]
+        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressMode.ReportIndefinitely)]
+        public void Session_ProgressObservable_Tests(ProgressMode mode)
         {
-            // TODO
+            const int ObjectSize = 1000000;
+            const int ObjectsToRecord = 2;
             AsyncContext.Run(async () =>
             {
                 var user = await GetUser();
                 var config = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/progress"));
                 using (var realm = Realm.GetInstance(config))
                 {
-                    var session = realm.GetSession();
-                    var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
-                    var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p => 
-                    {
-                        Console.WriteLine($"Transferred: {p.TransferredBytes}, transferable: {p.TransferableBytes}");
-                    }));
+                    var completionTCS = new TaskCompletionSource<ulong>();
+                    var callbacksInvoked = 0;
 
-                    for (var i = 0; i < 5; i++)
+                    var session = realm.GetSession();
+                    var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
+
+                    for (var i = 0; i < ObjectsToRecord; i++)
                     {
                         realm.Write(() =>
                         {
-                            realm.Add(new HugeSyncObject(1000000));
+                            realm.Add(new HugeSyncObject(ObjectSize));
                         });
                     }
 
-                    await Task.Delay(10000);
+                    var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p => 
+                    {
+                        try
+                        {
+                            callbacksInvoked++;
+
+                            Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+
+                            if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                            {
+                                Assert.That(p.TransferableBytes, Is.GreaterThan(ObjectSize));
+                                Assert.That(p.TransferableBytes, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            completionTCS.TrySetException(e);
+                        }
+
+                        if (p.TransferredBytes == p.TransferableBytes)
+                        {
+                            completionTCS.TrySetResult(p.TransferredBytes);
+                        }
+                    }));
+
+                    realm.Write(() =>
+                    {
+                        realm.Add(new HugeSyncObject(ObjectSize));
+                    });
+
+                    var totalTransferred = await completionTCS.Task;
+
+                    if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                    {
+                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+
+                        // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
+                        // so in the fixed mode, we should not get updates for it.
+                        Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                    }
+                    else
+                    {
+                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+                    }
+
+                    Assert.That(callbacksInvoked, Is.GreaterThan(1));
 
                     token.Dispose();
+                    Console.WriteLine(realm.All<HugeSyncObject>().Count());
                 }
+
+                Realm.DeleteRealm(config);
             });
         }
 
