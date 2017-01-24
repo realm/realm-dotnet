@@ -42,7 +42,7 @@ namespace Realms.Sync
 
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len);
 
-            public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferrable_bytes);
+            public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
@@ -166,10 +166,10 @@ namespace Realms.Sync
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         #endif
-        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferrableBytes)
+        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
             var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
-            token.Notify(transferredBytes, transferrableBytes);
+            token.Notify(transferredBytes, transferableBytes);
         }
     }
 }

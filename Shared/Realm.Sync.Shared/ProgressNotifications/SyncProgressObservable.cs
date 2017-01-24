@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,33 +37,42 @@ namespace Realms.Sync
 
         public IDisposable Subscribe(IObserver<SyncProgress> observer)
         {
-            var token = new ProgressNotificationToken(_session, observer);
-            token.Token = _session.Handle.RegisterProgressNotifier(GCHandle.ToIntPtr(token.GCHandle), _direction, _mode);
-            return token;
+            return new ProgressNotificationToken(_session, observer, _direction, _mode);
         }
 
         public class ProgressNotificationToken : IDisposable
         {
+            private readonly ulong _nativeToken;
+            private readonly GCHandle _gcHandle;
+
             private bool isDisposed;
             private Session _session;
             private IObserver<SyncProgress> _observer;
 
-            public ulong Token { get; set; }
-
-            public GCHandle GCHandle { get; }
-
-            public ProgressNotificationToken(Session session, IObserver<SyncProgress> observer)
+            public ProgressNotificationToken(Session session, 
+                                             IObserver<SyncProgress> observer, 
+                                             ProgressDirection direction, 
+                                             ProgressMode mode)
             {
                 _session = session;
                 _observer = observer;
-                GCHandle = GCHandle.Alloc(this);
+                _gcHandle = GCHandle.Alloc(this);
+                try
+                {
+                    _nativeToken = _session.Handle.RegisterProgressNotifier(GCHandle.ToIntPtr(_gcHandle), direction, mode);
+                }
+                catch
+                {
+                    _gcHandle.Free();
+                    throw;
+                }
             }
 
-            public void Notify(ulong transferredBytes, ulong transferrableBytes)
+            public void Notify(ulong transferredBytes, ulong transferableBytes)
             {
                 Task.Run(() =>
                 {
-                    _observer.OnNext(new SyncProgress(transferredBytes, transferrableBytes));
+                    _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
                 });
             }
 
@@ -73,8 +82,8 @@ namespace Realms.Sync
                 {
                     isDisposed = true;
 
-                    _session.Handle.UnregisterProgressNotifier(Token);
-                    GCHandle.Free();
+                    _session.Handle.UnregisterProgressNotifier(_nativeToken);
+                    _gcHandle.Free();
                     _session = null;
                     _observer = null;
                 }

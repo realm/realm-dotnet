@@ -128,7 +128,7 @@ namespace Tests.Sync
                     var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
                     var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p => 
                     {
-                        Console.WriteLine($"Transferred: {p.TransferredBytes}, transferrable: {p.TransferrableBytes}");
+                        Console.WriteLine($"Transferred: {p.TransferredBytes}, transferable: {p.TransferableBytes}");
                     }));
 
                     for (var i = 0; i < 5; i++)

@@ -57,6 +57,7 @@ namespace Realms.Sync
                                                                   ProgressDirection direction,
                                                                   [MarshalAs(UnmanagedType.I1)] bool is_streaming,
                                                                   out NativeException ex);
+            
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
         }

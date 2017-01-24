@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,26 +19,29 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// Sync progress.
+    /// A struct containing information about the progress state at a given instant.
     /// </summary>
     public struct SyncProgress
     {
         /// <summary>
-        /// Gets the transferred bytes.
+        /// Gets the number of bytes that have been transferred since subscribing for progress notifications.
         /// </summary>
-        /// <value>The transferred bytes.</value>
+        /// <value>The number of transferred bytes.</value>
         public ulong TransferredBytes { get; }
 
         /// <summary>
-        /// Gets the transferrable bytes.
+        /// Gets the total number of bytes that have to be transferred since subscribing for progress notifications.
+        /// The difference between that number and <see cref="TransferredBytes"/> gives you the number of bytes not yet
+        /// transferred. If the difference is 0, then all changes at the instant the callback fires have been
+        /// successfully transferred.
         /// </summary>
-        /// <value>The transferrable bytes.</value>
-        public ulong TransferrableBytes { get; }
+        /// <value>The number of transferable bytes.</value>
+        public ulong TransferableBytes { get; }
 
-        internal SyncProgress(ulong transferred, ulong transferrable)
+        internal SyncProgress(ulong transferred, ulong transferable)
         {
             TransferredBytes = transferred;
-            TransferrableBytes = transferrable;
+            TransferableBytes = transferable;
         }
     }
 }

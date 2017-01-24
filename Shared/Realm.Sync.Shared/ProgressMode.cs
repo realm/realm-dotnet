@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,14 +25,16 @@ namespace Realms.Sync
     {
         /// <summary>
         /// The callback will be called forever, or until it is unregistered by disposing the subscription token.
-        /// Notifications will always report the latest number of transferred bytes, and the most up-to-date number of total transferrable bytes.
+        /// Notifications will always report the latest number of transferred bytes, and the most up-to-date number of 
+        /// total transferable bytes.
         /// </summary>
         ReportIndefinitely,
 
         /// <summary>
-        /// The block will, upon registration, store the total number of bytes to be transferred. When invoked, it will 
-        /// always report the most up-to-date number of transferrable bytes out of that original number of transferrable bytes.
-        /// When the number of transferred bytes reaches or exceeds the number of transferrable bytes, the block will be unregistered.
+        /// The callback will, upon registration, store the total number of bytes to be transferred. When invoked, it will 
+        /// always report the most up-to-date number of transferable bytes out of that original number of transferable bytes.
+        /// When the number of transferred bytes reaches or exceeds the number of transferable bytes, the callback will 
+        /// be unregistered.
         /// </summary>
         ForCurrentlyOutstandingWork
     }
