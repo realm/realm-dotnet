@@ -79,7 +79,6 @@ namespace Realms.Sync
         /// notifications are desired. To stop receiving notifications, call <see cref="IDisposable.Dispose"/>
         /// on the token.
         /// You don't need to keep a reference to the observable itself.
-        /// 
         /// The progress callback will always be called once immediately upon subscribing in order to provide
         /// the latest available status information.
         /// </remarks>
@@ -109,7 +108,6 @@ namespace Realms.Sync
         ///     }
         /// }
         /// </c>
-        /// 
         /// In this example we're using <see href="https://msdn.microsoft.com/en-us/library/ff402849(v=vs.103).aspx">ObservableExtensions.Subscribe</see>
         /// found in the <see href="https://github.com/Reactive-Extensions/Rx.NET">Reactive Extensions</see> class library.
         /// If you prefer not to take a dependency on it, you can create a class that implements <see cref="IObserver{T}"/>

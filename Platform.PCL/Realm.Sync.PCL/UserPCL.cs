@@ -18,6 +18,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 
 namespace Realms.Sync
 {

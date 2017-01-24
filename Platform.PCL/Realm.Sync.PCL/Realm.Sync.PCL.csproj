@@ -74,6 +74,15 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\HttpException.cs">
       <Link>Exceptions\HttpException.cs</Link>
     </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\SyncProgress.cs">
+      <Link>ProgressNotifications\SyncProgress.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\ProgressDirection.cs">
+      <Link>ProgressNotifications\ProgressDirection.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\ProgressMode.cs">
+      <Link>ProgressNotifications\ProgressMode.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
@@ -84,6 +93,7 @@
   <ItemGroup>
     <Folder Include="Exceptions\" />
     <Folder Include="Permissions\" />
+    <Folder Include="ProgressNotifications\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
