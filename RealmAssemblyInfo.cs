@@ -19,7 +19,7 @@
 using System.Reflection;
 
 [assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite")]
-[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
+[assembly: AssemblyCopyright("Copyright © 2017 Realm")]
 [assembly: AssemblyCompany("Realm Inc.")]
 [assembly: AssemblyProduct("Realm C#")]
 

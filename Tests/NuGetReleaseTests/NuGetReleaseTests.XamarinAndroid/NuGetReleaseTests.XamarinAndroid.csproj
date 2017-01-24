@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>NuGetReleaseTests.XamarinAndroid</RootNamespace>
     <AssemblyName>NuGetReleaseTests.XamarinAndroid</AssemblyName>
-    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -45,6 +45,15 @@
     <Reference Include="Mono.Android" />
     <Reference Include="Xamarin.Android.NUnitLite" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Nito.Disposables">
+      <HintPath>..\packages\Nito.Disposables.1.0.0\lib\portable45-net45+win8+wp8+wpa81\Nito.Disposables.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Tasks">
+      <HintPath>..\packages\Nito.AsyncEx.Tasks.1.1.0\lib\netstandard1.3\Nito.AsyncEx.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Context">
+      <HintPath>..\packages\Nito.AsyncEx.Context.1.1.0\lib\netstandard1.3\Nito.AsyncEx.Context.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -55,6 +64,7 @@
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
     <None Include="Properties\AndroidManifest.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable-hdpi\Icon.png" />
