@@ -15,7 +15,6 @@ namespace SmokeTestWin32Console
 
         public IList<Employee> Reports { get; }
 
-        // circular reference breaks schema see issue 1163 [Backlink(nameof(Employee.Reports))]
         public Employee Boss { get; set; }
     }
 
@@ -35,6 +34,7 @@ namespace SmokeTestWin32Console
                             new Employee {Name="Jake"}
                         }
                 });
+                // explicitly set relationship because not using backlinks
                 foreach (var emp in theBoss.Reports)
                 {
                     emp.Boss = theBoss;
