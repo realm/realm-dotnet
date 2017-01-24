@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
@@ -232,6 +233,7 @@ namespace Realms
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
+        /// <returns>The passed object.</returns>
         public RealmObject Add(RealmObject obj, bool update = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -507,7 +509,7 @@ namespace Realms
         /// <b>Deprecated</b> Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. <see cref="Int64"/> argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
@@ -521,7 +523,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
@@ -534,7 +536,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, long id)
@@ -547,7 +549,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, string id)
