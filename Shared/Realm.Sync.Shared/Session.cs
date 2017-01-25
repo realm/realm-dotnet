@@ -86,7 +86,7 @@ namespace Realms.Sync
         /// <param name="direction">The transfer direction (upload or download) to track in the subscription callback.</param>
         /// <param name="mode">The desired behavior of this progress notification block.</param>
         /// <example>
-        /// <c>
+        /// <code>
         /// class ProgressNotifyingViewModel
         /// {
         ///     private IDisposable notificationToken;
@@ -107,7 +107,7 @@ namespace Realms.Sync
         ///         notificationToken = null;
         ///     }
         /// }
-        /// </c>
+        /// </code>
         /// In this example we're using <see href="https://msdn.microsoft.com/en-us/library/ff402849(v=vs.103).aspx">ObservableExtensions.Subscribe</see>
         /// found in the <see href="https://github.com/Reactive-Extensions/Rx.NET">Reactive Extensions</see> class library.
         /// If you prefer not to take a dependency on it, you can create a class that implements <see cref="IObserver{T}"/>

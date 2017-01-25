@@ -19,13 +19,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync
@@ -141,8 +142,7 @@ namespace Tests.Sync
                         realm.Add(new HugeSyncObject(ObjectSize));
                     });
                 }
-
-                var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p => 
+                var token = observable.Subscribe(p => 
                 {
                     try
                     {
@@ -165,7 +165,7 @@ namespace Tests.Sync
                     {
                         completionTCS.TrySetResult(p.TransferredBytes);
                     }
-                }));
+                });
 
                 realm.Write(() =>
                 {
@@ -212,7 +212,7 @@ namespace Tests.Sync
                 SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
 
                 var observable = session.GetProgressObservable(direction, mode);
-                var token = observable.Subscribe(new SimpleObserver<SyncProgress>(p =>
+                var token = observable.Subscribe(p =>
                 {
                     try
                     {
@@ -234,7 +234,7 @@ namespace Tests.Sync
                     {
                         completionTCS.TrySetResult(p.TransferredBytes);
                     }
-                }));
+                });
 
                 SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 150, 50, 150);
                 SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 200, 100, 200);
@@ -260,29 +260,118 @@ namespace Tests.Sync
             });
         }
 
-        private class SimpleObserver<T> : IObserver<T>
+        [Test]
+        public void Session_RXCombineLatestTests()
         {
-            private readonly Action<T> _onNext;
-
-            public SimpleObserver(Action<T> onNext)
+            AsyncContext.Run(async () =>
             {
-                _onNext = onNext;
-            }
+                var realm = await GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
 
-            public void OnCompleted()
-            {
-                throw new NotImplementedException();
-            }
+                var callbacksInvoked = 0;
+                var completionTCS = new TaskCompletionSource<ulong>();
 
-            public void OnError(Exception error)
-            {
-                throw new NotImplementedException();
-            }
+                var uploadProgress = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
+                var downloadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
 
-            public void OnNext(T value)
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
+                var token = uploadProgress.CombineLatest(downloadProgress, (upload, download) =>
+                            {
+                                return new
+                                {
+                                    TotalTransferred = upload.TransferredBytes + download.TransferredBytes,
+                                    TotalTransferable = upload.TransferableBytes + download.TransferableBytes
+                                };
+                            })
+                            .Subscribe(progress =>
+                            {
+                                callbacksInvoked++;
+                                if (progress.TotalTransferred == progress.TotalTransferable)
+                                {
+                                    completionTCS.TrySetResult(progress.TotalTransferred);
+                                }
+                            });
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 100, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 100, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 100, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 150, 100, 100);
+
+                var totalTransferred = await completionTCS.Task;
+
+                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(6));
+                Assert.That(totalTransferred, Is.EqualTo(250));
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
+        }
+
+        [Test]
+        public void Session_RXThrottleTests()
+        {
+            AsyncContext.Run(async () =>
             {
-                _onNext(value);
-            }
+                var realm = await GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
+
+                var callbacksInvoked = 0;
+
+                var uploadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 0);
+
+                var token = uploadProgress.Throttle(TimeSpan.FromSeconds(0.05))
+                                          .Subscribe(p =>
+                                          {
+                                              callbacksInvoked++;
+                                              Console.WriteLine(p.TransferableBytes);
+                                          });
+
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(1));
+
+                for (ulong i = 0; i < 10; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(2));
+
+                for (ulong i = 10; i < 20; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    await Task.Delay(TimeSpan.FromSeconds(0.01));
+                }
+
+                Assert.That(callbacksInvoked, Is.EqualTo(2));
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(3));
+
+                for (ulong i = 20; i < 25; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    await Task.Delay(TimeSpan.FromSeconds(0.1));
+                }
+
+                Assert.That(callbacksInvoked, Is.EqualTo(8));
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
         }
     }
 }
