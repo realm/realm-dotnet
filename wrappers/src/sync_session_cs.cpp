@@ -146,5 +146,11 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
     });
 }
     
+REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSyncSession& session, uint64_t downloaded, uint64_t downloadable,
+                                                                    uint64_t uploaded, uint64_t uploadable)
+{
+    SyncSession::OnlyForTesting::handle_progress_update(*session, downloaded, downloadable, uploaded, uploadable);
+}
+    
 }
 

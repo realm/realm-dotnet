@@ -18,6 +18,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Realms;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -28,6 +29,20 @@ namespace Tests.Sync
         {
             var credentials = Constants.CreateCredentials();
             return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+        }
+
+        protected static async Task<Realm> GetFakeRealm(bool isUserAdmin)
+        {
+            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isUserAdmin), new Uri("http://localhost:9080"));
+            var serverUri = new Uri("realm://localhost:9080/foobar");
+            return Realm.GetInstance(new SyncConfiguration(user, serverUri));
+        }
+
+        protected static async Task<Realm> GetIntegrationRealm(string path)
+        {
+            var user = await GetUser();
+            var config = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/{path}"));
+            return Realm.GetInstance(config);
         }
     }
 }

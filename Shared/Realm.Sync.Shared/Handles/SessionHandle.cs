@@ -18,13 +18,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
     internal class SessionHandle : RealmHandle
     {
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
+        public static class NativeCommon
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
+        }
+
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_refresh_access_token", CallingConvention = CallingConvention.Cdecl)]
