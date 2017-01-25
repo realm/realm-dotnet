@@ -223,6 +223,8 @@ namespace IntegrationTests
         {
             get
             {
+                // NOTE the ToList() in here is needed because of issue 1177
+                // it is shown as a workaround
                 return Bosses.ToList().SingleOrDefault();
             }
         }

@@ -438,7 +438,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void RecursiveBacklinksBossTestOnly()
+        public void RecursiveBacklinkWorksViaOneToManyProperty()
         {
             realm.Write(() =>
             {
@@ -460,9 +460,9 @@ namespace IntegrationTests
             Assert.That(bossesBoss, Is.Null);
         }
 
-        // Demonstrate the bug reported in issue 1177
+        // Test is named assuming it succeeds. Currently fails and demonstrates the bug reported in issue 1177
         [Test, NUnit.Framework.Explicit("Demonstrates issue 1177 so disable from auto run")]
-        public void RecursiveBacklinksQueryFailures()
+        public void RecursiveBacklinksQueriesOnlySeeRelatedItems()
         {
             realm.Write(() =>
             {
