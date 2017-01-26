@@ -1,5 +1,7 @@
-0.83.0 (TBD)
+0.82.1 (2017-01-27)
 -------------------
+### Bug fixes
+- Addressed an issue where obtaining a Realm instance, reading an object, then obtaining another instance on the same thread would cause the object to become invalid and crash the application upon accessing any of its members.
 
 0.82.0 (2017-01-23)
 -------------------
