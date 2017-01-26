@@ -123,7 +123,7 @@ REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_
     
 enum class CSharpNotifierType : uint8_t {
     Upload = 0,
-    Download
+    Download = 1
 };
     
 REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedSyncSession& session, size_t managed_state, CSharpNotifierType direction, bool is_streaming, NativeException::Marshallable& ex)

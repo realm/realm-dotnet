@@ -19,6 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)MergeByPKTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncTestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncTestHelpers.cs" />
   </ItemGroup>
 </Project>

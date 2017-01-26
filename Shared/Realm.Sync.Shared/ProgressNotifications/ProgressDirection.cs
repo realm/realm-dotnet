@@ -26,11 +26,11 @@ namespace Realms.Sync
         /// <summary>
         /// Monitors upload progress.
         /// </summary>
-        Upload,
+        Upload = 0,
 
         /// <summary>
         /// Monitors download progress.
         /// </summary>
-        Download
+        Download = 1
     }
 }

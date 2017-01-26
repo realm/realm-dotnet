@@ -32,7 +32,7 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SessionTests : SyncTestBase
+    public class SessionTests
     {
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
@@ -64,7 +64,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetFakeRealm(isUserAdmin: true))
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
                 {
                     var session1 = realm.GetSession();
                     var session2 = realm.GetSession();
@@ -78,7 +78,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetFakeRealm(isUserAdmin: false))
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false))
                 {
                     var errors = new List<Exception>();
                     var session = realm.GetSession();
@@ -102,7 +102,7 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var errors = new List<Exception>();
-                using (var realm = await GetFakeRealm(isUserAdmin: true))
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
                 {
                     var session = realm.GetSession();
                     session.Error += (o, e) => errors.Add(e.Exception);
@@ -128,7 +128,7 @@ namespace Tests.Sync
             const int ObjectsToRecord = 2;
             AsyncContext.Run(async () =>
             {
-                var realm = await GetIntegrationRealm("progress");
+                var realm = await SyncTestHelpers.GetIntegrationRealm("progress");
                 var completionTCS = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;
 
@@ -206,7 +206,7 @@ namespace Tests.Sync
                 var callbacksInvoked = 0;
                 var completionTCS = new TaskCompletionSource<ulong>();
 
-                var realm = await GetFakeRealm(isUserAdmin: true);
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
 
                 SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
@@ -265,7 +265,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await GetFakeRealm(isUserAdmin: true);
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
 
                 var callbacksInvoked = 0;
@@ -323,7 +323,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await GetFakeRealm(isUserAdmin: true);
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
 
                 var callbacksInvoked = 0;
