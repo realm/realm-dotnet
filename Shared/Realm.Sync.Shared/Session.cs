@@ -82,7 +82,7 @@ namespace Realms.Sync
         /// The progress callback will always be called once immediately upon subscribing in order to provide
         /// the latest available status information.
         /// </remarks>
-        /// <returns>An observable that you can suscribe to and receive progress updates.</returns>
+        /// <returns>An observable that you can subscribe to and receive progress updates.</returns>
         /// <param name="direction">The transfer direction (upload or download) to track in the subscription callback.</param>
         /// <param name="mode">The desired behavior of this progress notification block.</param>
         /// <example>
