@@ -68,9 +68,6 @@
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.InteropServices.WindowsRuntime">
-      <HintPath>..\..\packages\System.Runtime.InteropServices.WindowsRuntime.4.0.1\lib\netstandard1.3\System.Runtime.InteropServices.WindowsRuntime.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reactive.Interfaces">
       <HintPath>..\..\packages\System.Reactive.Interfaces.3.1.1\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
