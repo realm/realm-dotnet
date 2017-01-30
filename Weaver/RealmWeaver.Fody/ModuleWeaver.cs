@@ -172,8 +172,8 @@ public class ModuleWeaver
                                           ?.Properties
                                           .FirstOrDefault(p => p.Name == "ExecuteWeaver")
                                           .Argument
-                                          .Value;
-        if (shouldWeave != null && (bool)shouldWeave)
+                                          .Value as bool?;
+        if (shouldWeave != false)
         {
             // Cache of getter and setter methods for the various types.
             var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
