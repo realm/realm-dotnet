@@ -28,6 +28,7 @@
 #include "sync/sync_user.hpp"
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
+#include "sync_session_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -41,19 +42,6 @@ struct SyncConfiguration
     uint16_t* url;
     size_t url_len;
 };
-
-void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
-void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len);
-
-static void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
-{
-    s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
-}
-
-static void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
-{
-    s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length());
-}
 
 extern "C" {
 REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_path_buf, size_t base_path_len,
@@ -79,12 +67,6 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
 
         SyncManager::shared().configure_file_system(base_path, metadata_mode, encryption_key, reset_on_error);
     });
-}
-    
-REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback)
-{
-    s_refresh_access_token_callback = refresh_callback;
-    s_session_error_callback = session_error_callback;
 }
     
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)

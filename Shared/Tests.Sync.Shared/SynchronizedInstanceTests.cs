@@ -23,9 +23,8 @@ using IntegrationTests;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
-using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests

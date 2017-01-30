@@ -32,11 +32,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOfferResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCodeHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\SyncProgressObservable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\SyncProgress.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressDirection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
     <Folder Include="$(MSBuildThisFileDirectory)Native\" />
     <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
     <Folder Include="$(MSBuildThisFileDirectory)Permissions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)ProgressNotifications\" />
   </ItemGroup>
 </Project>

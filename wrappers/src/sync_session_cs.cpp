@@ -23,12 +23,30 @@
 #include "realm_export_decls.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_session.hpp"
+#include "sync_session_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
+namespace realm {
+namespace binding {
+    void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
+    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len);
+    void (*s_progress_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+
+    void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
+    {
+        s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
+    }
+    
+    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
+    {
+        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length());
+    }
+}
+}
 extern "C" {
 REALM_EXPORT void realm_syncsession_refresh_access_token(SharedSyncSession& session, const uint16_t* token_buf, size_t token_len, const uint16_t* server_path_buf, size_t server_path_len, NativeException::Marshallable& ex)
 {
@@ -95,5 +113,44 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
 {
     delete session;
 }
+    
+REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback)
+{
+    s_refresh_access_token_callback = refresh_callback;
+    s_session_error_callback = session_error_callback;
+    s_progress_callback = progress_callback;
+}
+    
+enum class CSharpNotifierType : uint8_t {
+    Upload = 0,
+    Download = 1
+};
+    
+REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedSyncSession& session, size_t managed_state, CSharpNotifierType direction, bool is_streaming, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        auto notifier_direction = direction == CSharpNotifierType::Upload
+                                  ? SyncSession::NotifierType::upload
+                                  : SyncSession::NotifierType::download;
+        
+        return session->register_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable) {
+            s_progress_callback(managed_state, transferred, transferable);
+        }, notifier_direction, is_streaming);
+    });
+}
+    
+REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyncSession& session, uint64_t token, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        session->unregister_progress_notifier(token);
+    });
+}
+    
+REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSyncSession& session, uint64_t downloaded, uint64_t downloadable,
+                                                                    uint64_t uploaded, uint64_t uploadable)
+{
+    SyncSession::OnlyForTesting::handle_progress_update(*session, downloaded, downloadable, uploaded, uploadable);
+}
+    
 }
 

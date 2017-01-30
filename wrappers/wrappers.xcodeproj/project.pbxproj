@@ -116,6 +116,7 @@
 		519B58381DB0F8E7000CB2BB /* object_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_cs.hpp; path = src/object_cs.hpp; sourceTree = "<group>"; };
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
+		51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_session_cs.hpp; path = src/sync_session_cs.hpp; sourceTree = "<group>"; };
 		850F7D651DF72EFD0068B584 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/generic/event_loop_signal.hpp"; sourceTree = "<group>"; };
 		850F7D661DF730650068B584 /* event_loop_signal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal.cpp; path = "src/object-store/src/util/generic/event_loop_signal.cpp"; sourceTree = "<group>"; };
 		850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal_cs.cpp; path = src/event_loop_signal_cs.cpp; sourceTree = "<group>"; };
@@ -220,6 +221,7 @@
 				85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */,
 				85C041311DD229C100CBF37B /* sync_user_cs.cpp */,
 				85C041331DD4953200CBF37B /* sync_session_cs.cpp */,
+				51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */,
 				850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */,
 				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,

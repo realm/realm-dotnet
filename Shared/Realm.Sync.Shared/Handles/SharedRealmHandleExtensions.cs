@@ -27,7 +27,7 @@ namespace Realms.Sync
     internal static class SharedRealmHandleExtensions
     {
         // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
-        private static int _fileSystemConfigured = 0;
+        private static int _fileSystemConfigured;
 
         private static class NativeMethods
         {
@@ -42,6 +42,8 @@ namespace Realms.Sync
 
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len);
 
+            public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
                                                                    UserPersistenceMode* userPersistence, byte[] encryptionKey,
@@ -49,7 +51,7 @@ namespace Realms.Sync
                                                                    out NativeException exception);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback session_error_callback);
+            public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
@@ -57,7 +59,7 @@ namespace Realms.Sync
 
         static unsafe SharedRealmHandleExtensions()
         {
-            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError);
+            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError, HandleSessionProgress);
         }
 
         public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -159,6 +161,15 @@ namespace Realms.Sync
             var session = Session.SessionForPointer(sessionHandlePtr);
             var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
             session.RaiseError(new SessionErrorException(message, errorCode));
+        }
+
+        #if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
+        #endif
+        private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
+        {
+            var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
+            token.Notify(transferredBytes, transferableBytes);
         }
     }
 }

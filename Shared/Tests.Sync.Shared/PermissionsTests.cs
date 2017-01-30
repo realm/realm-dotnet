@@ -29,7 +29,7 @@ using Realms.Sync.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class PermissionsTests
@@ -75,7 +75,7 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var user = await GetUser();
+                var user = await SyncTestHelpers.GetUser();
                 var permissionChange = await CreatePermissionObject(user, _ => new PermissionChange("*", "*", mayRead: true));
                 Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
             });
@@ -86,7 +86,7 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var user = await GetUser();
+                var user = await SyncTestHelpers.GetUser();
                 var permissionOffer = await CreateOffer(user);
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
                 Assert.That(permissionOffer.Token, Is.Not.Null);
@@ -98,7 +98,7 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var user = await GetUser();
+                var user = await SyncTestHelpers.GetUser();
                 var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Error));
                 Assert.That(permissionOffer.Token, Is.Null);
@@ -112,7 +112,7 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var user = await GetUser();
+                var user = await SyncTestHelpers.GetUser();
                 var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddSeconds(2));
 
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
@@ -131,7 +131,7 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var user = await GetUser();
+                var user = await SyncTestHelpers.GetUser();
                 var permissionResponse = await CreateResponse(user, "Some string");
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
                 Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
@@ -144,8 +144,8 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await GetUser();
-                var bob = await GetUser();
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
 
                 // Opening a synced realm with just read permission fails.
                 // OS issue: https://github.com/realm/realm-object-store/issues/312
@@ -170,8 +170,8 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await GetUser();
-                var bob = await GetUser();
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
 
                 var realmUrl = await GrantPermissions(alice, bob);
 
@@ -184,9 +184,9 @@ namespace Tests.Sync.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await GetUser();
-                var bob = await GetUser();
-                var charlie = await GetUser();
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+                var charlie = await SyncTestHelpers.GetUser();
 
                 var alicesUrl = await GrantPermissions(alice, bob, mayManage: true);
 
@@ -196,12 +196,6 @@ namespace Tests.Sync.Shared
 
                 await ValidateWriteAndSync(alicesUrl, bob, charlie, 3, 4);
             });
-        }
-
-        private static Task<User> GetUser()
-        {
-            var credentials = Constants.CreateCredentials();
-            return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
         }
 
         private static async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)

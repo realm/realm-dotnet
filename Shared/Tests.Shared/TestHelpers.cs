@@ -24,6 +24,8 @@ namespace IntegrationTests
 {
     public static class TestHelpers
     {
+        public static readonly Random Random = new Random();
+
         public static object GetPropertyValue(object o, string propName)
         {
             return o.GetType().GetProperty(propName).GetValue(o, null);

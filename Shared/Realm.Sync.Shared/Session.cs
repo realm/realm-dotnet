@@ -70,6 +70,54 @@ namespace Realms.Sync
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         public User User => new User(Handle.GetUser());
 
+        /// <summary>
+        /// Gets an <see cref="IObservable{T}"/> that can be used to track upload or download progress.
+        /// </summary>
+        /// <remarks>
+        /// To start receiving notifications, you should call <see cref="IObservable{T}.Subscribe"/> on the returned object.
+        /// The token returned from <see cref="IObservable{T}.Subscribe"/> should be retained as long as progress
+        /// notifications are desired. To stop receiving notifications, call <see cref="IDisposable.Dispose"/>
+        /// on the token.
+        /// You don't need to keep a reference to the observable itself.
+        /// The progress callback will always be called once immediately upon subscribing in order to provide
+        /// the latest available status information.
+        /// </remarks>
+        /// <returns>An observable that you can subscribe to and receive progress updates.</returns>
+        /// <param name="direction">The transfer direction (upload or download) to track in the subscription callback.</param>
+        /// <param name="mode">The desired behavior of this progress notification block.</param>
+        /// <example>
+        /// <code>
+        /// class ProgressNotifyingViewModel
+        /// {
+        ///     private IDisposable notificationToken;
+        /// 
+        ///     public void ShowProgress()
+        ///     {
+        ///         var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
+        ///         notificationToken = observable.Subscribe(progress =>
+        ///         {
+        ///             // Update relevant properties by accessing
+        ///             // progress.TransferredBytes and progress.TransferableBytes
+        ///         });
+        ///     }
+        /// 
+        ///     public void HideProgress()
+        ///     {
+        ///         notificationToken?.Dispose();
+        ///         notificationToken = null;
+        ///     }
+        /// }
+        /// </code>
+        /// In this example we're using <see href="https://msdn.microsoft.com/en-us/library/ff402849(v=vs.103).aspx">ObservableExtensions.Subscribe</see>
+        /// found in the <see href="https://github.com/Reactive-Extensions/Rx.NET">Reactive Extensions</see> class library.
+        /// If you prefer not to take a dependency on it, you can create a class that implements <see cref="IObserver{T}"/>
+        /// and use it to subscribe instead.
+        /// </example>
+        public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
+        {
+            return new SyncProgressObservable(this, direction, mode);
+        }
+
         internal readonly SessionHandle Handle;
 
         private Session(SessionHandle handle)

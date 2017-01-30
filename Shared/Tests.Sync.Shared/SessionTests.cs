@@ -19,30 +19,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace Tests.Sync.Shared
+namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests
     {
         [Test]
-        public async void Realm_GetSession_WhenSyncedRealm()
+        public void Realm_GetSession_WhenSyncedRealm()
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            AsyncContext.Run(async () =>
             {
-                var session = realm.GetSession();
-                Assert.That(session.User, Is.EqualTo(user));
-                Assert.That(session.ServerUri, Is.EqualTo(serverUri));
-            }
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://localhost:9080"));
+                var serverUri = new Uri("realm://localhost:9080/foobar");
+                using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+                {
+                    var session = realm.GetSession();
+                    Assert.That(session.User, Is.EqualTo(user));
+                    Assert.That(session.ServerUri, Is.EqualTo(serverUri));
+                }
+            });
         }
 
         [Test]
@@ -55,62 +60,325 @@ namespace Tests.Sync.Shared
         }
 
         [Test]
-        public async void Realm_GetSession_ShouldReturnSameObject()
+        public void Realm_GetSession_ShouldReturnSameObject()
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            AsyncContext.Run(async () =>
             {
-                var session1 = realm.GetSession();
-                var session2 = realm.GetSession();
-                Assert.That(session1, Is.SameAs(session2));
-            }
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
+                {
+                    var session1 = realm.GetSession();
+                    var session2 = realm.GetSession();
+                    Assert.That(session1, Is.SameAs(session2));
+                }
+            });
         }
 
         [Test, Explicit, Timeout(1000)]
-        public async void Session_Error_WhenInvalidRefreshToken()
+        public void Session_Error_WhenInvalidRefreshToken()
         {
-            var errors = new List<Exception>();
-
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: false), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            AsyncContext.Run(async () =>
             {
-                var session = realm.GetSession();
-                session.Error += (o, e) => errors.Add(e.Exception);
-
-                while (!errors.Any())
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false))
                 {
-                    await Task.Yield();
-                }
+                    var errors = new List<Exception>();
+                    var session = realm.GetSession();
+                    session.Error += (o, e) => errors.Add(e.Exception);
 
-                var authErrors = errors.OfType<AuthenticationException>().ToList();
-                Assert.That(authErrors.Count, Is.EqualTo(1));
-                Assert.That(authErrors[0].ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
-            }
+                    while (!errors.Any())
+                    {
+                        await Task.Yield();
+                    }
+
+                    var authErrors = errors.OfType<AuthenticationException>().ToList();
+                    Assert.That(authErrors.Count, Is.EqualTo(1));
+                    Assert.That(authErrors[0].ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
+                }
+            });
         }
 
         [Test, Explicit, Timeout(1000)]
-        public async void Session_Error_WhenInvalidAccessToken()
+        public void Session_Error_WhenInvalidAccessToken()
         {
-            var errors = new List<Exception>();
-
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+            AsyncContext.Run(async () =>
             {
-                var session = realm.GetSession();
-                session.Error += (o, e) => errors.Add(e.Exception);
-
-                while (!errors.Any())
+                var errors = new List<Exception>();
+                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
                 {
-                    await Task.Yield();
+                    var session = realm.GetSession();
+                    session.Error += (o, e) => errors.Add(e.Exception);
+
+                    while (!errors.Any())
+                    {
+                        await Task.Yield();
+                    }
+
+                    var sessionErrors = errors.OfType<SessionErrorException>().ToList();
+                    Assert.That(sessionErrors.Count, Is.EqualTo(1));
+                    Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
+                }
+            });
+        }
+    
+        [Explicit]
+        [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressMode.ReportIndefinitely)]
+        public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
+        {
+            const int ObjectSize = 1000000;
+            const int ObjectsToRecord = 2;
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetIntegrationRealm("progress");
+                var completionTCS = new TaskCompletionSource<ulong>();
+                var callbacksInvoked = 0;
+
+                var session = realm.GetSession();
+                var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
+
+                for (var i = 0; i < ObjectsToRecord; i++)
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new HugeSyncObject(ObjectSize));
+                    });
+                }
+                var token = observable.Subscribe(p => 
+                {
+                    try
+                    {
+                        callbacksInvoked++;
+
+                        Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+
+                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        {
+                            Assert.That(p.TransferableBytes, Is.GreaterThan(ObjectSize));
+                            Assert.That(p.TransferableBytes, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        completionTCS.TrySetException(e);
+                    }
+
+                    if (p.TransferredBytes == p.TransferableBytes)
+                    {
+                        completionTCS.TrySetResult(p.TransferredBytes);
+                    }
+                });
+
+                realm.Write(() =>
+                {
+                    realm.Add(new HugeSyncObject(ObjectSize));
+                });
+
+                var totalTransferred = await completionTCS.Task;
+
+                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                {
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+
+                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
+                    // so in the fixed mode, we should not get updates for it.
+                    Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                }
+                else
+                {
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
                 }
 
-                var sessionErrors = errors.OfType<SessionErrorException>().ToList();
-                Assert.That(sessionErrors.Count, Is.EqualTo(1));
-                Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
-            }
+                Assert.That(callbacksInvoked, Is.GreaterThan(1));
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
+        }
+
+        [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressDirection.Upload, ProgressMode.ReportIndefinitely)]
+        [TestCase(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressDirection.Download, ProgressMode.ReportIndefinitely)]
+        public void Session_ProgressObservable_UnitTests(ProgressDirection direction, ProgressMode mode)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var callbacksInvoked = 0;
+                var completionTCS = new TaskCompletionSource<ulong>();
+
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
+
+                var observable = session.GetProgressObservable(direction, mode);
+                var token = observable.Subscribe(p =>
+                {
+                    try
+                    {
+                        callbacksInvoked++;
+
+                        Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+
+                        if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                        {
+                            Assert.That(p.TransferableBytes, Is.EqualTo(100));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        completionTCS.TrySetException(e);
+                    }
+
+                    if (p.TransferredBytes == p.TransferableBytes)
+                    {
+                        completionTCS.TrySetResult(p.TransferredBytes);
+                    }
+                });
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 150, 50, 150);
+                await Task.Delay(50);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 200, 100, 200);
+                await Task.Delay(50);
+                
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 200, 150, 200);
+                await Task.Delay(50);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 200, 200, 200, 200);
+                await Task.Delay(50);
+                
+                var totalTransferred = await completionTCS.Task;
+
+                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                {
+                    Assert.That(totalTransferred, Is.EqualTo(100));
+                    Assert.That(callbacksInvoked, Is.EqualTo(3));
+                }
+                else
+                {
+                    Assert.That(totalTransferred, Is.EqualTo(200));
+                    Assert.That(callbacksInvoked, Is.EqualTo(5));
+                }
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
+        }
+
+        [Test]
+        public void Session_RXCombineLatestTests()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
+
+                var callbacksInvoked = 0;
+                var completionTCS = new TaskCompletionSource<ulong>();
+
+                var uploadProgress = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
+                var downloadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
+                var token = uploadProgress.CombineLatest(downloadProgress, (upload, download) =>
+                            {
+                                return new
+                                {
+                                    TotalTransferred = upload.TransferredBytes + download.TransferredBytes,
+                                    TotalTransferable = upload.TransferableBytes + download.TransferableBytes
+                                };
+                            })
+                            .Subscribe(progress =>
+                            {
+                                callbacksInvoked++;
+                                if (progress.TotalTransferred == progress.TotalTransferable)
+                                {
+                                    completionTCS.TrySetResult(progress.TotalTransferred);
+                                }
+                            });
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 100, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 100, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 0, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 100, 100);
+
+                await Task.Delay(50);
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 150, 100, 100);
+
+                var totalTransferred = await completionTCS.Task;
+
+                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(6));
+                Assert.That(totalTransferred, Is.EqualTo(250));
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
+        }
+
+        [Test]
+        public void Session_RXThrottleTests()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
+
+                var callbacksInvoked = 0;
+
+                var uploadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 0);
+
+                var token = uploadProgress.Throttle(TimeSpan.FromSeconds(0.05))
+                                          .Subscribe(p =>
+                                          {
+                                              callbacksInvoked++;
+                                              Console.WriteLine(p.TransferableBytes);
+                                          });
+
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(1));
+
+                for (ulong i = 0; i < 10; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(2));
+
+                for (ulong i = 10; i < 20; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    await Task.Delay(TimeSpan.FromSeconds(0.01));
+                }
+
+                Assert.That(callbacksInvoked, Is.EqualTo(2));
+                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                Assert.That(callbacksInvoked, Is.EqualTo(3));
+
+                for (ulong i = 20; i < 25; i++)
+                {
+                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    await Task.Delay(TimeSpan.FromSeconds(0.1));
+                }
+
+                Assert.That(callbacksInvoked, Is.EqualTo(8));
+
+                token.Dispose();
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
+            });
         }
     }
 }

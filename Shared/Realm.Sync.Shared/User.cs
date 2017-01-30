@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Json;
 using System.Linq;
@@ -211,7 +210,7 @@ namespace Realms.Sync
 
             var result = await MakeAuthRequestAsync(ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
             var access_token = result["access_token"];
-            return Tuple.Create<string, string>((string)access_token["token"], (string)access_token["token_data"]["path"]);
+            return Tuple.Create((string)access_token["token"], (string)access_token["token_data"]["path"]);
         }
 
         private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)
