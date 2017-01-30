@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="Extensions\RealmSyncExtensionsPCL.cs" />
     <Compile Include="Extensions\TestingExtensionsPCL.cs" />
+    <Compile Include="Exceptions\SessionErrorClientResetException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

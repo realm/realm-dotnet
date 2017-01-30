@@ -100,13 +100,11 @@ namespace Tests.Sync
 
                 session.SimulateError(code, message);
 
-                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(100));
-                Assert.That(completedTask, Is.EqualTo(tcs.Task));
                 var result = await tcs.Task;
 
                 var error = result.Item2;
                 Assert.That(error.Message, Is.EqualTo(message));
-                Assert.That(error.ErrorCode, Is.EqualTo((ErrorCode)code));
+                Assert.That(error.ErrorCode, Is.EqualTo(code));
 
                 var errorSession = result.Item1;
                 Assert.That(errorSession, Is.EqualTo(session));
@@ -114,6 +112,44 @@ namespace Tests.Sync
 
                 realm.Dispose();
                 Realm.DeleteRealm(realm.Config);
+            });
+        }
+
+        [Test]
+        public void Session_ClientReset()
+        {
+            // TODO: better naming
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var tcs = new TaskCompletionSource<Tuple<Session, SessionErrorClientResetException>>();
+                Session.Error += (sender, e) =>
+                {
+                    try
+                    {
+                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionErrorClientResetException)e.Exception));
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                };
+
+                var session = realm.GetSession();
+                const ErrorCode code = ErrorCode.DivergingHistories;
+                const string message = "Fake client reset is required";
+
+                session.SimulateError(code, message);
+
+                var result = await tcs.Task;
+
+                var error = result.Item2;
+                Assert.That(error.BackupFilePath, Is.Not.Null);
+
+                realm.Dispose();
+                var isSuccess = error.InitiateClientReset();
+
+                Assert.That(isSuccess, Is.True);
             });
         }
 

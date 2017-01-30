@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\RealmSyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorClientResetException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />

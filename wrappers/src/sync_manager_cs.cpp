@@ -100,6 +100,14 @@ REALM_EXPORT size_t realm_syncmanager_get_path_for_realm(SharedSyncUser& user, u
         return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
     });
 }
+    
+REALM_EXPORT bool realm_syncmanager_immediately_run_file_actions(uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
+        return SyncManager::shared().immediately_run_file_actions(path);
+    });
+}
 
 }
 
