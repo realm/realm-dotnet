@@ -49,6 +49,16 @@ namespace Realms
     {
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class RealmTestingSetup : Attribute
+    {
+        public bool ThrowPCLExceptions { get; set; } = true;
+
+        public bool ExecuteWeaver { get; set; } = true;
+    }
+
     /// <summary>
     /// Do not implicitly add the type decorated by this attribute to a Realm's schema unless it has been explicitly set.
     /// </summary>

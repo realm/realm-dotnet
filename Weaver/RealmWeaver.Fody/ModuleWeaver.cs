@@ -166,18 +166,28 @@ public class ModuleWeaver
 
         _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
 
-        // Cache of getter and setter methods for the various types.
-        var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
-
-        foreach (var type in GetMatchingTypes())
+        var shouldWeave = ModuleDefinition.Assembly
+                                          .CustomAttributes
+                                          .FirstOrDefault(a => a.AttributeType.Name == "RealmTestingSetup")
+                                          ?.Properties
+                                          .FirstOrDefault(p => p.Name == "ExecuteWeaver")
+                                          .Argument
+                                          .Value;
+        if (shouldWeave != null && (bool)shouldWeave)
         {
-            try
+            // Cache of getter and setter methods for the various types.
+            var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
+
+            foreach (var type in GetMatchingTypes())
             {
-                WeaveType(type, methodTable);
-            }
-            catch (Exception e)
-            {
-                LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                try
+                {
+                    WeaveType(type, methodTable);
+                }
+                catch (Exception e)
+                {
+                    LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                }
             }
         }
 

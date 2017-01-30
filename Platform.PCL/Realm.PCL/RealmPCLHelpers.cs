@@ -17,14 +17,36 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Realms
 {
     internal static class RealmPCLHelpers
     {
+        private static readonly Lazy<bool> _shouldThrow = new Lazy<bool>(() =>
+        {
+            var getEntryAssembly = typeof(Assembly).GetRuntimeMethods()
+                                                   .FirstOrDefault(m => m.Name == "GetEntryAssembly");
+
+            if (getEntryAssembly == null)
+            {
+                return false;
+            }
+
+            var entryAssembly = (Assembly)getEntryAssembly.Invoke(null, null);
+
+            return entryAssembly.GetCustomAttributes<RealmTestingSetup>()
+                                .FirstOrDefault()
+                                ?.ThrowPCLExceptions != false;
+        });
+
         internal static void ThrowProxyShouldNeverBeUsed()
         {
-            throw new PlatformNotSupportedException("The PCL build of Realm is being linked which probably means you need to use NuGet or otherwise link a platform-specific Realm.dll to your main application.");
+            if (_shouldThrow.Value)
+            {
+                throw new PlatformNotSupportedException("The PCL build of Realm is being linked which probably means you need to use NuGet or otherwise link a platform-specific Realm.dll to your main application.");
+            }
         }
     }
 }
