@@ -29,28 +29,10 @@ namespace Realms.Sync
     /// </summary>
     public class Session
     {
-        private static readonly ConcurrentDictionary<SessionHandle, Session> _sessions = new ConcurrentDictionary<SessionHandle, Session>(new SessionHandle.Comparer());
-
-        private List<ErrorEventArgs> _aggregatedErrors = new List<ErrorEventArgs>();
-
-        private event EventHandler<ErrorEventArgs> _error;
-
         /// <summary>
-        /// Triggered when an error occurs on this session.
+        /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error
-        {
-            add
-            {
-                Interlocked.Exchange(ref _aggregatedErrors, null)?.ForEach(error => value(this, error));
-                _error += value;
-            }
-
-            remove
-            {
-                _error -= value;
-            }
-        }
+        public static event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
@@ -125,38 +107,40 @@ namespace Realms.Sync
             Handle = handle;
         }
 
-        internal void RaiseError(Exception error)
+        internal static Session Create(IntPtr sessionPtr)
         {
-            var args = new ErrorEventArgs(error);
-            _error?.Invoke(this, args);
-            _aggregatedErrors?.Add(args);
+            var handle = new SessionHandle();
+            handle.SetHandle(sessionPtr);
+
+            return new Session(handle);
         }
 
-        internal static Session SessionForRealm(Realm realm)
+        internal static Session Create(Realm realm)
         {
             System.Diagnostics.Debug.Assert(realm.Config is SyncConfiguration, "Realm must be opened with a SyncConfiguration");
 
-            return SessionForPointer(SessionHandle.SessionForRealm(realm.SharedRealmHandle));
+            return Create(SessionHandle.SessionForRealm(realm.SharedRealmHandle));
         }
 
-        internal static Session SessionForPointer(IntPtr sessionPtr)
+        internal static void RaiseError(Session session, Exception error)
         {
-            var tempHandle = new SessionHandle();
-            tempHandle.SetHandle(sessionPtr);
+            var args = new ErrorEventArgs(error);
+            Error?.Invoke(session, args);
+        }
 
-            var shouldDispose = true;
-            var session = _sessions.GetOrAdd(tempHandle, handle =>
-            {
-                shouldDispose = false;
-                return new Session(handle);
-            });
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var session = obj as Session;
 
-            if (shouldDispose)
-            {
-                tempHandle.Dispose();
-            }
+            return session != null &&
+                   session.Handle.GetRawPointer() == Handle.GetRawPointer();
+        }
 
-            return session;
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return Handle.GetRawPointer().GetHashCode();
         }
     }
 }

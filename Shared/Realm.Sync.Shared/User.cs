@@ -172,6 +172,13 @@ namespace Realms.Sync
             Handle = handle;
         }
 
+        internal static User Create(IntPtr userPtr)
+        {
+            var userHandle = new SyncUserHandle();
+            userHandle.SetHandle(userPtr);
+            return new User(userHandle);
+        }
+
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>

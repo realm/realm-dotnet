@@ -29,9 +29,9 @@ namespace Realms.Sync
     public class Session
     {
         /// <summary>
-        /// Triggered when an error occurs on this session.
+        /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
+        public static event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.

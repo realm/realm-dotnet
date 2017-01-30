@@ -128,29 +128,26 @@ namespace Realms.Sync
         #endif
         private static unsafe void RefreshAccessTokenCallback(IntPtr userHandlePtr, IntPtr sessionHandlePtr, sbyte* urlBuffer, IntPtr urlLength)
         {
-            var userHandle = new SyncUserHandle();
-            userHandle.SetHandle(userHandlePtr);
-            var user = new User(userHandle);
-
-            var session = Session.SessionForPointer(sessionHandlePtr);
-
+            var user = User.Create(userHandlePtr);
+            var session = Session.Create(sessionHandlePtr);
             var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
 
             user.RefreshAccessToken(realmUri.AbsolutePath)
                 .ContinueWith(t =>
-            {
-                if (t.IsFaulted)
                 {
-                    session.RaiseError(t.Exception.GetBaseException());
-                }
-                else
+                    if (t.IsFaulted)
+                    {
+                        Session.RaiseError(session, t.Exception.GetBaseException());
+                    }
+                    else
+                    {
+                        session.Handle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
+                    }
+                })
+                .ContinueWith(t =>
                 {
-                    session.Handle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
-                }
-            }).ContinueWith(t =>
-            {
-                userHandle.Dispose();
-            });
+                    user.Handle.Dispose();
+                });
         }
 
         #if __IOS__
@@ -158,9 +155,9 @@ namespace Realms.Sync
         #endif
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength)
         {
-            var session = Session.SessionForPointer(sessionHandlePtr);
+            var session = Session.Create(sessionHandlePtr);
             var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
-            session.RaiseError(new SessionErrorException(message, errorCode));
+            Session.RaiseError(session, new SessionErrorException(message, errorCode));
         }
 
         #if __IOS__
