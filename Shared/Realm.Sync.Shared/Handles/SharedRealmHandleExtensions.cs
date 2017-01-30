@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
 
@@ -40,7 +41,7 @@ namespace Realms.Sync
 
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr user_handle_ptr, IntPtr session_handle_ptr, sbyte* url_buf, IntPtr url_len);
 
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len);
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
@@ -153,11 +154,23 @@ namespace Realms.Sync
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         #endif
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength)
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, IntPtr user_info_pairs, int user_info_pairs_len)
         {
             var session = Session.Create(sessionHandlePtr);
             var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
-            Session.RaiseError(session, new SessionErrorException(message, errorCode));
+
+            var exception = new SessionErrorException(message, errorCode);
+
+            if (user_info_pairs_len > 0)
+            {
+                for (var i = 0; i < user_info_pairs_len; i++)
+                {
+                    var pair = Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(user_info_pairs, i * StringStringPair.Size));
+                    exception.Data.Add(pair.key, pair.value);
+                }
+            }
+
+            Session.RaiseError(session, exception);
         }
 
         #if __IOS__

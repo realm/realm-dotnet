@@ -131,4 +131,10 @@ size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer,
 } // namespace binding
 } // namespace realm
 
+struct StringStringPair
+{
+    const char* key;
+    const char* value;
+};
+
 #endif // MARSHALLING_HPP
