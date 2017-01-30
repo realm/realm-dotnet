@@ -29,7 +29,7 @@ namespace Realms.Sync
     public class Session
     {
         /// <summary>
-        /// Triggered when an error occurs on this session.
+        /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
         /// </summary>
         public static event EventHandler<ErrorEventArgs> Error;
 
