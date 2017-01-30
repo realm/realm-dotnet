@@ -27,6 +27,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using Realms.Sync.Testing;
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync
@@ -81,7 +82,7 @@ namespace Tests.Sync
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var tcs = new TaskCompletionSource<Tuple<Session, SessionErrorException>>();
-                Session.Error += (sender, e) => 
+                Session.Error += (sender, e) =>
                 {
                     try
                     {
@@ -92,10 +93,12 @@ namespace Tests.Sync
                         tcs.TrySetException(ex);
                     }
                 };
+
                 var session = realm.GetSession();
-                const int code = 102;
+                const ErrorCode code = (ErrorCode)102;
                 const string message = "Some fake error has occurred";
-                SessionHandle.NativeCommon.report_error_for_testing(session.Handle, code, message, (IntPtr)message.Length, false);
+
+                session.SimulateError(code, message);
 
                 var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(100));
                 Assert.That(completedTask, Is.EqualTo(tcs.Task));
@@ -248,7 +251,7 @@ namespace Tests.Sync
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
+                session.SimulateProgress(0, 100, 0, 100);
 
                 var observable = session.GetProgressObservable(direction, mode);
                 var token = observable.Subscribe(p =>
@@ -275,16 +278,16 @@ namespace Tests.Sync
                     }
                 });
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 150, 50, 150);
+                session.SimulateProgress(50, 150, 50, 150);
                 await Task.Delay(50);
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 200, 100, 200);
+                session.SimulateProgress(100, 200, 100, 200);
                 await Task.Delay(50);
                 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 200, 150, 200);
+                session.SimulateProgress(150, 200, 150, 200);
                 await Task.Delay(50);
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 200, 200, 200, 200);
+                session.SimulateProgress(200, 200, 200, 200);
                 await Task.Delay(50);
                 
                 var totalTransferred = await completionTCS.Task;
@@ -320,7 +323,7 @@ namespace Tests.Sync
                 var uploadProgress = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
                 var downloadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 100);
+                session.SimulateProgress(0, 100, 0, 100);
                 var token = uploadProgress.CombineLatest(downloadProgress, (upload, download) =>
                             {
                                 return new
@@ -339,19 +342,19 @@ namespace Tests.Sync
                             });
 
                 await Task.Delay(50);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 100, 0, 100);
+                session.SimulateProgress(50, 100, 0, 100);
 
                 await Task.Delay(50);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 100, 0, 100);
+                session.SimulateProgress(100, 100, 0, 100);
 
                 await Task.Delay(50);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 0, 100);
+                session.SimulateProgress(100, 150, 0, 100);
 
                 await Task.Delay(50);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 150, 100, 100);
+                session.SimulateProgress(100, 150, 100, 100);
 
                 await Task.Delay(50);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 150, 100, 100);
+                session.SimulateProgress(150, 150, 100, 100);
 
                 var totalTransferred = await completionTCS.Task;
 
@@ -376,7 +379,7 @@ namespace Tests.Sync
 
                 var uploadProgress = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely);
 
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 0, 100, 0, 0);
+                session.SimulateProgress(0, 100, 0, 0);
 
                 var token = uploadProgress.Throttle(TimeSpan.FromSeconds(0.05))
                                           .Subscribe(p =>
@@ -390,7 +393,7 @@ namespace Tests.Sync
 
                 for (ulong i = 0; i < 10; i++)
                 {
-                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    session.SimulateProgress(i, 100, 0, 0);
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(0.1));
@@ -398,7 +401,7 @@ namespace Tests.Sync
 
                 for (ulong i = 10; i < 20; i++)
                 {
-                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    session.SimulateProgress(i, 100, 0, 0);
                     await Task.Delay(TimeSpan.FromSeconds(0.01));
                 }
 
@@ -408,7 +411,7 @@ namespace Tests.Sync
 
                 for (ulong i = 20; i < 25; i++)
                 {
-                    SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, i, 100, 0, 0);
+                    session.SimulateProgress(i, 100, 0, 0);
                     await Task.Delay(TimeSpan.FromSeconds(0.1));
                 }
 

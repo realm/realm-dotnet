@@ -42,7 +42,6 @@
     <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
       <Link>RealmPCLHelpers.cs</Link>
     </Compile>
-    <Compile Include="RealmSyncExtensionsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
     <Compile Include="UserPCL.cs" />
@@ -83,6 +82,8 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\ProgressMode.cs">
       <Link>ProgressNotifications\ProgressMode.cs</Link>
     </Compile>
+    <Compile Include="Extensions\RealmSyncExtensionsPCL.cs" />
+    <Compile Include="Extensions\TestingExtensionsPCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
@@ -94,6 +95,7 @@
     <Folder Include="Exceptions\" />
     <Folder Include="Permissions\" />
     <Folder Include="ProgressNotifications\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
