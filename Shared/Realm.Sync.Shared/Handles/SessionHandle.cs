@@ -25,16 +25,6 @@ namespace Realms.Sync
 {
     internal class SessionHandle : RealmHandle
     {
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
-        public static class NativeCommon
-        {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
-        }
-
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_refresh_access_token", CallingConvention = CallingConvention.Cdecl)]
@@ -70,6 +60,12 @@ namespace Realms.Sync
             
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
 
         public SyncUserHandle GetUser()
@@ -123,6 +119,16 @@ namespace Realms.Sync
         public IntPtr GetRawPointer()
         {
             return NativeMethods.get_raw_pointer(this);
+        }
+
+        public void ReportProgressForTesting(ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable)
+        {
+            NativeMethods.report_progress_for_testing(this, downloaded, downloadable, uploaded, uploadable);
+        }
+
+        public void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal)
+        {
+            NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal);
         }
 
         public static IntPtr SessionForRealm(SharedRealmHandle realm)

@@ -15,7 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SyncUserHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandleExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Session.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmSyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SyncConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SessionHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ErrorCode.cs" />
@@ -36,6 +35,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\SyncProgress.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\RealmSyncExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
@@ -43,5 +44,6 @@
     <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
     <Folder Include="$(MSBuildThisFileDirectory)Permissions\" />
     <Folder Include="$(MSBuildThisFileDirectory)ProgressNotifications\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Extensions\" />
   </ItemGroup>
 </Project>
