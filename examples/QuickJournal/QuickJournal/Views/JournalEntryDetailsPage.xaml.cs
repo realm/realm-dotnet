@@ -17,6 +17,7 @@ namespace QuickJournal
         {
             base.OnDisappearing();
             (BindingContext as JournalEntryDetailsViewModel)?.OnDisappearing();
+            BindingContext = null;
         }
     }
 }

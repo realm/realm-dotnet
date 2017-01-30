@@ -3,11 +3,13 @@
     <BooleanProperty Name="ViolationsAsErrors">True</BooleanProperty>
     <CollectionProperty Name="RecognizedWords">
       <Value>awaitable</Value>
+      <Value>changeset</Value>
       <Value>databinding</Value>
       <Value>finalizer</Value>
       <Value>Fody</Value>
       <Value>hpp</Value>
       <Value>iterable</Value>
+      <Value>mappable</Value>
       <Value>overriden</Value>
       <Value>pongo</Value>
       <Value>queryable</Value>
