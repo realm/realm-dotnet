@@ -237,10 +237,17 @@ namespace Tests.Sync
                 });
 
                 SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 50, 150, 50, 150);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 200, 100, 200);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 200, 150, 200);
-                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 200, 200, 200, 200);
+                await Task.Delay(50);
 
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 100, 200, 100, 200);
+                await Task.Delay(50);
+                
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 150, 200, 150, 200);
+                await Task.Delay(50);
+
+                SessionHandle.NativeCommon.report_progress_for_testing(session.Handle, 200, 200, 200, 200);
+                await Task.Delay(50);
+                
                 var totalTransferred = await completionTCS.Task;
 
                 if (mode == ProgressMode.ForCurrentlyOutstandingWork)
