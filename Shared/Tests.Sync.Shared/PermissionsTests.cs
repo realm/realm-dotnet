@@ -154,8 +154,7 @@ namespace Tests.Sync
 
                 Realm realm = null;
                 Assert.That(() => realm = Realm.GetInstance(syncConfig), Throws.Nothing);
-                var session = realm.GetSession();
-                session.Error += (sender, e) => 
+                Session.Error += (sender, e) => 
                 {
                     Assert.Fail("Opening the realm should not cause an error.", e.Exception);
                 };

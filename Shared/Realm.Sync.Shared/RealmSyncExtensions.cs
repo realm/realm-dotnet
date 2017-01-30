@@ -47,7 +47,7 @@ namespace Realms.Sync
                 throw new ArgumentException("Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
             }
 
-            return Session.SessionForRealm(realm);
+            return Session.Create(realm);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Realms.Sync
         /// <summary>
         /// Triggered when an error occurs on this session.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
+        public static event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.

@@ -30,6 +30,9 @@ namespace Realms.Sync
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
 
         private static class NativeMethods
@@ -117,6 +120,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        public IntPtr GetRawPointer()
+        {
+            return NativeMethods.get_raw_pointer(this);
+        }
+
         public static IntPtr SessionForRealm(SharedRealmHandle realm)
         {
             NativeException ex;
@@ -128,19 +136,6 @@ namespace Realms.Sync
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
-        }
-
-        public class Comparer : IEqualityComparer<SessionHandle>
-        {
-            public bool Equals(SessionHandle x, SessionHandle y)
-            {
-                return NativeMethods.get_raw_pointer(x) == NativeMethods.get_raw_pointer(y);
-            }
-
-            public int GetHashCode(SessionHandle obj)
-            {
-                return NativeMethods.get_raw_pointer(obj).GetHashCode();
-            }
         }
     }
 }

@@ -152,5 +152,12 @@ REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSync
     SyncSession::OnlyForTesting::handle_progress_update(*session, downloaded, downloadable, uploaded, uploadable);
 }
     
+REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* message_buf, size_t message_len, bool is_fatal)
+{
+    Utf16StringAccessor message(message_buf, message_len);
+    std::error_code error_code(err, realm::sync::protocol_error_category());
+    SyncSession::OnlyForTesting::handle_error(*session, SyncError{error_code, std::move(message), is_fatal});
+}
+    
 }
 

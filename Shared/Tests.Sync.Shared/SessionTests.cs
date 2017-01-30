@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -68,8 +68,49 @@ namespace Tests.Sync
                 {
                     var session1 = realm.GetSession();
                     var session2 = realm.GetSession();
-                    Assert.That(session1, Is.SameAs(session2));
+                    Assert.That(session1, Is.EqualTo(session2));
+                    Assert.That(session1.GetHashCode(), Is.EqualTo(session2.GetHashCode()));
                 }
+            });
+        }
+
+        [Test]
+        public void Session_Error_ShouldPassCorrectSession()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var tcs = new TaskCompletionSource<Tuple<Session, SessionErrorException>>();
+                Session.Error += (sender, e) => 
+                {
+                    try
+                    {
+                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionErrorException)e.Exception));
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.TrySetException(ex);
+                    }
+                };
+                var session = realm.GetSession();
+                const int code = 102;
+                const string message = "Some fake error has occurred";
+                SessionHandle.NativeCommon.report_error_for_testing(session.Handle, code, message, (IntPtr)message.Length, false);
+
+                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(100));
+                Assert.That(completedTask, Is.EqualTo(tcs.Task));
+                var result = await tcs.Task;
+
+                var error = result.Item2;
+                Assert.That(error.Message, Is.EqualTo(message));
+                Assert.That(error.ErrorCode, Is.EqualTo((ErrorCode)code));
+
+                var errorSession = result.Item1;
+                Assert.That(errorSession, Is.EqualTo(session));
+                Assert.That(errorSession.ServerUri, Is.EqualTo(session.ServerUri));
+
+                realm.Dispose();
+                Realm.DeleteRealm(realm.Config);
             });
         }
 
@@ -81,8 +122,7 @@ namespace Tests.Sync
                 using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false))
                 {
                     var errors = new List<Exception>();
-                    var session = realm.GetSession();
-                    session.Error += (o, e) => errors.Add(e.Exception);
+                    Session.Error += (o, e) => errors.Add(e.Exception);
 
                     while (!errors.Any())
                     {
@@ -104,8 +144,7 @@ namespace Tests.Sync
                 var errors = new List<Exception>();
                 using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
                 {
-                    var session = realm.GetSession();
-                    session.Error += (o, e) => errors.Add(e.Exception);
+                    Session.Error += (o, e) => errors.Add(e.Exception);
 
                     while (!errors.Any())
                     {
