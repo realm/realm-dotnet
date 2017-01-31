@@ -176,16 +176,16 @@ namespace Realms.Sync
             var session = Session.Create(sessionHandlePtr);
             var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
 
-            SessionErrorException exception;
+            SessionException exception;
 
             switch (errorCode)
             {
                 case ErrorCode.DivergingHistories:
                     var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
-                    exception = new SessionErrorClientResetException(message, userInfo);
+                    exception = new ClientResetException(message, userInfo);
                     break;
                 default:
-                    exception = new SessionErrorException(message, errorCode);
+                    exception = new SessionException(message, errorCode);
                     break;
             }
 

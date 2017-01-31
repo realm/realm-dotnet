@@ -23,7 +23,7 @@ namespace Realms.Sync.Exceptions
     /// <summary>
     /// An exception describing a condition where a reset of the local Realm is required.
     /// </summary>
-    public class SessionErrorClientResetException : SessionErrorException
+    public class ClientResetException : SessionException
     {
         private const string OriginalFilePathKey = "ORIGINAL_FILE_PATH";
         private const string BackupFilePathKey = "RECOVERY_FILE_PATH";
@@ -35,7 +35,7 @@ namespace Realms.Sync.Exceptions
         /// </summary>
         public string BackupFilePath { get; }
 
-        internal SessionErrorClientResetException(string message, IDictionary<string, string> userInfo)
+        internal ClientResetException(string message, IDictionary<string, string> userInfo)
             : base(message, ErrorCode.DivergingHistories)
         {
             _originalFilePath = userInfo[OriginalFilePathKey];

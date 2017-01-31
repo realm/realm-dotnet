@@ -21,14 +21,14 @@ namespace Realms.Sync.Exceptions
     /// <summary>
     /// An exception describing a condition where a reset of the local Realm is required.
     /// </summary>
-    public class SessionErrorClientResetException : SessionErrorException
+    public class ClientResetException : SessionException
     {
         /// <summary>
         /// Gets the path where the backup copy of the realm will be placed once the client reset process is complete.
         /// </summary>
         public string BackupFilePath { get; }
 
-        private SessionErrorClientResetException()
+        private ClientResetException()
             : base(null, ErrorCode.DivergingHistories)
         {
         }

@@ -25,7 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\IPermissionObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SessionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserState.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UserPersistenceMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\ManagementObjectStatus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions\PermissionOffer.cs" />
@@ -37,7 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ProgressNotifications\ProgressMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\RealmSyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SessionErrorClientResetException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ClientResetException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />

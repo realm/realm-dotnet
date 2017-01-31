@@ -82,12 +82,12 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var tcs = new TaskCompletionSource<Tuple<Session, SessionErrorException>>();
+                var tcs = new TaskCompletionSource<Tuple<Session, SessionException>>();
                 Session.Error += (sender, e) =>
                 {
                     try
                     {
-                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionErrorException)e.Exception));
+                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionException)e.Exception));
                     }
                     catch (Exception ex)
                     {
@@ -122,14 +122,14 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var tcs = new TaskCompletionSource<Tuple<Session, SessionErrorClientResetException>>();
+                var tcs = new TaskCompletionSource<Tuple<Session, ClientResetException>>();
                 Session.Error += (sender, e) =>
                 {
                     try
                     {
                         Assert.That(sender, Is.TypeOf<Session>());
-                        Assert.That(e.Exception, Is.TypeOf<SessionErrorClientResetException>());
-                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionErrorClientResetException)e.Exception));
+                        Assert.That(e.Exception, Is.TypeOf<ClientResetException>());
+                        tcs.TrySetResult(Tuple.Create((Session)sender, (ClientResetException)e.Exception));
                     }
                     catch (Exception ex)
                     {
@@ -196,7 +196,7 @@ namespace Tests.Sync
                         await Task.Yield();
                     }
 
-                    var sessionErrors = errors.OfType<SessionErrorException>().ToList();
+                    var sessionErrors = errors.OfType<SessionException>().ToList();
                     Assert.That(sessionErrors.Count, Is.EqualTo(1));
                     Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
                 }
