@@ -460,8 +460,7 @@ namespace IntegrationTests
             Assert.That(bossesBoss, Is.Null);
         }
 
-        // Test is named assuming it succeeds. Currently fails and demonstrates the bug reported in issue 1177
-        [Test, NUnit.Framework.Explicit("Demonstrates issue 1177 so disable from auto run")]
+        [Test]
         public void RecursiveBacklinksQueriesOnlySeeRelatedItems()
         {
             realm.Write(() =>

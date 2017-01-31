@@ -770,6 +770,21 @@ namespace IntegrationTests
             Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
 
+        // test added to prove with breakpoints that we rebuild query multiple times calling ElementAt
+        [Test]
+        public void ElementAtRepeatedOnResults()
+        {
+            var twoPeeps = _realm.All<Person>().Where(p => p.Score > 10.0f); 
+            var peepsList = twoPeeps.ToList();
+            Assert.That(peepsList.Count, Is.EqualTo(2));
+
+            var p1 = twoPeeps.ElementAt(0);
+            Assert.That(p1.Email, Is.EqualTo("john@doe.com"));
+
+            var p2 = twoPeeps.ElementAt(1);
+            Assert.That(p2.FirstName, Is.EqualTo("Peter"));
+        }
+
         [Test]
         public void ElementAtOrDefaultInRange()
         {
@@ -852,6 +867,27 @@ namespace IntegrationTests
             var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohn = moderateScorers.Any(p => p.FirstName == "John");
             Assert.That(hasJohn, Is.True);
+        }
+
+        // test that you can add a clause to a RealmResults after instantiating the query
+        [Test]
+        public void ChainedWithIterationBefore2ndClause()
+        {
+            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var listScorers = moderateScorers.ToList();  // query will be evaluated to iterate making the list
+            Assert.That(listScorers.Count, Is.EqualTo(2));
+            var hasJohn = moderateScorers.Any(p => p.FirstName == "John");  // now 2nd predicate applied
+            Assert.That(hasJohn, Is.True);
+        }
+
+        [Test]
+        public void ChainedWithIterationBeforeFirst()
+        {
+            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var listScorers = moderateScorers.ToList();  // query will be evaluated to iterate making the list
+            Assert.That(listScorers.Count, Is.EqualTo(2));
+            var firstAfterIter = moderateScorers.First();  // if debugging, query should not be evaulated again
+            Assert.That(firstAfterIter, Is.Not.Null);
         }
 
         [Test]

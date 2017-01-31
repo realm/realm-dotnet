@@ -223,9 +223,12 @@ namespace IntegrationTests
         {
             get
             {
-                // NOTE the ToList() in here is needed because of issue 1177
-                // it is shown as a workaround
-                return Bosses.ToList().SingleOrDefault();
+                // Alternative implementation here to get faster release performance avoiding 2nd search to ensure only one.
+                #if DEBUG
+                return Bosses.SingleOrDefault();
+                #else
+                return Bosses.FirstOrDefault();
+                #endif
             }
         }
     }
