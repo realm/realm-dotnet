@@ -93,7 +93,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\BacklinkAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\StringStringPair.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

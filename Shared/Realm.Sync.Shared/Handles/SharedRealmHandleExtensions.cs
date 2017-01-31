@@ -29,6 +29,8 @@ namespace Realms.Sync
 {
     internal static class SharedRealmHandleExtensions
     {
+        private static readonly int kvpStringStringSize = Marshal.SizeOf<KeyValuePair<string, string>>();
+
         // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
         private static int _fileSystemConfigured;
 
@@ -193,8 +195,8 @@ namespace Realms.Sync
         private static Dictionary<string, string> MarshalErrorUserInfo(IntPtr userInfoPairs, int userInfoPairsLength)
         {
             return Enumerable.Range(0, userInfoPairsLength)
-                             .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(userInfoPairs, i * StringStringPair.Size)))
-                             .ToDictionary(pair => pair.key, pair => pair.value);
+                             .Select(i => Marshal.PtrToStructure<KeyValuePair<string, string>>(IntPtr.Add(userInfoPairs, i * kvpStringStringSize)))
+                             .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         #if __IOS__
