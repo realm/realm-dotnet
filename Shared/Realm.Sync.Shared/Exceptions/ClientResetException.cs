@@ -33,6 +33,7 @@ namespace Realms.Sync.Exceptions
         /// <summary>
         /// Gets the path where the backup copy of the realm will be placed once the client reset process is complete.
         /// </summary>
+        /// <value>The path to the backup realm.</value>
         public string BackupFilePath { get; }
 
         internal ClientResetException(string message, IDictionary<string, string> userInfo)
