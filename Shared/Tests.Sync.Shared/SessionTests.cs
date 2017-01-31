@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -116,9 +117,8 @@ namespace Tests.Sync
         }
 
         [Test]
-        public void Session_ClientReset()
+        public void Session_DivergingHistories_ShouldRaiseClientResetException()
         {
-            // TODO: better naming
             AsyncContext.Run(async () =>
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
@@ -127,6 +127,8 @@ namespace Tests.Sync
                 {
                     try
                     {
+                        Assert.That(sender, Is.TypeOf<Session>());
+                        Assert.That(e.Exception, Is.TypeOf<SessionErrorClientResetException>());
                         tcs.TrySetResult(Tuple.Create((Session)sender, (SessionErrorClientResetException)e.Exception));
                     }
                     catch (Exception ex)
@@ -145,11 +147,15 @@ namespace Tests.Sync
 
                 var error = result.Item2;
                 Assert.That(error.BackupFilePath, Is.Not.Null);
+                Assert.That(error.BackupFilePath, Is.StringContaining("io.realm.object-server-recovered-realms/recovered_realm"));
+                Assert.That(File.Exists(error.BackupFilePath), Is.False);
 
                 realm.Dispose();
-                var isSuccess = error.InitiateClientReset();
 
-                Assert.That(isSuccess, Is.True);
+                var clientResetSuccess = error.InitiateClientReset();
+
+                Assert.That(clientResetSuccess, Is.True);
+                Assert.That(File.Exists(error.BackupFilePath), Is.True);
             });
         }
 
