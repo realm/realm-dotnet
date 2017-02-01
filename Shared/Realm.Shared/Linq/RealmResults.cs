@@ -62,7 +62,7 @@ namespace Realms
 
         public QueryHandle CreateQuery()
         {
-            return TargetMetadata.Table.CreateQuery(ResultsHandle);
+            return ResultsHandle.CreateQuery();
         }
 
         protected override CollectionHandleBase CreateHandle()

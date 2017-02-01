@@ -33,9 +33,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_empty_object(TableHandle tableHandle, SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr where(TableHandle handle, ResultsHandle results, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 count_all(TableHandle handle, out NativeException ex);
 
@@ -96,41 +93,11 @@ namespace Realms
             }
         */
 
-        private QueryHandle RootedQueryHandle()
-        {
-            return new QueryHandle(Root ?? this);
-        }
-
         // call with a parent, will set the correct root (parent if parent.root=null, or parent.root otherwise)
         // if You want a RootedTableHandle with is self-rooted, call with no parameter
         internal static TableHandle RootedTableHandle(RealmHandle parent)
         {
             return new TableHandle(parent.Root ?? parent);
-        }
-
-        // acquire a QueryHandle from table_where And set root in an atomic fashion 
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal QueryHandle CreateQuery(ResultsHandle results)
-        {
-            var queryHandle = RootedQueryHandle();
-
-            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            // a finalize at this point will not leak anything and the handle will not do anything
-
-            // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                NativeException nativeException;
-                var result = NativeMethods.where(this, results, out nativeException);
-                nativeException.ThrowIfNecessary();
-                queryHandle.SetHandle(result);
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-
-            return queryHandle;
         }
 
         public IntPtr AddEmptyObject(SharedRealmHandle sharedRealm)

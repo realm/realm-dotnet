@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -42,6 +44,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallbackDelegate callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
         }
 
         // keep this one even though warned that it is not used. It is in fact used by marshalling
@@ -77,6 +82,31 @@ namespace Realms
             NativeException nativeException;
             NativeMethods.clear(this, realmHandle, out nativeException);
             nativeException.ThrowIfNecessary();
+        }
+
+        // acquire a QueryHandle from table_where And set root in an atomic fashion 
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        public QueryHandle CreateQuery()
+        {
+            var queryHandle = new QueryHandle(Root ?? this);
+
+            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
+            // a finalize at this point will not leak anything and the handle will not do anything
+
+            // now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
+            try
+            {
+            }
+            finally
+            {
+                NativeException nativeException;
+                var result = NativeMethods.get_query(this, out nativeException);
+                nativeException.ThrowIfNecessary();
+                queryHandle.SetHandle(result);
+            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+
+            return queryHandle;
         }
 
         public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
