@@ -75,6 +75,34 @@ namespace IntegrationTests
             });
         }
 
+        [Test]
+        public void AsyncWrite_ShouldRefreshRealmOnOriginalThread()
+        {
+            AsyncContext.Run(async () =>
+            {
+                await Task.Run(async () =>
+                {
+                    using (var current = Realm.GetInstance(_realm.Config))
+                    {
+                        Assert.That(current.All<PrimaryKeyInt32Object>().Count(), Is.EqualTo(0));
+
+                        Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
+                        await current.WriteAsync(r =>
+                        {
+                            r.Add(new PrimaryKeyInt32Object
+                            {
+                                Int32Property = 3
+                            });
+                        });
+
+                        Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
+                        
+                        Assert.That(current.Find<PrimaryKeyInt32Object>(3), Is.Not.Null);
+                    }
+                });
+            });
+        }
+
         internal class MyDataObject : RealmObject
         {
             [PrimaryKey]
