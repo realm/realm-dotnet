@@ -421,7 +421,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void Backlinks()
+        public void BacklinksBetweenTwoClasses()
         {
             var tim = realm.All<Owner>().Single(o => o.Name == "Tim");
             foreach (var dog in tim.Dogs)
@@ -435,6 +435,60 @@ namespace IntegrationTests
 
             realm.Write(() => dani.Dogs.Add(maggie));
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
+        }
+
+        [Test]
+        public void BacklinksReturnOnlyRelatedData()
+        {
+            var john = new Owner
+            {
+                Name = "John"
+            };
+
+            var doggy = new Dog
+            {
+                Name = "Doggy"
+            };
+
+            realm.Write(() =>
+            {
+                realm.Add(doggy);
+                realm.Add(john);
+            });
+
+            Assert.That(doggy.Owners.Count(), Is.EqualTo(0));
+            Assert.That(doggy.Owners.FirstOrDefault(), Is.EqualTo(null));
+
+            var sally = new Owner
+            {
+                Name = "Sally"
+            };
+
+            realm.Write(() =>
+            {
+                realm.Add(sally);
+
+                john.Dogs.Add(doggy);
+            });
+
+            Assert.That(doggy.Owners.Count(), Is.EqualTo(1));
+            Assert.That(doggy.Owners.Single(), Is.EqualTo(john));
+
+            realm.Write(() =>
+            {
+                sally.Dogs.Add(doggy);
+            });
+
+            Assert.That(doggy.Owners.Count(), Is.EqualTo(2));
+
+            var alphabeticalOwners = doggy.Owners.OrderBy(o => o.Name);
+            var reverseAlphabeticalOwners = doggy.Owners.OrderByDescending(o => o.Name);
+
+            Assert.That(alphabeticalOwners.ElementAt(0), Is.EqualTo(john));
+            Assert.That(reverseAlphabeticalOwners.ElementAt(1), Is.EqualTo(john));
+
+            Assert.That(reverseAlphabeticalOwners.ElementAt(0), Is.EqualTo(sally));
+            Assert.That(alphabeticalOwners.ElementAt(1), Is.EqualTo(sally));
         }
 
         #region DeleteRelated

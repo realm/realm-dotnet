@@ -34,7 +34,7 @@ namespace Realms
             public static extern IntPtr add_empty_object(TableHandle tableHandle, SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr where(TableHandle handle, out NativeException ex);
+            public static extern IntPtr where(TableHandle handle, ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 count_all(TableHandle handle, out NativeException ex);
@@ -110,7 +110,7 @@ namespace Realms
 
         // acquire a QueryHandle from table_where And set root in an atomic fashion 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal QueryHandle TableWhere()
+        internal QueryHandle CreateQuery(ResultsHandle results)
         {
             var queryHandle = RootedQueryHandle();
 
@@ -124,7 +124,10 @@ namespace Realms
             }
             finally
             {
-                queryHandle.SetHandle(this.Where());
+                NativeException nativeException;
+                var result = NativeMethods.where(this, results, out nativeException);
+                nativeException.ThrowIfNecessary();
+                queryHandle.SetHandle(result);
             } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
 
             return queryHandle;
@@ -134,14 +137,6 @@ namespace Realms
         {
             NativeException nativeException;
             var result = NativeMethods.add_empty_object(this, sharedRealm, out nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public IntPtr Where()
-        {
-            NativeException nativeException;
-            var result = NativeMethods.where(this, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

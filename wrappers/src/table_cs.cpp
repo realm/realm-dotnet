@@ -55,10 +55,10 @@ REALM_EXPORT Object* table_add_empty_object(Table* table_ptr, SharedRealm* realm
     });
 }
 
-REALM_EXPORT Query* table_where(Table* table_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Query* table_where(Table* table_ptr, Results* results_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Query(table_ptr->where());
+        return new Query(table_ptr->where(new TableView(results_ptr->get_tableview())));
     });
 }
 
