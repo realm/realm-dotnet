@@ -18,8 +18,11 @@
 
 using System;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using Realms;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Testing;
 
 namespace Tests.Sync
 {
@@ -43,6 +46,32 @@ namespace Tests.Sync
             var user = await GetUser();
             var config = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/{path}"));
             return Realm.GetInstance(config);
+        }
+
+        public static Task<Tuple<Session, T>> SimulateSessionError<T>(Session session, ErrorCode code, string message) where T : Exception
+        {
+            var tcs = new TaskCompletionSource<Tuple<Session, T>>();
+            EventHandler<ErrorEventArgs> handler = null;
+            handler = new EventHandler<ErrorEventArgs>((sender, e) =>
+            {
+                try
+                {
+                    Assert.That(sender, Is.TypeOf<Session>());
+                    Assert.That(e.Exception, Is.TypeOf<T>());
+                    tcs.TrySetResult(Tuple.Create((Session)sender, (T)e.Exception));
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+                Session.Error -= handler;
+            });
+
+            Session.Error += handler;
+
+            session.SimulateError(code, message);
+
+            return tcs.Task;
         }
     }
 }

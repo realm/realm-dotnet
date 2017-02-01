@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using Realms.Native;
 using Realms.Schema;
@@ -148,14 +149,17 @@ namespace Realms.Sync
         {
             var user = User.Create(userHandlePtr);
             var session = Session.Create(sessionHandlePtr);
-            var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
+            var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, Encoding.UTF8));
 
             user.RefreshAccessToken(realmUri.AbsolutePath)
                 .ContinueWith(t =>
                 {
                     if (t.IsFaulted)
                     {
-                        Session.RaiseError(session, t.Exception.GetBaseException());
+                        var sessionException = new SessionException("An error has occurred while refreshing the access token.", 
+                                                                    ErrorCode.BadUserAuthentication, 
+                                                                    t.Exception.GetBaseException());
+                        Session.RaiseError(session, sessionException);
                     }
                     else
                     {
@@ -174,19 +178,18 @@ namespace Realms.Sync
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
             var session = Session.Create(sessionHandlePtr);
-            var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
+            var message = new string(messageBuffer, 0, (int)messageLength, Encoding.UTF8);
 
             SessionException exception;
 
-            switch (errorCode)
+            if (errorCode.IsClientResetError())
             {
-                case ErrorCode.DivergingHistories:
-                    var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
-                    exception = new ClientResetException(message, userInfo);
-                    break;
-                default:
-                    exception = new SessionException(message, errorCode);
-                    break;
+                var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
+                exception = new ClientResetException(message, userInfo);
+            }
+            else
+            {
+                exception = new SessionException(message, errorCode);
             }
 
             Session.RaiseError(session, exception);

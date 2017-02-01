@@ -82,34 +82,19 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var tcs = new TaskCompletionSource<Tuple<Session, SessionException>>();
-                Session.Error += (sender, e) =>
-                {
-                    try
-                    {
-                        tcs.TrySetResult(Tuple.Create((Session)sender, (SessionException)e.Exception));
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex);
-                    }
-                };
 
                 var session = realm.GetSession();
                 const ErrorCode code = (ErrorCode)102;
                 const string message = "Some fake error has occurred";
 
-                session.SimulateError(code, message);
-
-                var result = await tcs.Task;
+                var result = await SyncTestHelpers.SimulateSessionError<SessionException>(session, code, message);
 
                 var error = result.Item2;
                 Assert.That(error.Message, Is.EqualTo(message));
                 Assert.That(error.ErrorCode, Is.EqualTo(code));
 
                 var errorSession = result.Item1;
-                Assert.That(errorSession, Is.EqualTo(session));
-                Assert.That(errorSession.ServerUri, Is.EqualTo(session.ServerUri));
+                Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
 
                 realm.Dispose();
                 Realm.DeleteRealm(realm.Config);
@@ -122,28 +107,10 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var tcs = new TaskCompletionSource<Tuple<Session, ClientResetException>>();
-                Session.Error += (sender, e) =>
-                {
-                    try
-                    {
-                        Assert.That(sender, Is.TypeOf<Session>());
-                        Assert.That(e.Exception, Is.TypeOf<ClientResetException>());
-                        tcs.TrySetResult(Tuple.Create((Session)sender, (ClientResetException)e.Exception));
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex);
-                    }
-                };
-
                 var session = realm.GetSession();
-                const ErrorCode code = ErrorCode.DivergingHistories;
-                const string message = "Fake client reset is required";
-
-                session.SimulateError(code, message);
-
-                var result = await tcs.Task;
+                var result = await SyncTestHelpers.SimulateSessionError<ClientResetException>(session, 
+                                                                                              ErrorCode.DivergingHistories,
+                                                                                              "Fake client reset is required");
 
                 var error = result.Item2;
                 Assert.That(error.BackupFilePath, Is.Not.Null);
@@ -164,17 +131,25 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
+                var errors = new List<Exception>();
                 using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false))
                 {
-                    var errors = new List<Exception>();
-                    Session.Error += (o, e) => errors.Add(e.Exception);
+                    EventHandler<Realms.ErrorEventArgs> handler = null;
+                    handler = new EventHandler<Realms.ErrorEventArgs>((sender, e) =>
+                    {
+                        errors.Add(e.Exception);
+                    });
+
+                    Session.Error += handler;
 
                     while (!errors.Any())
                     {
                         await Task.Yield();
                     }
 
-                    var authErrors = errors.OfType<AuthenticationException>().ToList();
+                    Session.Error -= handler;
+
+                    var authErrors = errors.OfType<AuthenticationException>().ToArray();
                     Assert.That(authErrors.Count, Is.EqualTo(1));
                     Assert.That(authErrors[0].ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
                 }
@@ -189,14 +164,22 @@ namespace Tests.Sync
                 var errors = new List<Exception>();
                 using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
                 {
-                    Session.Error += (o, e) => errors.Add(e.Exception);
+                    EventHandler<Realms.ErrorEventArgs> handler = null;
+                    handler = new EventHandler<Realms.ErrorEventArgs>((sender, e) =>
+                    {
+                        errors.Add(e.Exception);
+                    });
+
+                    Session.Error += handler;
 
                     while (!errors.Any())
                     {
                         await Task.Yield();
                     }
 
-                    var sessionErrors = errors.OfType<SessionException>().ToList();
+                    Session.Error -= handler;
+
+                    var sessionErrors = errors.OfType<SessionException>().ToArray();
                     Assert.That(sessionErrors.Count, Is.EqualTo(1));
                     Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
                 }
