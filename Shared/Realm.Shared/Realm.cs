@@ -728,26 +728,22 @@ namespace Realms
                 throw new ArgumentNullException(nameof(action));
             }
 
-            // avoid capturing `this` in the lambda
-            var configuration = Config;
-            var threadId = Thread.CurrentThread.ManagedThreadId;
-            await Task.Run(() =>
+            if (SynchronizationContext.Current != null)
             {
-                using (var realm = GetInstance(configuration))
-                using (var transaction = realm.BeginWrite())
+                await Task.Run(() =>
                 {
-                    action(realm);
-                    transaction.Commit();
-                }
-            });
+                    using (var realm = GetInstance(Config))
+                    {
+                        realm.Write(() => action(realm));
+                    }
+                });
 
-            if (Thread.CurrentThread.ManagedThreadId == threadId)
-            {
                 Refresh();
             }
             else
             {
-                ErrorMessages.OutputError(ErrorMessages.RealmWriteAsyncThreadChange);
+                // If running on background thread, execute synchronously.
+                Write(() => action(this));
             }
         }
 

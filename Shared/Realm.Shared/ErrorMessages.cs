@@ -25,12 +25,6 @@ namespace Realms
         public const string RealmNotifyErrorNoSubscribers =
             "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.";
 
-        public static readonly string RealmWriteAsyncThreadChange =
-            "You are using Realm.WriteAsync on a thread without SynchronizationContext (likely a background thread)." +
-            Environment.NewLine +
-            "This will work as expected, however, upon returning from the await, the original Realm will be on a " +
-            "different thread, making it unusable. We recommend that you use the synchronous version - Realm.Write - instead.";
-
         public static void OutputError(string error)
         {
             Console.Error.WriteLine(error);
