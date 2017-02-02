@@ -161,7 +161,7 @@ namespace Realms.Sync
         }
 
         #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         #endif
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
