@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync.Native
@@ -26,8 +25,10 @@ namespace Realms.Sync.Native
     {
         internal static readonly int Size = Marshal.SizeOf<StringStringPair>();
         
+        [MarshalAs(UnmanagedType.LPStr)]
         public string Key;
 
+        [MarshalAs(UnmanagedType.LPStr)]
         public string Value;
     }
 }
