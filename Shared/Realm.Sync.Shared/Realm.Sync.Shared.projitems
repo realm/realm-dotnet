@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\RealmSyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ClientResetException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Native\StringStringPair.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />

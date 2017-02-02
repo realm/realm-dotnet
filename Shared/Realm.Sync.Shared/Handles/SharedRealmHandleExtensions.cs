@@ -25,13 +25,12 @@ using System.Threading;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
     internal static class SharedRealmHandleExtensions
     {
-        private static readonly int kvpStringStringSize = Marshal.SizeOf<KeyValuePair<string, string>>();
-
         // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
         private static int _fileSystemConfigured;
 
@@ -198,7 +197,7 @@ namespace Realms.Sync
         private static Dictionary<string, string> MarshalErrorUserInfo(IntPtr userInfoPairs, int userInfoPairsLength)
         {
             return Enumerable.Range(0, userInfoPairsLength)
-                             .Select(i => Marshal.PtrToStructure<KeyValuePair<string, string>>(IntPtr.Add(userInfoPairs, i * kvpStringStringSize)))
+                             .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(userInfoPairs, i * StringStringPair.Size)))
                              .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
