@@ -421,7 +421,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void BacklinksBetweenTwoClasses()
+        public void Backlinks_SanityCheck()
         {
             var tim = realm.All<Owner>().Single(o => o.Name == "Tim");
             foreach (var dog in tim.Dogs)
@@ -438,7 +438,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void BacklinksReturnOnlyRelatedData()
+        public void Backlinks_WhenTargetsDifferentClass_ShouldReturnOnlyRelatedData()
         {
             var john = new Owner
             {
@@ -456,8 +456,9 @@ namespace IntegrationTests
                 realm.Add(john);
             });
 
+            // We check both Count() and FirstOrDefault() due to a bug we had with queries
             Assert.That(doggy.Owners.Count(), Is.EqualTo(0));
-            Assert.That(doggy.Owners.FirstOrDefault(), Is.EqualTo(null));
+            Assert.That(doggy.Owners.FirstOrDefault(), Is.Null);
 
             var sally = new Owner
             {
@@ -489,6 +490,58 @@ namespace IntegrationTests
 
             Assert.That(reverseAlphabeticalOwners.ElementAt(0), Is.EqualTo(sally));
             Assert.That(alphabeticalOwners.ElementAt(1), Is.EqualTo(sally));
+        }
+
+        [Test]
+        public void Backlinks_WhenTargetsSameClass_ShouldReturnOnlyRelatedData()
+        {
+            var child1 = new RecursiveBacklinksObject
+            {
+                Id = 1
+            };
+
+            var parent = new RecursiveBacklinksObject
+            {
+                Id = 100
+            };
+
+            realm.Write(() =>
+            {
+                realm.Add(child1);
+                realm.Add(parent);
+            });
+
+            Assert.That(parent.Children.Count(), Is.EqualTo(0));
+            Assert.That(parent.Children.FirstOrDefault(), Is.Null);
+
+            var child2 = new RecursiveBacklinksObject
+            {
+                Id = 2
+            };
+
+            realm.Write(() =>
+            {
+                realm.Add(child2);
+
+                child1.Parent = parent;
+            });
+
+            Assert.That(parent.Children.Count(), Is.EqualTo(1));
+            Assert.That(parent.Children.Single(), Is.EqualTo(child1));
+
+            realm.Write(() =>
+            {
+                child2.Parent = parent;
+            });
+
+            var orderedChildren = parent.Children.OrderBy(o => o.Id);
+            var reverseOrderedChildren = parent.Children.OrderByDescending(o => o.Id);
+
+            Assert.That(orderedChildren.ElementAt(0), Is.EqualTo(child1));
+            Assert.That(reverseOrderedChildren.ElementAt(1), Is.EqualTo(child1));
+
+            Assert.That(reverseOrderedChildren.ElementAt(0), Is.EqualTo(child2));
+            Assert.That(orderedChildren.ElementAt(1), Is.EqualTo(child2));
         }
 
         #region DeleteRelated

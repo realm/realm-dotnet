@@ -226,4 +226,15 @@ namespace IntegrationTests
     {
         public int Int { get; set; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RecursiveBacklinksObject : RealmObject
+    {
+        public int Id { get; set; }
+
+        public RecursiveBacklinksObject Parent { get; set; }
+
+        [Backlink(nameof(Parent))]
+        public IQueryable<RecursiveBacklinksObject> Children { get; }
+    }
 }
