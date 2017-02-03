@@ -244,7 +244,7 @@ namespace Realms
             Schema = schema;
         }
 
-        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.ObjectSchema schema)
+        private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
             var table = this.GetTable(schema);
             Weaving.IRealmObjectHelper helper;
@@ -397,7 +397,7 @@ namespace Realms
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private TableHandle GetTable(Schema.ObjectSchema schema)
+        private TableHandle GetTable(ObjectSchema schema)
         {
             var result = new TableHandle();
             var tableName = schema.Name;

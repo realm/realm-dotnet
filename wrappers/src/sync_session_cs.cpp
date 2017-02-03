@@ -33,7 +33,7 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 namespace realm {
 namespace binding {
     void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
-    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len);
+    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len);
     void (*s_progress_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
     void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
@@ -43,7 +43,13 @@ namespace binding {
     
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
     {
-        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length());
+        std::vector<std::pair<char*, char*>> user_info_pairs;
+        
+        for (const auto& p : error.user_info) {
+            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
+        }
+
+        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length(), user_info_pairs.data(), user_info_pairs.size());
     }
 }
 }

@@ -56,8 +56,8 @@
     <Compile Include="..\..\Shared\Realm.Sync.Shared\UserState.cs">
       <Link>UserState.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionErrorException.cs">
-      <Link>Exceptions\SessionErrorException.cs</Link>
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionException.cs">
+      <Link>Exceptions\SessionException.cs</Link>
     </Compile>
     <Compile Include="..\..\Shared\Realm.Sync.Shared\UserPersistenceMode.cs">
       <Link>UserPersistencyMode.cs</Link>
@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="Extensions\RealmSyncExtensionsPCL.cs" />
     <Compile Include="Extensions\TestingExtensionsPCL.cs" />
+    <Compile Include="Exceptions\ClientResetException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
@@ -152,5 +156,30 @@ namespace Realms.Sync.Exceptions
         /// The Realm file at the specified path is not available for shared access.
         /// </summary>
         FileMayNotBeShared = 703,
+    }
+
+    /// <summary>
+    /// A set of extensions that simplify checking for common error scenarios.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static class ErrorCodeExtensions
+    {
+        private static readonly IEnumerable<ErrorCode> clientResetCodes = new[]
+        {
+            ErrorCode.BadServerFileIdentifier,
+            ErrorCode.BadClientFileIdentifier,
+            ErrorCode.BadServerVersion,
+            ErrorCode.DivergingHistories,
+        };
+
+        /// <summary>
+        /// Checks if an error code indicates that a client reset is needed.
+        /// </summary>
+        /// <returns><c>true</c>, if the code indicates a client reset error, <c>false</c> otherwise.</returns>
+        /// <param name="code">The error code.</param>
+        public static bool IsClientResetError(this ErrorCode code)
+        {
+            return clientResetCodes.Contains(code);
+        }
     }
 }

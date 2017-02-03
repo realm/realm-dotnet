@@ -23,7 +23,7 @@ namespace Realms.Sync.Exceptions
     /// <summary>
     /// An exception type that describes a session-level error condition.
     /// </summary>
-    public class SessionErrorException : Exception
+    public class SessionException : Exception
     {
         /// <summary>
         /// Gets the error code that describes the session error this exception represents.
@@ -31,7 +31,7 @@ namespace Realms.Sync.Exceptions
         /// <value>An enum value, providing more detailed information for the cause of the error.</value>
         public ErrorCode ErrorCode { get; }
 
-        internal SessionErrorException(string message, ErrorCode errorCode) : base(message)
+        internal SessionException(string message, ErrorCode errorCode, Exception innerException = null) : base(message, innerException)
         {
             ErrorCode = errorCode;
         }

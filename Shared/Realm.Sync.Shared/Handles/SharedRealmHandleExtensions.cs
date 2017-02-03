@@ -17,10 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
+using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
@@ -32,15 +37,15 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Realms.Native.Configuration configuration, Native.SyncConfiguration sync_configuration,
-                [MarshalAs(UnmanagedType.LPArray), In] Realms.Native.SchemaObject[] objects, int objects_length,
-                [MarshalAs(UnmanagedType.LPArray), In] Realms.Native.SchemaProperty[] properties,
+            public static extern IntPtr open_with_sync(Configuration configuration, Native.SyncConfiguration sync_configuration,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 out NativeException ex);
 
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr user_handle_ptr, IntPtr session_handle_ptr, sbyte* url_buf, IntPtr url_len);
 
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len);
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
@@ -55,6 +60,10 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_immediately_run_file_actions", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -62,7 +71,7 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError, HandleSessionProgress);
         }
 
-        public static SharedRealmHandle OpenWithSync(Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             DoInitialFileSystemConfiguration();
 
@@ -123,6 +132,15 @@ namespace Realms.Sync
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
 
+        public static bool ImmediatelyRunFileActions(string path)
+        {
+            NativeException ex;
+            var result = NativeMethods.immediately_run_file_actions(path, (IntPtr)path.Length, out ex);
+            ex.ThrowIfNecessary();
+
+            return result;
+        }
+
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         #endif
@@ -130,14 +148,17 @@ namespace Realms.Sync
         {
             var user = User.Create(userHandlePtr);
             var session = Session.Create(sessionHandlePtr);
-            var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, System.Text.Encoding.UTF8));
+            var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, Encoding.UTF8));
 
             user.RefreshAccessToken(realmUri.AbsolutePath)
                 .ContinueWith(t =>
                 {
                     if (t.IsFaulted)
                     {
-                        Session.RaiseError(session, t.Exception.GetBaseException());
+                        var sessionException = new SessionException("An error has occurred while refreshing the access token.", 
+                                                                    ErrorCode.BadUserAuthentication, 
+                                                                    t.Exception.GetBaseException());
+                        Session.RaiseError(session, sessionException);
                     }
                     else
                     {
@@ -153,11 +174,31 @@ namespace Realms.Sync
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         #endif
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength)
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
             var session = Session.Create(sessionHandlePtr);
-            var message = new string(messageBuffer, 0, (int)messageLength, System.Text.Encoding.UTF8);
-            Session.RaiseError(session, new SessionErrorException(message, errorCode));
+            var message = new string(messageBuffer, 0, (int)messageLength, Encoding.UTF8);
+
+            SessionException exception;
+
+            if (errorCode.IsClientResetError())
+            {
+                var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
+                exception = new ClientResetException(message, userInfo);
+            }
+            else
+            {
+                exception = new SessionException(message, errorCode);
+            }
+
+            Session.RaiseError(session, exception);
+        }
+
+        private static Dictionary<string, string> MarshalErrorUserInfo(IntPtr userInfoPairs, int userInfoPairsLength)
+        {
+            return Enumerable.Range(0, userInfoPairsLength)
+                             .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(userInfoPairs, i * StringStringPair.Size)))
+                             .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         #if __IOS__
