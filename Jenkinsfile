@@ -55,7 +55,7 @@ stage('RealmWeaver') {
 stage('Build without sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -134,7 +134,7 @@ stage('Build without sync') {
 stage('Build with sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('xamarin-mac') {
         getArchive()
 
         dir('wrappers') {
@@ -241,7 +241,7 @@ def Win32Test(stashName) {
 
 def iOSTest(stashName) {
   return {
-    nodeWithCleanup('osx') {
+    nodeWithCleanup('xamarin-mac') {
       unstash stashName
 
       dir('Tests.XamarinIOS.app') {
