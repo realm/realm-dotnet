@@ -443,6 +443,8 @@ namespace IntegrationTests
                     realm2.Dispose();
                 });
 
+                realm1.Refresh();
+
                 var people = realm1.All<Person>();
 
                 Assert.That(people.Count(), Is.EqualTo(1));
@@ -454,28 +456,40 @@ namespace IntegrationTests
         [Test]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
-            var realm = Realm.GetInstance();
-            realm.Dispose();
+            AsyncContext.Run(async () =>
+            {
+                var realm = Realm.GetInstance();
+                realm.Dispose();
 
-            Assert.That(realm.IsClosed);
+                Assert.That(realm.IsClosed);
 
-            var other = Realm.GetInstance();
+                var other = Realm.GetInstance();
 
-            Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.WriteAsync(_ => { }), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.Refresh(), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
 
-            other.Dispose();
+                try
+                {
+                    await realm.WriteAsync(_ => { });
+                    Assert.Fail("An exception should have been thrown.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<ObjectDisposedException>());
+                }
+
+                other.Dispose();
+            });
         }
 
         private static void AddDummyData(Realm realm)
