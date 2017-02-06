@@ -30,7 +30,7 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
-    public class RealmObject : IReflectableType, INotifyPropertyChanged
+    public class RealmObject : IReflectableType, INotifyPropertyChanged, ISchemaSource
     {
         /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged

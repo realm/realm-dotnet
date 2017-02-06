@@ -36,7 +36,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : IReflectableType, INotifyPropertyChanged
+    public class RealmObject : IReflectableType, INotifyPropertyChanged, ISchemaSource
     {
         #region static
 

@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class RealmCollectionBase<T> : RealmCollectionNativeHelper.Interface, IRealmCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged
+    internal abstract class RealmCollectionBase<T> : RealmCollectionNativeHelper.Interface, IRealmCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged, ISchemaSource
     {
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
