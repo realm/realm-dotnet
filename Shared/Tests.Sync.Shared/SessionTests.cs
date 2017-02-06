@@ -397,6 +397,9 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
+                const int ThrottleInterval = 100; // In ms
+                const int SafeDelay = 2 * ThrottleInterval;
+
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
 
@@ -406,14 +409,14 @@ namespace Tests.Sync
 
                 session.SimulateProgress(0, 100, 0, 0);
 
-                var token = uploadProgress.Throttle(TimeSpan.FromSeconds(0.05))
+                var token = uploadProgress.Throttle(TimeSpan.FromMilliseconds(ThrottleInterval))
                                           .Subscribe(p =>
                                           {
                                               callbacksInvoked++;
                                               Console.WriteLine(p.TransferableBytes);
                                           });
 
-                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                await Task.Delay(SafeDelay);
                 Assert.That(callbacksInvoked, Is.EqualTo(1));
 
                 for (ulong i = 0; i < 10; i++)
@@ -421,23 +424,23 @@ namespace Tests.Sync
                     session.SimulateProgress(i, 100, 0, 0);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                await Task.Delay(SafeDelay);
                 Assert.That(callbacksInvoked, Is.EqualTo(2));
 
                 for (ulong i = 10; i < 20; i++)
                 {
                     session.SimulateProgress(i, 100, 0, 0);
-                    await Task.Delay(TimeSpan.FromSeconds(0.01));
+                    await Task.Delay(ThrottleInterval / 10);
                 }
 
                 Assert.That(callbacksInvoked, Is.EqualTo(2));
-                await Task.Delay(TimeSpan.FromSeconds(0.1));
+                await Task.Delay(SafeDelay);
                 Assert.That(callbacksInvoked, Is.EqualTo(3));
 
                 for (ulong i = 20; i < 25; i++)
                 {
                     session.SimulateProgress(i, 100, 0, 0);
-                    await Task.Delay(TimeSpan.FromSeconds(0.1));
+                    await Task.Delay(SafeDelay);
                 }
 
                 Assert.That(callbacksInvoked, Is.EqualTo(8));
