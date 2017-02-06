@@ -147,7 +147,7 @@ namespace Realms.Sync
         private static unsafe void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
             var session = Session.Create(sessionHandlePtr);
-            AuthenticationHelper.RefreshAccessToken(session);
+            AuthenticationHelper.RefreshAccessToken(session).ContinueWith(_ => session.Handle.Dispose());
         }
 
         #if __IOS__

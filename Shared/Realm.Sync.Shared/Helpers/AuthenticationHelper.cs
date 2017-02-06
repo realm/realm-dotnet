@@ -18,8 +18,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Json;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -38,7 +41,16 @@ namespace Realms.Sync
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
 
-        public static async Task RefreshAccessToken(Session session)
+        private static readonly HashSet<HttpStatusCode> _connectivityStatusCodes = new HashSet<HttpStatusCode>
+        {
+            HttpStatusCode.NotFound,
+            HttpStatusCode.BadGateway,
+            HttpStatusCode.ServiceUnavailable,
+            HttpStatusCode.GatewayTimeout,
+            HttpStatusCode.RequestTimeout,
+        };
+
+        public static async Task RefreshAccessToken(Session session, bool reportErrors = true)
         {
             var user = session.User;
             try
@@ -56,18 +68,26 @@ namespace Realms.Sync
                 session.Handle.RefreshAccessToken(access_token["token"], access_token["token_data"]["path"]);
                 ScheduleTokenRefresh(session.Path, _date_1970.AddSeconds(access_token["token_data"]["expires"]));
             }
+            catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
+            {
+                // 30 seconds is an arbitrarily chosen value, consider rationalizing it.
+                ScheduleTokenRefresh(session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
+            }
             catch (Exception ex)
             {
-                // TODO: if http exception - retry instead of reporting it.
+                if (reportErrors)
+                {
+                    var sessionException = new SessionException("An error has occurred while refreshing the access token.",
+                                                                ErrorCode.BadUserAuthentication,
+                                                                ex);
 
-                var sessionException = new SessionException("An error has occurred while refreshing the access token.",
-                                                            ErrorCode.BadUserAuthentication,
-                                                            ex);
-
-                Session.RaiseError(session, sessionException);
+                    Session.RaiseError(session, sessionException);
+                }
             }
             finally
             {
+                // session.User creates a new user each time, so it's safe to dispose the handle here.
+                // It won't actually corrupt the state of the session.
                 user.Handle.Dispose();
             }
         }
@@ -108,7 +128,7 @@ namespace Realms.Sync
                 var session = Session.Create(path);
                 if (session != null)
                 {
-                    RefreshAccessToken(session);
+                    RefreshAccessToken(session, reportErrors: false).ContinueWith(_ => session.Handle.Dispose());
                 }
             }
             catch
