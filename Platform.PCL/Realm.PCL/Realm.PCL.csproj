@@ -141,8 +141,8 @@
     <Compile Include="..\..\Shared\Realm.Shared\Extensions\StringExtensions.cs">
       <Link>Extensions\StringExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\..\Shared\Realm.Shared\ISchemaObject.cs">
-      <Link>ISchemaObject.cs</Link>
+    <Compile Include="..\..\Shared\Realm.Shared\ISchemaSource.cs">
+      <Link>ISchemaSource.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
