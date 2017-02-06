@@ -39,8 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ClientResetException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\StringStringPair.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SessionTokenHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AccessTokenData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AuthenticationHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
