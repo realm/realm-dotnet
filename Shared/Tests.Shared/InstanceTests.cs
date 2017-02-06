@@ -443,6 +443,8 @@ namespace IntegrationTests
                     realm2.Dispose();
                 });
 
+                realm1.Refresh();
+
                 var people = realm1.All<Person>();
 
                 Assert.That(people.Count(), Is.EqualTo(1));
@@ -473,7 +475,9 @@ namespace IntegrationTests
             Assert.That(() => realm.Remove(new Person()), Throws.TypeOf<ObjectDisposedException>());
             Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
             Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
-            Assert.That(() => realm.WriteAsync(_ => { }), Throws.TypeOf<ObjectDisposedException>());
+
+            var aggregateException = Assert.Throws<AggregateException>(() => realm.WriteAsync(_ => { }).Wait());
+            Assert.That(aggregateException.GetBaseException(), Is.TypeOf<ObjectDisposedException>());
 
             other.Dispose();
         }
