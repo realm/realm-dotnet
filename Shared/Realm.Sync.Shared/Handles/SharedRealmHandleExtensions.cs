@@ -43,7 +43,7 @@ namespace Realms.Sync
                 byte[] encryptionKey,
                 out NativeException ex);
 
-            public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr user_handle_ptr, IntPtr session_handle_ptr, sbyte* url_buf, IntPtr url_len);
+            public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr session_handle_ptr);
 
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, sbyte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
@@ -144,31 +144,10 @@ namespace Realms.Sync
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         #endif
-        private static unsafe void RefreshAccessTokenCallback(IntPtr userHandlePtr, IntPtr sessionHandlePtr, sbyte* urlBuffer, IntPtr urlLength)
+        private static unsafe void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
-            var user = User.Create(userHandlePtr);
             var session = Session.Create(sessionHandlePtr);
-            var realmUri = new Uri(new string(urlBuffer, 0, (int)urlLength, Encoding.UTF8));
-
-            user.RefreshAccessToken(realmUri.AbsolutePath)
-                .ContinueWith(t =>
-                {
-                    if (t.IsFaulted)
-                    {
-                        var sessionException = new SessionException("An error has occurred while refreshing the access token.", 
-                                                                    ErrorCode.BadUserAuthentication, 
-                                                                    t.Exception.GetBaseException());
-                        Session.RaiseError(session, sessionException);
-                    }
-                    else
-                    {
-                        session.Handle.RefreshAccessToken(t.Result.Item1, t.Result.Item2);
-                    }
-                })
-                .ContinueWith(t =>
-                {
-                    user.Handle.Dispose();
-                });
+            SessionTokenHelper.RefreshAccessToken(session);
         }
 
         #if __IOS__

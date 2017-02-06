@@ -125,6 +125,7 @@ namespace Realms.Sync
         #endregion
 
         private const int ErrorContentTruncationLimit = 256 * 1024;
+        private static readonly DateTimeOffset _date_1970 = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
@@ -206,7 +207,7 @@ namespace Realms.Sync
         }
 
         // returns a tuple of access token and resolved realm path
-        internal async Task<Tuple<string, string>> RefreshAccessToken(string path)
+        internal async Task<AccessTokenData> RefreshAccessToken(string path)
         {
             var json = new JsonObject
             {
@@ -217,7 +218,13 @@ namespace Realms.Sync
 
             var result = await MakeAuthRequestAsync(ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
             var access_token = result["access_token"];
-            return Tuple.Create((string)access_token["token"], (string)access_token["token_data"]["path"]);
+
+            return new AccessTokenData
+            {
+                AccessToken = access_token["token"],
+                ServerUrl = access_token["token_data"]["path"],
+                ExpiryDate = _date_1970.AddSeconds(access_token["token_data"]["expires"])
+            };
         }
 
         private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)

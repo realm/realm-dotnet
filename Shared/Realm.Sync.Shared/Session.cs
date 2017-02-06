@@ -50,6 +50,12 @@ namespace Realms.Sync
         public User User => new User(Handle.GetUser());
 
         /// <summary>
+        /// Gets the on-disk path of the Realm file backing the <see cref="Realm"/> this Session represents.
+        /// </summary>
+        /// <value>The file path.</value>
+        public string Path => Handle.GetPath();
+
+        /// <summary>
         /// Gets an <see cref="IObservable{T}"/> that can be used to track upload or download progress.
         /// </summary>
         /// <remarks>
@@ -106,17 +112,20 @@ namespace Realms.Sync
 
         internal static Session Create(IntPtr sessionPtr)
         {
+            if (sessionPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
             var handle = new SessionHandle();
             handle.SetHandle(sessionPtr);
 
             return new Session(handle);
         }
 
-        internal static Session Create(Realm realm)
+        internal static Session Create(string path)
         {
-            System.Diagnostics.Debug.Assert(realm.Config is SyncConfiguration, "Realm must be opened with a SyncConfiguration");
-
-            return Create(SessionHandle.SessionForRealm(realm.SharedRealmHandle));
+            return Create(SessionHandle.SessionForPath(path));
         }
 
         internal static void RaiseError(Session session, Exception error)

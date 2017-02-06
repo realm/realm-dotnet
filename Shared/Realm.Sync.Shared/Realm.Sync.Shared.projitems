@@ -39,6 +39,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TestingExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ClientResetException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\StringStringPair.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SessionTokenHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\AccessTokenData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />
@@ -47,5 +49,6 @@
     <Folder Include="$(MSBuildThisFileDirectory)Permissions\" />
     <Folder Include="$(MSBuildThisFileDirectory)ProgressNotifications\" />
     <Folder Include="$(MSBuildThisFileDirectory)Extensions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
   </ItemGroup>
 </Project>
