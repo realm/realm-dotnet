@@ -113,7 +113,7 @@ namespace Realms
         /// Gets the <see cref="ObjectSchema"/> of the contained objects.
         /// </summary>
         /// <value>The ObjectSchema of the contained objects.</value>
-        /// <seealso cref="ISchemaObject.ObjectSchema"/>
+        /// <seealso cref="ISchemaSource.ObjectSchema"/>
         [Obsolete("Use ISchemaObject.ObjectSchema instead.")]
         ObjectSchema ObjectSchema { get; }
 

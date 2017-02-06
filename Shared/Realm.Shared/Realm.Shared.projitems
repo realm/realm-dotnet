@@ -93,7 +93,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\BacklinkAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ISchemaObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISchemaSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

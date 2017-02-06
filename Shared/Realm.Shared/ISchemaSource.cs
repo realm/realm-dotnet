@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms.Schema;
 
 namespace Realms
@@ -24,7 +23,7 @@ namespace Realms
     /// <summary>
     /// An object describing its properties in terms of a <see cref="ObjectSchema"/>.
     /// </summary>
-    public interface ISchemaObject
+    public interface ISchemaSource
     {
         /// <summary>
         /// Gets the <see cref="ObjectSchema"/>, describing the persisted properties of the object. If the object is a
