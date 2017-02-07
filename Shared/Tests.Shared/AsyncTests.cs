@@ -62,16 +62,40 @@ namespace IntegrationTests
                 var otherThreadId = currentThreadId;
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+                Assert.That(SynchronizationContext.Current != null);
                 await _realm.WriteAsync(realm =>
                 {
                     otherThreadId = Thread.CurrentThread.ManagedThreadId;
                     realm.Add(new Person());
                 });
 
-                await Task.Yield();
-
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
                 Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
+            });
+        }
+
+        [Test]
+        public void AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
+        {
+            AsyncContext.Run(async () =>
+            {
+                await Task.Run(async () =>
+                {
+                    var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                    var otherThreadId = -1;
+
+                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+                    Assert.That(SynchronizationContext.Current == null);
+
+                    await _realm.WriteAsync(realm =>
+                    {
+                        otherThreadId = Thread.CurrentThread.ManagedThreadId;
+                        realm.Add(new Person());
+                    });
+
+                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+                    Assert.That(otherThreadId, Is.EqualTo(currentThreadId));
+                });
             });
         }
 

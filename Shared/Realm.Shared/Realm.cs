@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 #if __IOS__
 using ObjCRuntime;
@@ -308,7 +309,7 @@ namespace Realms
         {
             if (Error == null)
             {
-                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
+                ErrorMessages.OutputError(ErrorMessages.RealmNotifyErrorNoSubscribers);
             }
 
             Error?.Invoke(this, new ErrorEventArgs(ex));
@@ -718,7 +719,7 @@ namespace Realms
         /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public Task WriteAsync(Action<Realm> action)
+        public async Task WriteAsync(Action<Realm> action)
         {
             ThrowIfDisposed();
 
@@ -727,17 +728,23 @@ namespace Realms
                 throw new ArgumentNullException(nameof(action));
             }
 
-            // avoid capturing `this` in the lambda
-            var configuration = Config;
-            return Task.Run(() =>
+            if (SynchronizationContext.Current != null)
             {
-                using (var realm = GetInstance(configuration))
-                using (var transaction = realm.BeginWrite())
+                await Task.Run(() =>
                 {
-                    action(realm);
-                    transaction.Commit();
-                }
-            });
+                    using (var realm = GetInstance(Config))
+                    {
+                        realm.Write(() => action(realm));
+                    }
+                });
+
+                Refresh();
+            }
+            else
+            {
+                // If running on background thread, execute synchronously.
+                Write(() => action(this));
+            }
         }
 
         /// <summary>
