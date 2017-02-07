@@ -39,6 +39,9 @@ namespace Realms
         [return: MarshalAs(UnmanagedType.I1)]
         public delegate bool NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void FreeGCHandleCallback(IntPtr handle);
+
 #if DEBUG
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
@@ -65,6 +68,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_object_changed", CallingConvention = CallingConvention.Cdecl)]
         public static extern void register_notify_realm_object_changed(NotifyRealmObjectCallback callback);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_free_gc_handle", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void register_free_gc_handle(FreeGCHandleCallback callback);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
 
@@ -83,6 +89,17 @@ namespace Realms
             GCHandle.Alloc(logger);
             set_debug_logger(logger);
 #endif
+        }
+
+#if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.FreeGCHandleCallback))]
+#endif
+        public static void FreeGCHandle(IntPtr handle)
+        {
+            if (handle != IntPtr.Zero)
+            {
+                GCHandle.FromIntPtr(handle).Free();
+            }
         }
     }
 }
