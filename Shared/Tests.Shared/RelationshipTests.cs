@@ -421,12 +421,12 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void Backlinks()
+        public void BacklinksBetweenTwoClasses()
         {
             var tim = realm.All<Owner>().Single(o => o.Name == "Tim");
             foreach (var dog in tim.Dogs)
             {
-                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim })); 
+                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim }));
             }
 
             var dani = realm.All<Owner>().Single(o => o.Name == "Dani");
@@ -435,6 +435,55 @@ namespace IntegrationTests
 
             realm.Write(() => dani.Dogs.Add(maggie));
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
+        }
+
+        [Test]
+        public void RecursiveBacklinkWorksViaOneToManyProperty()
+        {
+            realm.Write(() =>
+            {
+                realm.Add(new Employee
+                {
+                    Name = "Sally",
+                    Reports =
+                    {
+                        new Employee { Name = "Sree" },
+                        new Employee { Name = "Jake" }
+                    }
+                });
+            });
+
+            // simple query of immediate Boss 
+            var jake = realm.All<Employee>().Single(p => p.Name == "Jake");
+            Assert.That(jake.Boss?.Name, Is.EqualTo("Sally"));
+            var bossesBoss = jake.Boss?.Boss;
+            Assert.That(bossesBoss, Is.Null);
+        }
+
+        [Test]
+        public void RecursiveBacklinksQueriesOnlySeeRelatedItems()
+        {
+            realm.Write(() =>
+            {
+                realm.Add(new Employee
+                {
+                    Name = "Sally",
+                    Reports =
+                    {
+                        new Employee { Name = "Sree" },
+                        new Employee { Name = "Jake" }
+                    }
+                });
+            });
+
+            // simple query of immediate Boss 
+            var jake = realm.All<Employee>().Single(p => p.Name == "Jake");
+            var jakeBossCount = jake.Bosses.Count();
+            Assert.That(jakeBossCount, Is.EqualTo(1));
+
+            var sally = realm.All<Employee>().Single(p => p.Name == "Sally");
+            var sallyBossCount = sally.Bosses.Count();
+            Assert.That(sallyBossCount, Is.EqualTo(0));
         }
 
         #region DeleteRelated

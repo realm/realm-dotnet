@@ -354,6 +354,9 @@ namespace Realms
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
+            // Although this retrns a new RealmResults each time it is called,
+            // the woven code in ModuleWeaver.ReplaceBacklinksGetter caches this in the backing field
+            // so it should not be invoked repeaatedly when user code gets the backlinks multiple times.
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
