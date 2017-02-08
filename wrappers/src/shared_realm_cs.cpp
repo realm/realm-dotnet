@@ -96,11 +96,17 @@ namespace binding {
     
     void CSharpBindingContext::notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index)
     {
+        std::vector<void*> toNotify;
+        
         for (auto const& o : m_observed_rows) {
             if (o.row_ndx == row_ndx && o.table_ndx == table_ndx) {
                 auto const& details = static_cast<ObservedObjectDetails*>(o.info);
-                notify_and_remove_if_needed(this, details->managed_object_handle, property_index);
+                toNotify.push_back(details->managed_object_handle);
             }
+        }
+        
+        for (void* handle : toNotify) {
+            notify_and_remove_if_needed(this, handle, property_index);
         }
     }
     
