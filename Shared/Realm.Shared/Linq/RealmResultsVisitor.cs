@@ -878,7 +878,7 @@ namespace Realms
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
         {
-            var results = c.Value as IRealmCollection<RealmObject>;
+            var results = c.Value as IQueryableCollection;
             if (results != null)
             {
                 // assume constant nodes w/ IQueryables are table references
@@ -887,50 +887,14 @@ namespace Realms
                     throw new Exception("We already have a table...");
                 }
 
-                CoreQueryHandle = CreateQuery(results.ObjectSchema);
+                CoreQueryHandle = results.CreateQuery();
             }
-            else if (c.Value == null)
+            else if (c.Value?.GetType() == typeof(object))
             {
-            }
-            else
-            {
-                if (c.Value is bool)
-                {
-                }
-                else if (c.Value is string)
-                {
-                }
-                else if (c.Value.GetType() == typeof(object))
-                {
-                    throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
-                }
-                else
-                {
-                }
+                throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
             }
 
             return c;
-        }
-
-        private QueryHandle CreateQuery(Schema.ObjectSchema elementType)
-        {
-            var tableHandle = _realm.Metadata[elementType.Name].Table;
-            var queryHandle = tableHandle.TableWhere();
-
-            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            // a finalize at this point will not leak anything and the handle will not do anything
-
-            // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                queryHandle.SetHandle(tableHandle.Where());
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-
-            return queryHandle;
         }
 
         internal override Expression VisitMemberAccess(MemberExpression m)

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -28,7 +28,12 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class RealmCollectionBase<T> : RealmCollectionNativeHelper.Interface, IRealmCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged, ISchemaSource
+    internal abstract class RealmCollectionBase<T> 
+        : RealmCollectionNativeHelper.Interface, 
+          IRealmCollection<T>, 
+          INotifyCollectionChanged, 
+          INotifyPropertyChanged,
+          ISchemaSource
     {
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 

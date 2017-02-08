@@ -23,7 +23,12 @@ using System.Linq.Expressions;
 
 namespace Realms
 {
-    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>
+    internal interface IQueryableCollection
+    {
+        QueryHandle CreateQuery();
+    }
+
+    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection
     {
         private readonly RealmResultsProvider _provider;
         private readonly bool _allRecords;
@@ -53,6 +58,11 @@ namespace Realms
             : this(realm, new RealmResultsProvider(realm, metadata), null, metadata, false)
         {
             _handle = handle;
+        }
+
+        public QueryHandle CreateQuery()
+        {
+            return ResultsHandle.CreateQuery();
         }
 
         protected override CollectionHandleBase CreateHandle()

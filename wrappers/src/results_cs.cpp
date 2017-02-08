@@ -97,5 +97,12 @@ REALM_EXPORT void* collection_destroy_notificationtoken(ManagedNotificationToken
         return managed_collection;
     });
 }
+    
+REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Query(results_ptr->get_query());
+    });
+}
 
 }   // extern "C"
