@@ -21,7 +21,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Json;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -35,6 +34,7 @@ namespace Realms.Sync
     internal static class AuthenticationHelper
     {
         private const int ErrorContentTruncationLimit = 256 * 1024;
+        private static readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() => new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
         
         private static readonly ConcurrentDictionary<string, Timer> _tokenRefreshTimers = new ConcurrentDictionary<string, Timer>();
         private static readonly DateTimeOffset _date_1970 = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -66,12 +66,12 @@ namespace Realms.Sync
                 var access_token = result["access_token"];
 
                 session.Handle.RefreshAccessToken(access_token["token"], access_token["token_data"]["path"]);
-                ScheduleTokenRefresh(session.Path, _date_1970.AddSeconds(access_token["token_data"]["expires"]));
+                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(access_token["token_data"]["expires"]));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {
                 // 30 seconds is an arbitrarily chosen value, consider rationalizing it.
-                ScheduleTokenRefresh(session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
+                ScheduleTokenRefresh(user.Identity, session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
             }
             catch (Exception ex)
             {
@@ -100,35 +100,49 @@ namespace Realms.Sync
             return Tuple.Create((string)refresh_token["token_data"]["identity"], (string)refresh_token["token"]);
         }
 
-        private static void ScheduleTokenRefresh(string path, DateTimeOffset expireDate)
+        private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
+            var timerState = new TokenRefreshData
+            {
+                RealmPath = path,
+                UserId = userId
+            };
 
             if (dueTime < TimeSpan.Zero)
             {
-                OnTimerCallback(path);
+                OnTimerCallback(timerState);
             }
 
             _tokenRefreshTimers.AddOrUpdate(path, p =>
             {
-                return new Timer(OnTimerCallback, path, dueTime, TimeSpan.FromMilliseconds(-1));
+                return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
             }, (p, old) =>
             {
                 old.Dispose();
-                return new Timer(OnTimerCallback, path, dueTime, TimeSpan.FromMilliseconds(-1));
+                return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
             });
         }
 
         private static void OnTimerCallback(object state)
         {
-            var path = (string)state;
+            var data = (TokenRefreshData)state;
 
             try
             {
-                var session = Session.Create(path);
-                if (session != null)
+                var user = User.GetLoggedInUser(data.UserId);
+                if (user != null)
                 {
-                    RefreshAccessToken(session, reportErrors: false).ContinueWith(_ => session.Handle.Dispose());
+                    var sessionPointer = user.Handle.GetSessionPointer(data.RealmPath);
+                    var session = Session.Create(sessionPointer);
+                    if (session != null)
+                    {
+                        RefreshAccessToken(session, reportErrors: false).ContinueWith(_ =>
+                        {
+                            user.Handle.Dispose();
+                            session.Handle.Dispose();
+                        });
+                    }
                 }
             }
             catch
@@ -137,7 +151,7 @@ namespace Realms.Sync
             finally
             {
                 Timer timer;
-                if (_tokenRefreshTimers.TryRemove(path, out timer))
+                if (_tokenRefreshTimers.TryRemove(data.RealmPath, out timer))
                 {
                     timer.Dispose();
                 }
@@ -155,36 +169,33 @@ namespace Realms.Sync
                 requestBody = writer.ToString();
             }
 
-            using (var client = new HttpClient { Timeout = timeout })
+            var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
+            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
+            request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
+
+            var response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
+            if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-                request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
-                request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
-
-                var response = await client.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
-                if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
-                {
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
-                    {
-                        return JsonValue.Load(stream);
-                    }
-                }
-
                 using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
                 {
-                    if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
-                    {
-                        var problem = JsonValue.Load(stream);
-
-                        var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
-
-                        throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
-                    }
-
-                    var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
-                    throw new HttpException(response.StatusCode, response.ReasonPhrase, content);
+                    return JsonValue.Load(stream);
                 }
+            }
+
+            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
+            {
+                if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
+                {
+                    var problem = JsonValue.Load(stream);
+
+                    var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
+
+                    throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
+                }
+
+                var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
+                throw new HttpException(response.StatusCode, response.ReasonPhrase, content);
             }
         }
 
@@ -207,6 +218,13 @@ namespace Realms.Sync
 
                 return sb.ToString();
             }
+        }
+
+        private class TokenRefreshData
+        {
+            public string UserId { get; set; }
+
+            public string RealmPath { get; set; }
         }
     }
 }

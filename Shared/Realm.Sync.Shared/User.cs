@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 
 namespace Realms.Sync
 {
@@ -62,6 +63,7 @@ namespace Realms.Sync
             get
             {
                 SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+
                 return SyncUserHandle.GetAllLoggedInUsers()
                                      .Select(handle => new User(handle))
                                      .ToArray();
@@ -112,6 +114,24 @@ namespace Realms.Sync
             }
 
             SharedRealmHandleExtensions.ConfigureFileSystem(mode, encryptionKey, resetOnError);
+        }
+
+        /// <summary>
+        /// Gets a logged in user with a specified identity.
+        /// </summary>
+        /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
+        /// <param name="identity">The identity of the user.</param>
+        public static User GetLoggedInUser(string identity)
+        {
+            SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+            
+            var handle = SyncUserHandle.GetLoggedInUser(identity);
+            if (handle == null)
+            {
+                return null;
+            }
+
+            return new User(handle);
         }
 
         #endregion

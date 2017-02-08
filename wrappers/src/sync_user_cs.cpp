@@ -22,11 +22,13 @@
 #include "realm_export_decls.hpp"
 #include "sync/sync_manager.hpp"
 #include "sync/sync_user.hpp"
+#include "sync/sync_session.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
+using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 extern "C" {
 
@@ -50,10 +52,10 @@ REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, s
     
 REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&] {
+    return handle_errors(ex, [&]() -> SharedSyncUser* {
         auto ptr = SyncManager::shared().get_current_user();
         if (ptr == nullptr) {
-            return (SharedSyncUser*)nullptr;
+            return nullptr;
         }
         
         return new SharedSyncUser(std::move(ptr));
@@ -77,6 +79,28 @@ REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t bu
         }
         
         return users.size();
+    });
+}
+    
+REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_buf, size_t identity_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> SharedSyncUser* {
+        Utf16StringAccessor identity(identity_buf, identity_len);
+        auto ptr = SyncManager::shared().get_existing_logged_in_user(identity);
+        if (ptr == nullptr) {
+            return nullptr;
+        }
+        
+        return new SharedSyncUser(std::move(ptr));
+    });
+}
+    
+REALM_EXPORT SharedSyncSession* realm_syncuser_get_session(SharedSyncUser& user, const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        Utf16StringAccessor path(path_buf, path_len);
+        auto sess = user->session_for_on_disk_path(path);
+        return new SharedSyncSession(user->session_for_on_disk_path(path));
     });
 }
 

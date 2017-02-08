@@ -56,6 +56,12 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_logged_in_user", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_logged_in_user([MarshalAs(UnmanagedType.LPWStr)] string identity, IntPtr identity_len, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_session", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_session(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
         }
 
         public string GetIdentity()
@@ -93,6 +99,15 @@ namespace Realms.Sync
             return result;
         }
 
+        public IntPtr GetSessionPointer(string path)
+        {
+            NativeException ex;
+            var result = NativeMethods.get_session(this, path, (IntPtr)path.Length, out ex);
+            ex.ThrowIfNecessary();
+
+            return result;
+        }
+
         public void LogOut()
         {
             NativeException ex;
@@ -125,6 +140,15 @@ namespace Realms.Sync
         {
             return MarshalHelpers.GetCollection<IntPtr>(NativeMethods.get_logged_in_users, bufferSize: 8)
                                  .Select(GetHandle);
+        }
+
+        public static SyncUserHandle GetLoggedInUser(string identity)
+        {
+            NativeException ex;
+            var userPtr = NativeMethods.get_logged_in_user(identity, (IntPtr)identity.Length, out ex);
+            ex.ThrowIfNecessary();
+
+            return GetHandle(userPtr);
         }
 
         protected override void Unbind()
