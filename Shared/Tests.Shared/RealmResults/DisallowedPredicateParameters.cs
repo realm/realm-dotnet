@@ -25,7 +25,7 @@ using Realms;
 
 namespace IntegrationTests
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class DisallowedPredicateParameters
     {
         [Test]

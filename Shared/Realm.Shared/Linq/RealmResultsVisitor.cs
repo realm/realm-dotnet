@@ -512,14 +512,15 @@ namespace Realms
                     memberExpression = ((UnaryExpression)b.Left).Operand as MemberExpression;
                 }
 
-                if (memberExpression == null ||
+                var leftName = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ?? 
+                               memberExpression?.Member.Name;
+
+                if (leftName == null ||
                     memberExpression.Member.MemberType != MemberTypes.Property ||
-                    !_metadata.Schema.PropertyNames.Contains(memberExpression.Member.Name))
+                    !_metadata.Schema.PropertyNames.Contains(leftName))
                 {
                     throw new NotSupportedException($"The left-hand side of the {b.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{b.Left}'.");
                 }
-
-                var leftName = memberExpression.Member.Name;
 
                 object rightValue;
                 if (!TryExtractConstantValue(b.Right, out rightValue))

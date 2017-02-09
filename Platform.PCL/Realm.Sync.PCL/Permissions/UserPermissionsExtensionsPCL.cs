@@ -41,5 +41,20 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
+
+        /// <summary>
+        /// Returns an instance of the Permission Realm owned by the user.
+        /// </summary>
+        /// <remarks>
+        /// This Realm can be used to review access permissions for Realms managed by the user
+        /// and to Realms which the user was granted access to by other users.
+        /// </remarks>
+        /// <param name="user">The user whose Permission Realm to get.</param>
+        /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
+        public static Realm GetPermissionRealm(this User user)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
     }
 }

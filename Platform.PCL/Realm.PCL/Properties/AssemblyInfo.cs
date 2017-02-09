@@ -17,5 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm.PCL")]
+[assembly: InternalsVisibleTo("Realm.Sync")]

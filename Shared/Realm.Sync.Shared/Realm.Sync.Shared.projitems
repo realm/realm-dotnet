@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ClientResetException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\StringStringPair.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\AuthenticationHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Permissions\Permission.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Handles\" />

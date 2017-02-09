@@ -70,13 +70,19 @@ namespace Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(PermissionOfferResponse)), Is.Null);
         }
 
+        [Test]
+        public void Permission_ShouldNotBeInDefaultSchema()
+        {
+            Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
+        }
+
         [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
         public void PermissionChange_IsProcessedByServer()
         {
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUser();
-                var permissionChange = await CreatePermissionObject(user, _ => new PermissionChange("*", "*", mayRead: true));
+                var permissionChange = await CreateChange(user, "*");
                 Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
             });
         }
@@ -197,6 +203,52 @@ namespace Tests.Sync
             });
         }
 
+        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        public void PermissionChange_UpdatesPermissionRealm()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+
+                var permissionRealm = alice.GetPermissionRealm();
+                var tcs = new TaskCompletionSource<Permission>();
+                var aliceId = alice.Identity; // LINQ :/
+                var token = permissionRealm.All<Permission>()
+                                           .Where(p => p.UserId != aliceId)
+                                           .SubscribeForNotifications((sender, changes, error) =>
+                                           {
+                                               if (sender.Count > 0)
+                                               {
+                                                   try
+                                                   {
+                                                       tcs.TrySetResult(sender.Single());
+                                                   }
+                                                   catch (Exception ex)
+                                                   {
+                                                       tcs.TrySetException(ex);
+                                                   }
+                                               }
+                                           });
+
+                var realmPath = $"/{alice.Identity}/testPermission";
+                var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+                EnsureRealmExists(alice, realmUrl);
+
+                await CreateChange(alice, bob.Identity, realmUrl);
+                var permission = await tcs.Task;
+
+                Assert.That(permission.UserId, Is.EqualTo(bob.Identity));
+                Assert.That(permission.Path, Is.EqualTo(realmPath));
+                Assert.That(permission.MayRead, Is.True);
+                Assert.That(permission.MayWrite, Is.False);
+                Assert.That(permission.MayManage, Is.False);
+
+                token.Dispose();
+                permissionRealm.Dispose();
+            });
+        }
+
         private static async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
         {
             var permissionOffer = await CreateOffer(granter, mayRead, mayWrite, mayManage, realmUrl: realmUrl);
@@ -255,6 +307,11 @@ namespace Tests.Sync
 
             firstRealm.Dispose();
             secondRealm.Dispose();
+        }
+
+        private static Task<PermissionChange> CreateChange(User user, string receiverId, string url = "*", bool mayRead = true, bool mayWrite = false, bool mayManage = false)
+        {
+            return CreatePermissionObject(user, _ => new PermissionChange(receiverId, url, mayRead, mayWrite, mayManage));
         }
 
         private static Task<PermissionOffer> CreateOffer(User user, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null, string realmUrl = null)
