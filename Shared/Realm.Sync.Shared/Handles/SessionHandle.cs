@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync
@@ -42,8 +40,11 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SessionState get_state(SessionHandle session, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_from_realm", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_from_realm(SharedRealmHandle realm, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_path", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_path(SessionHandle session, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_from_path", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_from_path([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_raw_pointer", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_raw_pointer(SessionHandle session);
@@ -93,6 +94,15 @@ namespace Realms.Sync
             return state;
         }
 
+        public string GetPath()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_path(this, buffer, length, out ex);
+            });
+        }
+
         public void RefreshAccessToken(string accessToken, string serverPath)
         {
             NativeException ex;
@@ -131,10 +141,10 @@ namespace Realms.Sync
             NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal);
         }
 
-        public static IntPtr SessionForRealm(SharedRealmHandle realm)
+        public static IntPtr SessionForPath(string path)
         {
             NativeException ex;
-            var ptr = NativeMethods.get_from_realm(realm, out ex);
+            var ptr = NativeMethods.get_from_path(path, (IntPtr)path.Length, out ex);
             ex.ThrowIfNecessary();
             return ptr;
         }

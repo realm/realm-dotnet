@@ -17,14 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
-using System.Json;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
-using Realms.Sync.Exceptions;
+using Realms.Exceptions;
 
 namespace Realms.Sync
 {
@@ -68,6 +63,7 @@ namespace Realms.Sync
             get
             {
                 SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+
                 return SyncUserHandle.GetAllLoggedInUsers()
                                      .Select(handle => new User(handle))
                                      .ToArray();
@@ -91,10 +87,8 @@ namespace Realms.Sync
                 return new User(SyncUserHandle.GetSyncUser(identity, credentials.Token, serverUrl?.AbsoluteUri, isAdmin));
             }
 
-            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToJson(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            var refresh_token = result["refresh_token"];
-
-            return new User(SyncUserHandle.GetSyncUser((string)refresh_token["token_data"]["identity"], (string)refresh_token["token"], serverUrl.AbsoluteUri, false));
+            var result = await AuthenticationHelper.Login(credentials, serverUrl);
+            return new User(SyncUserHandle.GetSyncUser(result.Item1, result.Item2, serverUrl.AbsoluteUri, isAdmin: false));
         }
 
         /// <summary>
@@ -122,12 +116,25 @@ namespace Realms.Sync
             SharedRealmHandleExtensions.ConfigureFileSystem(mode, encryptionKey, resetOnError);
         }
 
+        /// <summary>
+        /// Gets a logged in user with a specified identity.
+        /// </summary>
+        /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
+        /// <param name="identity">The identity of the user.</param>
+        public static User GetLoggedInUser(string identity)
+        {
+            SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+            
+            var handle = SyncUserHandle.GetLoggedInUser(identity);
+            if (handle == null)
+            {
+                return null;
+            }
+
+            return new User(handle);
+        }
+
         #endregion
-
-        private const int ErrorContentTruncationLimit = 256 * 1024;
-
-        private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-        private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
 
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
@@ -203,86 +210,6 @@ namespace Realms.Sync
         public override int GetHashCode()
         {
             return Identity.GetHashCode();
-        }
-
-        // returns a tuple of access token and resolved realm path
-        internal async Task<Tuple<string, string>> RefreshAccessToken(string path)
-        {
-            var json = new JsonObject
-            {
-                ["data"] = RefreshToken,
-                ["path"] = path,
-                ["provider"] = "realm"
-            };
-
-            var result = await MakeAuthRequestAsync(ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            var access_token = result["access_token"];
-            return Tuple.Create((string)access_token["token"], (string)access_token["token_data"]["path"]);
-        }
-
-        private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)
-        {
-            body["app_id"] = string.Empty; // FIXME
-
-            string requestBody;
-            using (var writer = new StringWriter())
-            {
-                body.Save(writer);
-                requestBody = writer.ToString();
-            }
-
-            using (var client = new HttpClient { Timeout = timeout })
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
-                request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-                request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
-                request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
-
-                var response = await client.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
-                if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
-                {
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
-                    {
-                        return JsonValue.Load(stream);
-                    }
-                }
-
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
-                {
-                    if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
-                    {
-                        var problem = JsonValue.Load(stream);
-
-                        var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
-
-                        throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
-                    }
-
-                    var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
-                    throw new HttpException(response.StatusCode, response.ReasonPhrase, content);
-                }
-            }
-        }
-
-        private static string ReadContent(Stream stream, int maxNumberOfCharacters, string prefixIfExceeded)
-        {
-            using (var sr = new StreamReader(stream))
-            {
-                var sb = new StringBuilder();
-
-                int current;
-                while ((current = sr.Read()) > 0)
-                {
-                    sb.Append((char)current);
-                    if (sb.Length > maxNumberOfCharacters - 1)
-                    {
-                        sb.Insert(0, prefixIfExceeded);
-                        break;
-                    }
-                }
-
-                return sb.ToString();
-            }
         }
     }
 }

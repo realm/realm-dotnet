@@ -32,13 +32,13 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 namespace realm {
 namespace binding {
-    void (*s_refresh_access_token_callback)(std::shared_ptr<SyncUser>*, std::shared_ptr<SyncSession>*, const char* path, size_t path_len);
+    void (*s_refresh_access_token_callback)(std::shared_ptr<SyncSession>*);
     void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len);
     void (*s_progress_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 
     void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
     {
-        s_refresh_access_token_callback(new std::shared_ptr<SyncUser>(config.user), new std::shared_ptr<SyncSession>(session), config.realm_url.c_str(), config.realm_url.size());
+        s_refresh_access_token_callback(new std::shared_ptr<SyncSession>(session));
     }
     
     void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error)
@@ -67,10 +67,11 @@ REALM_EXPORT void realm_syncsession_refresh_access_token(SharedSyncSession& sess
     });
 }
 
-REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_realm(const SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_path(const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new SharedSyncSession(SyncManager::shared().get_existing_active_session(realm->config().path));
+        Utf16StringAccessor path(path_buf, path_len);
+        return new SharedSyncSession(SyncManager::shared().get_existing_active_session(path));
     });
 }
 
@@ -107,6 +108,13 @@ REALM_EXPORT size_t realm_syncsession_get_uri(const SharedSyncSession& session, 
     return handle_errors(ex, [&] {
         std::string uri(session->full_realm_url().value_or(session->config().realm_url));
         return stringdata_to_csharpstringbuffer(uri, buffer, buffer_length);
+    });
+}
+    
+REALM_EXPORT size_t realm_syncsession_get_path(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        return stringdata_to_csharpstringbuffer(session->path(), buffer, buffer_length);
     });
 }
     
