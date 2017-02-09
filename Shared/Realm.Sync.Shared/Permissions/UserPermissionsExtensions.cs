@@ -40,21 +40,41 @@ namespace Realms.Sync
         /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
         public static Realm GetManagementRealm(this User user)
         {
-            var managementUriBuilder = new UriBuilder(user.ServerUri);
-            if (managementUriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+            return user.GetSpecialPurposeRealm("__management", 
+                                               typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse));
+        }
+
+        /// <summary>
+        /// Returns an instance of the Permission Realm owned by the user.
+        /// </summary>
+        /// <remarks>
+        /// This Realm can be used to review access permissions for Realms managed by the user
+        /// and to Realms which the user was granted access to by other users.
+        /// </remarks>
+        /// <param name="user">The user whose Permission Realm to get.</param>
+        /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
+        public static Realm GetPermissionRealm(this User user)
+        {
+            return user.GetSpecialPurposeRealm("__permission", typeof(Permission));
+        }
+
+        private static Realm GetSpecialPurposeRealm(this User user, string path, params Type[] objectClasses)
+        {
+            var uriBuilder = new UriBuilder(user.ServerUri);
+            if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
             {
-                managementUriBuilder.Scheme = "realm";
+                uriBuilder.Scheme = "realm";
             }
-            else if (managementUriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+            else if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
-                managementUriBuilder.Scheme = "realms";
+                uriBuilder.Scheme = "realms";
             }
 
-            managementUriBuilder.Path = "/~/__management";
+            uriBuilder.Path = $"/~/{path}";
 
-            var configuration = new SyncConfiguration(user, managementUriBuilder.Uri)
+            var configuration = new SyncConfiguration(user, uriBuilder.Uri)
             {
-                ObjectClasses = new[] { typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse) }
+                ObjectClasses = objectClasses
             };
 
             return Realm.GetInstance(configuration);

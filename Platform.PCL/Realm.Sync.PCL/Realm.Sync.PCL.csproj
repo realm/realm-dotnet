@@ -85,6 +85,9 @@
     <Compile Include="Extensions\RealmSyncExtensionsPCL.cs" />
     <Compile Include="Extensions\TestingExtensionsPCL.cs" />
     <Compile Include="Exceptions\ClientResetException.cs" />
+    <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\Permission.cs">
+      <Link>Permissions\Permission.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

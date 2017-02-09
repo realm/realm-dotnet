@@ -42,8 +42,7 @@ namespace Realms.Sync
         /// Gets when the object was updated the last time.
         /// </summary>
         /// <remarks>
-        /// This should be filled by the client with the <see cref="CreatedAt"/>
-        /// date and is updated by the server with the current object when the object is processed.
+        /// This will be updated by the server with the current object when the object is processed.
         /// </remarks>
         /// <value>A <see cref="DateTimeOffset"/> indicating the last time the object has been updated.</value>
         DateTimeOffset UpdatedAt { get; }
