@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -25,7 +24,7 @@ namespace Realms
     // We need to mirror this same relationship here.
     internal class NotificationTokenHandle : RealmHandle
     {
-        private CollectionHandleBase _collectionHandle;
+        private readonly CollectionHandleBase _collectionHandle;
 
         internal NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
         {

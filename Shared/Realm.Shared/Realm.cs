@@ -53,11 +53,14 @@ namespace Realms
 
             NativeCommon.NotifyRealmCallback notifyRealm = RealmState.NotifyRealmChanged;
             NativeCommon.NotifyRealmObjectCallback notifyRealmObject = RealmObject.NotifyRealmObjectPropertyChanged;
+            NativeCommon.FreeGCHandleCallback freeGCHandle = NativeCommon.FreeGCHandle;
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(notifyRealmObject);
+            GCHandle.Alloc(freeGCHandle);
 
             NativeCommon.register_notify_realm_changed(notifyRealm);
             NativeCommon.register_notify_realm_object_changed(notifyRealmObject);
+            NativeCommon.register_free_gc_handle(freeGCHandle);
 
             SynchronizationContextEventLoopSignal.Install();
         }
@@ -342,7 +345,6 @@ namespace Realms
                 return;
             }
 
-            _state.RemoveRealm(this);
             _state = null;
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
@@ -1125,12 +1127,13 @@ namespace Realms
 
             #endregion
 
-            private readonly List<WeakReference> weakRealms = new List<WeakReference>();
+            private readonly List<WeakReference<Realm>> weakRealms = new List<WeakReference<Realm>>();
 
             public readonly GCHandle GCHandle;
 
             public RealmState()
             {
+                // This is Free-d by NativeCommon.FreeGCHandle
                 GCHandle = GCHandle.Alloc(this);
             }
 
@@ -1146,42 +1149,32 @@ namespace Realms
             {
                 // We only want to have each realm once. That should be the case as AddRealm
                 // is only called in the Realm ctor, but let's check just in case.
-                Debug.Assert(weakRealms.All(r => r.Target as Realm != realm), "Trying to add a duplicate Realm to the RealmState.");
-
-                weakRealms.Add(new WeakReference(realm));
-            }
-
-            public void RemoveRealm(Realm realm)
-            {
-                var weakRealm = weakRealms.SingleOrDefault(r => r.Target as Realm == realm);
-                weakRealms.Remove(weakRealm);
-
-                if (!weakRealms.Any())
+                Debug.Assert(!weakRealms.Any(r => 
                 {
-                    realm.SharedRealmHandle.CloseRealm();
-                    GCHandle.Free();
-                }
+                    Realm other;
+                    return r.TryGetTarget(out other) && other == realm;
+                }), "Trying to add a duplicate Realm to the RealmState.");
+
+                weakRealms.Add(new WeakReference<Realm>(realm));
             }
 
             private IEnumerable<Realm> GetLiveRealms()
             {
-                var shouldPurge = false;
-                foreach (var weakRealm in weakRealms)
-                {
-                    if (weakRealm.IsAlive)
-                    {
-                        yield return (Realm)weakRealm.Target;
-                    }
-                    else
-                    { 
-                        shouldPurge = true;
-                    }
-                }
+                var result = new List<Realm>();
 
-                if (shouldPurge)
+                weakRealms.RemoveAll(r =>
                 {
-                    weakRealms.RemoveAll(weak => !weak.IsAlive);
-                }
+                    Realm realm;
+                    if (r.TryGetTarget(out realm))
+                    {
+                        result.Add(realm);
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                return result;
             }
         }
     }
