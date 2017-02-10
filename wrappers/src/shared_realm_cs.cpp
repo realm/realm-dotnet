@@ -37,6 +37,9 @@ NotifyRealmChangedDelegate* notify_realm_changed = nullptr;
 using NotifyRealmObjectChangedDelegate = bool(void* managed_realm_object_handle, size_t property_ndx);
 NotifyRealmObjectChangedDelegate* notify_realm_object_changed = nullptr;
 
+using FreeGCHandleDelegate = void(void* managed_handle);
+FreeGCHandleDelegate* free_gc_handle = nullptr;
+
 namespace realm {
 namespace binding {
     inline size_t get_property_index(const ObjectSchema& schema, const size_t column_index) {
@@ -116,6 +119,11 @@ namespace binding {
             return observer->row_ndx == row_ndx && observer->table_ndx == table_ndx;
         });
     }
+
+    CSharpBindingContext::~CSharpBindingContext()
+    {
+        free_gc_handle(m_managed_state_handle);
+    }
 }
     
 }
@@ -132,7 +140,12 @@ REALM_EXPORT void register_notify_realm_object_changed(NotifyRealmObjectChangedD
 {
     notify_realm_object_changed = notifier;
 }
-    
+
+REALM_EXPORT void realm_install_gchandle_deleter(FreeGCHandleDelegate deleter)
+{
+    free_gc_handle = deleter;
+}
+
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

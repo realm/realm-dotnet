@@ -76,6 +76,8 @@ namespace binding {
         {
             return m_observed_rows;
         }
+
+        ~CSharpBindingContext();
     private:
         void* m_managed_state_handle;
         std::vector<BindingContext::ObserverState> m_observed_rows;
