@@ -5,7 +5,7 @@ After about a year and a half of hard work, we are proud to call this a 1.0 rele
 
 ## Sync
 Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised by adding just a few lines of code.
-You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync)
+You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync).
 
 ## Windows Desktop
 Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Sync does not yet work for Windows, but we are working on it and you can expect support soon.
