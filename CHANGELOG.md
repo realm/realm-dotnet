@@ -1,3 +1,23 @@
+1.0.3 (2017-02-14)
+------------------
+# Out of Beta!
+After about a year and a half of hard work, we are proud to call this a 1.0 release. There is still work to do, but Realm Xamarin is now being used by thousands of developers and has proven reliable.
+
+## Sync
+Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised literally by adding a few lines of configuration code.
+You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync)
+
+## Windows Desktop
+Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. 
+
+### Bug fixes
+ - `[MapTo]` attribute is now considered in queries (#1219)
+ - Crashes in `RealmState.RemoveRealm` have been resolved (#1212)
+ - Update object by primary key on Android has been resolved (#1207)
+ - `WriteAsync` now advances the read transaction (#1192)
+ - Queries on backlinks no longer fail (#1177)
+
+
 0.82.1 (2017-01-27)
 -------------------
 ### Bug fixes
