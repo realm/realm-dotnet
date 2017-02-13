@@ -14,11 +14,11 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
  - `IRealmCollection<T>.ObjectSchema` is deprecated and replaced with `ISchemaSource.ObjectSchema`. (#1216) 
 
 ### Bug fixes
- - `[MapTo]` attribute is now considered in queries (#1219)
- - Letting a Realm be finalized instead of disposing it will no longer lead to crashes (#1212)
- - Unsubscribing from PropertyChanged in a PropertyChanged callback should no longer lead to crashes (#1207)
- - `WriteAsync` now advances the read transaction so the changes made asynchronously will be visible (#1192)
- - Queries on backlink properties should no longer produce unexpected results (#1177)
+ - `[MapTo]` attribute is now respected in queries. (#1219)
+ - Letting a Realm instance be garbage collected instead of disposing it will no longer lead to crashes. (#1212)
+ - Unsubscribing from `RealmObject.PropertyChanged` in a `PropertyChanged` callback should no longer lead to crashes. (#1207)
+ - `WriteAsync` now advances the read transaction so the changes made asynchronously are available immediately in the original thread. (#1192)
+ - Queries on backlink properties should no longer produce unexpected results. (#1177)
 
 
 0.82.1 (2017-01-27)
