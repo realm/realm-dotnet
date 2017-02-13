@@ -47,26 +47,17 @@ namespace Benchmarkr.Realm
 
         public override void RunInTransaction(Action action)
         {
-            using (var transaction = this.realm.BeginWrite())
-            {
-                try
-                {
-                    action();
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                }
-            }
+            this.realm.Write(action);
         }
 
         public override void InsertObject(uint index)
         {
-            var employee = this.realm.CreateObject<Employee>();
-            employee.Name = BenchmarkBase.NameValue(index);
-            employee.Age = Benchmark.AgeValue(index);
-            employee.IsHired = Benchmark.IsHiredValue(index);
+            this.realm.Add(new Employee
+            {
+                Name = BenchmarkBase.NameValue(index),
+                Age = Benchmark.AgeValue(index),
+                IsHired = Benchmark.IsHiredValue(index)
+            });
         }
 
         public override int Count(EmployeeQuery query)
@@ -88,16 +79,11 @@ namespace Benchmarkr.Realm
 
         private IQueryable<Employee> ConvertQuery(EmployeeQuery query)
         {
-            var name = query.Name;
-            var minAge = query.MinAge;
-            var maxAge = query.MaxAge;
-            var isHired = query.IsHired;
-
             return from employee in this.realm.All<Employee>()
-                   where employee.Name.Contains("0") // String methods in Realm queries still support only literals
-                       && employee.Age >= minAge
-                       && employee.Age <= maxAge
-                       && employee.IsHired == isHired
+                   where employee.Name.Contains(query.Name)
+                       && employee.Age >= query.MinAge
+                       && employee.Age <= query.MaxAge
+                       && employee.IsHired == query.IsHired
                    select employee;
         }
     }
