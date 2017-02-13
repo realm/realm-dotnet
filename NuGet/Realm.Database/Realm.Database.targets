@@ -20,6 +20,7 @@
       <SmartLink>True</SmartLink>
       <IsCxx>True</IsCxx>
       <LinkerFlags>-lz</LinkerFlags>
+      <Frameworks>Security</Frameworks>
     </NativeReference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
