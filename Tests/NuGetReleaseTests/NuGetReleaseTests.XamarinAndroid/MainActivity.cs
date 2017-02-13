@@ -22,7 +22,7 @@ using Android.App;
 using Android.OS;
 using Xamarin.Android.NUnitLite;
 
-namespace NuGetReleaseTests.XamarinAndroid
+namespace Tests.XamarinAndroid
 {
     [Activity (Label = "NuGetReleaseTests.XamarinAndroid", MainLauncher = true)]
     public class MainActivity : TestSuiteActivity
