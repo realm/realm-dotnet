@@ -4,7 +4,7 @@
 After about a year and a half of hard work, we are proud to call this a 1.0 release. There is still work to do, but Realm Xamarin is now being used by thousands of developers and has proven reliable.
 
 ## Sync
-Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised literally by adding a few lines of configuration code.
+Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised by adding just a few lines of code.
 You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync)
 
 ## Windows Desktop
@@ -17,7 +17,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
  - `[MapTo]` attribute is now considered in queries (#1219)
  - Letting a Realm be finalized instead of disposing it will no longer lead to crashes (#1212)
  - Unsubscribing from PropertyChanged in a PropertyChanged callback should no longer lead to crashes (#1207)
- - `WriteAsync` now advances the read transaction (#1192)
+ - `WriteAsync` now advances the read transaction so the changes made asynchronously will be reflected (#1192)
  - Queries on backlink properties should no longer produce unexpected results (#1177)
 
 
