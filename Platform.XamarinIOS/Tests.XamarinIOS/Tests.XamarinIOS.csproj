@@ -150,6 +150,7 @@
       <SmartLink>True</SmartLink>
       <IsCxx>True</IsCxx>
       <LinkerFlags>-lz</LinkerFlags>
+      <Frameworks>Security</Frameworks>
     </NativeReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
