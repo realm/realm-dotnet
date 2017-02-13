@@ -8,7 +8,7 @@ Realm Xamarin now works with the Realm Mobile Platform. This means that you can 
 You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync)
 
 ## Windows Desktop
-Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Sync does not yet work for Windows, but we are working on it and you can expect support soon.
+Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Some features are not supported on Windows yet. Most notably, sync does not yet work for Windows, but also encryption and notifications across processes are missing. We are working on it and you can expect support soon.
 
 ### Breaking Changes
  - `IRealmCollection<T>.ObjectSchema` is deprecated and replaced with `ISchemaSource.ObjectSchema`. (#1216) 
@@ -17,7 +17,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
  - `[MapTo]` attribute is now considered in queries (#1219)
  - Letting a Realm be finalized instead of disposing it will no longer lead to crashes (#1212)
  - Unsubscribing from PropertyChanged in a PropertyChanged callback should no longer lead to crashes (#1207)
- - `WriteAsync` now advances the read transaction so the changes made asynchronously will be reflected (#1192)
+ - `WriteAsync` now advances the read transaction so the changes made asynchronously will be visible (#1192)
  - Queries on backlink properties should no longer produce unexpected results (#1177)
 
 
