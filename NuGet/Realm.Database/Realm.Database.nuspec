@@ -6,7 +6,7 @@
     <title>Realm.Database</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
-    <developmentDependency>true</developmentDependency>
+    <developmentDependency>false</developmentDependency>
     <licenseUrl>https://opensource.org/licenses/Apache-2.0</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <iconUrl>http://realm.io/img/favicon-32x32.png</iconUrl>
