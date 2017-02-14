@@ -46,8 +46,6 @@ stage('RealmWeaver') {
       getArchive()
       dir('Weaver/WeaverTests/RealmWeaver.Tests') {
         xbuildSafe("${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
-        sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
-        publishTests 'TestResult.xml'
       }
       deleteDir()
     }
@@ -228,13 +226,7 @@ def nodeWithCleanup(String label, Closure steps) {
 
 def xbuildSafe(String command) {
   try {
-    def buildResult = sh script: command, returnStdout: true
-
-    if (buildResult.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
-      echo "StyleCop crashed. No big deal."
-    } else { 
-      echo buildResult.trim()
-    }
+    sh command
   } catch (err) {
     echo "Error: ${err.getMessage()}"
   }
