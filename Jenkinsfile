@@ -4,8 +4,8 @@ wrapperConfigurations = [
 ]
 configuration = 'Debug'
 
+xbuildCmd = '/usr/local/bin/xbuild'
 def nuget = '/usr/local/bin/nuget'
-def xbuild = '/usr/local/bin/xbuild'
 def mono = '/usr/local/bin/mono'
 
 def version
@@ -45,7 +45,7 @@ stage('RealmWeaver') {
     for (int i = 0; i < 100; i++) {
       getArchive()
       dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-        xbuildSafe("${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
+        xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}");
       }
       deleteDir()
     }
@@ -224,10 +224,17 @@ def nodeWithCleanup(String label, Closure steps) {
   }
 }
 
-def xbuildSafe(String command) {
+def xbuild(String arguments) {
   try {
-    sh "${command} 2> >(while read line; do echo -e \"[STDError]\$line\" >&2; done)"
+    sh "${xbuildCmd} ${arguments} 2> xbuildError"
   } catch (err) {
     echo "Error: ${err.getMessage()}"
+    def stdErr = readFile 'xbuildError'
+    if (stdErr.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
+      echo "StyleCop crashed, no big deal."
+      throw err
+    } else {
+      throw err
+    }
   }
 }

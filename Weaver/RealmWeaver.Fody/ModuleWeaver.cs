@@ -127,8 +127,6 @@ public class ModuleWeaver
         "MapToAttribute",
     };
 
-    BUILD_SHOULD_FAIL
-
     private RealmWeaver.ImportedReferences _references;
 
     private IEnumerable<TypeDefinition> GetMatchingTypes()
