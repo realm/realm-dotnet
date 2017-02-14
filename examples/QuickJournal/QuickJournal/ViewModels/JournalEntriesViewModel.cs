@@ -35,11 +35,14 @@ namespace QuickJournal
         private void AddEntry()
         {
             var transaction = _realm.BeginWrite();
-            var entry = _realm.CreateObject<JournalEntry>();
-            var metadata = _realm.CreateObject<EntryMetadata>();
-            metadata.Date = DateTimeOffset.Now;
-            metadata.Author = AuthorName;
-            entry.Metadata = metadata;
+            var entry = _realm.Add(new JournalEntry
+            {
+                Metadata = new EntryMetadata
+                {
+                    Date = DateTimeOffset.Now,
+                    Author = AuthorName
+                }
+            });
 
             var page = new JournalEntryDetailsPage(new JournalEntryDetailsViewModel(entry, transaction));
 

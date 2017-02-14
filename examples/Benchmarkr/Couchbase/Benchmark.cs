@@ -34,6 +34,11 @@ namespace Benchmarkr.Couchbase
             }
         }
 
+        static Benchmark()
+        {
+            global::Couchbase.Lite.Storage.ForestDB.Plugin.Register();
+        }
+
         private Database db;
         public override IDisposable OpenDB()
         {

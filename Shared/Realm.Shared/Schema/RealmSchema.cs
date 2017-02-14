@@ -136,6 +136,7 @@ namespace Realms.Schema
                                               #endif
                                               // exclude the Realm assembly
                                               .Where(a => a != typeof(Realm).Assembly)
+                                              .Where(a => !a.GetName().Name.StartsWith("Xamarin.Interactive"))
                                               .SelectMany(a => a.GetTypes())
                                               .Where(t => t.IsSubclassOf(typeof(RealmObject)))
                                               .Where(t => t.GetCustomAttributes(typeof(ExplicitAttribute), false).Length == 0);

@@ -1,3 +1,26 @@
+1.0.3 (2017-02-14)
+------------------
+# Out of Beta!
+After about a year and a half of hard work, we are proud to call this a 1.0 release. There is still work to do, but Realm Xamarin is now being used by thousands of developers and has proven reliable.
+
+## Sync
+Realm Xamarin now works with the Realm Mobile Platform. This means that you can write Xamarin apps that synchronize seamlessly with a Realm Object Server, allowing you to write complex apps with Xamarin that are offline-first and automatically synchronised by adding just a few lines of code.
+You can read about this in the [documentation](https://realm.io/docs/xamarin/latest/#sync).
+
+## Windows Desktop
+Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Some features are not supported on Windows yet. Most notably, sync does not yet work for Windows, but also encryption and notifications across processes are missing. We are working on it and you can expect support soon.
+
+### Breaking Changes
+ - `IRealmCollection<T>.ObjectSchema` is deprecated and replaced with `ISchemaSource.ObjectSchema`. (#1216) 
+
+### Bug fixes
+ - `[MapTo]` attribute is now respected in queries. (#1219)
+ - Letting a Realm instance be garbage collected instead of disposing it will no longer lead to crashes. (#1212)
+ - Unsubscribing from `RealmObject.PropertyChanged` in a `PropertyChanged` callback should no longer lead to crashes. (#1207)
+ - `WriteAsync` now advances the read transaction so the changes made asynchronously are available immediately in the original thread. (#1192)
+ - Queries on backlink properties should no longer produce unexpected results. (#1177)
+
+
 0.82.1 (2017-01-27)
 -------------------
 ### Bug fixes
