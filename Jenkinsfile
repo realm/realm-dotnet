@@ -226,7 +226,7 @@ def nodeWithCleanup(String label, Closure steps) {
 
 def xbuildSafe(String command) {
   try {
-    sh command
+    sh "${command} 2> >(while read line; do echo -e \"[STDError]\$line\" >&2; done)"
   } catch (err) {
     echo "Error: ${err.getMessage()}"
   }
