@@ -388,19 +388,14 @@ def nodeWithCleanup(String label, Closure steps) {
 }
 
 def xbuild(String arguments) {
-  try {
-    sh "${xbuildCmd} ${arguments} 1> xbuildOutput"
-    def stdOut = readFile 'xbuildOutput'
-
-    echo stdOut
-  } catch (err) {
-    def stdOut = readFile 'xbuildOutput'
-    echo stdOut
-
+  def exitCode = sh returnStatus: true, script: "${xbuildCmd} ${arguments} > xbuildOutput"
+  def out = readFile('xbuildOutput')
+  echo out
+  if (exitCode != 0) {
     if (stdOut.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
-      echo "StyleCop crashed, no big deal."
+      echo 'StyleCop crashed, no big deal.'
     } else {
-      throw err
+      error("xbuild failed with exit code: ${exitCode}")
     }
   }
 }
