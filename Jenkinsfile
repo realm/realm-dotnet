@@ -12,7 +12,7 @@ def version
 def versionString
 
 stage('Checkout') {
-  node('xamarin-mac') {
+  node('macos && xamarin') {
     checkout([
         $class: 'GitSCM',
         branches: scm.branches,
@@ -39,7 +39,7 @@ def getArchive() {
 }
 
 stage('RealmWeaver') {
-  nodeWithCleanup('xamarin-mac') {
+  nodeWithCleanup('macos && xamarin') {
     getArchive()
     def workspace = pwd()
 
@@ -65,7 +65,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
@@ -80,7 +80,7 @@ stage('Build without sync') {
       }
     },
     'Android': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         dir('wrappers') {
@@ -91,7 +91,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
@@ -122,7 +122,7 @@ stage('Build without sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         sh "${nuget} restore Realm.sln"
         xbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
@@ -144,7 +144,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'ios-wrappers-sync'
@@ -161,7 +161,7 @@ stage('Build with sync') {
       }
     },
     'Android': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         dir('wrappers') {
@@ -172,7 +172,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
@@ -191,7 +191,7 @@ stage('Build with sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         sh "${nuget} restore Realm.sln"
         xbuild("Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
@@ -321,7 +321,7 @@ def stopLogCatCollector(String backgroundPid, boolean archiveLog, String archive
 stage('NuGet') {
   parallel(
     'Realm.Database': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'nuget-weaver'
@@ -340,7 +340,7 @@ stage('NuGet') {
       }
     },
     'Realm': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'nuget-pcl-sync'
