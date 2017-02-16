@@ -206,3 +206,5 @@ wrappers/libs-dbg
 *.xam
 Resource.designer.cs
 *.gz
+Mono.Cecil.dll
+Realm.BuildTasks.dll

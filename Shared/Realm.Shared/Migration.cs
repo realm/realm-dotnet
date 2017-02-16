@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -83,9 +84,7 @@ namespace Realms
             return true;
         }
 
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(Native.MigrationCallback))]
-#endif
+        [NativeCallback(typeof(MigrationCallback))]
         private static bool MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);

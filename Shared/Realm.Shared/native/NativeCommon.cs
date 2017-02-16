@@ -22,10 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-
-#if __IOS__
-using ObjCRuntime;
-#endif
+using Realms.Native;
 
 namespace Realms
 {
@@ -46,9 +43,7 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
 
-#if __IOS__
-        [MonoPInvokeCallback(typeof(DebugLoggerCallback))]
-#endif
+        [NativeCallback(typeof(DebugLoggerCallback))]
         private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
         {
             var message = new string((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8);
@@ -95,9 +90,7 @@ namespace Realms
             install_gchandle_deleter(gchandleDeleter);
         }
 
-#if __IOS__
-        [MonoPInvokeCallback(typeof(NativeCommon.FreeGCHandleCallback))]
-#endif
+        [NativeCallback(typeof(FreeGCHandleCallback))]
         public static void FreeGCHandle(IntPtr handle)
         {
             if (handle != IntPtr.Zero)

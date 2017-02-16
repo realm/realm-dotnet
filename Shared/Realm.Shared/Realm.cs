@@ -27,9 +27,6 @@ using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-#if __IOS__
-using ObjCRuntime;
-#endif
 using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
@@ -1073,7 +1070,7 @@ namespace Realms
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm.</exception>
         [Obsolete("This method has been renamed. Use Add for the same results.")]
         public void Manage<T>(T obj, bool update = false) where T : RealmObject
         {
@@ -1119,9 +1116,7 @@ namespace Realms
         {
             #region static
 
-            #if __IOS__
-            [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
-            #endif
+            [NativeCallback(typeof(NativeCommon.NotifyRealmCallback))]
             public static void NotifyRealmChanged(IntPtr stateHandle)
             {
                 var gch = GCHandle.FromIntPtr(stateHandle);
