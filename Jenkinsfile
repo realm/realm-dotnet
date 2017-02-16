@@ -4,8 +4,8 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
+xbuildCmd = '/usr/local/bin/xbuild'
 def nuget = '/usr/local/bin/nuget'
-def xbuild = '/usr/local/bin/xbuild'
 def mono = '/usr/local/bin/mono'
 
 def version
@@ -44,10 +44,11 @@ stage('RealmWeaver') {
     def workspace = pwd()
 
     dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-      xbuildSafe("${xbuild} RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
+      xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}");
       sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
       publishTests 'TestResult.xml'
     }
+
     stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
   }
 }
@@ -69,7 +70,7 @@ stage('Build without sync') {
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
 
-        xbuildSafe("${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
 
@@ -97,7 +98,7 @@ stage('Build without sync') {
         unstash 'android-wrappers-nosync'
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
-          xbuildSafe("${xbuild} Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+          xbuild("Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
           }
@@ -124,7 +125,7 @@ stage('Build without sync') {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
         sh "${nuget} restore Realm.sln"
-        xbuildSafe("${xbuild} Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
+        xbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
       }
     }
@@ -150,7 +151,7 @@ stage('Build with sync') {
 
         sh "${nuget} restore Realm.sln"
 
-        xbuildSafe("${xbuild} Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
 
@@ -180,7 +181,7 @@ stage('Build with sync') {
         sh "${nuget} restore Realm.sln"
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
-          xbuildSafe("${xbuild} Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+          xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
@@ -193,7 +194,7 @@ stage('Build with sync') {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
         sh "${nuget} restore Realm.sln"
-        xbuildSafe("${xbuild} Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
+        xbuild("Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
     }
@@ -207,6 +208,7 @@ stage('Test without sync') {
     'Win32': Win32Test('win32-tests-nosync')
   )
 }
+
 
 stage('Test with sync') {
   parallel(
@@ -385,14 +387,15 @@ def nodeWithCleanup(String label, Closure steps) {
   }
 }
 
-def xbuildSafe(String command) {
-  try {
-    sh "${command}"
-  } catch (err) {
-    if (err.getMessage().contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
-      echo "StyleCop crashed. No big deal."
+def xbuild(String arguments) {
+  def exitCode = sh returnStatus: true, script: "${xbuildCmd} ${arguments} > xbuildOutput"
+  def out = readFile('xbuildOutput')
+  echo out
+  if (exitCode != 0) {
+    if (stdOut.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
+      echo 'StyleCop crashed, no big deal.'
     } else {
-      throw err
+      error("xbuild failed with exit code: ${exitCode}")
     }
   }
 }
