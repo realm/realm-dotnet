@@ -70,7 +70,7 @@ stage('Weavers') {
 stage('Build without sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('osx') {
         getArchive()
 
         dir('wrappers') {
@@ -150,7 +150,7 @@ stage('Build without sync') {
 stage('Build with sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('osx') {
         getArchive()
 
         dir('wrappers') {
@@ -259,7 +259,7 @@ def Win32Test(stashName) {
 
 def iOSTest(stashName) {
   return {
-    nodeWithCleanup('xamarin-mac') {
+    nodeWithCleanup('osx') {
       unstash stashName
 
       dir('Tests.XamarinIOS.app') {
