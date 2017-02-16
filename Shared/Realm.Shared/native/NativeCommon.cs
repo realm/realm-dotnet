@@ -90,9 +90,7 @@ namespace Realms
             install_gchandle_deleter(gchandleDeleter);
         }
 
-#if __IOS__
-        [MonoPInvokeCallback(typeof(NativeCommon.FreeGCHandleCallback))]
-#endif
+        [NativeCallback(typeof(FreeGCHandleCallback))]
         public static void FreeGCHandle(IntPtr handle)
         {
             if (handle != IntPtr.Zero)

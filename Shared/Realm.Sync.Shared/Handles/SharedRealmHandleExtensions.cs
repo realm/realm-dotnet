@@ -141,18 +141,14 @@ namespace Realms.Sync
             return result;
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
-        #endif
+        [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         private static unsafe void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
             var session = Session.Create(sessionHandlePtr);
             AuthenticationHelper.RefreshAccessToken(session).ContinueWith(_ => session.Handle.Dispose());
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        #endif
+        [NativeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, sbyte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
             var session = Session.Create(sessionHandlePtr);
@@ -180,9 +176,7 @@ namespace Realms.Sync
                              .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
-        #endif
+        [NativeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
             var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;

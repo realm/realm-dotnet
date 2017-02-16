@@ -1116,9 +1116,7 @@ namespace Realms
         {
             #region static
 
-            #if __IOS__
             [NativeCallback(typeof(NativeCommon.NotifyRealmCallback))]
-            #endif
             public static void NotifyRealmChanged(IntPtr stateHandle)
             {
                 var gch = GCHandle.FromIntPtr(stateHandle);
