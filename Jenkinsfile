@@ -392,7 +392,7 @@ def xbuild(String arguments) {
   def out = readFile('xbuildOutput')
   echo out
   if (exitCode != 0) {
-    if (stdOut.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
+    if (out.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
       echo 'StyleCop crashed, no big deal.'
     } else {
       error("xbuild failed with exit code: ${exitCode}")
