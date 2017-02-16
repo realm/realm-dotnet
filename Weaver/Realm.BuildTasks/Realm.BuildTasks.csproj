@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{584C7D67-7FFF-478F-81C2-615545294A51}</ProjectGuid>
+    <ProjectGuid>{9C1A39EB-953B-4732-8E14-0238E2C88A1F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>RealmBuildTasks</RootNamespace>
     <AssemblyName>Realm.BuildTasks</AssemblyName>
