@@ -4,9 +4,9 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
-xbuildCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/xbuild'
-def nuget = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
-def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
+xbuildCmd = "${env.MONO_TOOLS_ROOT}/xbuild"
+def nuget = "${env.MONO_TOOLS_ROOT}/nuget"
+def mono = "${env.MONO_TOOLS_ROOT}/mono"
 
 def version
 def versionString
@@ -84,9 +84,7 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-          }
+          sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
         }
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
@@ -165,9 +163,7 @@ stage('Build with sync') {
         getArchive()
 
         dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]}"
-          }
+          sh "make android${wrapperConfigurations[configuration]}"
         }
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
