@@ -25,9 +25,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-#if __IOS__
-using ObjCRuntime;
-#endif
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -40,9 +38,7 @@ namespace Realms
     {
         #region static
 
-        #if __IOS__
-        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
-        #endif
+        [NativeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
         internal static bool NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
         {
             var gch = GCHandle.FromIntPtr(realmObjectHandle);

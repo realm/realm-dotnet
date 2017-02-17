@@ -2,7 +2,7 @@ wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
 ]
-configuration = 'Release'
+configuration = 'Debug'
 
 def version
 def versionString
@@ -34,19 +34,33 @@ def getArchive() {
     unstash 'dotnet-source'
 }
 
-stage('RealmWeaver') {
-  nodeWithCleanup('macos && xamarin') {
-    getArchive()
-    def workspace = pwd()
+stage('Weavers') {
+  parallel(
+    'RealmWeaver': {
+      nodeWithCleanup('macos && xamarin') {
+        getArchive()
+        def workspace = pwd()
 
-    dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-      xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}");
-      sh "${env.MONO_TOOLS_ROOT}/mono \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
-      publishTests 'TestResult.xml'
+        dir('Weaver/WeaverTests/RealmWeaver.Tests') {
+          xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
+          sh "${env.MONO_TOOLS_ROOT}/mono \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          publishTests 'TestResult.xml'
+        }
+        stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
+      }
+    },
+    'BuildTasks': {
+      nodeWithCleanup('macos && xamarin') {
+        getArchive()
+        def workspace = pwd()
+
+        dir('Weaver/Realm.BuildTasks') {
+          xbuild("Realm.BuildTasks.csproj /p:Configuration=${configuration}")
+        }
+        stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'buildtasks-output'
+      }
     }
-
-    stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
-  }
+  )
 }
 
 stage('Build without sync') {
@@ -65,6 +79,7 @@ stage('Build without sync') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
+        unstash 'buildtasks-output'
 
         xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
@@ -142,6 +157,7 @@ stage('Build with sync') {
         getArchive()
 
         unstash 'ios-wrappers-sync'
+        unstash 'buildtasks-output'
 
         sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
@@ -317,6 +333,7 @@ stage('NuGet') {
         getArchive()
 
         unstash 'nuget-weaver'
+        unstash 'buildtasks-output'
         unstash 'nuget-pcl-database'
         unstash 'ios-wrappers-nosync'
         unstash 'nuget-ios-database'

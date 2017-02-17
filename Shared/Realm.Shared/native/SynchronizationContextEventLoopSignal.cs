@@ -22,6 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Native;
 
 namespace Realms
 {
@@ -74,9 +75,7 @@ namespace Realms
             }
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(get_eventloop))]
-        #endif
+        [NativeCallback(typeof(get_eventloop))]
         private static IntPtr GetCurrentSynchronizationContext()
         {
             var context = SynchronizationContext.Current;
@@ -88,9 +87,7 @@ namespace Realms
             return GCHandle.ToIntPtr(GCHandle.Alloc(new EventLoop(context)));
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(post_on_event_loop))]
-        #endif
+        [NativeCallback(typeof(post_on_event_loop))]
         private static void PostOnSynchronizationContext(IntPtr eventloop, EventLoopPostHandler callback, IntPtr user_data)
         {
             if (eventloop != IntPtr.Zero)
@@ -100,9 +97,7 @@ namespace Realms
             }
         }
 
-        #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(release_eventloop))]
-        #endif
+        [NativeCallback(typeof(release_eventloop))]
         private static void ReleaseSynchronizationContext(IntPtr eventloop)
         {
             if (eventloop != IntPtr.Zero)

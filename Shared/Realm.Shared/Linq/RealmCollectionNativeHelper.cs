@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -30,9 +31,7 @@ namespace Realms
 
         internal static readonly CollectionHandleBase.NotificationCallbackDelegate NotificationCallback = NotificationCallbackImpl;
 
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(CollectionHandleBase.NotificationCallbackDelegate))]
-#endif
+        [NativeCallback(typeof(CollectionHandleBase.NotificationCallbackDelegate))]
         private static void NotificationCallbackImpl(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
