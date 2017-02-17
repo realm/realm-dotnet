@@ -27,6 +27,7 @@
 #include <list>
 #include "shared_realm_cs.hpp"
 #include "object-store/src/binding_context.hpp"
+#include <unordered_set>
 
 using namespace realm;
 using namespace realm::binding;
@@ -52,29 +53,31 @@ namespace binding {
         
         return -1;
     }
-
-    inline void notify_and_remove_if_needed(CSharpBindingContext* context, void* managed_realm_object_handle, size_t property_ndx)
-    {
-        auto object_alive = notify_realm_object_changed(managed_realm_object_handle, property_ndx);
-        if (!object_alive) {
-            context->remove_observed_row(managed_realm_object_handle);
-        }
-    }
     
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
     
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
+        std::unordered_set<void*> toRemove;
+
         for (auto const& o : observed) {
             for (auto const& change : o.changes) {
                 if (change.kind == CSharpBindingContext::ColumnInfo::Kind::Set) {
                     auto const& observed_object_details = static_cast<ObservedObjectDetails*>(o.info);
-                    notify_and_remove_if_needed(this, observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index));
+                    
+                    if (toRemove.find(observed_object_details->managed_object_handle) != toRemove.end() &&
+                        !notify_realm_object_changed(observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index))) {
+                        toRemove.insert(observed_object_details->managed_object_handle);
+                    }
                 }
             }
         }
         
         for (auto const& o : invalidated) {
+            remove_observed_row(o);
+        }
+        
+        for (auto const& o : toRemove) {
             remove_observed_row(o);
         }
         
@@ -108,8 +111,16 @@ namespace binding {
             }
         }
         
+        std::unordered_set<void*> toRemove;
         for (void* handle : toNotify) {
-            notify_and_remove_if_needed(this, handle, property_index);
+            if (toRemove.find(handle) != toRemove.end() &&
+                !notify_realm_object_changed(handle, property_index)) {
+                toRemove.insert(handle);
+            }
+        }
+        
+        for (auto const& o : toRemove) {
+            remove_observed_row(o);
         }
     }
     
