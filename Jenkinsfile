@@ -4,9 +4,9 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
-xbuildCmd = '/usr/local/bin/xbuild'
-def nuget = '/usr/local/bin/nuget'
-def mono = '/usr/local/bin/mono'
+xbuildCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/xbuild'
+def nuget = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
+def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
 
 def version
 def versionString
