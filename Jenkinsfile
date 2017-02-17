@@ -4,10 +4,6 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
-xbuildCmd = "${env.MONO_TOOLS_ROOT}/xbuild"
-def nuget = "${env.MONO_TOOLS_ROOT}/nuget"
-def mono = "${env.MONO_TOOLS_ROOT}/mono"
-
 def version
 def versionString
 
@@ -27,7 +23,7 @@ stage('Checkout') {
       version = readAssemblyVersion()
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
-      sh "${nuget} restore Realm.sln"
+      sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
       stash includes: '**', name: 'dotnet-source'
       deleteDir()
@@ -45,7 +41,7 @@ stage('RealmWeaver') {
 
     dir('Weaver/WeaverTests/RealmWeaver.Tests') {
       xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}");
-      sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+      sh "${env.MONO_TOOLS_ROOT}/mono \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
       publishTests 'TestResult.xml'
     }
 
@@ -122,7 +118,7 @@ stage('Build without sync') {
     'PCL': {
       nodeWithCleanup('macos && xamarin') {
         getArchive()
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
         xbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
       }
@@ -147,7 +143,7 @@ stage('Build with sync') {
 
         unstash 'ios-wrappers-sync'
 
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
         xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
@@ -174,7 +170,7 @@ stage('Build with sync') {
 
         unstash 'android-wrappers-sync'
 
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
@@ -189,7 +185,7 @@ stage('Build with sync') {
     'PCL': {
       nodeWithCleanup('macos && xamarin') {
         getArchive()
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
         xbuild("Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
@@ -330,7 +326,7 @@ stage('NuGet') {
         unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
-          sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          sh "${env.MONO_TOOLS_ROOT}/nuget pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
           archive "Realm.Database.${versionString}.nupkg"
         }
       }
@@ -346,7 +342,7 @@ stage('NuGet') {
         unstash 'nuget-android-sync'
 
         dir('NuGet/Realm') {
-          sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          sh "${env.MONO_TOOLS_ROOT}/nuget pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
           archive "Realm.${versionString}.nupkg"
         }
       }
@@ -384,7 +380,7 @@ def nodeWithCleanup(String label, Closure steps) {
 }
 
 def xbuild(String arguments) {
-  def exitCode = sh returnStatus: true, script: "${xbuildCmd} ${arguments} > xbuildOutput"
+  def exitCode = sh returnStatus: true, script: "${env.MONO_TOOLS_ROOT}/xbuild ${arguments} > xbuildOutput"
   def out = readFile('xbuildOutput')
   echo out
   if (exitCode != 0) {
