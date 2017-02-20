@@ -5,6 +5,9 @@
 *.xml     -text 
 *.targets -text
 
+# Changelog entries should be union-ed
+CHANGELOG.md merge=union
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 *.sln    merge=union
