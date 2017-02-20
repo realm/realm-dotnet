@@ -65,7 +65,7 @@ namespace binding {
                 if (change.kind == CSharpBindingContext::ColumnInfo::Kind::Set) {
                     auto const& observed_object_details = static_cast<ObservedObjectDetails*>(o.info);
                     
-                    if (toRemove.find(observed_object_details->managed_object_handle) != toRemove.end() &&
+                    if (toRemove.find(observed_object_details->managed_object_handle) == toRemove.end() &&
                         !notify_realm_object_changed(observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index))) {
                         toRemove.insert(observed_object_details->managed_object_handle);
                     }
@@ -113,7 +113,7 @@ namespace binding {
         
         std::unordered_set<void*> toRemove;
         for (void* handle : toNotify) {
-            if (toRemove.find(handle) != toRemove.end() &&
+            if (toRemove.find(handle) == toRemove.end() &&
                 !notify_realm_object_changed(handle, property_index)) {
                 toRemove.insert(handle);
             }
