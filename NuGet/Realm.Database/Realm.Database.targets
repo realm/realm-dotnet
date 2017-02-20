@@ -3,10 +3,16 @@
   <UsingTask
     TaskName="RealmBuildTasks.WeaveRealmAssembly"
     AssemblyFile="$(MSBuildThisFileDirectory)../tools/Realm.BuildTasks.dll" />
-  <Target 
+  <Target
     Name="WeaveRealmAssemblyTarget" 
     AfterTargets="AfterCompile"
+    BeforeTargets="DeployOutputFiles"
     Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
+    <ItemGroup>
+      <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
+      <ReferencePath Remove="@(FilteredReferences)" />
+      <ReferenceCopyLocalPaths Remove="@(FilteredReferences)" />
+    </ItemGroup>
     <RealmBuildTasks.WeaveRealmAssembly 
       OutputDirectory="$(ProjectDir)$(OutputPath)"
       AssemblyName="$(AssemblyName)"
