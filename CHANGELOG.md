@@ -4,6 +4,7 @@
 ### Bug fixes
 
 - The `Realm` NuGet package no longer clobbers the path to Win32 native binaries in `Realm.Database`. (#1239)
+- Fixed a bug where garbage collecting an object with `PropertyChanged` subscribers would cause crashes. (#1237)
 
 1.0.3 (2017-02-14)
 ------------------
