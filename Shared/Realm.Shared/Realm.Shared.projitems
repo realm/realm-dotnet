@@ -96,6 +96,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ISchemaSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ErrorMessages.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeCallbackAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InteropConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

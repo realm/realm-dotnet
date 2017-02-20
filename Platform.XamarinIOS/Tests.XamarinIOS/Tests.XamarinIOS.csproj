@@ -157,6 +157,7 @@
   <UsingTask 
 		TaskName="RealmBuildTasks.WeaveRealmAssembly"
 		AssemblyFile="$(SolutionDir)Weaver\Realm.BuildTasks\bin\$(Configuration)\Realm.BuildTasks.dll" />
+		AssemblyFile="$(SolutionDir)Tools/Realm.BuildTasks.dll" />
   <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile">
     <RealmBuildTasks.WeaveRealmAssembly 
 			OutputDirectory="$(ProjectDir)$(OutputPath)" 

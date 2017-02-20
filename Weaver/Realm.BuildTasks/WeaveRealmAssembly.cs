@@ -29,6 +29,8 @@ namespace RealmBuildTasks
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public class WeaveRealmAssembly : Task
     {
+        private const string NativeCallbackAttribute = "NativeCallbackAttribute";
+
         [Required]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public string OutputDirectory { get; set; }
@@ -66,22 +68,32 @@ namespace RealmBuildTasks
                 return;
             }
 
-            var targetFramework = currentAssembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
+            var targetFramework = currentAssembly.GetAttribute(typeof(TargetFrameworkAttribute).Name);
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
+
+            var hasWovenChanges = false;
             switch (frameworkName.Identifier)
             {
                 case "Xamarin.iOS":
-                    WeaveiOSAssembly(currentAssembly, assemblyToWeave);
+                    WeaveMonoPInvoke(currentAssembly.MainModule, assemblyToWeave);
+                    WeaveDllImport(assemblyToWeave, "__Internal");
+                    hasWovenChanges = true;
                     break;
+            }
+
+            if (hasWovenChanges)
+            {
+                assemblyToWeave.Write(assemblyToWeave.MainModule.FullyQualifiedName);
+                LogDebug($"Woven {assemblyToWeave.Name} for {frameworkName.Identifier}");
             }
         }
 
-        private void WeaveiOSAssembly(AssemblyDefinition currentAssembly, AssemblyDefinition assemblyToWeave)
+        private void WeaveMonoPInvoke(ModuleDefinition mainModule, AssemblyDefinition assemblyToWeave)
         {
-            var xamariniOSAssemlby = currentAssembly.MainModule.AssemblyReferences.Single(r => r.Name == "Xamarin.iOS");
-            var monoPInvokeCallbackAttribute = new TypeReference("ObjCRuntime", "MonoPInvokeCallbackAttribute", currentAssembly.MainModule, xamariniOSAssemlby);
-            var system_Type = new TypeReference("System", "Type", currentAssembly.MainModule, currentAssembly.MainModule.TypeSystem.CoreLibrary);
-            var monoPInvokeAttribute_Constructor = new MethodReference(".ctor", currentAssembly.MainModule.TypeSystem.Void, monoPInvokeCallbackAttribute)
+            var xamariniOSAssemlby = mainModule.AssemblyReferences.Single(r => r.Name == "Xamarin.iOS");
+            var monoPInvokeCallbackAttribute = new TypeReference("ObjCRuntime", "MonoPInvokeCallbackAttribute", mainModule, xamariniOSAssemlby);
+            var system_Type = new TypeReference("System", "Type", mainModule, mainModule.TypeSystem.CoreLibrary);
+            var monoPInvokeAttribute_Constructor = new MethodReference(".ctor", mainModule.TypeSystem.Void, monoPInvokeCallbackAttribute)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(system_Type) }
@@ -90,22 +102,27 @@ namespace RealmBuildTasks
             var monoPInvokeAttribute_ConstructorRef = assemblyToWeave.MainModule.ImportReference(monoPInvokeAttribute_Constructor);
 
             var classes = assemblyToWeave.MainModule.GetTypes();
-            var callbackMethods = classes.Select(c => c.Methods.Where(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "NativeCallbackAttribute")))
+            var callbackMethods = classes.Select(c => c.Methods.Where(m => m.HasAttribute(NativeCallbackAttribute)))
                                          .SelectMany(m => m);
 
             foreach (var method in callbackMethods)
             {
-                var nativeCallbackAttribute = method.CustomAttributes.Single(a => a.AttributeType.Name == "NativeCallbackAttribute");
+                var nativeCallbackAttribute = method.GetAttribute(NativeCallbackAttribute);
                 var actualNativeCallbackAttribute = new CustomAttribute(monoPInvokeAttribute_ConstructorRef);
                 actualNativeCallbackAttribute.ConstructorArguments.Add(nativeCallbackAttribute.ConstructorArguments[0]);
 
                 method.CustomAttributes.Add(actualNativeCallbackAttribute);
                 method.CustomAttributes.Remove(nativeCallbackAttribute);
             }
+        }
 
-            assemblyToWeave.Write(assemblyToWeave.MainModule.FullyQualifiedName);
-
-            LogDebug($"Woven {assemblyToWeave.Name} for Xamarin.iOS");
+        private void WeaveDllImport(AssemblyDefinition assemblyToWeave, string dllName)
+        {
+            var dllImportModule = assemblyToWeave.MainModule.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
+            if (dllImportModule != null)
+            {
+                dllImportModule.Name = dllName;
+            }
         }
 
         private void LogDebug(string message)
