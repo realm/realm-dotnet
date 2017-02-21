@@ -41,7 +41,9 @@ namespace Tests.Sync
             }
         }
 
+        #if !ROS_SETUP
         [NUnit.Framework.Explicit]
+        #endif
         [TestCaseSource(nameof(MergeTestCases))]
         public async void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
