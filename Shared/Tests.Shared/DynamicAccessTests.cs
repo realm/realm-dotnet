@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-#if ENABLE_INTERNAL_NON_PCL_TESTS
 
 using System;
 using System.Collections.Generic;
@@ -119,4 +118,3 @@ namespace IntegrationTests
         }
     }
 }
-#endif

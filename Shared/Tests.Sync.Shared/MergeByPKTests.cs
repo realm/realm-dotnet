@@ -41,7 +41,9 @@ namespace Tests.Sync
             }
         }
 
+        #if !ROS_SETUP
         [NUnit.Framework.Explicit]
+        #endif
         [TestCaseSource(nameof(MergeTestCases))]
         public async void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
@@ -64,7 +66,7 @@ namespace Tests.Sync
                     }
                     catch (RealmDuplicatePrimaryKeyValueException)
                     {
-                        // Sync went through too quickly (that's why we do 5 attempts
+                        // Sync went through too quickly (that's why we do 5 attempts)
                     }
 
                     await Task.Delay(500); // A little bit of time for sync
@@ -112,8 +114,8 @@ namespace Tests.Sync
         private static async Task<Realm> GetSyncedRealm(Type objectType)
         {
             var credentials = Credentials.UsernamePassword("z@z", "z", false);
-            var user = await User.LoginAsync(credentials, new Uri("http://localhost:9080"));
-            var configuration = new SyncConfiguration(user, new Uri($"realm://localhost:9080/~/merge_by_pk_{objectType.Name}"))
+            var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+            var configuration = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/merge_by_pk_{objectType.Name}"))
             {
                 ObjectClasses = new[] { objectType }
             };

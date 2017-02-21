@@ -26,7 +26,6 @@ using Realms;
 // unlike the Cocoa definitions, we use Pascal casing for properties
 namespace IntegrationTests
 {
-#if ENABLE_INTERNAL_NON_PCL_TESTS    
     [Preserve(AllMembers = true)]
     public enum DynamicTestObjectType
     {
@@ -322,5 +321,4 @@ namespace IntegrationTests
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
         }
     }
-#endif
 }

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if ENABLE_INTERNAL_NON_PCL_TESTS
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -687,5 +686,3 @@ namespace IntegrationTests
         }
     }
 }
-
-#endif  // #if ENABLE_INTERNAL_NON_PCL_TESTS

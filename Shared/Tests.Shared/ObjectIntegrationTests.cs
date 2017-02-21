@@ -186,15 +186,12 @@ namespace IntegrationTests
             Assert.That(() => p.FirstName = "John", Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
-#if ENABLE_INTERNAL_NON_PCL_TESTS
-
         [Test]
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
             Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
 
-#endif
         [Test]
         public void NonAutomaticPropertiesShouldBeIgnored()
         {

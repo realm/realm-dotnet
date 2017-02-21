@@ -16,7 +16,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
-    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -27,10 +27,10 @@
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
-    <DebugType>full</DebugType>
+    <DebugType></DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
-    <DefineConstants>ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARMv7, ARMv7s, ARM64</MtouchArch>
@@ -42,7 +42,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
-    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>x86_64</MtouchArch>
@@ -54,7 +54,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
-    <DefineConstants>DEBUG;ENABLE_INTERNAL_NON_PCL_TESTS;</DefineConstants>
+    <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>

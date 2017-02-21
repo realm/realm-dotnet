@@ -76,7 +76,10 @@ namespace Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionChange_IsProcessedByServer()
         {
             AsyncContext.Run(async () =>
@@ -87,7 +90,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionOffer_WhenValid_TokenIsSet()
         {
             AsyncContext.Run(async () =>
@@ -99,7 +105,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionOffer_WhenExpired_ShouldGetError()
         {
             AsyncContext.Run(async () =>
@@ -113,7 +122,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionResponse_WhenOfferExpired_ShouldGetError()
         {
             AsyncContext.Run(async () =>
@@ -132,7 +144,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionResponse_WhenTokenIsInvalid_ShouldGetError()
         {
             AsyncContext.Run(async () =>
@@ -145,7 +160,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionResponse_WhenOfferIsValid_ShouldSetRealmUrl()
         {
             AsyncContext.Run(async () =>
@@ -170,7 +188,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void Permission_ValidateWrite()
         {
             AsyncContext.Run(async () =>
@@ -184,7 +205,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void Permission_ValidateManage()
         {
             AsyncContext.Run(async () =>
@@ -203,7 +227,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        #endif
+        [Test]
         public void PermissionChange_UpdatesPermissionRealm()
         {
             AsyncContext.Run(async () =>

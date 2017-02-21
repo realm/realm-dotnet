@@ -126,7 +126,8 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit, Timeout(1000)]
+        [Explicit("Fails with obscure error.")]
+        [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidRefreshToken()
         {
             AsyncContext.Run(async () =>
@@ -156,7 +157,8 @@ namespace Tests.Sync
             });
         }
 
-        [Test, Explicit, Timeout(1000)]
+        [Explicit("Fails with obscure error.")]
+        [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidAccessToken()
         {
             AsyncContext.Run(async () =>
@@ -186,7 +188,9 @@ namespace Tests.Sync
             });
         }
     
+        #if !ROS_SETUP
         [Explicit]
+        #endif
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
