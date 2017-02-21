@@ -16,13 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+using System;
+
+namespace Realms.Native
 {
     /// <summary>
-    /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
+    /// This attribute is replaced with <c>ObjCRuntime.MonoPInvokeCallback</c> on iOS and ignored otherwise.
     /// </summary>
-    internal static class InteropConfig
+    [AttributeUsage(AttributeTargets.Method)]
+    internal class NativeCallbackAttribute : Attribute
     {
-        public const string DLL_NAME = "realm-wrappers";
+        public NativeCallbackAttribute(Type type)
+        {
+        }
     }
 }

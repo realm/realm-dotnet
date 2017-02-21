@@ -1,6 +1,24 @@
 <?xml version="1.0"  encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
+  <UsingTask
+    TaskName="RealmBuildTasks.WeaveRealmAssembly"
+    AssemblyFile="$(MSBuildThisFileDirectory)../tools/Realm.BuildTasks.dll" />
+  <Target
+    Name="WeaveRealmAssemblyTarget" 
+    AfterTargets="AfterCompile"
+    BeforeTargets="DeployOutputFiles"
+    Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
+    <ItemGroup>
+      <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
+      <ReferencePath Remove="@(FilteredReferences)" />
+      <ReferenceCopyLocalPaths Remove="@(FilteredReferences)" />
+    </ItemGroup>
+    <RealmBuildTasks.WeaveRealmAssembly 
+      OutputDirectory="$(ProjectDir)$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
+  </Target>
+  <!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
   <Target Name="CopyRealmWeaver" BeforeTargets="FodyTarget">
     <Message Text="CopyRealmWeaver" />
     <Error 
