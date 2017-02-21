@@ -108,22 +108,12 @@ namespace IntegrationTests
 
         private IRealmObjectHelper GetHelper(RealmObject obj)
         {
-#if ENABLE_INTERNAL_NON_PCL_TESTS
             return obj.ObjectMetadata.Helper;
-#else
-            return GetHelper(obj.GetType());
-#endif
         }
 
         private IRealmObjectHelper GetHelper(Type type)
         {
-#if ENABLE_INTERNAL_NON_PCL_TESTS
             return _realm.Metadata[type.Name].Helper;
-#else
-            var attribute = type.GetCustomAttribute<WovenAttribute>();
-            var helperType = (Type)typeof(WovenAttribute).GetProperty("HelperType", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(attribute);
-            return (IRealmObjectHelper)Activator.CreateInstance(helperType);
-#endif
         }
     }
 }
