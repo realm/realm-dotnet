@@ -66,7 +66,7 @@ namespace Tests.Sync
                     }
                     catch (RealmDuplicatePrimaryKeyValueException)
                     {
-                        // Sync went through too quickly (that's why we do 5 attempts
+                        // Sync went through too quickly (that's why we do 5 attempts)
                     }
 
                     await Task.Delay(500); // A little bit of time for sync

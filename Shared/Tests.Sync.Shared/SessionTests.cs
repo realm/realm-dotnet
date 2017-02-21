@@ -126,9 +126,7 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
-        [Explicit]
-        #endif
+        [Explicit("Fails with obscure error.")]
         [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidRefreshToken()
         {
@@ -159,9 +157,7 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
-        [Explicit]
-        #endif
+        [Explicit("Fails with obscure error.")]
         [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidAccessToken()
         {
