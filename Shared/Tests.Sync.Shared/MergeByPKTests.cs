@@ -114,8 +114,8 @@ namespace Tests.Sync
         private static async Task<Realm> GetSyncedRealm(Type objectType)
         {
             var credentials = Credentials.UsernamePassword("z@z", "z", false);
-            var user = await User.LoginAsync(credentials, new Uri("http://localhost:9080"));
-            var configuration = new SyncConfiguration(user, new Uri($"realm://localhost:9080/~/merge_by_pk_{objectType.Name}"))
+            var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+            var configuration = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/merge_by_pk_{objectType.Name}"))
             {
                 ObjectClasses = new[] { objectType }
             };
