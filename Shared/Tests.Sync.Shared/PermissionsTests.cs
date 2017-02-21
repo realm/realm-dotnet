@@ -76,7 +76,6 @@ namespace Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
         }
 
-
         #if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
         #endif
