@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(NuGetPackageRoot)' == ''">
+    <NuGetPackageRoot>/Users/nikolairinchev/.nuget/packages/</NuGetPackageRoot>
+  </PropertyGroup>
+  <ImportGroup>
+    <Import Project="$(NuGetPackageRoot)stylecop.msbuild/4.7.55/build/StyleCop.MSBuild.Targets" Condition="Exists('$(NuGetPackageRoot)stylecop.msbuild/4.7.55/build/StyleCop.MSBuild.Targets')" />
+  </ImportGroup>
+</Project>
