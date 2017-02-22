@@ -113,16 +113,17 @@
     <Compile Include="UnitTestAppDelegate.cs" />
     <Compile Include="RunLoopTests.cs" />
   </ItemGroup>
+  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
-    <ProjectReference Include="..\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
-      <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
-      <Name>Realm.XamarinIOS</Name>
+    <ProjectReference Include="..\..\Realm\Realm.Sync\Realm.Sync.csproj">
+      <Project>{2015403A-59D2-47F2-8E18-7DF85BB98467}</Project>
+      <Name>Realm.Sync</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj" Condition="'$(RealmNoSync)' != 'true'">
-      <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
-      <Name>Realm.Sync.XamarinIOS</Name>
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
