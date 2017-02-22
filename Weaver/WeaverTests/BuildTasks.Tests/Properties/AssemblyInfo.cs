@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,5 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("BuildTasks")]
-[assembly: InternalsVisibleTo("BuildTasks.Tests")]
+[assembly: AssemblyTitle("BuildTasks.Tests")]
