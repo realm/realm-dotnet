@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using RealmBuildTasks;
@@ -27,20 +28,59 @@ namespace RealmTasks.Tests
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(typeof(Realms.Realm).FullName);
-
             var current = Assembly.GetExecutingAssembly();
 
-            var output = Path.GetDirectoryName(current.Location);
+            var output = CopyTestProject(Path.GetDirectoryName(current.Location));
 
             var task = new WeaveRealmAssembly
             {
                 AssemblyName = "Tests.XamarinIOS",
                 OutputDirectory = output,
-                IntermediateDirectory = Path.GetFullPath(Path.Combine(output, "..", "..", "Assemblies"))
+                IntermediateDirectory = output,
+                LogDebug = Console.WriteLine
             };
 
-            task.Execute();
+            var success = task.Execute();
+            Console.WriteLine($"Task executed. Result: {success}");
+        }
+
+        private static string CopyTestProject(string currentFolder)
+        {
+            var pathSegments = new List<string>
+            {
+                currentFolder
+            };
+
+            for (var i = 0; i < 5; i++)
+            {
+                pathSegments.Add("..");
+            }
+
+            pathSegments.AddRange(new[]
+            {
+                "Tests",
+                "Tests.XamarinIOS",
+                "bin",
+                "iPhoneSimulator",
+                "Debug"
+            });
+
+            var iosTestOutput = Path.GetFullPath(Path.Combine(pathSegments.ToArray()));
+            var outputCopy = Path.Combine(currentFolder, "temp");
+
+            if (Directory.Exists(outputCopy))
+            {
+                Directory.Delete(outputCopy, recursive: true);
+            }
+
+            Directory.CreateDirectory(outputCopy);
+
+            foreach (var file in Directory.EnumerateFiles(iosTestOutput))
+            {
+                File.Copy(file, file.Replace(iosTestOutput, outputCopy));
+            }
+
+            return outputCopy;
         }
     }
 }

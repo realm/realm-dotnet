@@ -50,10 +50,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj">
-      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
-      <Name>Realm</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Realm.BuildTasks\Realm.BuildTasks.csproj">
       <Project>{9C1A39EB-953B-4732-8E14-0238E2C88A1F}</Project>
       <Name>Realm.BuildTasks</Name>

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -33,6 +33,8 @@ namespace RealmBuildTasks
     {
         private const string NativeCallbackAttribute = "NativeCallbackAttribute";
 
+        internal Action<string> LogDebug { get; set; }
+
         [Required]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public string OutputDirectory { get; set; }
@@ -48,34 +50,33 @@ namespace RealmBuildTasks
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public override bool Execute()
         {
-            try
+            if (LogDebug == null)
+            {
+                LogDebug = message => BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                                $"WeaveRealmAssembly: {message}",
+                                string.Empty,
+                                "BuildTasks",
+                                MessageImportance.Normal));
+            }
+
+            AssemblyDefinition currentAssembly;
+            if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
             {
                 AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainAssemblyResolve;
 
-                var path = GetAssemblyPath(AssemblyName, isRealmAssembly: false);
-                if (!File.Exists(path))
-                {
-                    return false;
-                }
+            var resolver = new RealmAssemblyResolver(currentAssembly);
 
-                var currentAssembly = AssemblyDefinition.ReadAssembly(path);
+            WeaveAssembly("Realm", currentAssembly, resolver);
+            WeaveAssembly("Realm.Sync", currentAssembly, resolver);
 
-                WeaveAssembly("Realm", currentAssembly);
-                WeaveAssembly("Realm.Sync", currentAssembly);
-
-                return true;
-            }
-            finally
-            {
-                AppDomain.CurrentDomain.AssemblyResolve -= OnCurrentDomainAssemblyResolve;
-            }
+            return true;
         }
 
-        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
+        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly, IAssemblyResolver resolver)
         {
-            var path = GetAssemblyPath(name);
-
-            if (!File.Exists(path))
+            AssemblyDefinition assemblyToWeave;
+            if (!currentAssembly.MainModule.AssemblyReferences.Any(a => a.Name == name) ||
+                !TryReadAssembly(name, out assemblyToWeave, resolver: resolver))
             {
                 if (currentAssembly.MainModule.AssemblyReferences.Any(r => r.Name == name))
                 {
@@ -152,21 +153,23 @@ namespace RealmBuildTasks
             }
         }
 
-        private void LogDebug(string message)
+        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true, IAssemblyResolver resolver = null)
         {
-            BuildEngine.LogMessageEvent(new BuildMessageEventArgs(
-                $"WeaveRealmAssembly: {message}",
-                string.Empty,
-                "BuildTasks",
-                MessageImportance.High));
-        }
-
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
-        {
-            var path = GetAssemblyPath(name, isRealmAssembly);
+            var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
             if (File.Exists(path))
             {
-                assembly = AssemblyDefinition.ReadAssembly(path);
+                if (resolver != null)
+                {
+                    assembly = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+                    {
+                        AssemblyResolver = resolver
+                    });
+                }
+                else
+                {
+                    assembly = AssemblyDefinition.ReadAssembly(path);
+                }
+
                 return true;
             }
 
