@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 
@@ -76,12 +77,12 @@ namespace Realms
                 return (IntPtr)4; // type_Data
             }
 
-            if (columnType.BaseType == typeof(RealmObject))
+            if (columnType.GetTypeInfo().BaseType == typeof(RealmObject))
             {
                 return (IntPtr)12;  // type_Link
             }
 
-            if (columnType.IsGenericType)
+            if (columnType.GetTypeInfo().IsGenericType)
             {
                 var type = columnType.GetGenericTypeDefinition();
                 if (type == typeof(RealmList<>) || type == typeof(IList<>))

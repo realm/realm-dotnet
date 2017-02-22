@@ -20,11 +20,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Realms.Schema;
 
 namespace Realms.Schema
 {
@@ -68,8 +65,6 @@ namespace Realms.Schema
             {
                 throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
             }
-
-            Contract.EndContractBlock();
 
             ObjectSchema obj;
             _objects.TryGetValue(name, out obj);
@@ -129,17 +124,20 @@ namespace Realms.Schema
 
         private static RealmSchema BuildDefaultSchema()
         {
-            var realmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
-                                              #if !__IOS__
-                                              // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
-                                              .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
-                                              #endif
-                                              // exclude the Realm assembly
-                                              .Where(a => a != typeof(Realm).Assembly)
-                                              .Where(a => !a.GetName().Name.StartsWith("Xamarin.Interactive"))
-                                              .SelectMany(a => a.GetTypes())
-                                              .Where(t => t.IsSubclassOf(typeof(RealmObject)))
-                                              .Where(t => t.GetCustomAttributes(typeof(ExplicitAttribute), false).Length == 0);
+            ////var realmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
+            ////                                  #if !__IOS__
+            ////                                  // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
+            ////                                  .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
+            ////                                  #endif
+            ////                                  // exclude the Realm assembly
+            ////                                  .Where(a => a != typeof(Realm).Assembly)
+            ////                                  .Where(a => !a.GetName().Name.StartsWith("Xamarin.Interactive"))
+            ////                                  .SelectMany(a => a.GetTypes())
+            ////                                  .Where(t => t.IsSubclassOf(typeof(RealmObject)))
+            ////                                  .Where(t => t.GetCustomAttributes(typeof(ExplicitAttribute), false).Length == 0);
+
+            // TODO:
+            var realmObjectClasses = new Type[0];
 
             return CreateSchemaForClasses(realmObjectClasses);
         }
@@ -153,8 +151,6 @@ namespace Realms.Schema
                     throw new InvalidOperationException(
                         "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
                 }
-
-                Contract.EndContractBlock();
 
                 return new RealmSchema(this);
             }

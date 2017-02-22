@@ -23,7 +23,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -153,14 +152,7 @@ namespace Realms
             var token = new NotificationTokenHandle(Handle.Value);
             var tokenHandle = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), RealmCollectionNativeHelper.NotificationCallback);
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-            }
-            finally
-            {
-                token.SetHandle(tokenHandle);
-            }
+            token.SetHandle(tokenHandle);
 
             _notificationToken = token;
         }

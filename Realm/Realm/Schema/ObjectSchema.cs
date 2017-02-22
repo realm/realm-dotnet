@@ -21,7 +21,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 
@@ -104,7 +103,7 @@ namespace Realms.Schema
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.BaseType != typeof(RealmObject))
+            if (type.GetTypeInfo().BaseType != typeof(RealmObject))
             {
                 throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
             }

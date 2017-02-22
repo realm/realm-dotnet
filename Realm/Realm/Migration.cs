@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Realms.Native;
 using Realms.Schema;
@@ -58,7 +57,7 @@ namespace Realms
             _schema = schema;
         }
 
-        internal void PopulateConfiguration(ref Native.Configuration configuration)
+        internal void PopulateConfiguration(ref Configuration configuration)
         {
             var migrationHandle = GCHandle.Alloc(this);
 
@@ -94,15 +93,8 @@ namespace Realms
             var oldRealmHandle = new UnownedRealmHandle();
             var newRealmHandle = new UnownedRealmHandle();
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-            }
-            finally
-            {
-                oldRealmHandle.SetHandle(oldRealmPtr);
-                newRealmHandle.SetHandle(newRealmPtr);
-            }
+            oldRealmHandle.SetHandle(oldRealmPtr);
+            newRealmHandle.SetHandle(newRealmPtr);
 
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, IsReadOnly = true };
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));

@@ -23,15 +23,6 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <ConsolePause>false</ConsolePause>
-    <CustomCommands>
-      <CustomCommands>
-        <Command>
-          <type>Execute</type>
-          <command>${SolutionDir}/packages/NUnit.ConsoleRunner.3.2.1/tools/nunit3-console.exe ${ProjectFile} --config=${Configuration} --inprocess</command>
-          <workingdir>${SolutionDir}</workingdir>
-        </Command>
-      </CustomCommands>
-    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +32,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Custom Command' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>%24{SolutionDir}\packages\NUnit.ConsoleRunner.3.2.1\tools\nunit3-console.exe</StartProgram>
+    <StartArguments>${ProjectFile} --config=${Configuration} --inprocess</StartArguments>
+    <StartWorkingDirectory>%24{SolutionDir}</StartWorkingDirectory>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,7 +94,6 @@ namespace Realms
             return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
         {
             if (config == null)
@@ -159,39 +156,17 @@ namespace Realms
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
         {
             var resultsHandle = new ResultsHandle();
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                resultsHandle.SetHandle(resultsPtr);
-            }
-
+            resultsHandle.SetHandle(resultsPtr);
             return resultsHandle;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static ObjectHandle CreateObjectHandle(IntPtr objectPtr, SharedRealmHandle sharedRealmHandle)
         {
             var objectHandle = new ObjectHandle(sharedRealmHandle);
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                objectHandle.SetHandle(objectPtr);
-            }
-
+            objectHandle.SetHandle(objectPtr);
             return objectHandle;
         }
 
@@ -249,7 +224,7 @@ namespace Realms
 
             if (schema.Type != null && !Config.Dynamic)
             {
-                var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
+                var wovenAtt = schema.Type.GetTypeInfo().GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
                 {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
@@ -399,22 +374,13 @@ namespace Realms
             return (int)SharedRealmHandle.DangerousGetHandle();
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(ObjectSchema schema)
         {
             var result = new TableHandle();
             var tableName = schema.Name;
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                var tablePtr = SharedRealmHandle.GetTable(tableName);
-                result.SetHandle(tablePtr);
-            }
+            var tablePtr = SharedRealmHandle.GetTable(tableName);
+            result.SetHandle(tablePtr);
 
             return result;
         }
@@ -1150,7 +1116,7 @@ namespace Realms
                 Debug.Assert(!weakRealms.Any(r =>
                 {
                     Realm other;
-                    return r.TryGetTarget(out other) && object.ReferenceEquals(realm, other);
+                    return r.TryGetTarget(out other) && ReferenceEquals(realm, other);
                 }), "Trying to add a duplicate Realm to the RealmState.");
 
                 weakRealms.Add(new WeakReference<Realm>(realm));
@@ -1161,7 +1127,7 @@ namespace Realms
                 var weakRealm = weakRealms.SingleOrDefault(r =>
                 {
                     Realm other;
-                    return r.TryGetTarget(out other) && object.ReferenceEquals(realm, other);
+                    return r.TryGetTarget(out other) && ReferenceEquals(realm, other);
                 });
                 weakRealms.Remove(weakRealm);
 

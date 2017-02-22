@@ -17,5 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm")]
+[assembly: InternalsVisibleTo("Realm.Sync")]

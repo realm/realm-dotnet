@@ -21,7 +21,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Realms.Native;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -516,7 +515,7 @@ namespace Realms
                                memberExpression?.Member.Name;
 
                 if (leftName == null ||
-                    memberExpression.Member.MemberType != MemberTypes.Property ||
+                    !(memberExpression.Member is PropertyInfo) ||
                     !_metadata.Schema.PropertyNames.Contains(leftName))
                 {
                     throw new NotSupportedException($"The left-hand side of the {b.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{b.Left}'.");
@@ -616,7 +615,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
                     }
                 }
             }
@@ -684,7 +683,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
                     }
                 }
             }

@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -194,20 +193,7 @@ namespace Realms
         internal ListHandle TableLinkList(IntPtr propertyIndex)
         {
             var listHandle = new ListHandle(Root ?? this);
-
-            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            // a finalize at this point will not leak anything and the handle will not do anything
-
-            // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                listHandle.SetHandle(this.GetLinklist(propertyIndex));
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-
+            listHandle.SetHandle(this.GetLinklist(propertyIndex));
             return listHandle;
         }
     
@@ -517,7 +503,7 @@ namespace Realms
             {
                 fixed (byte* buffer = value)
                 {
-                    NativeMethods.set_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
+                    NativeMethods.set_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)value.LongCount(), out nativeException);
                 }
             }
 
@@ -586,10 +572,10 @@ namespace Realms
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var handle = NativeMethods.get_backlinks(this, propertyIndex, out nativeException);
+            var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
 
-            return handle;
+            return resultsHandle;
         }
     }
 }

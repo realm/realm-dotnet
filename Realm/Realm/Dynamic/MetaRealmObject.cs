@@ -31,9 +31,9 @@ namespace Realms.Dynamic
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
-        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", PrivateBindingFlags);
-        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", PrivateBindingFlags);
-        private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags, null, new[] { typeof(string), typeof(ResultsHandle) }, null)
+        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetField("_realm", PrivateBindingFlags);
+        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetField("_objectHandle", PrivateBindingFlags);
+        private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
@@ -261,7 +261,7 @@ namespace Realms.Dynamic
                     break;
             }
 
-            if (property.IsNullable && argumentType.IsValueType)
+            if (property.IsNullable && argumentType.GetTypeInfo().IsValueType)
             {
                 argumentType = typeof(Nullable<>).MakeGenericType(argumentType);
             }
@@ -305,12 +305,12 @@ namespace Realms.Dynamic
             return convertedExpression;
         }
 
-        private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }
