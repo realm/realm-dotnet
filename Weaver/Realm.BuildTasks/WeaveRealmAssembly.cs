@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -30,6 +31,8 @@ namespace RealmBuildTasks
     public class WeaveRealmAssembly : Task
     {
         private const string NativeCallbackAttribute = "NativeCallbackAttribute";
+
+        internal Action<string> LogDebug { get; set; }
 
         [Required]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
@@ -46,23 +49,34 @@ namespace RealmBuildTasks
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public override bool Execute()
         {
+            if (LogDebug == null)
+            {
+                LogDebug = message => BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                                $"WeaveRealmAssembly: {message}",
+                                string.Empty,
+                                "BuildTasks",
+                                MessageImportance.Normal));
+            }
+
             AssemblyDefinition currentAssembly;
             if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
             {
                 return false;
             }
 
-            WeaveAssembly("Realm", currentAssembly);
-            WeaveAssembly("Realm.Sync", currentAssembly);
+            var resolver = new RealmAssemblyResolver(currentAssembly);
+
+            WeaveAssembly("Realm", currentAssembly, resolver);
+            WeaveAssembly("Realm.Sync", currentAssembly, resolver);
 
             return true;
         }
 
-        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
+        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly, IAssemblyResolver resolver)
         {
             AssemblyDefinition assemblyToWeave;
             if (!currentAssembly.MainModule.AssemblyReferences.Any(a => a.Name == name) ||
-                !TryReadAssembly(name, out assemblyToWeave))
+                !TryReadAssembly(name, out assemblyToWeave, resolver: resolver))
             {
                 // Assembly not found, nothing to weave
                 return;
@@ -125,21 +139,23 @@ namespace RealmBuildTasks
             }
         }
 
-        private void LogDebug(string message)
-        {
-            BuildEngine.LogMessageEvent(new BuildMessageEventArgs(
-                $"WeaveRealmAssembly: {message}",
-                string.Empty,
-                "BuildTasks",
-                MessageImportance.Normal));
-        }
-
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
+        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true, IAssemblyResolver resolver = null)
         {
             var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
             if (File.Exists(path))
             {
-                assembly = AssemblyDefinition.ReadAssembly(path);
+                if (resolver != null)
+                {
+                    assembly = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+                    {
+                        AssemblyResolver = resolver
+                    });
+                }
+                else
+                {
+                    assembly = AssemblyDefinition.ReadAssembly(path);
+                }
+
                 return true;
             }
 
