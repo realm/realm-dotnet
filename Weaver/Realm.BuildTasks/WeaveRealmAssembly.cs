@@ -32,6 +32,8 @@ namespace RealmBuildTasks
     {
         private const string NativeCallbackAttribute = "NativeCallbackAttribute";
 
+        private DefaultAssemblyResolver _resolver;
+
         internal Action<string> LogDebug { get; set; }
 
         [Required]
@@ -59,24 +61,29 @@ namespace RealmBuildTasks
             }
 
             AssemblyDefinition currentAssembly;
+            _resolver = new DefaultAssemblyResolver();
+            _resolver.AddSearchDirectory(IntermediateDirectory);
+            _resolver.ResolveFailure += (sender, reference) =>
+            {
+                return _resolver.Resolve("mscorlib");
+            };
+
             if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
             {
                 return false;
             }
 
-            var resolver = new RealmAssemblyResolver(currentAssembly);
-
-            WeaveAssembly("Realm", currentAssembly, resolver);
-            WeaveAssembly("Realm.Sync", currentAssembly, resolver);
+            WeaveAssembly("Realm", currentAssembly);
+            WeaveAssembly("Realm.Sync", currentAssembly);
 
             return true;
         }
 
-        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly, IAssemblyResolver resolver)
+        private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
         {
             AssemblyDefinition assemblyToWeave;
             if (!currentAssembly.MainModule.AssemblyReferences.Any(a => a.Name == name) ||
-                !TryReadAssembly(name, out assemblyToWeave, resolver: resolver))
+                !TryReadAssembly(name, out assemblyToWeave))
             {
                 // Assembly not found, nothing to weave
                 return;
@@ -139,22 +146,15 @@ namespace RealmBuildTasks
             }
         }
 
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true, IAssemblyResolver resolver = null)
+        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
         {
             var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
             if (File.Exists(path))
             {
-                if (resolver != null)
+                assembly = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
                 {
-                    assembly = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
-                    {
-                        AssemblyResolver = resolver
-                    });
-                }
-                else
-                {
-                    assembly = AssemblyDefinition.ReadAssembly(path);
-                }
+                    AssemblyResolver = _resolver
+                });
 
                 return true;
             }

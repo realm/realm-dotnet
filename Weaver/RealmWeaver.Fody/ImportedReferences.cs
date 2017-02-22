@@ -51,6 +51,8 @@ namespace RealmWeaver
 
         public TypeReference System_Type { get; }
 
+        public MethodReference System_Type_GetTypeFromHandle { get; }
+
         public TypeReference System_DateTimeOffset { get; }
 
         public MethodReference System_DateTimeOffset_op_Inequality { get; private set; }
@@ -107,6 +109,8 @@ namespace RealmWeaver
 
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
+        public MethodReference RealmSchema_SetDefaultTypes { get; private set; }
+
         protected ImportedReferences(ModuleDefinition module)
         {
             Module = module;
@@ -120,7 +124,17 @@ namespace RealmWeaver
             IListOfT = new TypeReference("System.Collections.Generic", "IList`1", Module, Types.CoreLibrary);
             IListOfT.GenericParameters.Add(new GenericParameter(IListOfT));
 
+            var runtimeTypeHandle = new TypeReference("System", "RuntimeTypeHandle", Module, Types.CoreLibrary)
+            {
+                IsValueType = true
+            };
+
             System_Type = new TypeReference("System", "Type", Module, Types.CoreLibrary);
+            System_Type_GetTypeFromHandle = new MethodReference("GetTypeFromHandle", System_Type, System_Type)
+            { 
+                HasThis = false,
+                Parameters = { new ParameterDefinition(runtimeTypeHandle) }
+            };
 
             System_DateTimeOffset = new TypeReference("System", "DateTimeOffset", Module, Types.CoreLibrary, valueType: true);
 
@@ -246,6 +260,17 @@ namespace RealmWeaver
 
             WovenPropertyAttribute = new TypeReference("Realms", "WovenPropertyAttribute", Module, realmAssembly);
             WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenPropertyAttribute) { HasThis = true };
+
+            var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
+            RealmSchema_SetDefaultTypes = new MethodReference("set_DefaultTypes", Types.Void, realmSchema) { HasThis = false };
+            {
+                var ienumerableOfType = new GenericInstanceType(IEnumerableOfT) 
+                { 
+                    GenericArguments = { System_Type } 
+                };
+            
+                RealmSchema_SetDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
+            }
         }
 
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)

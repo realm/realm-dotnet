@@ -37,8 +37,14 @@ namespace Realms.Schema
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(DefaultTypes));
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
+
+        /// <summary>
+        /// Gets or sets the types which the default schema will contain.
+        /// </summary>
+        /// <value>The default types.</value>
+        public static IEnumerable<Type> DefaultTypes { get; set; }
 
         /// <summary>
         /// Gets the number of known classes in the schema.

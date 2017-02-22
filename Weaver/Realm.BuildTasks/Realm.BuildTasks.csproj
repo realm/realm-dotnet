@@ -41,7 +41,6 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Extensions.cs" />
-    <Compile Include="RealmAssemblyResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
