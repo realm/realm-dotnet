@@ -35,9 +35,6 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\ErrorCode.cs">
-      <Link>Exceptions\ErrorCode.cs</Link>
-    </Compile>
     <Compile Include="CredentialsPCL.cs" />
     <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
       <Link>RealmPCLHelpers.cs</Link>
@@ -45,48 +42,51 @@
     <Compile Include="SessionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
     <Compile Include="UserPCL.cs" />
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\IPermissionObject.cs">
-      <Link>Permissions\IPermissionObject.cs</Link>
-    </Compile>
     <Compile Include="Permissions\PermissionChangePCL.cs" />
     <Compile Include="Permissions\UserPermissionsExtensionsPCL.cs" />
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\SessionState.cs">
-      <Link>SessionState.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\UserState.cs">
-      <Link>UserState.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\SessionException.cs">
-      <Link>Exceptions\SessionException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\UserPersistenceMode.cs">
-      <Link>UserPersistencyMode.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\ManagementObjectStatus.cs">
-      <Link>Permissions\ManagementObjectStatus.cs</Link>
-    </Compile>
     <Compile Include="Permissions\PermissionOfferPCL.cs" />
     <Compile Include="Permissions\PermissionOfferResponsePCL.cs" />
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\AuthenticationException.cs">
-      <Link>Exceptions\AuthenticationException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Exceptions\HttpException.cs">
-      <Link>Exceptions\HttpException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\SyncProgress.cs">
-      <Link>ProgressNotifications\SyncProgress.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\ProgressDirection.cs">
-      <Link>ProgressNotifications\ProgressDirection.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\ProgressNotifications\ProgressMode.cs">
-      <Link>ProgressNotifications\ProgressMode.cs</Link>
-    </Compile>
     <Compile Include="Extensions\RealmSyncExtensionsPCL.cs" />
     <Compile Include="Extensions\TestingExtensionsPCL.cs" />
     <Compile Include="Exceptions\ClientResetException.cs" />
-    <Compile Include="..\..\Shared\Realm.Sync.Shared\Permissions\Permission.cs">
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\AuthenticationException.cs">
+      <Link>Exceptions\AuthenticationException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\ErrorCode.cs">
+      <Link>Exceptions\ErrorCode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\HttpException.cs">
+      <Link>Exceptions\HttpException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\SessionException.cs">
+      <Link>Exceptions\SessionException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\SessionState.cs">
+      <Link>SessionState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\UserPersistenceMode.cs">
+      <Link>UserPersistenceMode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\UserState.cs">
+      <Link>UserState.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\IPermissionObject.cs">
+      <Link>Permissions\IPermissionObject.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\ManagementObjectStatus.cs">
+      <Link>Permissions\ManagementObjectStatus.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\Permission.cs">
       <Link>Permissions\Permission.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ProgressNotifications\ProgressDirection.cs">
+      <Link>ProgressNotifications\ProgressDirection.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ProgressNotifications\ProgressMode.cs">
+      <Link>ProgressNotifications\ProgressMode.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ProgressNotifications\SyncProgress.cs">
+      <Link>ProgressNotifications\SyncProgress.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
