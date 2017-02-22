@@ -72,12 +72,14 @@ namespace Realms
         {
             if (string.IsNullOrEmpty(optionalPath))
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DefaultRealmName);
+                // TODO
+                return Path.Combine(string.Empty, DefaultRealmName); // Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             }
 
             if (!Path.IsPathRooted(optionalPath))
             {
-                optionalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
+                // TODO
+                optionalPath = Path.Combine(string.Empty, optionalPath); // Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             }
 
             if (optionalPath[optionalPath.Length - 1] == Path.DirectorySeparatorChar) // ends with dir sep

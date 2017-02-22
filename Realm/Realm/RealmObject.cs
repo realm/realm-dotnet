@@ -140,7 +140,7 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> PropertyIndices;
 
-            internal Schema.ObjectSchema Schema;
+            internal ObjectSchema Schema;
         }
 
         #region Getters
@@ -302,7 +302,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            Schema.Property property;
+            Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
@@ -321,7 +321,7 @@ namespace Realms
                 return null;
             }
 
-            Schema.Property property;
+            Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var objectType = property.ObjectType;
             return (T)_realm.MakeObject(objectType, linkedObjectPtr);
@@ -346,7 +346,7 @@ namespace Realms
 
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
         {
-            Schema.Property property;
+            Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
@@ -707,7 +707,9 @@ namespace Realms
 
         TypeInfo IReflectableType.GetTypeInfo()
         {
-            return RealmObjectTypeInfo.FromType(GetType());
+            // TODO
+            // return RealmObjectTypeInfo.FromType(GetType());
+            return GetType().GetTypeInfo();
         }
 
         private void SubscribeForNotifications()

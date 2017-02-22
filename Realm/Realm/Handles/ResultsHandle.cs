@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -88,24 +87,12 @@ namespace Realms
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public QueryHandle CreateQuery()
         {
+            NativeException nativeException;
+            var result = NativeMethods.get_query(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+
             var queryHandle = new QueryHandle(Root ?? this);
-
-            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            // a finalize at this point will not leak anything and the handle will not do anything
-
-            // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                NativeException nativeException;
-                var result = NativeMethods.get_query(this, out nativeException);
-                nativeException.ThrowIfNecessary();
-                queryHandle.SetHandle(result);
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-
+            queryHandle.SetHandle(result);
             return queryHandle;
         }
 
@@ -117,22 +104,22 @@ namespace Realms
             return result;
         }
 
-        public override bool Equals(object p)
+        public override bool Equals(object obj)
         {
             // If parameter is null, return false. 
-            if (ReferenceEquals(p, null))
+            if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
             // Optimization for a common success case. 
-            if (ReferenceEquals(this, p))
+            if (ReferenceEquals(this, obj))
             {
                 return true;
             }
 
             NativeException nativeException;
-            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)p, out nativeException);
+            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)obj, out nativeException);
             nativeException.ThrowIfNecessary();
             return result != IntPtr.Zero;
         }

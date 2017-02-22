@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if TODO
+
 using System;
 using System.Globalization;
 using System.Reflection;
@@ -83,3 +85,5 @@ namespace Realms
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
     }
 }
+
+#endif

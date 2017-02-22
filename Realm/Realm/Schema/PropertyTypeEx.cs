@@ -18,8 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 
 namespace Realms.Schema
 {
@@ -32,8 +32,6 @@ namespace Realms.Schema
                 throw new ArgumentNullException(nameof(type));
             }
 
-            Contract.EndContractBlock();
-
             innerType = null;
 
             var nullableType = Nullable.GetUnderlyingType(type);
@@ -43,23 +41,34 @@ namespace Realms.Schema
                 type = nullableType;
             }
 
-            switch (Type.GetTypeCode(type))
+            if (type == typeof(bool))
             {
-                case TypeCode.Boolean:
-                    return PropertyType.Bool;
-                case TypeCode.Char:
-                case TypeCode.Byte:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                    return PropertyType.Int;
-                case TypeCode.Single:
-                    return PropertyType.Float;
-                case TypeCode.Double:
-                    return PropertyType.Double;
-                case TypeCode.String:
-                    isNullable = true;
-                    return PropertyType.String;
+                return PropertyType.Bool;
+            }
+
+            if (type == typeof(char) ||
+                type == typeof(byte) ||
+                type == typeof(short) ||
+                type == typeof(int) ||
+                type == typeof(long))
+            {
+                return PropertyType.Int;
+            }
+
+            if (type == typeof(float))
+            {
+                return PropertyType.Float;
+            }
+
+            if (type == typeof(double))
+            {
+                return PropertyType.Double;
+            }
+
+            if (type == typeof(string))
+            {
+                isNullable = true;
+                return PropertyType.String;
             }
 
             if (type == typeof(DateTimeOffset))
@@ -73,14 +82,14 @@ namespace Realms.Schema
                 return PropertyType.Data;
             }
 
-            if (type.BaseType == typeof(RealmObject))
+            if (type.GetTypeInfo().BaseType == typeof(RealmObject))
             {
                 isNullable = true;
                 innerType = type;
                 return PropertyType.Object;
             }
 
-            if (type.IsGenericType)
+            if (type.GetTypeInfo().IsGenericType)
             {
                 var definition = type.GetGenericTypeDefinition();
                 if (definition == typeof(IList<>))

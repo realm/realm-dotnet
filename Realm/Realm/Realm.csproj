@@ -8,6 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Realm</RootNamespace>
     <AssemblyName>Realm</AssemblyName>
+    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -18,18 +19,105 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ErrorMessages.cs" />
+    <Compile Include="ISchemaSource.cs" />
+    <Compile Include="InteropConfig.cs" />
+    <Compile Include="MarshalHelpers.cs" />
+    <Compile Include="Migration.cs" />
+    <Compile Include="Realm.cs" />
+    <Compile Include="RealmCollectionBase.cs" />
+    <Compile Include="RealmConfiguration.cs" />
+    <Compile Include="RealmConfigurationBase.cs" />
+    <Compile Include="RealmList.cs" />
+    <Compile Include="RealmObject.cs" />
+    <Compile Include="Transaction.cs" />
+    <Compile Include="Attributes\Attributes.cs" />
+    <Compile Include="Attributes\BacklinkAttribute.cs" />
+    <Compile Include="Attributes\IgnoredAttribute.cs" />
+    <Compile Include="Attributes\IndexedAttribute.cs" />
+    <Compile Include="Attributes\MapToAttribute.cs" />
+    <Compile Include="Attributes\PreserveAttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="Attributes\RequiredAttribute.cs" />
+    <Compile Include="Dynamic\DynamicRealmObject.cs" />
+    <Compile Include="Dynamic\DynamicRealmObjectHelper.cs" />
+    <Compile Include="Dynamic\MetaRealmList.cs" />
+    <Compile Include="Dynamic\MetaRealmObject.cs" />
+    <Compile Include="Exceptions\ErrorEventArgs.cs" />
+    <Compile Include="Exceptions\ManagedExceptionDuringMigrationException.cs" />
+    <Compile Include="Exceptions\RealmClassLacksPrimaryKeyException.cs" />
+    <Compile Include="Exceptions\RealmClosedException.cs" />
+    <Compile Include="Exceptions\RealmDecryptionFailedException.cs" />
+    <Compile Include="Exceptions\RealmDuplicatePrimaryKeyValueException.cs" />
+    <Compile Include="Exceptions\RealmException.cs" />
+    <Compile Include="Exceptions\RealmExceptionCodes.cs" />
+    <Compile Include="Exceptions\RealmFileAccessErrorException.cs" />
+    <Compile Include="Exceptions\RealmFileExistsException.cs" />
+    <Compile Include="Exceptions\RealmFileNotFoundException.cs" />
+    <Compile Include="Exceptions\RealmInvalidDatabaseException.cs" />
+    <Compile Include="Exceptions\RealmInvalidObjectException.cs" />
+    <Compile Include="Exceptions\RealmInvalidTransactionException.cs" />
+    <Compile Include="Exceptions\RealmMigrationNeededException.cs" />
+    <Compile Include="Exceptions\RealmMismatchedConfigException.cs" />
+    <Compile Include="Exceptions\RealmObjectManagedByAnotherRealmException.cs" />
+    <Compile Include="Exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="Exceptions\RealmPermissionDeniedException.cs" />
+    <Compile Include="Extensions\CollectionNotificationsExtensions.cs" />
+    <Compile Include="Extensions\ReadOnlyCollectionExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Handles\CollectionHandleBase.cs" />
+    <Compile Include="Handles\ListHandle.cs" />
+    <Compile Include="Handles\NotificationTokenHandle.cs" />
+    <Compile Include="Handles\ObjectHandle.cs" />
+    <Compile Include="Handles\QueryHandle.cs" />
+    <Compile Include="Handles\RealmHandle.cs" />
+    <Compile Include="Handles\ResultsHandle.cs" />
+    <Compile Include="Handles\SharedRealmHandle.cs" />
+    <Compile Include="Handles\TableHandle.cs" />
+    <Compile Include="Handles\UnownedRealmHandle.cs" />
+    <Compile Include="Linq\ExpressionVisitor.cs" />
+    <Compile Include="Linq\IRealmCollection.cs" />
+    <Compile Include="Linq\RealmCollectionNativeHelper.cs" />
+    <Compile Include="Linq\RealmResults.cs" />
+    <Compile Include="Linq\RealmResultsProvider.cs" />
+    <Compile Include="Linq\RealmResultsVisitor.cs" />
+    <Compile Include="Linq\TypeSystem.cs" />
+    <Compile Include="Native\Configuration.cs" />
+    <Compile Include="Native\MarshaledVector.cs" />
+    <Compile Include="Native\NativeCallbackAttribute.cs" />
+    <Compile Include="Native\NativeCommon.cs" />
+    <Compile Include="Native\NativeException.cs" />
+    <Compile Include="Native\PtrTo.cs" />
+    <Compile Include="Native\Schema.cs" />
+    <Compile Include="Native\SchemaObject.cs" />
+    <Compile Include="Native\SchemaProperty.cs" />
+    <Compile Include="Native\SortDescriptorBuilder.cs" />
+    <Compile Include="Native\SynchronizationContextEventLoopSignal.cs" />
+    <Compile Include="ReflectableType\RealmObjectTypeInfo.cs" />
+    <Compile Include="ReflectableType\WovenGetterMethodInfo.cs" />
+    <Compile Include="ReflectableType\WovenPropertyInfo.cs" />
+    <Compile Include="ReflectableType\WovenSetterMethodInfo.cs" />
+    <Compile Include="Schema\ObjectSchema.cs" />
+    <Compile Include="Schema\Property.cs" />
+    <Compile Include="Schema\PropertyType.cs" />
+    <Compile Include="Schema\PropertyTypeEx.cs" />
+    <Compile Include="Schema\RealmSchema.cs" />
+    <Compile Include="Weaving\IRealmObjectHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+    <None Include="Realm.nuget.targets" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

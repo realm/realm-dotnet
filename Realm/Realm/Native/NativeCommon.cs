@@ -19,9 +19,7 @@
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using Realms.Native;
 
 namespace Realms
@@ -46,7 +44,7 @@ namespace Realms
         [NativeCallback(typeof(DebugLoggerCallback))]
         private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
         {
-            var message = new string((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8);
+            var message = new string((char*)utf8String, 0, (int)stringLen);
             Console.WriteLine(message);
         }
 
@@ -71,13 +69,16 @@ namespace Realms
 
         public static void Initialize()
         {
+#if TODO
+
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
                 var architecture = Environment.Is64BitProcess ? "x64" : "x86";
                 var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
                 Environment.SetEnvironmentVariable("PATH", path);
             }
+#endif
 
 #if DEBUG
             DebugLoggerCallback logger = DebugLogger;
