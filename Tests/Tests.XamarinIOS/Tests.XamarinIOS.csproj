@@ -154,18 +154,13 @@
     </NativeReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
-  <UsingTask 
-		TaskName="RealmBuildTasks.WeaveRealmAssembly" 
-		AssemblyFile="$(SolutionDir)Weaver\Realm.BuildTasks\bin\$(Configuration)\Realm.BuildTasks.dll" />
-  <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile" BeforeTargets="DeployOutputFiles" >
+  <UsingTask TaskName="RealmBuildTasks.WeaveRealmAssembly" AssemblyFile="$(SolutionDir)Weaver\Realm.BuildTasks\bin\$(Configuration)\Realm.BuildTasks.dll" />
+  <Target Name="WeaveRealmAssemblyTarget" AfterTargets="AfterCompile" BeforeTargets="DeployOutputFiles">
     <ItemGroup>
       <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
       <ReferencePath Remove="@(FilteredReferences)" />
       <ReferenceCopyLocalPaths Remove="@(FilteredReferences)" />
     </ItemGroup>
-    <RealmBuildTasks.WeaveRealmAssembly 
-			OutputDirectory="$(ProjectDir)$(OutputPath)" 
-			AssemblyName="$(AssemblyName)" 
-			IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
+    <RealmBuildTasks.WeaveRealmAssembly OutputDirectory="$(ProjectDir)$(OutputPath)" AssemblyName="$(AssemblyName)" IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
   </Target>
 </Project>
