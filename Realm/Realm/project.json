@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "DotNetCross.Memory.Unsafe": "0.2.3.4",
+    "Remotion.Linq": "2.1.1",
+    "NETStandard.Library": "1.6.0",
+    "StyleCop.MSBuild": "4.7.55"
+  },
+  "frameworks": {
+    "netstandard1.4": {}
+  }
+}
