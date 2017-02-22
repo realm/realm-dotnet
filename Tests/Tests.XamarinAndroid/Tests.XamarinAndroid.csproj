@@ -101,6 +101,8 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
+  <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
+  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
@@ -118,13 +120,13 @@
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
-      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
-      <Name>Realm.XamarinAndroid</Name>
+    <ProjectReference Include="..\..\Realm\Realm.Sync\Realm.Sync.csproj">
+      <Project>{2015403A-59D2-47F2-8E18-7DF85BB98467}</Project>
+      <Name>Realm.Sync</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Realm.Sync.XamarinAndroid\Realm.Sync.XamarinAndroid.csproj" Condition="'$(RealmNoSync)' != 'true'">
-      <Project>{3379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
-      <Name>Realm.Sync.XamarinAndroid</Name>
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
