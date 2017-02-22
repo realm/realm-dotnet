@@ -169,7 +169,8 @@ public class ModuleWeaver
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
-        foreach (var type in GetMatchingTypes())
+        var matchingTypes = GetMatchingTypes().ToArray();
+        foreach (var type in matchingTypes)
         {
             try
             {
@@ -180,6 +181,8 @@ public class ModuleWeaver
                 LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
             }
         }
+
+        WeaveSchema(matchingTypes);
 
         submitAnalytics.Wait();
     }
@@ -1037,6 +1040,28 @@ public class ModuleWeaver
         realmObjectType.NestedTypes.Add(helperType);
 
         return helperType;
+    }
+
+    private void WeaveSchema(TypeDefinition[] types)
+    {
+        if (ModuleDefinition.EntryPoint != null)
+        {
+            var start = ModuleDefinition.EntryPoint.Body.Instructions.First();
+            var il = ModuleDefinition.EntryPoint.Body.GetILProcessor();
+            il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, types.Length));
+            il.InsertBefore(start, Instruction.Create(OpCodes.Newarr, _references.System_Type));
+
+            for (var i = 0; i < types.Length; i++)
+            {
+                il.InsertBefore(start, Instruction.Create(OpCodes.Dup));
+                il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, i));
+                il.InsertBefore(start, Instruction.Create(OpCodes.Ldtoken, types[i]));
+                il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.System_Type_GetTypeFromHandle));
+                il.InsertBefore(start, Instruction.Create(OpCodes.Stelem_Ref));
+            }
+            
+            il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.RealmSchema_SetDefaultTypes));
+        }
     }
 
     private class WeaveResult
