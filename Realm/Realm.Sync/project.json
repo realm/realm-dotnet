@@ -1,6 +1,8 @@
-{
+﻿{
   "dependencies": {
-    "NETStandard.Library": "1.6.0",
+    "Fody": "1.29.4",
+    "NETStandard.Library": "1.6.1",
+    "Newtonsoft.Json": "9.0.1",
     "StyleCop.MSBuild": "4.7.55"
   },
   "frameworks": {

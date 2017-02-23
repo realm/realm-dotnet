@@ -20,13 +20,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Json;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -55,7 +55,7 @@ namespace Realms.Sync
             var user = session.User;
             try
             {
-                var json = new JsonObject
+                var json = new Dictionary<string, object>
                 {
                     ["data"] = user.RefreshToken,
                     ["path"] = session.ServerUri.AbsolutePath,
@@ -63,10 +63,10 @@ namespace Realms.Sync
                 };
 
                 var result = await MakeAuthRequestAsync(user.ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-                var access_token = result["access_token"];
+                var access_token = result.access_token;
 
-                session.Handle.RefreshAccessToken(access_token["token"], access_token["token_data"]["path"]);
-                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(access_token["token_data"]["expires"]));
+                session.Handle.RefreshAccessToken(access_token.token, access_token.token_data.path);
+                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(access_token.token_data.expires));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {
@@ -95,9 +95,9 @@ namespace Realms.Sync
         // Returns a Tuple<userId, refreshToken>
         public static async Task<Tuple<string, string>> Login(Credentials credentials, Uri serverUrl)
         {
-            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToJson(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            var refresh_token = result["refresh_token"];
-            return Tuple.Create((string)refresh_token["token_data"]["identity"], (string)refresh_token["token"]);
+            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+            var refresh_token = result.refresh_token;
+            return Tuple.Create((string)refresh_token.token_data.identity, (string)refresh_token.token);
         }
 
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
@@ -158,45 +158,33 @@ namespace Realms.Sync
             }
         }
 
-        private static async Task<JsonValue> MakeAuthRequestAsync(Uri serverUri, JsonObject body, TimeSpan timeout)
+        private static async Task<dynamic> MakeAuthRequestAsync(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
         {
             body["app_id"] = string.Empty; // FIXME
 
-            string requestBody;
-            using (var writer = new StringWriter())
-            {
-                body.Save(writer);
-                requestBody = writer.ToString();
-            }
-
             var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
-            request.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
             request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
             request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
 
             var response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
             {
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
-                {
-                    return JsonValue.Load(stream);
-                }
+                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+                return JsonConvert.DeserializeObject<dynamic>(json);
             }
 
-            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false))
+            var errorJson = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+            if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
             {
-                if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
-                {
-                    var problem = JsonValue.Load(stream);
+                var problem = JsonConvert.DeserializeObject<dynamic>(errorJson);
 
-                    var code = ErrorCodeHelper.GetErrorCode((int)problem["code"]) ?? ErrorCode.Unknown;
+                var code = ErrorCodeHelper.GetErrorCode(problem.code) ?? ErrorCode.Unknown;
 
-                    throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
-                }
-
-                var content = ReadContent(stream, ErrorContentTruncationLimit, $"Response too long. Truncated to first {ErrorContentTruncationLimit} characters:{Environment.NewLine}");
-                throw new HttpException(response.StatusCode, response.ReasonPhrase, content);
+                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
             }
+
+            throw new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
         }
 
         private static string ReadContent(Stream stream, int maxNumberOfCharacters, string prefixIfExceeded)

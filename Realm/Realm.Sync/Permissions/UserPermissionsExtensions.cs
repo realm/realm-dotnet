@@ -24,7 +24,6 @@ namespace Realms.Sync
     /// <summary>
     /// A set of extensions methods over the <see cref="User"/> class that expose functionality for managing synchronized Realm permissions.
     /// </summary>
-    [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class UserPermissionsExtensions
     {

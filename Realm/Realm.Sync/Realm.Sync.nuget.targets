@@ -5,5 +5,6 @@
   </PropertyGroup>
   <ImportGroup>
     <Import Project="$(NuGetPackageRoot)stylecop.msbuild/4.7.55/build/StyleCop.MSBuild.Targets" Condition="Exists('$(NuGetPackageRoot)stylecop.msbuild/4.7.55/build/StyleCop.MSBuild.Targets')" />
+    <Import Project="$(NuGetPackageRoot)Fody/1.29.4/build/portable-net+sl+win+wpa+wp/Fody.targets" Condition="Exists('$(NuGetPackageRoot)Fody/1.29.4/build/portable-net+sl+win+wpa+wp/Fody.targets')" />
   </ImportGroup>
 </Project>
