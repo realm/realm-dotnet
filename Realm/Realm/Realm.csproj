@@ -114,6 +114,9 @@
     <Compile Include="Schema\PropertyTypeEx.cs" />
     <Compile Include="Schema\RealmSchema.cs" />
     <Compile Include="Weaving\IRealmObjectHelper.cs" />
+    <Compile Include="..\..\RealmAssemblyInfo.cs">
+      <Link>Properties\RealmAssemblyInfo.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

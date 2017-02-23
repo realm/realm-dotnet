@@ -24,7 +24,6 @@ namespace Realms.Sync
     /// <summary>
     /// A set of extension methods that provide Sync-related functionality on top of Realm classes.
     /// </summary>
-    [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class RealmSyncExtensions
     {
