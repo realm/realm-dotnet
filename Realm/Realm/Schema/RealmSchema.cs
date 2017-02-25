@@ -37,7 +37,7 @@ namespace Realms.Schema
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(DefaultTypes));
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(DefaultTypes ?? Enumerable.Empty<Type>()));
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>

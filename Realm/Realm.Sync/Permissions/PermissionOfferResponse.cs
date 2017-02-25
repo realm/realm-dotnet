@@ -27,7 +27,7 @@ namespace Realms.Sync
     /// <remarks>
     /// Create an instance of <see cref="PermissionOfferResponse"/> using the provided <see cref="PermissionOffer.Token"/>
     /// and add it to the <see cref="User"/>'s ManagementRealm.
-    /// After that, you should subsribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server
+    /// After that, you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server
     /// processes the response.
     /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
     /// <see cref="ErrorCode"/> will be updated accordingly.
@@ -80,7 +80,7 @@ namespace Realms.Sync
         public ErrorCode? ErrorCode => ErrorCodeHelper.GetErrorCode(StatusCode);
 
         /// <summary>
-        /// Gets the token thas was provided by the offering user.
+        /// Gets the token that was provided by the offering user.
         /// </summary>
         [Required]
         [MapTo("token")]

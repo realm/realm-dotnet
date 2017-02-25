@@ -5,6 +5,7 @@
       <Value>awaitable</Value>
       <Value>changeset</Value>
       <Value>databinding</Value>
+      <Value>errored</Value>
       <Value>finalizer</Value>
       <Value>Fody</Value>
       <Value>hpp</Value>
@@ -15,6 +16,7 @@
       <Value>queryable</Value>
       <Value>runloop</Value>
       <Value>ulong</Value>
+      <Value>Uploadable</Value>
       <Value>var</Value>
       <Value>Xamarin</Value>
     </CollectionProperty>

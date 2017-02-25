@@ -19,6 +19,8 @@
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -69,16 +71,21 @@ namespace Realms
 
         public static void Initialize()
         {
-#if TODO
-
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            var osVersionPI = typeof(Environment).GetProperty("OSVersion", BindingFlags.Public | BindingFlags.Static);
+            if (osVersionPI != null)
             {
-                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
-                var architecture = Environment.Is64BitProcess ? "x64" : "x86";
-                var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", path);
+                var osVersion = osVersionPI.GetValue(null);
+                var platformPI = osVersion.GetType().GetProperty("Platform", BindingFlags.Public | BindingFlags.Instance);
+                if (platformPI.GetValue(osVersion).ToString() == "Win32NT")
+                {
+                    // We know we're on Win32 so Assembly.Location is available
+                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+                    var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                    var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
+                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                    Environment.SetEnvironmentVariable("PATH", path);
+                }
             }
-#endif
 
 #if DEBUG
             DebugLoggerCallback logger = DebugLogger;
