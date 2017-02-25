@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
@@ -51,19 +51,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildTasks.Tests", "Weaver\
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{02c53890-5cfa-4443-b894-7d0d74301280}*SharedItemsImports = 4
-		Shared\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
-		Shared\Realm.Shared\Realm.Shared.projitems*{2379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
-		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{3379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
-		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{355bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
-		Shared\Realm.Sync.Shared\Realm.Sync.Shared.projitems*{76990168-1696-4f96-8eda-3dcf173a0e00}*SharedItemsImports = 13
-		Shared\Realm.Shared\Realm.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
-		Shared\Realm.Shared\Realm.Shared.projitems*{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
+		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
 		Shared\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
 		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
-		Shared\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
-		Shared\Realm.Shared\Realm.Shared.projitems*{c211ede7-cc8e-4f53-a9df-0b105a350bbf}*SharedItemsImports = 4
-		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
+		Tests\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Shared\Tests.Shared\Tests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
 		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
 	EndGlobalSection

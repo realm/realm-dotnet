@@ -1062,6 +1062,11 @@ public class ModuleWeaver
             
             il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.RealmSchema_SetDefaultTypes));
         }
+        else
+        {
+            // TODO
+            LogError("Entry point not found. Default schema will be empty.");
+        }
     }
 
     private class WeaveResult

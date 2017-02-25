@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 
 namespace Realms.Sync
 {
@@ -124,7 +123,7 @@ namespace Realms.Sync
         public static User GetLoggedInUser(string identity)
         {
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
-            
+
             var handle = SyncUserHandle.GetLoggedInUser(identity);
             if (handle == null)
             {

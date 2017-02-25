@@ -15,7 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
+using System;
+
 namespace Realms
 {
     internal static class InteropConfig
@@ -24,5 +26,7 @@ namespace Realms
         /// Name of the DLL used in native declarations, constant varying per-platform.
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
+
+        public static readonly bool Is64BitProcess = IntPtr.Size == 8;
     }
 }
