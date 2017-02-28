@@ -128,26 +128,6 @@ namespace Realms.Schema
             return new RealmSchema(objects);
         }
 
-        private static RealmSchema BuildDefaultSchema()
-        {
-            ////var realmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
-            ////                                  #if !__IOS__
-            ////                                  // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
-            ////                                  .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
-            ////                                  #endif
-            ////                                  // exclude the Realm assembly
-            ////                                  .Where(a => a != typeof(Realm).Assembly)
-            ////                                  .Where(a => !a.GetName().Name.StartsWith("Xamarin.Interactive"))
-            ////                                  .SelectMany(a => a.GetTypes())
-            ////                                  .Where(t => t.IsSubclassOf(typeof(RealmObject)))
-            ////                                  .Where(t => t.GetCustomAttributes(typeof(ExplicitAttribute), false).Length == 0);
-
-            // TODO:
-            var realmObjectClasses = new Type[0];
-
-            return CreateSchemaForClasses(realmObjectClasses);
-        }
-
         private class Builder : List<ObjectSchema>
         {
             public RealmSchema Build()
