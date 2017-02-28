@@ -71,15 +71,12 @@ namespace Realms
 
         public static void Initialize()
         {
-            var osVersionPI = typeof(Environment).GetProperty("OSVersion", BindingFlags.Public | BindingFlags.Static);
-            if (osVersionPI != null)
+            if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework") &&
+                RuntimeInformation.OSDescription.Contains("Windows"))
             {
-                var osVersion = osVersionPI.GetValue(null);
-                var platformPI = osVersion.GetType().GetProperty("Platform", BindingFlags.Public | BindingFlags.Instance);
-                if (platformPI.GetValue(osVersion).ToString() == "Win32NT")
+                var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+                if (assemblyLocationPI != null)
                 {
-                    // We know we're on Win32 so Assembly.Location is available
-                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
                     var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
                     var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
                     var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
