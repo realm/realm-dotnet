@@ -182,7 +182,10 @@ public class ModuleWeaver
             }
         }
 
-        WeaveSchema(matchingTypes);
+        var defaultSchemaTypes = matchingTypes.Where(t => t.CustomAttributes.All(a => a.AttributeType.Name != "ExplicitAttribute"))
+                                              .ToArray();
+
+        WeaveSchema(defaultSchemaTypes);
 
         submitAnalytics.Wait();
     }
