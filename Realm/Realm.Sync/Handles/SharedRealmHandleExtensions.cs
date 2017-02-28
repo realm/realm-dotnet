@@ -63,6 +63,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_immediately_run_file_actions", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void reset_for_testing();
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -110,8 +113,7 @@ namespace Realms.Sync
             // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
             Interlocked.Exchange(ref _fileSystemConfigured, 1);
 
-            // TODO
-            var basePath = string.Empty; // Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            var basePath = InteropConfig.DefaultStorageFolder;
 
             UserPersistenceMode mode;
             UserPersistenceMode* modePtr = null;
@@ -128,8 +130,9 @@ namespace Realms.Sync
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            // TODO: compiler crash
-            NativeCommon.reset_for_testing();
+            // TODO: This should reference NativeCommon.reset_for_testing
+            // Due to mono compiler bug, it's copied to NativeMethods
+            NativeMethods.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
 

@@ -17,16 +17,37 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
 
 namespace Realms
 {
     internal static class InteropConfig
     {
+        private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
+        {
+            var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
+
+            if (specialFolderType != null)
+            {
+                var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
+
+                if (getFolderPath != null)
+                {
+                    var personalField = specialFolderType.GetField("Personal");
+                    return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
+                }
+            }
+
+            throw new NotSupportedException();
+        });
+
         /// <summary>
         /// Name of the DLL used in native declarations, constant varying per-platform.
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
         public static readonly bool Is64BitProcess = IntPtr.Size == 8;
+
+        public static string DefaultStorageFolder => _defaultStorageFolder.Value;
     }
 }

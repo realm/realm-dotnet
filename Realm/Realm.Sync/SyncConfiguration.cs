@@ -65,7 +65,6 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            // TODO: compiler crash
             var configuration = new Realms.Native.Configuration
             {
                 Path = DatabasePath,

@@ -707,7 +707,7 @@ namespace Realms
 
         TypeInfo IReflectableType.GetTypeInfo()
         {
-            // TODO
+            // TODO IReflectableType implementation should be in a separate nuget
             // return RealmObjectTypeInfo.FromType(GetType());
             return GetType().GetTypeInfo();
         }
