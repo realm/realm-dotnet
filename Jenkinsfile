@@ -85,11 +85,11 @@ stage('Build without sync') {
         unstash 'ios-wrappers-nosync'
         unstash 'buildtasks-output'
 
-        xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
-        stash includes: "Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-ios-database'
+        stash includes: "Realm/Realm/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-database'
 
-        dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
+        dir("Tests/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-nosync'
         }
       }
@@ -112,13 +112,12 @@ stage('Build without sync') {
 
         unstash 'android-wrappers-nosync'
 
-        dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
+        dir('Tests/Tests.XamarinAndroid') {
           xbuild("Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
           }
         }
-        stash includes: "Platform.XamarinAndroid/Realm.XamarinAndroid/bin/${configuration}/Realm.*", name: 'nuget-android-database'
       }
     },
     'Win32': {
@@ -132,8 +131,7 @@ stage('Build without sync') {
         """
 
         stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
-        stash includes: "Platform.Win32/Realm.Win32/bin/${configuration}/Realm.*", name: 'nuget-win32-database'
-        stash includes: "Platform.Win32/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
+        stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
       }
     },
     'PCL': {
@@ -167,11 +165,11 @@ stage('Build with sync') {
 
         sh "${nuget} restore Realm.sln"
 
-        xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
-        stash includes: "Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-ios-sync'
+        stash includes: "Realm/Realm.Sync/bin/iPhoneSimulator/${configuration}/Realm.Sync.*", name: 'nuget-sync'
 
-        dir("Platform.XamarinIOS/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
+        dir("Tests/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-sync'
         }
       }
@@ -196,14 +194,12 @@ stage('Build with sync') {
 
         sh "${nuget} restore Realm.sln"
 
-        dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
+        dir('Tests/Tests.XamarinAndroid') {
           xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
         }
-
-        stash includes: "Platform.XamarinAndroid/Realm.Sync.XamarinAndroid/bin/${configuration}/Realm.Sync.*", name: 'nuget-android-sync'
       }
     },
     'PCL': {
@@ -240,7 +236,7 @@ def Win32Test(stashName) {
       unstash stashName
 
       def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
-      dir("Platform.Win32/Tests.Win32/bin/${configuration}") {
+      dir("Tests/Tests.Win32/bin/${configuration}") {
         try {
           withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
             bat """
@@ -343,12 +339,10 @@ stage('NuGet') {
         unstash 'nuget-weaver'
         unstash 'buildtasks-output'
         unstash 'nuget-pcl-database'
+        unstash 'nuget-database'
         unstash 'ios-wrappers-nosync'
-        unstash 'nuget-ios-database'
         unstash 'android-wrappers-nosync'
-        unstash 'nuget-android-database'
         unstash 'win32-wrappers-nosync'
-        unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
           sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
@@ -361,10 +355,9 @@ stage('NuGet') {
         getArchive()
 
         unstash 'nuget-pcl-sync'
+        unstash 'nuget-sync'
         unstash 'ios-wrappers-sync'
-        unstash 'nuget-ios-sync'
         unstash 'android-wrappers-sync'
-        unstash 'nuget-android-sync'
 
         dir('NuGet/Realm') {
           sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
