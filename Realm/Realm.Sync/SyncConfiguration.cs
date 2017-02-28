@@ -65,21 +65,21 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            return null;
-            //////var configuration = new Realms.Native.Configuration
-            //////{
-            //////    Path = DatabasePath,
-            //////    schema_version = SchemaVersion
-            //////};
-            ////
-            //////var syncConfiguration = new Native.SyncConfiguration
-            //////{
-            //////    SyncUserHandle = User.Handle,
-            //////    Url = ServerUri.ToString()
-            //////};
-            ////
-            //////var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            //////return new Realm(srHandle, this, schema);
+            // TODO: compiler crash
+            var configuration = new Realms.Native.Configuration
+            {
+                Path = DatabasePath,
+                schema_version = SchemaVersion
+            };
+            
+            var syncConfiguration = new Native.SyncConfiguration
+            {
+                SyncUserHandle = User.Handle,
+                Url = ServerUri.ToString()
+            };
+            
+            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
+            return new Realm(srHandle, this, schema);
         }
     }
 }

@@ -57,6 +57,9 @@ public class ModuleWeaver
     public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public Action<string> LogWarning { get; set; } = m => { };
+
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
@@ -1063,12 +1066,11 @@ public class ModuleWeaver
                 il.InsertBefore(start, Instruction.Create(OpCodes.Stelem_Ref));
             }
             
-            il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.RealmSchema_SetDefaultTypes));
+            il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.RealmSchema_AddDefaultTypes));
         }
         else
         {
-            // TODO
-            LogError("Entry point not found. Default schema will be empty.");
+            LogWarning("Entry point not found. Default schema will be empty.");
         }
     }
 

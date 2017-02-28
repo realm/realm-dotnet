@@ -37,14 +37,27 @@ namespace Realms.Schema
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(DefaultTypes ?? Enumerable.Empty<Type>()));
+        private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(_defaultTypes));
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>
-        /// Gets or sets the types which the default schema will contain.
+        /// Adds a collection of types to the default schema.
         /// </summary>
-        /// <value>The default types.</value>
-        public static IEnumerable<Type> DefaultTypes { get; set; }
+        /// <param name="types">Types to be added to the default schema.</param>
+        /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
+        public static void AddDefaultTypes(IEnumerable<Type> types)
+        {
+            if (_default.IsValueCreated)
+            {
+                throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema");
+            }
+
+            foreach (var type in types)
+            {
+                _defaultTypes.Add(type);
+            }
+        }
 
         /// <summary>
         /// Gets the number of known classes in the schema.

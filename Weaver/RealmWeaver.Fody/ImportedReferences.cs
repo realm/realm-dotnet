@@ -109,7 +109,7 @@ namespace RealmWeaver
 
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
-        public MethodReference RealmSchema_SetDefaultTypes { get; private set; }
+        public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
 
         protected ImportedReferences(ModuleDefinition module)
         {
@@ -262,14 +262,14 @@ namespace RealmWeaver
             WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenPropertyAttribute) { HasThis = true };
 
             var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
-            RealmSchema_SetDefaultTypes = new MethodReference("set_DefaultTypes", Types.Void, realmSchema) { HasThis = false };
+            RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.Void, realmSchema) { HasThis = false };
             {
                 var ienumerableOfType = new GenericInstanceType(IEnumerableOfT) 
                 { 
                     GenericArguments = { System_Type } 
                 };
             
-                RealmSchema_SetDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
+                RealmSchema_AddDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
             }
         }
 

@@ -128,8 +128,8 @@ namespace Realms.Sync
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            // TODO
-            // NativeCommon.reset_for_testing();
+            // TODO: compiler crash
+            NativeCommon.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
 
