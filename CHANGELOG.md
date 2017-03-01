@@ -4,6 +4,7 @@ x.y.z (TBD)
 ### Breaking Changes
 
 ### Enhancements
+- Added Azure Active Directory (AzureAD) credentials provider. (#1254)
 
 ### Bug fixes
 
