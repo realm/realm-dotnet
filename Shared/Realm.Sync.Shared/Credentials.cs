@@ -39,6 +39,8 @@ namespace Realms.Sync
             internal const string Password = "password";
 
             internal const string AccessToken = "accessToken";
+
+            internal const string AzureAD = "azuread";
         }
 
         internal static class Keys
@@ -127,6 +129,21 @@ namespace Realms.Sync
                 Token = username,
                 UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
             };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// </summary>
+        /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        public static Credentials AzureAD(string adToken)
+        {
+            if (adToken == null)
+            {
+                throw new ArgumentNullException(nameof(adToken));
+            }
+
+            return new Credentials { IdentityProvider = Providers.AzureAD, Token = adToken };
         }
 
         internal static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)

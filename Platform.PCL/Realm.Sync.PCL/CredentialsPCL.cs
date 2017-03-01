@@ -84,6 +84,17 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// </summary>
+        /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        public static Credentials AzureAD(string adToken)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Gets the identity provider for the credentials.
         /// </summary>
         /// <value>The identity provider, such as Google, Facebook, etc.</value>
