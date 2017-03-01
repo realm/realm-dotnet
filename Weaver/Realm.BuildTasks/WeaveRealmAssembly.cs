@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -46,26 +48,41 @@ namespace RealmBuildTasks
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public override bool Execute()
         {
-            AssemblyDefinition currentAssembly;
-            if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
+            try
             {
-                return false;
+                AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainAssemblyResolve;
+                AssemblyDefinition currentAssembly;
+                if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
+                {
+                    return false;
+                }
+
+                WeaveAssembly("Realm", currentAssembly);
+                WeaveAssembly("Realm.Sync", currentAssembly);
+
+                return true;
             }
-
-            WeaveAssembly("Realm", currentAssembly);
-            WeaveAssembly("Realm.Sync", currentAssembly);
-
-            return true;
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= OnCurrentDomainAssemblyResolve;
+            }
         }
 
         private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
         {
-            AssemblyDefinition assemblyToWeave;
-            if (!currentAssembly.MainModule.AssemblyReferences.Any(a => a.Name == name) ||
-                !TryReadAssembly(name, out assemblyToWeave))
+            if (!currentAssembly.MainModule.AssemblyReferences.Any(r => r.Name == name))
             {
-                // Assembly not found, nothing to weave
+                LogDebug($"Current assembly doesn't reference {name}. Skipping.");
                 return;
+            }
+
+            LogDebug($"Weaving {name}");
+
+            AssemblyDefinition assemblyToWeave;
+            if (!TryReadAssembly(name, out assemblyToWeave))
+            {
+                // Assembly not found, not weaving it will produce subtle runtime bugs, so it's safer to throw.
+                throw new Exception($"{name} is referenced by your project but was not found in {OutputDirectory}. Make sure that CopyLocal is set to True and try again.");
             }
 
             var targetFramework = currentAssembly.GetAttribute(typeof(TargetFrameworkAttribute).Name);
@@ -85,6 +102,10 @@ namespace RealmBuildTasks
             {
                 assemblyToWeave.Write(assemblyToWeave.MainModule.FullyQualifiedName);
                 LogDebug($"Woven {assemblyToWeave.Name} for {frameworkName.Identifier}");
+            }
+            else
+            {
+                LogDebug($"No changes woven for {assemblyToWeave.Name}");
             }
         }
 
@@ -145,6 +166,22 @@ namespace RealmBuildTasks
 
             assembly = null;
             return false;
+        }
+
+        // Invoked when looking for Cecil
+        private Assembly OnCurrentDomainAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var location = typeof(WeaveRealmAssembly).Assembly.Location;
+            var folder = Path.GetDirectoryName(location);
+
+            try
+            {
+                return Assembly.LoadFile(Path.Combine(folder, args.Name + ".dll"));
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
