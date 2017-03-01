@@ -2,8 +2,8 @@
 
 # Dependencies
 
-CORE_VER=2.3.1
-SYNC_VER=1.2.0
+CORE_VER=2.3.2
+SYNC_VER=1.2.1
 
 REALM_ENABLE_SYNC ?= 1
 
