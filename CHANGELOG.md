@@ -1,12 +1,8 @@
-x.y.z (TBD)
+1.1.0 (2017-03-02)
 ------------------
-
-### Breaking Changes
 
 ### Enhancements
 - Added Azure Active Directory (AzureAD) credentials provider. (#1254)
-
-### Bug fixes
 
 
 1.0.4 (2017-02-21)
