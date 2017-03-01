@@ -656,13 +656,15 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread. If no exception is thrown,
+        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
         /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in 
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread.
+        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
+        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
         /// </remarks>
         /// <example>
         /// <code>
@@ -696,6 +698,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(action));
             }
 
+            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
             {
                 await Task.Run(() =>
