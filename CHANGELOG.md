@@ -1,13 +1,15 @@
-x.y.z (TBD)
+1.1.0 (2017-03-03)
 ------------------
-
-### Breaking Changes
 
 ### Enhancements
 - Added Azure Active Directory (AzureAD) credentials provider. (#1254)
 
-### Bug fixes
+### Breaking Changes
+This is a preparation release for adding UWP support. We have removed all platform-specific logic from the Realm assemblies, and instead weave them in compile time. While this has been tested in all common scenarios, it may create issues with very complex project graphs. If you encounter any of these issues with iOS projects:
+- Compilation fails when running Task `WeaveRealmAssemblies`
+- App crashes when first accessing a Realm
 
+please file an issue and explain your solution setup.
 
 1.0.4 (2017-02-21)
 ------------------
