@@ -125,9 +125,9 @@ stage('Build without sync') {
         getArchive()
 
         bat """
-          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x86 /t:"Platform_Win32\\wrappers"
-          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /p:Platform=x64 /t:"Platform_Win32\\wrappers"
-          "${tool 'msbuild'}" Realm.sln /p:Configuration=${configuration} /t:"Platform_Win32\\Tests_Win32"
+          "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x86
+          "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x64
+          "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration}
         """
 
         stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
