@@ -15,12 +15,13 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v7.1</TargetFrameworkVersion>
     <MandroidI18n />
     <JavaMaximumHeapSize>
     </JavaMaximumHeapSize>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AndroidTlsProvider></AndroidTlsProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -86,10 +87,10 @@
       <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="Realm">
-      <HintPath>..\..\packages\Realm.Database.1.0.4\lib\MonoAndroid44\Realm.dll</HintPath>
+      <HintPath>..\..\packages\Realm.Database.1.1.0\lib\MonoAndroid44\Realm.dll</HintPath>
     </Reference>
     <Reference Include="Realm.Sync">
-      <HintPath>..\..\packages\Realm.1.0.4\lib\MonoAndroid44\Realm.Sync.dll</HintPath>
+      <HintPath>..\..\packages\Realm.1.1.0\lib\MonoAndroid44\Realm.Sync.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +132,6 @@
   <ItemGroup>
     <Folder Include="NativeLibs\" />
   </ItemGroup>
-  <Import Project="..\..\packages\Realm.Database.1.0.4\build\Realm.Database.targets" Condition="Exists('..\..\packages\Realm.Database.1.0.4\build\Realm.Database.targets')" />
-  <Import Project="..\..\packages\Realm.1.0.4\build\Realm.targets" Condition="Exists('..\..\packages\Realm.1.0.4\build\Realm.targets')" />
+  <Import Project="..\..\packages\Realm.Database.1.1.0\build\Realm.Database.targets" Condition="Exists('..\..\packages\Realm.Database.1.1.0\build\Realm.Database.targets')" />
+  <Import Project="..\..\packages\Realm.1.1.0\build\Realm.targets" Condition="Exists('..\..\packages\Realm.1.1.0\build\Realm.targets')" />
 </Project>
