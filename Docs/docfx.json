@@ -3,10 +3,10 @@
         {
             "src": [
                 {
-                    "src": "../Platform.Win32/",
+                    "src": "../Realm/",
                     "files": [
-                        "Realm.Win32/Realm.Win32.csproj",
-                        "Realm.Sync.Win32/Realm.Sync.Win32.csproj"
+                        "Realm/Realm.csproj",
+                        "Realm.Sync/Realm.Sync.csproj"
                     ],
                     "exclude": [
                         "**/obj/**",
