@@ -51,11 +51,14 @@ namespace RealmBuildTasks
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainAssemblyResolve;
-                AssemblyDefinition currentAssembly;
-                if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
+
+                var path = GetAssemblyPath(AssemblyName, isRealmAssembly: false);
+                if (!File.Exists(path))
                 {
                     return false;
                 }
+
+                var currentAssembly = AssemblyDefinition.ReadAssembly(path);
 
                 WeaveAssembly("Realm", currentAssembly);
                 WeaveAssembly("Realm.Sync", currentAssembly);
@@ -70,20 +73,23 @@ namespace RealmBuildTasks
 
         private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
         {
-            if (!currentAssembly.MainModule.AssemblyReferences.Any(r => r.Name == name))
+            var path = GetAssemblyPath(name);
+
+            if (!File.Exists(path))
             {
+                if (currentAssembly.MainModule.AssemblyReferences.Any(r => r.Name == name))
+                {
+                    // Assembly not found, not weaving it will produce subtle runtime bugs, so it's safer to throw.
+                    throw new Exception($"{name} is referenced by your project but was not found in {OutputDirectory}. Make sure that CopyLocal is set to True and try again.");
+                }
+
                 LogDebug($"Current assembly doesn't reference {name}. Skipping.");
                 return;
             }
 
             LogDebug($"Weaving {name}");
 
-            AssemblyDefinition assemblyToWeave;
-            if (!TryReadAssembly(name, out assemblyToWeave))
-            {
-                // Assembly not found, not weaving it will produce subtle runtime bugs, so it's safer to throw.
-                throw new Exception($"{name} is referenced by your project but was not found in {OutputDirectory}. Make sure that CopyLocal is set to True and try again.");
-            }
+            var assemblyToWeave = AssemblyDefinition.ReadAssembly(path);
 
             var targetFramework = currentAssembly.GetAttribute(typeof(TargetFrameworkAttribute).Name);
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
@@ -113,14 +119,14 @@ namespace RealmBuildTasks
         {
             var xamariniOSAssemlby = mainModule.AssemblyReferences.Single(r => r.Name == "Xamarin.iOS");
             var monoPInvokeCallbackAttribute = new TypeReference("ObjCRuntime", "MonoPInvokeCallbackAttribute", mainModule, xamariniOSAssemlby);
-            var system_Type = new TypeReference("System", "Type", mainModule, mainModule.TypeSystem.CoreLibrary);
+            var system_Type = new TypeReference("System", "Type", mainModule, mainModule.TypeSystem.Corlib);
             var monoPInvokeAttribute_Constructor = new MethodReference(".ctor", mainModule.TypeSystem.Void, monoPInvokeCallbackAttribute)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(system_Type) }
             };
 
-            var monoPInvokeAttribute_ConstructorRef = assemblyToWeave.MainModule.ImportReference(monoPInvokeAttribute_Constructor);
+            var monoPInvokeAttribute_ConstructorRef = assemblyToWeave.MainModule.Import(monoPInvokeAttribute_Constructor);
 
             var classes = assemblyToWeave.MainModule.GetTypes();
             var callbackMethods = classes.Select(c => c.Methods.Where(m => m.HasAttribute(NativeCallbackAttribute)))
@@ -157,7 +163,7 @@ namespace RealmBuildTasks
 
         private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
         {
-            var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
+            var path = GetAssemblyPath(name, isRealmAssembly);
             if (File.Exists(path))
             {
                 assembly = AssemblyDefinition.ReadAssembly(path);
@@ -168,9 +174,16 @@ namespace RealmBuildTasks
             return false;
         }
 
+        private string GetAssemblyPath(string name, bool isRealmAssembly = true)
+        {
+            return Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
+        }
+
         // Invoked when looking for Cecil
         private Assembly OnCurrentDomainAssemblyResolve(object sender, ResolveEventArgs args)
         {
+            LogDebug("Resolving: " + args.Name);
+
             var location = typeof(WeaveRealmAssembly).Assembly.Location;
             var folder = Path.GetDirectoryName(location);
 
