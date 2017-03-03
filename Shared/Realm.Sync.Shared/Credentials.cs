@@ -132,7 +132,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// Creates <see cref="Credentials"/> based on an Active Directory login.
         /// </summary>
         /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
