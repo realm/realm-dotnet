@@ -61,7 +61,6 @@ namespace RealmBuildTasks
                                 MessageImportance.Normal));
             }
 
-            AssemblyDefinition currentAssembly;
             _resolver = new DefaultAssemblyResolver();
             _resolver.AddSearchDirectory(IntermediateDirectory);
             _resolver.ResolveFailure += (sender, reference) =>
@@ -69,21 +68,33 @@ namespace RealmBuildTasks
                 return _resolver.Resolve("mscorlib");
             };
 
-            if (!TryReadAssembly(AssemblyName, out currentAssembly, isRealmAssembly: false))
+            try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainAssemblyResolve;
+                var path = GetAssemblyPath(AssemblyName, isRealmAssembly: false);
+                if (!File.Exists(path))
+                {
+                    return false;
+                }
 
-            WeaveAssembly("Realm", currentAssembly);
-            WeaveAssembly("Realm.Sync", currentAssembly);
+                var currentAssembly = AssemblyDefinition.ReadAssembly(path);
 
-            return true;
+                WeaveAssembly("Realm", currentAssembly);
+                WeaveAssembly("Realm.Sync", currentAssembly);
+
+                return true;
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= OnCurrentDomainAssemblyResolve;
+            }
         }
 
         private void WeaveAssembly(string name, AssemblyDefinition currentAssembly)
         {
-            AssemblyDefinition assemblyToWeave;
-            if (!currentAssembly.MainModule.AssemblyReferences.Any(a => a.Name == name) ||
-                !TryReadAssembly(name, out assemblyToWeave))
+            var path = GetAssemblyPath(name);
+
+            if (!File.Exists(path))
             {
                 if (currentAssembly.MainModule.AssemblyReferences.Any(r => r.Name == name))
                 {
@@ -97,7 +108,10 @@ namespace RealmBuildTasks
 
             LogDebug($"Weaving {name}");
 
-            var assemblyToWeave = AssemblyDefinition.ReadAssembly(path);
+            var assemblyToWeave = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+            {
+                AssemblyResolver = _resolver
+            });
 
             var targetFramework = currentAssembly.GetAttribute(typeof(TargetFrameworkAttribute).Name);
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
@@ -158,23 +172,6 @@ namespace RealmBuildTasks
             {
                 dllImportModule.Name = dllName;
             }
-        }
-
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
-        {
-            var path = Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
-            if (File.Exists(path))
-            {
-                assembly = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
-                {
-                    AssemblyResolver = _resolver
-                });
-
-                return true;
-            }
-
-            assembly = null;
-            return false;
         }
 
         private string GetAssemblyPath(string name, bool isRealmAssembly = true)
