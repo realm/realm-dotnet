@@ -16,15 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if TODO
-
 using System;
 using System.Globalization;
 using System.Reflection;
 
 namespace Realms
 {
-    internal class WovenGetterMethodInfo : MethodInfo
+    internal class WovenSetterMethodInfo : MethodInfo
     {
         private readonly MethodInfo _mi;
 
@@ -42,7 +40,7 @@ namespace Realms
 
         public override Type ReturnType => _mi.ReturnType;
 
-        public WovenGetterMethodInfo(MethodInfo mi)
+        public WovenSetterMethodInfo(MethodInfo mi)
         {
             if (mi == null)
             {
@@ -64,22 +62,24 @@ namespace Realms
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            var ro = obj as RealmObject;
-            if (ro == null || ro.IsValid)
+            var managingRealm = (obj as RealmObject)?.Realm;
+            Transaction writeTransaction = null;
+            if (managingRealm != null && !managingRealm.IsInTransaction)
             {
-                return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+                writeTransaction = managingRealm.BeginWrite();
             }
 
-            if (ReturnType.IsValueType)
+            var result = _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+
+            if (writeTransaction != null)
             {
-                return Activator.CreateInstance(ReturnType);
+                writeTransaction.Commit();
+                writeTransaction.Dispose();
             }
 
-            return null;
+            return result;
         }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
     }
 }
-
-#endif

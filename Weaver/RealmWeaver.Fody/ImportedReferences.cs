@@ -55,6 +55,12 @@ namespace RealmWeaver
 
         public TypeReference System_DateTimeOffset { get; }
 
+        public abstract TypeReference System_Reflection_IReflectableType { get; }
+
+        public abstract TypeReference System_Reflection_TypeInfo { get; }
+
+        public MethodReference TypeInfoHelper_GetInfo { get; private set; }
+
         public MethodReference System_DateTimeOffset_op_Inequality { get; private set; }
 
         public abstract TypeReference System_Collections_Generic_ListOfT { get; }
@@ -279,6 +285,20 @@ namespace RealmWeaver
             PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
         }
 
+        private void InitializeDataBinding(AssemblyNameReference dataBindingAssembly)
+        {
+            {
+                var typeInfoHelper = new TypeReference("Realms", "TypeInfoHelper", Module, dataBindingAssembly);
+                TypeInfoHelper_GetInfo = new MethodReference("GetInfo", System_Reflection_TypeInfo, typeInfoHelper)
+                {
+                    HasThis = false
+                };
+
+                var T = new GenericParameter(TypeInfoHelper_GetInfo) { Constraints = { RealmObject } };
+                TypeInfoHelper_GetInfo.GenericParameters.Add(T);
+            }
+        }
+
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)
         {
             var assembly = Module.AssemblyReferences.SingleOrDefault(a => a.Name == assemblyName);
@@ -308,6 +328,10 @@ namespace RealmWeaver
 
             public override TypeReference System_Linq_Queryable { get; }
 
+            public override TypeReference System_Reflection_IReflectableType { get; }
+
+            public override TypeReference System_Reflection_TypeInfo { get; }
+
             public NETFramework(ModuleDefinition module) : base(module)
             {
                 var System_Core = GetOrAddFrameworkReference("System.Core");
@@ -321,11 +345,18 @@ namespace RealmWeaver
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, System_Core);
 
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, System_Core);
+
+                System_Reflection_IReflectableType = new TypeReference("System.Reflection", "IReflectableType", Module, Types.CoreLibrary);
+                System_Reflection_TypeInfo = new TypeReference("System.Reflection", "TypeInfo", Module, Types.CoreLibrary);
             }
         }
 
         private sealed class NETPortable : ImportedReferences
         {
+            public override TypeReference System_Reflection_IReflectableType { get; }
+
+            public override TypeReference System_Reflection_TypeInfo { get; }
+
             public override TypeReference IQueryableOfT { get; }
 
             public override TypeReference System_Collections_Generic_ListOfT { get; }
@@ -344,6 +375,9 @@ namespace RealmWeaver
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Linq"));
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Linq.Queryable"));
+
+                System_Reflection_IReflectableType = new TypeReference("System.Reflection", "IReflectableType", Module, GetOrAddFrameworkReference("System.Reflection"));
+                System_Reflection_TypeInfo = new TypeReference("System.Reflection", "TypeInfo", Module, GetOrAddFrameworkReference("System.Reflection"));
             }
         }
 
@@ -377,6 +411,22 @@ namespace RealmWeaver
             if (realmAssembly != null)
             {
                 references.InitializeRealm(realmAssembly);
+
+                switch (frameworkName.Identifier)
+                {
+                    case "Xamarin.iOS":
+                    case "MonoAndroid":
+                    case ".NETStandard":
+                    case ".NETPortable":
+                        var dataBindingAssembly = module.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm.DataBinding");
+                        if (dataBindingAssembly == null)
+                        {
+                            dataBindingAssembly = new AssemblyNameReference("Realm.DataBinding", new Version(1, 0, 0, 0));
+                            module.AssemblyReferences.Add(dataBindingAssembly);
+                        }
+                        references.InitializeDataBinding(dataBindingAssembly);
+                        break;
+                }
             }
 
             return references;

@@ -16,29 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if TODO
-
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Realms
 {
     internal class RealmObjectTypeInfo : TypeDelegator
     {
-        // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
-        private static readonly ConcurrentDictionary<Type, RealmObjectTypeInfo> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeInfo>();
-
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
         private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
 
-        public static TypeInfo FromType(Type type)
-        {
-            return TypeCache.GetOrAdd(type, t => new RealmObjectTypeInfo(t));
-        }
-
-        private RealmObjectTypeInfo(Type type) : base(type)
+        internal RealmObjectTypeInfo(Type type) : base(type)
         {
         }
 
@@ -58,5 +47,3 @@ namespace Realms
         }
     }
 }
-
-#endif

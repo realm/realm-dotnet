@@ -131,6 +131,10 @@
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DataBinding\Realm.DataBinding.iOS\Realm.DataBinding.iOS.csproj">
+      <Project>{0A266CAC-EF4A-4BB0-A3D9-F2084F1B1012}</Project>
+      <Name>Realm.DataBinding.iOS</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">

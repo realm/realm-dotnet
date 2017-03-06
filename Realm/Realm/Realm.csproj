@@ -104,10 +104,6 @@
     <Compile Include="Native\SchemaProperty.cs" />
     <Compile Include="Native\SortDescriptorBuilder.cs" />
     <Compile Include="Native\SynchronizationContextEventLoopSignal.cs" />
-    <Compile Include="ReflectableType\RealmObjectTypeInfo.cs" />
-    <Compile Include="ReflectableType\WovenGetterMethodInfo.cs" />
-    <Compile Include="ReflectableType\WovenPropertyInfo.cs" />
-    <Compile Include="ReflectableType\WovenSetterMethodInfo.cs" />
     <Compile Include="Schema\ObjectSchema.cs" />
     <Compile Include="Schema\Property.cs" />
     <Compile Include="Schema\PropertyType.cs" />

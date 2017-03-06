@@ -19,9 +19,4 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Realm")]
-[assembly: InternalsVisibleTo("Realm.Sync")]
-[assembly: InternalsVisibleTo("Realm.DataBinding")]
-[assembly: InternalsVisibleTo("Tests.Win32")]
-[assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
-[assembly: InternalsVisibleTo("Tests.XamarinIOS")]
+[assembly: AssemblyTitle("Realm.DataBinding.PCL")]

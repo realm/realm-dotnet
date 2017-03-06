@@ -22,7 +22,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Realms.Native;
@@ -34,7 +33,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : IReflectableType, INotifyPropertyChanged, ISchemaSource
+    public class RealmObject : INotifyPropertyChanged, ISchemaSource
     {
         #region static
 
@@ -703,13 +702,6 @@ namespace Realms
         /// </example>
         protected virtual void OnPropertyChanged(string propertyName)
         {
-        }
-
-        TypeInfo IReflectableType.GetTypeInfo()
-        {
-            // TODO IReflectableType implementation should be in a separate nuget
-            // return RealmObjectTypeInfo.FromType(GetType());
-            return GetType().GetTypeInfo();
         }
 
         private void SubscribeForNotifications()

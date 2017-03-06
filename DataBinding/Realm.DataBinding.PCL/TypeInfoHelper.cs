@@ -16,12 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Realm")]
-[assembly: InternalsVisibleTo("Realm.Sync")]
-[assembly: InternalsVisibleTo("Realm.DataBinding")]
-[assembly: InternalsVisibleTo("Tests.Win32")]
-[assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
-[assembly: InternalsVisibleTo("Tests.XamarinIOS")]
+namespace Realms
+{
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public static class TypeInfoHelper
+    {
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        public static TypeInfo GetInfo<T>() where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+    }
+}

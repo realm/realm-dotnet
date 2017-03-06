@@ -16,34 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
-internal static class TypeHelper
+public partial class ModuleWeaver
 {
-    internal static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
+    private void WeaveReflectableType(TypeDefinition type)
     {
-        if (typeName == null)
+        if (_references.TypeInfoHelper_GetInfo == null)
         {
-            throw new ArgumentNullException(nameof(typeName));
+            return;
         }
 
-        if (assemblies.Length == 0)
+        type.Interfaces.Add(_references.System_Reflection_IReflectableType);
+
+        var getTypeInfo = new MethodDefinition("GetTypeInfo", DefaultMethodAttributes, _references.System_Reflection_TypeInfo);
         {
-            throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
+            var il = getTypeInfo.Body.GetILProcessor();
+            var fromType = new GenericInstanceMethod(_references.TypeInfoHelper_GetInfo) { GenericArguments = { type } };
+            il.Emit(OpCodes.Call, fromType);
+            il.Emit(OpCodes.Ret);
         }
 
-        foreach (var assembly in assemblies)
-        {
-            var type = assembly?.MainModule.Types.FirstOrDefault(x => x.Name == typeName);
-
-            if (type != null)
-            {
-                return type;
-            }
-        }
-
-        throw new ApplicationException("Unable to find type: " + typeName);
+        type.Methods.Add(getTypeInfo);
     }
 }
