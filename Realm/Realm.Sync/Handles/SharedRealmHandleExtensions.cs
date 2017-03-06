@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using Realms.Native;
 using Realms.Schema;
@@ -44,7 +45,7 @@ namespace Realms.Sync
 
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr session_handle_ptr);
 
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, char* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
@@ -153,10 +154,10 @@ namespace Realms.Sync
         }
 
         [NativeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, char* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
             var session = Session.Create(sessionHandlePtr);
-            var message = new string(messageBuffer, 0, (int)messageLength);
+            var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
 
             SessionException exception;
 

@@ -22,6 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Realms.Native;
 
 namespace Realms
@@ -41,12 +42,12 @@ namespace Realms
 
 #if DEBUG
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
+        public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
 
         [NativeCallback(typeof(DebugLoggerCallback))]
-        private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
+        private static unsafe void DebugLogger(byte* utf8String, IntPtr stringLen)
         {
-            var message = new string((char*)utf8String, 0, (int)stringLen);
+            var message = Encoding.UTF8.GetString(utf8String, (int)stringLen);
             Console.WriteLine(message);
         }
 
@@ -69,7 +70,7 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
 
-        public static void Initialize()
+        public static unsafe void Initialize()
         {
             if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework") &&
                 RuntimeInformation.OSDescription.Contains("Windows"))

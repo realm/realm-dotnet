@@ -29,13 +29,13 @@ namespace Realms
     internal unsafe struct NativeException
     {
         public RealmExceptionCodes type;
-        public char* messageBytes;
+        public byte* messageBytes;
         public IntPtr messageLength;
 
         internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             var message = (messageLength != IntPtr.Zero) ?
-                new string(messageBytes, 0, (int)messageLength)
+                Encoding.UTF8.GetString(messageBytes, (int)messageLength)
                 : "No further information available";
             NativeCommon.delete_pointer(messageBytes);
 
