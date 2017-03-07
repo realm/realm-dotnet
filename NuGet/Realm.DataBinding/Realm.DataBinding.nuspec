@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.8">
+    <id>Realm.DataBinding</id>
+    <version>$version$</version>
+    <title>Realm.DataBinding</title>
+    <authors>Realm</authors>
+    <owners>Realm</owners>
+    <developmentDependency>false</developmentDependency>
+    <licenseUrl>https://opensource.org/licenses/Apache-2.0</licenseUrl>
+    <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
+    <iconUrl>http://realm.io/img/favicon-32x32.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Realm is a mobile database: a replacement for SQLite and ORMs</description>
+    <summary />
+    <language>en-US</language>
+    <tags>Realm database db persistence sqlite</tags>
+    <dependencies>
+      <dependency id="NETStandard.Library" version="1.6.1"/>
+    </dependencies>
+  </metadata>
+  <files>
+<!-- PCL file -->
+    <file src="../../DataBinding/Realm.DataBinding.PCL/bin/$Configuration$/Realm.DataBinding.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+<!-- IOS file -->
+    <file src="../../DataBinding/Realm.DataBinding.iOS/bin/$Configuration$/Realm.DataBinding.*" target="lib/Xamarin.iOS10" />
+<!-- Android files -->
+    <file src="../../DataBinding/Realm.DataBinding.Android/bin/$Configuration$/Realm.DataBinding.*" target="lib/MonoAndroid44" />
+  </files>
+</package>

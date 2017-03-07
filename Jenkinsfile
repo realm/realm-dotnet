@@ -11,6 +11,9 @@ def mono = '/usr/local/bin/mono'
 def version
 def versionString
 
+def dataBindingVersion
+def dataBindingVersionString
+
 stage('Checkout') {
   node('xamarin-mac') {
     checkout([
@@ -24,8 +27,11 @@ stage('Checkout') {
         userRemoteConfigs: scm.userRemoteConfigs
       ])
 
-      version = readAssemblyVersion()
+      version = readAssemblyVersion('RealmAssemblyInfo.cs')
       versionString = "${version.major}.${version.minor}.${version.patch}"
+
+      dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
+      dataBindingVersionString = "${version.major}.${version.minor}.${version.patch}"
 
       sh "${nuget} restore Realm.sln"
 
@@ -88,6 +94,7 @@ stage('Build without sync') {
         xbuild("Tests/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "Realm/Realm/bin/iPhoneSimulator/${configuration}/Realm.*", name: 'nuget-database'
+        stash includes: "DataBinding/Realm.DataBinding.iOS/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-ios-databinding'
 
         dir("Tests/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-nosync'
@@ -112,11 +119,12 @@ stage('Build without sync') {
 
         unstash 'android-wrappers-nosync'
 
-        dir('Tests/Tests.XamarinAndroid') {
-          xbuild("Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
-          dir("bin/${configuration}") {
-            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
-          }
+        xbuild("Tests/Tests.XamarinAndroid/Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+
+        stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
+
+        dir("Tests/Tests.XamarinAndroid/bin/${configuration}") {
+          stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
         }
       }
     },
@@ -140,6 +148,7 @@ stage('Build without sync') {
         sh "${nuget} restore Realm.sln"
         xbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
+        stash includes: "DataBinding/Realm.DataBinding.PCL/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-pcl-databinding'
       }
     }
   )
@@ -364,12 +373,26 @@ stage('NuGet') {
           archive "Realm.${versionString}.nupkg"
         }
       }
+    },
+    'DataBinding': {
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+
+        unstash 'nuget-pcl-databinding'
+        unstash 'nuget-ios-databinding'
+        unstash 'nuget-android-databinding'
+      }
+
+      dir('NuGet/Realm.DataBinding') {
+          sh "${nuget} pack Realm.DataBinding.nuspec -version ${dataBindingVersionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          archive "Realm.DataBinding.${dataBindingVersionString}.nupkg"
+      }
     }
   )
 }
 
-def readAssemblyVersion() {
-  def assemblyInfo = readFile 'RealmAssemblyInfo.cs'
+def readAssemblyVersion(String file) {
+  def assemblyInfo = readFile file
 
   def match = (assemblyInfo =~ /\[assembly: AssemblyVersion\("(\d*).(\d*).(\d*).0"\)\]/)
   if (match) {
