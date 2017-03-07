@@ -106,8 +106,8 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
-  <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
-  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Shared\Tests.Shared.projitems')" />
+  <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
+  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
