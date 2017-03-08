@@ -35,6 +35,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.3.4\lib\netstandard1.0\DotNetCross.Memory.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
     </Reference>
@@ -157,10 +160,6 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DataBinding\DataBinding.Win32\DataBinding.Win32.csproj">
-      <Project>{9debb6f2-2ce7-4c5e-9645-4889d733bf14}</Project>
-      <Name>DataBinding.Win32</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj">
       <Project>{c0db0e07-4fbc-44d1-8e84-a074497385c6}</Project>
       <Name>Realm</Name>

@@ -16,10 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#if !WINDOWS
+
 using System.Reflection;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+
 
 namespace IntegrationTests
 {
@@ -341,3 +344,5 @@ namespace IntegrationTests
         }
     }
 }
+
+#endif

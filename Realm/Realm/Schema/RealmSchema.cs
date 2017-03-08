@@ -48,14 +48,13 @@ namespace Realms.Schema
         /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
         public static void AddDefaultTypes(IEnumerable<Type> types)
         {
-            if (_default.IsValueCreated)
-            {
-                throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema");
-            }
-
             foreach (var type in types)
             {
-                _defaultTypes.Add(type);
+                if (_defaultTypes.Add(type) &&
+                    _default.IsValueCreated)
+                {
+                    throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema. If you see this error, please report it to help@realm.io.");
+                }
             }
         }
 

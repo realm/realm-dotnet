@@ -50,7 +50,7 @@ public partial class ModuleWeaver
     internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
     internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
-    
+
     // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
@@ -152,7 +152,7 @@ public partial class ModuleWeaver
     public void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-        // Debugger.Launch();  
+        // Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
 
@@ -187,10 +187,7 @@ public partial class ModuleWeaver
             }
         }
 
-        var defaultSchemaTypes = matchingTypes.Where(t => t.CustomAttributes.All(a => a.AttributeType.Name != "ExplicitAttribute"))
-                                              .ToArray();
-
-        WeaveSchema(defaultSchemaTypes);
+        WeaveSchema(matchingTypes);
 
         submitAnalytics.Wait();
     }
@@ -228,7 +225,7 @@ public partial class ModuleWeaver
                                                       .Select(a => a.AttributeType.Name)
                                                       .Intersect(RealmPropertyAttributes)
                                                       .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
-                        
+
                         if (realmAttributeNames.Any())
                         {
                             LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
@@ -306,9 +303,9 @@ public partial class ModuleWeaver
         }
 
         var isRequired = prop.IsRequired();
-        if (isRequired && 
+        if (isRequired &&
             !prop.IsNullable() &&
-            prop.PropertyType.FullName != StringTypeName && 
+            prop.PropertyType.FullName != StringTypeName &&
             prop.PropertyType.FullName != ByteArrayTypeName)
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {prop.PropertyType.FullName}.");
@@ -1049,32 +1046,6 @@ public partial class ModuleWeaver
         realmObjectType.NestedTypes.Add(helperType);
 
         return helperType;
-    }
-
-    private void WeaveSchema(TypeDefinition[] types)
-    {
-        if (ModuleDefinition.EntryPoint != null)
-        {
-            var start = ModuleDefinition.EntryPoint.Body.Instructions.First();
-            var il = ModuleDefinition.EntryPoint.Body.GetILProcessor();
-            il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, types.Length));
-            il.InsertBefore(start, Instruction.Create(OpCodes.Newarr, _references.System_Type));
-
-            for (var i = 0; i < types.Length; i++)
-            {
-                il.InsertBefore(start, Instruction.Create(OpCodes.Dup));
-                il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, i));
-                il.InsertBefore(start, Instruction.Create(OpCodes.Ldtoken, types[i]));
-                il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.System_Type_GetTypeFromHandle));
-                il.InsertBefore(start, Instruction.Create(OpCodes.Stelem_Ref));
-            }
-            
-            il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.RealmSchema_AddDefaultTypes));
-        }
-        else
-        {
-            LogWarning("Entry point not found. Default schema will be empty.");
-        }
     }
 
     private class WeaveResult
