@@ -16,17 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if !WINDOWS
-
 using System.Reflection;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
 
-
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
+#if WINDOWS
+    [Ignore("ReflectableType is not respected by WPF.")]
+#endif
     public class ReflectableTypeTests : RealmInstanceTest
     {
         private const string DogName = "Sharo";
@@ -344,5 +344,3 @@ namespace IntegrationTests
         }
     }
 }
-
-#endif
