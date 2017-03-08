@@ -24,7 +24,7 @@ using RealmBuildTasks;
 
 namespace RealmTasks.Tests
 {
-    class MainClass
+    internal class MainClass
     {
         public static void Main(string[] args)
         {
