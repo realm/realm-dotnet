@@ -40,6 +40,16 @@ namespace Realms.Schema
         /// <value>The number of known classes.</value>
         public int Count { get; }
 
+        /// <summary>
+        /// Adds a collection of types to the default schema.
+        /// </summary>
+        /// <param name="types">Types to be added to the default schema.</param>
+        /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
+        public static void AddDefaultTypes(IEnumerable<Type> types)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
         private RealmSchema()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

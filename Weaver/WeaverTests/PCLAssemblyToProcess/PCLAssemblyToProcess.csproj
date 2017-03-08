@@ -42,6 +42,10 @@
       <Project>{a80a308a-3aff-43f8-9186-383aaf148ca4}</Project>
       <Name>Realm.FakeForWeaverTests</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\DataBinding\Realm.DataBinding.PCL\Realm.DataBinding.PCL.csproj">
+      <Project>{F7D3FB29-7D55-4703-AD6A-0E43758E77A4}</Project>
+      <Name>Realm.DataBinding.PCL</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyToProcess\ClassWithStaticProperty.cs">

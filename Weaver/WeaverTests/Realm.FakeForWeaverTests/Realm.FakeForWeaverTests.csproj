@@ -72,6 +72,7 @@
     <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs">
       <Link>IRealmObjectHelper.cs</Link>
     </Compile>
+    <Compile Include="RealmSchema.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
