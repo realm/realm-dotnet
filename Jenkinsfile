@@ -6,6 +6,7 @@ configuration = 'Debug'
 
 xbuildCmd = '/usr/local/bin/xbuild'
 nugetCmd = '/usr/local/bin/nuget'
+def windowsNugetCmd = 'C:\\ProgramData\\chocolatey\\bin\\NuGet.exe'
 def mono = '/usr/local/bin/mono'
 
 def version
@@ -138,6 +139,7 @@ stage('Build without sync') {
         unstash 'tools-weaver'
 
         bat """
+          "${windowsNugetCmd}" restore Realm.sln
           "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x86 /p:SolutionDir="${workspace}/"
           "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x64 /p:SolutionDir="${workspace}/"
           "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration} /p:SolutionDir="${workspace}/"
