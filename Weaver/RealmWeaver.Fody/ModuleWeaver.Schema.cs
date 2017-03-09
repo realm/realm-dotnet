@@ -26,6 +26,12 @@ public partial class ModuleWeaver
 {
     private void WeaveSchema(TypeDefinition[] types)
     {
+        if (_references.RealmSchema_AddDefaultTypes == null)
+        {
+            // Realm is added, but not used, so we don't need to weave schema
+            return;
+        }
+
         var allTypes = GetReferencedTypes().Where(t => t != null)
                                            .Where(t => t.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"))
                                            .Concat(types)
