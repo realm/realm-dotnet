@@ -17,18 +17,22 @@
     <tags>Realm database db persistence sqlite</tags>
     <dependencies>
       <dependency id="Realm.Database" version="$version$"/>
+      <dependency id="Newtonsoft.Json" version="9.0.1"/>
+      <dependency id="System.Collections.Concurrent" version="4.3.0"/>
+      <dependency id="System.Net.Http" version="4.3.0"/>
+      <dependency id="System.Threading.Timer" version="4.3.0"/>
     </dependencies>
   </metadata>
   <files>
 <!-- PCL file -->
     <file src="../../Platform.PCL/Realm.Sync.PCL/bin/$Configuration$/Realm.Sync.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+<!-- NETStandard file -->
+    <file src="../../Realm/Realm.Sync/bin/$Configuration$/Realm.Sync.*" target="lib/netstandard1.4" />
 <!-- IOS file -->
-    <file src="../../Platform.XamarinIOS/Realm.Sync.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.Sync.*" target="lib/Xamarin.iOS10" />
     <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="native/ios/universal" />
 <!-- Targets file adds adds references to native libs -->
     <file src="Realm.targets" target="build" />
 <!-- Android files -->
-    <file src="../../Platform.XamarinAndroid/Realm.Sync.XamarinAndroid/bin/$Configuration$/Realm.Sync.*" target="lib/MonoAndroid44" />
     <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/librealm-wrappers.so" target="native/android/armeabi-v7a" />
     <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
     <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="native/android/x86" />

@@ -387,11 +387,11 @@ stage('NuGet') {
         unstash 'nuget-pcl-databinding'
         unstash 'nuget-ios-databinding'
         unstash 'nuget-android-databinding'
-      }
 
-      dir('NuGet/Realm.DataBinding') {
+        dir('NuGet/Realm.DataBinding') {
           nuget("pack Realm.DataBinding.nuspec -version ${dataBindingVersionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
           archive "Realm.DataBinding.${dataBindingVersionString}.nupkg"
+        }
       }
     }
   )

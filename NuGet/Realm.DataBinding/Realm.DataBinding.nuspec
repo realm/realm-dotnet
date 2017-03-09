@@ -16,7 +16,6 @@
     <language>en-US</language>
     <tags>Realm database db persistence sqlite</tags>
     <dependencies>
-      <dependency id="NETStandard.Library" version="1.6.1"/>
     </dependencies>
   </metadata>
   <files>

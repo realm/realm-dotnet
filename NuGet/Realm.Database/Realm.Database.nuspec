@@ -17,8 +17,18 @@
     <tags>Realm database db persistence sqlite</tags>
     <dependencies>
       <dependency id="Fody" version="1.29.4"/>
+      <dependency id="Realm.DataBinding" version="1.0.0"/>
       <dependency id="DotNetCross.Memory.Unsafe" version="0.2.2"/>
       <dependency id="Remotion.Linq" version="2.1.1"/>
+      <dependency id="System.Console" version="4.3.0"/>
+      <dependency id="System.Diagnostics.Tools" version="4.3.0"/>
+      <dependency id="System.Dynamic.Runtime" version="4.3.0"/>
+      <dependency id="System.Globalization" version="4.3.0"/>
+      <dependency id="System.IO.FileSystem" version="4.3.0"/>
+      <dependency id="System.Reflection.Primitives" version="4.3.0"/>
+      <dependency id="System.Reflection.TypeExtensions" version="4.3.0"/>
+      <dependency id="System.Runtime.InteropServices" version="4.3.0"/>
+      <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0"/>
     </dependencies>
   </metadata>
   <files>
@@ -30,19 +40,18 @@
      <file src="FodyWeavers.xml.uninstall.xdt" target="content"/>
 <!-- PCL file -->
     <file src="../../Platform.PCL/Realm.PCL/bin/$Configuration$/Realm.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+<!-- NETStandard file -->
+    <file src="../../Realm/Realm/bin/$Configuration$/Realm.*" target="lib/netstandard1.4" />
 <!-- IOS file -->
-    <file src="../../Platform.XamarinIOS/Realm.XamarinIOS/bin/iPhoneSimulator/$Configuration$/Realm.*" target="lib/Xamarin.iOS10" />
     <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="native/ios/universal" />
 <!-- Targets file adds references to native libs and copies RealmWeaver -->
     <file src="Realm.Database.targets" target="build" />
 <!-- Android files -->
-    <file src="../../Platform.XamarinAndroid/Realm.XamarinAndroid/bin/$Configuration$/Realm.*" target="lib/MonoAndroid44" />
     <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/librealm-wrappers.so" target="native/android/armeabi-v7a" />
     <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
     <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="native/android/x86" />
     <file src="../../wrappers/build/$Configuration$-android/x86_64/librealm-wrappers.so" target="native/android/x86_64" />
-    <!-- Win32 files -->
-    <file src="../../Platform.Win32/Realm.Win32/bin/$Configuration$/Realm.*" target="lib/net452" />
+<!-- Win32 files -->
     <file src="../../wrappers/build/$Configuration$-Win32/realm-wrappers.dll" target="native/win32/x86" />
     <file src="../../wrappers/build/$Configuration$-x64/realm-wrappers.dll" target="native/win32/x64" />
   </files>
