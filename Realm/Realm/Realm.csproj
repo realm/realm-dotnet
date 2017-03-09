@@ -10,6 +10,7 @@
     <AssemblyName>Realm</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <DocumentationFile>bin\$(Configuration)\Realm.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

@@ -10,7 +10,8 @@
     <AssemblyName>Realm.Sync</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-  </PropertyGroup>
+   <DocumentationFile>bin\$(Configuration)\Realm.Sync.xml</DocumentationFile>
+   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
