@@ -72,17 +72,25 @@ namespace Realms
 
         public static unsafe void Initialize()
         {
-            if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework") &&
-                RuntimeInformation.OSDescription.Contains("Windows"))
+            try
             {
-                var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-                if (assemblyLocationPI != null)
+                if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework") &&
+                    RuntimeInformation.OSDescription.Contains("Windows"))
                 {
-                    var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
-                    var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                    Environment.SetEnvironmentVariable("PATH", path);
+                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+                    if (assemblyLocationPI != null)
+                    {
+                        var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                        var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
+                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                        Environment.SetEnvironmentVariable("PATH", path);
+                    }
                 }
+            }
+            catch
+            {
+                // HACK
+                // RuntimeInformation seems to throw on Android. As we're only interested in windows, swallow the exception.
             }
 
 #if DEBUG
