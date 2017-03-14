@@ -5,8 +5,7 @@
     AssemblyFile="$(MSBuildThisFileDirectory)../tools/Realm.BuildTasks.dll" />
   <Target
     Name="WeaveRealmAssemblyTarget" 
-    AfterTargets="AfterCompile"
-    BeforeTargets="DeployOutputFiles"
+    BeforeTargets="_CompileToNative"
     Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
     <ItemGroup>
       <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
