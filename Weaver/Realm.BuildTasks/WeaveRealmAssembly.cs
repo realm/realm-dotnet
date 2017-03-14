@@ -158,7 +158,7 @@ namespace RealmBuildTasks
                 $"WeaveRealmAssembly: {message}",
                 string.Empty,
                 "BuildTasks",
-                MessageImportance.Normal));
+                MessageImportance.High));
         }
 
         private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)

@@ -9,6 +9,8 @@
     Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
     <ItemGroup>
       <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
+      <ReferencePath Include="$(OutputPath)Realm.dll" Condition="Exists('$(OutputPath)Realm.dll')"/>
+      <ReferencePath Include="$(OutputPath)Realm.Sync.dll" Condition="Exists('$(OutputPath)Realm.Sync.dll')"/>
       <ReferencePath Remove="@(FilteredReferences)" />
       <ReferenceCopyLocalPaths Remove="@(FilteredReferences)" />
     </ItemGroup>
