@@ -100,7 +100,7 @@ namespace Realms.Sync
         /// <remarks>
         /// Users are persisted in a realm file within the application's sandbox.
         /// <para>
-        /// By default <see cref="User"/> objects are persisted and are additionaly protected with an encryption key stored
+        /// By default <see cref="User"/> objects are persisted and are additionally protected with an encryption key stored
         /// in the iOS Keychain when running on an iOS device (but not on a Simulator).
         /// On Android users are persisted in plaintext, because the AndroidKeyStore API is only supported on API level 18 and up.
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
