@@ -1,3 +1,10 @@
+x.y.z (TBD)
+------------------
+
+### Bug fixes
+
+- Resolved an issue that prevented compiling for iOS on Visual Studio. (#1277)
+
 1.1.0 (2017-03-03)
 ------------------
 
