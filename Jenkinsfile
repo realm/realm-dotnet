@@ -4,15 +4,11 @@ wrapperConfigurations = [
 ]
 configuration = 'Debug'
 
-xbuildCmd = '/usr/local/bin/xbuild'
-def nuget = '/usr/local/bin/nuget'
-def mono = '/usr/local/bin/mono'
-
 def version
 def versionString
 
 stage('Checkout') {
-  node('xamarin-mac') {
+  node('macos && xamarin') {
     checkout([
         $class: 'GitSCM',
         branches: scm.branches,
@@ -27,7 +23,7 @@ stage('Checkout') {
       version = readAssemblyVersion()
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
-      sh "${nuget} restore Realm.sln"
+      sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
       stash includes: '**', name: 'dotnet-source'
       deleteDir()
@@ -41,20 +37,20 @@ def getArchive() {
 stage('Weavers') {
   parallel(
     'RealmWeaver': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
         dir('Weaver/WeaverTests/RealmWeaver.Tests') {
           xbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration}")
-          sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          sh "${env.MONO_TOOLS_ROOT}/mono \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
           publishTests 'TestResult.xml'
         }
         stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
       }
     },
     'BuildTasks': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
@@ -79,7 +75,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
         unstash 'ios-wrappers-nosync'
@@ -95,18 +91,16 @@ stage('Build without sync') {
       }
     },
     'Android': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-          }
+          sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
         }
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
@@ -137,9 +131,9 @@ stage('Build without sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
         xbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
       }
@@ -159,13 +153,13 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'ios-wrappers-sync'
         unstash 'buildtasks-output'
 
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
         xbuild("Platform.XamarinIOS/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
@@ -177,24 +171,22 @@ stage('Build with sync') {
       }
     },
     'Android': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]}"
-          }
+          sh "make android${wrapperConfigurations[configuration]}"
         }
 
         stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
         def workspace = pwd()
 
         unstash 'android-wrappers-sync'
 
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
 
         dir('Platform.XamarinAndroid/Tests.XamarinAndroid') {
           xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
@@ -207,9 +199,9 @@ stage('Build with sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
-        sh "${nuget} restore Realm.sln"
+        sh "${env.MONO_TOOLS_ROOT}/nuget restore Realm.sln"
         xbuild("Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
@@ -337,7 +329,7 @@ def stopLogCatCollector(String backgroundPid, boolean archiveLog, String archive
 stage('NuGet') {
   parallel(
     'Realm.Database': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'nuget-weaver'
@@ -351,13 +343,13 @@ stage('NuGet') {
         unstash 'nuget-win32-database'
 
         dir('NuGet/Realm.Database') {
-          sh "${nuget} pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          sh "${env.MONO_TOOLS_ROOT}/nuget pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
           archive "Realm.Database.${versionString}.nupkg"
         }
       }
     },
     'Realm': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && xamarin') {
         getArchive()
 
         unstash 'nuget-pcl-sync'
@@ -367,7 +359,7 @@ stage('NuGet') {
         unstash 'nuget-android-sync'
 
         dir('NuGet/Realm') {
-          sh "${nuget} pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
+          sh "${env.MONO_TOOLS_ROOT}/nuget pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}"
           archive "Realm.${versionString}.nupkg"
         }
       }
@@ -405,7 +397,7 @@ def nodeWithCleanup(String label, Closure steps) {
 }
 
 def xbuild(String arguments) {
-  def exitCode = sh returnStatus: true, script: "${xbuildCmd} ${arguments} > xbuildOutput"
+  def exitCode = sh returnStatus: true, script: "${env.MONO_TOOLS_ROOT}/xbuild ${arguments} > xbuildOutput"
   def out = readFile('xbuildOutput')
   echo out
   if (exitCode != 0) {
