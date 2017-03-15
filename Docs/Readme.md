@@ -8,6 +8,7 @@ Currently docfx only seems to [work on Windows](https://github.com/docascode/doc
 
 1. Run `choco install docfx`.
 1. Run `choco install nuget.commandline`.
+1. Make sure you have [Visual Studio 2015](https://www.visualstudio.com/vs/) or [Microsoft Build Tools 2015](https://www.microsoft.com/en-us/download/details.aspx?id=48159) installed.
 
 ## Building the docs
 1. Open cmd in `$SolutionDir\Docs` and run `nuget restore -PackagesDirectory ../packages`.
