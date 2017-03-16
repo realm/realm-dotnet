@@ -42,11 +42,9 @@ target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
 target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(realm-wrappers PUBLIC realm-object-store realm ${PLATFORM_LIBRARIES})
 
-install(TARGETS realm-wrappers
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-	RUNTIME DESTINATION bin
-)
+set(runtime_target $<CONFIG>-${CMAKE_GENERATOR_PLATFORM})
+
+install(TARGETS realm-wrappers RUNTIME DESTINATION ${runtime_target})
 if(MSVC)
-	install(FILES $<TARGET_PDB_FILE:realm-wrappers> DESTINATION bin OPTIONAL)
+	install(FILES $<TARGET_PDB_FILE:realm-wrappers> DESTINATION ${runtime_target} OPTIONAL)
 endif()
