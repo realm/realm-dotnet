@@ -69,14 +69,26 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
+    <Content Condition="'$(Platform)' == 'x86'" Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\wrappers\build\$(Configuration)-x64\realm-wrappers.dll">
+    </Content>
+    <Content Condition="'$(Platform)' == 'x64'" Include="..\..\wrappers\build\$(Configuration)-x64\realm-wrappers.dll">
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'AnyCPU'">
+    <Content Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
+      <Link>lib\win32\x86\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\wrappers\build\$(Configuration)-x64\realm-wrappers.dll">
+      <Link>lib\win32\x64\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="FodyWeavers.xml" />
     <None Include="..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
