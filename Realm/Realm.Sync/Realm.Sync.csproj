@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2015403A-59D2-47F2-8E18-7DF85BB98467}</ProjectGuid>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Realm.Sync</RootNamespace>
+    <AssemblyName>Realm.Sync</AssemblyName>
+    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+   <DocumentationFile>bin\$(Configuration)\Realm.Sync.xml</DocumentationFile>
+   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Credentials.cs" />
+    <Compile Include="Session.cs" />
+    <Compile Include="SessionState.cs" />
+    <Compile Include="SyncConfiguration.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserPersistenceMode.cs" />
+    <Compile Include="UserState.cs" />
+    <Compile Include="Exceptions\AuthenticationException.cs" />
+    <Compile Include="Exceptions\ClientResetException.cs" />
+    <Compile Include="Exceptions\ErrorCode.cs" />
+    <Compile Include="Exceptions\ErrorCodeHelper.cs" />
+    <Compile Include="Exceptions\HttpException.cs" />
+    <Compile Include="Exceptions\SessionException.cs" />
+    <Compile Include="Extensions\RealmSyncExtensions.cs" />
+    <Compile Include="Extensions\TestingExtensions.cs" />
+    <Compile Include="Handles\SessionHandle.cs" />
+    <Compile Include="Handles\SharedRealmHandleExtensions.cs" />
+    <Compile Include="Handles\SyncUserHandle.cs" />
+    <Compile Include="Helpers\AuthenticationHelper.cs" />
+    <Compile Include="Native\StringStringPair.cs" />
+    <Compile Include="Native\SyncConfiguration.cs" />
+    <Compile Include="Permissions\IPermissionObject.cs" />
+    <Compile Include="Permissions\ManagementObjectStatus.cs" />
+    <Compile Include="Permissions\Permission.cs" />
+    <Compile Include="Permissions\PermissionChange.cs" />
+    <Compile Include="Permissions\PermissionOffer.cs" />
+    <Compile Include="Permissions\PermissionOfferResponse.cs" />
+    <Compile Include="Permissions\UserPermissionsExtensions.cs" />
+    <Compile Include="ProgressNotifications\ProgressDirection.cs" />
+    <Compile Include="ProgressNotifications\ProgressMode.cs" />
+    <Compile Include="ProgressNotifications\SyncProgress.cs" />
+    <Compile Include="ProgressNotifications\SyncProgressObservable.cs" />
+    <Compile Include="..\..\RealmAssemblyInfo.cs">
+      <Link>Properties\RealmAssemblyInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+    <None Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Realm\Realm.csproj">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+	<Import Project="..\..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
+</Project>

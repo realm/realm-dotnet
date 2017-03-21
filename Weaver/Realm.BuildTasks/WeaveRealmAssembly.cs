@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -33,6 +33,10 @@ namespace RealmBuildTasks
     {
         private const string NativeCallbackAttribute = "NativeCallbackAttribute";
 
+        private DefaultAssemblyResolver _resolver;
+
+        internal Action<string> LogDebug { get; set; }
+
         [Required]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public string OutputDirectory { get; set; }
@@ -48,10 +52,25 @@ namespace RealmBuildTasks
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public override bool Execute()
         {
+            if (LogDebug == null)
+            {
+                LogDebug = message => BuildEngine?.LogMessageEvent(new BuildMessageEventArgs(
+                                $"WeaveRealmAssembly: {message}",
+                                string.Empty,
+                                "BuildTasks",
+                                MessageImportance.Normal));
+            }
+
+            _resolver = new DefaultAssemblyResolver();
+            _resolver.AddSearchDirectory(IntermediateDirectory);
+            _resolver.ResolveFailure += (sender, reference) =>
+            {
+                return _resolver.Resolve("mscorlib");
+            };
+
             try
             {
                 AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainAssemblyResolve;
-
                 var path = GetAssemblyPath(AssemblyName, isRealmAssembly: false);
                 if (!File.Exists(path))
                 {
@@ -89,7 +108,10 @@ namespace RealmBuildTasks
 
             LogDebug($"Weaving {name}");
 
-            var assemblyToWeave = AssemblyDefinition.ReadAssembly(path);
+            var assemblyToWeave = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
+            {
+                AssemblyResolver = _resolver
+            });
 
             var targetFramework = currentAssembly.GetAttribute(typeof(TargetFrameworkAttribute).Name);
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
@@ -150,28 +172,6 @@ namespace RealmBuildTasks
             {
                 dllImportModule.Name = dllName;
             }
-        }
-
-        private void LogDebug(string message)
-        {
-            BuildEngine.LogMessageEvent(new BuildMessageEventArgs(
-                $"WeaveRealmAssembly: {message}",
-                string.Empty,
-                "BuildTasks",
-                MessageImportance.High));
-        }
-
-        private bool TryReadAssembly(string name, out AssemblyDefinition assembly, bool isRealmAssembly = true)
-        {
-            var path = GetAssemblyPath(name, isRealmAssembly);
-            if (File.Exists(path))
-            {
-                assembly = AssemblyDefinition.ReadAssembly(path);
-                return true;
-            }
-
-            assembly = null;
-            return false;
         }
 
         private string GetAssemblyPath(string name, bool isRealmAssembly = true)

@@ -293,13 +293,15 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread. If no exception is thrown,
+        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
         /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in 
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread.
+        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
+        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
         /// </remarks>
         /// <example>
         /// <code>
@@ -564,7 +566,7 @@ namespace Realms
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm.</exception>
         [Obsolete("This method has been renamed. Use Add for the same results.")]
         public void Manage<T>(T obj, bool update) where T : RealmObject
         {

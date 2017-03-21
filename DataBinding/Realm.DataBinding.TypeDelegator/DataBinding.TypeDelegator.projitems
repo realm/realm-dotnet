@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{519E6D0A-7DCF-45F6-A40A-0260EAEA0DF7}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Realms</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RealmObjectTypeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WovenGetterMethodInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WovenPropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WovenSetterMethodInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeInfoHelper.cs" />
+  </ItemGroup>
+</Project>

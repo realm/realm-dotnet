@@ -26,8 +26,10 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
 [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-public class ModuleWeaver
+public partial class ModuleWeaver
 {
+    private const MethodAttributes DefaultMethodAttributes = MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot;
+
     internal const string StringTypeName = "System.String";
     internal const string ByteArrayTypeName = "System.Byte[]";
     internal const string CharTypeName = "System.Char";
@@ -48,13 +50,16 @@ public class ModuleWeaver
     internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
     internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
-    
+
     // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
+
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public Action<string> LogWarning { get; set; } = m => { };
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
@@ -147,7 +152,7 @@ public class ModuleWeaver
     public void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-        // Debugger.Launch();  
+        // Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
 
@@ -169,7 +174,8 @@ public class ModuleWeaver
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
-        foreach (var type in GetMatchingTypes())
+        var matchingTypes = GetMatchingTypes().ToArray();
+        foreach (var type in matchingTypes)
         {
             try
             {
@@ -180,6 +186,8 @@ public class ModuleWeaver
                 LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
             }
         }
+
+        WeaveSchema(matchingTypes);
 
         submitAnalytics.Wait();
     }
@@ -217,7 +225,7 @@ public class ModuleWeaver
                                                       .Select(a => a.AttributeType.Name)
                                                       .Intersect(RealmPropertyAttributes)
                                                       .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
-                        
+
                         if (realmAttributeNames.Any())
                         {
                             LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
@@ -268,7 +276,8 @@ public class ModuleWeaver
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
         wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_references.System_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
-        Debug.WriteLine(string.Empty);
+
+        WeaveReflectableType(type);
     }
 
     private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable)
@@ -294,9 +303,9 @@ public class ModuleWeaver
         }
 
         var isRequired = prop.IsRequired();
-        if (isRequired && 
+        if (isRequired &&
             !prop.IsNullable() &&
-            prop.PropertyType.FullName != StringTypeName && 
+            prop.PropertyType.FullName != StringTypeName &&
             prop.PropertyType.FullName != ByteArrayTypeName)
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {prop.PropertyType.FullName}.");
@@ -678,7 +687,7 @@ public class ModuleWeaver
 
         helperType.Interfaces.Add(_references.IRealmObjectHelper);
 
-        var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, _references.RealmObject);
+        var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObject);
         {
             var il = createInstance.Body.GetILProcessor();
             il.Emit(OpCodes.Newobj, objectConstructor);
@@ -687,7 +696,7 @@ public class ModuleWeaver
 
         helperType.Methods.Add(createInstance);
 
-        var copyToRealm = new MethodDefinition("CopyToRealm", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.TypeSystem.Void);
+        var copyToRealm = new MethodDefinition("CopyToRealm", DefaultMethodAttributes, ModuleDefinition.TypeSystem.Void);
         {
             // This roughly translates to
             /*
@@ -974,7 +983,7 @@ public class ModuleWeaver
         copyToRealm.CustomAttributes.Add(new CustomAttribute(_references.PreserveAttribute_Constructor));
         helperType.Methods.Add(copyToRealm);
 
-        var getPrimaryKeyValue = new MethodDefinition("TryGetPrimaryKeyValue", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.TypeSystem.Boolean);
+        var getPrimaryKeyValue = new MethodDefinition("TryGetPrimaryKeyValue", DefaultMethodAttributes, ModuleDefinition.TypeSystem.Boolean);
         {
             var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObject);
             getPrimaryKeyValue.Parameters.Add(instanceParameter);
