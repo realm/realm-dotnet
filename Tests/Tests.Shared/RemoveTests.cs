@@ -94,7 +94,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void RemoveAllRemovesAllObjectsOfAGivenType()
+        public void RemoveAll_WhenGeneric_RemovesAllObjectsOfAGivenType()
         {
             // Arrange
             _realm.Write(() =>
@@ -102,12 +102,32 @@ namespace IntegrationTests
                 _realm.Add(new Person());
                 _realm.Add(new Person());
                 _realm.Add(new Person());
-
-                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
             });
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
 
             // Act
             _realm.Write(() => _realm.RemoveAll<Person>());
+
+            // Assert
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemoveAll_WhenDynamic_RemovesAllObjectsOfAGivenType()
+        {
+            // Arrange
+            _realm.Write(() =>
+            {
+                _realm.Add(new Person());
+                _realm.Add(new Person());
+                _realm.Add(new Person());
+            });
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
+
+            // Act
+            _realm.Write(() => _realm.RemoveAll(nameof(Person)));
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));

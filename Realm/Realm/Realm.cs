@@ -909,7 +909,7 @@ namespace Realms
         /// If <c>range</c> is not the result of <see cref="All{T}"/> or subsequent LINQ filtering.
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
-        public void RemoveRange<T>(IQueryable<T> range)
+        public void RemoveRange<T>(IQueryable<T> range) where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -958,7 +958,8 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            RemoveRange(All(className));
+            var query = (RealmResults<RealmObject>)All(className);
+            query.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>
