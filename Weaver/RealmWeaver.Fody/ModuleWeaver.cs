@@ -187,6 +187,8 @@ public partial class ModuleWeaver
             }
         }
 
+        LogDebug("trololo");
+
         WeaveSchema(matchingTypes);
 
         submitAnalytics.Wait();
@@ -782,6 +784,12 @@ public partial class ModuleWeaver
                     // *addPlaceholder* will be the Brfalse instruction that will skip the call to Add if the field is null.
                     Instruction addPlaceholder = null;
 
+                    // We can skip setting properties that have their default values unless:
+                    var shouldSetAlways = property.IsNullable() ||     // The property is nullable - those should be set explicitly to null
+                                          property.IsPrimaryKey() ||   // setPrimaryKey should always be called as the first instruction
+                                          property.IsRequired() ||     // Needed for validating that the property is not null (string)
+                                          property.IsDateTimeOffset(); // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
+
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!setPrimaryKey || castInstance.field != default(fieldType))
                     // {
@@ -809,7 +817,7 @@ public partial class ModuleWeaver
                         il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_Add) { GenericArguments = { field.FieldType } }));
                         il.Append(il.Create(OpCodes.Pop));
                     }
-                    else if (!property.IsNullable() && !property.IsPrimaryKey() && !property.IsRequired())
+                    else if (!shouldSetAlways)
                     {
                         il.Append(il.Create(OpCodes.Ldarg_3));
                         setPrimaryKeyPlaceholder = il.Create(OpCodes.Nop);
@@ -818,15 +826,7 @@ public partial class ModuleWeaver
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
 
-                        if (property.IsDateTimeOffset())
-                        {
-                            // DateTimeOffset's default value is not falsy, so we need to create a new instance and compare to that.
-                            il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
-                            il.Append(il.Create(OpCodes.Initobj, field.FieldType));
-                            il.Append(il.Create(OpCodes.Ldloc_1));
-                            il.Append(il.Create(OpCodes.Call, _references.System_DateTimeOffset_op_Inequality));
-                        }
-                        else if (property.IsSingle())
+                        if (property.IsSingle())
                         {
                             il.Append(il.Create(OpCodes.Ldc_R4, 0f));
                         }
@@ -852,7 +852,7 @@ public partial class ModuleWeaver
                             il.Replace(addPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
                     }
-                    else if (!property.IsNullable() && !property.IsPrimaryKey() && !property.IsRequired())
+                    else if (!shouldSetAlways)
                     {
                         // Branching instruction to check if we're trying to set the default value of a property.
                         if (property.IsSingle() || property.IsDouble())
