@@ -542,11 +542,10 @@ namespace RealmWeaver
         [TestCase("Single", (float)3.3)]
         [TestCase("Double", 3.3)]
         [TestCase("Boolean", true)]
-        public void WovenCopyToRealm_ShouldSetNonDefaultProperties(string propertyName, object propertyValue)
+        public void WovenCopyToRealm_ShouldSetNonDefaultProperties(string propertyName, object propertyValue, string typeName = "NonNullableProperties")
         {
-            var objectType = _assembly.GetType("AssemblyToProcess.NonNullableProperties");
+            var objectType = _assembly.GetType($"AssemblyToProcess.{typeName}");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
             SetPropertyValue(instance, propertyName, propertyValue);
 
             CopyToRealm(objectType, instance);
@@ -554,15 +553,17 @@ namespace RealmWeaver
             Assert.That(instance.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
+                "IsManaged",
                 $"RealmObject.Set{propertyName}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
             }));
         }
 
         [Test]
-        public void WovenCopyToRealm_ShouldSetNonDefaultDateTimeOffsetProperties()
+        public void WovenCopyToRealm_ShouldAlwaysSetDateTimeOffsetProperties()
         {
             // DateTimeOffset can't be set as a constant
-            WovenCopyToRealm_ShouldSetNonDefaultProperties("DateTimeOffset", new DateTimeOffset(1, 1, 1, 1, 1, 1, TimeSpan.Zero));
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("DateTimeOffset", default(DateTimeOffset), "DateTimeOffsetProperty");
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("DateTimeOffset", new DateTimeOffset(1, 1, 1, 1, 1, 1, TimeSpan.Zero), "DateTimeOffsetProperty");
         }
 
         [Test]
@@ -577,7 +578,6 @@ namespace RealmWeaver
         {
             var objectType = _assembly.GetType("AssemblyToProcess.NullableProperties");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
 
             CopyToRealm(objectType, instance);
 
@@ -605,7 +605,6 @@ namespace RealmWeaver
         {
             var objectType = _assembly.GetType($"AssemblyToProcess.PrimaryKey{type}Object");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
 
             CopyToRealm(objectType, instance);
 
@@ -620,7 +619,6 @@ namespace RealmWeaver
         {
             var objectType = _assembly.GetType($"AssemblyToProcess.{type}");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
 
             CopyToRealm(objectType, instance);
 
@@ -654,7 +652,6 @@ namespace RealmWeaver
         {
             var objectType = _assembly.GetType($"AssemblyToProcess.{@class}");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
 
             CopyToRealm(objectType, instance);
 
@@ -666,7 +663,6 @@ namespace RealmWeaver
         {
             var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber");
             var instance = (dynamic)Activator.CreateInstance(objectType);
-            instance.IsManaged = true;
 
             CopyToRealm(objectType, instance);
             var persons = instance.Persons;
@@ -679,6 +675,7 @@ namespace RealmWeaver
             var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
             var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
             var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType);
+            instance.IsManaged = true;
             helper.CopyToRealm(instance, update: false, setPrimaryKey: true);
         }
 

@@ -41,11 +41,15 @@ namespace AssemblyToProcess
 
         public double Double { get; set; }
 
-        public DateTimeOffset DateTimeOffset { get; set; }
-
         public bool Boolean { get; set; }
 
         public byte[] ByteArray { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class DateTimeOffsetProperty : RealmObject
+    {
+        public DateTimeOffset DateTimeOffset { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
