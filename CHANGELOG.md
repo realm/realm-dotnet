@@ -7,6 +7,7 @@ If you encounter any issues after the upgrade, we recommend clearing the `bin` a
 
 ### Bug fixes
 - Fixes the `RemoveAll(string)` overload to work correctly. (#1288)
+- Resolved an issue that would lead to crashes when refreshing the token for an invalid session. (#1289)
 
 ### Enhancements
 
