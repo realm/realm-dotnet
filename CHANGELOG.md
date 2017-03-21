@@ -6,6 +6,7 @@ Realm is now being distributed as a .NET Standard 1.4 library as this is a requi
 If you encounter any issues after the upgrade, we recommend clearing the `bin` and `obj` folders and restarting Xamarin Studio. If this doesn't help, please file an issue explaining your solution setup and the type of problems you encounter.
 
 ### Bug fixes
+- Fixes the `RemoveAll(string)` overload to work correctly. (#1288)
 
 ### Enhancements
 
