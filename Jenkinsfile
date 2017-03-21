@@ -163,6 +163,14 @@ stage('Build without sync') {
   )
 }
 
+stage('Test without sync') {
+  parallel(
+    'iOS': iOSTest('ios-tests-nosync'),
+    'Android': AndroidTest('android-tests-nosync'),
+    'Win32': Win32Test('win32-tests-nosync')
+  )
+}
+
 stage('Build with sync') {
   parallel(
     'iOS': {
@@ -227,15 +235,6 @@ stage('Build with sync') {
     }
   )
 }
-
-stage('Test without sync') {
-  parallel(
-    'iOS': iOSTest('ios-tests-nosync'),
-    'Android': AndroidTest('android-tests-nosync'),
-    'Win32': Win32Test('win32-tests-nosync')
-  )
-}
-
 
 stage('Test with sync') {
   parallel(
