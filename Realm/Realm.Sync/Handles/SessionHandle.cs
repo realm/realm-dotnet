@@ -69,12 +69,17 @@ namespace Realms.Sync
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
 
-        public SyncUserHandle GetUser()
+        public User GetUser()
         {
-            var handle = new SyncUserHandle();
             var ptr = NativeMethods.get_user(this);
+            if (ptr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var handle = new SyncUserHandle();
             handle.SetHandle(ptr);
-            return handle;
+            return new User(handle);
         }
 
         public string GetServerUri()
