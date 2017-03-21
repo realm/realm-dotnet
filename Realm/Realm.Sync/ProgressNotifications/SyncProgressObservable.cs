@@ -76,7 +76,8 @@ namespace Realms.Sync
                 {
                     _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
 
-                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork && transferableBytes == transferredBytes)
+                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork && 
+                        transferredBytes >= transferableBytes)
                     {
                         _observer.OnCompleted();
                     }
