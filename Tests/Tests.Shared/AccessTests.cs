@@ -134,35 +134,11 @@ namespace IntegrationTests
         [Test]
         public void RealmObjectProperties_WhenNotSet_ShouldHaveDefaultValues()
         {
-            AllTypesObject obj = null;
-            _realm.Write(() => obj = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty }));
+            var obj = new AllTypesObject
+            { 
+                RequiredStringProperty = string.Empty 
+            };
 
-            Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));
-            Assert.That(obj.StringProperty, Is.EqualTo(default(string)));
-            Assert.That(obj.BooleanProperty, Is.EqualTo(default(bool)));
-            Assert.That(obj.ByteProperty, Is.EqualTo(default(byte)));
-            Assert.That(obj.CharProperty, Is.EqualTo(default(char)));
-            Assert.That(obj.DateTimeOffsetProperty, Is.EqualTo(new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))); // Unix time -> 0
-            Assert.That(obj.SingleProperty, Is.EqualTo(default(float)));
-            Assert.That(obj.DoubleProperty, Is.EqualTo(default(double)));
-            Assert.That(obj.Int16Property, Is.EqualTo(default(short)));
-            Assert.That(obj.Int32Property, Is.EqualTo(default(int)));
-            Assert.That(obj.Int64Property, Is.EqualTo(default(long)));
-            Assert.That(obj.NullableBooleanProperty, Is.EqualTo(default(bool?)));
-            Assert.That(obj.NullableByteProperty, Is.EqualTo(default(byte?)));
-            Assert.That(obj.NullableCharProperty, Is.EqualTo(default(char?)));
-            Assert.That(obj.NullableDateTimeOffsetProperty, Is.EqualTo(default(DateTimeOffset?)));
-            Assert.That(obj.NullableSingleProperty, Is.EqualTo(default(float?)));
-            Assert.That(obj.NullableDoubleProperty, Is.EqualTo(default(double?)));
-            Assert.That(obj.NullableInt16Property, Is.EqualTo(default(short?)));
-            Assert.That(obj.NullableInt32Property, Is.EqualTo(default(int?)));
-            Assert.That(obj.NullableInt64Property, Is.EqualTo(default(long?)));
-        }
-
-        [Test]
-        public void RealmObjectProperties_WhenNotSetAfterManage_ShouldHaveDefaultValues()
-        {
-            var obj = new AllTypesObject { RequiredStringProperty = string.Empty };
             _realm.Write(() => _realm.Add(obj));
 
             Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));
@@ -170,7 +146,7 @@ namespace IntegrationTests
             Assert.That(obj.BooleanProperty, Is.EqualTo(default(bool)));
             Assert.That(obj.ByteProperty, Is.EqualTo(default(byte)));
             Assert.That(obj.CharProperty, Is.EqualTo(default(char)));
-            Assert.That(obj.DateTimeOffsetProperty, Is.EqualTo(new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))); // Unix time -> 0
+            Assert.That(obj.DateTimeOffsetProperty, Is.EqualTo(default(DateTimeOffset)));
             Assert.That(obj.SingleProperty, Is.EqualTo(default(float)));
             Assert.That(obj.DoubleProperty, Is.EqualTo(default(double)));
             Assert.That(obj.Int16Property, Is.EqualTo(default(short)));

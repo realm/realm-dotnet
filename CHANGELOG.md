@@ -11,7 +11,7 @@ If you encounter any issues after the upgrade, we recommend clearing the `bin` a
 ### Enhancements
 
 ### Breaking Changes
-
+- `DateTimeOffset` properties that are not set will now correctly default to `0001-1-1` instead of `1970-1-1` after the object is passed to `realm.Add`. (#1293)
 
 1.1.1 (2017-03-15)
 ------------------
