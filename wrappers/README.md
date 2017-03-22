@@ -46,10 +46,19 @@ To save time for testing you may want to build only some of the wrappers librari
 * iOS builds `librealm-wrappers.a` - run `make ios` or `make iosdbg`. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
 * Android builds `librealm-wrappers.so` - run `make android` or `make androiddbg` Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
 
-Building Win32 wrappers
+Building Windows wrappers
 -------------
 
-* Windows builds `realm-wrappers.dll` for x86 and x64. Open `wrappers.vcxproj` (or `Realm.sln`) and build for both architectures in the desired configuration. Sync is not supported on Windows right now.
+You need Visual Studio 2017 with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
+Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can specify all or a subset to save time when building.
+
+* To build for regular Windows run `.\build.ps1 Windows -Configuration Debug/Release -Platforms Win32, x64`
+
+* To build for Windows Universal run `.\build.ps1 WindowsStore -Configuration Debug/Release -Platforms Win32, x64, ARM`
+
+You can find the CMake-generated Visual Studio project files in `cmake\$Target\$Configuration-$Platform` and use them for debugging.
+
+Sync is not supported on Windows right now.
 
 
 General Notes

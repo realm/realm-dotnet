@@ -115,11 +115,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\wrappers\build\$(Configuration)-Win32\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\$(Configuration)-x64\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
