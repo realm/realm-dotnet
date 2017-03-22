@@ -38,7 +38,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := realm-wrappers
 
 LOCAL_CFLAGS := 
-LOCAL_SRC_FILES := src/object-store/src/collection_notifications.cpp
+LOCAL_SRC_FILES := src/object-store/src/binding_callback_thread_observer.cpp
+LOCAL_SRC_FILES += src/object-store/src/collection_notifications.cpp
 LOCAL_SRC_FILES += src/object-store/src/index_set.cpp
 LOCAL_SRC_FILES += src/object-store/src/list.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_schema.cpp

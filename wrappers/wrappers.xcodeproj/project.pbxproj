@@ -31,6 +31,7 @@
 		48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
 		48EE96C61D75D60600666046 /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48EE96C51D75D60600666046 /* schema_cs.cpp */; };
 		51A51F261DAEB5660057BAE6 /* object_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51A51F251DAEB5660057BAE6 /* object_cs.cpp */; };
+		85040BC01E808FEC0049189D /* binding_callback_thread_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */; };
 		850F7D671DF730650068B584 /* event_loop_signal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 850F7D661DF730650068B584 /* event_loop_signal.cpp */; };
 		850F7D691DF735290068B584 /* event_loop_signal_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */; };
 		8522B2B31CD11DC000E5C1F3 /* collection_notifications.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */; };
@@ -117,6 +118,8 @@
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
 		51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_session_cs.hpp; path = src/sync_session_cs.hpp; sourceTree = "<group>"; };
+		85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = binding_callback_thread_observer.cpp; path = "src/object-store/src/binding_callback_thread_observer.cpp"; sourceTree = "<group>"; };
+		85040BBF1E808FEC0049189D /* binding_callback_thread_observer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_callback_thread_observer.hpp; path = "src/object-store/src/binding_callback_thread_observer.hpp"; sourceTree = "<group>"; };
 		850F7D651DF72EFD0068B584 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/generic/event_loop_signal.hpp"; sourceTree = "<group>"; };
 		850F7D661DF730650068B584 /* event_loop_signal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal.cpp; path = "src/object-store/src/util/generic/event_loop_signal.cpp"; sourceTree = "<group>"; };
 		850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = event_loop_signal_cs.cpp; path = src/event_loop_signal_cs.cpp; sourceTree = "<group>"; };
@@ -253,6 +256,8 @@
 				85C041161DCCE94A00CBF37B /* sync */,
 				8522B2AF1CD11D6A00E5C1F3 /* impl */,
 				48371F491D2294EF00B52DAB /* util */,
+				85040BBF1E808FEC0049189D /* binding_callback_thread_observer.hpp */,
+				85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */,
 				48D347321C74861900CD0E02 /* binding_context.hpp */,
 				8522B2B21CD11DC000E5C1F3 /* collection_notifications.hpp */,
 				8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */,
@@ -451,6 +456,7 @@
 				48D347691C74861900CD0E02 /* shared_realm.cpp in Sources */,
 				48D3475B1C74861900CD0E02 /* index_set.cpp in Sources */,
 				48ED7C6B1C16F9C200AF23A4 /* query_cs.cpp in Sources */,
+				85040BC01E808FEC0049189D /* binding_callback_thread_observer.cpp in Sources */,
 				8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* list_cs.cpp in Sources */,
 				48371F4E1D22952D00B52DAB /* format.cpp in Sources */,
