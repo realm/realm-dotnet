@@ -112,7 +112,7 @@ Object* object_for_primarykey(Table* table_ptr, SharedRealm* realm, std::functio
         auto& object_schema = *realm->get()->schema().find(object_name);
         if (object_schema.primary_key.empty()) {
             const std::string name(table_ptr->get_name());
-            throw MissingPrimaryKeyException(name, name + " does not have a primary key");
+            throw MissingPrimaryKeyException(name);
         }
         
         const size_t column_index = object_schema.primary_key_property()->table_column;
