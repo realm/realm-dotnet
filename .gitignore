@@ -187,11 +187,10 @@ Tools/RealmWeaver.Fody.dll
 wrappers/DerivedData
 wrappers/core
 wrappers/core-android
-wrappers/core-windows
 wrappers/realm-core*.bz2
 wrappers/realm-core-android*.gz
-wrappers/realm-core-windows-*.zip
 wrappers/realm-*.xz
+wrappers/cmake
 doxyout*
 RealmNetWeaver.Fody.dll
 NuGetBuild
