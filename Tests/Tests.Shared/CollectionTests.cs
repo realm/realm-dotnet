@@ -164,6 +164,23 @@ namespace IntegrationTests
             Assert.That(readonlyContainer.Items.IsReadOnly);
         }
 
+        [Test]
+        public void Results_GetAtIndex_WhenIndexIsOutOfRange_ShouldThrow()
+        {
+            Assert.That(() => _realm.All<IntPropertyObject>().AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => _realm.All<IntPropertyObject>().AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void List_GetAtIndex_WhenIndexIsOutOfRange_ShouldThrow()
+        {
+            var owner = new Owner();
+            _realm.Write(() => _realm.Add(owner));
+
+            Assert.That(() => owner.Dogs.AsRealmCollection()[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => owner.Dogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
         private ContainerObject GetPopulatedManagedContainerObject()
         {
             var container = new ContainerObject();

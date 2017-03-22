@@ -14,6 +14,7 @@ If you encounter any issues after the upgrade, we recommend clearing the `bin` a
 
 ### Breaking Changes
 - `DateTimeOffset` properties that are not set will now correctly default to `0001-1-1` instead of `1970-1-1` after the object is passed to `realm.Add`. (#1293)
+- Attempting to get an item at index that is out of range should now correctly throw `ArgumentOutOfRangeException` for all `IRealmCollection` implementations. (#1295)
 
 1.1.1 (2017-03-15)
 ------------------
