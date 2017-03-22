@@ -187,8 +187,6 @@ public partial class ModuleWeaver
             }
         }
 
-        LogDebug("trololo");
-
         WeaveSchema(matchingTypes);
 
         submitAnalytics.Wait();
