@@ -16,6 +16,7 @@
 //
 //////////////////////////////////////////////////////////////////////////// 
 
+#include <sstream>
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -23,6 +24,7 @@
 #include "realm_export_decls.hpp"
 #include "results.hpp"
 #include "object_accessor.hpp"
+#include "wrapper_exceptions.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -52,8 +54,8 @@ REALM_EXPORT Object* results_get_row(Results* results_ptr, size_t ndx, NativeExc
             
             return new Object(results_ptr->get_realm(), results_ptr->get_object_schema(), results_ptr->get(ndx));
         }
-        catch (std::out_of_range &exp) {
-            return static_cast<Object*>(nullptr);
+        catch (realm::Results::OutOfBoundsIndexException &exp) {
+            throw IndexOutOfRangeException("Get from RealmResults", exp.requested, exp.valid_count);
         }
     });
 }
