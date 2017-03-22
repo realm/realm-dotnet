@@ -357,6 +357,38 @@ namespace Tests.Sync
         }
 
         [Test]
+        public void Session_ProgressObservable_WhenModeIsForOutstandingWork_CallsOnCompleted()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var session = realm.GetSession();
+
+                session.SimulateProgress(0, 100, 0, 0);
+
+                var observable = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
+
+                var task = Task.Run(() =>
+                {
+                    return observable.Wait();
+                });
+
+                session.SimulateProgress(50, 100, 0, 0);
+
+                await Task.Delay(50);
+
+                session.SimulateProgress(100, 100, 0, 0);
+
+                var completedTask = await Task.WhenAny(task, Task.Delay(500));
+
+                Assert.That(completedTask, Is.EqualTo(task));
+
+                Assert.That(task.Result.TransferredBytes, Is.EqualTo(100));
+                Assert.That(task.Result.TransferableBytes, Is.EqualTo(100));
+            });
+        }
+
+        [Test]
         public void Session_RXCombineLatestTests()
         {
             AsyncContext.Run(async () =>

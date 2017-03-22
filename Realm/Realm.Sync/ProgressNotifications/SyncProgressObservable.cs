@@ -43,6 +43,7 @@ namespace Realms.Sync
         public class ProgressNotificationToken : IDisposable
         {
             private readonly ulong _nativeToken;
+            private readonly ProgressMode _mode;
             private readonly GCHandle _gcHandle;
 
             private bool isDisposed;
@@ -56,6 +57,7 @@ namespace Realms.Sync
             {
                 _session = session;
                 _observer = observer;
+                _mode = mode;
                 _gcHandle = GCHandle.Alloc(this);
                 try
                 {
@@ -73,6 +75,12 @@ namespace Realms.Sync
                 Task.Run(() =>
                 {
                     _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
+
+                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork && 
+                        transferredBytes >= transferableBytes)
+                    {
+                        _observer.OnCompleted();
+                    }
                 });
             }
 
