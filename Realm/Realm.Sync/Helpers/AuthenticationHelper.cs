@@ -53,6 +53,11 @@ namespace Realms.Sync
         public static async Task RefreshAccessToken(Session session, bool reportErrors = true)
         {
             var user = session.User;
+            if (user == null || session.State == SessionState.Invalid)
+            {
+                return;
+            }
+
             try
             {
                 var json = new Dictionary<string, object>

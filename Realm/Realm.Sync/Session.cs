@@ -47,7 +47,7 @@ namespace Realms.Sync
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
-        public User User => new User(Handle.GetUser());
+        public User User => Handle.GetUser();
 
         /// <summary>
         /// Gets the on-disk path of the Realm file backing the <see cref="Realm"/> this Session represents.

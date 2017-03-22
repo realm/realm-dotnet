@@ -77,6 +77,10 @@ REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_path(const uint16_t* 
 
 REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
 {
+    if (session->user() == nullptr) {
+        return nullptr;
+    }
+    
     return new std::shared_ptr<SyncUser>(session->user());
 }
 

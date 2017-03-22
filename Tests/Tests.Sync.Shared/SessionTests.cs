@@ -126,6 +126,24 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void Session_GetUser_WhenInvalidSession_ShouldNotThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false);
+                var session = realm.GetSession();
+                session.SimulateError(ErrorCode.BadUserAuthentication, "some error", isFatal: true);
+
+                while (session.State != SessionState.Invalid)
+                {
+                    await Task.Delay(100);
+                }
+
+                Assert.That(() => session.User, Is.Null);
+            });
+        }
+
         [Explicit("Fails with obscure error.")]
         [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidRefreshToken()
