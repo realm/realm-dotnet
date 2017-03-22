@@ -135,18 +135,34 @@ stage('Build without sync') {
     'Win32': {
       nodeWithCleanup('windows') {
         getArchive()
-        
+
         unstash 'tools-weaver'
+
+        dir('wrappers') {
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32' ]
+          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64' ]
+        }
 
         bat """
           "${windowsNugetCmd}" restore Realm.sln
-          "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x86 /p:SolutionDir="${workspace}/"
-          "${tool 'msbuild'}" wrappers/wrappers.vcxproj /p:Configuration=${configuration} /p:Platform=x64 /p:SolutionDir="${workspace}/"
           "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration} /p:SolutionDir="${workspace}/"
         """
 
         stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
         stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
+      }
+    },
+    'UWP': {
+      nodeWithCleanup('windows') {
+        getArchive()
+
+        dir('wrappers') {
+          cmake 'build-win32', "${pwd()}\\build-uwp", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-x64', "${pwd()}\\build-uwp", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-arm', "${pwd()}\\build-uwp", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+        }
+
+        archive 'build-uwp/**/*'
       }
     },
     'PCL': {
@@ -441,5 +457,25 @@ def xbuild(String arguments) {
 def nuget(String arguments) {
   withEnv(['PATH+EXTRA=/Library/Frameworks/Mono.framework/Versions/Current/Commands']) {
     sh "${nugetCmd} ${arguments}"
+  }
+}
+
+def cmake(String binaryDir, String installPrefix, String configuration, Map arguments = [:]) {
+  def command = ''
+  for (arg in arguments) {
+    command += "-D${arg.key}=\"${arg.value}\" "
+  }
+
+  def cmakeInvocation = """
+    "${tool 'cmake'}" -DCMAKE_INSTALL_PREFIX="${installPrefix}" ${command} "${pwd()}"
+    "${tool 'cmake'}" --build . --target install --config ${configuration}
+  """
+
+  dir(binaryDir) {
+    if (isUnix()) {
+      sh cmakeInvocation
+    } else {
+      bat cmakeInvocation
+    }
   }
 }
