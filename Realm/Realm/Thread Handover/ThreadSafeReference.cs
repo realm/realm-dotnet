@@ -125,7 +125,7 @@ namespace Realms
         /// </remarks>
         public class Query<T> : ThreadSafeReference where T : RealmObject
         {
-            internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.List)
+            internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.Query)
             {
             }
         }
