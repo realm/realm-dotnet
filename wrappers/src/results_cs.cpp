@@ -25,6 +25,7 @@
 #include "results.hpp"
 #include "object_accessor.hpp"
 #include "wrapper_exceptions.hpp"
+#include "object-store/src/thread_safe_reference.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -104,6 +105,20 @@ REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Mar
 {
     return handle_errors(ex, [&]() {
         return new Query(results_ptr->get_query());
+    });
+}
+    
+REALM_EXPORT bool results_get_is_valid(const Results& results, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return results.is_valid();
+    });
+}
+
+REALM_EXPORT ThreadSafeReference<Results>* results_get_thread_safe_reference(const Results& results, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new ThreadSafeReference<Results>{results.get_realm()->obtain_thread_safe_reference(results)};
     });
 }
 

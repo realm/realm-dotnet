@@ -32,7 +32,8 @@ namespace Realms
           IRealmCollection<T>, 
           INotifyCollectionChanged, 
           INotifyPropertyChanged,
-          ISchemaSource
+          ISchemaSource,
+          IThreadConfined
     {
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
@@ -89,17 +90,24 @@ namespace Realms
             }
         }
 
-        public Schema.ObjectSchema ObjectSchema => TargetMetadata.Schema;
+        public Schema.ObjectSchema ObjectSchema => Metadata.Schema;
+
+        public RealmObject.Metadata Metadata { get; }
+
+        public bool IsManaged => Realm != null;
+
+        public bool IsValid => Handle.Value.IsValid;
+
+        IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
         protected readonly Realm Realm;
         protected readonly Lazy<CollectionHandleBase> Handle;
-        protected readonly RealmObject.Metadata TargetMetadata;
 
         protected RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(CreateHandle);
-            TargetMetadata = metadata;
+            Metadata = metadata;
         }
 
         ~RealmCollectionBase()
@@ -119,7 +127,7 @@ namespace Realms
                 }
 
                 var objectPtr = Handle.Value.GetObjectAtIndex(index);
-                return (T)(object)Realm.MakeObject(TargetMetadata, objectPtr);
+                return (T)(object)Realm.MakeObject(Metadata, objectPtr);
             }
         }
 

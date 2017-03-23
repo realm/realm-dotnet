@@ -6,7 +6,7 @@
     <ProjectGuid>{2015403A-59D2-47F2-8E18-7DF85BB98467}</ProjectGuid>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Realm.Sync</RootNamespace>
+    <RootNamespace>Realms.Sync</RootNamespace>
     <AssemblyName>Realm.Sync</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>

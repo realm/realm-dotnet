@@ -871,6 +871,69 @@ namespace Realms
 
         #endregion Quick Find using primary key
 
+        #region Thread Handover
+
+        /// <summary>
+        /// Returns the same object as the one referenced when the <see cref="ThreadSafeReference.Object{T}"/> was first created,
+        /// but resolved for the current Realm for this thread. Returns null if this object was deleted after
+        /// the reference was created.
+        /// </summary>
+        /// <returns>A thread-confined instance of the original <see cref="RealmObject"/> resolved for the current thread.</returns>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="RealmObject"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the reference.</typeparam>
+        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference) where T : RealmObject
+        {
+            var objectPtr = SharedRealmHandle.ResolveReference(reference);
+            if (objectPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            return (T)MakeObject(reference.Metadata, objectPtr);
+        }
+
+        /// <summary>
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.List{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <returns>A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread.</returns>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IList{T}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the collection.</typeparam>
+        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference) where T : RealmObject
+        {
+            var listPtr = SharedRealmHandle.ResolveReference(reference);
+            if (listPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var listHandle = new ListHandle(SharedRealmHandle);
+            listHandle.SetHandle(listPtr);
+            return new RealmList<T>(this, listHandle, reference.Metadata);
+        }
+
+        /// <summary>
+        /// Returns the same object as the one referenced when the <see cref="ThreadSafeReference.Query{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IQueryable{T}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
+        public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference) where T : RealmObject
+        {
+            var resultsPtr = SharedRealmHandle.ResolveReference(reference);
+            if (resultsPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var resultsHandle = new ResultsHandle();
+            resultsHandle.SetHandle(resultsPtr);
+            return new RealmResults<T>(this, resultsHandle, reference.Metadata);
+        }
+
+        #endregion
+
         /// <summary>
         /// Removes a persistent object from this Realm, effectively deleting it.
         /// </summary>

@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class CollectionHandleBase : RealmHandle
+    internal abstract class CollectionHandleBase : RealmHandle, IThreadConfinedHandle
     {
         private static class NativeMethods
         {
@@ -49,6 +49,8 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
+        public abstract bool IsValid { get; }
+
         protected CollectionHandleBase(RealmHandle root) : base(root)
         {
         }
@@ -66,5 +68,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
             return result;
         }
+
+        public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
     }
 }
