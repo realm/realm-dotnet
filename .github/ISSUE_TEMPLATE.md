@@ -1,43 +1,49 @@
-> We LOVE to help with any issues or bug you have!
+<!--- We LOVE to help with any issues or bugs you have! -->
 
-> **Questions**: If you have questions about how to use Realm, please ask on [SO](http://stackoverflow.com/questions/ask?tags=realm) - we monitor the Realm tag.
+<!--- Questions: If you have questions about how to use Realm, please ask on -->
+<!--- StackOverflow: http://stackoverflow.com/questions/ask?tags=realm -->
+<!--- We monitor the `realm` tag. -->
 
-> **Feature Request**: Just fill in the first two sections below.
+<!--- Feature Request: Just fill in the first two sections below. -->
 
-> **Bugs**: To help you as fast as possible with an issue or bug please describe your issue and the steps you have taken to reproduce it in as many details as possible.
->
-> Thanks for helping us help you :-)
->
-> Remove this and above before submitting.
+<!--- Bugs: To help you as fast as possible with an issue please describe your issue  -->
+<!--- and the steps you have taken to reproduce it in as much detail as possible.  -->
 
-#### Goal
+<!--- Thanks for helping us help you! :-)  -->
 
-> What do you want to achieve?
+## Goals
 
-#### Expected Results
+<!--- What are you trying to achieve? -->
 
-> ?
+## Expected Results
 
-#### Actual Results
+<!--- What did you expect to happen? -->
 
->  E.g. full stack trace with exception
+## Actual Results
 
-#### Steps & Code to Reproduce
+<!--- What happened instead? -->
+<!--- e.g. the stack trace of a crash -->
 
-> Describe your current debugging efforts.
+## Steps to Reproduce
 
-#### Code Sample
+<!--- What are steps we can follow to reproduce this issue? -->
 
-```csharp
+## Code Sample
 
-> Your code here. Bigger samples should ideally be as separate Xamarin/Visual Studio project, 
-> in gists/repositories or privately at help@realm.io)
+<!--- Please provide a code sample or test case that highlights the issue. -->
+<!--- If relevant, include your model definitions. -->
+<!--- For larger code samples, links to external gists/repositories are preferred. -->
+<!--- Alternatively, you can share information confidentially via email at help@realm.io. -->
+<!--- Full projects that we can compile and run ourselves are ideal! -->
 
-```
+## Version of Realm and Tooling
 
-#### Version of Realm and tooling
-Realm version(s): ?
+- Realm Object Server Version: ?
+- Flavor:
+  - [ ] Developer
+  - [ ] Professional
+  - [ ] Enterprise
+- Server OS & Version: ? (e.g. CentOS 6)
+- Client SDK Version: ?
+- Client OS & Version: ?
 
-Xamarin/Visual Studio version: ?
-
-Which operating system version and device: ?
