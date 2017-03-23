@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Realms.Exceptions;
 
 namespace Realms
 {
@@ -41,34 +39,6 @@ namespace Realms
     /// </remarks>
     public abstract class ThreadSafeReference
     {
-        internal readonly ThreadSafeReferenceHandle Handle;
-
-        internal readonly RealmObject.Metadata Metadata;
-
-        internal readonly Type ReferenceType;
-
-        internal ThreadSafeReference(IThreadConfined value, Type type)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            if (!value.IsManaged)
-            {
-                throw new RealmException("Cannot construct reference to unmanaged object, which can be passed across threads directly.");
-            }
-
-            if (!value.IsValid)
-            {
-                throw new RealmException("Cannot construct reference to invalidated object.");
-            }
-
-            Handle = value.Handle.GetThreadSafeReference();
-            Metadata = value.Metadata;
-            ReferenceType = type;
-        }
-
         #region Factory
 
         /// <summary>
@@ -80,7 +50,8 @@ namespace Realms
         /// </param>
         public static Query<T> Create<T>(IQueryable<T> value) where T : RealmObject
         {
-            return new Query<T>(value);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -89,7 +60,8 @@ namespace Realms
         /// <param name="value">The thread-confined <see cref="RealmObject"/> to create a thread-safe reference to.</param>
         public static Object<T> Create<T>(T value) where T : RealmObject
         {
-            return new Object<T>(value);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -101,7 +73,8 @@ namespace Realms
         /// </param>
         public static List<T> Create<T>(IList<T> value) where T : RealmObject
         {
-            return new List<T>(value);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         #endregion
@@ -125,7 +98,7 @@ namespace Realms
         /// </remarks>
         public class Query<T> : ThreadSafeReference where T : RealmObject
         {
-            internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.List)
+            private Query()
             {
             }
         }
@@ -147,7 +120,7 @@ namespace Realms
         /// </remarks>
         public class Object<T> : ThreadSafeReference where T : RealmObject
         {
-            internal Object(T value) : base(value, Type.Object)
+            private Object()
             {
             }
         }
@@ -169,18 +142,11 @@ namespace Realms
         /// </remarks>
         public class List<T> : ThreadSafeReference where T : RealmObject
         {
-            internal List(IList<T> value) : base((RealmList<T>)value, Type.List)
+            private List()
             {
             }
         }
 
         #endregion
-
-        internal enum Type
-        {
-            Object,
-            List,
-            Query
-        }
     }
 }

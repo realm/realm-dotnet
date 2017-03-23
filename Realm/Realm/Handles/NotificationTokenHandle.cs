@@ -27,7 +27,7 @@ namespace Realms
     {
         private CollectionHandleBase _collectionHandle;
 
-        internal NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
+        public NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
         {
             // We save this because RealmHandle doesn't support a parent chain like
             // NotificationToken -> List -> Realm

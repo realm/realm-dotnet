@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -81,25 +80,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        // if root is null the this tablehandle is responsible for cleaning up the tableView and its children
-        // if root is something else, it is the this tablehandles root, and that root should also manage the tableview and its children
-        // note that IgnoreUnbind is set to false, the tableview should be unbound
-        /*
-            private TableViewHandle RootedTableViewHandle()
-            {
-                return (Root == null) ?
-                    new TableViewHandle(this):
-                    new TableViewHandle(Root);
-            }
-        */
-
-        // call with a parent, will set the correct root (parent if parent.root=null, or parent.root otherwise)
-        // if You want a RootedTableHandle with is self-rooted, call with no parameter
-        internal static TableHandle RootedTableHandle(RealmHandle parent)
-        {
-            return new TableHandle(parent.Root ?? parent);
-        }
-
         public IntPtr AddEmptyObject(SharedRealmHandle sharedRealm)
         {
             NativeException nativeException;
@@ -142,7 +122,7 @@ namespace Realms
             return result;
         }
 
-        internal IntPtr Find(SharedRealmHandle realmHandle, string id)
+        public IntPtr Find(SharedRealmHandle realmHandle, string id)
         {
             if (id == null)
             {
@@ -155,7 +135,7 @@ namespace Realms
             return result;
         }
 
-        internal IntPtr Find(SharedRealmHandle realmHandle, long? id)
+        public IntPtr Find(SharedRealmHandle realmHandle, long? id)
         {
             NativeException nativeException;
             IntPtr result;

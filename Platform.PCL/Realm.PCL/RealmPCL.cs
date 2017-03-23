@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -504,6 +505,52 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
+
+        #region Thread Handover
+
+        /// <summary>
+        /// Returns the same object as the one referenced when the <see cref="ThreadSafeReference.Object{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="RealmObject"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the reference.</typeparam>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="RealmObject"/> resolved for the current thread or <c>null</c>
+        /// if the object has been deleted after the reference was created.
+        /// </returns>
+        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.List{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IList{T}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the collection.</typeparam>
+        /// <returns>A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread.</returns>
+        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the same query as the one referenced when the <see cref="ThreadSafeReference.Query{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IQueryable{T}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
+        /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
+        public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        #endregion
 
         #region Obsolete methods
 

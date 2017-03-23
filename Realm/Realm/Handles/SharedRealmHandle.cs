@@ -249,12 +249,12 @@ namespace Realms
             return result;
         }
 
-        internal class SchemaMarshaler
+        public class SchemaMarshaler
         {
-            internal readonly Native.SchemaObject[] Objects;
-            internal readonly Native.SchemaProperty[] Properties;
+            public readonly Native.SchemaObject[] Objects;
+            public readonly Native.SchemaProperty[] Properties;
 
-            internal SchemaMarshaler(RealmSchema schema)
+            public SchemaMarshaler(RealmSchema schema)
             {
                 var properties = new List<Native.SchemaProperty>();
 
@@ -274,7 +274,7 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            internal static Native.SchemaProperty ForMarshalling(Property property)
+            public static Native.SchemaProperty ForMarshalling(Property property)
             {
                 return new Native.SchemaProperty
                 {
