@@ -530,7 +530,10 @@ namespace Realms
         /// </summary>
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IList{T}"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the collection.</typeparam>
-        /// <returns>A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread.</returns>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
+        /// if the list's parent object has been deleted after the reference was created.
+        /// </returns>
         public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

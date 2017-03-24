@@ -886,12 +886,14 @@ namespace Realms
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference) where T : RealmObject
         {
             var objectPtr = SharedRealmHandle.ResolveReference(reference);
-            if (objectPtr == IntPtr.Zero)
+            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
+
+            if (!objectHandle.IsValid)
             {
                 return null;
             }
 
-            return (T)MakeObject(reference.Metadata, objectPtr);
+            return (T)MakeObject(reference.Metadata, objectHandle);
         }
 
         /// <summary>
@@ -900,17 +902,20 @@ namespace Realms
         /// </summary>
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IList{T}"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the collection.</typeparam>
-        /// <returns>A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread.</returns>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
+        /// if the list's parent object has been deleted after the reference was created.
+        /// </returns>
         public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference) where T : RealmObject
         {
             var listPtr = SharedRealmHandle.ResolveReference(reference);
-            if (listPtr == IntPtr.Zero)
+            var listHandle = new ListHandle(SharedRealmHandle);
+            listHandle.SetHandle(listPtr);
+            if (!listHandle.IsValid)
             {
                 return null;
             }
 
-            var listHandle = new ListHandle(SharedRealmHandle);
-            listHandle.SetHandle(listPtr);
             return new RealmList<T>(this, listHandle, reference.Metadata);
         }
 
@@ -924,11 +929,6 @@ namespace Realms
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference) where T : RealmObject
         {
             var resultsPtr = SharedRealmHandle.ResolveReference(reference);
-            if (resultsPtr == IntPtr.Zero)
-            {
-                return null;
-            }
-
             var resultsHandle = new ResultsHandle();
             resultsHandle.SetHandle(resultsPtr);
             return new RealmResults<T>(this, resultsHandle, reference.Metadata);

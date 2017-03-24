@@ -31,15 +31,11 @@ namespace IntegrationTests.Shared
     public class ThreadHandoverTests : RealmInstanceTest
     {
         [Test]
-        public void ObjectHandover_ShouldWork()
+        public void ObjectReference_ShouldWork()
         {
             AsyncContext.Run(async () =>
             {
-                var obj = new IntPropertyObject { Int = 12 };
-
-                _realm.Write(() => _realm.Add(obj));
-
-                var objReference = ThreadSafeReference.Create(obj);
+                var objReference = SetupObjectReference();
 
                 await Task.Run(() =>
                 {
@@ -56,7 +52,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ListHandover_ShouldWork()
+        public void ListReference_ShouldWork()
         {
             AsyncContext.Run(async () =>
             {
@@ -83,32 +79,12 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void QueryHandover_WhenNoQueryApplied_ShouldWork()
+        public void QueryReference_WhenNoQueryApplied_ShouldWork()
         {
             AsyncContext.Run(async () =>
             {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new IntPropertyObject { Int = 1 });
-                    _realm.Add(new IntPropertyObject { Int = 2 });
-                    _realm.Add(new IntPropertyObject { Int = 3 });
-                    _realm.Add(new IntPropertyObject { Int = 4 });
-                });
-
-                var query = _realm.All<IntPropertyObject>();
-                var queryReference = ThreadSafeReference.Create(query);
-
-                await Task.Run(() =>
-                {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherQuery = otherRealm.ResolveReference(queryReference);
-
-                        Assert.That(otherQuery, Is.InstanceOf(typeof(RealmResults<IntPropertyObject>)));
-                        var values = otherQuery.ToArray().Select(q => q.Int);
-                        Assert.That(values, Is.EqualTo(new[] { 1, 2, 3, 4 }));
-                    }
-                });
+                var queryReference = SetupQueryReference(q => q);
+                await AssertQueryReference(queryReference, new[] { 1, 2, 3, 4 });
             });
         }
 
@@ -117,11 +93,8 @@ namespace IntegrationTests.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var obj = new IntPropertyObject();
+                var objReference = SetupObjectReference();
 
-                _realm.Write(() => _realm.Add(obj));
-
-                var objReference = ThreadSafeReference.Create(obj);
                 await Task.Run(() =>
                 {
                     using (var otherRealm = Realm.GetInstance(_realm.Config))
@@ -154,11 +127,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void ThreadSafeReference_CanBeResolvedOnTheSameThread()
         {
-            var obj = new IntPropertyObject { Int = 12 };
-
-            _realm.Write(() => _realm.Add(obj));
-
-            var objReference = ThreadSafeReference.Create(obj);
+            var objReference = SetupObjectReference();
 
             using (var otherRealm = Realm.GetInstance(_realm.Config))
             {
@@ -173,11 +142,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void ThreadSafeReference_CanBeResolvedByTheSameRealm()
         {
-            var obj = new IntPropertyObject { Int = 12 };
-
-            _realm.Write(() => _realm.Add(obj));
-
-            var objReference = ThreadSafeReference.Create(obj);
+            var objReference = SetupObjectReference();
 
             var otherObj = _realm.ResolveReference(objReference);
 
@@ -218,11 +183,7 @@ namespace IntegrationTests.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var obj = new IntPropertyObject();
-
-                _realm.Write(() => _realm.Add(obj));
-
-                var objReference = ThreadSafeReference.Create(obj);
+                var objReference = SetupObjectReference();
 
                 await Task.Run(() =>
                 {
@@ -242,11 +203,7 @@ namespace IntegrationTests.Shared
         {
             AsyncContext.Run(async () =>
             {
-                var obj = new IntPropertyObject { Int = 12 };
-
-                _realm.Write(() => _realm.Add(obj));
-
-                var objReference = ThreadSafeReference.Create(obj);
+                var objReference = SetupObjectReference();
 
                 await Task.Run(() =>
                 {
@@ -274,16 +231,14 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        [NUnit.Framework.Explicit("Assertion failure - investigating")]
-        public void ObjectReference_ResolveDeletedObject()
+        public void ObjectReference_ResolveDeletedObject_ShouldReturnNull()
         {
             AsyncContext.Run(async () =>
             {
                 var obj = new IntPropertyObject { Int = 12 };
                 _realm.Write(() => _realm.Add(obj));
 
-                var ref1 = ThreadSafeReference.Create(obj);
-                var ref2 = ThreadSafeReference.Create(obj);
+                var objReference = ThreadSafeReference.Create(obj);
 
                 _realm.Write(() => _realm.Remove(obj));
 
@@ -291,18 +246,114 @@ namespace IntegrationTests.Shared
                 {
                     using (var otherRealm = Realm.GetInstance(_realm.Config))
                     {
-                        var otherObj1 = otherRealm.ResolveReference(ref1);
-                        Assert.That(otherObj1.IsManaged);
-                        Assert.That(otherObj1.IsValid);
-                        Assert.That(otherObj1.Int, Is.EqualTo(12));
-
-                        otherRealm.Refresh();
-
-                        var otherObj2 = otherRealm.ResolveReference(ref2);
-
-                        Assert.That(otherObj2, Is.Null);
+                        var otherObj = otherRealm.ResolveReference(objReference);
+                        Assert.That(otherObj, Is.Null);
                     }
                 });
+            });
+        }
+
+        [Test]
+        public void ListReference_ResolveDeletedParentObject_ShouldReturnNull()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var obj = new Owner();
+                obj.Dogs.Add(new Dog { Name = "1" });
+                obj.Dogs.Add(new Dog { Name = "2" });
+
+                _realm.Write(() => _realm.Add(obj));
+
+                var listReference = ThreadSafeReference.Create(obj.Dogs);
+
+                _realm.Write(() => _realm.Remove(obj));
+
+                await Task.Run(() =>
+                {
+                    using (var otherRealm = Realm.GetInstance(_realm.Config))
+                    {
+                        var otherList = otherRealm.ResolveReference(listReference);
+
+                        Assert.That(otherList, Is.Null);
+                    }
+                });
+            });
+        }
+
+        [Test]
+        public void QueryReference_WhenFilterApplied_ShouldWork()
+        {
+            AsyncContext.Run(async () =>
+            {
+                _realm.Write(() =>
+                {
+                    _realm.Add(new IntPropertyObject { Int = 1 });
+                    _realm.Add(new IntPropertyObject { Int = 2 });
+                    _realm.Add(new IntPropertyObject { Int = 3 });
+                    _realm.Add(new IntPropertyObject { Int = 4 });
+                });
+
+                var query = _realm.All<IntPropertyObject>().Where(o => o.Int != 2);
+                var queryReference = ThreadSafeReference.Create(query);
+                await AssertQueryReference(queryReference, new[] { 1, 3, 4 });
+            });
+        }
+
+        [Test]
+        public void QueryReference_WhenSortApplied_ShouldWork()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var queryReference = SetupQueryReference(q => q.OrderByDescending(o => o.Int));
+                await AssertQueryReference(queryReference, new[] { 4, 3, 2, 1 });
+            });
+        }
+
+        [Test]
+        public void QueryReference_WhenSortAndFilterApplied_ShouldWork()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var queryReference = SetupQueryReference(q => q.Where(o => o.Int != 2).OrderByDescending(o => o.Int));
+                await AssertQueryReference(queryReference, new[] { 4, 3, 1 });
+            });
+        }
+
+        private ThreadSafeReference.Query<IntPropertyObject> SetupQueryReference(Func<IQueryable<IntPropertyObject>, IQueryable<IntPropertyObject>> queryFunc)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new IntPropertyObject { Int = 1 });
+                _realm.Add(new IntPropertyObject { Int = 2 });
+                _realm.Add(new IntPropertyObject { Int = 3 });
+                _realm.Add(new IntPropertyObject { Int = 4 });
+            });
+
+            var query = queryFunc(_realm.All<IntPropertyObject>());
+            return ThreadSafeReference.Create(query);
+        }
+
+        private ThreadSafeReference.Object<IntPropertyObject> SetupObjectReference()
+        {
+            var obj = new IntPropertyObject { Int = 12 };
+
+            _realm.Write(() => _realm.Add(obj));
+
+            return ThreadSafeReference.Create(obj);
+        }
+
+        private Task AssertQueryReference(ThreadSafeReference.Query<IntPropertyObject> reference, int[] expected)
+        {
+            return Task.Run(() =>
+            {
+                using (var otherRealm = Realm.GetInstance(_realm.Config))
+                {
+                    var otherQuery = otherRealm.ResolveReference(reference);
+
+                    Assert.That(otherQuery, Is.InstanceOf(typeof(RealmResults<IntPropertyObject>)));
+                    var values = otherQuery.ToArray().Select(q => q.Int);
+                    Assert.That(values, Is.EqualTo(expected));
+                }
             });
         }
     }
