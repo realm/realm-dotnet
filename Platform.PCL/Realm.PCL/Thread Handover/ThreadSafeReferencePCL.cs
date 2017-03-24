@@ -24,18 +24,18 @@ namespace Realms
     /// <summary>
     /// An object intended to be passed between threads containing a thread-safe reference to its
     /// thread-confined object.
-    /// 
+    /// <para/>
     /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-    /// <c>Realm.ResolveReference</c>
+    /// <c>Realm.ResolveReference</c>.
     /// </summary>
     /// <remarks>
     /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
-    /// 
+    /// <para/>
     /// Failing to resolve a <see cref="ThreadSafeReference"/> will result in the source version of the
     /// Realm being pinned until the reference is deallocated.
-    /// 
+    /// <para/>
     /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
-    //// will be retained until all references have been resolved or deallocated.
+    /// will be retained until all references have been resolved or deallocated.
     /// </remarks>
     public abstract class ThreadSafeReference
     {
@@ -48,6 +48,8 @@ namespace Realms
         /// The thread-confined <see cref="IQueryable{T}"/> to create a thread-safe reference to. It must be a collection,
         /// obtained by calling <see cref="Realm.All"/> or a subsequent LINQ query.
         /// </param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the query.</typeparam>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(Query{T})"/> on a different thread.</returns>
         public static Query<T> Create<T>(IQueryable<T> value) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -58,6 +60,8 @@ namespace Realms
         /// Initializes a new instance of the <see cref="ThreadSafeReference.Object{T}"/> class.
         /// </summary>
         /// <param name="value">The thread-confined <see cref="RealmObject"/> to create a thread-safe reference to.</param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(Object{T})"/> on a different thread.</returns>
         public static Object<T> Create<T>(T value) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -71,6 +75,8 @@ namespace Realms
         /// The thread-confined <see cref="IList{T}"/> to create a thread-safe reference to. It must be a collection
         /// representing to-many relationship as a property of a <see cref="RealmObject"/>
         /// </param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(List{T})"/> on a different thread.</returns>
         public static List<T> Create<T>(IList<T> value) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -83,19 +89,20 @@ namespace Realms
 
         /// <summary>
         /// A reference to a <see cref="IQueryable{T}"/> intended to be passed between threads.
-        /// 
+        /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="T:Realm.ResolveReference`1(QueryReference{T})"/>.
+        /// <see cref="T:Realm.ResolveReference`1(Query{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
-        /// 
+        /// <para/>
         /// Failing to resolve a <see cref="ThreadSafeReference"/> will result in the source version of the
         /// Realm being pinned until the reference is deallocated.
-        /// 
+        /// <para/>
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
-        //// will be retained until all references have been resolved or deallocated.
+        /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the query.</typeparam>
         public class Query<T> : ThreadSafeReference where T : RealmObject
         {
             private Query()
@@ -105,19 +112,20 @@ namespace Realms
 
         /// <summary>
         /// A reference to a <see cref="RealmObject"/> intended to be passed between threads.
-        /// 
+        /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
         /// <see cref="T:Realm.ResolveReference`1(ObjectReference{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
-        /// 
+        /// <para/>
         /// Failing to resolve a <see cref="ThreadSafeReference"/> will result in the source version of the
         /// Realm being pinned until the reference is deallocated.
-        /// 
+        /// <para/>
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
-        //// will be retained until all references have been resolved or deallocated.
+        /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
         public class Object<T> : ThreadSafeReference where T : RealmObject
         {
             private Object()
@@ -127,19 +135,20 @@ namespace Realms
 
         /// <summary>
         /// A reference to a <see cref="IList{T}"/> intended to be passed between threads.
-        /// 
+        /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
         /// <see cref="T:Realm.ResolveReference`1(ListReference{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
-        /// 
+        /// <para/>
         /// Failing to resolve a <see cref="ThreadSafeReference"/> will result in the source version of the
         /// Realm being pinned until the reference is deallocated.
-        /// 
+        /// <para/>
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
-        //// will be retained until all references have been resolved or deallocated.
+        /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
         public class List<T> : ThreadSafeReference where T : RealmObject
         {
             private List()
