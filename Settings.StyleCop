@@ -19,6 +19,7 @@
       <Value>Uploadable</Value>
       <Value>var</Value>
       <Value>Xamarin</Value>
+      <Value>deallocated</Value>
     </CollectionProperty>
   </GlobalSettings>
   <Analyzers>

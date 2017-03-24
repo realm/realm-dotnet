@@ -174,7 +174,7 @@ namespace Realms
         /// <para/>
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
         /// will be retained until all references have been resolved or deallocated.
-		/// </remarks>
+        /// </remarks>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
         public class List<T> : ThreadSafeReference where T : RealmObject
         {
