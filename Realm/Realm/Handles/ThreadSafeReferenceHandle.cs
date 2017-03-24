@@ -16,10 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Runtime.InteropServices;
+
 namespace Realms
 {
     internal class ThreadSafeReferenceHandle : RealmHandle
     {
+        private static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "thread_safe_reference_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr handle);
+        }
+
         [Preserve]
         public ThreadSafeReferenceHandle()
         {
@@ -27,7 +36,7 @@ namespace Realms
 
         protected override unsafe void Unbind()
         {
-            NativeCommon.delete_pointer((void*)handle);
+            NativeMethods.destroy(handle);
         }
     }
 }

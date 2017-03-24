@@ -348,4 +348,9 @@ REALM_EXPORT Results* shared_realm_resolve_query_reference(SharedRealm* realm, T
     });
 }
     
+REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReferenceBase* reference)
+{
+    delete reference;
+}
+    
 }
