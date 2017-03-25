@@ -36,9 +36,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CredentialsPCL.cs" />
-    <Compile Include="..\Realm.PCL\RealmPCLHelpers.cs">
-      <Link>RealmPCLHelpers.cs</Link>
-    </Compile>
     <Compile Include="SessionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
     <Compile Include="UserPCL.cs" />
