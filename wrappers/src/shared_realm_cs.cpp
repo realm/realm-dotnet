@@ -28,6 +28,7 @@
 #include "shared_realm_cs.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <unordered_set>
+#include "object-store/src/thread_safe_reference.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -324,6 +325,32 @@ REALM_EXPORT bool shared_realm_compact(SharedRealm* realm, NativeException::Mars
     return handle_errors(ex, [&]() {
         return (*realm)->compact();
     });
+}
+    
+REALM_EXPORT Object* shared_realm_resolve_object_reference(SharedRealm* realm, ThreadSafeReference<Object>& reference, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object((*realm)->resolve_thread_safe_reference(std::move(reference)));
+    });
+}
+
+REALM_EXPORT List* shared_realm_resolve_list_reference(SharedRealm* realm, ThreadSafeReference<List>& reference, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new List((*realm)->resolve_thread_safe_reference(std::move(reference)));
+    });
+}
+
+REALM_EXPORT Results* shared_realm_resolve_query_reference(SharedRealm* realm, ThreadSafeReference<Results>& reference, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results((*realm)->resolve_thread_safe_reference(std::move(reference)));
+    });
+}
+    
+REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReferenceBase* reference)
+{
+    delete reference;
 }
     
 }

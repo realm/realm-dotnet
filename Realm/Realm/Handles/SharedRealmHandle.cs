@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
@@ -46,41 +47,32 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr sharedRealm);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern void close_realm(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_commit_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void commit_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_transaction",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_cancel_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern void cancel_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr refresh(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_same_instance",
-                CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr is_same_instance(SharedRealmHandle lhs, SharedRealmHandle rhs, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version",
-                CallingConvention = CallingConvention.Cdecl)]
-            public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ulong get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_add_observed_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_observed_object(SharedRealmHandle sharedRealm, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
@@ -91,6 +83,15 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_compact", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool compact(SharedRealmHandle sharedRealm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_object_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_object_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_list_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_list_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+        
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
         }
 
         [Preserve]
@@ -218,12 +219,42 @@ namespace Realms
             return result;
         }
 
-        internal class SchemaMarshaler
+        public IntPtr ResolveReference(ThreadSafeReference reference)
         {
-            internal readonly Native.SchemaObject[] Objects;
-            internal readonly Native.SchemaProperty[] Properties;
+            if (reference.Handle.IsClosed)
+            {
+                throw new RealmException("Can only resolve a thread safe reference once.");
+            }
 
-            internal SchemaMarshaler(RealmSchema schema)
+            NativeException nativeException;
+            IntPtr result;
+            switch (reference.ReferenceType)
+            {
+                case ThreadSafeReference.Type.Object:
+                    result = NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException);
+                    break;
+                case ThreadSafeReference.Type.List:
+                    result = NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException);
+                    break;
+                case ThreadSafeReference.Type.Query:
+                    result = NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            nativeException.ThrowIfNecessary();
+
+            reference.Handle.Close();
+
+            return result;
+        }
+
+        public class SchemaMarshaler
+        {
+            public readonly Native.SchemaObject[] Objects;
+            public readonly Native.SchemaProperty[] Properties;
+
+            public SchemaMarshaler(RealmSchema schema)
             {
                 var properties = new List<Native.SchemaProperty>();
 
@@ -243,7 +274,7 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            internal static Native.SchemaProperty ForMarshalling(Schema.Property property)
+            public static Native.SchemaProperty ForMarshalling(Property property)
             {
                 return new Native.SchemaProperty
                 {

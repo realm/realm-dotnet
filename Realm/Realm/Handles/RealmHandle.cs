@@ -116,7 +116,7 @@ namespace Realms
         // root and handle should be set atomically using RuntimeHelpers.PrepareConstrainedRegions();
         // or at the very least, handle should only be set *after* root has been successfully set
         // otherwise the finalizer might free the handle concurrently or not at all
-        internal readonly RealmHandle Root; // internal to allow constructors in e.g. TableViewHandle to reference Root of e.g. TableHandle
+        public readonly RealmHandle Root; // internal to allow constructors in e.g. TableViewHandle to reference Root of e.g. TableHandle
 
         // at creation, we must always specify the root if any, or null if the object is itself a root
         // root in this respect means the object where it and all its children must be accessed serially
@@ -126,7 +126,7 @@ namespace Realms
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
+        public RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
         {
             if (root == null) // if we are a root object, we need a list for our children and Root is already null
             {

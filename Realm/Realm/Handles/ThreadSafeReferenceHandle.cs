@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,29 +15,28 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Collection object.
-    // We need to mirror this same relationship here.
-    internal class NotificationTokenHandle : RealmHandle
+    internal class ThreadSafeReferenceHandle : RealmHandle
     {
-        private CollectionHandleBase _collectionHandle;
-
-        public NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
+        private static class NativeMethods
         {
-            // We save this because RealmHandle doesn't support a parent chain like
-            // NotificationToken -> List -> Realm
-            _collectionHandle = root;
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "thread_safe_reference_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr handle);
         }
 
-        protected override void Unbind()
+        [Preserve]
+        public ThreadSafeReferenceHandle()
         {
-            var managedCollectionHandle = _collectionHandle.DestroyNotificationToken(handle);
-            GCHandle.FromIntPtr(managedCollectionHandle).Free();
+        }
+
+        protected override unsafe void Unbind()
+        {
+            NativeMethods.destroy(handle);
         }
     }
 }

@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -74,7 +73,7 @@ namespace Realms
 
             if (_allRecords)
             {
-                return Realm.MakeResultsForTable(TargetMetadata);
+                return Realm.MakeResultsForTable(Metadata);
             }
 
             // do all the LINQ expression evaluation to build a query

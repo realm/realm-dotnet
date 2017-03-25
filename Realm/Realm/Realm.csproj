@@ -6,7 +6,7 @@
     <ProjectGuid>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</ProjectGuid>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Realm</RootNamespace>
+    <RootNamespace>Realms</RootNamespace>
     <AssemblyName>Realm</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
@@ -114,9 +114,16 @@
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Thread Handover\IThreadConfined.cs" />
+    <Compile Include="Thread Handover\ThreadSafeReference.cs" />
+    <Compile Include="Handles\ThreadSafeReferenceHandle.cs" />
+    <Compile Include="Handles\IThreadConfinedHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Thread Handover\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

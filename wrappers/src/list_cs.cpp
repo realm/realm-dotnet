@@ -24,6 +24,7 @@
 #include "wrapper_exceptions.hpp"
 #include "object_accessor.hpp"
 #include "collection_cs.hpp"
+#include "object-store/src/thread_safe_reference.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -115,6 +116,20 @@ REALM_EXPORT void list_move(List& list, const Object& object_ptr, size_t dest_nd
 
         size_t source_ndx = list.find(object_ptr.row());
         list.move(source_ndx, dest_ndx);
+    });
+}
+    
+REALM_EXPORT bool list_get_is_valid(const List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return list.is_valid();
+    });
+}
+
+REALM_EXPORT ThreadSafeReference<List>* list_get_thread_safe_reference(const List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new ThreadSafeReference<List>{list.get_realm()->obtain_thread_safe_reference(list)};
     });
 }
 

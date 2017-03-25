@@ -144,10 +144,12 @@
     <Compile Include="..\..\Realm\Realm\Schema\PropertyType.cs">
       <Link>Schema\PropertyType.cs</Link>
     </Compile>
+    <Compile Include="Thread Handover\ThreadSafeReferencePCL.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
     <Folder Include="Exceptions\" />
+    <Folder Include="Thread Handover\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />

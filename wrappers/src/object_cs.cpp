@@ -23,15 +23,16 @@
 #include "object_accessor.hpp"
 #include "timestamp_helpers.hpp"
 #include "object_cs.hpp"
+#include "object-store/src/thread_safe_reference.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 extern "C" {
-    REALM_EXPORT size_t object_get_is_valid(const Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_is_valid(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return bool_to_size_t(object.is_valid());
+            return object.is_valid();
         });
     }
     
@@ -474,6 +475,13 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             return object.row().get_index() == other_object.row().get_index();
+        });
+    }
+    
+    REALM_EXPORT ThreadSafeReference<Object>* object_get_thread_safe_reference(const Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new ThreadSafeReference<Object>{object.realm()->obtain_thread_safe_reference(object)};
         });
     }
     

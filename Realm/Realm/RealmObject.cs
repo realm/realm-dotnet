@@ -33,7 +33,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : INotifyPropertyChanged, ISchemaSource
+    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined
     {
         #region static
 
@@ -118,6 +118,10 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         public ObjectSchema ObjectSchema => _metadata?.Schema;
+
+        Metadata IThreadConfined.Metadata => ObjectMetadata;
+
+        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {

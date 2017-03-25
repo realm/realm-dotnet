@@ -23,14 +23,15 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ObjectHandle : RealmHandle
+    internal class ObjectHandle : RealmHandle, IThreadConfinedHandle
     {
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_is_valid(ObjectHandle objectHandle, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_valid(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_row_index", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_row_index(ObjectHandle objectHandle, out NativeException ex);
@@ -136,6 +137,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern ResultsHandle get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
         }
 
         public bool IsValid
@@ -145,7 +149,7 @@ namespace Realms
                 NativeException nativeException;
                 var result = NativeMethods.get_is_valid(this, out nativeException);
                 nativeException.ThrowIfNecessary();
-                return result == (IntPtr)1;  // inline equiv of IntPtrToBool
+                return result;
             }
         }
 
@@ -543,7 +547,7 @@ namespace Realms
 
         public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
         {
-            var linkedObjectPtr = this.GetLink(propertyIndex);
+            var linkedObjectPtr = GetLink(propertyIndex);
             if (linkedObjectPtr == IntPtr.Zero)
             {
                 return null;
@@ -576,6 +580,15 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return resultsHandle;
+        }
+
+        public ThreadSafeReferenceHandle GetThreadSafeReference()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
         }
     }
 }

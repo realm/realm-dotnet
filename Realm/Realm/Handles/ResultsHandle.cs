@@ -46,6 +46,24 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_valid(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ResultsHandle results, out NativeException ex);
+        }
+
+        public override bool IsValid
+        {
+            get
+            {
+                NativeException nativeException;
+                var result = NativeMethods.get_is_valid(this, out nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
         }
 
         // keep this one even though warned that it is not used. It is in fact used by marshalling
@@ -122,6 +140,15 @@ namespace Realms
             var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)obj, out nativeException);
             nativeException.ThrowIfNecessary();
             return result != IntPtr.Zero;
+        }
+
+        public override ThreadSafeReferenceHandle GetThreadSafeReference()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
         }
     }
 }

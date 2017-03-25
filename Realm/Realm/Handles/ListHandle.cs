@@ -54,9 +54,27 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_move", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr move(ListHandle listHandle, ObjectHandle objectHandle, IntPtr targetIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_valid(ListHandle listHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ListHandle listHandle, out NativeException ex);
         }
 
-        internal ListHandle(RealmHandle root) : base(root)
+        public override bool IsValid
+        {
+            get
+            {
+                NativeException nativeException;
+                var result = NativeMethods.get_is_valid(this, out nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public ListHandle(RealmHandle root) : base(root)
         {
         }
 
@@ -130,6 +148,15 @@ namespace Realms
             var result = NativeMethods.size(this, out nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
+        }
+
+        public override ThreadSafeReferenceHandle GetThreadSafeReference()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
         }
     }
 }
