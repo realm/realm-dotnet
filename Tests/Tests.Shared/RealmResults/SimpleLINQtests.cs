@@ -586,6 +586,54 @@ namespace IntegrationTests
             }, Throws.TypeOf<NotSupportedException>());
         }
 
+        [TestCaseSource(nameof(LikeTestValues))]
+        public void StringSearch_LikeTests(string pattern, bool caseSensitive, bool expected)
+        {
+            _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject { Id = 1, StringValue = "abc" }));
+
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
+
+            if (expected)
+            {
+                Assert.That(query.Count(), Is.EqualTo(1));
+                Assert.That(query.Single().Id, Is.EqualTo(1));
+            }
+            else
+            {
+                Assert.That(query.Count(), Is.EqualTo(0));
+            }
+        }
+
+        public static object[] LikeTestValues =
+        {
+            new object[] { "ab", false, false },
+            new object[] { string.Empty, false, false },
+
+            new object[] { "*a*", true, true },
+            new object[] { "*b*", true, true },
+            new object[] { "*c", true, true },
+            new object[] { "ab*", true, true },
+            new object[] { "*bc", true, true },
+            new object[] { "a*bc", true, true },
+            new object[] { "*abc*", true, true },
+            new object[] { "*d*", true, false },
+            new object[] { "aabc", true, false },
+            new object[] { "b*bc", true, false },
+
+            new object[] { "a??", true, true },
+            new object[] { "?b?", true, true },
+            new object[] { "*?c", true, true },
+            new object[] { "ab?", true, true },
+            new object[] { "?bc", true, true },
+            new object[] { "?d?", true, false },
+            new object[] { "?abc", true, false },
+            new object[] { "b?bc", true, false },
+
+            new object[] { "*C*", true, false },
+            new object[] { "*c*", false, true },
+            new object[] { "*C*", false, true },
+        };
+
         [Test]
         public void AnySucceeds()
         {

@@ -18,6 +18,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Realms
 {
@@ -44,6 +46,42 @@ namespace Realms
             }
 
             return str.IndexOf(value, comparisonType) >= 0;
+        }
+
+        /// <summary>
+        /// Performs a 'like' comparison between the specified string and pattern.
+        /// </summary>
+        /// <remarks>
+        /// <c>?</c> and <c>*</c> are allowed where <c>?</c> matches a single character and <c>*</c> matches zero or
+        /// more characters, such that <c>?bc*</c> matches <c>abcde</c> and <c>bbc</c>, but does not match <c>bcd</c>.
+        /// <para/>
+        /// This extension method can be used in LINQ queries against the <see cref="IQueryable"/> returned from
+        /// <see cref="Realm.All"/>. If used outside of a query context, it will use a <see cref="Regex"/> to perform
+        /// the comparison using the same rules.
+        /// </remarks>
+        /// <param name="str">The string to compare against the pattern.</param>
+        /// <param name="pattern">The pattern to compare against.</param>
+        /// <param name="caseSensitive">If set to <c>true</c> performs a case sensitive comparison.</param>
+        /// <returns><c>true</c>  if the string matches the pattern, <c>false</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <c>str</c> or <c>pattern</c> is <c>null</c>.</exception>
+        public static bool Like(this string str, string pattern, bool caseSensitive = true)
+        {
+            if (str == null)
+            {
+                throw new ArgumentNullException(nameof(str));
+            }
+
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            pattern = Regex.Escape(pattern)
+                           .Replace("\\?", ".")
+                           .Replace("\\*", ".*");
+
+            var options = caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
+            return Regex.Match(str, $"^{pattern}$", options).Success;
         }
     }
 }

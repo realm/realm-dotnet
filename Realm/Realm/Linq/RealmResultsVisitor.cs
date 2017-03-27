@@ -58,6 +58,8 @@ namespace Realms
 
                 internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
 
+                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
@@ -358,7 +360,11 @@ namespace Realms
                 m.Method.DeclaringType == typeof(StringExtensions))
             {
                 QueryHandle.Operation<string> queryMethod = null;
+
+                // For extension methods, member should be m.Arguments[0] as MemberExpression;
                 MemberExpression member = null;
+
+                // For extension methods, that should be 1
                 var stringArgumentIndex = 0;
 
                 if (m.Method == Methods.String.Contains.Value)
@@ -411,6 +417,18 @@ namespace Realms
                 else if (m.Method == Methods.String.EqualsStringComparison.Value)
                 {
                     queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(m));
+                }
+                else if (m.Method == Methods.String.Like.Value)
+                {
+                    member = m.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+                    object caseSensitive;
+                    if (!TryExtractConstantValue(m.Arguments.Last(), out caseSensitive) || !(caseSensitive is bool))
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and boolean constant arguments.");
+                    }
+
+                    queryMethod = (q, c, v) => q.StringLike(c, v, (bool)caseSensitive);
                 }
 
                 if (queryMethod != null)
