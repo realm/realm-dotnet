@@ -108,6 +108,11 @@ REALM_EXPORT bool realm_syncmanager_immediately_run_file_actions(uint16_t* pathb
         return SyncManager::shared().immediately_run_file_actions(path);
     });
 }
+    
+REALM_EXPORT void realm_syncmanager_reconnect()
+{
+    SyncManager::shared().reconnect();
+}
 
 }
 

@@ -67,6 +67,10 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reset_for_testing();
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void reconnect();
+
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -144,6 +148,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
 
             return result;
+        }
+
+        public static void ReconnectSessions()
+        {
+            NativeMethods.reconnect();
         }
 
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
