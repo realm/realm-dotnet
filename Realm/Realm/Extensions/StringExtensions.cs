@@ -63,17 +63,11 @@ namespace Realms
         /// <param name="pattern">The pattern to compare against.</param>
         /// <param name="caseSensitive">If set to <c>true</c> performs a case sensitive comparison.</param>
         /// <returns><c>true</c>  if the string matches the pattern, <c>false</c> otherwise.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <c>str</c> or <c>pattern</c> is <c>null</c>.</exception>
         public static bool Like(this string str, string pattern, bool caseSensitive = true)
         {
             if (str == null)
             {
-                throw new ArgumentNullException(nameof(str));
-            }
-
-            if (pattern == null)
-            {
-                throw new ArgumentNullException(nameof(pattern));
+                return pattern == null;
             }
 
             pattern = Regex.Escape(pattern)

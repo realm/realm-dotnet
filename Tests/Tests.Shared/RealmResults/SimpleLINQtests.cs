@@ -587,51 +587,71 @@ namespace IntegrationTests
         }
 
         [TestCaseSource(nameof(LikeTestValues))]
-        public void StringSearch_LikeTests(string pattern, bool caseSensitive, bool expected)
+        public void StringSearch_LikeTests(string str, string pattern, bool caseSensitive, bool expected)
         {
-            _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject { Id = 1, StringValue = "abc" }));
+            _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject { Id = 1, StringValue = str }));
 
-            var query = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
-
+            var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
+            var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue.Like(pattern, caseSensitive));
+            
             if (expected)
             {
-                Assert.That(query.Count(), Is.EqualTo(1));
-                Assert.That(query.Single().Id, Is.EqualTo(1));
+                Assert.That(regularQuery.Count(), Is.EqualTo(1));
+                Assert.That(regularQuery.Single().Id, Is.EqualTo(1));
+
+                Assert.That(negatedQuery.Count(), Is.EqualTo(0));
             }
             else
             {
-                Assert.That(query.Count(), Is.EqualTo(0));
+                Assert.That(regularQuery.Count(), Is.EqualTo(0));
+
+                Assert.That(negatedQuery.Count(), Is.EqualTo(1));
+                Assert.That(negatedQuery.Single().Id, Is.EqualTo(1));
             }
         }
 
         public static object[] LikeTestValues =
         {
-            new object[] { "ab", false, false },
-            new object[] { string.Empty, false, false },
+            new object[] { "abc", "ab", false, false },
+            new object[] { "abc", string.Empty, false, false },
+            new object[] { string.Empty, string.Empty, true, true },
+            new object[] { string.Empty, string.Empty, false, true },
+            new object[] { null, string.Empty, true, false },
+            new object[] { null, string.Empty, false, false },
+            new object[] { string.Empty, null, true, false },
+            new object[] { string.Empty, null, false, false },
+            new object[] { null, null, true, true },
+            new object[] { null, null, false, true },
+            new object[] { null, "*", true, false },
+            new object[] { null, "*", false, false },
+            new object[] { string.Empty, "*", true, true },
+            new object[] { string.Empty, "*", false, true },
+            new object[] { string.Empty, "?", true, false },
+            new object[] { string.Empty, "?", false, false },
 
-            new object[] { "*a*", true, true },
-            new object[] { "*b*", true, true },
-            new object[] { "*c", true, true },
-            new object[] { "ab*", true, true },
-            new object[] { "*bc", true, true },
-            new object[] { "a*bc", true, true },
-            new object[] { "*abc*", true, true },
-            new object[] { "*d*", true, false },
-            new object[] { "aabc", true, false },
-            new object[] { "b*bc", true, false },
+            new object[] { "abc", "*a*", true, true },
+            new object[] { "abc", "*b*", true, true },
+            new object[] { "abc", "*c", true, true },
+            new object[] { "abc", "ab*", true, true },
+            new object[] { "abc", "*bc", true, true },
+            new object[] { "abc", "a*bc", true, true },
+            new object[] { "abc", "*abc*", true, true },
+            new object[] { "abc", "*d*", true, false },
+            new object[] { "abc", "aabc", true, false },
+            new object[] { "abc", "b*bc", true, false },
 
-            new object[] { "a??", true, true },
-            new object[] { "?b?", true, true },
-            new object[] { "*?c", true, true },
-            new object[] { "ab?", true, true },
-            new object[] { "?bc", true, true },
-            new object[] { "?d?", true, false },
-            new object[] { "?abc", true, false },
-            new object[] { "b?bc", true, false },
+            new object[] { "abc", "a??", true, true },
+            new object[] { "abc", "?b?", true, true },
+            new object[] { "abc", "*?c", true, true },
+            new object[] { "abc", "ab?", true, true },
+            new object[] { "abc", "?bc", true, true },
+            new object[] { "abc", "?d?", true, false },
+            new object[] { "abc", "?abc", true, false },
+            new object[] { "abc", "b?bc", true, false },
 
-            new object[] { "*C*", true, false },
-            new object[] { "*c*", false, true },
-            new object[] { "*C*", false, true },
+            new object[] { "abc", "*C*", true, false },
+            new object[] { "abc", "*c*", false, true },
+            new object[] { "abc", "*C*", false, true },
         };
 
         [Test]

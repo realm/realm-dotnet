@@ -55,6 +55,9 @@ namespace IntegrationTests
         public static object[] LikeTestValues =
         {
             new object[] { string.Empty, string.Empty, true, true },
+            new object[] { string.Empty, string.Empty, false, true },
+            new object[] { null, null, true, true },
+            new object[] { null, null, false, true },
             new object[] { "abc", string.Empty, true, false },
             new object[] { string.Empty, "abc", true, false },
             new object[] { "abcd", "abc", true, false },

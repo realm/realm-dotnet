@@ -443,7 +443,8 @@ namespace Realms
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
-                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || argument.GetType() != typeof(string))
+                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || 
+                        (argument != null && argument.GetType() != typeof(string)))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }

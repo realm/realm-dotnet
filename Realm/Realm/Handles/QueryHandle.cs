@@ -287,7 +287,14 @@ namespace Realms
         public void StringLike(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
-            NativeMethods.string_like(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            if (value == null)
+            {
+                NativeMethods.null_equal(this, columnIndex, out nativeException);
+            }
+            else
+            {
+                NativeMethods.string_like(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            }
             nativeException.ThrowIfNecessary();
         }
 
