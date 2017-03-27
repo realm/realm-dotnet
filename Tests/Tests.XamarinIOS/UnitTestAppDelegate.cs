@@ -25,7 +25,6 @@ namespace IntegrationTests.XamarinIOS
     [Register("UnitTestAppDelegate")]
     public class UnitTestAppDelegate : Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
-
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
             global::Xamarin.Forms.Forms.Init();
@@ -33,8 +32,9 @@ namespace IntegrationTests.XamarinIOS
             // This will load all tests within the current project
             var runner = new NUnit.Runner.App();
             runner.AddTestAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+
             // Do you want to automatically run tests when the app starts?
-            runner.Options = new TestOptions{AutoRun = true};
+            runner.Options = new TestOptions { AutoRun = false };
 
             LoadApplication(runner);
 
