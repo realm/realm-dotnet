@@ -17,6 +17,7 @@ If you encounter any issues after the upgrade, we recommend clearing the `bin` a
 - `DateTimeOffset` properties that are not set will now correctly default to `0001-1-1` instead of `1970-1-1` after the object is passed to `realm.Add`. (#1293)
 - Attempting to get an item at index that is out of range should now correctly throw `ArgumentOutOfRangeException` for all `IRealmCollection` implementations. (#1295)
 - The layout of the .lock file has changed, which may affect scenarios where different processes attempt to write to the same Realm file at the same time. (#1296)
+- This version is not compatible with versions of the Realm Object Server lower than 1.3.0. (#1300)
 
 1.1.1 (2017-03-15)
 ------------------
