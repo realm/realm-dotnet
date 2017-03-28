@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -27,7 +27,8 @@
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
-    <DebugType></DebugType>
+    <DebugType>
+    </DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
     <DefineConstants>__UNIFIED__;__MOBILE__;__IOS__;</DefineConstants>
@@ -67,6 +68,9 @@
     <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.1\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -95,9 +99,6 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\..\packages\System.Reactive.PlatformServices.3.1.1\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="DotNetCross.Memory.Unsafe">
       <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.3.4\lib\netstandard1.0\DotNetCross.Memory.Unsafe.dll</HintPath>
     </Reference>
@@ -112,9 +113,6 @@
     </Reference>
     <Reference Include="PCLStorage">
       <HintPath>..\..\packages\PCLStorage.1.0.2\lib\portable-Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Loader">
-      <HintPath>..\..\packages\System.Runtime.Loader.4.0.0\lib\netstandard1.5\System.Runtime.Loader.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.3.6.1\lib\Xamarin.iOS10\nunit.framework.dll</HintPath>
@@ -136,6 +134,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
     <None Include="FodyWeavers.xml" />
@@ -187,7 +186,8 @@
       <SmartLink>True</SmartLink>
       <IsCxx>True</IsCxx>
       <LinkerFlags>-lz -framework Security</LinkerFlags>
-      <Frameworks></Frameworks>
+      <Frameworks>
+      </Frameworks>
     </NativeReference>
   </ItemGroup>
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />

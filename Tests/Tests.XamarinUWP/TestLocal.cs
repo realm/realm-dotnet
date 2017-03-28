@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NUnit.Tests.Simple {
     [TestFixture]
-    public class TestSimpleClass {
+    public class TestLocal {
         [Test]
         public void TestMethod()
         {
