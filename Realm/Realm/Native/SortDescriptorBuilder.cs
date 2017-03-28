@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
@@ -46,24 +47,20 @@ namespace Realms.Native
         }
 
         private readonly List<Clause> _clauses = new List<Clause>();
-        private readonly RealmObject.Metadata _metadata;
 
-        public TableHandle TableHandle => _metadata.Table;
+        public TableHandle TableHandle { get; }
 
-        public SortDescriptorBuilder(RealmObject.Metadata metadata)
+        public SortDescriptorBuilder(TableHandle tableHandle)
         {
-            _metadata = metadata;
+            TableHandle = tableHandle;
         }
 
-        // This method adds a direct sort clause, i.e. a clause that doesn't involve
-        // any links.
-        public void AddClause(string columnName, bool @ascending)
+        public void AddClause(IEnumerable<IntPtr> propertyChain, bool @ascending)
         {
-            var propertyIndex = _metadata.PropertyIndices[columnName];
             _clauses.Add(new Clause
             {
-                PropertyIndexChain = new List<IntPtr> { propertyIndex }, 
-                Ascending = @ascending 
+                PropertyIndexChain = propertyChain.ToList(),
+                Ascending = @ascending
             });
         }
 

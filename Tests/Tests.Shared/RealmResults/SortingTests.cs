@@ -195,6 +195,86 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void All_OrderBy_OverLinks()
+        {
+            MakeThreeLinkingObjects("B", 3, 10000, "A", 1, 5000, "C", 2, 1000);
+
+            var level1 = _realm.All<Level1>()
+                               .OrderBy(l => l.StringValue)
+                               .ToArray();
+
+            Assert.That(level1.Select(l => l.StringValue), Is.EqualTo(new[] { "A", "B", "C" }));
+
+            var level2 = _realm.All<Level1>()
+                               .OrderBy(l => l.Level2.IntValue)
+                               .ToArray();
+
+            Assert.That(level2.Select(l => l.StringValue), Is.EqualTo(new[] { "A", "C", "B" }));
+            Assert.That(level2.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 1, 2, 3 }));
+
+            var level3 = _realm.All<Level1>()
+                               .OrderBy(l => l.Level2.Level3.DateValue)
+                               .ToArray();
+
+            Assert.That(level3.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "A", "B" }));
+            Assert.That(level3.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 2, 1, 3 }));
+            Assert.That(level3.Select(l => l.Level2.Level3.DateValue), Is.EqualTo(new[] { Date(1000), Date(5000), Date(10000) }));
+        }
+
+        [Test]
+        public void All_OrderByDescending_OverLinks()
+        {
+            MakeThreeLinkingObjects("B", 3, 10000, "A", 1, 5000, "C", 2, 1000);
+
+            var level1 = _realm.All<Level1>()
+                               .OrderByDescending(l => l.StringValue)
+                               .ToArray();
+
+            Assert.That(level1.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "B", "A" }));
+
+            var level2 = _realm.All<Level1>()
+                               .OrderByDescending(l => l.Level2.IntValue)
+                               .ToArray();
+
+            Assert.That(level2.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "C", "A" }));
+            Assert.That(level2.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 3, 2, 1 }));
+
+            var level3 = _realm.All<Level1>()
+                               .OrderByDescending(l => l.Level2.Level3.DateValue)
+                               .ToArray();
+
+            Assert.That(level3.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "A", "C" }));
+            Assert.That(level3.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 3, 1, 2 }));
+            Assert.That(level3.Select(l => l.Level2.Level3.DateValue), Is.EqualTo(new[] { Date(10000), Date(5000), Date(1000) }));
+        }
+
+        [Test]
+        public void All_OrderByThenByDescending_OverLinks()
+        {
+            MakeThreeLinkingObjects("A", 2, 10000, "B", 2, 5000, "C", 1, 10000);
+
+            var items = _realm.All<Level1>()
+                              .OrderBy(o => o.Level2.IntValue)
+                              .ThenByDescending(o => o.Level2.Level3.DateValue)
+                              .ToArray();
+
+            Assert.That(items.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "A", "B" }));
+        }
+
+        [Test]
+        public void All_OrderByDescendingThenBy_OverLinks()
+        {
+            MakeThreeLinkingObjects("A", 2, 10000, "B", 2, 5000, "C", 1, 10000);
+
+            var items = _realm.All<Level1>()
+                              .OrderByDescending(o => o.Level2.IntValue)
+                              .ThenBy(o => o.Level2.Level3.DateValue)
+                              .ToArray();
+
+            Assert.That(items.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "A", "C" }));
+        }
+
+        [Test]
         public void FirstIsDifferentSorted()
         {
             var highestScore = _realm.All<Person>().OrderByDescending(p => p.Score).First();
@@ -248,6 +328,78 @@ namespace IntegrationTests
             });
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
             Assert.That(sortedCities, Is.EqualTo(new[] { "A-Place", "A Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney", "Åby" }));
+        }
+
+        private void MakeThreeLinkingObjects(
+            string string1, int int1, long date1,
+            string string2, int int2, long date2,
+            string string3, int int3, long date3)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Level1
+                {
+                    StringValue = string1,
+                    Level2 = new Level2
+                    {
+                        IntValue = int1,
+                        Level3 = new Level3
+                        {
+                            DateValue = Date(date1)
+                        }
+                    }
+                });
+
+                _realm.Add(new Level1
+                {
+                    StringValue = string2,
+                    Level2 = new Level2
+                    {
+                        IntValue = int2,
+                        Level3 = new Level3
+                        {
+                            DateValue = Date(date2)
+                        }
+                    }
+                });
+
+                _realm.Add(new Level1
+                {
+                    StringValue = string3,
+                    Level2 = new Level2
+                    {
+                        IntValue = int3,
+                        Level3 = new Level3
+                        {
+                            DateValue = Date(date3)
+                        }
+                    }
+                });
+            });
+        }
+
+        private static DateTimeOffset Date(long ticks)
+        {
+            return new DateTimeOffset(ticks, TimeSpan.Zero);
+        }
+
+        private class Level1 : RealmObject
+        {
+            public string StringValue { get; set; }
+
+            public Level2 Level2 { get; set; }
+        }
+
+        private class Level2 : RealmObject
+        {
+            public int IntValue { get; set; }
+
+            public Level3 Level3 { get; set; }
+        }
+
+        public class Level3 : RealmObject
+        {
+            public DateTimeOffset DateValue { get; set; }
         }
     }
 }
