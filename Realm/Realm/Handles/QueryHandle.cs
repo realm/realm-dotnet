@@ -64,6 +64,10 @@ namespace Realms
             public static extern void string_not_equal(QueryHandle queryPtr, IntPtr columnIndex,
                         [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_like", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void string_like(QueryHandle queryPtr, IntPtr columnIndex,
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void bool_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value, out NativeException ex);
 
@@ -277,6 +281,20 @@ namespace Realms
         {
             NativeException nativeException;
             NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void StringLike(IntPtr columnIndex, string value, bool caseSensitive)
+        {
+            NativeException nativeException;
+            if (value == null)
+            {
+                NativeMethods.null_equal(this, columnIndex, out nativeException);
+            }
+            else
+            {
+                NativeMethods.string_like(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            }
             nativeException.ThrowIfNecessary();
         }
 
