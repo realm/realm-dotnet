@@ -62,9 +62,10 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
+		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{0a266cac-ef4a-4bb0-a3d9-f2084f1b1012}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{519e6d0a-7dcf-45f6-a40a-0260eaea0df7}*SharedItemsImports = 13
-		Shared\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
-		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
+		Tests\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Shared\Tests.Shared\Tests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
