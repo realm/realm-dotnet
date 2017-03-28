@@ -470,12 +470,7 @@ namespace Realms
 
             return CreateResultsHandle(resultsPtr);
         }
-
-        internal SortDescriptorBuilder CreateSortDescriptorForTable(RealmObject.Metadata metadata)
-        {
-            return new SortDescriptorBuilder(metadata);
-        }
-
+        
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
