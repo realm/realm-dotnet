@@ -38,6 +38,20 @@ namespace Realms
                 }
             }
 
+            // On UWP, the sandbox folder is obtained by:
+            // ApplicationData.Current.LocalFolder.Path
+            var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
+            if (applicationData != null)
+            {
+                var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
+                var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
+                var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+
+                var currentApplicationData = currentProperty.GetValue(null);
+                var localFolder = localFolderProperty.GetValue(currentApplicationData);
+                return (string)pathProperty.GetValue(localFolder);
+            }
+
             throw new NotSupportedException();
         });
 
