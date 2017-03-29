@@ -106,20 +106,26 @@
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x86'">
+    <Content Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll">
+      <Link>realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x64'">
+   <Content Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
+      <Link>realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'ARM'">
+    <Content Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM\realm-wrappers.dll">
+      <Link>realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\wrappers\build\WindowsStore\Debug-Win32\realm-wrappers.dll">
-      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\wrappers\build\WindowsStore\Debug-x64\realm-wrappers.dll">
-      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\wrappers\build\WindowsStore\Debug-ARM\realm-wrappers.dll">
-      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <AppxBinary Include="lib\$(Platform)\realm-wrappers.dll" />
+    <!--<AppxBinary Include="bin\$(Configuration)\$(Platform)\lib\$(Platform)\realm-wrappers.dll" /> -->
     <Content Include="FodyWeavers.xml" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
