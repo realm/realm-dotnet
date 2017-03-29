@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -67,10 +68,12 @@ namespace Realms.Sync
                     ["provider"] = "realm"
                 };
 
-                var result = await MakeAuthRequestAsync<AccessTokenResponse>(user.ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+                var result = await MakeAuthRequestAsync(user.ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
 
-                session.Handle.RefreshAccessToken(result.Details.Token, result.Details.Data.Path);
-                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(result.Details.Data.Expires));
+                var accessToken = result["access_token"];
+
+                session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
+                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {
@@ -99,8 +102,9 @@ namespace Realms.Sync
         // Returns a Tuple<userId, refreshToken>
         public static async Task<Tuple<string, string>> Login(Credentials credentials, Uri serverUrl)
         {
-            var result = await MakeAuthRequestAsync<RefreshTokenResponse>(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            return Tuple.Create(result.Details.Data.Identity, result.Details.Token);
+            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+            var refreshToken = result["refresh_token"];
+            return Tuple.Create(refreshToken["token_data"]["identity"].Value<string>(), refreshToken["token"].Value<string>());
         }
 
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
@@ -162,7 +166,7 @@ namespace Realms.Sync
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
-        private static async Task<T> MakeAuthRequestAsync<T>(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
+        private static async Task<JObject> MakeAuthRequestAsync(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
         {
             body["app_id"] = string.Empty; // FIXME
 
@@ -175,17 +179,17 @@ namespace Realms.Sync
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
-                return JsonConvert.DeserializeObject<T>(json);
+                return JObject.Parse(json);
             }
 
             var errorJson = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
             if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
             {
-                var problem = JsonConvert.DeserializeObject<Problem>(errorJson);
+                var problem = JObject.Parse(errorJson);
 
-                var code = ErrorCodeHelper.GetErrorCode(problem.Code) ?? ErrorCode.Unknown;
+                var code = ErrorCodeHelper.GetErrorCode(problem["code"].Value<int>()) ?? ErrorCode.Unknown;
 
-                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem.Title);
+                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem["title"].Value<string>());
             }
 
             throw new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
@@ -217,53 +221,6 @@ namespace Realms.Sync
             public string UserId { get; set; }
 
             public string RealmPath { get; set; }
-        }
-
-        [Preserve(AllMembers = true)]
-        private class RefreshTokenResponse
-        {
-            [JsonProperty("refresh_token")]
-            public TokenDetails Details { get; set; }
-        }
-
-        [Preserve(AllMembers = true)]
-        private class AccessTokenResponse
-        {
-            [JsonProperty("access_token")]
-            public TokenDetails Details { get; set; }
-        }
-
-        [Preserve(AllMembers = true)]
-        private class TokenDetails
-        {
-            [JsonProperty("token")]
-            public string Token { get; set; }
-
-            [JsonProperty("token_data")]
-            public TokenData Data { get; set; }
-        }
-
-        [Preserve(AllMembers = true)]
-        private class TokenData
-        {
-            [JsonProperty("identity")]
-            public string Identity { get; set; }
-
-            [JsonProperty("expires")]
-            public long Expires { get; set; }
-
-            [JsonProperty("path")]
-            public string Path { get; set; }
-        }
-
-        [Preserve(AllMembers = true)]
-        private class Problem
-        {
-            [JsonProperty("code")]
-            public int Code { get; set; }
-
-            [JsonProperty("title")]
-            public string Title { get; set; }
         }
     }
 }
