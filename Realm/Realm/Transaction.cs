@@ -48,16 +48,7 @@ namespace Realms
                 return;
             }
 
-            // var exceptionOccurred = Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
-            var exceptionOccurred = true; // TODO: Can we find this out on iOS? Otherwise, we have to remove it!
-            if (exceptionOccurred)
-            {
-                Rollback();
-            }
-            else
-            {
-                Commit();
-            }
+            Rollback();
         }
 
         /// <summary>
@@ -73,6 +64,7 @@ namespace Realms
 
             _realm.SharedRealmHandle.CancelTransaction();
             _isOpen = false;
+            _realm.DrainTransactionQueue();
         }
 
         /// <summary>
@@ -88,6 +80,7 @@ namespace Realms
 
             _realm.SharedRealmHandle.CommitTransaction();
             _isOpen = false;
+            _realm.DrainTransactionQueue();
         }
     }
 }

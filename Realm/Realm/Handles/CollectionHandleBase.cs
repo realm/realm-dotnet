@@ -17,58 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class CollectionHandleBase : RealmHandle, IThreadConfinedHandle
+    internal abstract class CollectionHandleBase : NotifiableObjectHandleBase
     {
-        private static class NativeMethods
-        {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "collection_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct CollectionChangeSet
-        {
-            public MarshaledVector<IntPtr> Deletions;
-            public MarshaledVector<IntPtr> Insertions;
-            public MarshaledVector<IntPtr> Modifications;
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct Move
-            {
-                public IntPtr From;
-                public IntPtr To;
-            }
-
-            public MarshaledVector<Move> Moves;
-        }
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        internal delegate void NotificationCallbackDelegate(IntPtr managedCollectionHandle, IntPtr collectionChanges, IntPtr notficiationException);
-
         public abstract bool IsValid { get; }
 
         protected CollectionHandleBase(RealmHandle root) : base(root)
         {
         }
 
-        public abstract IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback);
-
         public abstract IntPtr GetObjectAtIndex(int index);
 
         public abstract int Count();
-
-        public IntPtr DestroyNotificationToken(IntPtr token)
-        {
-            NativeException nativeException;
-            var result = NativeMethods.destroy_notificationtoken(token, out nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
     }
 }

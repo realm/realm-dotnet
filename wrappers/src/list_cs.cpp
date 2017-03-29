@@ -23,8 +23,8 @@
 #include "realm_export_decls.hpp"
 #include "wrapper_exceptions.hpp"
 #include "object_accessor.hpp"
-#include "collection_cs.hpp"
 #include "object-store/src/thread_safe_reference.hpp"
+#include "notifications_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;

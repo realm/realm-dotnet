@@ -36,105 +36,13 @@ using namespace realm::binding;
 using NotifyRealmChangedDelegate = void(void* managed_state_handle);
 NotifyRealmChangedDelegate* notify_realm_changed = nullptr;
 
-using NotifyRealmObjectChangedDelegate = bool(void* managed_realm_object_handle, size_t property_ndx);
-NotifyRealmObjectChangedDelegate* notify_realm_object_changed = nullptr;
-
-using FreeGCHandleDelegate = void(void* managed_handle);
-FreeGCHandleDelegate* free_gc_handle = nullptr;
-
 namespace realm {
 namespace binding {
-    inline size_t get_property_index(const ObjectSchema& schema, const size_t column_index) {
-        auto const& props = schema.persisted_properties;
-        for (size_t i = 0; i < props.size(); ++i) {
-            if (props[i].table_column == column_index) {
-                return i;
-            }
-        }
-        
-        return -1;
-    }
-    
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
     
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
-        std::unordered_set<void*> toRemove;
-
-        for (auto const& o : observed) {
-            for (auto const& change : o.changes) {
-                if (change.kind == CSharpBindingContext::ColumnInfo::Kind::Set) {
-                    auto const& observed_object_details = static_cast<ObservedObjectDetails*>(o.info);
-                    
-                    if (toRemove.find(observed_object_details->managed_object_handle) == toRemove.end() &&
-                        !notify_realm_object_changed(observed_object_details->managed_object_handle, get_property_index(observed_object_details->schema, change.initial_column_index))) {
-                        toRemove.insert(observed_object_details->managed_object_handle);
-                    }
-                }
-            }
-        }
-        
-        for (auto const& o : invalidated) {
-            remove_observed_row(o);
-        }
-        
-        for (auto const& o : toRemove) {
-            remove_observed_row(o);
-        }
-        
         notify_realm_changed(m_managed_state_handle);
-    }
-    
-    void CSharpBindingContext::add_observed_row(const Object& object, void* managed_object_handle)
-    {
-        auto observer_state = BindingContext::ObserverState();
-        observer_state.row_ndx = object.row().get_index();
-        observer_state.table_ndx = object.row().get_table()->get_index_in_group();
-        observer_state.info = new ObservedObjectDetails(object.get_object_schema(), managed_object_handle);
-        m_observed_rows.push_back(std::move(observer_state));
-    }
-    
-    void CSharpBindingContext::remove_observed_row(void* managed_object_handle)
-    {
-        remove_observed_rows([&](auto const* observer, auto const* details) {
-            return details->managed_object_handle == managed_object_handle;
-        });
-    }
-    
-    void CSharpBindingContext::notify_change(const size_t row_ndx, const size_t table_ndx, const size_t property_index)
-    {
-        std::vector<void*> toNotify;
-        
-        for (auto const& o : m_observed_rows) {
-            if (o.row_ndx == row_ndx && o.table_ndx == table_ndx) {
-                auto const& details = static_cast<ObservedObjectDetails*>(o.info);
-                toNotify.push_back(details->managed_object_handle);
-            }
-        }
-        
-        std::unordered_set<void*> toRemove;
-        for (void* handle : toNotify) {
-            if (toRemove.find(handle) == toRemove.end() &&
-                !notify_realm_object_changed(handle, property_index)) {
-                toRemove.insert(handle);
-            }
-        }
-        
-        for (auto const& o : toRemove) {
-            remove_observed_row(o);
-        }
-    }
-    
-    void CSharpBindingContext::notify_removed(const size_t row_ndx, const size_t table_ndx)
-    {
-        remove_observed_rows([&](auto const* observer, auto const* details) {
-            return observer->row_ndx == row_ndx && observer->table_ndx == table_ndx;
-        });
-    }
-
-    CSharpBindingContext::~CSharpBindingContext()
-    {
-        free_gc_handle(m_managed_state_handle);
     }
 }
     
@@ -148,16 +56,6 @@ REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedDelegate notif
     notify_realm_changed = notifier;
 }
     
-REALM_EXPORT void register_notify_realm_object_changed(NotifyRealmObjectChangedDelegate notifier)
-{
-    notify_realm_object_changed = notifier;
-}
-
-REALM_EXPORT void realm_install_gchandle_deleter(FreeGCHandleDelegate deleter)
-{
-    free_gc_handle = deleter;
-}
-
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -224,24 +122,6 @@ REALM_EXPORT void* shared_realm_get_managed_state_handle(SharedRealm& realm, Nat
         
         auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
         return csharp_context->get_managed_state_handle();
-    });
-}
-    
-REALM_EXPORT void shared_realm_add_observed_object(SharedRealm& realm, const Object& object, void* managed_realm_object_handle, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
-        csharp_context->add_observed_row(object, managed_realm_object_handle);
-    });
-}
-    
-REALM_EXPORT void shared_realm_remove_observed_object(SharedRealm& realm, void* managed_realm_object_handle, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        if (realm->m_binding_context != nullptr) {
-            auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
-            csharp_context->remove_observed_row(managed_realm_object_handle);
-        }
     });
 }
     

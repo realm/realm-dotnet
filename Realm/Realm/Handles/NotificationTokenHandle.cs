@@ -15,8 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
+
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -25,19 +24,19 @@ namespace Realms
     // We need to mirror this same relationship here.
     internal class NotificationTokenHandle : RealmHandle
     {
-        private CollectionHandleBase _collectionHandle;
+        private readonly NotifiableObjectHandleBase _notifiableHandle;
 
-        public NotificationTokenHandle(CollectionHandleBase root) : base(root.Root ?? root)
+        public NotificationTokenHandle(NotifiableObjectHandleBase root) : base(root.Root ?? root)
         {
             // We save this because RealmHandle doesn't support a parent chain like
             // NotificationToken -> List -> Realm
-            _collectionHandle = root;
+            _notifiableHandle = root;
         }
 
         protected override void Unbind()
         {
-            var managedCollectionHandle = _collectionHandle.DestroyNotificationToken(handle);
-            GCHandle.FromIntPtr(managedCollectionHandle).Free();
+            var managedObjectHandle = _notifiableHandle.DestroyNotificationToken(handle);
+            GCHandle.FromIntPtr(managedObjectHandle).Free();
         }
     }
 }

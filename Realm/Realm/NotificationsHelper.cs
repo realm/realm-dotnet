@@ -22,20 +22,20 @@ using Realms.Native;
 
 namespace Realms
 {
-    internal static class RealmCollectionNativeHelper
+    internal static class NotificationsHelper
     {
-        internal interface Interface
+        internal interface INotifiable
         {
-            void NotifyCallbacks(CollectionHandleBase.CollectionChangeSet? changes, NativeException? exception);
+            void NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception);
         }
 
-        internal static readonly CollectionHandleBase.NotificationCallbackDelegate NotificationCallback = NotificationCallbackImpl;
+        internal static readonly NotifiableObjectHandleBase.NotificationCallbackDelegate NotificationCallback = NotificationCallbackImpl;
 
-        [NativeCallback(typeof(CollectionHandleBase.NotificationCallbackDelegate))]
-        private static void NotificationCallbackImpl(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
+        [NativeCallback(typeof(NotifiableObjectHandleBase.NotificationCallbackDelegate))]
+        private static void NotificationCallbackImpl(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<CollectionHandleBase.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+            var notifiable = (INotifiable)GCHandle.FromIntPtr(managedHandle).Target;
+            notifiable.NotifyCallbacks(new PtrTo<NotifiableObjectHandleBase.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

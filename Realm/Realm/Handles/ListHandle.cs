@@ -126,10 +126,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override IntPtr AddNotificationCallback(IntPtr managedCollectionHandle, NotificationCallbackDelegate callback)
+        public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedCollectionHandle, callback, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

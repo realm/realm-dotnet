@@ -20,12 +20,12 @@
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
-#include "collection_cs.hpp"
 #include "realm_export_decls.hpp"
 #include "results.hpp"
 #include "object_accessor.hpp"
 #include "wrapper_exceptions.hpp"
 #include "object-store/src/thread_safe_reference.hpp"
+#include "notifications_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -92,15 +92,6 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
     });
 }
 
-REALM_EXPORT void* collection_destroy_notificationtoken(ManagedNotificationTokenContext* token_ptr, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        void* managed_collection = token_ptr->managed_collection;
-        delete token_ptr;
-        return managed_collection;
-    });
-}
-    
 REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

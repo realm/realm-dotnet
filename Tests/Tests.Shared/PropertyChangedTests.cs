@@ -89,41 +89,37 @@ namespace IntegrationTests
         [Test]
         public void UnmanagedObject_AfterAdd_ShouldContinueTriggering()
         {
-            AsyncContext.Run(async delegate
+            var notifications = 0;
+            var person = new Person();
+
+            person.PropertyChanged += (sender, e) =>
             {
-                var notifications = 0;
-                var person = new Person();
-
-                person.PropertyChanged += (sender, e) =>
+                if (e.PropertyName == nameof(Person.FirstName))
                 {
-                    if (e.PropertyName == nameof(Person.FirstName))
-                    {
-                        notifications++;
-                    }
-                };
+                    notifications++;
+                }
+            };
 
-                person.FirstName = "Peter";
-                await Task.Yield();
-                Assert.That(notifications, Is.EqualTo(1));
+            person.FirstName = "Peter";
 
-                _realm.Write(() =>
-                {
-                    _realm.Add(person);
-                });
+            _realm.Refresh();
+            Assert.That(notifications, Is.EqualTo(1));
 
-                // When calling Realm.Add, all properties are persisted, which causes a notification to be sent out.
-                // We're using SomeClass because Person has nullable properties, which are set always, so it interferes with the test.
-                await Task.Yield();
-                Assert.That(notifications, Is.EqualTo(2));
-
-                _realm.Write(() =>
-                {
-                    person.FirstName = "George";
-                });
-
-                await Task.Yield();
-                Assert.That(notifications, Is.EqualTo(3));
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
             });
+
+            _realm.Refresh();
+            Assert.That(notifications, Is.EqualTo(1));
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "George";
+            });
+
+            _realm.Refresh();
+            Assert.That(notifications, Is.EqualTo(2));
         }
 
         [Test]
@@ -180,26 +176,20 @@ namespace IntegrationTests
         [Test]
         public void ManagedObject_WhenSameInstanceTransactionRollback()
         {
-            AsyncContext.Run(delegate
-            {
-                return TestManagedRollback((person, name) =>
+            TestManagedRollback((person, name) =>
             {
                 person.FirstName = name;
             }, _realm.BeginWrite);
-            });
         }
 
         [Test]
         public void ManagedObject_WhenAnotherInstaceTransactionRollback()
         {
-            AsyncContext.Run(delegate
+            TestManagedRollback((_, name) =>
             {
-                return TestManagedRollback((_, name) =>
-                {
-                    var otherInstance = _realm.All<Person>().First();
-                    otherInstance.FirstName = name;
-                }, _realm.BeginWrite);
-            });
+                var otherInstance = _realm.All<Person>().First();
+                otherInstance.FirstName = name;
+            }, _realm.BeginWrite);
         }
 
         [Test]
@@ -233,7 +223,7 @@ namespace IntegrationTests
                     }
                 });
 
-                await Task.Yield();
+                _realm.Refresh();
                 Assert.That(notifiedPropertyNames, Is.Empty);
             });
         }
@@ -258,6 +248,7 @@ namespace IntegrationTests
                 person.FirstName = "Peter";
             });
 
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
             _realm.Write(() =>
@@ -265,6 +256,7 @@ namespace IntegrationTests
                 person.LastName = "Smith";
             });
 
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.LastName) }));
 
             _realm.Write(() =>
@@ -272,6 +264,7 @@ namespace IntegrationTests
                 person.Score = 3.5f;
             });
 
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.LastName), nameof(Person.Score) }));
         }
 
@@ -303,6 +296,7 @@ namespace IntegrationTests
                 first.IsAmbivalent = true;
             });
 
+            _realm.Refresh();
             Assert.That(firstNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.IsAmbivalent) }));
             Assert.That(secondNotifiedPropertyNames, Is.Empty);
 
@@ -312,6 +306,7 @@ namespace IntegrationTests
                 second.Longitude = 5.6;
             });
 
+            _realm.Refresh();
             Assert.That(firstNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.IsAmbivalent) }));
             Assert.That(secondNotifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.Latitude), nameof(Person.Longitude) }));
         }
@@ -337,6 +332,7 @@ namespace IntegrationTests
                 person.FirstName = "Peter";
             });
 
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
             _realm.Write(() =>
@@ -376,6 +372,7 @@ namespace IntegrationTests
                 person.Birthday = new DateTimeOffset(1985, 1, 5, 8, 2, 3, TimeSpan.FromHours(3));
             });
 
+            _realm.Refresh();
             Assert.That(subscriber1Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
             Assert.That(subscriber2Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
 
@@ -386,6 +383,7 @@ namespace IntegrationTests
                 person.IsInteresting = true;
             });
 
+            _realm.Refresh();
             Assert.That(subscriber1Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday) }));
             Assert.That(subscriber2Properties, Is.EquivalentTo(new[] { nameof(Person.Birthday), nameof(Person.IsInteresting) }));
         }
@@ -411,6 +409,7 @@ namespace IntegrationTests
                 person.Email = "peter@gmail.com";
             });
 
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { "Email_" }));
         }
 
@@ -456,6 +455,7 @@ namespace IntegrationTests
                     _realm.Write(() => person.FirstName = "Peter");
 
                     // Sanity check
+                    _realm.Refresh();
                     Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
                 })();
 
@@ -478,6 +478,7 @@ namespace IntegrationTests
                 });
 
                 // person was garbage collected, so we should not be notified and no exception should be thrown.
+                _realm.Refresh();
                 Assert.That(notifiedPropertyNames, Is.Empty);
             });
         }
@@ -576,14 +577,16 @@ namespace IntegrationTests
 
             // Subscribed - regular set should trigger
             await writeFirstNameAction(person, "Peter");
-            await Task.Yield();
+
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
 
             // Subscribed - setting the same value for the property should trigger again
             // This is different from .NET's usual behavior, but is a limitation due to the fact that we don't
             // check the previous value of the property before setting it.
             await writeFirstNameAction(person, "Peter");
-            await Task.Yield();
+
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
 
             notifiedPropertyNames.Clear();
@@ -591,11 +594,12 @@ namespace IntegrationTests
 
             // Unsubscribed - should not trigger
             await writeFirstNameAction(person, "George");
-            await Task.Yield();
+
+            _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
-        private async Task TestManagedRollback(Action<Person, string> writeFirstNameAction, Func<Transaction> transactionFactory)
+        private void TestManagedRollback(Action<Person, string> writeFirstNameAction, Func<Transaction> transactionFactory)
         {
             var notifiedPropertyNames = new List<string>();
             var person = new Person();
@@ -613,14 +617,12 @@ namespace IntegrationTests
             {
                 writeFirstNameAction(person, "Peter");
 
-                await Task.Yield();
-                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName) }));
-
+                Assert.That(notifiedPropertyNames, Is.Empty);
                 transaction.Rollback();
             }
 
-            await Task.Yield();
-            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(Person.FirstName), nameof(Person.FirstName) }));
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
         private class AgedObject : RealmObject

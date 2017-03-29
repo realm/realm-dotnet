@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-#ifndef COLLECTION_CS_HPP
-#define COLLECTION_CS_HPP
+#ifndef NOTIFICATIONS_CS_HPP
+#define NOTIFICATIONS_CS_HPP
 
 #include <memory>
 #include "collection_notifications.hpp"
@@ -37,21 +37,37 @@ namespace realm {
             CollectionChangeSet::Move* moves;
             size_t count;
         } moves;
+        
+        MarshallableIndexSet properties;
     };
     
     typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
     
     struct ManagedNotificationTokenContext {
         NotificationToken token;
-        void* managed_collection;
+        void* managed_object;
         ManagedNotificationCallback callback;
+        ObjectSchema* schema;
     };
     
-    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_collection, ManagedNotificationCallback callback, std::function<NotificationToken(CollectionChangeCallback)> subscriber)
+    inline size_t get_property_index(const ObjectSchema* schema, const size_t column_index) {
+        REALM_ASSERT(schema != nullptr);
+        auto const& props = schema->persisted_properties;
+        for (size_t i = 0; i < props.size(); ++i) {
+            if (props[i].table_column == column_index) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
+    
+    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, ManagedNotificationCallback callback, std::function<NotificationToken(CollectionChangeCallback)> subscriber, ObjectSchema* schema = nullptr)
     {
         auto context = new ManagedNotificationTokenContext();
-        context->managed_collection = managed_collection;
+        context->managed_object = managed_object;
         context->callback = callback;
+        context->schema = schema;
         context->token = subscriber([context](CollectionChangeSet changes, std::exception_ptr e) {
             if (e) {
                 try {
@@ -59,22 +75,35 @@ namespace realm {
                 } catch (...) {
                     auto exception = convert_exception();
                     auto marshallable_exception = exception.for_marshalling();
-                    context->callback(context->managed_collection, nullptr, &marshallable_exception);
+                    context->callback(context->managed_object, nullptr, &marshallable_exception);
                 }
             } else if (changes.empty()) {
-                context->callback(context->managed_collection, nullptr, nullptr);
+                context->callback(context->managed_object, nullptr, nullptr);
             } else {
                 std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
                 std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
                 std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
                 
+                std::vector<size_t> properties;
+                
+                for (size_t i = 0; i < changes.columns.size(); i++) {
+                    if (!changes.columns[i].empty()) {
+                        for (auto c : changes.columns[i]) {
+                            auto b = c;
+                        }
+                        properties.emplace_back(get_property_index(context->schema, i));
+                    }
+                }
+                
                 MarshallableCollectionChangeSet marshallable_changes {
                     { deletions.data(), deletions.size() },
                     { insertions.data(), insertions.size() },
                     { modifications.data(), modifications.size() },
-                    { changes.moves.data(), changes.moves.size() }
+                    { changes.moves.data(), changes.moves.size() },
+                    { properties.data(), properties.size() }
                 };
-                context->callback(context->managed_collection, &marshallable_changes, nullptr);
+                
+                context->callback(context->managed_object, &marshallable_changes, nullptr);
             }
         });
         
@@ -82,4 +111,4 @@ namespace realm {
     }
 }
 
-#endif // COLLECTION_CS_HPP
+#endif // NOTIFICATIONS_CS_HPP
