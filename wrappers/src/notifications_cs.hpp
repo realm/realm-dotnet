@@ -62,49 +62,51 @@ namespace realm {
         return -1;
     }
     
-    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, ManagedNotificationCallback callback, std::function<NotificationToken(CollectionChangeCallback)> subscriber, ObjectSchema* schema = nullptr)
+    static void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
+        if (e) {
+            try {
+                std::rethrow_exception(e);
+            } catch (...) {
+                auto exception = convert_exception();
+                auto marshallable_exception = exception.for_marshalling();
+                context->callback(context->managed_object, nullptr, &marshallable_exception);
+            }
+        } else if (changes.empty()) {
+            context->callback(context->managed_object, nullptr, nullptr);
+        } else {
+            std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
+            std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
+            std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
+            
+            std::vector<size_t> properties;
+            
+            for (size_t i = 0; i < changes.columns.size(); i++) {
+                if (!changes.columns[i].empty()) {
+                    properties.emplace_back(get_property_index(context->schema, i));
+                }
+            }
+            
+            MarshallableCollectionChangeSet marshallable_changes {
+                { deletions.data(), deletions.size() },
+                { insertions.data(), insertions.size() },
+                { modifications.data(), modifications.size() },
+                { changes.moves.data(), changes.moves.size() },
+                { properties.data(), properties.size() }
+            };
+            
+            context->callback(context->managed_object, &marshallable_changes, nullptr);
+        }
+    }
+
+    template<typename Subscriber>
+    inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, ManagedNotificationCallback callback, Subscriber subscriber, ObjectSchema* schema = nullptr)
     {
         auto context = new ManagedNotificationTokenContext();
         context->managed_object = managed_object;
         context->callback = callback;
         context->schema = schema;
         context->token = subscriber([context](CollectionChangeSet changes, std::exception_ptr e) {
-            if (e) {
-                try {
-                    std::rethrow_exception(e);
-                } catch (...) {
-                    auto exception = convert_exception();
-                    auto marshallable_exception = exception.for_marshalling();
-                    context->callback(context->managed_object, nullptr, &marshallable_exception);
-                }
-            } else if (changes.empty()) {
-                context->callback(context->managed_object, nullptr, nullptr);
-            } else {
-                std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
-                std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
-                std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
-                
-                std::vector<size_t> properties;
-                
-                for (size_t i = 0; i < changes.columns.size(); i++) {
-                    if (!changes.columns[i].empty()) {
-                        for (auto c : changes.columns[i]) {
-                            auto b = c;
-                        }
-                        properties.emplace_back(get_property_index(context->schema, i));
-                    }
-                }
-                
-                MarshallableCollectionChangeSet marshallable_changes {
-                    { deletions.data(), deletions.size() },
-                    { insertions.data(), insertions.size() },
-                    { modifications.data(), modifications.size() },
-                    { changes.moves.data(), changes.moves.size() },
-                    { properties.data(), properties.size() }
-                };
-                
-                context->callback(context->managed_object, &marshallable_changes, nullptr);
-            }
+            handle_changes(context, changes, e);
         });
         
         return context;
