@@ -110,37 +110,44 @@ namespace Realms
             // First alloc this thread
             var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
 
-            bool isNull;
-            NativeException nativeException;
-
-            // try to read
-            var bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
-            nativeException.ThrowIfNecessary();
-
-            if (bytesRead == -1)
+            try
             {
-                throw new RealmInvalidDatabaseException("Corrupted string data");
-            }
+                bool isNull;
+                NativeException nativeException;
 
-            if (bytesRead > bufferSize) // need a bigger buffer
-            {
-                bufferSize = bytesRead;
-
-                Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
-
-                // try to read with big buffer
-                bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
+                // try to read
+                var bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
-                if (bytesRead == -1) // bad UTF-8 in full string
+
+                if (bytesRead == -1)
                 {
                     throw new RealmInvalidDatabaseException("Corrupted string data");
                 }
 
-                Debug.Assert(bytesRead <= bufferSize, "Buffer must have overflowed.");
-            } // needed re-read with expanded buffer
+                if (bytesRead > bufferSize) // need a bigger buffer
+                {
+                    bufferSize = bytesRead;
 
-            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+                    Marshal.FreeHGlobal(stringGetBuffer);
+                    stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSize * sizeof(char)));
+
+                    // try to read with big buffer
+                    bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
+                    nativeException.ThrowIfNecessary();
+                    if (bytesRead == -1) // bad UTF-8 in full string
+                    {
+                        throw new RealmInvalidDatabaseException("Corrupted string data");
+                    }
+
+                    Debug.Assert(bytesRead <= bufferSize, "Buffer must have overflowed.");
+                } // needed re-read with expanded buffer
+
+                return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(stringGetBuffer);
+            }
         }
 
         public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
