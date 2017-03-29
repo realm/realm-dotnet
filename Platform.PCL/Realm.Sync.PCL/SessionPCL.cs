@@ -73,6 +73,20 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Attempts to reconnect all sessions.
+        /// </summary>
+        /// <remarks>
+        /// By default, the sync engine will attempt to reconnect sessions at incrementing intervals. This method is
+        /// useful when you are monitoring connectivity yourself, using e.g.
+        /// <see href="https://github.com/jamesmontemagno/ConnectivityPlugin">Connectivity Plugin</see> or through the
+        /// native connectivity API and you wish to cancel that delay and try to reconnect immediately.
+        /// </remarks>
+        public static void Reconnect()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
         /// Gets an <see cref="IObservable{T}"/> that can be used to track upload or download progress.
         /// </summary>
         /// <remarks>

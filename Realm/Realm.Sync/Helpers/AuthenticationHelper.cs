@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -68,10 +69,11 @@ namespace Realms.Sync
                 };
 
                 var result = await MakeAuthRequestAsync(user.ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-                var access_token = result.access_token;
 
-                session.Handle.RefreshAccessToken(access_token.token, access_token.token_data.path);
-                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(access_token.token_data.expires));
+                var accessToken = result["access_token"];
+
+                session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
+                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {
@@ -101,8 +103,8 @@ namespace Realms.Sync
         public static async Task<Tuple<string, string>> Login(Credentials credentials, Uri serverUrl)
         {
             var result = await MakeAuthRequestAsync(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
-            var refresh_token = result.refresh_token;
-            return Tuple.Create((string)refresh_token.token_data.identity, (string)refresh_token.token);
+            var refreshToken = result["refresh_token"];
+            return Tuple.Create(refreshToken["token_data"]["identity"].Value<string>(), refreshToken["token"].Value<string>());
         }
 
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
@@ -163,7 +165,8 @@ namespace Realms.Sync
             }
         }
 
-        private static async Task<dynamic> MakeAuthRequestAsync(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
+        // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
+        private static async Task<JObject> MakeAuthRequestAsync(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
         {
             body["app_id"] = string.Empty; // FIXME
 
@@ -176,17 +179,17 @@ namespace Realms.Sync
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
-                return JsonConvert.DeserializeObject<dynamic>(json);
+                return JObject.Parse(json);
             }
 
             var errorJson = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
             if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
             {
-                var problem = JsonConvert.DeserializeObject<dynamic>(errorJson);
+                var problem = JObject.Parse(errorJson);
 
-                var code = ErrorCodeHelper.GetErrorCode(problem.code) ?? ErrorCode.Unknown;
+                var code = ErrorCodeHelper.GetErrorCode(problem["code"].Value<int>()) ?? ErrorCode.Unknown;
 
-                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, problem.ToString(), (string)problem["title"]);
+                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem["title"].Value<string>());
             }
 
             throw new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);

@@ -147,6 +147,14 @@ REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, 
         query_ptr->not_equal(columnIndex, str, case_sensitive);
     });
 }
+    
+REALM_EXPORT void query_string_like(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor str(value, value_len);
+        query_ptr->like(columnIndex, str, case_sensitive);
+    });
+}
 
 REALM_EXPORT void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
 {
@@ -402,10 +410,10 @@ REALM_EXPORT void query_null_equal(Query* query_ptr, size_t columnIndex, NativeE
     
 REALM_EXPORT void query_null_not_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
 {   
-    handle_errors(ex, [&]() {   
-        query_ptr->not_equal(columnIndex, null());    
+    handle_errors(ex, [&]() {
+        query_ptr->not_equal(columnIndex, null());
     });   
-}   
+}
 
 REALM_EXPORT Results* query_create_results(Query* query_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {

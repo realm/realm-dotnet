@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -55,6 +57,8 @@ namespace Realms
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
                 internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+
+                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
 
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
@@ -118,7 +122,7 @@ namespace Realms
             {
                 if (OptionalSortDescriptorBuilder == null)
                 {
-                    OptionalSortDescriptorBuilder = _realm.CreateSortDescriptorForTable(_metadata);
+                    OptionalSortDescriptorBuilder = new SortDescriptorBuilder(_metadata.Table);
                 }
                 else
                 {
@@ -127,8 +131,28 @@ namespace Realms
                 }
             }
 
-            var sortColName = body.Member.Name;
-            OptionalSortDescriptorBuilder.AddClause(sortColName, ascending);
+            var propertyChain = TraverseSort(body).Select(n =>
+            {
+                var metadata = _realm.Metadata[n.Item1.Name];
+                return metadata.PropertyIndices[n.Item2];
+            });
+
+            OptionalSortDescriptorBuilder.AddClause(propertyChain, ascending);
+        }
+
+        private IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
+        {
+            var chain = new List<Tuple<Type, string>>();
+
+            while (expression != null)
+            {
+                chain.Add(Tuple.Create(expression.Member.DeclaringType, expression.Member.Name));
+                expression = expression.Expression as MemberExpression;
+            }
+
+            chain.Reverse();
+
+            return chain;
         }
 
         private ObjectHandle VisitElementAt(MethodCallExpression m)
@@ -166,36 +190,36 @@ namespace Realms
             {
                 if (m.Method.Name == nameof(Queryable.Where))
                 {
-                    this.Visit(m.Arguments[0]);
+                    Visit(m.Arguments[0]);
                     var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                    this.Visit(lambda.Body);
+                    Visit(lambda.Body);
                     return m;
                 }
 
                 if (m.Method.Name == nameof(Queryable.OrderBy))
                 {
-                    this.Visit(m.Arguments[0]);
+                    Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
                     return m;
                 }
 
                 if (m.Method.Name == nameof(Queryable.OrderByDescending))
                 {
-                    this.Visit(m.Arguments[0]);
+                    Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
                     return m;
                 }
 
                 if (m.Method.Name == nameof(Queryable.ThenBy))
                 {
-                    this.Visit(m.Arguments[0]);
+                    Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
                     return m;
                 }
 
                 if (m.Method.Name == nameof(Queryable.ThenByDescending))
                 {
-                    this.Visit(m.Arguments[0]);
+                    Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
                     return m;
                 }
@@ -336,7 +360,11 @@ namespace Realms
                 m.Method.DeclaringType == typeof(StringExtensions))
             {
                 QueryHandle.Operation<string> queryMethod = null;
+
+                // For extension methods, member should be m.Arguments[0] as MemberExpression;
                 MemberExpression member = null;
+
+                // For extension methods, that should be 1
                 var stringArgumentIndex = 0;
 
                 if (m.Method == Methods.String.Contains.Value)
@@ -390,6 +418,18 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(m));
                 }
+                else if (m.Method == Methods.String.Like.Value)
+                {
+                    member = m.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+                    object caseSensitive;
+                    if (!TryExtractConstantValue(m.Arguments.Last(), out caseSensitive) || !(caseSensitive is bool))
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and boolean constant arguments.");
+                    }
+
+                    queryMethod = (q, c, v) => q.StringLike(c, v, (bool)caseSensitive);
+                }
 
                 if (queryMethod != null)
                 {
@@ -403,7 +443,8 @@ namespace Realms
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
-                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || argument.GetType() != typeof(string))
+                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || 
+                        (argument != null && argument.GetType() != typeof(string)))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
@@ -422,7 +463,7 @@ namespace Realms
             {
                 case ExpressionType.Not:
                     CoreQueryHandle.Not();
-                    this.Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
+                    Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
