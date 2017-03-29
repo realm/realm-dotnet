@@ -108,17 +108,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-Win32\realm-wrappers.dll">
-      <Link>realm-wrappers.dll</Link>
+      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-x64\realm-wrappers.dll">
-      <Link>\realm-wrappers.dll</Link>
+      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-ARM\realm-wrappers.dll">
-      <Link>realm-wrappers.dll</Link>
+      <Link>lib\$(Platform)\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <AppxBinary Include="lib\$(Platform)\realm-wrappers.dll" />
     <Content Include="FodyWeavers.xml" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
