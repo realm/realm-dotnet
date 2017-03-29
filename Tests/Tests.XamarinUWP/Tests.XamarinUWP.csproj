@@ -108,15 +108,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-Win32\realm-wrappers.dll">
-      <Link>lib\winrt\x86\realm-wrappers.dll</Link>
+      <Link>realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-x64\realm-wrappers.dll">
-      <Link>lib\winrt\x64\realm-wrappers.dll</Link>
+      <Link>\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\Debug-ARM\realm-wrappers.dll">
-      <Link>lib\winrt\ARM\realm-wrappers.dll</Link>
+      <Link>realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="FodyWeavers.xml" />
