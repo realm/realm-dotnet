@@ -32,7 +32,7 @@ stage('Checkout') {
       versionString = "${version.major}.${version.minor}.${version.patch}"
 
       dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
-      dataBindingVersionString = "${version.major}.${version.minor}.${version.patch}"
+      dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
       nuget('restore Realm.sln')
 
