@@ -89,7 +89,6 @@
     <Compile Include="Handles\UnownedRealmHandle.cs" />
     <Compile Include="Linq\ExpressionVisitor.cs" />
     <Compile Include="Linq\IRealmCollection.cs" />
-    <Compile Include="Linq\RealmCollectionNativeHelper.cs" />
     <Compile Include="Linq\RealmResults.cs" />
     <Compile Include="Linq\RealmResultsProvider.cs" />
     <Compile Include="Linq\RealmResultsVisitor.cs" />
@@ -118,6 +117,8 @@
     <Compile Include="Thread Handover\ThreadSafeReference.cs" />
     <Compile Include="Handles\ThreadSafeReferenceHandle.cs" />
     <Compile Include="Handles\IThreadConfinedHandle.cs" />
+    <Compile Include="Handles\NotifiableObjectHandleBase.cs" />
+    <Compile Include="NotificationsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

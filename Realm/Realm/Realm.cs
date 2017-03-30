@@ -47,12 +47,9 @@ namespace Realms
             NativeCommon.Initialize();
 
             NativeCommon.NotifyRealmCallback notifyRealm = RealmState.NotifyRealmChanged;
-            NativeCommon.NotifyRealmObjectCallback notifyRealmObject = RealmObject.NotifyRealmObjectPropertyChanged;
             GCHandle.Alloc(notifyRealm);
-            GCHandle.Alloc(notifyRealmObject);
 
             NativeCommon.register_notify_realm_changed(notifyRealm);
-            NativeCommon.register_notify_realm_object_changed(notifyRealmObject);
 
             SynchronizationContextEventLoopSignal.Install();
         }
@@ -1039,6 +1036,32 @@ namespace Realms
             }
         }
 
+        #region Transactions
+
+        internal void DrainTransactionQueue()
+        {
+            _state.DrainTransactionQueue();
+        }
+
+        internal void ExecuteOutsideTransaction(Action action)
+        {
+            if (action == null)
+            {
+                return;
+            }
+
+            if (IsInTransaction)
+            {
+                _state.AfterTransactionQueue.Enqueue(action);
+            }
+            else
+            {
+                action();
+            }
+        }
+
+        #endregion
+
         #region Obsolete methods
 
         /// <summary>
@@ -1158,7 +1181,8 @@ namespace Realms
             private readonly List<WeakReference<Realm>> weakRealms = new List<WeakReference<Realm>>();
 
             public readonly GCHandle GCHandle;
-
+            public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
+            
             public RealmState()
             {
                 // this is freed in a native callback when the CSharpBindingContext is destroyed
@@ -1218,6 +1242,25 @@ namespace Realms
                 });
 
                 return realms;
+            }
+
+            internal void DrainTransactionQueue()
+            {
+                while (AfterTransactionQueue.Count > 0)
+                {
+                    var action = AfterTransactionQueue.Dequeue();
+                    try
+                    {
+                        action.Invoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        foreach (var realm in GetLiveRealms())
+                        {
+                            realm.NotifyError(ex);
+                        }
+                    }
+                }
             }
         }
     }

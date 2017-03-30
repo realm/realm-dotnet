@@ -74,12 +74,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version", CallingConvention = CallingConvention.Cdecl)]
             public static extern ulong get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_add_observed_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_observed_object(SharedRealmHandle sharedRealm, ObjectHandle objectHandle, IntPtr managedRealmObjectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_observed_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void remove_observed_object(SharedRealmHandle sharedRealm, IntPtr managedRealmObjectHandle, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_compact", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool compact(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -134,20 +128,6 @@ namespace Realms
             var result = NativeMethods.get_managed_state_handle(this, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
-        }
-
-        public void AddObservedObject(ObjectHandle objectHandle, IntPtr managedRealmObjectHandle)
-        {
-            NativeException nativeException;
-            NativeMethods.add_observed_object(this, objectHandle, managedRealmObjectHandle, out nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void RemoveObservedObject(IntPtr managedRealmObjectHandle)
-        {
-            NativeException nativeException;
-            NativeMethods.remove_observed_object(this, managedRealmObjectHandle, out nativeException);
-            nativeException.ThrowIfNecessary();
         }
 
         public void BeginTransaction()
