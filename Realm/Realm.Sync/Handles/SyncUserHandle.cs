@@ -45,6 +45,13 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern UserState get_state(SyncUserHandle user, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_is_admin", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_admin(SyncUserHandle user);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_set_is_admin", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_is_admin(SyncUserHandle user, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_log_out", CallingConvention = CallingConvention.Cdecl)]
             public static extern void log_out(SyncUserHandle user, out NativeException ex);
 
@@ -99,6 +106,18 @@ namespace Realms.Sync
             return result;
         }
 
+        public bool GetIsAdmin()
+        {
+            return NativeMethods.get_is_admin(this);
+        }
+
+        public void SetIsAdmin(bool value)
+        {
+            NativeException ex;
+            NativeMethods.set_is_admin(this, value, out ex);
+            ex.ThrowIfNecessary();
+        }
+
         public IntPtr GetSessionPointer(string path)
         {
             NativeException ex;
@@ -115,6 +134,7 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        // isAdmin should only be true when logging in with an admin token.
         public static SyncUserHandle GetSyncUser(string identity, string refreshToken, string authServerUrl, bool isAdmin)
         {
             NativeException ex;

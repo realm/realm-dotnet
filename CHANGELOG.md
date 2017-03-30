@@ -18,6 +18,7 @@ Files written with this version cannot be read by earlier versions of Realm. Thi
 - Introduce API for attempting to reconnect all sessions. This could be used in conjunction with the [connectivity plugin](https://github.com/jamesmontemagno/ConnectivityPlugin) to monitor for connectivity changes and proactively request reconnecting, rather than rely on the built-in retry mechanism. (#1310)
 - Enable sorting over to-one relationships, e.g. `realm.All<Parent>().OrderBy(p => p.Child.Age)`. (#1313)
 - Introduce a `string.Like` extension method that can be used in LINQ queries against the underlying database engine. (#1311)
+- Add an `User.IsAdmin` property that indicates whether a user is a Realm Object Server administrator. (#1320)
 
 ### Breaking Changes
 - `DateTimeOffset` properties that are not set will now correctly default to `0001-1-1` instead of `1970-1-1` after the object is passed to `realm.Add`. (#1293)

@@ -148,6 +148,19 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="User"/> is a Realm Object Server administrator user.
+        /// </summary>
+        /// <value><c>true</c> if the user is admin; otherwise, <c>false</c>.</value>
+        public bool IsAdmin
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
         public void LogOut()
