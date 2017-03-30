@@ -99,6 +99,11 @@ namespace Tests.Sync
             {
                 var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://foobar"));
                 var key = new byte[64];
+                for (var i = 0; i < key.Length; i++)
+                {
+                    key[i] = (byte)i;
+                }
+
                 var config = new SyncConfiguration(user, new Uri("realm://foobar"))
                 {
                     EncryptionKey = key

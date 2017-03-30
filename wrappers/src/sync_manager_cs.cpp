@@ -85,11 +85,10 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
         if (encryption_key) {
-            config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
             
-            auto& sync_encryption_key = config.sync_config->realm_encryption_key;
-            sync_encryption_key = std::array<char, 64>();
-            std::copy_n(config.encryption_key.begin(), 64, sync_encryption_key->begin());
+            config.encryption_key = std::vector<char>(key.begin(), key.end());
+            config.sync_config->realm_encryption_key = key;
         }
 
         return new SharedRealm(Realm::get_shared_realm(config));
