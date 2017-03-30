@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 namespace Realms
 {
     internal abstract class RealmCollectionBase<T> 
-        : RealmCollectionNativeHelper.Interface, 
+        : NotificationsHelper.INotifiable, 
           IRealmCollection<T>, 
           INotifyCollectionChanged, 
           INotifyPropertyChanged,
@@ -158,7 +158,7 @@ namespace Realms
 
             var managedResultsHandle = GCHandle.Alloc(this);
             var token = new NotificationTokenHandle(Handle.Value);
-            var tokenHandle = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), RealmCollectionNativeHelper.NotificationCallback);
+            var tokenHandle = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), NotificationsHelper.NotificationCallback);
 
             token.SetHandle(tokenHandle);
 
@@ -302,7 +302,7 @@ namespace Realms
 
         #endregion
 
-        void RealmCollectionNativeHelper.Interface.NotifyCallbacks(CollectionHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
             ChangeSet changeset = null;

@@ -109,7 +109,7 @@
 		48ED7C5D1C16F9C200AF23A4 /* realm_error_type.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_error_type.hpp; path = src/realm_error_type.hpp; sourceTree = "<group>"; };
 		48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_export_decls.hpp; path = src/realm_export_decls.hpp; sourceTree = "<group>"; };
 		48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "realm-csharp.cpp"; path = "src/realm-csharp.cpp"; sourceTree = "<group>"; };
-		48ED7C621C16F9C200AF23A4 /* collection_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = collection_cs.hpp; path = src/collection_cs.hpp; sourceTree = "<group>"; };
+		48ED7C621C16F9C200AF23A4 /* notifications_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = notifications_cs.hpp; path = src/notifications_cs.hpp; sourceTree = "<group>"; };
 		48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm_cs.cpp; path = src/shared_realm_cs.cpp; sourceTree = "<group>"; };
 		48ED7C641C16F9C200AF23A4 /* table_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = table_cs.cpp; path = src/table_cs.cpp; sourceTree = "<group>"; };
 		48EE96C51D75D60600666046 /* schema_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = schema_cs.cpp; path = src/schema_cs.cpp; sourceTree = "<group>"; };
@@ -217,7 +217,7 @@
 				48EE96C71D75D60F00666046 /* schema_cs.hpp */,
 				51A51F251DAEB5660057BAE6 /* object_cs.cpp */,
 				519B58381DB0F8E7000CB2BB /* object_cs.hpp */,
-				48ED7C621C16F9C200AF23A4 /* collection_cs.hpp */,
+				48ED7C621C16F9C200AF23A4 /* notifications_cs.hpp */,
 				8510C5001D3D1194000CAD87 /* shared_realm_cs.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,

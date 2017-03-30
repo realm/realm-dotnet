@@ -33,13 +33,6 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotifyRealmCallback(IntPtr stateHandle);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        public delegate bool NotifyRealmObjectCallback(IntPtr realmObjectHandle, IntPtr propertyIndex);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void FreeGCHandleCallback(IntPtr handle);
-
 #if DEBUG
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
@@ -60,12 +53,6 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_object_changed", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void register_notify_realm_object_changed(NotifyRealmObjectCallback callback);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_gchandle_deleter", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void install_gchandle_deleter(FreeGCHandleCallback callback);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
@@ -98,19 +85,6 @@ namespace Realms
             GCHandle.Alloc(logger);
             set_debug_logger(logger);
 #endif
-
-            FreeGCHandleCallback gchandleDeleter = FreeGCHandle;
-            GCHandle.Alloc(gchandleDeleter);
-            install_gchandle_deleter(gchandleDeleter);
-        }
-
-        [NativeCallback(typeof(FreeGCHandleCallback))]
-        public static void FreeGCHandle(IntPtr handle)
-        {
-            if (handle != IntPtr.Zero)
-            {
-                GCHandle.FromIntPtr(handle).Free();
-            }
         }
     }
 }

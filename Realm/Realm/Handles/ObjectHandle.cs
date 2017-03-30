@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ObjectHandle : RealmHandle, IThreadConfinedHandle
+    internal class ObjectHandle : NotifiableObjectHandleBase
     {
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
@@ -140,6 +140,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, NotificationCallbackDelegate callback, out NativeException ex);
         }
 
         public bool IsValid
@@ -582,12 +585,20 @@ namespace Realms
             return resultsHandle;
         }
 
-        public ThreadSafeReferenceHandle GetThreadSafeReference()
+        public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
             NativeException nativeException;
             var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
             nativeException.ThrowIfNecessary();
 
+            return result;
+        }
+
+        public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out nativeException);
+            nativeException.ThrowIfNecessary();
             return result;
         }
     }

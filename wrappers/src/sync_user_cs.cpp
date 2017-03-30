@@ -46,7 +46,8 @@ REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, s
             auth_server_url.emplace(Utf16StringAccessor(auth_server_url_buf, auth_server_url_len));
         }
         
-        return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, is_admin));
+        SyncUser::TokenType token_type = is_admin ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal;
+        return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, token_type));
     });
 }
     
@@ -138,6 +139,18 @@ REALM_EXPORT SyncUser::State realm_syncuser_get_state(SharedSyncUser& user, Nati
 {
     return handle_errors(ex, [&] {
         return user->state();
+    });
+}
+    
+REALM_EXPORT bool realm_syncuser_get_is_admin(SharedSyncUser& user)
+{
+    return user->is_admin();
+}
+    
+REALM_EXPORT void realm_syncuser_set_is_admin(SharedSyncUser& user, bool is_admin, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        user->set_is_admin(is_admin);
     });
 }
     

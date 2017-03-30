@@ -24,7 +24,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -33,33 +32,13 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined
+    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined, NotificationsHelper.INotifiable
     {
-        #region static
-
-        [NativeCallback(typeof(NativeCommon.NotifyRealmObjectCallback))]
-        internal static bool NotifyRealmObjectPropertyChanged(IntPtr realmObjectHandle, IntPtr propertyIndex)
-        {
-            var gch = GCHandle.FromIntPtr(realmObjectHandle);
-            var realmObject = (RealmObject)gch.Target;
-            if (realmObject != null)
-            {
-                var property = realmObject.ObjectSchema.ElementAtOrDefault((int)propertyIndex);
-                realmObject.RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
-                return true;
-            }
-
-            gch.Free();
-            return false;
-        }
-
-        #endregion
-
         private Realm _realm;
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
-        private GCHandle? _notificationsHandle;
-
+        private NotificationTokenHandle _notificationToken;
+        
         private event PropertyChangedEventHandler _propertyChanged;
 
         /// <inheritdoc />
@@ -123,6 +102,12 @@ namespace Realms
 
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
+        /// <inheritdoc/>
+        ~RealmObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             _realm = realm;
@@ -133,17 +118,6 @@ namespace Realms
             {
                 SubscribeForNotifications();
             }
-        }
-
-        internal class Metadata
-        {
-            internal TableHandle Table;
-
-            internal Weaving.IRealmObjectHelper Helper;
-
-            internal Dictionary<string, IntPtr> PropertyIndices;
-
-            internal ObjectSchema Schema;
         }
 
         #region Getters
@@ -710,22 +684,53 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            Debug.Assert(!_notificationsHandle.HasValue, "Notification handle must be null before subscribing");
+            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
-            _notificationsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            _realm.SharedRealmHandle.AddObservedObject(ObjectHandle, GCHandle.ToIntPtr(_notificationsHandle.Value));
+            _realm.ExecuteOutsideTransaction(() =>
+            {
+                var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                var token = new NotificationTokenHandle(ObjectHandle);
+                var tokenHandle = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
+
+                token.SetHandle(tokenHandle);
+
+                _notificationToken = token;
+            });
         }
 
         private void UnsubscribeFromNotifications()
         {
-            Debug.Assert(_notificationsHandle.HasValue, "Notification handle must not be null to unsubscribe");
+            _notificationToken?.Dispose();
+            _notificationToken = null;
+        }
 
-            if (_notificationsHandle.HasValue)
+        void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        {
+            var managedException = exception?.Convert();
+
+            if (managedException != null)
             {
-                _realm.SharedRealmHandle.RemoveObservedObject(GCHandle.ToIntPtr(_notificationsHandle.Value));
-                _notificationsHandle.Value.Free();
-                _notificationsHandle = null;
+                Realm.NotifyError(managedException);
             }
+            else if (changes.HasValue)
+            {
+                foreach (var propertyIndex in changes.Value.Properties.AsEnumerable())
+                {
+                    var property = ObjectSchema.ElementAtOrDefault((int)propertyIndex);
+                    RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                }
+            }
+        }
+
+        internal class Metadata
+        {
+            internal TableHandle Table;
+
+            internal Weaving.IRealmObjectHelper Helper;
+
+            internal Dictionary<string, IntPtr> PropertyIndices;
+
+            internal ObjectSchema Schema;
         }
     }
 }
