@@ -88,7 +88,9 @@ namespace Realms.Sync
             }
 
             var result = await AuthenticationHelper.Login(credentials, serverUrl);
-            return new User(SyncUserHandle.GetSyncUser(result.Item1, result.Item2, serverUrl.AbsoluteUri, isAdmin: false));
+            var handle = SyncUserHandle.GetSyncUser(result.UserId, result.RefreshToken, serverUrl.AbsoluteUri, isAdmin: false);
+            handle.SetIsAdmin(result.IsAdmin);
+            return new User(handle);
         }
 
         /// <summary>
@@ -165,6 +167,12 @@ namespace Realms.Sync
                 return new Uri(serverUrl);
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="User"/> is a Realm Object Server administrator user.
+        /// </summary>
+        /// <value><c>true</c> if the user is admin; otherwise, <c>false</c>.</value>
+        public bool IsAdmin => Handle.GetIsAdmin();
 
         /// <summary>
         /// Gets the current state of the user.

@@ -100,11 +100,16 @@ namespace Realms.Sync
         }
 
         // Returns a Tuple<userId, refreshToken>
-        public static async Task<Tuple<string, string>> Login(Credentials credentials, Uri serverUrl)
+        public static async Task<UserLoginData> Login(Credentials credentials, Uri serverUrl)
         {
             var result = await MakeAuthRequestAsync(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
             var refreshToken = result["refresh_token"];
-            return Tuple.Create(refreshToken["token_data"]["identity"].Value<string>(), refreshToken["token"].Value<string>());
+            return new UserLoginData
+            {
+                RefreshToken = refreshToken["token"].Value<string>(),
+                UserId = refreshToken["token_data"]["identity"].Value<string>(),
+                IsAdmin = refreshToken["token_data"]["is_admin"].Value<bool>()
+            };
         }
 
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
@@ -221,6 +226,15 @@ namespace Realms.Sync
             public string UserId { get; set; }
 
             public string RealmPath { get; set; }
+        }
+
+        public class UserLoginData
+        {
+            public string UserId { get; set; }
+
+            public string RefreshToken { get; set; }
+
+            public bool IsAdmin { get; set; }
         }
     }
 }

@@ -5,6 +5,8 @@ Realm is now being distributed as a .NET Standard 1.4 library as this is a requi
 
 If you encounter any issues after the upgrade, we recommend clearing the `bin` and `obj` folders and restarting Xamarin Studio. If this doesn't help, please file an issue explaining your solution setup and the type of problems you encounter.
 
+Files written with this version cannot be read by earlier versions of Realm. This version is not compatible with versions of the Realm Object Server lower than 1.3.0.
+
 ### Bug fixes
 - Fixes the `RemoveAll(string)` overload to work correctly. (#1288)
 - Resolved an issue that would lead to crashes when refreshing the token for an invalid session. (#1289)
@@ -16,12 +18,12 @@ If you encounter any issues after the upgrade, we recommend clearing the `bin` a
 - Introduce API for attempting to reconnect all sessions. This could be used in conjunction with the [connectivity plugin](https://github.com/jamesmontemagno/ConnectivityPlugin) to monitor for connectivity changes and proactively request reconnecting, rather than rely on the built-in retry mechanism. (#1310)
 - Enable sorting over to-one relationships, e.g. `realm.All<Parent>().OrderBy(p => p.Child.Age)`. (#1313)
 - Introduce a `string.Like` extension method that can be used in LINQ queries against the underlying database engine. (#1311)
+- Add an `User.IsAdmin` property that indicates whether a user is a Realm Object Server administrator. (#1320)
 
 ### Breaking Changes
 - `DateTimeOffset` properties that are not set will now correctly default to `0001-1-1` instead of `1970-1-1` after the object is passed to `realm.Add`. (#1293)
 - Attempting to get an item at index that is out of range should now correctly throw `ArgumentOutOfRangeException` for all `IRealmCollection` implementations. (#1295)
 - The layout of the .lock file has changed, which may affect scenarios where different processes attempt to write to the same Realm file at the same time. (#1296)
-- This version is not compatible with versions of the Realm Object Server lower than 1.3.0. (#1300)
 - `PropertyChanged` notifications use a new, more reliable, mechanism, that behaves slightly differently from the old one. Notifications will be sent only after a transaction is committed (making it consistent with the way collection notifications are handled). To make sure that your UI is promptly updated, you should avoid keeping long lived transactions around. (#1316)
 
 1.1.1 (2017-03-15)
