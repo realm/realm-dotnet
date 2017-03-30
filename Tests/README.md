@@ -1,18 +1,16 @@
-Tests Reeadme 
+Tests Readme 
 ==========
 
 Test projects in here use the NUnit test runner using VS2017 or XS.
 
 Building UWP target with ARM will run on a Lumia 950XL or similar device.
 
-It does **not** include Windows Phone 8.1 as that targets 
-is [not supported in VS2017]( https://www.visualstudio.com/en-us/productinfo/vs2017-compatibility-vs).
 
 Desktop Testing
 ---------------
 You can run with x86 or x64 on the Local Machine to get a desktop version running, 
 
-Note that a virtual Badk button appears on the toolbar and is needed to navigate the UI. Other devices will use the hard or soft Back button (Android and Windows Phone) or add a top-left back. With the desktop version, even if you are running in a split screen mode, the back button still appears only on the left-hand side of the toolbar, next to the Windows logo. This may not be obvious and you can feel _stuck_ in the user interface.
+Note that a virtual Back button appears on the toolbar and is needed to navigate the UI. Other devices will use the hard or soft Back button (Android and Windows Phone) or add a top-left back. With the desktop version, even if you are running in a split screen mode, the back button still appears only on the left-hand side of the toolbar, next to the Windows logo. This may not be obvious and you can feel _stuck_ in the user interface.
 
 Runtime Exceptions in Debugger
 ------------------------------

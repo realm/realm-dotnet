@@ -17,32 +17,37 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
 
-using Foundation;
-using UIKit;
-
-namespace IntegrationTests.XamarinIOS
+namespace NUnit.Tests.Simple 
 {
-    public class Application
+    [TestFixture]
+    public class TestLocal 
     {
-        // This is the main entry point of the application.
-        private static void Main(string[] args)
+        internal class People : RealmObject
         {
-            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
+            public string Name { get; set; }
+        }
+
+        [Test]
+        public void TestMethod()
+        {
+            // TODO: Add your test code here
+            using (var realm = Realm.GetInstance())
             {
-                using (var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml")))
+                var initialCount = realm.All<People>().Count();
+
+                realm.Write(() =>
                 {
-                   ////ASD TODO IntegrationTests.TestRunner.Run("iOS", output);
-                }
-
-                return;
+                    realm.Add(new People() { Name = "Andy" });
+                });
+                Assert.That(initialCount + 1, Is.EqualTo(realm.All<People>().Count()));
             }
-
-            // if you want to use a different Application Delegate class from "UnitTestAppDelegate"
-            // you can specify it here.
-            UIApplication.Main(args, null, "UnitTestAppDelegate");
         }
     }
 }
