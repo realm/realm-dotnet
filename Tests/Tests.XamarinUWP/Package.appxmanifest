@@ -28,7 +28,7 @@
     <Extensions>
         <Extension Category="windows.activatableClass.inProcessServer">
             <InProcessServer>
-                <Path>realm-wrappers.dll</Path>  <!-- HACK - need to make dependent -->
+                <Path>realm-wrappers.dll</Path>
                 <ActivatableClass ActivatableClassId="realm.io.wrappers" ThreadingModel="both" />
             </InProcessServer>
         </Extension>
