@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -29,14 +30,14 @@ namespace IntegrationTests
     {
         private void WriteOnDifferentThread(Action<Realm> action)
         {
-            var thread = new Thread(() => 
+            var t = new Task(() => 
             {
                 var r = Realm.GetInstance(_configuration);
                 r.Write(() => action(r));
                 r.Dispose();
             });
-            thread.Start();
-            thread.Join();
+            t.Start();
+            t.Wait();
         }
 
         [Test]

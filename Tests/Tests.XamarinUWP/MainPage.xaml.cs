@@ -38,7 +38,7 @@ namespace Tests.XamarinUWP {
             nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
 
             // Do you want to automatically run tests when the app starts?
-            nunit.Options = new TestOptions { AutoRun = true};
+            nunit.Options = new TestOptions { AutoRun = false};
 
             LoadApplication(nunit);
         }

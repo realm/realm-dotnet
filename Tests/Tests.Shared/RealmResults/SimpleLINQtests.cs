@@ -365,7 +365,7 @@ namespace IntegrationTests
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
         }
-       
+
         [Test]
         public void SearchComparingInstanceProperties()
         {
@@ -560,6 +560,7 @@ namespace IntegrationTests
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
+#if !WINDOWS_UWP
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
@@ -569,7 +570,7 @@ namespace IntegrationTests
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
-
+#endif
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.StartsWith("pat", StringComparison.CurrentCulture)).Count();
@@ -593,7 +594,7 @@ namespace IntegrationTests
 
             var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
             var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue.Like(pattern, caseSensitive));
-            
+
             if (expected)
             {
                 Assert.That(regularQuery.Count(), Is.EqualTo(1));
@@ -970,7 +971,7 @@ namespace IntegrationTests
         private class InstanceConstants
         {
             public readonly long SixtyThousandField = 60000;
-           
+
             public long SixtyThousandProperty { get; } = 60000;
         }
     }

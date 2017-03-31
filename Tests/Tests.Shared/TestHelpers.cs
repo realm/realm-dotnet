@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;  // needed for UWP only
 using Realms;
 
 namespace IntegrationTests
@@ -57,6 +58,8 @@ namespace IntegrationTests
 
 #if __IOS__
             var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
+#elif WINDOWS_UWP
+            var sourceDir = Directory.GetCurrentDirectory();
 #else
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
 #endif

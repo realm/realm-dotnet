@@ -53,6 +53,7 @@ namespace IntegrationTests
             base.TearDown();
         }
 
+#if !WINDOWS_UWP
         [Test]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
@@ -98,6 +99,7 @@ namespace IntegrationTests
                 });
             });
         }
+#endif
 
         internal class MyDataObject : RealmObject
         {

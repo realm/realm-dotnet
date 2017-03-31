@@ -23,6 +23,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Realm.Sync")]
 [assembly: InternalsVisibleTo("Realm.DataBinding")]
 [assembly: InternalsVisibleTo("Tests.Win32")]
+[assembly: InternalsVisibleTo("Tests.XamarinUWP")]
 [assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
 [assembly: InternalsVisibleTo("Tests.XamarinIOS")]
 [assembly: InternalsVisibleTo("Tests.XamarinIOSn3")]

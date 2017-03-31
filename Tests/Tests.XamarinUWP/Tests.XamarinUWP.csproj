@@ -112,7 +112,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x64'">
-   <Content Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
+    <Content Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
       <Link>realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -151,6 +151,7 @@
       <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

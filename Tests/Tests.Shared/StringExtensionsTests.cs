@@ -37,12 +37,12 @@ namespace IntegrationTests
 
         public static object[] ContainsTestValues =
         {
-            new object[] { string.Empty, string.Empty, StringComparison.InvariantCulture, true },
-            new object[] { string.Empty, string.Empty, StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "b", StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.InvariantCulture, false },
-            new object[] { "abc", "d", StringComparison.InvariantCultureIgnoreCase, false },
+            new object[] { string.Empty, string.Empty, StringComparison.CurrentCulture, true },
+            new object[] { string.Empty, string.Empty, StringComparison.CurrentCultureIgnoreCase, true },
+            new object[] { "abc", "b", StringComparison.CurrentCultureIgnoreCase, true },
+            new object[] { "abc", "B", StringComparison.CurrentCultureIgnoreCase, true },
+            new object[] { "abc", "B", StringComparison.CurrentCulture, false },
+            new object[] { "abc", "d", StringComparison.CurrentCultureIgnoreCase, false },
         };
 
         [TestCaseSource(nameof(LikeTestValues))]

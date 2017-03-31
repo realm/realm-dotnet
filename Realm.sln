@@ -66,7 +66,9 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
+		Tests\runner\nunit.runner\nunit.runner.projitems*{09bcb5fa-30ad-49af-8034-5670ccb320b5}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{0a266cac-ef4a-4bb0-a3d9-f2084f1b1012}*SharedItemsImports = 4
+		Tests\Tests.Shared\Tests.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{336ed3ca-5344-4f04-966c-ca170afc3348}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{519e6d0a-7dcf-45f6-a40a-0260eaea0df7}*SharedItemsImports = 13
 		Tests\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
