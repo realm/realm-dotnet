@@ -22,3 +22,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("Realm.Sync")]
 [assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
 [assembly: InternalsVisibleTo("Tests.XamarinIOS")]
+[assembly: InternalsVisibleTo("Tests.XamarinIOSn3")]

@@ -18,7 +18,6 @@
 
 using Foundation;
 using NUnit.Runner.Services;
-using NUnit.Tests.Simple;
 using UIKit;
 
 namespace IntegrationTests.XamarinIOSn3

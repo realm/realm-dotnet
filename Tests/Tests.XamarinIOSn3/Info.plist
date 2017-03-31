@@ -35,6 +35,6 @@
 	<key>CFBundleName</key>
 	<string>Tests.XamarinIOSn3</string>
 	<key>CFBundleIdentifier</key>
-	<string>io.realm.xamarintests<n3/string>
+	<string>io.realm.xamarintestsn3</string>
 </dict>
 </plist>
