@@ -39,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D10BE048
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinAndroid", "Tests\Tests.XamarinAndroid\Tests.XamarinAndroid.csproj", "{ED17479C-2CFE-4E6D-A592-82C491FFBE4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinIOSn3", "Tests\Tests.XamarinIOSn3\Tests.XamarinIOSn3.csproj", "{B9450AD4-E48B-479B-98BA-4563B32E278A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinIOS", "Tests\Tests.XamarinIOS\Tests.XamarinIOS.csproj", "{B9450AD4-E48B-479B-98BA-4563B32E278A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tests.Shared", "Tests\Tests.Shared\Tests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject

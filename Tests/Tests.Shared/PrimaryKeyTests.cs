@@ -286,7 +286,6 @@ namespace IntegrationTests
                     foundValue = foundObj.Int64Property;
                 }
             });
-            t.Start();
             t.Wait();
 
             Assert.That(foundValue, Is.EqualTo(42000042));

@@ -94,7 +94,6 @@ namespace IntegrationTests
                 {
                     realm2 = Realm.GetInstance();
                 });
-            t.Start();
             t.Wait();
 
             // Assert

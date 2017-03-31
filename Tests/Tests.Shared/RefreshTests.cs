@@ -30,13 +30,12 @@ namespace IntegrationTests
     {
         private void WriteOnDifferentThread(Action<Realm> action)
         {
-            var t = new Task(() => 
+            var t = Task.Run(() => 
             {
                 var r = Realm.GetInstance(_configuration);
                 r.Write(() => action(r));
                 r.Dispose();
             });
-            t.Start();
             t.Wait();
         }
 
