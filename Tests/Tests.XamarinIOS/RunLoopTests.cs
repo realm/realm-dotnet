@@ -23,7 +23,7 @@ using System.Threading;
 using Foundation;
 using NUnit.Framework;
 using Realms;
-/* ASD HACK
+
 namespace IntegrationTests.XamarinIOS
 {
     [TestFixture]
@@ -88,4 +88,4 @@ namespace IntegrationTests.XamarinIOS
             thread.Join();
         }
     }
-}*/
+}

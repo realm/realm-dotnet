@@ -17,28 +17,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using Foundation;
-using NUnit.Runner.Services;
-using NUnit.Tests.Simple;
+using MonoTouch.NUnit.UI;
 using UIKit;
 
 namespace IntegrationTests.XamarinIOS
 {
     [Register("UnitTestAppDelegate")]
-    public class UnitTestAppDelegate : Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
+    public class UnitTestAppDelegate : UIApplicationDelegate
     {
+        private UIWindow window;
+        private TouchRunner runner;
+
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            global::Xamarin.Forms.Forms.Init();
+            window = new UIWindow(UIScreen.MainScreen.Bounds);
+            runner = new TouchRunner(window);
 
-            // This will load all tests within the current project
-            var runner = new NUnit.Runner.App();
+            runner.Add(System.Reflection.Assembly.GetExecutingAssembly());
 
-            // Do you want to automatically run tests when the app starts?
-            runner.Options = new TestOptions { AutoRun = false };
+            window.RootViewController = new UINavigationController(runner.GetViewController());
 
-            LoadApplication(runner);
+            window.MakeKeyAndVisible();
 
-            return base.FinishedLaunching(application, launchOptions);
+            return true;
         }
     }
 }
