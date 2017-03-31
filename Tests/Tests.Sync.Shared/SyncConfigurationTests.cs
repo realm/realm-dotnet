@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -89,6 +90,27 @@ namespace Tests.Sync
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
             Assert.That(config.DatabasePath, Is.EqualTo(path));
+        }
+
+        [Test]
+        public void SyncConfiguration_WithEncryptionKey_DoesntThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://foobar"));
+                var key = new byte[64];
+                for (var i = 0; i < key.Length; i++)
+                {
+                    key[i] = (byte)i;
+                }
+
+                var config = new SyncConfiguration(user, new Uri("realm://foobar"))
+                {
+                    EncryptionKey = key
+                };
+
+                Assert.That(() => Realm.GetInstance(config), Throws.Nothing);
+            });
         }
     }
 }

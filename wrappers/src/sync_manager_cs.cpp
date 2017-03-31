@@ -75,11 +75,6 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        if (encryption_key) {
-            config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
-        }
-
         config.schema = create_schema(objects, objects_length, properties);
         config.schema_version = configuration.schema_version;
 
@@ -87,6 +82,15 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         
         config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error});
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        
+        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
+        if (encryption_key) {
+            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+            
+            config.encryption_key = std::vector<char>(key.begin(), key.end());
+            config.sync_config->realm_encryption_key = key;
+        }
+
         return new SharedRealm(Realm::get_shared_realm(config));
     });
 }

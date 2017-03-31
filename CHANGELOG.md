@@ -12,6 +12,7 @@ Files written with this version cannot be read by earlier versions of Realm. Thi
 - Resolved an issue that would lead to crashes when refreshing the token for an invalid session. (#1289)
 - The `IObservable` returned from `session.GetProgressObservable` will correctly call `OnComplete` when created with `mode: ProgressMode.ForCurrentlyOutstandingWork`. (#1292)
 - Fixed a memory leak when accessing string properties. (#1318)
+- Fixes an issue when using `EncryptionKey` with synchronized realms. (#1322)
 
 ### Enhancements
 - Introduce APIs for safely passing objects between threads. Create a thread-safe reference to a thread-confined object by passing it to the `ThreadSafeReference.Create` factory method, which you can then safely pass to another thread to resolve in the new realm with `Realm.ResolveReference`. (#1300)
