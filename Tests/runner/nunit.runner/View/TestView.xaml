@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NUnit.Runner.View.TestView"
+             Title="{Binding TestResult.ResultState.Status}"
+             Padding="0"
+             BackgroundColor="{DynamicResource defaultBackground}" >
+    <ScrollView Orientation="Vertical"
+                VerticalOptions="FillAndExpand" 
+                HorizontalOptions="FillAndExpand" 
+                Padding="10"
+                BackgroundColor="{DynamicResource defaultBackground}" >
+        <StackLayout Orientation="Vertical" Spacing="8" Padding="8"  HorizontalOptions="FillAndExpand" BackgroundColor="White">
+            <Label Text="{Binding TestResult.Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Large" />
+            <Label Text="{Binding TestResult.Test.Parent.FullName}" LineBreakMode="MiddleTruncation" FontSize="Small" />
+            
+            <StackLayout Orientation="Horizontal" Spacing="4">
+                <Label Text="Duration:" FontSize="Small" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.Duration, StringFormat='{0:F3} seconds'}" FontSize="Small" />
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal" Spacing="4">
+                <Label Text="Asserts:" FontSize="Small" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.AssertCount}" FontSize="Small" />
+            </StackLayout>
+
+            <Label Text="Properties:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Properties}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Message:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Message}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Output:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Output}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Stack Trace:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding StackTrace}" LineBreakMode="CharacterWrap" FontSize="Small" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

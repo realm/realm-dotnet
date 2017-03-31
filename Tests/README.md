@@ -1,9 +1,21 @@
 Tests Readme 
 ==========
 
+Original Tests
+--------------
+The original `Tests.XamarinAndroid` and `Tests.XamarinIOS` projects build app using the UnitTest projects from Xamarin Studio, that invoke the NUnitLite test runner.
+
+
+New Tests
+---------
+
 Test projects in here use the NUnit test runner using VS2017 or XS.
 
 Building UWP target with ARM will run on a Lumia 950XL or similar device.
+
+There's a new IOS project Tests.XamarinIOSn3 which uses NUnit 3
+
+Because of extensive customisation, rather than using the `nunit.Xamarin` package, the runner is supplied by directly including the `nunit.runner.iOS` project.
 
 
 Desktop Testing

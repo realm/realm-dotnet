@@ -117,9 +117,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.3.6.1\lib\Xamarin.iOS10\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.runner.iOS">
-      <HintPath>..\..\packages\nunit.xamarin.3.6.1\lib\Xamarin.iOS\nunit.runner.iOS.dll</HintPath>
-    </Reference>
     <Reference Include="Xamarin.Forms.Core">
       <HintPath>..\..\packages\Xamarin.Forms.2.3.3.193\lib\Xamarin.iOS10\Xamarin.Forms.Core.dll</HintPath>
     </Reference>
@@ -161,6 +158,10 @@
     <ProjectReference Include="..\..\DataBinding\Realm.DataBinding.iOS\Realm.DataBinding.iOS.csproj">
       <Project>{0A266CAC-EF4A-4BB0-A3D9-F2084F1B1012}</Project>
       <Name>Realm.DataBinding.iOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\runner\nunit.runner.iOS\nunit.runner.iOS.csproj">
+      <Project>{09BCB5FA-30AD-49AF-8034-5670CCB320B5}</Project>
+      <Name>nunit.runner.iOS</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
