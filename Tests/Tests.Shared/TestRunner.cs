@@ -23,7 +23,7 @@ using NUnit.Framework.Internal;
 
 namespace IntegrationTests
 {
-    #if !WINDOWS
+    #if !WINDOWS && false
     internal class TestRunner
     {
         internal static void Run(string title, Stream outputStream)
