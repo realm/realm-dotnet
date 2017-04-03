@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Tests.XamarinAndroid</RootNamespace>
     <AssemblyName>Tests.XamarinAndroid</AssemblyName>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v7.1</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -96,11 +96,11 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
-  <Import Project="..\..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
-  <Import Project="..\..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
+  <Import Project="..\..\..\Tests\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>
-    <AndroidAsset Include="..\..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <AndroidAsset Include="..\..\..\Tests\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
   </ItemGroup>

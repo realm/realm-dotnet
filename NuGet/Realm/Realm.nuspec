@@ -19,7 +19,7 @@
       <group targetFramework="portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac">
         <dependency id="Realm.Database" version="$version$"/>
       </group>
-      <group>
+      <group targetFramework="netstandard1.4">
         <dependency id="Realm.Database" version="$version$"/>
         <dependency id="Newtonsoft.Json" version="9.0.1"/>
         <dependency id="System.Collections.Concurrent" version="4.3.0"/>

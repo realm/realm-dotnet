@@ -20,7 +20,7 @@
         <dependency id="Fody" version="1.29.4"/>
         <dependency id="Realm.DataBinding" version="1.0.0"/>
       </group>
-      <group>
+      <group targetFramework="netstandard1.4">
         <dependency id="Fody" version="1.29.4"/>
         <dependency id="Realm.DataBinding" version="1.0.0"/>
         <dependency id="DotNetCross.Memory.Unsafe" version="0.2.2"/>
