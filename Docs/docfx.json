@@ -5,8 +5,8 @@
                 {
                     "src": "../Realm/",
                     "files": [
-                        "Realm/Realm.csproj",
-                        "Realm.Sync/Realm.Sync.csproj"
+                        "Realm/Realm.Docs.csproj",
+                        "Realm.Sync/Realm.Sync.Docs.csproj"
                     ],
                     "exclude": [
                         "**/obj/**",
@@ -16,7 +16,7 @@
                 }
             ],
             "dest": "obj/temp/api",
-            "filter": "Docs/filterConfig.yml"
+            "filter": "filterConfig.yml"
         }
     ],
     "build": {

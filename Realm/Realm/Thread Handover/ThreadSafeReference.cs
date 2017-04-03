@@ -79,7 +79,7 @@ namespace Realms
         /// obtained by calling <see cref="Realm.All"/> or a subsequent LINQ query.
         /// </param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the query.</typeparam>
-        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(Query{T})"/> on a different thread.</returns>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Query{T})"/> on a different thread.</returns>
         public static Query<T> Create<T>(IQueryable<T> value) where T : RealmObject
         {
             return new Query<T>(value);
@@ -90,7 +90,7 @@ namespace Realms
         /// </summary>
         /// <param name="value">The thread-confined <see cref="RealmObject"/> to create a thread-safe reference to.</param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
-        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(Object{T})"/> on a different thread.</returns>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(Object{T})"/> on a different thread.</returns>
         public static Object<T> Create<T>(T value) where T : RealmObject
         {
             return new Object<T>(value);
@@ -104,7 +104,7 @@ namespace Realms
         /// representing to-many relationship as a property of a <see cref="RealmObject"/>
         /// </param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
-        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="T:Realm.ResolveReference`1(List{T})"/> on a different thread.</returns>
+        /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <see cref="Realm.ResolveReference{T}(List{T})"/> on a different thread.</returns>
         public static List<T> Create<T>(IList<T> value) where T : RealmObject
         {
             return new List<T>(value);
@@ -118,7 +118,7 @@ namespace Realms
         /// A reference to a <see cref="IQueryable{T}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="T:Realm.ResolveReference`1(QueryReference{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(Query{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -141,7 +141,7 @@ namespace Realms
         /// A reference to a <see cref="RealmObject"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="T:Realm.ResolveReference`1(ObjectReference{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(Object{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.
@@ -164,7 +164,7 @@ namespace Realms
         /// A reference to a <see cref="IList{T}"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
-        /// <see cref="T:Realm.ResolveReference`1(ListReference{T})"/>.
+        /// <see cref="Realm.ResolveReference{T}(List{T})"/>.
         /// </summary>
         /// <remarks>
         /// A <see cref="ThreadSafeReference"/> object must be resolved at most once.

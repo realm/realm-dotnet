@@ -12,5 +12,9 @@ Currently docfx only seems to [work on Windows](https://github.com/docascode/doc
 
 ## Building the docs
 1. Open cmd in `$SolutionDir\Docs` and run `nuget restore -PackagesDirectory ../packages`.
+1. Rename `Realm\Realm{Sync}\project.json` to something.
+1. Rename `Realm\Realm{Sync}\packages.Docs.config` to `Realm\Realm{Sync}\packages.config`.
+1. Open `Realm.Docs.sln` and make sure all files are included in the docs projects as well as that the solution builds.
 1. Open cmd in `$SolutionDir` and run `docfx Docs/docfx.json`.
 1. To preview the docs, run `docfx Docs/docfx.json --serve`.
+1. Once the API docs are generated, revert `project.json` and `packages.config` to their old names.
