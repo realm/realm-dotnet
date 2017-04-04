@@ -7,8 +7,8 @@
     <ProjectGuid>{2A1B7531-AA17-483E-B679-EAF41781C368}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Realm.Sync.Docs</RootNamespace>
-    <AssemblyName>Realm.Sync.Docs</AssemblyName>
+    <RootNamespace>Realms</RootNamespace>
+    <AssemblyName>Realm.Sync</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
