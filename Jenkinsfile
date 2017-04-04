@@ -143,6 +143,8 @@ stage('Build without sync') {
           cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64' ]
         }
 
+        archive 'wrappers/build/**/*.pdb'
+
         bat """
           "${windowsNugetCmd}" restore Realm.sln
           "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration} /p:SolutionDir="${workspace}/"
@@ -162,6 +164,7 @@ stage('Build without sync') {
           cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
         }
 
+        archive 'wrappers/build/**/*.pdb'
         stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-nosync'
       }
     },
