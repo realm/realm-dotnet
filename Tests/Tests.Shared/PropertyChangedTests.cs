@@ -564,6 +564,199 @@ namespace IntegrationTests
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
+        [Test]
+        public void ManagedObject_WhenSubscribedDuringTransaction_AfterCommit_ShouldGetNotifications()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            _realm.Write(() =>
+            {
+                person.PropertyChanged += handler;
+                person.FirstName = "Peter";
+            });
+
+            _realm.Refresh();
+
+            // We miss notifications from this transaction because we're subscribing after the
+            // transaction has been committed.
+            Assert.That(notifiedPropertyNames, Is.Empty);
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "John";
+            });
+
+            _realm.Refresh();
+
+            // We should get subsequent notifications.
+            Assert.That(notifiedPropertyNames, Is.EqualTo(new[] { nameof(Person.FirstName) }));
+
+            person.PropertyChanged -= handler;
+        }
+
+        [Test]
+        public void ManagedObject_WhenSubscribedDuringTransaction_AfterRollback_ShouldGetNotifications()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                person.PropertyChanged += handler;
+                person.FirstName = "Peter";
+                transaction.Rollback();
+            }
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "John";
+            });
+
+            _realm.Refresh();
+
+            // We should get subsequent notifications.
+            Assert.That(notifiedPropertyNames, Is.EqualTo(new[] { nameof(Person.FirstName) }));
+            person.PropertyChanged -= handler;
+        }
+
+        [Test]
+        public void ManagedObject_WhenSubscribedDuringCreation_AfterCommit_ShouldReceiveNotifications()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+                person.PropertyChanged += handler;
+            });
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
+
+            _realm.Write(() =>
+            {
+                person.FirstName = "John";
+            });
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.EqualTo(new[] { nameof(Person.FirstName) }));
+            person.PropertyChanged -= handler;
+        }
+
+        [Test]
+        public void ManagedObject_WhenSubscribedDuringCreation_AfterRollback_ShouldNotThrow()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                _realm.Add(person);
+                person.FirstName = "John";
+                person.PropertyChanged += handler;
+
+                transaction.Rollback();
+            }
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
+            person.PropertyChanged -= handler;
+        }
+
+        [Test]
+        public void ManagedObject_WhenSubscribedDuringDeletion_AfterCommit_ShouldNotThrow()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            _realm.Write(() =>
+            {
+                person.PropertyChanged += handler;
+                person.FirstName = "John";
+                _realm.Remove(person);
+            });
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
+            person.PropertyChanged -= handler;
+        }
+
+        [Test, NUnit.Framework.Explicit("After remove + rollback, the object handle is invalid - https://github.com/realm/realm-dotnet/issues/1332")]
+        public void ManagedObject_WhenSubscribedDuringDeletion_AfterRollback_ShouldReceiveNotifications()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                person.PropertyChanged += handler;
+                person.FirstName = "John";
+                _realm.Remove(person);
+                transaction.Rollback();
+            }
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.Empty);
+
+            _realm.Write(() => person.FirstName = "John");
+
+            _realm.Refresh();
+            Assert.That(notifiedPropertyNames, Is.EqualTo(new[] { nameof(Person.FirstName) }));
+            
+            person.PropertyChanged -= handler;
+        }
+
         private async Task TestManaged(Func<Person, string, Task> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
