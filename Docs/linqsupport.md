@@ -100,7 +100,7 @@ Furthermore, the following can be used for numerical types: [<](https://msdn.mic
 
 ## String Operators
 With strings, you can use:
-[`Contains`](xref:System.String.Contains*), [`StartsWith`](xref:System.String.StartsWith*), and [`EndsWith`](xref:System.String.EndsWith*), and [`Equals`](xref:System.String.Equals*).
+[`Contains`](xref:System.String.Contains*), [`StartsWith`](xref:System.String.StartsWith*), and [`EndsWith`](xref:System.String.EndsWith*), [`Equals`](xref:System.String.Equals*), and [`Like`](xref:Realms.StringExtensions.Like*).
 
 Example:
 
@@ -113,6 +113,16 @@ By default, Realm will perform a case-sensitive comparison, but you can provide 
 ```csharp
 var peopleWhoseNameContainsA = realm.All<Person>().Where(p => p.FirstName.Contains("a", StringComparison.OrdinalIgnoreCase));
 ```
+
+The [`Like`](xref:Realms.StringExtensions.Like*) extension method can be used to compare a string property against a pattern. `?` and `*` are allowed as wildcard characters, where `?` matches 1 character and `*` matches 0 or more characters:
+```csharp
+var words = realm.All<Word>().Where(p => p.Value.Like("?bc*"));
+
+// Matches abc, cbcde, but not bcd
+```
+
+When not used in a query expression, `Like` falls back to using RegEx to enforce the same rules.
+
 ## Composition
 You can use parentheses and the [||](https://msdn.microsoft.com/en-us/library/6373h346.aspx) and [&&](https://msdn.microsoft.com/en-us/library/2a723cdk.aspx) operators to compose queries.
 
