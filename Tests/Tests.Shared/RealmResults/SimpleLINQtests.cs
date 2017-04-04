@@ -766,6 +766,13 @@ namespace IntegrationTests
 
             expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").FirstOrDefault();
             Assert.That(expectedDef, Is.Null);
+
+            expectedDef = _realm.All<Person>()
+                                .Where(p => p.FirstName == "Just Some Guy")
+                                .OrderByDescending(p => p.FirstName)
+                                .FirstOrDefault();
+
+            Assert.That(expectedDef, Is.Null);
         }
 
         [Test]

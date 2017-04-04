@@ -155,35 +155,6 @@ namespace Realms
             return chain;
         }
 
-        private ObjectHandle VisitElementAt(MethodCallExpression m)
-        {
-            Visit(m.Arguments.First());
-            object argument;
-            if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || argument.GetType() != typeof(int))
-            {
-                throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single integer constant argument or closure variable");
-            }
-
-            var index = (int)argument;
-
-            ObjectHandle obj;
-            if (OptionalSortDescriptorBuilder == null)
-            {
-                var objectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle, (IntPtr)index);
-                obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
-            }
-            else
-            {
-                using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
-                {
-                    var objectPtr = rh.GetObjectAtIndex(index);
-                    obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
-                }
-            }
-
-            return obj;
-        }
-
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable))
@@ -340,19 +311,40 @@ namespace Realms
 
                 if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
                 {
-                    var objectHandle = VisitElementAt(m);
-                    if (objectHandle == null || objectHandle.IsInvalid)
+                    Visit(m.Arguments.First());
+                    object argument;
+                    if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || argument.GetType() != typeof(int))
                     {
-                        if (m.Method.Name == nameof(Queryable.ElementAt))
-                        {
-                            throw new ArgumentOutOfRangeException();
-                        }
-
-                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
-                        return Expression.Constant(null);
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single integer constant argument or closure variable");
                     }
 
-                    return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
+                    IntPtr objectPtr;
+                    var index = (int)argument;
+                    if (OptionalSortDescriptorBuilder == null)
+                    {
+                        objectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle, (IntPtr)index);
+                    }
+                    else
+                    {
+                        using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                        {
+                            objectPtr = rh.GetObjectAtIndex(index);
+                        }
+                    }
+
+                    if (objectPtr != IntPtr.Zero)
+                    {
+                        var objectHandle = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
+                        return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
+                    }
+
+                    if (m.Method.Name == nameof(Queryable.ElementAt))
+                    {
+                        throw new ArgumentOutOfRangeException();
+                    }
+
+                    Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
+                    return Expression.Constant(null);
                 }
             }
 
