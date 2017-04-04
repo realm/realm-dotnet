@@ -123,10 +123,15 @@ namespace Realms
             {
                 if (index < 0)
                 {
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 var objectPtr = Handle.Value.GetObjectAtIndex(index);
+                if (objectPtr == IntPtr.Zero)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
                 return (T)(object)Realm.MakeObject(Metadata, objectPtr);
             }
         }
