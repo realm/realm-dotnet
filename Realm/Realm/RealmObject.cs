@@ -688,13 +688,16 @@ namespace Realms
 
             _realm.ExecuteOutsideTransaction(() =>
             {
-                var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                var token = new NotificationTokenHandle(ObjectHandle);
-                var tokenHandle = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
+                if (ObjectHandle.IsValid)
+                {
+                    var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                    var token = new NotificationTokenHandle(ObjectHandle);
+                    var tokenHandle = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
 
-                token.SetHandle(tokenHandle);
+                    token.SetHandle(tokenHandle);
 
-                _notificationToken = token;
+                    _notificationToken = token;
+                }
             });
         }
 
