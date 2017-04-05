@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2A1B7531-AA17-483E-B679-EAF41781C368}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Realms</RootNamespace>
+    <AssemblyName>Realm.Sync</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\Docs\SourceProjects\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\RealmAssemblyInfo.cs">
+      <Link>Properties\RealmAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Credentials.cs" />
+    <Compile Include="Exceptions\AuthenticationException.cs" />
+    <Compile Include="Exceptions\ClientResetException.cs" />
+    <Compile Include="Exceptions\ErrorCode.cs" />
+    <Compile Include="Exceptions\ErrorCodeHelper.cs" />
+    <Compile Include="Exceptions\HttpException.cs" />
+    <Compile Include="Exceptions\SessionException.cs" />
+    <Compile Include="Extensions\RealmSyncExtensions.cs" />
+    <Compile Include="Extensions\TestingExtensions.cs" />
+    <Compile Include="Handles\SessionHandle.cs" />
+    <Compile Include="Handles\SharedRealmHandleExtensions.cs" />
+    <Compile Include="Handles\SyncUserHandle.cs" />
+    <Compile Include="Helpers\AuthenticationHelper.cs" />
+    <Compile Include="Native\StringStringPair.cs" />
+    <Compile Include="Native\SyncConfiguration.cs" />
+    <Compile Include="Permissions\IPermissionObject.cs" />
+    <Compile Include="Permissions\ManagementObjectStatus.cs" />
+    <Compile Include="Permissions\Permission.cs" />
+    <Compile Include="Permissions\PermissionChange.cs" />
+    <Compile Include="Permissions\PermissionOffer.cs" />
+    <Compile Include="Permissions\PermissionOfferResponse.cs" />
+    <Compile Include="Permissions\UserPermissionsExtensions.cs" />
+    <Compile Include="ProgressNotifications\ProgressDirection.cs" />
+    <Compile Include="ProgressNotifications\ProgressMode.cs" />
+    <Compile Include="ProgressNotifications\SyncProgress.cs" />
+    <Compile Include="ProgressNotifications\SyncProgressObservable.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Session.cs" />
+    <Compile Include="SessionState.cs" />
+    <Compile Include="SyncConfiguration.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserPersistenceMode.cs" />
+    <Compile Include="UserState.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Realm\Realm.Docs.csproj">
+      <Project>{a7dab9b6-15f3-4647-bd13-f4eee8b0338e}</Project>
+      <Name>Realm.Docs</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

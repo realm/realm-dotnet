@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Docs", "Realm\Realm\Realm.Docs.csproj", "{A7DAB9B6-15F3-4647-BD13-F4EEE8B0338E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Sync.Docs", "Realm\Realm.Sync\Realm.Sync.Docs.csproj", "{2A1B7531-AA17-483E-B679-EAF41781C368}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7DAB9B6-15F3-4647-BD13-F4EEE8B0338E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7DAB9B6-15F3-4647-BD13-F4EEE8B0338E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7DAB9B6-15F3-4647-BD13-F4EEE8B0338E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7DAB9B6-15F3-4647-BD13-F4EEE8B0338E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A1B7531-AA17-483E-B679-EAF41781C368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A1B7531-AA17-483E-B679-EAF41781C368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A1B7531-AA17-483E-B679-EAF41781C368}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A1B7531-AA17-483E-B679-EAF41781C368}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

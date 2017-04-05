@@ -178,13 +178,17 @@ namespace Tests.Sync
 
                 Realm realm = null;
                 Assert.That(() => realm = Realm.GetInstance(syncConfig), Throws.Nothing);
-                Session.Error += (sender, e) => 
+                var handler = new EventHandler<ErrorEventArgs>((sender, e) =>
                 {
                     Assert.Fail("Opening the realm should not cause an error.", e.Exception);
-                };
+                });
+
+                Session.Error += handler;
 
                 await Task.Delay(2000);
                 realm.Dispose();
+
+                Session.Error -= handler;
             });
         }
 

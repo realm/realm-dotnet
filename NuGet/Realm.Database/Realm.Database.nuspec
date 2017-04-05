@@ -11,7 +11,7 @@
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <iconUrl>http://realm.io/img/favicon-32x32.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Realm is a mobile database: a replacement for SQLite and ORMs</description>
+    <description>Realm is a mobile database: a replacement for SQLite and ORMs. This package contains just classes for communicating with the offline database. If you're looking to synchronize realm files with the Realm Mobile Platform, add the Realm parent package.</description>
     <summary />
     <language>en-US</language>
     <tags>Realm database db persistence sqlite</tags>
@@ -20,7 +20,7 @@
         <dependency id="Fody" version="1.29.4"/>
         <dependency id="Realm.DataBinding" version="1.0.0"/>
       </group>
-      <group>
+      <group targetFramework="netstandard1.4">
         <dependency id="Fody" version="1.29.4"/>
         <dependency id="Realm.DataBinding" version="1.0.0"/>
         <dependency id="DotNetCross.Memory.Unsafe" version="0.2.2"/>

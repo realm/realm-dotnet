@@ -123,8 +123,8 @@
     <Compile Include="Main.cs" />
     <Compile Include="UnitTestAppDelegate.cs" />
   </ItemGroup>
-  <Import Project="..\..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
-  <Import Project="..\..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
+  <Import Project="..\..\..\Tests\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">
@@ -138,7 +138,7 @@
     </ImageAsset>
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="..\..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <BundleResource Include="..\..\..\Tests\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </BundleResource>

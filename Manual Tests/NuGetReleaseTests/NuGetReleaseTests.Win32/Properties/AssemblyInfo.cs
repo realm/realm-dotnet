@@ -16,6 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-[assembly: InternalsVisibleTo("Realm.Sync")]
+[assembly: AssemblyTitle("IntegrationTests.Win32")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("IntegrationTests.Win32")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
+[assembly: Guid("bfc1c1b7-2864-4456-9dec-309a3f006b66")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
