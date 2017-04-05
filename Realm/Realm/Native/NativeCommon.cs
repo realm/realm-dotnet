@@ -59,25 +59,21 @@ namespace Realms
 
         public static unsafe void Initialize()
         {
-            try
+            var osVersionPI = typeof(Environment).GetProperty("OSVersion");
+            var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
+            var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+            if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
             {
-                if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework") &&
-                    RuntimeInformation.OSDescription.Contains("Windows"))
+                var osVersion = osVersionPI.GetValue(null);
+                var platform = platformPI.GetValue(osVersion);
+
+                if (platform.ToString() == "Win32NT")
                 {
-                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-                    if (assemblyLocationPI != null)
-                    {
-                        var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
-                        var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                        Environment.SetEnvironmentVariable("PATH", path);
-                    }
+                    var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                    var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
+                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                    Environment.SetEnvironmentVariable("PATH", path);
                 }
-            }
-            catch
-            {
-                // HACK
-                // RuntimeInformation seems to throw on Android. As we're only interested in windows, swallow the exception.
             }
 
 #if DEBUG

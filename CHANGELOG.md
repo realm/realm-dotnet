@@ -2,6 +2,7 @@
 ------------------
 
 ### Bug fixes
+- Fixed an issue where `EntryPointNotFoundException` would be thrown on some Android devices. (#1336)
 
 ### Enhancements
 
