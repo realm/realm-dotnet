@@ -90,12 +90,11 @@ namespace IntegrationTests
             Realm realm2 = realm1;  // should be reassigned by other thread
 
             // Act
-            var t = new Thread(() =>
+            var t = Task.Run(() =>
                 {
                     realm2 = Realm.GetInstance();
                 });
-            t.Start();
-            t.Join();
+            t.Wait();
 
             // Assert
             Assert.That(ReferenceEquals(realm1, realm2), Is.False);

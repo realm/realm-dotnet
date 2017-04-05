@@ -1,0 +1,1 @@
+This is a copy of the code from the [nunit xamarin](https://github.com/nunit/nunit.xamarin) project.

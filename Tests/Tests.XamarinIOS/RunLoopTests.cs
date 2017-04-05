@@ -19,7 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Foundation;
 using NUnit.Framework;
 using Realms;
@@ -39,20 +39,19 @@ namespace IntegrationTests.XamarinIOS
 
         private void WriteOnDifferentThread(Action<Realm> action)
         {
-            var thread = new Thread(() =>
+            var t = Task.Run(() =>
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() => action(r));
                 r.Dispose();
             });
-            thread.Start();
-            thread.Join();
+            t.Wait();
         }
 
         [Test]
         public void QueriesShouldAutomaticallyRefreshInRunLoop()
         {
-            var thread = new Thread(() =>
+            var t = Task.Run(() =>
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() =>
@@ -84,8 +83,7 @@ namespace IntegrationTests.XamarinIOS
                 Realm.DeleteRealm(r.Config);
             });
 
-            thread.Start();
-            thread.Join();
+            t.Wait();
         }
     }
 }

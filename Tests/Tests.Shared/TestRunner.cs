@@ -28,7 +28,7 @@ namespace IntegrationTests
     {
         internal static void Run(string title, Stream outputStream)
         {
-            var suite = new TestSuite(title);
+            /*var suite = new TestSuite(title);
             var builder = new NUnitLiteTestAssemblyBuilder();
             suite.Add(builder.Build(System.Reflection.Assembly.GetExecutingAssembly(), new Dictionary<string, object>()));
 
@@ -46,7 +46,7 @@ namespace IntegrationTests
             using (var writer = new StreamWriter(outputStream))
             {
                 testWriter.WriteResultFile(workItem.Result, writer);
-            }
+            }*/
         }
     }
     #endif

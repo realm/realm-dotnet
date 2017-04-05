@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;  // needed for UWP only
 using NUnit.Framework;
 using Realms;
 

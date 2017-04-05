@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;  // needed for UWP only
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;

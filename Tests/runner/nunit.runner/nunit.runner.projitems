@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c9209134-aea3-4c7f-ad74-00d578a6f208</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>NUnit.Runner</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\XamarinExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestRunResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messages\ErrorMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\Annotations.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TcpWriterInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TcpWriterProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TestResultProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TcpWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TestOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\XmlFileProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\BaseViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ResultSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\SummaryViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TestViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\ResultsView.xaml.cs">
+      <DependentUpon>ResultsView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\SummaryView.xaml.cs">
+      <DependentUpon>SummaryView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\TestView.xaml.cs">
+      <DependentUpon>TestView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)View\TestView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)View\SummaryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)View\ResultsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)App.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

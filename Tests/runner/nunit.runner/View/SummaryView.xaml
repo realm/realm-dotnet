@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NUnit.Runner.View.SummaryView"
+             Title="NUnit 3"
+             Padding="10"
+             BackgroundColor="{DynamicResource defaultBackground}" >
+    <ContentPage.Triggers>
+        <DataTrigger TargetType="ContentPage" Binding="{Binding Running}" Value="True">
+            <Setter Property="IsBusy" Value="True" />
+        </DataTrigger>
+    </ContentPage.Triggers>
+    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="{DynamicResource defaultBackground}">
+        <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand">
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding Running}" Value="True">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+
+        <ScrollView Orientation="Vertical"
+                    VerticalOptions="FillAndExpand" 
+                    HorizontalOptions="FillAndExpand"
+                    BackgroundColor="#F2F2F2">
+
+            <Grid HorizontalOptions="FillAndExpand" RowSpacing="0" Padding="10" BackgroundColor="White">
+                <Grid.Triggers>
+                    <DataTrigger TargetType="Grid" Binding="{Binding HasResults}" Value="False">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Grid.Triggers>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <!-- Rows with height of 10 are just for spacing between sections -->
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <StackLayout Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal" Spacing="4" HorizontalOptions="CenterAndExpand">
+                    <Label Text="Overall result:" TextColor="{Binding Results.OverallResultColor}" FontAttributes="Bold" FontSize="Large"/>
+                    <Label Text="{Binding Results.OverallResult}" TextColor="{Binding Results.OverallResultColor}" FontAttributes="Bold" FontSize="Large" />
+                </StackLayout>
+
+                <StackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="Tests run:" FontSize="Large" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.RunCount}" FontSize="Large" />
+                </StackLayout>
+
+                <StackLayout Grid.Row="3" Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Passed:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.PassCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Errors:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.ErrorCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="4" Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Inconclusive:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.InconclusiveCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Failures:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.FailureCount}" FontSize="Medium" />
+                </StackLayout>
+
+                <StackLayout Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="Not run:" FontSize="Large" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.NotRunCount}" FontSize="Large" />
+                </StackLayout>
+                <StackLayout Grid.Row="7" Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Ignored:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.IgnoreCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Explicit:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.ExplicitCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="8" Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Skipped:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.SkipCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Invalid:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.InvalidCount}" FontSize="Medium" />
+                </StackLayout>
+
+                <StackLayout Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="Start time:" FontSize="Small" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.TestResult.StartTime, StringFormat='{0:u}'}" FontSize="Small" />
+                </StackLayout>
+                <StackLayout Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="End time:" FontSize="Small" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.TestResult.EndTime, StringFormat='{0:u}'}" FontSize="Small" />
+                </StackLayout>
+                <StackLayout Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="Duration:" FontSize="Small" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.TestResult.Duration, StringFormat='{0:F3} seconds'}" FontSize="Small" />
+                </StackLayout>
+            </Grid>
+
+        </ScrollView>
+
+        <Button Text="All Results" Command="{Binding ViewAllResultsCommand}" HorizontalOptions="FillAndExpand" VerticalOptions="End" >
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding HasResults}" Value="False">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+        <Button Text="Failed Results" Command="{Binding ViewFailedResultsCommand}" HorizontalOptions="FillAndExpand" VerticalOptions="End" >
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding HasResults}" Value="False">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+    </StackLayout>
+</ContentPage>

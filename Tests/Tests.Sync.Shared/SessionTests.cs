@@ -24,6 +24,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
+using NUnit;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -145,7 +146,7 @@ namespace Tests.Sync
         }
 
         [Explicit("Fails with obscure error.")]
-        [Test, Timeout(1000)]
+        [Test]  // TODO reinstate timeout - see nunit issue 1638 [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidRefreshToken()
         {
             AsyncContext.Run(async () =>
@@ -176,7 +177,7 @@ namespace Tests.Sync
         }
 
         [Explicit("Fails with obscure error.")]
-        [Test, Timeout(1000)]
+        [Test]  // TODO reinstate timeout - see nunit issue 1638 [Test, Timeout(1000)]
         public void Session_Error_WhenInvalidAccessToken()
         {
             AsyncContext.Run(async () =>
