@@ -94,13 +94,13 @@ stage('Build without sync') {
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
-        xbuild("Tests/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.iOS/Tests.iOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "Realm/Realm/bin/${configuration}/Realm.*", name: 'nuget-database'
         stash includes: "DataBinding/Realm.DataBinding.iOS/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-ios-databinding'
 
-        dir("Tests/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
-          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-nosync'
+        dir("Tests/Tests.iOS/bin/iPhoneSimulator/${configuration}") {
+          stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests-nosync'
         }
       }
     },
@@ -206,12 +206,12 @@ stage('Build with sync') {
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
-        xbuild("Tests/Tests.XamarinIOS/Tests.XamarinIOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.iOS/Tests.iOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "Realm/Realm.Sync/bin/${configuration}/Realm.Sync.*", name: 'nuget-sync'
 
-        dir("Tests/Tests.XamarinIOS/bin/iPhoneSimulator/${configuration}") {
-          stash includes: 'Tests.XamarinIOS.app/**/*', name: 'ios-tests-sync'
+        dir("Tests/Tests.iOS/bin/iPhoneSimulator/${configuration}") {
+          stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests-sync'
         }
       }
     },
@@ -288,10 +288,10 @@ def iOSTest(stashName) {
     nodeWithCleanup('osx') {
       unstash stashName
 
-      dir('Tests.XamarinIOS.app') {
+      dir('Tests.iOS.app') {
         sh '''
           mkdir -p fakehome/Documents
-          HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.XamarinIOS --headless
+          HOME=`pwd`/fakehome DYLD_ROOT_PATH=`xcrun -show-sdk-path -sdk iphonesimulator` ./Tests.iOS --headless
         '''
         publishTests 'fakehome/Documents/TestResults.iOS.xml'
       }
