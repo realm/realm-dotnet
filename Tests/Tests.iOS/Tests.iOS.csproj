@@ -125,9 +125,6 @@
     <Reference Include="PCLStorage">
       <HintPath>..\..\packages\PCLStorage.1.0.2\lib\portable-Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.runner.iOS">
-      <HintPath>..\..\packages\nunit.xamarin.3.6.1\lib\Xamarin.iOS\nunit.runner.iOS.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reactive.Interfaces">
       <HintPath>..\..\packages\System.Reactive.Interfaces.3.1.1\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
@@ -142,6 +139,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.runner.iOS">
+      <HintPath>..\..\dependencies\nunit.xamarin.3.6.1\Xamarin.iOS\nunit.runner.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
