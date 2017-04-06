@@ -45,7 +45,7 @@ namespace Tests.XamarinAndroid
 
             using (var output = Context.OpenFileOutput("TestResults.Android.xml", FileCreationMode.WorldReadable))
             {
-                IntegrationTests.TestRunner.Run("Android", output);
+                Database.TestRunner.Run("Android", output);
             }
 
             this.Finish(Result.Ok, null);

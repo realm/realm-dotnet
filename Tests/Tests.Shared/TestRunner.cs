@@ -23,7 +23,7 @@ using NUnit.Framework.Internal;
 
 namespace Tests.Database
 {
-    #if !WINDOWS && false
+    #if !WINDOWS && !__IOS__
     internal class TestRunner
     {
         internal static void Run(string title, Stream outputStream)
