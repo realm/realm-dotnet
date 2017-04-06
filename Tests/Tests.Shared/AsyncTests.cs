@@ -36,13 +36,13 @@ namespace IntegrationTests
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
         // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            base.SetUp();
             _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance());
+            base.CustomSetUp();
         }
 
-        public override void TearDown()
+        protected override void CustomTearDown()
         {
             if (_lazyRealm.IsValueCreated)
             {
@@ -50,7 +50,7 @@ namespace IntegrationTests
                 Realm.DeleteRealm(_realm.Config);
             }
 
-            base.TearDown();
+            base.CustomTearDown();
         }
 
         [Test]

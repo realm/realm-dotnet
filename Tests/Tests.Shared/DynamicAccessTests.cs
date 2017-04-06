@@ -27,14 +27,14 @@ namespace IntegrationTests
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAccessTests : RealmInstanceTest
     {
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
             _configuration = new RealmConfiguration(_configuration.DatabasePath)
             {
                 ObjectClasses = new[] { typeof(AllTypesObject) },
                 Dynamic = true
             };
-            base.SetUp();
+            base.CustomSetUp();
         }
 
         [Test]

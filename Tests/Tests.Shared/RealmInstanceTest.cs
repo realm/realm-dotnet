@@ -28,17 +28,17 @@ namespace IntegrationTests
 
         protected Realm _realm;
 
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            base.SetUp();
             _realm = Realm.GetInstance(_configuration);
+            base.CustomSetUp();
         }
 
-        public override void TearDown()
+        protected override void CustomTearDown()
         {
             _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
-            base.TearDown();
+            base.CustomTearDown();
         }
     }
 }

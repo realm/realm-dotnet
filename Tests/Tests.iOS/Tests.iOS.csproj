@@ -67,7 +67,6 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
-    <Compile Include="TestClass.cs" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="packages.config" />
@@ -90,6 +89,10 @@
     <BundleResource Include="Resources\Icon-Small@2x.png" />
     <BundleResource Include="Resources\Icon-Small@3x.png" />
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+    <BundleResource Include="..\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

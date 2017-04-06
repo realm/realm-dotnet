@@ -33,8 +33,9 @@ namespace IntegrationTests
     {
         private const string SpecialRealmName = "EnterTheMagic.realm";
 
-        public override void TearDown()
+        protected override void CustomTearDown()
         {
+            base.CustomTearDown();
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
             Realm.DeleteRealm(uniqueConfig);
