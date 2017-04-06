@@ -1,59 +1,54 @@
-﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+﻿////////////////////////////////////////////////////////////////////////////
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-// 
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-// ***********************************************************************
+// Copyright 2017 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
 
 using Foundation;
 using UIKit;
 using NUnit.Runner.Services;
+using Xamarin.Forms.Platform.iOS;
+using Xamarin.Forms;
+using NUnit.Runner;
+using System.Linq;
+using System.IO;
+using System;
 
 namespace Tests.iOS
 {
     [Register("AppDelegate")]
-    public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
+    public class AppDelegate : FormsApplicationDelegate
     {
-        public override bool FinishedLaunching(UIApplication app, NSDictionary options)
+        public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
         {
-            global::Xamarin.Forms.Forms.Init();
+            Forms.Init();
 
-            var nunit = new NUnit.Runner.App();
-
-            // If you want to add tests in another assembly
-            //nunit.AddTestAssembly(typeof(MyTests).Assembly);
-
-            // nunit.AutoRun = false;
-            nunit.Options = new TestOptions
+            var nunit = new App();
+            var options = new TestOptions();
+            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
             {
-                AutoRun = false,
-                // If True, the application will terminate automatically after running the tests.
-                //TerminateAfterExecution = true,
+                options.AutoRun = true;
+                options.CreateXmlResultFile = true;
+                options.TerminateAfterExecution = true;
+                options.ResultFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml");
+            }
 
-                // Information about the tcp listener host and port.
-                // For now, send result as XML to the listening server.
-                // TcpWriterParameters = new TcpWriterInfo("192.168.0.108", 13000),
-                CreateXmlResultFile = true
-            };
+            nunit.Options = options;
             LoadApplication(nunit);
 
-            return base.FinishedLaunching(app, options);
+            return base.FinishedLaunching(uiApplication, launchOptions);
         }
     }
 }
