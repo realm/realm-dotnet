@@ -22,7 +22,7 @@ using System.Linq;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class Cities : RealmObject

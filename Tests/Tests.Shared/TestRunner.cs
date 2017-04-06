@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework.Internal;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     #if !WINDOWS && false
     internal class TestRunner

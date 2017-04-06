@@ -20,7 +20,7 @@ using System;
 using System.IO;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests
 {
     public static class TestHelpers
     {

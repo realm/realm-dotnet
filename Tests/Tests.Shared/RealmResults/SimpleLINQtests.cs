@@ -23,7 +23,7 @@ using Realms;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     internal class SimpleLINQtests : PeopleTestsBase

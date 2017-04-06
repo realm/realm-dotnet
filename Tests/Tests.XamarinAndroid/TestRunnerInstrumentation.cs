@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -23,7 +23,7 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-namespace IntegrationTests.XamarinAndroid
+namespace Tests.XamarinAndroid
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation

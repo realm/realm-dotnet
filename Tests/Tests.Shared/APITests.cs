@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -20,7 +20,7 @@ using System;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class APITests

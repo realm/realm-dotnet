@@ -6,7 +6,7 @@
     <SharedGUID>c81983e0-58a0-4d67-b0d0-ae91aba71a2c</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Tests.Sync.Shared</Import_RootNamespace>
+    <Import_RootNamespace>Tests.Sync</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>

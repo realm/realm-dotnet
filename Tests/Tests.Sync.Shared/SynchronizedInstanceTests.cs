@@ -19,7 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using IntegrationTests;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
@@ -34,39 +34,42 @@ namespace Tests.Sync
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(false, false)]
-        public async void Compact_ShouldReduceSize(bool encrypt, bool populate)
+        public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: false), new Uri("http://localhost:9080"));
-            var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
-
-            var config = new SyncConfiguration(user, serverUri);
-            if (encrypt)
+            AsyncContext.Run(async () =>
             {
-                config.EncryptionKey = new byte[64];
-                config.EncryptionKey[0] = 5;
-            }
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: false), new Uri("http://localhost:9080"));
+                var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
 
-            Realm.DeleteRealm(config);
-
-            using (var realm = Realm.GetInstance(config))
-            {
-                if (populate)
+                var config = new SyncConfiguration(user, serverUri);
+                if (encrypt)
                 {
-                    AddDummyData(realm);
+                    config.EncryptionKey = new byte[64];
+                    config.EncryptionKey[0] = 5;
                 }
-            }
 
-            var initialSize = new FileInfo(config.DatabasePath).Length;
+                Realm.DeleteRealm(config);
 
-            Assert.That(Realm.Compact(config));
+                using (var realm = Realm.GetInstance(config))
+                {
+                    if (populate)
+                    {
+                        AddDummyData(realm);
+                    }
+                }
 
-            var finalSize = new FileInfo(config.DatabasePath).Length;
-            Assert.That(initialSize >= finalSize);
+                var initialSize = new FileInfo(config.DatabasePath).Length;
 
-            using (var realm = Realm.GetInstance(config))
-            {
-                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
-            }
+                Assert.That(Realm.Compact(config));
+
+                var finalSize = new FileInfo(config.DatabasePath).Length;
+                Assert.That(initialSize >= finalSize);
+
+                using (var realm = Realm.GetInstance(config))
+                {
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+                }
+            });
         }
 
         private static void AddDummyData(Realm realm)

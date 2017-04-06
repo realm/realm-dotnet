@@ -20,7 +20,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using IntegrationTests;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -45,41 +45,44 @@ namespace Tests.Sync
         [NUnit.Framework.Explicit]
         #endif
         [TestCaseSource(nameof(MergeTestCases))]
-        public async void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
+        public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
-            User.ConfigurePersistence(UserPersistenceMode.NotEncrypted);
-
-            var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                       .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
-
-            for (var i = 0; i < 5; i++)
+            AsyncContext.Run(async () =>
             {
-                var instance = (RealmObject)Activator.CreateInstance(objectType);
+                User.ConfigurePersistence(UserPersistenceMode.NotEncrypted);
 
-                pkProperty.SetValue(instance, (dynamic)pkValue);
+                var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                           .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+
+                for (var i = 0; i < 5; i++)
+                {
+                    var instance = (RealmObject)Activator.CreateInstance(objectType);
+
+                    pkProperty.SetValue(instance, (dynamic)pkValue);
+
+                    using (var realm = await GetSyncedRealm(objectType))
+                    {
+                        try
+                        {
+                            realm.Write(() => realm.Add(instance));
+                        }
+                        catch (RealmDuplicatePrimaryKeyValueException)
+                        {
+                            // Sync went through too quickly (that's why we do 5 attempts)
+                        }
+
+                        await Task.Delay(500); // A little bit of time for sync
+                    }
+                }
 
                 using (var realm = await GetSyncedRealm(objectType))
                 {
-                    try
-                    {
-                        realm.Write(() => realm.Add(instance));
-                    }
-                    catch (RealmDuplicatePrimaryKeyValueException)
-                    {
-                        // Sync went through too quickly (that's why we do 5 attempts)
-                    }
+                    await Task.Delay(1000);
+                    var allObjects = realm.All(objectType.Name).ToArray();
 
-                    await Task.Delay(500); // A little bit of time for sync
+                    Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
                 }
-            }
-
-            using (var realm = await GetSyncedRealm(objectType))
-            {
-                await Task.Delay(1000);
-                var allObjects = realm.All(objectType.Name).ToArray();
-
-                Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
-            }
+            });
         }
 
         public static object[] MergeTestCases =

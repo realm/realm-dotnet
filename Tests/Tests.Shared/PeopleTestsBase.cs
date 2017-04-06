@@ -18,7 +18,7 @@
 
 using System;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     public abstract class PeopleTestsBase : RealmInstanceTest
     {

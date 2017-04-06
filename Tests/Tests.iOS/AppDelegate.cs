@@ -36,13 +36,18 @@ namespace Tests.iOS
             Forms.Init();
 
             var nunit = new App();
-            var options = new TestOptions();
+            var options = new TestOptions
+            {
+                LogToOutput = true
+            };
+
             if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
                 options.TerminateAfterExecution = true;
                 options.ResultFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml");
+                options.LogToOutput = false;
             }
 
             nunit.Options = options;

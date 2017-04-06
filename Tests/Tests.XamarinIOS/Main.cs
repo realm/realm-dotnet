@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -23,7 +23,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace IntegrationTests.XamarinIOS
+namespace Tests.XamarinIOS
 {
     public class Application
     {
@@ -34,7 +34,7 @@ namespace IntegrationTests.XamarinIOS
             {
                 using (var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml")))
                 {
-                    IntegrationTests.TestRunner.Run("iOS", output);
+                    Tests.Database.TestRunner.Run("iOS", output);
                 }
 
                 return;

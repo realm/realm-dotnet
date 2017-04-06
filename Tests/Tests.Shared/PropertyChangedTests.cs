@@ -26,7 +26,7 @@ using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class PropertyChangedTests

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -20,7 +20,7 @@ using System.IO;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [Preserve(AllMembers = true)]
     public abstract class RealmTest

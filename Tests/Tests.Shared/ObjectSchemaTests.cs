@@ -20,7 +20,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectSchemaTests

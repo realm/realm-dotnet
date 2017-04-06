@@ -24,7 +24,7 @@ using Foundation;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests.XamarinIOS
+namespace Tests.XamarinIOS
 {
     [TestFixture]
     public class RunLoopTests

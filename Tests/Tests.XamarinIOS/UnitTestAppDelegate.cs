@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -20,7 +20,7 @@ using Foundation;
 using MonoTouch.NUnit.UI;
 using UIKit;
 
-namespace IntegrationTests.XamarinIOS
+namespace Tests.XamarinIOS
 {
     [Register("UnitTestAppDelegate")]
     public class UnitTestAppDelegate : UIApplicationDelegate

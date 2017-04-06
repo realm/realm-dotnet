@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -20,7 +20,7 @@ using System;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     /// <summary>
     /// Tests for the standalone (non-query) versions of our string extensions.

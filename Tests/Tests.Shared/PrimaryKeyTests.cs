@@ -25,7 +25,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     // using classes from TestObjects.cs
     [TestFixture, Preserve(AllMembers = true)]

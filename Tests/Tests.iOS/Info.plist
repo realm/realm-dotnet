@@ -22,19 +22,17 @@
 	</array>
 	<key>MinimumOSVersion</key>
 	<string>7.1</string>
-	<key>CFBundleDisplayName</key>
-	<string>Tests.XamarinIOS</string>
 	<key>CFBundleIdentifier</key>
 	<string>io.realm.xamarintests</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>CFBundleName</key>
-	<string>Tests.XamarinIOS</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
+	<key>CFBundleName</key>
+	<string>Realm Tests</string>
 </dict>
 </plist>

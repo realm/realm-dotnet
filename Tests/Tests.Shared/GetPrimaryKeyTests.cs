@@ -23,7 +23,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Weaving;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class GetPrimaryKeyTests : RealmInstanceTest

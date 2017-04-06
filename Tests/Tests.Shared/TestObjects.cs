@@ -22,7 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests
 {
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class AllTypesObject : RealmObject

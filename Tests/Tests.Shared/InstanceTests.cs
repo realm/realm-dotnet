@@ -26,7 +26,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class InstanceTests : RealmTest
