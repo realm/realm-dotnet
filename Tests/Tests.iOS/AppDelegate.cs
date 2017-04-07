@@ -16,17 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Foundation;
-using UIKit;
-using NUnit.Runner.Services;
-using Xamarin.Forms.Platform.iOS;
-using Xamarin.Forms;
-using NUnit.Runner;
-using System.Linq;
-using System.IO;
 using System;
+using System.Linq;
+using Foundation;
+using NUnit.Runner;
+using NUnit.Runner.Services;
+using UIKit;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.iOS;
 
-namespace Tests.iOS
+namespace Tests
 {
     [Register("AppDelegate")]
     public class AppDelegate : FormsApplicationDelegate
@@ -42,8 +41,6 @@ namespace Tests.iOS
             };
 
             var arguments = NSProcessInfo.ProcessInfo.Arguments;
-
-
             if (arguments.Any("--headless".Equals))
             {
                 options.AutoRun = true;

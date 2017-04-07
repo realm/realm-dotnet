@@ -18,11 +18,11 @@
 
 using UIKit;
 
-namespace Tests.iOS
+namespace Tests
 {
     public class Application
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             UIApplication.Main(args, null, "AppDelegate");
         }
