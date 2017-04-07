@@ -66,6 +66,7 @@ namespace Tests.iOS
                     throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
                 }
 
+                options.XmlTransformFile = "nunit3-junit.xslt";
                 options.LogToOutput = true;
             }
 

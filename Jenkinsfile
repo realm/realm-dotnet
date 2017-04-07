@@ -291,9 +291,9 @@ def iOSTest(stashName) {
       def workspace = pwd()
       try {
         sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath {workspace}/temp/TestResults.iOS.xml")
+        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/TestResults.iOS.xml")
       } finally {
-        junit "{workspace}/temp/TestResults.iOS.xml"
+        junit "${workspace}/temp/TestResults.iOS.xml"
       }
     }
   }
@@ -444,7 +444,7 @@ def nodeWithCleanup(String label, Closure steps) {
 def runSimulator(String appPath, String bundleId, String arguments) {
   def id = UUID.randomUUID().toString().replace('-', '')
   try {
-    def runtimes = simctl('list devicetypes runtimes')
+    def runtimes = sh returnStdout: true, script: 'xcrun simctl list devicetypes runtimes'
 
     def runtimeId;
 
@@ -457,26 +457,25 @@ def runSimulator(String appPath, String bundleId, String arguments) {
 
     runtimeMatcher = null
 
-    simctl("create ${id} com.apple.CoreSimulator.SimDeviceType.iPhone-7 ${runtimeId}")
-    simctl("boot ${id}")
-    simctl("install ${id} ${appPath}")
-    simctl("launch --console ${id} ${bundleId} ${arguments}")
+    sh """
+      xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.iPhone-7 ${runtimeId}
+      xcrun simctl boot ${id}
+      xcrun simctl install ${id} ${appPath}
+      xcrun simctl launch --console ${id} ${bundleId} ${arguments}
+    """
   } catch (e) {
     echo e.toString()
     throw e
   } finally {
     try
     {
-      simctl("delete ${id}")
+      sh """
+        xcrun simctl shutdown ${id}
+        xcrun simctl delete ${id}
+      """
     } catch (error) {
     }
   }
-}
-
-def String simctl(String arguments) {
-  def output = sh returnStdout: true, script: "xcrun simctl ${arguments}"
-  echo output
-  return output
 }
 
 def xbuild(String arguments) {

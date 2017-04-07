@@ -605,6 +605,11 @@
             Default is [LocalStorage]/TestResults.xml
             </summary>
         </member>
+        <member name="P:NUnit.Runner.Services.TestOptions.XmlTransformFile">
+            <summary>
+            Gets or sets the xslt transform file for the results.
+            </summary>
+        </member>
         <member name="M:NUnit.Runner.Services.XmlFileProcessor.CreateFolderRecursive(System.String)">
             <summary>
             Create a folder from the full folder path if it does not exist
@@ -698,6 +703,11 @@
         <member name="T:NUnit.Runner.View.TestView">
             <summary>
             Xamarin.Forms view of an individual test result
+            </summary>
+        </member>
+        <member name="T:NUnit.Runner.View.ExploreView">
+            <summary>
+            A Xamarin.Forms view containing a collection of test cases/suites
             </summary>
         </member>
     </members>
