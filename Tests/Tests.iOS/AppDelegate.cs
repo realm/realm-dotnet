@@ -41,13 +41,32 @@ namespace Tests.iOS
                 LogToOutput = true
             };
 
-            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
+            var arguments = NSProcessInfo.ProcessInfo.Arguments;
+
+
+            if (arguments.Any("--headless".Equals))
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
                 options.TerminateAfterExecution = true;
-                options.ResultFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml");
-                options.LogToOutput = false;
+
+                var hasResultsPath = false;
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    if (arguments[i] == "--resultpath")
+                    {
+                        options.ResultFilePath = arguments[i + 1];
+                        hasResultsPath = true;
+                        break;
+                    }
+                }
+
+                if (!hasResultsPath)
+                {
+                    throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
+                }
+
+                options.LogToOutput = true;
             }
 
             nunit.Options = options;
