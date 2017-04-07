@@ -288,21 +288,11 @@ def iOSTest(stashName) {
     nodeWithCleanup('osx') {
       unstash stashName
 
-      def id = UUID.randomUUID().toString()
       def workspace = pwd()
       try {
         sh 'mkdir -p temp'
-        def runtimes = simctl('list devicetypes runtimes')
-        def runtimeMatcher = runtimes =~ /iOS.*\((?<runtimeId>com.apple.CoreSimulator.SimRuntime.iOS[^\)]*)\)/
-
-        def runtimeId = runtimeMatcher.group('runtimeId')
-
-        simctl("create ${id} com.apple.CoreSimulator.SimDeviceType.iPhone-7 {runtimeId}")
-        simctl("boot ${id}")
-        simctl("install ${id} Tests.iOS.app")
-        simctl("launch --console ${id} io.realm.xamarintests --headless --resultpath {workspace}/temp/TestResults.iOS.xml")
+        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath {workspace}/temp/TestResults.iOS.xml")
       } finally {
-        simctl("delete ${id}")
         junit "{workspace}/temp/TestResults.iOS.xml"
       }
     }
@@ -447,6 +437,38 @@ def nodeWithCleanup(String label, Closure steps) {
       steps()
     } finally {
       deleteDir()
+    }
+  }
+}
+
+def runSimulator(String appPath, String bundleId, String arguments) {
+  def id = UUID.randomUUID().toString().replace('-', '')
+  try {
+    def runtimes = simctl('list devicetypes runtimes')
+
+    def runtimeId;
+
+    def runtimeMatcher = (runtimes =~ /iOS.*\((?<runtimeId>com.apple.CoreSimulator.SimRuntime.iOS[^\)]*)\)/)
+    if (runtimeMatcher) {
+      runtimeId = runtimeMatcher[0][1]
+    } else {
+      error('Failed to find iOS runtime.')
+    }
+
+    runtimeMatcher = null
+
+    simctl("create ${id} com.apple.CoreSimulator.SimDeviceType.iPhone-7 ${runtimeId}")
+    simctl("boot ${id}")
+    simctl("install ${id} ${appPath}")
+    simctl("launch --console ${id} ${bundleId} ${arguments}")
+  } catch (e) {
+    echo e.toString()
+    throw e
+  } finally {
+    try
+    {
+      simctl("delete ${id}")
+    } catch (error) {
     }
   }
 }
