@@ -293,7 +293,9 @@ def iOSTest(stashName) {
         sh 'mkdir -p temp'
         runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/TestResults.iOS.xml")
       } finally {
-        junit "${workspace}/temp/TestResults.iOS.xml"
+        dir ("${workspace}/temp") {
+          junit 'TestResults.iOS.xml'
+        }
       }
     }
   }
