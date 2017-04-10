@@ -181,6 +181,42 @@ namespace Tests.Database
             Assert.That(() => owner.Dogs.AsRealmCollection()[0], Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
+        [Test]
+        public void List_WhenRealmIsClosed_ShouldBeInvalid()
+        {
+            var container = GetPopulatedManagedContainerObject();
+
+            Assert.That(container.Items.AsRealmCollection().IsValid);
+
+            _realm.Dispose();
+
+            Assert.That(container.Items.AsRealmCollection().IsValid, Is.False);
+        }
+
+        [Test]
+        public void List_WhenParentIsDeleted_ShouldBeInvalid()
+        {
+            var container = GetPopulatedManagedContainerObject();
+
+            Assert.That(container.Items.AsRealmCollection().IsValid);
+
+            _realm.Write(() => _realm.Remove(container));
+
+            Assert.That(container.Items.AsRealmCollection().IsValid, Is.False);
+        }
+
+        [Test]
+        public void Results_WhenRealmIsClosed_ShouldBeInvalid()
+        {
+            var items = _realm.All<IntPropertyObject>();
+
+            Assert.That(items.AsRealmCollection().IsValid);
+
+            _realm.Dispose();
+
+            Assert.That(items.AsRealmCollection().IsValid, Is.False);
+        }
+
         private ContainerObject GetPopulatedManagedContainerObject()
         {
             var container = new ContainerObject();

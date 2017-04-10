@@ -5,6 +5,7 @@
 - Fixed an issue where `EntryPointNotFoundException` would be thrown on some Android devices. (#1336)
 
 ### Enhancements
+- Expose `IRealmCollection.IsValid` to indicate whether the realm collection is valid to use. (#1344)
 
 ### Breaking Changes
 
