@@ -64,7 +64,6 @@ namespace Tests
                 }
 
                 options.XmlTransformFile = "nunit3-junit.xslt";
-                options.LogToOutput = true;
             }
 
             nunit.Options = options;

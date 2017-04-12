@@ -152,6 +152,7 @@
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
+    <Compile Include="TestRunnerInstrumentation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -175,6 +176,9 @@
   <ItemGroup>
     <AndroidAsset Include="..\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
+    </AndroidAsset>
+    <AndroidAsset Include="..\Tests.Shared\nunit3-junit.xslt">
+      <Link>Assets\nunit3-junit.xslt</Link>
     </AndroidAsset>
   </ItemGroup>
   <ItemGroup>

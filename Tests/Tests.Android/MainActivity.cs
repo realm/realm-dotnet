@@ -16,18 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.IO;
 using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
+using Realms;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
+using Environment = System.Environment;
 
 namespace Tests.Android
 {
     [Activity(Label = "Realm Tests", MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
     {
+        public Action<Result> OnFinished { get; set; }
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -36,10 +42,27 @@ namespace Tests.Android
 
             var nunit = new App();
 
-            nunit.Options = new TestOptions
+            var options = new TestOptions
             {
                 LogToOutput = true,
             };
+
+            if (Intent.GetBooleanExtra("headless", false))
+            {
+                TestHelpers.CopyBundledDatabaseToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+                var transformPath = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
+                options.XmlTransformFile = transformPath;
+                options.AutoRun = true;
+                options.CreateXmlResultFile = true;
+                options.OnCompletedCallback = () => 
+                {
+                    OnFinished(Result.Ok);
+                    Finish();
+                };
+                options.ResultFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "TestResults.Android.xml");
+            }
+
+            nunit.Options = options;
 
             LoadApplication(nunit);
         }

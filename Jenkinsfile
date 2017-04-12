@@ -123,11 +123,11 @@ stage('Build without sync') {
         unstash 'android-wrappers-nosync'
         unstash 'tools-weaver'
 
-        xbuild("Tests/Tests.XamarinAndroid/Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.Android/Tests.Android.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
 
-        dir("Tests/Tests.XamarinAndroid/bin/${configuration}") {
+        dir("Tests/Tests.Android/bin/${configuration}") {
           stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
         }
       }
@@ -237,8 +237,8 @@ stage('Build with sync') {
         unstash 'android-wrappers-sync'
         unstash 'tools-weaver'
 
-        dir('Tests/Tests.XamarinAndroid') {
-          xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+        dir('Tests/Tests.Android') {
+          xbuild("Tests.Android.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }

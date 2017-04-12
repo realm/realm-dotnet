@@ -17,13 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-namespace Tests.XamarinAndroid
+namespace Tests.Android
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
@@ -36,25 +35,19 @@ namespace Tests.XamarinAndroid
         {
             base.OnCreate(arguments);
 
-            this.Start();
+            Start();
         }
 
         public override void OnStart()
         {
-            NativeMethods.ALooper_prepare(0);
-
-            using (var output = Context.OpenFileOutput("TestResults.Android.xml", FileCreationMode.WorldReadable))
+            var intent = new Intent(Context, typeof(MainActivity));
+            intent.PutExtra("headless", true);
+            intent.SetFlags(ActivityFlags.NewTask);
+            var activity = (MainActivity)StartActivitySync(intent);
+            activity.OnFinished = result =>
             {
-                Database.TestRunner.Run("Android", output);
-            }
-
-            this.Finish(Result.Ok, null);
-        }
-
-        private static class NativeMethods
-        {
-            [System.Runtime.InteropServices.DllImport("android")]
-            internal static extern IntPtr ALooper_prepare(int opts);
+                Finish(result, null);
+            };
         }
     }
 }
