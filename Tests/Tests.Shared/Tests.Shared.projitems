@@ -52,8 +52,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)nunit3-junit.xslt">
+    <None Include="$(MSBuildThisFileDirectory)nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 </Project>

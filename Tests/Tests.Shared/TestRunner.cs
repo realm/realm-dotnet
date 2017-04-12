@@ -23,7 +23,8 @@ using NUnit.Framework.Internal;
 
 namespace Tests.Database
 {
-    #if !WINDOWS && !__IOS__
+    // TODO: delete that
+#if !WINDOWS && !__IOS__ && !__ANDROID__
     internal class TestRunner
     {
         internal static void Run(string title, Stream outputStream)
@@ -35,11 +36,11 @@ namespace Tests.Database
             var testExecutionContext = TestExecutionContext.CurrentContext;
             testExecutionContext.WorkDirectory = Environment.CurrentDirectory;
 
-            #if __IOS__
+#if __IOS__
             var workItem = suite.CreateWorkItem(TestFilter.Empty, new FinallyDelegate());
-            #else
+#else
             var workItem = suite.CreateWorkItem(TestFilter.Empty);
-            #endif
+#endif
             workItem.Execute(testExecutionContext);
 
             var testWriter = new NUnitLite.Runner.NUnit2XmlOutputWriter(DateTime.Now);
@@ -49,5 +50,5 @@ namespace Tests.Database
             }
         }
     }
-    #endif
+#endif
 }

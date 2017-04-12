@@ -16,11 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using Android.App;
+using Android.OS;
+using NUnit.Runner;
+using NUnit.Runner.Services;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.Android;
 
-[assembly: AssemblyTitle("Realm.Sync")]
-[assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
-[assembly: InternalsVisibleTo("Tests.XamarinIOS")]
-[assembly: InternalsVisibleTo("Tests.iOS")]
-[assembly: InternalsVisibleTo("Tests.Android")]
+namespace Tests.Android
+{
+    [Activity(Label = "Realm Tests", MainLauncher = true)]
+    public class MainActivity : FormsApplicationActivity
+    {
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+
+            Forms.Init(this, savedInstanceState);
+
+            var nunit = new App();
+
+            nunit.Options = new TestOptions
+            {
+                LogToOutput = true,
+            };
+
+            LoadApplication(nunit);
+        }
+    }
+}
+
