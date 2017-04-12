@@ -143,6 +143,8 @@ stage('Build without sync') {
           cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64' ]
         }
 
+        archive 'wrappers/build/**/*.pdb'
+
         bat """
           "${windowsNugetCmd}" restore Realm.sln
           "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration} /p:SolutionDir="${workspace}/"
@@ -157,12 +159,13 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          //cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
           cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
           cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
         }
 
-        archive 'build/**/*'
+        archive 'wrappers/build/**/*.pdb'
+        stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-nosync'
       }
     },
     'PCL': {
@@ -373,6 +376,7 @@ stage('NuGet') {
         unstash 'ios-wrappers-nosync'
         unstash 'android-wrappers-nosync'
         unstash 'win32-wrappers-nosync'
+        unstash 'uwp-wrappers-nosync'
 
         dir('NuGet/Realm.Database') {
           nuget("pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
