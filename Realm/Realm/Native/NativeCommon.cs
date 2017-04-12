@@ -67,7 +67,9 @@ namespace Realms
                 var osVersion = osVersionPI.GetValue(null);
                 var platform = platformPI.GetValue(osVersion);
 
-                if (platform.ToString() == "Win32NT")
+                var win10Type = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
+
+                if (platform.ToString() == "Win32NT" && win10Type == null)
                 {
                     var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
                     var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";

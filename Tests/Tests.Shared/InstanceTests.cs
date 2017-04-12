@@ -91,12 +91,10 @@ namespace Tests.Database
             Realm realm2 = realm1;  // should be reassigned by other thread
 
             // Act
-            var t = new Thread(() =>
-                {
-                    realm2 = Realm.GetInstance();
-                });
-            t.Start();
-            t.Join();
+            Task.Run(() =>
+            {
+                realm2 = Realm.GetInstance();
+            }).Wait();
 
             // Assert
             Assert.That(ReferenceEquals(realm1, realm2), Is.False);

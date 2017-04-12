@@ -37,12 +37,12 @@ namespace Tests.Database
 
         public static object[] ContainsTestValues =
         {
-            new object[] { string.Empty, string.Empty, StringComparison.InvariantCulture, true },
-            new object[] { string.Empty, string.Empty, StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "b", StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.InvariantCultureIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.InvariantCulture, false },
-            new object[] { "abc", "d", StringComparison.InvariantCultureIgnoreCase, false },
+            new object[] { string.Empty, string.Empty, StringComparison.Ordinal, true },
+            new object[] { string.Empty, string.Empty, StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "abc", "b", StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "abc", "B", StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "abc", "B", StringComparison.Ordinal, false },
+            new object[] { "abc", "d", StringComparison.OrdinalIgnoreCase, false },
         };
 
         [TestCaseSource(nameof(LikeTestValues))]

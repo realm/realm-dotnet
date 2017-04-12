@@ -208,3 +208,4 @@ Resource.designer.cs
 Mono.Cecil.dll
 Realm.BuildTasks.dll
 *.nuget.targets
+*.nuget.props

@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -277,16 +278,14 @@ namespace Tests.Database
             long foundValue = 0;
 
             // Act
-            var t = new Thread(() =>
+            Task.Run(() =>
             {
                 using (var realm2 = Realm.GetInstance(_configuration))
                 {
                     var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;
                 }
-            });
-            t.Start();
-            t.Join();
+            }).Wait();
 
             Assert.That(foundValue, Is.EqualTo(42000042));
         }

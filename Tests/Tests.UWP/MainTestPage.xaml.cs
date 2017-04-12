@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,15 +17,25 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using NUnit.Runner.Services;
 
-[assembly: AssemblyTitle("Realm")]
-[assembly: InternalsVisibleTo("Realm.Sync")]
-[assembly: InternalsVisibleTo("Realm.DataBinding")]
-[assembly: InternalsVisibleTo("Realm.Sync.Docs")]
-[assembly: InternalsVisibleTo("Tests.Win32")]
-[assembly: InternalsVisibleTo("Tests.XamarinAndroid")]
-[assembly: InternalsVisibleTo("Tests.XamarinIOS")]
-[assembly: InternalsVisibleTo("Tests.iOS")]
-[assembly: InternalsVisibleTo("Tests.Android")]
-[assembly: InternalsVisibleTo("Tests.UWP")]
+namespace Tests.UWP
+{
+    public sealed partial class MainPage
+    {
+        public MainPage()
+        {
+            InitializeComponent();
+
+            var nunit = new NUnit.Runner.App();
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+
+            nunit.Options = new TestOptions
+            {
+                LogToOutput = true
+            };
+
+            LoadApplication(nunit);
+        }
+    }
+}

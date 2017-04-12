@@ -59,11 +59,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.iOS", "Tests\Tests.iO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Android", "Tests\Tests.Android\Tests.Android.csproj", "{AD7B78B0-AE51-4FB7-9B11-4E22A2B538CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.UWP", "Tests\Tests.UWP\Tests.UWP.csproj", "{159A55AF-9531-4107-8444-CA9C96107EF5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{0a266cac-ef4a-4bb0-a3d9-f2084f1b1012}*SharedItemsImports = 4
+		Tests\Tests.Shared\Tests.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{519e6d0a-7dcf-45f6-a40a-0260eaea0df7}*SharedItemsImports = 13
+		Tests\Tests.Shared\Tests.Shared.projitems*{ad7b78b0-ae51-4fb7-9b11-4e22a2b538ca}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ad7b78b0-ae51-4fb7-9b11-4e22a2b538ca}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Tests\Tests.Shared\Tests.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
@@ -546,6 +551,30 @@ Global
 		{AD7B78B0-AE51-4FB7-9B11-4E22A2B538CA}.Release|x86.ActiveCfg = Release|Any CPU
 		{AD7B78B0-AE51-4FB7-9B11-4E22A2B538CA}.Release|x86.Build.0 = Release|Any CPU
 		{AD7B78B0-AE51-4FB7-9B11-4E22A2B538CA}.Release|x86.Deploy.0 = Release|Any CPU
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|ARM.ActiveCfg = Debug|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|ARM.Build.0 = Debug|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|ARM.Deploy.0 = Debug|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|iPhone.ActiveCfg = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|iPhoneSimulator.ActiveCfg = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x64.ActiveCfg = Debug|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x64.Build.0 = Debug|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x64.Deploy.0 = Debug|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x86.ActiveCfg = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x86.Build.0 = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Debug|x86.Deploy.0 = Debug|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|Any CPU.ActiveCfg = Release|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|ARM.ActiveCfg = Release|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|ARM.Build.0 = Release|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|ARM.Deploy.0 = Release|ARM
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|iPhone.ActiveCfg = Release|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|iPhoneSimulator.ActiveCfg = Release|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x64.ActiveCfg = Release|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x64.Build.0 = Release|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x64.Deploy.0 = Release|x64
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x86.ActiveCfg = Release|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x86.Build.0 = Release|x86
+		{159A55AF-9531-4107-8444-CA9C96107EF5}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -574,5 +603,6 @@ Global
 		{F7D3FB29-7D55-4703-AD6A-0E43758E77A4} = {A24C8BAE-3B43-472C-9609-8AB97180CB4F}
 		{D2CED8F0-7A76-454D-B5F7-9E8B9FE6A58E} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 		{AD7B78B0-AE51-4FB7-9B11-4E22A2B538CA} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
+		{159A55AF-9531-4107-8444-CA9C96107EF5} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 	EndGlobalSection
 EndGlobal

@@ -58,14 +58,14 @@ namespace Tests.Database
         {
             AsyncContext.Run(async delegate
             {
-                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                var currentThreadId = Environment.CurrentManagedThreadId;
                 var otherThreadId = currentThreadId;
 
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
                 Assert.That(SynchronizationContext.Current != null);
                 await _realm.WriteAsync(realm =>
                 {
-                    otherThreadId = Thread.CurrentThread.ManagedThreadId;
+                    otherThreadId = Environment.CurrentManagedThreadId;
                     realm.Add(new Person());
                 });
 
@@ -81,7 +81,7 @@ namespace Tests.Database
             {
                 await Task.Run(async () =>
                 {
-                    var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                    var currentThreadId = Environment.CurrentManagedThreadId;
                     var otherThreadId = -1;
 
                     Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
@@ -89,7 +89,7 @@ namespace Tests.Database
 
                     await _realm.WriteAsync(realm =>
                     {
-                        otherThreadId = Thread.CurrentThread.ManagedThreadId;
+                        otherThreadId = Environment.CurrentManagedThreadId;
                         realm.Add(new Person());
                     });
 

@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using Realms;
 #if __ANDROID__
 using Application = Android.App.Application;
@@ -57,6 +58,8 @@ namespace Tests
 #else
 #if __IOS__
             var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
+#elif WINDOWS_UWP
+            var sourceDir = NUnit.Framework.TestContext.CurrentContext.WorkDirectory;
 #else
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
 #endif
