@@ -59,7 +59,7 @@ namespace Tests
 #if __IOS__
             var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
 #elif WINDOWS_UWP
-            var sourceDir = NUnit.Framework.TestContext.CurrentContext.WorkDirectory;
+            var sourceDir = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 #else
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
 #endif

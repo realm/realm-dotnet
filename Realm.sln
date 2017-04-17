@@ -73,8 +73,6 @@ Global
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Tests\Tests.Shared\Tests.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
-		Shared\Tests.Shared\Tests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
-		Shared\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

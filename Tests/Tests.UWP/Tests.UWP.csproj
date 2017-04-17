@@ -100,6 +100,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="..\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="project.json" />
     <None Include="Tests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
