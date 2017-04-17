@@ -56,6 +56,7 @@ namespace Tests.Android
                 options.CreateXmlResultFile = true;
                 options.OnCompletedCallback = () => 
                 {
+                    Console.WriteLine("Activity finished...");
                     OnFinished(Result.Ok);
                     Finish();
                 };

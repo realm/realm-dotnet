@@ -46,6 +46,7 @@ namespace Tests.Android
             var activity = (MainActivity)StartActivitySync(intent);
             activity.OnFinished = result =>
             {
+                Console.WriteLine("Instrumentation finished...");
                 Finish(result, null);
             };
         }
