@@ -28,16 +28,6 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class RefreshTests : RealmInstanceTest
     {
-        private void WriteOnDifferentThread(Action<Realm> action)
-        {
-            Task.Run(() =>
-            {
-                var r = Realm.GetInstance(_configuration);
-                r.Write(() => action(r));
-                r.Dispose();
-            });
-        }
-
         [Test]
         public void CommittingAWriteTransactionShouldRefreshQueries()
         {
@@ -74,14 +64,18 @@ namespace Tests.Database
             var q = _realm.All<Person>();
             Assert.That(q.Count, Is.EqualTo(1));
 
-            WriteOnDifferentThread(newRealm =>
+            Task.Run(() =>
             {
-                newRealm.Add(new Person { FullName = "Person 2" });
-            });
+                var r = Realm.GetInstance(_configuration);
+                r.Write(() => r.Add(new Person { FullName = "Person 2" }));
+                r.Dispose();
+            }).Wait();
 
             _realm.Refresh();
 
-            var ql2 = q.ToList().Select(p => p.FullName);
+            var ql2 = q.AsEnumerable()
+                       .Select(p => p.FullName)
+                       .ToArray();
             Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
         }
     }
