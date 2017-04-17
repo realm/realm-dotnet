@@ -313,6 +313,7 @@ def AndroidTest(stashName) {
         boolean archiveLog = true
         String backgroundPid
 
+        def workspace = pwd()
         try {
           backgroundPid = startLogCatCollector()
 
@@ -321,10 +322,11 @@ def AndroidTest(stashName) {
             adb install io.realm.xamarintests-Signed.apk
           '''
 
-          def instrumentationOutput = sh script: '''
+          def instrumentationOutput = sh script: """
+            mkdir -p ${workspace}/temp
             adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-            adb shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android.xml
-          ''', returnStdout: true
+            adb pull /data/data/io.realm.xamarintests/files/TestResults.Android.xml ${workspace}/temp/
+          """, returnStdout: true
 
           def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
           if (result.INSTRUMENTATION_CODE != '-1') {
@@ -339,7 +341,9 @@ def AndroidTest(stashName) {
         }
       }
 
-      publishTests()
+      dir ("${workspace}/temp") {
+        junit 'TestResults.Android.xml'
+      }
     }
   }
 }

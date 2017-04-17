@@ -48,9 +48,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)ThreadHandoverTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringExtensionsTests.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)nunit3-junit.xslt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

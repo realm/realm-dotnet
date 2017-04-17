@@ -181,6 +181,12 @@
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\RealmGenericFilled-60%402x.png" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\RealmGenericFilled-60%403x.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Tests.Shared\nunit3-junit.xslt">
+      <Link>nunit3-junit.xslt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
