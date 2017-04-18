@@ -17,13 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-
+using System.IO;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-namespace Tests.XamarinAndroid
+using Environment = Android.OS.Environment;
+
+namespace Tests.Android
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
@@ -36,25 +38,23 @@ namespace Tests.XamarinAndroid
         {
             base.OnCreate(arguments);
 
-            this.Start();
+            Start();
         }
 
         public override void OnStart()
         {
-            NativeMethods.ALooper_prepare(0);
-
-            using (var output = Context.OpenFileOutput("TestResults.Android.xml", FileCreationMode.WorldReadable))
+            var resultPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "TestResults.Android.xml");
+            Console.WriteLine($"Test Result file: {resultPath}");
+            var intent = new Intent(Context, typeof(MainActivity));
+            intent.PutExtra("headless", true);
+            intent.SetFlags(ActivityFlags.NewTask);
+            intent.PutExtra("resultPath", resultPath);
+            var activity = (MainActivity)StartActivitySync(intent);
+            activity.OnFinished = result =>
             {
-                Database.TestRunner.Run("Android", output);
-            }
-
-            this.Finish(Result.Ok, null);
-        }
-
-        private static class NativeMethods
-        {
-            [System.Runtime.InteropServices.DllImport("android")]
-            internal static extern IntPtr ALooper_prepare(int opts);
+                Console.WriteLine("Instrumentation finished...");
+                Finish(result, null);
+            };
         }
     }
 }

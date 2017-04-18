@@ -54,7 +54,7 @@ namespace Tests.Database
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding(Path.Combine("jan", "docs", "default.realm")));
+            Assert.That(config.DatabasePath, Does.EndWith(Path.Combine("jan", "docs", "default.realm")));
         }
 
         [Test]
@@ -65,7 +65,7 @@ namespace Tests.Database
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding(Path.Combine("Documents", "fred.realm")));
+            Assert.That(config.DatabasePath, Does.EndWith(Path.Combine("Documents", "fred.realm")));
             Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
         }
 
@@ -77,7 +77,7 @@ namespace Tests.Database
             var config2 = config.ConfigWithPath("fred.realm");
 
             // Assert
-            Assert.That(config2.DatabasePath, Is.StringEnding("fred.realm"));
+            Assert.That(config2.DatabasePath, Does.EndWith("fred.realm"));
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace Tests.Database
             RealmConfiguration.DefaultConfiguration = config.ConfigWithPath("fred.realm");
 
             // Assert
-            Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
+            Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Does.EndWith("fred.realm"));
         }
 
         [Test]

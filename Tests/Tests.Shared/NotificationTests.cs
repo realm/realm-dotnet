@@ -98,7 +98,7 @@ namespace Tests.Database
                 Console.SetError(sw);
                 _realm.NotifyError(new Exception());
 
-                Assert.That(sw.ToString(), Contains.Substring("exception").And.ContainsSubstring("Realm.Error"));
+                Assert.That(sw.ToString(), Contains.Substring("exception").And.Contains("Realm.Error"));
                 Console.SetError(original);
             }
         }

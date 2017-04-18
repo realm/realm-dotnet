@@ -123,11 +123,11 @@ stage('Build without sync') {
         unstash 'android-wrappers-nosync'
         unstash 'tools-weaver'
 
-        xbuild("Tests/Tests.XamarinAndroid/Tests.XamarinAndroid.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+        xbuild("Tests/Tests.Android/Tests.Android.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
 
         stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
 
-        dir("Tests/Tests.XamarinAndroid/bin/${configuration}") {
+        dir("Tests/Tests.Android/bin/${configuration}") {
           stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
         }
       }
@@ -237,8 +237,8 @@ stage('Build with sync') {
         unstash 'android-wrappers-sync'
         unstash 'tools-weaver'
 
-        dir('Tests/Tests.XamarinAndroid') {
-          xbuild("Tests.XamarinAndroid.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+        dir('Tests/Tests.Android') {
+          xbuild("Tests.Android.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
@@ -313,6 +313,7 @@ def AndroidTest(stashName) {
         boolean archiveLog = true
         String backgroundPid
 
+        def workspace = pwd()
         try {
           backgroundPid = startLogCatCollector()
 
@@ -321,10 +322,12 @@ def AndroidTest(stashName) {
             adb install io.realm.xamarintests-Signed.apk
           '''
 
-          def instrumentationOutput = sh script: '''
+          def instrumentationOutput = sh script: """
+            mkdir -p ${workspace}/temp
             adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-            adb shell run-as io.realm.xamarintests cat /data/data/io.realm.xamarintests/files/TestResults.Android.xml > TestResults.Android.xml
-          ''', returnStdout: true
+            adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${workspace}/temp/
+            adb shell rm /sdcard/Realmtests/TestResults.Android.xml
+          """, returnStdout: true
 
           def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
           if (result.INSTRUMENTATION_CODE != '-1') {
@@ -339,7 +342,9 @@ def AndroidTest(stashName) {
         }
       }
 
-      publishTests()
+      dir ("${workspace}/temp") {
+        junit 'TestResults.Android.xml'
+      }
     }
   }
 }
