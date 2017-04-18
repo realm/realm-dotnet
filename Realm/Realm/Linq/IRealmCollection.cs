@@ -118,6 +118,13 @@ namespace Realms
         ObjectSchema ObjectSchema { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this collection is still valid to use, i.e. the <see cref="Realm"/> instance
+        /// hasn't been closed and, if it represents a to-many relationship, it's parent object hasn't been deleted.
+        /// </summary>
+        /// <value><c>true</c> if the collection is valid to use; <c>false</c> otherwise.</value>
+        bool IsValid { get; }
+
+        /// <summary>
         /// Register a callback to be invoked each time this <see cref="IRealmCollection{T}"/> changes.
         /// </summary>
         /// <remarks>
