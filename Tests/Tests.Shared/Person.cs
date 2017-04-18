@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests
 {
     public class Person : RealmObject
     {

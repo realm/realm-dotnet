@@ -145,7 +145,7 @@ namespace Tests.Sync
         }
 
         [Explicit("Fails with obscure error.")]
-        [Test, Timeout(1000)]
+        [Test]
         public void Session_Error_WhenInvalidRefreshToken()
         {
             AsyncContext.Run(async () =>
@@ -176,7 +176,7 @@ namespace Tests.Sync
         }
 
         [Explicit("Fails with obscure error.")]
-        [Test, Timeout(1000)]
+        [Test]
         public void Session_Error_WhenInvalidAccessToken()
         {
             AsyncContext.Run(async () =>

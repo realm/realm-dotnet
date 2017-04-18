@@ -17,29 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.IO;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAccessTests : RealmInstanceTest
     {
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
             _configuration = new RealmConfiguration(_configuration.DatabasePath)
             {
                 ObjectClasses = new[] { typeof(AllTypesObject) },
                 Dynamic = true
             };
-            base.SetUp();
+            base.CustomSetUp();
         }
 
         [Test]

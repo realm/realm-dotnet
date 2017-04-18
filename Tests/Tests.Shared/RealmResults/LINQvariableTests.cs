@@ -20,15 +20,14 @@ using System.Linq;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class LINQvariableTests : PeopleTestsBase
     {
-        // see comment on base method why this isn't decorated with [SetUp]
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            base.SetUp();
+            base.CustomSetUp();
             MakeThreePeople();
         }
 

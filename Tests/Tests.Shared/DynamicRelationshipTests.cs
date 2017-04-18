@@ -24,7 +24,7 @@ using Realms;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
-namespace IntegrationTests
+namespace Tests.Database
 {
     [Preserve(AllMembers = true)]
     public enum DynamicTestObjectType
@@ -66,17 +66,17 @@ namespace IntegrationTests
             _mode = mode;
         }
 
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            _configuration = new RealmConfiguration { ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) } };
-            if (_mode == DynamicTestObjectType.DynamicRealmObject)
-            {
-                _configuration.Dynamic = true;
-            }
+            _configuration = new RealmConfiguration 
+            { 
+                ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
+                Dynamic = _mode == DynamicTestObjectType.DynamicRealmObject
+            };
 
-            base.SetUp();
+            base.CustomSetUp();
 
-            using (var trans = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 var o1 = _realm.CreateObject("DynamicOwner");
                 o1.Name = "Tim";
@@ -99,9 +99,7 @@ namespace IntegrationTests
                 var d3 = _realm.CreateObject("DynamicDog");  // will remain unassigned
                 d3.Name = "Maggie Mongrel";
                 d3.Color = "Grey";
-
-                trans.Commit();
-            }
+            });
         }
 
         [Test]

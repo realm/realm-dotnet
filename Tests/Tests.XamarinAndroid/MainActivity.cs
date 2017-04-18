@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -22,7 +22,7 @@ using Android.App;
 using Android.OS;
 using Xamarin.Android.NUnitLite;
 
-namespace IntegrationTests.XamarinAndroid
+namespace Tests.XamarinAndroid
 {
     [Activity(Label = "IntegrationTests.XamarinAndroid", MainLauncher = true)]
     public class MainActivity : TestSuiteActivity

@@ -23,15 +23,14 @@ using Realms;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     internal class SimpleLINQtests : PeopleTestsBase
     {
-        // see comment on base method why this isn't decorated with [SetUp]
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            base.SetUp();
+            base.CustomSetUp();
             MakeThreePeople();
         }
 

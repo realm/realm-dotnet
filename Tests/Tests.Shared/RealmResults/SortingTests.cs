@@ -22,7 +22,7 @@ using System.Linq;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class Cities : RealmObject
@@ -34,10 +34,9 @@ namespace IntegrationTests
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class SortingTests : PeopleTestsBase
     {
-        // see comment on base method why this isn't decorated with [SetUp]
-        public override void SetUp()
+        protected override void CustomSetUp()
         {
-            base.SetUp();
+            base.CustomSetUp();
             MakeThreePeople();
             _realm.Write(() =>
             {

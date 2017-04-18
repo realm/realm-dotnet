@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -23,7 +23,7 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-namespace IntegrationTests.XamarinAndroid
+namespace Tests.XamarinAndroid
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
@@ -45,7 +45,7 @@ namespace IntegrationTests.XamarinAndroid
 
             using (var output = Context.OpenFileOutput("TestResults.Android.xml", FileCreationMode.WorldReadable))
             {
-                IntegrationTests.TestRunner.Run("Android", output);
+                Database.TestRunner.Run("Android", output);
             }
 
             this.Finish(Result.Ok, null);

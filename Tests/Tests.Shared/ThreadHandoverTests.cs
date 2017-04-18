@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -25,7 +25,7 @@ using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
 
-namespace IntegrationTests.Shared
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ThreadHandoverTests : RealmInstanceTest

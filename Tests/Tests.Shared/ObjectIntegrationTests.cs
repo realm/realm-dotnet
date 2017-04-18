@@ -25,7 +25,7 @@ using Realms.Exceptions;
 
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase

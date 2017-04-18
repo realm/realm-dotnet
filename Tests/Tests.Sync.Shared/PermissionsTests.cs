@@ -19,14 +19,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using IntegrationTests;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync

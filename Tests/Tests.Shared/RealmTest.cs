@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -20,21 +20,41 @@ using System.IO;
 using NUnit.Framework;
 using Realms;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
     [Preserve(AllMembers = true)]
     public abstract class RealmTest
     {
+        private bool _isSetup;
+
         [SetUp]
-        public virtual void SetUp()
+        public void SetUp()
         {
-            RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+            if (!_isSetup)
+            {
+                RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+                CustomSetUp();
+                _isSetup = true;
+            }
+        }
+
+        protected virtual void CustomSetUp()
+        {
         }
 
         [TearDown]
-        public virtual void TearDown()
+        public void TearDown()
         {
-            NativeCommon.reset_for_testing();
+            if (_isSetup)
+            {
+                CustomTearDown();
+                NativeCommon.reset_for_testing();
+                _isSetup = false;
+            }
+        }
+
+        protected virtual void CustomTearDown()
+        {
         }
     }
 }

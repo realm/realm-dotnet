@@ -29,67 +29,76 @@ namespace Tests.Sync
     public class SyncConfigurationTests
     {
         [Test]
-        public async void SyncConfiguration_WithoutPath()
+        public void SyncConfiguration_WithoutPath()
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            var config = new SyncConfiguration(user, serverUri);
-
-            Realm.DeleteRealm(config);
-
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
-
-            using (var realm = Realm.GetInstance(config))
+            AsyncContext.Run(async () =>
             {
-            }
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var serverUri = new Uri("realm://localhost:9080/foobar");
+                var config = new SyncConfiguration(user, serverUri);
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
+                Realm.DeleteRealm(config);
+
+                var file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists, Is.False);
+
+                using (var realm = Realm.GetInstance(config))
+                {
+                }
+
+                file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists);
+            });
         }
 
         [Test]
-        public async void SyncConfiguration_WithRelativePath()
+        public void SyncConfiguration_WithRelativePath()
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-            var config = new SyncConfiguration(user, serverUri, "myrealm.realm");
-
-            Realm.DeleteRealm(config);
-
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
-
-            using (var realm = Realm.GetInstance(config))
+            AsyncContext.Run(async () =>
             {
-            }
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var serverUri = new Uri("realm://localhost:9080/foobar");
+                var config = new SyncConfiguration(user, serverUri, "myrealm.realm");
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
-            Assert.That(config.DatabasePath.EndsWith("myrealm.realm"));
+                Realm.DeleteRealm(config);
+
+                var file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists, Is.False);
+
+                using (var realm = Realm.GetInstance(config))
+                {
+                }
+
+                file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists);
+                Assert.That(config.DatabasePath.EndsWith("myrealm.realm"));
+            });
         }
 
         [Test]
-        public async void SyncConfiguration_WithAbsolutePath()
+        public void SyncConfiguration_WithAbsolutePath()
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-            var serverUri = new Uri("realm://localhost:9080/foobar");
-
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "bla.realm");
-            var config = new SyncConfiguration(user, serverUri, path);
-
-            Realm.DeleteRealm(config);
-
-            var file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists, Is.False);
-            
-            using (var realm = Realm.GetInstance(config))
+            AsyncContext.Run(async () =>
             {
-            }
+                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var serverUri = new Uri("realm://localhost:9080/foobar");
 
-            file = new FileInfo(config.DatabasePath);
-            Assert.That(file.Exists);
-            Assert.That(config.DatabasePath, Is.EqualTo(path));
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "bla.realm");
+                var config = new SyncConfiguration(user, serverUri, path);
+
+                Realm.DeleteRealm(config);
+
+                var file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists, Is.False);
+
+                using (var realm = Realm.GetInstance(config))
+                {
+                }
+
+                file = new FileInfo(config.DatabasePath);
+                Assert.That(file.Exists);
+                Assert.That(config.DatabasePath, Is.EqualTo(path));
+            });
         }
 
         [Test]

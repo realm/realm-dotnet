@@ -21,9 +21,9 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework.Internal;
 
-namespace IntegrationTests
+namespace Tests.Database
 {
-    #if !WINDOWS
+    #if !WINDOWS && !__IOS__
     internal class TestRunner
     {
         internal static void Run(string title, Stream outputStream)
