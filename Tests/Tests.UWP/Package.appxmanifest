@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="1da5575a-cb6f-458e-bf6d-a093aa4a0c8b" Publisher="CN=NUnit" Version="1.0.2.0" />
-  <mp:PhoneIdentity PhoneProductId="1da5575a-cb6f-458e-bf6d-a093aa4a0c8b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Identity Name="4f50c901-646f-47f4-9a2f-29ccb95c138c" Publisher="CN=irinc" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="4f50c901-646f-47f4-9a2f-29ccb95c138c" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>io.realm.uwptests</DisplayName>
+    <DisplayName>io.realm.xamarintests</DisplayName>
     <PublisherDisplayName>Realm</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

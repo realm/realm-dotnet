@@ -28,6 +28,31 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class StringExtensionsTests
     {
+        public static object[] ContainsTestValues =
+        {
+            new object[] { "text", "x", StringComparison.Ordinal, true },
+            new object[] { "teXt", "x", StringComparison.Ordinal, false },
+            new object[] { "teXt", "X", StringComparison.Ordinal, true },
+            new object[] { "teXt", "x", StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "teXt", "X", StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "Text", "t", StringComparison.Ordinal, true },
+            new object[] { "Text", "T", StringComparison.Ordinal, true },
+            new object[] { "texT", "ext", StringComparison.Ordinal, false },
+            new object[] { "texT", "ext", StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "teXt", "test", StringComparison.Ordinal, false },
+            new object[] { "teXt", "test", StringComparison.OrdinalIgnoreCase, false },
+            new object[] { "teXt", string.Empty, StringComparison.OrdinalIgnoreCase, true },
+            new object[] { "teXt", string.Empty, StringComparison.Ordinal, true },
+            new object[] { string.Empty, "a", StringComparison.Ordinal, false },
+            new object[] { string.Empty, "a", StringComparison.OrdinalIgnoreCase, false },
+            new object[] { string.Empty, string.Empty, StringComparison.Ordinal, true },
+
+            // "".IndexOf("", StringComparison.OrdinalIgnoreCase) == -1 for .NET Native ?!
+#if DEBUG || !WINDOWS_UWP
+            new object[] { string.Empty, string.Empty, StringComparison.OrdinalIgnoreCase, true }
+#endif
+        };
+
         [TestCaseSource(nameof(ContainsTestValues))]
         public void ContainsTests(string str, string value, StringComparison comparisonType, bool expected)
         {
@@ -35,15 +60,18 @@ namespace Tests.Database
             Assert.That(result, Is.EqualTo(expected));
         }
 
-        public static object[] ContainsTestValues =
+        public static object[] InvalidContainsTestCases =
         {
-            new object[] { string.Empty, string.Empty, StringComparison.Ordinal, true },
-            new object[] { string.Empty, string.Empty, StringComparison.OrdinalIgnoreCase, true },
-            new object[] { "abc", "b", StringComparison.OrdinalIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.OrdinalIgnoreCase, true },
-            new object[] { "abc", "B", StringComparison.Ordinal, false },
-            new object[] { "abc", "d", StringComparison.OrdinalIgnoreCase, false },
+            new object[] { null, "x", StringComparison.Ordinal, typeof(ArgumentNullException) },
+            new object[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
+            new object[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
         };
+
+        [TestCaseSource(nameof(InvalidContainsTestCases))]
+        public void Contains_TestInvalidArgumentCases(string original, string value, StringComparison comparisonType, Type exceptionType)
+        {
+            Assert.That(() => original.Contains(value, comparisonType), Throws.TypeOf(exceptionType));
+        }
 
         [TestCaseSource(nameof(LikeTestValues))]
         public void LikeTests(string str, string value, bool caseSensitive, bool expected)

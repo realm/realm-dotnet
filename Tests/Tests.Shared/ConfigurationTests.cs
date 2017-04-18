@@ -29,7 +29,7 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class ConfigurationTests
     {
-        private void ReliesOnEncryption()
+        private static void ReliesOnEncryption()
         {
 #if ENCRYPTION_DISABLED
             Assert.Ignore("This test relies on encryption which is not enabled in this build");
@@ -222,8 +222,10 @@ namespace Tests.Database
         public void ReadOnlyFilesMustExist()
         {
             // Arrange
-            var config = new RealmConfiguration("FileNotThere.realm");
-            config.IsReadOnly = true;
+            var config = new RealmConfiguration("FileNotThere.realm")
+            {
+                IsReadOnly = true
+            };
 
             // Assert
             Assert.Throws<RealmFileNotFoundException>(() =>
