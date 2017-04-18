@@ -60,7 +60,7 @@ namespace Tests.Android
                     OnFinished(Result.Ok);
                     Finish();
                 };
-                options.ResultFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "TestResults.Android.xml");
+                options.ResultFilePath = Intent.GetStringExtra("resultPath");
             }
 
             nunit.Options = options;

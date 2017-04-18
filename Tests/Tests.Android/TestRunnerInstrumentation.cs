@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
+
+using Environment = System.Environment;
 
 namespace Tests.Android
 {
@@ -40,12 +43,23 @@ namespace Tests.Android
 
         public override void OnStart()
         {
+            var resultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "TestResults.Android.xml");
             var intent = new Intent(Context, typeof(MainActivity));
             intent.PutExtra("headless", true);
             intent.SetFlags(ActivityFlags.NewTask);
+            intent.PutExtra("resultPath", resultPath);
             var activity = (MainActivity)StartActivitySync(intent);
             activity.OnFinished = result =>
             {
+                if (File.Exists(resultPath))
+                {
+                    Console.WriteLine($"RealmInstrumentation: Result file: {resultPath}");
+                }
+                else
+                {
+                    Console.WriteLine("RealmInstrumentation: File not found.");
+                }
+
                 Console.WriteLine("Instrumentation finished...");
                 Finish(result, null);
             };
