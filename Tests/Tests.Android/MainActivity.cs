@@ -25,7 +25,6 @@ using NUnit.Runner.Services;
 using Realms;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
-using Environment = System.Environment;
 
 namespace Tests.Android
 {

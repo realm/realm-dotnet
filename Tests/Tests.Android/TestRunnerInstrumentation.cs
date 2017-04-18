@@ -23,7 +23,7 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-using Environment = System.Environment;
+using Environment = Android.OS.Environment;
 
 namespace Tests.Android
 {
@@ -43,7 +43,8 @@ namespace Tests.Android
 
         public override void OnStart()
         {
-            var resultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "TestResults.Android.xml");
+            var resultPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "TestResults.Android.xml");
+            Console.WriteLine($"Test Result file: {resultPath}");
             var intent = new Intent(Context, typeof(MainActivity));
             intent.PutExtra("headless", true);
             intent.SetFlags(ActivityFlags.NewTask);
@@ -51,15 +52,6 @@ namespace Tests.Android
             var activity = (MainActivity)StartActivitySync(intent);
             activity.OnFinished = result =>
             {
-                if (File.Exists(resultPath))
-                {
-                    Console.WriteLine($"RealmInstrumentation: Result file: {resultPath}");
-                }
-                else
-                {
-                    Console.WriteLine("RealmInstrumentation: File not found.");
-                }
-
                 Console.WriteLine("Instrumentation finished...");
                 Finish(result, null);
             };
