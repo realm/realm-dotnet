@@ -326,6 +326,7 @@ def AndroidTest(stashName) {
             mkdir -p ${workspace}/temp
             adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
             adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${workspace}/temp/
+            adb shell rm /sdcard/Realmtests/TestResults.Android.xml
           """, returnStdout: true
 
           def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
