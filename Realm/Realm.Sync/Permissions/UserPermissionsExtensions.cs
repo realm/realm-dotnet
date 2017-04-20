@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -37,10 +38,10 @@ namespace Realms.Sync
         /// <seealso href="https://realm.io/docs/realm-object-server/#modifying-permissions">How to control permissions</seealso>
         /// <param name="user">The user whose Management Realm to get.</param>
         /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
+        [Obsolete]
         public static Realm GetManagementRealm(this User user)
         {
-            return user.GetSpecialPurposeRealm("__management", 
-                                               typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse));
+            return user.ManagementRealm;
         }
 
         /// <summary>
@@ -52,31 +53,37 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="user">The user whose Permission Realm to get.</param>
         /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
+        [Obsolete]
         public static Realm GetPermissionRealm(this User user)
         {
-            return user.GetSpecialPurposeRealm("__permission", typeof(Permission));
+            return user.PermissionRealm;
         }
 
-        private static Realm GetSpecialPurposeRealm(this User user, string path, params Type[] objectClasses)
+        public static Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
         {
-            var uriBuilder = new UriBuilder(user.ServerUri);
-            if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+            var tcs = new TaskCompletionSource<object>();
+            PropertyChangedEventHandler handler = null;
+            handler = new PropertyChangedEventHandler((sender, e) =>
             {
-                uriBuilder.Scheme = "realm";
-            }
-            else if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
-            {
-                uriBuilder.Scheme = "realms";
-            }
+                if (e.PropertyName == nameof(PermissionChange.Status) &&
+                    permissionObject.Status != ManagementObjectStatus.NotProcessed)
+                {
+                    permissionObject.PropertyChanged -= handler;
+                    switch (permissionObject.Status)
+                    {
+                        case ManagementObjectStatus.Success:
+                            tcs.TrySetResult(permissionObject);
+                            break;
+                        case ManagementObjectStatus.Error:
+                            tcs.TrySetException(new Exception(permissionObject.StatusMessage));
+                            break;
+                    }
+                }
+            });
 
-            uriBuilder.Path = $"/~/{path}";
+            permissionObject.PropertyChanged += handler;
 
-            var configuration = new SyncConfiguration(user, uriBuilder.Uri)
-            {
-                ObjectClasses = objectClasses
-            };
-
-            return Realm.GetInstance(configuration);
+            return tcs.Task;
         }
     }
 }

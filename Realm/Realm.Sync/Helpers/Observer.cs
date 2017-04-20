@@ -20,25 +20,32 @@ using System;
 
 namespace Realms.Sync
 {
-    /// <summary>
-    /// The status of the management object as set by the server.
-    /// </summary>
-    [Flags]
-    public enum ManagementObjectStatus
+    internal class Observer<T> : IObserver<T>
     {
-        /// <summary>
-        /// The server hasn't yet processed the request.
-        /// </summary>
-        NotProcessed = 1,
+        private readonly Action<T> _onNext;
+        private readonly Action _onCompleted;
+        private readonly Action<Exception> _onError;
 
-        /// <summary>
-        /// The server has processed the request successfully.
-        /// </summary>
-        Success = 2,
+        public Observer(Action<T> onNext = null, Action onCompleted = null, Action<Exception> onError = null)
+        {
+            _onNext = onNext;
+            _onCompleted = onCompleted;
+            _onError = onError;
+        }
 
-        /// <summary>
-        /// There was an error while processing the request. See <see cref="IPermissionObject.StatusMessage"/> for more details.
-        /// </summary>
-        Error = 4
+        public void OnCompleted()
+        {
+            _onCompleted?.Invoke();
+        }
+
+        public void OnError(Exception error)
+        {
+            _onError?.Invoke(error);
+        }
+
+        public void OnNext(T value)
+        {
+            _onNext?.Invoke(value);
+        }
     }
 }

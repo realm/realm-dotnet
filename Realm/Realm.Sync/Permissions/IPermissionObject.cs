@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -78,5 +80,9 @@ namespace Realms.Sync
         /// </summary>
         /// <value>An enum indicating whether the operation has completed successfully.</value>
         ManagementObjectStatus Status { get; }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        int? StatusCode { get; set; }
     }
 }

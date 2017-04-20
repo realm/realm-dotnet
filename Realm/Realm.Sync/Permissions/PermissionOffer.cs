@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -53,9 +55,10 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-        /// <inheritdoc />
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         [MapTo("statusCode")]
-        private int? StatusCode { get; set; }
+        public int? StatusCode { get; set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
@@ -122,17 +125,9 @@ namespace Realms.Sync
         /// </summary>
         /// <value>If <c>null</c>, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.</value>
         [MapTo("expiresAt")]
-        public DateTimeOffset? ExpiresAt { get; set; }
+        public DateTimeOffset? ExpiresAt { get; internal set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionOffer"/> class.
-        /// </summary>
-        /// <param name="realmUrl">The Realm URL to offer permissions to.</param>
-        /// <param name="mayRead">If set to <c>true</c> grants read access.</param>
-        /// <param name="mayWrite">If set to <c>true</c> grants write access.</param>
-        /// <param name="mayManage">If set to <c>true</c> grants manage access.</param>
-        /// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
-        public PermissionOffer(string realmUrl, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null)
+        internal PermissionOffer(string realmUrl, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null)
         {
             RealmUrl = realmUrl;
             MayRead = mayRead;
@@ -153,6 +148,7 @@ namespace Realms.Sync
             if (propertyName == nameof(StatusCode))
             {
                 RaisePropertyChanged(nameof(Status));
+                RaisePropertyChanged(nameof(ErrorCode));
             }
         }
     }

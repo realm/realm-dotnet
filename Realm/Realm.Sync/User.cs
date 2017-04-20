@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -185,6 +186,8 @@ namespace Realms.Sync
         internal User(SyncUserHandle handle)
         {
             Handle = handle;
+            _permissionRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__permission", typeof(Permission)));
+            _managementRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__management", typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse)));
         }
 
         internal static User Create(IntPtr userPtr)
@@ -238,5 +241,154 @@ namespace Realms.Sync
         {
             return Identity.GetHashCode();
         }
+
+        #region Permissions
+
+        private readonly Lazy<Realm> _permissionRealm;
+        private readonly Lazy<Realm> _managementRealm;
+
+        internal Realm PermissionRealm => _permissionRealm.Value;
+
+        internal Realm ManagementRealm => _managementRealm.Value;
+
+        public async Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any, string realmUrl = null)
+        {
+            // TODO: this should use the new openasync API once implemented
+            var result = PermissionRealm.All<Permission>();
+
+            if (!string.IsNullOrEmpty(realmUrl))
+            {
+                result = result.Where(p => p.Path == realmUrl);
+            }
+
+            var id = Identity;
+            switch (receiver)
+            {
+                case Receiver.CurrentUser:
+                    result = result.Where(p => p.UserId == id);
+                    break;
+                case Receiver.OtherUser:
+                    result = result.Where(p => p.UserId != id);
+                    break;
+            }
+
+            return result;
+        }
+
+        public Task GrantPermissions(string userId, string realmUrl, Permissions permissions)
+        {
+            bool? mayRead = BoolFromFlag(permissions, Permissions.Read);
+            bool? mayWrite = BoolFromFlag(permissions, Permissions.Write);
+            bool? mayManage = BoolFromFlag(permissions, Permissions.Manage);
+            var change = new PermissionChange(userId, realmUrl, mayRead, mayWrite, mayManage);
+            return WriteToManagementRealm(change);
+        }
+
+        public Task RevokePermissions(string userId, string realmUrl, Permissions permissions)
+        {
+            bool? mayRead = BoolFromFlag(permissions, Permissions.Read, false);
+            bool? mayWrite = BoolFromFlag(permissions, Permissions.Write, false);
+            bool? mayManage = BoolFromFlag(permissions, Permissions.Manage, false);
+            var change = new PermissionChange(userId, realmUrl, mayRead, mayWrite, mayManage);
+            return WriteToManagementRealm(change);
+        }
+
+        public async Task<string> OfferPermissions(string realmUrl, Permissions permissions, DateTimeOffset? expiresAt = null)
+        {
+            var offer = new PermissionOffer(realmUrl,
+                                            permissions.HasFlag(Permissions.Read),
+                                            permissions.HasFlag(Permissions.Write),
+                                            permissions.HasFlag(Permissions.Manage),
+                                            expiresAt);
+
+            await WriteToManagementRealm(offer);
+            return offer.RealmUrl;
+        }
+
+        public async Task<string> AcceptPermissionOffer(string offerToken)
+        {
+            var permissionResponse = new PermissionOfferResponse(offerToken);
+            await WriteToManagementRealm(permissionResponse);
+            return permissionResponse.RealmUrl;
+        }
+
+        public Task InvalidateOffer(PermissionOffer offer)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            ManagementRealm.Write(() =>
+            {
+                offer.ExpiresAt = DateTimeOffset.UtcNow;
+            });
+
+            var progressObservable = ManagementRealm.GetSession().GetProgressObservable(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork);
+            var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
+            progressObservable.Subscribe(observer);
+            return tcs.Task;
+        }
+
+        public IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IPermissionObject
+        {
+            var result = ManagementRealm.All<T>();
+            int? successCode = 0;
+            int? notProcessedCode = null;
+
+            if (!status.HasFlag(ManagementObjectStatus.Error))
+            {
+                result = result.Where(p => p.StatusCode == successCode || p.StatusCode == notProcessedCode);
+            }
+
+            if (!status.HasFlag(ManagementObjectStatus.NotProcessed))
+            {
+                result = result.Where(p => p.StatusCode != notProcessedCode);
+            }
+
+            if (!status.HasFlag(ManagementObjectStatus.Success))
+            {
+                result = result.Where(p => p.StatusCode != successCode);
+            }
+
+            return result;
+        }
+
+        private Realm GetSpecialPurposeRealm(string path, params Type[] objectClasses)
+        {
+            var uriBuilder = new UriBuilder(ServerUri);
+            if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+            {
+                uriBuilder.Scheme = "realm";
+            }
+            else if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+            {
+                uriBuilder.Scheme = "realms";
+            }
+
+            uriBuilder.Path = $"/~/{path}";
+
+            var configuration = new SyncConfiguration(this, uriBuilder.Uri)
+            {
+                ObjectClasses = objectClasses
+            };
+
+            return Realm.GetInstance(configuration);
+        }
+
+        private Task WriteToManagementRealm<T>(T permissionObject) where T : RealmObject, IPermissionObject
+        {
+            ManagementRealm.Write(() => ManagementRealm.Add(permissionObject));
+            return permissionObject.WaitForProcessing();
+        }
+
+        private static bool? BoolFromFlag(Permissions permissions, Permissions flag, bool containsValue = true)
+        {
+            if (permissions.HasFlag(flag))
+            {
+                return containsValue;
+            }
+
+            return null;
+        }
+
+#endregion
     }
 }

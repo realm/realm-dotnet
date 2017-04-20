@@ -20,25 +20,11 @@ using System;
 
 namespace Realms.Sync
 {
-    /// <summary>
-    /// The status of the management object as set by the server.
-    /// </summary>
     [Flags]
-    public enum ManagementObjectStatus
+    public enum Permissions
     {
-        /// <summary>
-        /// The server hasn't yet processed the request.
-        /// </summary>
-        NotProcessed = 1,
-
-        /// <summary>
-        /// The server has processed the request successfully.
-        /// </summary>
-        Success = 2,
-
-        /// <summary>
-        /// There was an error while processing the request. See <see cref="IPermissionObject.StatusMessage"/> for more details.
-        /// </summary>
-        Error = 4
+        Read = 1,
+        Write = 2,
+        Manage = 4
     }
 }
