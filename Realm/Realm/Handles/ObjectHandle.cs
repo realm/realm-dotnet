@@ -126,7 +126,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_binary(ObjectHandle handle, IntPtr propertyIndex,
-                out IntPtr retBuffer, out int retBufferLength, out NativeException ex);
+                IntPtr buffer, IntPtr bufferLength, [MarshalAs(UnmanagedType.I1)] out bool is_null, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove_row", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove_row(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
@@ -519,20 +519,34 @@ namespace Realms
 
         public byte[] GetByteArray(IntPtr propertyIndex)
         {
+            return GetByteArrayBuffer(propertyIndex, 0);
+        }
+
+        private unsafe byte[] GetByteArrayBuffer(IntPtr propertyIndex, int size)
+        {
+            // Initially called with size = 0, we make a native call just to get the size of the buffer.
+            var bytes = new byte[size];
+            bool isNull;
             NativeException nativeException;
-            int bufferSize;
-            IntPtr buffer;
-            var hasValue = NativeMethods.get_binary(this, propertyIndex, out buffer, out bufferSize, out nativeException) != IntPtr.Zero;
+
+            int actualSize;
+            fixed (byte* buffer = bytes)
+            {
+                actualSize = (int)NativeMethods.get_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)size, out isNull, out nativeException);
+            }
             nativeException.ThrowIfNecessary();
 
-            if (hasValue)
+            if (isNull)
             {
-                var bytes = new byte[bufferSize];
-                Marshal.Copy(buffer, bytes, 0, bufferSize);
-                return bytes;
+                return null;
             }
 
-            return null;
+            if (actualSize > size)
+            {
+                return GetByteArrayBuffer(propertyIndex, actualSize);
+            }
+
+            return bytes;
         }
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
