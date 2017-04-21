@@ -16,12 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 
 namespace Realms.Dynamic
 {
-    internal class DynamicRealmObject : RealmObject, IDynamicMetaObjectProvider
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public class DynamicRealmObject : RealmObject, IDynamicMetaObjectProvider
     {
         public DynamicMetaObject GetMetaObject(Expression parameter)
         {

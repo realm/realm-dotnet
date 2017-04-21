@@ -354,7 +354,7 @@ namespace Realms
             }
         }
 
-        internal class Enumerator : IEnumerator<T>
+        public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
             private int _index;
