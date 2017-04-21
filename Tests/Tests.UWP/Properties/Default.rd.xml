@@ -6,5 +6,6 @@
     <Type Name="Windows.Storage.StorageFolder" Dynamic="Required Public" />
 
     <Assembly Name="nunit.framework" Dynamic="Required All" />
+    <Assembly Name="nunit.runner.uwp" Dynamic="Required All" />
   </Application>
 </Directives>

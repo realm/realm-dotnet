@@ -95,6 +95,8 @@ namespace Tests.Database
 
                     Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
                     Assert.That(otherThreadId, Is.EqualTo(currentThreadId));
+
+                    _realm.Dispose();
                 });
             });
         }

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
@@ -270,24 +271,27 @@ namespace Tests.Database
         [Test]
         public void GetByPrimaryKeyDifferentThreads()
         {
-            _realm.Write(() =>
+            AsyncContext.Run(async () =>
             {
-                _realm.Add(new PrimaryKeyInt64Object { Int64Property = 42000042 });
-            });
-
-            long foundValue = 0;
-
-            // Act
-            Task.Run(() =>
-            {
-                using (var realm2 = Realm.GetInstance(_configuration))
+                _realm.Write(() =>
                 {
-                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
-                    foundValue = foundObj.Int64Property;
-                }
-            }).Wait();
+                    _realm.Add(new PrimaryKeyInt64Object { Int64Property = 42000042 });
+                });
 
-            Assert.That(foundValue, Is.EqualTo(42000042));
+                long foundValue = 0;
+
+                // Act
+                await Task.Run(() =>
+                {
+                    using (var realm2 = Realm.GetInstance(_configuration))
+                    {
+                        var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
+                        foundValue = foundObj.Int64Property;
+                    }
+                });
+
+                Assert.That(foundValue, Is.EqualTo(42000042));
+            });
         }
 
         [Test]

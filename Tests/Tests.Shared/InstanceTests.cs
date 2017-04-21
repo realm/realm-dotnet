@@ -86,23 +86,32 @@ namespace Tests.Database
         [Test]
         public void GetUniqueInstancesDifferentThreads()
         {
-            // Arrange
-            var realm1 = Realm.GetInstance();
-            Realm realm2 = realm1;  // should be reassigned by other thread
-
-            // Act
-            Task.Run(() =>
+            AsyncContext.Run(async () =>
             {
-                realm2 = Realm.GetInstance();
-            }).Wait();
+                Realm realm1 = null;
+                Realm realm2 = null;
+                try
+                {
+                    // Arrange
+                    realm1 = Realm.GetInstance();
 
-            // Assert
-            Assert.That(ReferenceEquals(realm1, realm2), Is.False);
-            Assert.That(realm1.IsSameInstance(realm2), Is.False);
-            Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
+                    // Act
+                    await Task.Run(() =>
+                    {
+                        realm2 = Realm.GetInstance();
+                    });
 
-            realm1.Dispose();
-            realm2.Dispose();
+                    // Assert
+                    Assert.That(ReferenceEquals(realm1, realm2), Is.False, "ReferenceEquals");
+                    Assert.That(realm1.IsSameInstance(realm2), Is.False, "IsSameInstance");
+                    Assert.That(realm1, Is.EqualTo(realm2), "IsEqualTo");  // equal and same Realm but not same instance
+                }
+                finally
+                {
+                    realm1.Dispose();
+                    realm2.Dispose();
+                }
+            });
         }
 
         [Test]

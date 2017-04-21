@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -36,7 +38,11 @@ namespace Tests.UWP
             if (rootFrame == null)
             {
                 rootFrame = new Frame();
-                Xamarin.Forms.Forms.Init(e);
+                var assemblies = new[]
+                {
+                    typeof(NUnit.Runner.App).GetTypeInfo().Assembly
+                };
+                Xamarin.Forms.Forms.Init(e, assemblies);
                 Window.Current.Content = rootFrame;
             }
 
