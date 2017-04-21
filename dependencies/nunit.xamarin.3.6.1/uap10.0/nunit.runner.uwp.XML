@@ -583,6 +583,11 @@
             If True, the application will terminate automatically after running the tests.
             </summary>
         </member>
+        <member name="P:NUnit.Runner.Services.TestOptions.OnCompletedCallback">
+            <summary>
+            Gets or sets the callback that will be called after running the tests.
+            </summary>
+        </member>
         <member name="P:NUnit.Runner.Services.TestOptions.TcpWriterParameters">
             <summary>
             Information about the tcp listener host and port.
