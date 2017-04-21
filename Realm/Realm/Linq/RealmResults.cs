@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -64,7 +64,7 @@ namespace Realms
             return ResultsHandle.CreateQuery();
         }
 
-        protected override CollectionHandleBase CreateHandle()
+        internal override CollectionHandleBase CreateHandle()
         {
             if (_handle != null)
             {

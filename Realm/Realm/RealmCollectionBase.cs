@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -22,12 +22,15 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal abstract class RealmCollectionBase<T> 
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public abstract class RealmCollectionBase<T> 
         : NotificationsHelper.INotifiable, 
           IRealmCollection<T>, 
           INotifyCollectionChanged, 
@@ -36,6 +39,7 @@ namespace Realms
           IThreadConfined
     {
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        internal readonly RealmObject.Metadata Metadata;
 
         private NotificationTokenHandle _notificationToken;
 
@@ -92,7 +96,7 @@ namespace Realms
 
         public Schema.ObjectSchema ObjectSchema => Metadata.Schema;
 
-        public RealmObject.Metadata Metadata { get; }
+        RealmObject.Metadata IThreadConfined.Metadata => Metadata;
 
         public bool IsManaged => Realm != null;
 
@@ -100,10 +104,10 @@ namespace Realms
 
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
-        protected readonly Realm Realm;
-        protected readonly Lazy<CollectionHandleBase> Handle;
+        internal readonly Realm Realm;
+        internal readonly Lazy<CollectionHandleBase> Handle;
 
-        protected RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)
+        internal RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(CreateHandle);
@@ -115,7 +119,7 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        protected abstract CollectionHandleBase CreateHandle();
+        internal abstract CollectionHandleBase CreateHandle();
 
         public T this[int index]
         {
@@ -350,7 +354,7 @@ namespace Realms
             }
         }
 
-        public class Enumerator : IEnumerator<T>
+        internal class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
             private int _index;

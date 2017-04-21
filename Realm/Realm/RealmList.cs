@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -18,6 +18,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -37,7 +39,9 @@ namespace Realms
     /// </remarks>
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     [Preserve(AllMembers = true)]
-    internal class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
     {
         private Realm _realm;
         private ListHandle _listHandle;
@@ -48,7 +52,7 @@ namespace Realms
             _listHandle = adoptedList;
         }
 
-        protected override CollectionHandleBase CreateHandle()
+        internal override CollectionHandleBase CreateHandle()
         {
             return _listHandle;
         }
