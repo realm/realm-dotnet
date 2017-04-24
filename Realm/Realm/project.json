@@ -1,20 +1,23 @@
 ﻿{
-  "dependencies": {
-    "DotNetCross.Memory.Unsafe": "0.2.3.4",
-    "Remotion.Linq": "2.1.1",
-    "StyleCop.MSBuild": "4.7.55",
-    "System.Console": "4.3.0",
-    "System.Diagnostics.Tools": "4.3.0",
-    "System.Dynamic.Runtime": "4.3.0",
-    "System.Globalization": "4.3.0",
-    "System.IO.FileSystem": "4.3.0",
-    "System.Reflection.Primitives": "4.3.0",
-    "System.Reflection.TypeExtensions": "4.3.0",
-    "System.Runtime.InteropServices": "4.3.0",
-    "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
-    "System.Text.RegularExpressions": "4.3.0"
-  },
-  "frameworks": {
-    "netstandard1.4": {}
-  }
+	"dependencies": {
+		"DotNetCross.Memory.Unsafe": "0.2.3.4",
+		"Remotion.Linq": "2.1.1",
+		"StyleCop.MSBuild": "4.7.55",
+		"System.Console": "4.3.0",
+		"System.Diagnostics.Tools": "4.3.0",
+		"System.Dynamic.Runtime": "4.3.0",
+		"System.Globalization": "4.3.0",
+		"System.IO.FileSystem": "4.3.0",
+		"System.Reflection.Primitives": "4.3.0",
+		"System.Reflection.TypeExtensions": "4.3.0",
+		"System.Runtime.InteropServices": "4.3.0",
+		"System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
+		"System.Text.RegularExpressions": "4.3.0"
+	},
+	"frameworks": {
+		"netstandard1.4": {}
+	},
+	"resource": [
+		"Properties/realm.rd.xml"
+	]
 }
