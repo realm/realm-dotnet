@@ -28,7 +28,7 @@ public partial class ModuleWeaver
             return;
         }
 
-        type.Interfaces.Add(_references.System_Reflection_IReflectableType);
+        type.Interfaces.Add(new InterfaceImplementation(_references.System_Reflection_IReflectableType));
 
         var getTypeInfo = new MethodDefinition("GetTypeInfo", DefaultMethodAttributes, _references.System_Reflection_TypeInfo);
         {
