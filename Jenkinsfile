@@ -35,6 +35,12 @@ stage('Checkout') {
       dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
       nuget('restore Realm.sln')
+      dir('Realm/Realm') {
+        sh "${tool 'msbuild'} Realm.csproj /t:restore"
+      }
+      dir('Realm/Realm.Sync') {
+        sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
+      }
 
       stash includes: '**', name: 'dotnet-source'
       deleteDir()
