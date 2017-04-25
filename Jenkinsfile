@@ -4,10 +4,10 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
-xbuildCmd = '/usr/local/bin/xbuild'
-nugetCmd = '/usr/local/bin/nuget'
+xbuildCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/xbuild'
+nugetCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
 def windowsNugetCmd = 'C:\\ProgramData\\chocolatey\\bin\\NuGet.exe'
-def mono = '/usr/local/bin/mono'
+def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
 
 def version
 def versionString
