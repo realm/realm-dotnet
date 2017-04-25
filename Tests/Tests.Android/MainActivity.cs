@@ -28,7 +28,7 @@ using Xamarin.Forms.Platform.Android;
 
 namespace Tests.Android
 {
-    [Activity(Label = "Realm Tests", MainLauncher = true)]
+    [Activity(Label = Constants.ActivityLabel, MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
     {
         public Action<Result> OnFinished { get; set; }

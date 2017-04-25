@@ -27,7 +27,7 @@ using Environment = Android.OS.Environment;
 
 namespace Tests.Android
 {
-    [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
+    [Instrumentation(Name = Constants.PackageName + ".TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
     {
         public TestRunnerInstrumentation(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
