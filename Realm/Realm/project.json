@@ -16,8 +16,5 @@
 	},
 	"frameworks": {
 		"netstandard1.4": {}
-	},
-	"resource": [
-		"Properties/realm.rd.xml"
-	]
+	}
 }

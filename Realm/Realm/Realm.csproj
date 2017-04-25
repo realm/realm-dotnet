@@ -125,9 +125,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="Properties\realm.rd.xml">
+    <EmbeddedResource Include="Properties\realm.rd.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>
