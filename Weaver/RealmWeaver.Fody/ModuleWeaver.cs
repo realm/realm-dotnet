@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -144,7 +144,7 @@ public partial class ModuleWeaver
             }
             else
             {
-                LogErrorPoint($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.Body?.Instructions?.First()?.SequencePoint);
+                LogErrorPoint($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
             }
         }
     }
@@ -208,7 +208,7 @@ public partial class ModuleWeaver
                 }
                 else
                 {
-                    var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
+                    var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
                     if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                     {
                         // We only want one error point, so even though there may be more problems, we only log the first one.
@@ -235,7 +235,7 @@ public partial class ModuleWeaver
             }
             catch (Exception e)
             {
-                var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
+                var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
                 LogErrorPoint(
                     $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                     sequencePoint);
@@ -259,7 +259,7 @@ public partial class ModuleWeaver
         if (objectConstructor == null)
         {
             var nonDefaultConstructor = type.GetConstructors().First();
-            var sequencePoint = nonDefaultConstructor.Body.Instructions.First().SequencePoint;
+            var sequencePoint = nonDefaultConstructor.DebugInformation.SequencePoints.FirstOrDefault();
             LogErrorPoint($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
             return;
         }
@@ -685,7 +685,7 @@ public partial class ModuleWeaver
                                             TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
                                             ModuleDefinition.TypeSystem.Object);
 
-        helperType.Interfaces.Add(_references.IRealmObjectHelper);
+        helperType.Interfaces.Add(new InterfaceImplementation(_references.IRealmObjectHelper));
 
         var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObject);
         {
@@ -970,7 +970,7 @@ public partial class ModuleWeaver
                 }
                 else
                 {
-                    var sequencePoint = property.GetMethod.Body.Instructions.First().SequencePoint;
+                    var sequencePoint = property.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
                     LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
             }

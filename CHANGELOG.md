@@ -6,6 +6,7 @@
 
 ### Enhancements
 - Expose `IRealmCollection.IsValid` to indicate whether the realm collection is valid to use. (#1344)
+- Update the Fody reference which adds support for building with Mono 5. (#1364)
 
 ### Breaking Changes
 

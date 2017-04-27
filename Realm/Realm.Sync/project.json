@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "Fody": "1.29.4",
+    "Fody": "2.0.6",
     "Newtonsoft.Json": "9.0.1",
     "StyleCop.MSBuild": "4.7.55",
     "System.Collections.Concurrent": "4.3.0",

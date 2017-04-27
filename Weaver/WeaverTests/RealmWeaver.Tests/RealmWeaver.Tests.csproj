@@ -51,21 +51,24 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\..\packages\NUnit.3.2.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    <Reference Include="PropertyChanged">
+      <HintPath>..\..\..\packages\PropertyChanged.Fody.1.53.0\lib\netstandard10\PropertyChanged.dll</HintPath>
     </Reference>
     <Reference Include="PropertyChanged.Fody">
-      <HintPath>..\..\..\packages\PropertyChanged.Fody.1.51.0\PropertyChanged.Fody.dll</HintPath>
+      <HintPath>..\..\..\packages\PropertyChanged.Fody.1.53.0\PropertyChanged.Fody.dll</HintPath>
       <Aliases>propertychanged</Aliases>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -116,4 +119,5 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="..\..\..\packages\Fody.2.0.6\build\dotnet\Fody.targets" Condition="Exists('..\..\..\packages\Fody.2.0.6\build\dotnet\Fody.targets')" />
 </Project>

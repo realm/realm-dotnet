@@ -43,16 +43,16 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Mono.Cecil">
-      <HintPath>..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.dll</HintPath>
+      <HintPath>..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\..\packages\FodyCecil.2.0.6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
