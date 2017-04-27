@@ -42,6 +42,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Runtime" />
+    <Reference Include="System.ObjectModel" />
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
