@@ -71,7 +71,9 @@ namespace Realms
                 {
                     var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
                     var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                    var outputDirectoryPath = Path.Combine(assemblyLocation, "lib", "win32", architecture);
+                    var nugetLocalsPath = Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "native", "win32", architecture));
+                    var path = string.Join(Path.PathSeparator.ToString(), outputDirectoryPath, nugetLocalsPath, Environment.GetEnvironmentVariable("PATH"));
                     Environment.SetEnvironmentVariable("PATH", path);
                 }
             }
