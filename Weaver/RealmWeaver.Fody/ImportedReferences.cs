@@ -399,6 +399,7 @@ namespace RealmWeaver
                 case ".NETStandard":
                 case ".NETPortable":
                 case ".NETCore":
+                case ".NETCoreApp":
                     references = new NETPortable(module);
                     break;
                 default:
