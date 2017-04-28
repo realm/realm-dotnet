@@ -20,7 +20,7 @@
   </metadata>
   <files>
 <!-- PCL file -->
-    <file src="../../DataBinding/Realm.DataBinding.PCL/bin/$Configuration$/Realm.DataBinding.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+    <file src="../../DataBinding/Realm.DataBinding.PCL/bin/$Configuration$/Realm.DataBinding.*" target="lib/netstandard1.0" />
 <!-- IOS file -->
     <file src="../../DataBinding/Realm.DataBinding.iOS/bin/$Configuration$/Realm.DataBinding.*" target="lib/Xamarin.iOS10" />
 <!-- Android files -->

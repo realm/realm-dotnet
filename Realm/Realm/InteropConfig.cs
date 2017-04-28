@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace Realms
@@ -38,18 +39,33 @@ namespace Realms
                 }
             }
 
-            // On UWP, the sandbox folder is obtained by:
-            // ApplicationData.Current.LocalFolder.Path
-            var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
-            if (applicationData != null)
+            try
             {
-                var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
-                var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
-                var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+                // On UWP, the sandbox folder is obtained by:
+                // ApplicationData.Current.LocalFolder.Path
+                var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
+                if (applicationData != null)
+                {
+                    var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
+                    var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
+                    var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
 
-                var currentApplicationData = currentProperty.GetValue(null);
-                var localFolder = localFolderProperty.GetValue(currentApplicationData);
-                return (string)pathProperty.GetValue(localFolder);
+                    var currentApplicationData = currentProperty.GetValue(null);
+                    var localFolder = localFolderProperty.GetValue(currentApplicationData);
+                    return (string)pathProperty.GetValue(localFolder);
+                }
+            }
+            catch
+            {
+            }
+
+            var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+            if (assemblyLocationPI != null)
+            {
+                var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(InteropConfig).GetTypeInfo().Assembly));
+                var folder = Path.Combine(assemblyLocation, "Documents");
+                Directory.CreateDirectory(folder);
+                return folder;
             }
 
             throw new NotSupportedException();

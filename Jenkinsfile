@@ -41,6 +41,9 @@ stage('Checkout') {
       dir('Realm/Realm.Sync') {
         sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
       }
+      dir('DataBinding/Realm.DataBinding.PCL') {
+        sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
+      }
 
       stash includes: '**', name: 'dotnet-source'
       deleteDir()

@@ -27,8 +27,7 @@ namespace Realms
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         public static TypeInfo GetInfo<T>() where T : RealmObject
         {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
+            return typeof(T).GetTypeInfo();
         }
     }
 }
