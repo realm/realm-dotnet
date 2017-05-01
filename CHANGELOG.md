@@ -1,3 +1,11 @@
+1.3.0 (TBD)
+
+### Breaking Changes
+
+### Enhancements
+
+### Bug fixes
+
 1.2.1 (2017-05-01)
 ------------------
 
