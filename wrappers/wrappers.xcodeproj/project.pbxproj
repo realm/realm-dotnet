@@ -30,6 +30,8 @@
 		48ED7C721C16F9C200AF23A4 /* shared_realm_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */; };
 		48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
 		48EE96C61D75D60600666046 /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48EE96C51D75D60600666046 /* schema_cs.cpp */; };
+		515F02B81EB773220025B764 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B41EB773220025B764 /* network_reachability_observer.cpp */; };
+		515F02B91EB773220025B764 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B61EB773220025B764 /* system_configuration.cpp */; };
 		51A51F261DAEB5660057BAE6 /* object_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51A51F251DAEB5660057BAE6 /* object_cs.cpp */; };
 		85040BC01E808FEC0049189D /* binding_callback_thread_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */; };
 		850F7D671DF730650068B584 /* event_loop_signal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 850F7D661DF730650068B584 /* event_loop_signal.cpp */; };
@@ -114,6 +116,11 @@
 		48ED7C641C16F9C200AF23A4 /* table_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = table_cs.cpp; path = src/table_cs.cpp; sourceTree = "<group>"; };
 		48EE96C51D75D60600666046 /* schema_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = schema_cs.cpp; path = src/schema_cs.cpp; sourceTree = "<group>"; };
 		48EE96C71D75D60F00666046 /* schema_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = schema_cs.hpp; path = src/schema_cs.hpp; sourceTree = "<group>"; };
+		515F02B41EB773220025B764 /* network_reachability_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network_reachability_observer.cpp; sourceTree = "<group>"; };
+		515F02B51EB773220025B764 /* network_reachability_observer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = network_reachability_observer.hpp; sourceTree = "<group>"; };
+		515F02B61EB773220025B764 /* system_configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = system_configuration.cpp; sourceTree = "<group>"; };
+		515F02B71EB773220025B764 /* system_configuration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = system_configuration.hpp; sourceTree = "<group>"; };
+		515F02BA1EB773330025B764 /* network_reachability.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = network_reachability.hpp; path = "src/object-store/src/sync/impl/network_reachability.hpp"; sourceTree = "<group>"; };
 		519B58381DB0F8E7000CB2BB /* object_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_cs.hpp; path = src/object_cs.hpp; sourceTree = "<group>"; };
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
@@ -241,6 +248,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		515F02B31EB773220025B764 /* apple */ = {
+			isa = PBXGroup;
+			children = (
+				515F02B51EB773220025B764 /* network_reachability_observer.hpp */,
+				515F02B41EB773220025B764 /* network_reachability_observer.cpp */,
+				515F02B61EB773220025B764 /* system_configuration.cpp */,
+				515F02B71EB773220025B764 /* system_configuration.hpp */,
+			);
+			name = apple;
+			path = "src/object-store/src/sync/impl/apple";
+			sourceTree = "<group>";
+		};
 		850F7D641DF72EE70068B584 /* generic */ = {
 			isa = PBXGroup;
 			children = (
@@ -340,6 +359,8 @@
 		85C041241DCCE97300CBF37B /* impl */ = {
 			isa = PBXGroup;
 			children = (
+				515F02B31EB773220025B764 /* apple */,
+				515F02BA1EB773330025B764 /* network_reachability.hpp */,
 				85C041251DCCE98700CBF37B /* sync_client.hpp */,
 				85C041261DCCE98700CBF37B /* sync_file.cpp */,
 				85C041271DCCE98700CBF37B /* sync_file.hpp */,
@@ -470,12 +491,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				85C041301DCCEA3700CBF37B /* sync_manager_cs.cpp in Sources */,
+				515F02B91EB773220025B764 /* system_configuration.cpp in Sources */,
 				85C041341DD4953300CBF37B /* sync_session_cs.cpp in Sources */,
 				85C041221DCCE96C00CBF37B /* sync_session.cpp in Sources */,
 				85C0412D1DCCE98E00CBF37B /* sync_metadata.cpp in Sources */,
 				85C041231DCCE97000CBF37B /* sync_user.cpp in Sources */,
 				85C041321DD229C100CBF37B /* sync_user_cs.cpp in Sources */,
 				85C041211DCCE96600CBF37B /* sync_manager.cpp in Sources */,
+				515F02B81EB773220025B764 /* network_reachability_observer.cpp in Sources */,
 				85C0412C1DCCE98A00CBF37B /* sync_file.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
