@@ -19,7 +19,7 @@
     </dependencies>
   </metadata>
   <files>
-<!-- PCL file -->
+<!-- Netstandard file -->
     <file src="../../DataBinding/Realm.DataBinding.PCL/bin/$Configuration$/Realm.DataBinding.*" target="lib/netstandard1.0" />
 <!-- IOS file -->
     <file src="../../DataBinding/Realm.DataBinding.iOS/bin/$Configuration$/Realm.DataBinding.*" target="lib/Xamarin.iOS10" />
