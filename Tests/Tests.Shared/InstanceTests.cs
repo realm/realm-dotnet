@@ -292,16 +292,25 @@ namespace Tests.Database
 #endif
         public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
-            using (var realm = Realm.GetInstance())
+            AsyncContext.Run(async () =>
             {
-                AddDummyData(realm);
+                using (var realm = Realm.GetInstance())
+                {
+                    AddDummyData(realm);
 
-                var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
-                Assert.That(() => Task.Run(() => Realm.Compact(realm.Config)).Result, Is.False);
-                var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+                    var initialSize = new FileInfo(realm.Config.DatabasePath).Length;
+                    bool? isCompacted = null;
+                    await Task.Run(() =>
+                    {
+                        isCompacted = Realm.Compact(realm.Config);
+                    });
 
-                Assert.That(finalSize, Is.EqualTo(initialSize));
-            }
+                    Assert.That(isCompacted, Is.False);
+                    var finalSize = new FileInfo(realm.Config.DatabasePath).Length;
+
+                    Assert.That(finalSize, Is.EqualTo(initialSize));
+                }
+            });
         }
 
         [Test, Ignore("Currently doesn't work. Ref #947")]
