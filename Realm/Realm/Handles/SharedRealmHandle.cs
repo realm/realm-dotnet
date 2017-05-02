@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -89,6 +89,25 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_int_unique", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, long key,
+                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
+                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_string_unique", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, 
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
+                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_null_unique", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table,
+                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
+                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
         }
 
         [Preserve]
@@ -223,6 +242,38 @@ namespace Realms
         {
             NativeMethods.write_copy(this, path, (IntPtr)path.Length, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
+        }
+
+        public IntPtr CreateObject(TableHandle table)
+        {
+            NativeException ex;
+            var result = NativeMethods.create_object(this, table, out ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr CreateObject(TableHandle table, long key, bool update, out bool isNew)
+        {
+            NativeException ex;
+            var result = NativeMethods.create_object(this, table, key, update, out isNew, out ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr CreateObject(TableHandle table, string key, bool update, out bool isNew)
+        {
+            NativeException ex;
+            var result = NativeMethods.create_object(this, table, key, (IntPtr)key.Length, update, out isNew, out ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr CreateObject(TableHandle table, bool update, out bool isNew)
+        {
+            NativeException ex;
+            var result = NativeMethods.create_object(this, table, update, out isNew, out ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         public class SchemaMarshaler

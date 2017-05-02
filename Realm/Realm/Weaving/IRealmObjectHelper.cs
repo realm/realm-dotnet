@@ -34,8 +34,11 @@ namespace Realms.Weaving
         /// </summary>
         /// <param name="instance">The RealmObject to add.</param>
         /// <param name="update">If set to <c>true</c>, update the existing value (if any). Otherwise, try to add and throw if an object with the same primary key already exists.</param>
-        /// <param name="setPrimaryKey">If set to <c>true</c> will set the primary key of the object (if any).</param>
-        void CopyToRealm(RealmObject instance, bool update, bool setPrimaryKey);
+        /// <param name="skipDefaults">
+        /// If set to <c>true</c> will not invoke the setters of properties that have default values. 
+        /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
+        /// </param>
+        void CopyToRealm(RealmObject instance, bool update, bool skipDefaults);
 
         /// <summary>
         /// Tries the get primary key value from a RealmObject.
