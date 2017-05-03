@@ -107,18 +107,16 @@ namespace Tests.Database
 
             _realm.Write(() =>
             {
-                var first = _realm.CreateObject(type.Name);
-                pkProperty.SetValue(first, primaryKeyValue);
+                var first = _realm.CreateObject(type.Name, primaryKeyValue);
             });
 
             Assert.That(() =>
             {
                 _realm.Write(() =>
                 {
-                    var second = _realm.CreateObject(type.Name);
-                    pkProperty.SetValue(second, primaryKeyValue);
+                    var second = _realm.CreateObject(type.Name, primaryKeyValue);
                 });
-            }, Throws.InnerException.TypeOf<RealmDuplicatePrimaryKeyValueException>());
+            }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'x')]

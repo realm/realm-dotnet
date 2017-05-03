@@ -556,7 +556,7 @@ namespace Tests.Database
                 Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());

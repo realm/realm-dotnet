@@ -29,9 +29,6 @@ namespace Realms
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_empty_object(TableHandle tableHandle, SharedRealmHandle sharedRealm, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 count_all(TableHandle handle, out NativeException ex);
 
@@ -77,13 +74,6 @@ namespace Realms
         {
             NativeMethods.unbind(handle, out var nativeException);
             nativeException.ThrowIfNecessary();
-        }
-
-        public IntPtr AddEmptyObject(SharedRealmHandle sharedRealm)
-        {
-            var result = NativeMethods.add_empty_object(this, sharedRealm, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
         }
 
         public long CountAll()
