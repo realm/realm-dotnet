@@ -467,7 +467,7 @@ extern "C" {
     {
         return handle_errors(ex, [=]() {
             return subscribe_for_notifications(managed_object, callback, [object](CollectionChangeCallback callback) {
-                return object->add_notification_block(callback);
+                return object->add_notification_callback(callback);
             }, new ObjectSchema(object->get_object_schema()));
         });
     }

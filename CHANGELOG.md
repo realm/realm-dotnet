@@ -3,8 +3,13 @@
 ### Breaking Changes
 
 ### Enhancements
+- Case insensitive queries against a string property now use a new index based search. (#1380)
 
 ### Bug fixes
+- Fixed a bug where `Session.Reconnect` would not reconnect all sessions. (#1380)
+- Fixed a crash when subscribing for `PropertyChanged` multiple times. (#1380)
+- Fixed a crash when reconnecting to Object Server (#1380)
+- Fixed a crash on some Android 7.x devices when opening a realm (#1380)
 
 1.2.1 (2017-05-01)
 ------------------
