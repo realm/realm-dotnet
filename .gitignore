@@ -111,7 +111,6 @@ ClientBin/
 *~
 *.dbmdl
 *.dbproj.schemaview
-*.pfx
 *.publishsettings
 node_modules/
 orleans.codegen.cs
@@ -208,3 +207,4 @@ Resource.designer.cs
 Mono.Cecil.dll
 Realm.BuildTasks.dll
 *.nuget.targets
+*.nuget.props

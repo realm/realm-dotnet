@@ -44,7 +44,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CollectionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObsoleteAPITests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FallbackApiTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThreadHandoverTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringExtensionsTests.cs" />
   </ItemGroup>

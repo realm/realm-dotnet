@@ -69,10 +69,17 @@ namespace Realms
 
                 if (platform.ToString() == "Win32NT")
                 {
-                    var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
-                    var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                    Environment.SetEnvironmentVariable("PATH", path);
+                    try
+                    {
+                        var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                        var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
+                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                        Environment.SetEnvironmentVariable("PATH", path);
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        // Thrown on UWP
+                    }
                 }
             }
 

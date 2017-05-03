@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
-using System.Linq.Expressions;
+using System.Reflection;
+using NUnit.Runner.Services;
 
-namespace Realms.Dynamic
+namespace Tests.UWP
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public class DynamicRealmObject : RealmObject, IDynamicMetaObjectProvider
+    public sealed partial class MainPage
     {
-        public DynamicMetaObject GetMetaObject(Expression parameter)
+        public MainPage()
         {
-            return new MetaRealmObject(parameter, this);
+            InitializeComponent();
+
+            var nunit = new NUnit.Runner.App();
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+
+            nunit.Options = new TestOptions
+            {
+                LogToOutput = true
+            };
+
+            LoadApplication(nunit);
         }
     }
 }

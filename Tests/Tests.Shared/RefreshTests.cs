@@ -19,6 +19,8 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -27,18 +29,6 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class RefreshTests : RealmInstanceTest
     {
-        private void WriteOnDifferentThread(Action<Realm> action)
-        {
-            var thread = new Thread(() => 
-            {
-                var r = Realm.GetInstance(_configuration);
-                r.Write(() => action(r));
-                r.Dispose();
-            });
-            thread.Start();
-            thread.Join();
-        }
-
         [Test]
         public void CommittingAWriteTransactionShouldRefreshQueries()
         {
@@ -67,23 +57,30 @@ namespace Tests.Database
         [Test]
         public void CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
         {
-            _realm.Write(() =>
+            AsyncContext.Run(async () =>
             {
-                _realm.Add(new Person { FullName = "Person 1" });
+                _realm.Write(() =>
+                {
+                    _realm.Add(new Person { FullName = "Person 1" });
+                });
+
+                var q = _realm.All<Person>();
+                Assert.That(q.Count, Is.EqualTo(1));
+
+                await Task.Run(() =>
+                {
+                    var r = Realm.GetInstance(_configuration);
+                    r.Write(() => r.Add(new Person { FullName = "Person 2" }));
+                    r.Dispose();
+                });
+
+                _realm.Refresh();
+
+                var ql2 = q.AsEnumerable()
+                           .Select(p => p.FullName)
+                           .ToArray();
+                Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
             });
-
-            var q = _realm.All<Person>();
-            Assert.That(q.Count, Is.EqualTo(1));
-
-            WriteOnDifferentThread(newRealm =>
-            {
-                newRealm.Add(new Person { FullName = "Person 2" });
-            });
-
-            _realm.Refresh();
-
-            var ql2 = q.ToList().Select(p => p.FullName);
-            Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
         }
     }
 }

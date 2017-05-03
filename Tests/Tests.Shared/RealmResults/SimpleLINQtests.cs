@@ -559,6 +559,8 @@ namespace Tests.Database
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
+#if !WINDOWS_UWP
+
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
@@ -568,6 +570,8 @@ namespace Tests.Database
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
+
+#endif
 
             Assert.That(() =>
             {

@@ -30,7 +30,7 @@ namespace Realms
 {
     internal class RealmResultsVisitor : ExpressionVisitor
     {
-        private Realm _realm;
+        private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
         internal QueryHandle CoreQueryHandle;  // set when recurse down to VisitConstant
@@ -140,7 +140,7 @@ namespace Realms
             OptionalSortDescriptorBuilder.AddClause(propertyChain, ascending);
         }
 
-        private IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
+        private static IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
         {
             var chain = new List<Tuple<Type, string>>();
 
@@ -359,33 +359,33 @@ namespace Realms
                 // For extension methods, that should be 1
                 var stringArgumentIndex = 0;
 
-                if (m.Method == Methods.String.Contains.Value)
+                if (AreMethodsSame(m.Method, Methods.String.Contains.Value))
                 {
                     queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
-                else if (m.Method == Methods.String.ContainsStringComparison.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.ContainsStringComparison.Value))
                 {
                     member = m.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
                     queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(m));
                 }
-                else if (m.Method == Methods.String.StartsWith.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.StartsWith.Value))
                 {
                     queryMethod = (q, c, v) => q.StringStartsWith(c, v, caseSensitive: true);
                 }
-                else if (m.Method == Methods.String.StartsWithStringComparison.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.StartsWithStringComparison.Value))
                 {
                     queryMethod = (q, c, v) => q.StringStartsWith(c, v, GetComparisonCaseSensitive(m));
                 }
-                else if (m.Method == Methods.String.EndsWith.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.EndsWith.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v, caseSensitive: true);
                 }
-                else if (m.Method == Methods.String.EndsWithStringComparison.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.EndsWithStringComparison.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v, GetComparisonCaseSensitive(m));
                 }
-                else if (m.Method == Methods.String.IsNullOrEmpty.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.IsNullOrEmpty.Value))
                 {
                     member = m.Arguments.SingleOrDefault() as MemberExpression;
                     if (member == null)
@@ -402,15 +402,15 @@ namespace Realms
                     CoreQueryHandle.GroupEnd();
                     return m;
                 }
-                else if (m.Method == Methods.String.EqualsMethod.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.EqualsMethod.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEqual(c, v, caseSensitive: true);
                 }
-                else if (m.Method == Methods.String.EqualsStringComparison.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.EqualsStringComparison.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(m));
                 }
-                else if (m.Method == Methods.String.Like.Value)
+                else if (AreMethodsSame(m.Method, Methods.String.Like.Value))
                 {
                     member = m.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
@@ -447,6 +447,39 @@ namespace Realms
             }
 
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
+        }
+
+        // Compares two methods for equality. .NET Native's == doesn't return expected results.
+        private static bool AreMethodsSame(MethodInfo first, MethodInfo second)
+        {
+            if (first == second)
+            {
+                return true;
+            }
+
+            if (first.Name != second.Name ||
+                first.DeclaringType != second.DeclaringType)
+            {
+                return false;
+            }
+
+            var firstParameters = first.GetParameters();
+            var secondParameters = second.GetParameters();
+
+            if (firstParameters.Length != secondParameters.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < firstParameters.Length; i++)
+            {
+                if (firstParameters[i].ParameterType != secondParameters[i].ParameterType)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal override Expression VisitUnary(UnaryExpression u)

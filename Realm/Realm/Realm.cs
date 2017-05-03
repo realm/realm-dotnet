@@ -368,7 +368,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            return (int)SharedRealmHandle.DangerousGetHandle();
+            return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
         private TableHandle GetTable(ObjectSchema schema)

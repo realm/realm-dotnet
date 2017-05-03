@@ -61,24 +61,26 @@ namespace Tests.Database
 
             var triggersSchemaFieldValue = string.Empty;
 
-            var configuration = new RealmConfiguration("NeedsMigrating.realm");
-            configuration.SchemaVersion = 100;
-            configuration.MigrationCallback = (migration, oldSchemaVersion) =>
+            var configuration = new RealmConfiguration("NeedsMigrating.realm")
             {
-                Assert.That(oldSchemaVersion, Is.EqualTo(99));
-
-                var oldPeople = migration.OldRealm.All("Person");
-                var newPeople = migration.NewRealm.All<Person>();
-
-                Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
-
-                for (var i = 0; i < newPeople.Count(); i++)
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var oldPerson = oldPeople.ElementAt(i);
-                    var newPerson = newPeople.ElementAt(i);
+                    Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.TriggersSchema));
-                    newPerson.LastName = triggersSchemaFieldValue = oldPerson.TriggersSchema;
+                    var oldPeople = migration.OldRealm.All("Person");
+                    var newPeople = migration.NewRealm.All<Person>();
+
+                    Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
+
+                    for (var i = 0; i < newPeople.Count(); i++)
+                    {
+                        var oldPerson = oldPeople.ElementAt(i);
+                        var newPerson = newPeople.ElementAt(i);
+
+                        Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.TriggersSchema));
+                        newPerson.LastName = triggersSchemaFieldValue = oldPerson.TriggersSchema;
+                    }
                 }
             };
 
@@ -126,6 +128,8 @@ namespace Tests.Database
 
             // Assert
             Assert.That(File.Exists(config.DatabasePath));
+
+            realm.Dispose();
         }
     }
 }
