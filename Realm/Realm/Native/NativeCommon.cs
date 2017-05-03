@@ -18,6 +18,7 @@
 
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -70,8 +71,23 @@ namespace Realms
                 if (platform.ToString() == "Win32NT")
                 {
                     var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                    var potentialPaths = new List<string>();
+
                     var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                    var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                    potentialPaths.Add(Path.Combine(assemblyLocation, "lib", "win32", architecture));
+                    potentialPaths.Add(Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "native", "win32", architecture)));
+
+                    var getEntryAssemblyMI = typeof(Environment).GetMethod("GetEntryAssembly", BindingFlags.Public | BindingFlags.Static);
+                    if (getEntryAssemblyMI != null)
+                    {
+                        var entryAssembly = (Assembly)getEntryAssemblyMI.Invoke(null, null);
+                        var entryAssemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(entryAssembly));
+                        potentialPaths.Add(Path.Combine(entryAssemblyLocation, "lib", "win32", architecture));
+                    }
+
+                    potentialPaths.Add(Environment.GetEnvironmentVariable("PATH"));
+
+                    var path = string.Join(Path.PathSeparator.ToString(), potentialPaths);
                     Environment.SetEnvironmentVariable("PATH", path);
                 }
             }
