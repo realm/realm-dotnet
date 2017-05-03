@@ -142,7 +142,7 @@
       <Version>0.2.3.4</Version>
     </PackageReference>
     <PackageReference Include="Fody">
-      <Version>1.29.4</Version>
+      <Version>2.0.6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
