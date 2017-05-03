@@ -52,5 +52,9 @@
 <!-- Win32 files -->
     <file src="../../wrappers/build/Windows/$Configuration$-Win32/realm-wrappers.dll" target="native/win32/x86" />
     <file src="../../wrappers/build/Windows/$Configuration$-x64/realm-wrappers.dll" target="native/win32/x64" />
+<!-- UWP files -->
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-Win32/realm-wrappers.dll" target="runtimes/win10-x86/native" />
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-x64/realm-wrappers.dll" target="runtimes/win10-x64/native" />
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-ARM/realm-wrappers.dll" target="runtimes/win10-arm/native" />
   </files>
 </package>
