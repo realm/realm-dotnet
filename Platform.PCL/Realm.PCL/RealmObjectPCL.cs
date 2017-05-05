@@ -503,5 +503,17 @@ namespace Realms
         protected virtual void OnPropertyChanged(string propertyName)
         {
         }
+
+        /// <summary>
+        /// Called when the object has been managed by a Realm.
+        /// </summary>
+        /// <remarks>
+        /// This method will be called either when a managed object is materialized or when an unmanaged object has been
+        /// added to the Realm. It can be useful for providing some initialization logic as when the constructor is invoked,
+        /// it is not yet clear whether the object is managed or not.
+        /// </remarks>
+        protected virtual void OnManaged()
+        {
+        }
     }
 }

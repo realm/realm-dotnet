@@ -46,5 +46,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObsoleteAPITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ThreadHandoverTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringExtensionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmObjectTests.cs" />
   </ItemGroup>
 </Project>
