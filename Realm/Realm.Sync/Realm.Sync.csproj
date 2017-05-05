@@ -1,35 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2015403A-59D2-47F2-8E18-7DF85BB98467}</ProjectGuid>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard1.4</TargetFramework>
     <RootNamespace>Realms.Sync</RootNamespace>
-    <AssemblyName>Realm.Sync</AssemblyName>
-    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <DocumentationFile>bin\$(Configuration)\Realm.Sync.xml</DocumentationFile>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+  <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+      <PackageReference Include="Fody" Version="2.0.7" PrivateAssets="All" />
+<!--      <PackageReference Include="StyleCop.MSBuild" Version="4.7.55" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />-->
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Realm\Realm.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Credentials.cs" />
@@ -67,22 +53,13 @@
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Permissions\AccessLevel.cs" />
     <Compile Include="Permissions\Recipient.cs" />
-    <Compile Include="Helpers\Observer.cs" />
     <Compile Include="Permissions\PermissionCondition.cs" />
+    <Compile Include="Permissions\AccessLevel.cs" />
     <Compile Include="Exceptions\PermissionException.cs" />
+    <Compile Include="Helpers\Observer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Realm\Realm.csproj">
-      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
-      <Name>Realm</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\..\packages\Fody.2.0.6\build\netstandard1.4\Fody.targets" />
 </Project>

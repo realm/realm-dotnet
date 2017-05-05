@@ -129,7 +129,7 @@ stage('Build without sync') {
         msbuild project: 'Tests/Tests.iOS/Tests.iOS.csproj', target: 'Restore,Build',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true, Platform: 'iPhoneSimulator' ]
 
-        stash includes: "Realm/Realm/bin/${configuration}/Realm.*", name: 'nuget-database'
+        stash includes: "Realm/Realm/bin/netstandard1.4/${configuration}/Realm.*", name: 'nuget-database'
         stash includes: "DataBinding/Realm.DataBinding.iOS/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-ios-databinding'
 
         dir("Tests/Tests.iOS/bin/iPhoneSimulator/${configuration}") {
@@ -279,7 +279,7 @@ stage('Build with sync') {
         msbuild project: 'Tests/Tests.iOS/Tests.iOS.csproj', target: 'Restore,Build',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", Platform: 'iPhoneSimulator' ]
 
-        stash includes: "Realm/Realm.Sync/bin/${configuration}/Realm.Sync.*", name: 'nuget-sync'
+        stash includes: "Realm/Realm.Sync/bin/netstandard1.4/${configuration}/Realm.Sync.*", name: 'nuget-sync'
 
         dir("Tests/Tests.iOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests-sync'

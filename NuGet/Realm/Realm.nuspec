@@ -29,7 +29,7 @@
 <!-- PCL file -->
     <file src="../../Platform.PCL/Realm.Sync.PCL/bin/$Configuration$/Realm.Sync.*" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- NETStandard file -->
-    <file src="../../Realm/Realm.Sync/bin/$Configuration$/Realm.Sync.*" target="lib/netstandard1.4" />
+    <file src="../../Realm/Realm.Sync/bin/netstandard1.4/$Configuration$/Realm.Sync.*" target="lib/netstandard1.4" />
 <!-- IOS file -->
     <file src="../../wrappers/build/$Configuration$-ios-universal/librealm-wrappers.a" target="native/ios/universal" />
 <!-- Targets file adds adds references to native libs -->
