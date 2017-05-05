@@ -61,14 +61,20 @@ namespace Tests.Database
         [Test]
         public void RealmObject_SetRelatedObject_InvokesOnManaged()
         {
-            var first = new OnManagedTestClass();
+            var first = new OnManagedTestClass
+            {
+                Id = 1
+            };
 
             _realm.Write(() =>
             {
                 _realm.Add(first);
             });
 
-            var second = new OnManagedTestClass();
+            var second = new OnManagedTestClass
+            {
+                Id = 2
+            };
 
             Assert.That(second.OnManagedCalled, Is.EqualTo(0));
 
@@ -84,14 +90,20 @@ namespace Tests.Database
         [Test]
         public void RealmObject_AddToRelatedList_InvokesOnManaged()
         {
-            var first = new OnManagedTestClass();
+            var first = new OnManagedTestClass
+            {
+                Id = 1
+            };
 
             _realm.Write(() =>
             {
                 _realm.Add(first);
             });
 
-            var second = new OnManagedTestClass();
+            var second = new OnManagedTestClass
+            {
+                Id = 2
+            };
 
             Assert.That(second.OnManagedCalled, Is.EqualTo(0));
 
