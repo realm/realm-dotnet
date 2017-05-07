@@ -165,13 +165,16 @@ namespace Realms
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
-            var managedResultsHandle = GCHandle.Alloc(this);
-            var token = new NotificationTokenHandle(Handle.Value);
-            var tokenHandle = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), NotificationsHelper.NotificationCallback);
+            Realm.ExecuteOutsideTransaction(() =>
+            {
+                var managedResultsHandle = GCHandle.Alloc(this);
+                var token = new NotificationTokenHandle(Handle.Value);
+                var tokenHandle = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), NotificationsHelper.NotificationCallback);
 
-            token.SetHandle(tokenHandle);
+                token.SetHandle(tokenHandle);
 
-            _notificationToken = token;
+                _notificationToken = token;
+            });
         }
 
         private void UnsubscribeFromNotifications()
