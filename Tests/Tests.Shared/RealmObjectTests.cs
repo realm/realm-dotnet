@@ -173,7 +173,7 @@ namespace Tests.Database
             [Ignored]
             public int OnManagedCalled { get; private set; }
 
-            protected override void OnManaged()
+            protected internal override void OnManaged()
             {
                 OnManagedCalled++;
             }

@@ -422,6 +422,7 @@ namespace Realms
             var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
             result._SetOwner(this, objectHandle, metadata);
+            result.OnManaged();
             return result;
         }
 
@@ -444,6 +445,7 @@ namespace Realms
         {
             var ret = metadata.Helper.CreateInstance();
             ret._SetOwner(this, objectHandle, metadata);
+            ret.OnManaged();
             return ret;
         }
 
@@ -586,6 +588,7 @@ namespace Realms
 
             obj._SetOwner(this, objectHandle, metadata);
             metadata.Helper.CopyToRealm(obj, update, setPrimaryKey);
+            obj.OnManaged();
         }
 
         /// <summary>
