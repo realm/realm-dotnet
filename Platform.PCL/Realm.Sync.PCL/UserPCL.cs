@@ -168,6 +168,21 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        /// <summary>
+        /// Changes the user's password.
+        /// </summary>
+        /// <param name="newPassword">The user's new password.</param>
+        /// <remarks>
+        /// Changing a user's password using an authentication server that doesn't
+        /// use HTTPS is a major security flaw, and should only be done while testing.
+        /// </remarks>
+        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
+        public Task ChangePassword(string newPassword)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
         /// <inheritdoc />
         public bool Equals(User other)
         {

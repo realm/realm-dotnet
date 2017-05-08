@@ -4,6 +4,7 @@
 
 ### Enhancements
 - Case insensitive queries against a string property now use a new index based search. (#1380)
+- Add `User.ChangePassword` API to change the current user's password if using Realm's 'password' authentication provider. Requires any edition of the Realm Object Server 1.4.0 or later. (#1386)
 
 ### Bug fixes
 - Fixed a bug where `Session.Reconnect` would not reconnect all sessions. (#1380)
