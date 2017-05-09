@@ -42,6 +42,13 @@ namespace Realms.Sync
         public User User { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether SSL certificate validation is enabled for the connection associated
+        /// with this configuration value.
+        /// </summary>
+        /// <value><c>true</c> if SSL validation is enabled; otherwise, <c>false</c>. Default value is <c>true</c>.</value>
+        public bool EnableSSLValidation { get; set; } = true;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
@@ -74,7 +81,8 @@ namespace Realms.Sync
             var syncConfiguration = new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
-                Url = ServerUri.ToString()
+                Url = ServerUri.ToString(),
+                client_validate_ssl = EnableSSLValidation,
             };
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);

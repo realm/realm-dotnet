@@ -41,6 +41,8 @@ struct SyncConfiguration
 
     uint16_t* url;
     size_t url_len;
+    
+    bool client_validate_ssl;
 };
 
 extern "C" {
@@ -90,6 +92,8 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
             config.encryption_key = std::vector<char>(key.begin(), key.end());
             config.sync_config->realm_encryption_key = key;
         }
+        
+        config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
 
         return new SharedRealm(Realm::get_shared_realm(config));
     });

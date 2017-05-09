@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync.Native
 {
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct SyncConfiguration
     {
         private IntPtr sync_user_ptr;
@@ -46,5 +48,8 @@ namespace Realms.Sync.Native
                 url_len = (IntPtr)value.Length;
             }
         }
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool client_validate_ssl;
     }
 }
