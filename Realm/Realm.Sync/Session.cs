@@ -138,7 +138,7 @@ namespace Realms.Sync
 
         internal readonly SessionHandle Handle;
 
-        private Session(SessionHandle handle)
+        internal Session(SessionHandle handle)
         {
             Handle = handle;
         }

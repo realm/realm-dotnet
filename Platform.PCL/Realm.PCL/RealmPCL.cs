@@ -78,6 +78,24 @@ namespace Realms
         }
 
         /// <summary>
+        /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// If the configuration points to a remote realm belonging to a Realm Object Server
+        /// the realm will be downloaded and fully synchronized with the server prior to the completion
+        /// of the returned Task object.
+        /// Othwerise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
+        /// and immediately returns a completed Task.  
+        /// </remarks>
+        /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
+        /// <param name="config">A configuration object that describes the realm.</param>
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Compacts a Realm file. A Realm file usually contains free/unused space. This method removes this free space and the file size is thereby reduced. Objects within the Realm files are untouched.
         /// </summary>
         /// <remarks>

@@ -91,6 +91,29 @@ namespace Realms
             return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
         }
 
+        /// <summary>
+        /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
+        /// </summary>
+        /// <remarks>
+        /// If the configuration points to a remote realm belonging to a Realm Object Server
+        /// the realm will be downloaded and fully synchronized with the server prior to the completion
+        /// of the returned Task object.
+        /// Othwerise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
+        /// and immediately returns a completed Task.  
+        /// </remarks>
+        /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
+        /// <param name="config">A configuration object that describes the realm.</param>
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config)
+        {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            var schema = config.ObjectClasses != null ? RealmSchema.CreateSchemaForClasses(config.ObjectClasses) : RealmSchema.Default;
+            return config.CreateRealmAsync(schema);
+        }
+
         internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
         {
             if (config == null)

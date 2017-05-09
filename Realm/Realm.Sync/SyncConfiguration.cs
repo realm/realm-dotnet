@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -87,6 +88,18 @@ namespace Realms.Sync
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
             return new Realm(srHandle, this, schema);
+        }
+
+        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
+        {
+            var syncConfiguration = new Native.SyncConfiguration
+            {
+                SyncUserHandle = User.Handle,
+                Url = ServerUri.ToString()
+            };
+            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, syncConfiguration, EncryptionKey));
+            await session.WaitForDownloadAsync();
+            return CreateRealm(schema);
         }
     }
 }

@@ -73,6 +73,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect();
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_session(string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -155,6 +158,19 @@ namespace Realms.Sync
         public static void ReconnectSessions()
         {
             NativeMethods.reconnect();
+        }
+
+        public static SessionHandle GetSession(string path, Native.SyncConfiguration configuration, byte[] encryptionKey)
+        {
+            DoInitialFileSystemConfiguration();
+
+            NativeException nativeException;
+            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration,encryptionKey, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            var handle = new SessionHandle();
+            handle.SetHandle(result);
+            return handle;
         }
 
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]

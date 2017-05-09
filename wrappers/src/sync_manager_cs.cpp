@@ -122,5 +122,20 @@ REALM_EXPORT void realm_syncmanager_reconnect()
     SyncManager::shared().reconnect();
 }
 
+REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_t* pathbuffer, size_t pathbuffer_len, SyncConfiguration sync_configuration, uint8_t* encryption_key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
+        std::string url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
+        
+        SyncConfig config { *sync_configuration.user, url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error };
+        if (encryption_key) {
+            config.realm_encryption_key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+        }
+        
+        return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
+    });
+}
+
 }
 
