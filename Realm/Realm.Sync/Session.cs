@@ -107,7 +107,7 @@ namespace Realms.Sync
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are complete</returns>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
         public Task WaitForUploadAsync()
         {
@@ -123,7 +123,7 @@ namespace Realms.Sync
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending downloads.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are complete</returns>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
         public Task WaitForDownloadAsync()
         {

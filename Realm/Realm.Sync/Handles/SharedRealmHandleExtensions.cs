@@ -165,7 +165,7 @@ namespace Realms.Sync
             DoInitialFileSystemConfiguration();
 
             NativeException nativeException;
-            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration,encryptionKey, out nativeException);
+            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out nativeException);
             nativeException.ThrowIfNecessary();
 
             var handle = new SessionHandle();
@@ -229,7 +229,7 @@ namespace Realms.Sync
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception($"A system error with code {error_code} while waiting for completion"));
+                    tcs.TrySetException(new Exception($"A system error with code {error_code} occurred while waiting for completion"));
                 }
             }
             finally
