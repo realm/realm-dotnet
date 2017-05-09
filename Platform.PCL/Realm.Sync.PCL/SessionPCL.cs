@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -130,6 +131,28 @@ namespace Realms.Sync
         /// and use it to subscribe instead.
         /// </example>
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Waits for the <see cref="Session"/> to finish all pending uploads.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are complete</returns>
+        /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
+        public Task WaitForUploadAsync()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Waits for the <see cref="Session"/> to finish all pending downloads.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are complete</returns>
+        /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
+        public Task WaitForDownloadAsync()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

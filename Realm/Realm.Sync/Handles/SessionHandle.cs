@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -61,6 +62,10 @@ namespace Realms.Sync
             
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
@@ -129,6 +134,15 @@ namespace Realms.Sync
             NativeException ex;
             NativeMethods.unregister_progress_notifier(this, token, out ex);
             ex.ThrowIfNecessary();
+        }
+
+        public bool Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+            NativeException ex;
+            var result = NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         public IntPtr GetRawPointer()

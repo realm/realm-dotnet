@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
@@ -48,6 +49,8 @@ namespace Realms.Sync
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
+
+            public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
@@ -194,6 +197,29 @@ namespace Realms.Sync
         {
             var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
             token.Notify(transferredBytes, transferableBytes);
+        }
+
+        [NativeCallback(typeof(NativeMethods.SessionWaitCallback))]
+        private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code)
+        {
+            var handle = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<object>)handle.Target;
+
+            try
+            {
+                if (error_code == 0)
+                {
+                    tcs.TrySetResult(null);
+                }
+                else
+                {
+                    tcs.TrySetException(new Exception($"A system error with code {error_code} while waiting for completion"));
+                }
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
     }
 }

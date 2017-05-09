@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -101,6 +102,38 @@ namespace Realms.Sync
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
         {
             return new SyncProgressObservable(this, direction, mode);
+        }
+
+        /// <summary>
+        /// Waits for the <see cref="Session"/> to finish all pending uploads.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are complete</returns>
+        /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
+        public Task WaitForUploadAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            if (!Handle.Wait(tcs, ProgressDirection.Upload))
+            {
+                throw new InvalidOperationException("Cannot register a wait callback on a session in the Error state");
+            }
+
+            return tcs.Task;
+        }
+
+        /// <summary>
+        /// Waits for the <see cref="Session"/> to finish all pending downloads.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are complete</returns>
+        /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
+        public Task WaitForDownloadAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            if (!Handle.Wait(tcs, ProgressDirection.Download))
+            {
+                throw new InvalidOperationException("Cannot register a wait callback on a session in the Error state");
+            }
+
+            return tcs.Task;
         }
 
         internal readonly SessionHandle Handle;
