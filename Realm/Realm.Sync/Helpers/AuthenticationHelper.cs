@@ -35,6 +35,7 @@ namespace Realms.Sync
     internal static class AuthenticationHelper
     {
         private const int ErrorContentTruncationLimit = 256 * 1024;
+        private static readonly string AppId = string.Empty; // FIXME
         private static readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() => new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
         
         private static readonly ConcurrentDictionary<string, Timer> _tokenRefreshTimers = new ConcurrentDictionary<string, Timer>();
@@ -65,10 +66,11 @@ namespace Realms.Sync
                 {
                     ["data"] = user.RefreshToken,
                     ["path"] = session.ServerUri.AbsolutePath,
-                    ["provider"] = "realm"
+                    ["provider"] = "realm",
+                    ["app_id"] = AppId
                 };
 
-                var result = await MakeAuthRequestAsync(user.ServerUri, json, TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+                var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(user.ServerUri, "auth"), json).ConfigureAwait(continueOnCapturedContext: false);
 
                 var accessToken = result["access_token"];
 
@@ -102,7 +104,9 @@ namespace Realms.Sync
         // Returns a Tuple<userId, refreshToken>
         public static async Task<UserLoginData> Login(Credentials credentials, Uri serverUrl)
         {
-            var result = await MakeAuthRequestAsync(serverUrl, credentials.ToDictionary(), TimeSpan.FromSeconds(30)).ConfigureAwait(continueOnCapturedContext: false);
+            var body = credentials.ToDictionary();
+            body["app_id"] = AppId;
+            var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(serverUrl, "auth"), body).ConfigureAwait(continueOnCapturedContext: false);
             var refreshToken = result["refresh_token"];
             return new UserLoginData
             {
@@ -110,6 +114,17 @@ namespace Realms.Sync
                 UserId = refreshToken["token_data"]["identity"].Value<string>(),
                 IsAdmin = refreshToken["token_data"]["is_admin"].Value<bool>()
             };
+        }
+
+        public static Task ChangePassword(User user, string password)
+        {
+            var json = new Dictionary<string, object>
+            {
+                ["token"] = user.RefreshToken,
+                ["password"] = password
+            };
+
+            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json);
         }
 
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
@@ -171,11 +186,9 @@ namespace Realms.Sync
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
-        private static async Task<JObject> MakeAuthRequestAsync(Uri serverUri, IDictionary<string, object> body, TimeSpan timeout)
+        private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body)
         {
-            body["app_id"] = string.Empty; // FIXME
-
-            var request = new HttpRequestMessage(HttpMethod.Post, new Uri(serverUri, "auth"));
+            var request = new HttpRequestMessage(method, uri);
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
             request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
             request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);

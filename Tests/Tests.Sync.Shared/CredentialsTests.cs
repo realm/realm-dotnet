@@ -18,11 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Tests.Sync
 {
@@ -112,6 +114,46 @@ namespace Tests.Sync
                 var current = User.AllLoggedIn;
 
                 Assert.That(current, Is.EquivalentTo(users));
+            });
+        }
+
+        #if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+        #endif
+        [Test]
+        public void UserChangePasswordTest()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var userId = Guid.NewGuid().ToString();
+                var serverUri = new Uri($"http://{Constants.ServerUrl}");
+                var credentials = Credentials.UsernamePassword(userId, "a", createUser: true);
+                var user = await User.LoginAsync(credentials, serverUri);
+                await user.ChangePassword("b");
+                user.LogOut();
+
+                Assert.That(async () => await user.ChangePassword("c"), Throws.TypeOf<InvalidOperationException>());
+
+                // Try to login with the same credentials
+                try
+                {
+                    await User.LoginAsync(credentials, serverUri);
+                    Assert.Fail("Should be impossible to login with old password");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<AuthenticationException>());
+                    var authEx = (AuthenticationException)ex;
+                    Assert.That(authEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
+                }
+
+                var newCredentials = Credentials.UsernamePassword(userId, "b", createUser: false);
+                var newUser = await User.LoginAsync(newCredentials, serverUri);
+
+                Assert.That(newUser.State, Is.EqualTo(UserState.Active));
+                Assert.That(newUser, Is.EqualTo(User.Current));
+                newUser.LogOut();
+                Assert.That(User.Current, Is.Null);
             });
         }
     }
