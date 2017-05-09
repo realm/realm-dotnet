@@ -47,7 +47,7 @@ namespace Realms
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
-        /// A block called when opening a Realm for the first time during the life
+        /// A callback, invoked when opening a Realm for the first time during the life
         /// of a process to determine if it should be compacted before being returned
         /// to the user.
         /// </summary>

@@ -309,7 +309,6 @@ namespace Tests.Database
             }
 
             var initialSize = new FileInfo(config.DatabasePath).Length;
-
             Assert.That(Realm.Compact(config));
 
             var finalSize = new FileInfo(config.DatabasePath).Length;
@@ -319,6 +318,29 @@ namespace Tests.Database
             {
                 Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
             }
+        }
+
+        [Test]
+#if !WINDOWS
+        [Ignore("Compact works on this platform")]
+#endif
+        public void Compact_OnWindows_ThrowsRealmException()
+        {
+            Assert.That(() => Realm.Compact(RealmConfiguration.DefaultConfiguration), Throws.TypeOf<RealmException>());
+        }
+
+        [Test]
+        #if !WINDOWS
+        [Ignore("Compact works on this platform")]
+        #endif
+        public void ShouldCompactOnLaunch_OnWindows_ThrowsRealmException()
+        {
+            var config = new RealmConfiguration
+            {
+                ShouldCompactOnLaunch = (totalBytes, bytesUsed) => true
+            };
+
+            Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<RealmException>());
         }
 
         [Test]
