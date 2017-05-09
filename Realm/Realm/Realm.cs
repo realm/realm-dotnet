@@ -98,7 +98,7 @@ namespace Realms
         /// If the configuration points to a remote realm belonging to a Realm Object Server
         /// the realm will be downloaded and fully synchronized with the server prior to the completion
         /// of the returned Task object.
-        /// Othwerise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
+        /// Otherwise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
         /// and immediately returns a completed Task.  
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
