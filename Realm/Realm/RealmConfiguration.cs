@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Schema;
 
@@ -49,6 +50,17 @@ namespace Realms
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
+        /// A block called when opening a Realm for the first time during the life
+        /// of a process to determine if it should be compacted before being returned
+        /// to the user.
+        /// </summary>
+        /// <param name="totalBytes">Total file size (data + free space).</param>
+        /// <param name="bytesUsed">Total data size.</param>
+        /// <returns><c>true</c> to indicate that an attempt to compact the file should be made.</returns>
+        /// <remarks>The compaction will be skipped if another process is accessing it.</remarks>
+        public delegate bool ShouldCompactDelegate(ulong totalBytes, ulong bytesUsed);
+
+        /// <summary>
         /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/> 
         /// mismatches the one in the code. Use this when debugging and developing your app but never release it with
         /// this flag set to <c>true</c>.
@@ -71,6 +83,15 @@ namespace Realms
         /// to be migrated.
         /// </value>
         public MigrationCallbackDelegate MigrationCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets the compact on launch callback.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ShouldCompactDelegate"/> that will be invoked when opening a Realm for the first time
+        /// to determine if it should be compacted before being returned to the user.
+        /// </value>
+        public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="RealmConfiguration"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
@@ -137,6 +158,13 @@ namespace Realms
                 migration.PopulateConfiguration(ref configuration);
             }
 
+            if (ShouldCompactOnLaunch != null)
+            {
+                var handle = GCHandle.Alloc(this);
+                configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
+                configuration.managed_config_handle = GCHandle.ToIntPtr(handle);
+            }
+
             var srPtr = IntPtr.Zero;
             try
             {
@@ -149,6 +177,15 @@ namespace Realms
 
             srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
+        }
+
+        private static bool ShouldCompactOnLaunchCallback(IntPtr configPtr, ulong totalSize, ulong dataSize)
+        {
+            var handle = GCHandle.FromIntPtr(configPtr);
+            var config = (RealmConfiguration)handle.Target;
+            var result = config.ShouldCompactOnLaunch(totalSize, dataSize);
+            handle.Free();
+            return result;
         }
     }
 }

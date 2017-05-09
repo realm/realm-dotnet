@@ -100,6 +100,12 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             };
         }
         
+        if (configuration.managed_config_handle) {
+            config.should_compact_on_launch_function = [&configuration](uint64_t total_bytes, uint64_t used_bytes) {
+                return configuration.should_compact_callback(configuration.managed_config_handle, total_bytes, used_bytes);
+            };
+        }
+        
         return new SharedRealm{Realm::get_shared_realm(config)};
     });
 }
