@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
@@ -229,7 +230,7 @@ namespace Realms.Sync
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception($"A system error with code {error_code} occurred while waiting for completion"));
+                    tcs.TrySetException(new RealmException($"A system error with code {error_code} occurred while waiting for completion"));
                 }
             }
             finally

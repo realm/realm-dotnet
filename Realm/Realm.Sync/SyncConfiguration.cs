@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+﻿﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -79,27 +79,24 @@ namespace Realms.Sync
                 schema_version = SchemaVersion
             };
 
-            var syncConfiguration = new Native.SyncConfiguration
-            {
-                SyncUserHandle = User.Handle,
-                Url = ServerUri.ToString(),
-                client_validate_ssl = EnableSSLValidation,
-            };
-
-            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
+            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             return new Realm(srHandle, this, schema);
         }
 
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
-            var syncConfiguration = new Native.SyncConfiguration
-            {
-                SyncUserHandle = User.Handle,
-                Url = ServerUri.ToString()
-            };
-            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, syncConfiguration, EncryptionKey));
+            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
             await session.WaitForDownloadAsync();
             return CreateRealm(schema);
         }
-    }
+
+        private Native.SyncConfiguration ToNative()
+        {
+            return new Native.SyncConfiguration
+            {
+                SyncUserHandle = User.Handle,
+                Url = ServerUri.ToString(),
+                client_validate_ssl = EnableSSLValidation
+            };
+        }
 }
