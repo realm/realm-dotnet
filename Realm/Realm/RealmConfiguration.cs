@@ -161,9 +161,9 @@ namespace Realms
 
             if (ShouldCompactOnLaunch != null)
             {
-                var handle = GCHandle.Alloc(this);
+                var handle = GCHandle.Alloc(ShouldCompactOnLaunch);
                 configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
-                configuration.managed_config_handle = GCHandle.ToIntPtr(handle);
+                configuration.managed_compact_delegate = GCHandle.ToIntPtr(handle);
             }
 
             var srPtr = IntPtr.Zero;
@@ -181,13 +181,18 @@ namespace Realms
         }
 
         [NativeCallback(typeof(ShouldCompactCallback))]
-        private static bool ShouldCompactOnLaunchCallback(IntPtr configPtr, ulong totalSize, ulong dataSize)
+        private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
         {
-            var handle = GCHandle.FromIntPtr(configPtr);
-            var config = (RealmConfiguration)handle.Target;
-            var result = config.ShouldCompactOnLaunch(totalSize, dataSize);
-            handle.Free();
-            return result;
+            var handle = GCHandle.FromIntPtr(delegatePtr);
+            var compactDelegate = (ShouldCompactDelegate)handle.Target;
+            try
+            {
+                return compactDelegate(totalSize, dataSize);
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
     }
 }

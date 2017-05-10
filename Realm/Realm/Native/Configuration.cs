@@ -63,6 +63,6 @@ namespace Realms.Native
         internal IntPtr managed_migration_handle;
 
         internal ShouldCompactCallback should_compact_callback;
-        internal IntPtr managed_config_handle;
+        internal IntPtr managed_compact_delegate;
     }
 }
