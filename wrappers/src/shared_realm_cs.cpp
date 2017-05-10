@@ -46,11 +46,11 @@ namespace binding {
     }
 }
     
-    template<typename KeyType>
-    Object* create_object_unique(SharedRealm* realm, Table* table, KeyType key, bool try_update, std::function<size_t (size_t)> find_first, std::function<void (size_t, size_t)> set_unique, std::string key_to_string, bool& is_new)
+    template<typename KeyType, typename FindFirst>
+    Object* create_object_unique(SharedRealm* realm, Table* table, KeyType key, bool try_update, FindFirst find_first, std::function<void (size_t, size_t)> set_unique, std::string key_to_string, bool& is_new)
     {
         (*realm)->verify_in_write();
-        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        const StringData object_name(ObjectStore::object_type_for_table_name(table->get_name()));
         auto& object_schema = *realm->get()->schema().find(object_name);
         
         size_t column_index = object_schema.primary_key_property()->table_column;
@@ -58,8 +58,8 @@ namespace binding {
         
         if (row_index == realm::not_found) {
             is_new = true;
-#if REALM_ENABLE_SYNC && false
-            row_index = sync::create_object_with_primary_key(realm->read_group(), *table, key);
+#if REALM_ENABLE_SYNC
+            row_index = sync::create_object_with_primary_key((*realm)->read_group(), *table, key);
 #else
             row_index = table->add_empty_row();
             set_unique(column_index, row_index);
@@ -294,8 +294,8 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm* realm, Table* table
     return handle_errors(ex, [&]() {
         (*realm)->verify_in_write();
         
-#if REALM_ENABLE_SYNC && false
-        size_t row_index = sync::create_object(realm->read_group(), *table);
+#if REALM_ENABLE_SYNC
+        size_t row_index = sync::create_object((*realm)->read_group(), *table);
 #else
         size_t row_index = table->add_empty_row();
 #endif // REALM_ENABLE_SYNC
@@ -322,7 +322,7 @@ REALM_EXPORT Object* shared_realm_create_object_string_unique(SharedRealm* realm
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor key(key_buf, key_len);
-        return create_object_unique(realm, table, &key, try_update, [table, &key](size_t column_index) {
+        return create_object_unique(realm, table, std::move(key), try_update, [table, &key](size_t column_index) {
             return table->find_first_string(column_index, key);
         }, [table, &key](size_t column_index, size_t row_index) {
             table->set_string_unique(column_index, row_index, key);
