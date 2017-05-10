@@ -163,7 +163,7 @@ namespace Realms
             {
                 var handle = GCHandle.Alloc(ShouldCompactOnLaunch);
                 configuration.should_compact_callback = ShouldCompactOnLaunchCallback;
-                configuration.managed_compact_delegate = GCHandle.ToIntPtr(handle);
+                configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(handle);
             }
 
             var srPtr = IntPtr.Zero;
