@@ -213,7 +213,7 @@ REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm, NativeException::Ma
 
 REALM_EXPORT bool shared_realm_compact(SharedRealm* realm, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]() -> bool {
 #ifndef _WIN32
         return (*realm)->compact();
 #else
