@@ -47,6 +47,17 @@ namespace Realms
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
+        /// A callback, invoked when opening a Realm for the first time during the life
+        /// of a process to determine if it should be compacted before being returned
+        /// to the user.
+        /// </summary>
+        /// <param name="totalBytes">Total file size (data + free space).</param>
+        /// <param name="bytesUsed">Total data size.</param>
+        /// <returns><c>true</c> to indicate that an attempt to compact the file should be made.</returns>
+        /// <remarks>The compaction will be skipped if another process is accessing it.</remarks>
+        public delegate bool ShouldCompactDelegate(uint totalBytes, uint bytesUsed);
+
+        /// <summary>
         /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/> 
         /// mismatches the one in the code. Use this when debugging and developing your app but never release it with
         /// this flag set to <c>true</c>.

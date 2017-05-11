@@ -26,6 +26,10 @@ namespace Realms.Native
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
+    [return: MarshalAs(UnmanagedType.I1)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate bool ShouldCompactCallback(IntPtr config, ulong totalSize, ulong dataSize);
+
     [StructLayout(LayoutKind.Sequential)]
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct Configuration
@@ -57,5 +61,8 @@ namespace Realms.Native
 
         internal MigrationCallback migration_callback;
         internal IntPtr managed_migration_handle;
+
+        internal ShouldCompactCallback should_compact_callback;
+        internal IntPtr managed_should_compact_delegate;
     }
 }
