@@ -9,6 +9,7 @@
 - Silence some benign linker warnings on iOS. (#1263)
 - Use reachability API to minimize the reconnection delay if the network connection was lost. (#1380)
 - Silence some benign linker warnings on iOS. (#1263)
+- Use reachability API to minimize the reconnection delay if the network connection was lost. (#1380)
 
 ### Bug fixes
 - Fixed a bug where `Session.Reconnect` would not reconnect all sessions. (#1380)
