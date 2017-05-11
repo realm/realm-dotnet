@@ -173,17 +173,6 @@
   <Import Project="..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems')" />
   <Import Project="..\..\..\Tests\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\..\Tests\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <UsingTask TaskName="RealmBuildTasks.WeaveRealmAssembly" AssemblyFile="$(SolutionDir)Weaver\Realm.BuildTasks\bin\$(Configuration)\Realm.BuildTasks.dll" />
-  <Target Name="WeaveRealmAssemblyTarget" BeforeTargets="_CompileToNative">
-    <ItemGroup>
-      <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
-      <ReferencePath Include="$(OutputPath)Realm.dll" Condition="Exists('$(OutputPath)Realm.dll')" />
-      <ReferencePath Include="$(OutputPath)Realm.Sync.dll" Condition="Exists('$(OutputPath)Realm.Sync.dll')" />
-      <ReferencePath Remove="@(FilteredReferences)" />
-      <ReferenceCopyLocalPaths Remove="@(FilteredReferences)" />
-    </ItemGroup>
-    <RealmBuildTasks.WeaveRealmAssembly OutputDirectory="$(ProjectDir)$(OutputPath)" AssemblyName="$(AssemblyName)" IntermediateDirectory="$(ProjectDir)$(IntermediateOutputPath)" />
-  </Target>	
   <Import Project="..\packages\Xamarin.Forms.2.3.4.224\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.2.3.4.224\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20\Xamarin.Forms.targets')" />
   <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
   <Import Project="..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" />
