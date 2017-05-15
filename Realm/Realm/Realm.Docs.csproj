@@ -105,7 +105,6 @@
     <Compile Include="Handles\UnownedRealmHandle.cs" />
     <Compile Include="InteropConfig.cs" />
     <Compile Include="ISchemaSource.cs" />
-    <Compile Include="Linq\ExpressionVisitor.cs" />
     <Compile Include="Linq\IRealmCollection.cs" />
     <Compile Include="Linq\RealmResults.cs" />
     <Compile Include="Linq\RealmResultsProvider.cs" />

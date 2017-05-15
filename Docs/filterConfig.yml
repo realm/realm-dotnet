@@ -1,9 +1,4 @@
 apiRules:
-- include:
-    hasAttribute:
-      uid: System.ComponentModel.EditorBrowsableAttribute
-      ctorArguments:
-      - System.ComponentModel.EditorBrowsableState.Never
 - exclude:
     uidRegex: ^Realms\.RealmObject\.Get.*Value.*$
     type: Method
@@ -25,3 +20,17 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\.WovenPropertyAttribute$
     type: Type
+- exclude:
+    uidRegex: ^Realms\.Dynamic$
+    type: Namespace
+- exclude:
+    uidRegex: ^Realms\.RealmCollectionBase`1.*$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.RealmList`1$
+    type: Type
+- include:
+    hasAttribute:
+      uid: System.ComponentModel.EditorBrowsableAttribute
+      ctorArguments:
+      - System.ComponentModel.EditorBrowsableState.Never
