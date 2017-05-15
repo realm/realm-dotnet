@@ -1,6 +1,9 @@
 1.3.0 (2017-05-16)
 ------------------
 
+## Universal Windows Platform 
+Introducing Realm Mobile Database for Universal Windows Platform (UWP). With UWP support, you can now build mobile apps using Realm’s object database for the millions of mobile, PC, and Xbox devices powered by Windows 10. The addition of UWP support allows .NET developers to build apps for virtually any modern Windows Platform with Windows Desktop (Win32) or UWP as well as for iOS and Android via Xamarin. Note that sync support is not yet available for UWP, though we are working on it and you can expect it soon.
+
 ### Enhancements
 - Case insensitive queries against a string property now use a new index based search. (#1380)
 - Add `User.ChangePassword` API to change the current user's password if using Realm's 'password' authentication provider. Requires any edition of the Realm Object Server 1.4.0 or later. (#1386)
@@ -9,7 +12,6 @@
 - Silence some benign linker warnings on iOS. (#1263)
 - Use reachability API to minimize the reconnection delay if the network connection was lost. (#1380)
 - Silence some benign linker warnings on iOS. (#1263)
-- Use reachability API to minimize the reconnection delay if the network connection was lost. (#1380)
 
 ### Bug fixes
 - Fixed a bug where `Session.Reconnect` would not reconnect all sessions. (#1380)
