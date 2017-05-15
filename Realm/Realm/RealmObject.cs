@@ -662,9 +662,7 @@ namespace Realms
         /// class MyClass : RealmObject
         /// {
         ///     public int StatusCodeRaw { get; set; }
-        /// 
         ///     public StatusCodeEnum StatusCode => (StatusCodeEnum)StatusCodeRaw;
-        /// 
         ///     protected override void OnPropertyChanged(string propertyName)
         ///     {
         ///         if (propertyName == nameof(StatusCodeRaw))

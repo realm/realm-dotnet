@@ -155,7 +155,7 @@ namespace Realms
             return chain;
         }
 
-        internal override Expression VisitMethodCall(MethodCallExpression m)
+        protected override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable))
             {
@@ -482,7 +482,7 @@ namespace Realms
             return true;
         }
 
-        internal override Expression VisitUnary(UnaryExpression u)
+        protected override Expression VisitUnary(UnaryExpression u)
         {
             switch (u.NodeType)
             {
@@ -555,7 +555,7 @@ namespace Realms
             return false;
         }
 
-        internal override Expression VisitBinary(BinaryExpression b)
+        protected override Expression VisitBinary(BinaryExpression b)
         {
             if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
@@ -942,7 +942,7 @@ namespace Realms
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
-        internal override Expression VisitConstant(ConstantExpression c)
+        protected override Expression VisitConstant(ConstantExpression c)
         {
             var results = c.Value as IQueryableCollection;
             if (results != null)
@@ -963,21 +963,21 @@ namespace Realms
             return c;
         }
 
-        internal override Expression VisitMemberAccess(MemberExpression m)
+        protected override Expression VisitMember(MemberExpression node)
         {
-            if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
+            if (node.Expression != null && node.Expression.NodeType == ExpressionType.Parameter)
             {
-                if (m.Type == typeof(bool))
+                if (node.Type == typeof(bool))
                 {
                     object rhs = true;  // box value
-                    var leftName = m.Member.Name;
+                    var leftName = node.Member.Name;
                     AddQueryEqual(CoreQueryHandle, leftName, rhs);
                 }
 
-                return m;
+                return node;
             }
 
-            throw new NotSupportedException($"The member '{m.Member.Name}' is not supported");
+            throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
         }
     }
 }

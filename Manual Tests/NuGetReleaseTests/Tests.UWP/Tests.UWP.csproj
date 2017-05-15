@@ -140,11 +140,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="..\..\..\Tests\Tests.UWP\App.xaml">
+    <ApplicationDefinition Include="..\..\..\Tests\Tests.UWP\App.xaml">
       <Link>App.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
+    </ApplicationDefinition>
     <Page Include="..\..\..\Tests\Tests.UWP\MainPage.xaml">
       <Link>MainPage.xaml</Link>
       <Generator>MSBuild:Compile</Generator>

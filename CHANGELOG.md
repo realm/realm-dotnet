@@ -1,6 +1,8 @@
-1.3.0 (TBD)
+1.3.0 (2017-05-16)
+------------------
 
-### Breaking Changes
+## Universal Windows Platform 
+Introducing Realm Mobile Database for Universal Windows Platform (UWP). With UWP support, you can now build mobile apps using Realm’s object database for the millions of mobile, PC, and Xbox devices powered by Windows 10. The addition of UWP support allows .NET developers to build apps for virtually any modern Windows Platform with Windows Desktop (Win32) or UWP as well as for iOS and Android via Xamarin. Note that sync support is not yet available for UWP, though we are working on it and you can expect it soon.
 
 ### Enhancements
 - Case insensitive queries against a string property now use a new index based search. (#1380)
@@ -8,6 +10,7 @@
 - `SyncConfiguration` now has an `EnableSSLValidation` property (default is `true`) to allow SSL validation to be specified on a per-server basis. (#1387)
 - Add `RealmConfiguration.ShouldCompactOnLaunch` callback property when configuring a Realm to determine if it should be compacted before being returned. (#1389)
 - Silence some benign linker warnings on iOS. (#1263)
+- Use reachability API to minimize the reconnection delay if the network connection was lost. (#1380)
 
 ### Bug fixes
 - Fixed a bug where `Session.Reconnect` would not reconnect all sessions. (#1380)
@@ -24,8 +27,6 @@
 ### Enhancements
 - Expose `IRealmCollection.IsValid` to indicate whether the realm collection is valid to use. (#1344)
 - Update the Fody reference which adds support for building with Mono 5. (#1364)
-
-### Breaking Changes
 
 1.2.0 (2017-04-04)
 ------------------

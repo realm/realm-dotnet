@@ -87,7 +87,6 @@
     <Compile Include="Handles\SharedRealmHandle.cs" />
     <Compile Include="Handles\TableHandle.cs" />
     <Compile Include="Handles\UnownedRealmHandle.cs" />
-    <Compile Include="Linq\ExpressionVisitor.cs" />
     <Compile Include="Linq\IRealmCollection.cs" />
     <Compile Include="Linq\RealmResults.cs" />
     <Compile Include="Linq\RealmResultsProvider.cs" />

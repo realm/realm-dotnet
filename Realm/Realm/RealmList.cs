@@ -28,13 +28,13 @@ using Realms.Dynamic;
 namespace Realms
 {
     /// <summary>
-    /// Return type for a managed object property when you declare a to-many relationship with IList. 
+    /// Return type for a managed object property when you declare a to-many relationship with IList.
     /// </summary>
-    /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
+    /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal
     /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
-    /// <remarks>Although originally used in declarations, whilst that still compiles, 
-    /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is 
+    /// <remarks>Although originally used in declarations, whilst that still compiles,
+    /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is
     /// implemented with a faster binding.
     /// </remarks>
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
@@ -43,8 +43,8 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
     {
-        private Realm _realm;
-        private ListHandle _listHandle;
+        private readonly Realm _realm;
+        private readonly ListHandle _listHandle;
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
         {
