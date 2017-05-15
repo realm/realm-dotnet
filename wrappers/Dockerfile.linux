@@ -1,0 +1,5 @@
+FROM ubuntu:xenial
+
+RUN apt-get update && \
+    apt-get install -y wget build-essential lcov curl cmake libssl-dev \
+      git python-cheetah pkg-config xutils-dev
