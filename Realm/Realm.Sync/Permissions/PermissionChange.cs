@@ -92,6 +92,25 @@ namespace Realms.Sync
         public string UserId { get; private set; }
 
         /// <summary>
+        /// Gets the metadata key (if any) of the user(s) to effect.
+        /// </summary>
+        /// <value>A metadata key or null if the change is not based on metadata values.</value>
+        [Required]
+        [MapTo("metadataKey")]
+        public string MetadataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the metadata value (if any) of the user(s) to effect.
+        /// </summary>
+        /// <value>
+        /// A value corresponding to <see cref="MetadataKey" /> or null if the change
+        /// is not based on metadata values.
+        /// </value>
+        [Required]
+        [MapTo("metadataValue")]
+        public string MetadataValue { get; private set; }
+
+        /// <summary>
         /// Gets the Realm to change permissions for.
         /// </summary>
         /// <value><c>*</c> to change the permissions of all Realms.</value>
@@ -120,10 +139,22 @@ namespace Realms.Sync
         [MapTo("mayManage")]
         public bool? MayManage { get; private set; }
 
-        internal PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        internal PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null) 
+            : this(mayRead, mayWrite, mayManage)
         {
             UserId = userId;
             RealmUrl = realmUrl;
+        }
+
+        internal PermissionChange(string key, string value, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+            : this(mayRead, mayWrite, mayManage)
+        {
+            UserId = string.Empty;
+            RealmUrl = realmUrl;
+        }
+
+        private PermissionChange(bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        {
             MayRead = mayRead;
             MayWrite = mayWrite;
             MayManage = mayManage;

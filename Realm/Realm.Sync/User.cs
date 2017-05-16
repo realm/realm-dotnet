@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -251,15 +252,17 @@ namespace Realms.Sync
 
         internal Realm ManagementRealm => _managementRealm.Value;
 
-        public async Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any, string realmUrl = null)
+		/// <summary>
+		/// Asynchronously retrieve all permissions associated with the user calling this method.
+		/// </summary>
+		/// <returns>
+		/// A queryable collection of <see cref="Permission"/> objects that provide detailed information
+		/// regarding the granted access.</returns>
+		/// <param name="receiver">The optional recepient of the permission.</param>
+		public async Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any)
         {
             // TODO: this should use the new openasync API once implemented
             var result = PermissionRealm.All<Permission>();
-
-            if (!string.IsNullOrEmpty(realmUrl))
-            {
-                result = result.Where(p => p.Path == realmUrl);
-            }
 
             var id = Identity;
             switch (receiver)
@@ -275,44 +278,79 @@ namespace Realms.Sync
             return result;
         }
 
-        public Task GrantPermissions(string userId, string realmUrl, Permissions permissions)
+		/// <summary>
+		/// Applies a new permission.
+		/// </summary>
+		/// <returns>An awaitable task, that, upon completion, indicates that the permissions have been
+		/// successfully applied by the server.</returns>
+		/// <param name="condition">A <see cref="PermissionCondition"/> that will be used to match existing users against.</param>
+		/// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
+		/// <param name="accessLevel">
+		/// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
+		/// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
+		/// </param>
+		[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+		public Task ApplyPermissions(PermissionCondition condition, string realmUrl, AccessLevel accessLevel)
         {
-            bool? mayRead = BoolFromFlag(permissions, Permissions.Read);
-            bool? mayWrite = BoolFromFlag(permissions, Permissions.Write);
-            bool? mayManage = BoolFromFlag(permissions, Permissions.Manage);
-            var change = new PermissionChange(userId, realmUrl, mayRead, mayWrite, mayManage);
+            var mayRead = accessLevel >= AccessLevel.Read;
+            var mayWrite = accessLevel >= AccessLevel.Write;
+            var mayManage = accessLevel >= AccessLevel.Admin;
+
+            PermissionChange change = null;
+
+            if (condition is UserIdCondition userIdCondition)
+            {
+                change = new PermissionChange(userIdCondition.UserId, realmUrl, mayRead, mayWrite, mayManage);
+            }
+            else if (condition is KeyValueCondition keyValueCondition)
+            {
+                change = new PermissionChange(keyValueCondition.Key, keyValueCondition.Value, mayRead, mayWrite, mayManage);
+            }
+            else
+            {
+                throw new NotSupportedException("Invalid PermissionCondition.");
+            }
+
             return WriteToManagementRealm(change);
         }
 
-        public Task RevokePermissions(string userId, string realmUrl, Permissions permissions)
-        {
-            bool? mayRead = BoolFromFlag(permissions, Permissions.Read, false);
-            bool? mayWrite = BoolFromFlag(permissions, Permissions.Write, false);
-            bool? mayManage = BoolFromFlag(permissions, Permissions.Manage, false);
-            var change = new PermissionChange(userId, realmUrl, mayRead, mayWrite, mayManage);
-            return WriteToManagementRealm(change);
-        }
-
-        public async Task<string> OfferPermissions(string realmUrl, Permissions permissions, DateTimeOffset? expiresAt = null)
+        /// <summary>
+        /// TODO lorem ipsum
+        /// </summary>
+        /// <returns>The permissions.</returns>
+        /// <param name="realmUrl">Realm URL.</param>
+        /// <param name="accessLevel">Access level.</param>
+        /// <param name="expiresAt">Expires at.</param>
+        public async Task<string> OfferPermissions(string realmUrl, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
         {
             var offer = new PermissionOffer(realmUrl,
-                                            permissions.HasFlag(Permissions.Read),
-                                            permissions.HasFlag(Permissions.Write),
-                                            permissions.HasFlag(Permissions.Manage),
+                                            accessLevel >= AccessLevel.Read,
+                                            accessLevel >= AccessLevel.Write,
+                                            accessLevel >= AccessLevel.Admin,
                                             expiresAt);
 
             await WriteToManagementRealm(offer);
             return offer.RealmUrl;
         }
 
-        public async Task<string> AcceptPermissionOffer(string offerToken)
+		/// <summary>
+		/// TODO lorem ipsum
+		/// </summary>
+		/// <returns>The permission offer.</returns>
+		/// <param name="offerToken">Offer token.</param>
+		public async Task<string> AcceptPermissionOffer(string offerToken)
         {
             var permissionResponse = new PermissionOfferResponse(offerToken);
             await WriteToManagementRealm(permissionResponse);
             return permissionResponse.RealmUrl;
         }
 
-        public Task InvalidateOffer(PermissionOffer offer)
+		/// <summary>
+		/// TODO lorem ipsum
+		/// </summary>
+		/// <returns>The offer.</returns>
+		/// <param name="offer">Offer.</param>
+		public Task InvalidateOffer(PermissionOffer offer)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -327,7 +365,13 @@ namespace Realms.Sync
             return tcs.Task;
         }
 
-        public IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IPermissionObject
+		/// <summary>
+		/// TODO lorem ipsum
+		/// </summary>
+		/// <returns>The permission objects.</returns>
+		/// <param name="status">Status.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
+		public IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IPermissionObject
         {
             var result = ManagementRealm.All<T>();
             int? successCode = 0;
@@ -377,16 +421,6 @@ namespace Realms.Sync
         {
             ManagementRealm.Write(() => ManagementRealm.Add(permissionObject));
             return permissionObject.WaitForProcessing();
-        }
-
-        private static bool? BoolFromFlag(Permissions permissions, Permissions flag, bool containsValue = true)
-        {
-            if (permissions.HasFlag(flag))
-            {
-                return containsValue;
-            }
-
-            return null;
         }
 
 #endregion

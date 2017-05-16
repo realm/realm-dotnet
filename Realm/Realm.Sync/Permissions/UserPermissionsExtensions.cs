@@ -38,7 +38,7 @@ namespace Realms.Sync
         /// <seealso href="https://realm.io/docs/realm-object-server/#modifying-permissions">How to control permissions</seealso>
         /// <param name="user">The user whose Management Realm to get.</param>
         /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
-        [Obsolete]
+        [Obsolete("Use User.ApplyPermissions instead")]
         public static Realm GetManagementRealm(this User user)
         {
             return user.ManagementRealm;
@@ -53,13 +53,13 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="user">The user whose Permission Realm to get.</param>
         /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
-        [Obsolete]
+        [Obsolete("Use User.GetGrantedPermissions instead")]
         public static Realm GetPermissionRealm(this User user)
         {
             return user.PermissionRealm;
         }
 
-        public static Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
+        internal static Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
         {
             var tcs = new TaskCompletionSource<object>();
             PropertyChangedEventHandler handler = null;
