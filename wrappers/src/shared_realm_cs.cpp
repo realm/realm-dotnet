@@ -46,15 +46,15 @@ namespace binding {
     }
 }
     
-    template<typename KeyType, typename FindFirst>
-    Object* create_object_unique(SharedRealm* realm, Table* table, KeyType key, bool try_update, FindFirst find_first, std::function<void (size_t, size_t)> set_unique, std::string key_to_string, bool& is_new)
+    template<typename KeyType, typename FindFirst, typename SetUnique, typename KeyToString>
+    Object* create_object_unique(SharedRealm* realm, Table* table, KeyType key, bool try_update, FindFirst find_first, SetUnique set_unique, KeyToString key_to_string, bool& is_new)
     {
         (*realm)->verify_in_write();
         const StringData object_name(ObjectStore::object_type_for_table_name(table->get_name()));
         auto& object_schema = *realm->get()->schema().find(object_name);
         
         size_t column_index = object_schema.primary_key_property()->table_column;
-        size_t row_index = find_first(column_index);
+        size_t row_index = find_first(column_index, key);
         
         if (row_index == realm::not_found) {
             is_new = true;
@@ -62,14 +62,14 @@ namespace binding {
             row_index = sync::create_object_with_primary_key((*realm)->read_group(), *table, key);
 #else
             row_index = table->add_empty_row();
-            set_unique(column_index, row_index);
+            set_unique(column_index, row_index, key);
 #endif // REALM_ENABLE_SYNC
         }
         else if (!try_update) {
             throw SetDuplicatePrimaryKeyValueException(
                                                        table->get_name(),
                                                        table->get_column_name(column_index),
-                                                       key_to_string
+                                                       key_to_string(key)
                                                        );
         }
         else {
@@ -310,11 +310,13 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm* realm, Table* table
 REALM_EXPORT Object* shared_realm_create_object_int_unique(SharedRealm* realm, Table* table, int64_t key, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return create_object_unique(realm, table, key, try_update, [table, key](size_t column_index) {
+        return create_object_unique(realm, table, key, try_update, [table](size_t column_index, int64_t key) {
             return table->find_first_int(column_index, key);
-        }, [table, key](size_t column_index, size_t row_index) {
+        }, [table](size_t column_index, size_t row_index, int64_t key) {
             table->set_int_unique(column_index, row_index, key);
-        }, util::format("%1", key), is_new);
+        }, [](int64_t key) {
+            return util::format("%1", key);
+        }, is_new);
     });
 }
 
@@ -322,25 +324,29 @@ REALM_EXPORT Object* shared_realm_create_object_string_unique(SharedRealm* realm
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor key(key_buf, key_len);
-        return create_object_unique(realm, table, std::move(key), try_update, [table, &key](size_t column_index) {
+        return create_object_unique(realm, table, std::move(key), try_update, [table](size_t column_index, StringData key) {
             return table->find_first_string(column_index, key);
-        }, [table, &key](size_t column_index, size_t row_index) {
+        }, [table](size_t column_index, size_t row_index, StringData key) {
             table->set_string_unique(column_index, row_index, key);
-        }, key.to_string(), is_new);
+        }, [](StringData key) {
+            return key;
+        }, is_new);
     });
 }
 
 REALM_EXPORT Object* shared_realm_create_object_null_unique(SharedRealm* realm, Table* table, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return create_object_unique(realm, table, nullptr, try_update, [table](size_t column_index) {
+        return create_object_unique(realm, table, nullptr, try_update, [table](size_t column_index, void* _) {
             if (!table->is_nullable(column_index))
                 throw std::invalid_argument("Column is not nullable");
 
             return table->find_first_null(column_index);
-        }, [table](size_t column_index, size_t row_index) {
+        }, [table](size_t column_index, size_t row_index, void* _) {
             table->set_null_unique(column_index, row_index);
-        }, "null", is_new);
+        }, [](void* _) {
+            return "null";
+        }, is_new);
     });
 }
 
