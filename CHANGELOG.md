@@ -2,6 +2,7 @@
 ------------------
 
 ### Enhancements
+- Expose `RealmObject.OnManaged` virtual method that can be used for init purposes, since the constructor is run before the object has knowledge of its Realm. (#1383)
 
 ### Bug fixes
 
