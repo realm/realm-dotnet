@@ -489,30 +489,27 @@ namespace Tests.Database
         [Test]
         public void ManagedObject_WhenChanged_CallsOnPropertyChanged()
         {
-            AsyncContext.Run(async delegate
+            var item = new AgedObject
             {
-                var item = new AgedObject
-                {
-                    Birthday = DateTimeOffset.UtcNow.AddYears(-5)
-                };
+                Birthday = DateTimeOffset.UtcNow.AddYears(-5)
+            };
 
-                _realm.Write(() => _realm.Add(item));
+            _realm.Write(() => _realm.Add(item));
 
-                var notifiedPropertyNames = new List<string>();
-                item.PropertyChanged += (sender, e) =>
-                {
-                    notifiedPropertyNames.Add(e.PropertyName);
-                };
+            var notifiedPropertyNames = new List<string>();
+            item.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
 
-                _realm.Write(() =>
-                {
-                    item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
-                });
-
-                await Task.Yield();
-
-                Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
+            _realm.Write(() =>
+            {
+                item.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
             });
+
+            _realm.Refresh();
+
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
         [Test]
