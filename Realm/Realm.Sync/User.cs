@@ -381,45 +381,48 @@ namespace Realms.Sync
         /// Gets the permission offers that this user has created by invoking <see cref="OfferPermissions"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionOffer"/> objects.</returns>
-        /// <param name="status">An optional status to filter by.</param>
-        public IQueryable<PermissionOffer> GetPermissionOffers(ManagementObjectStatus status = ManagementObjectStatus.Any)
-                    => GetPermissionObjects<PermissionOffer>(status);
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        public IQueryable<PermissionOffer> GetPermissionOffers(params ManagementObjectStatus[] statuses)
+                    => GetPermissionObjects<PermissionOffer>(statuses);
 
         /// <summary>
         /// Gets the permission offer responses that this user has created by invoking <see cref="AcceptPermissionOffer"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionOfferResponse"/> objects.</returns>
-        /// <param name="status">An optional status to filter by.</param>
-        public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(ManagementObjectStatus status = ManagementObjectStatus.Any)
-                    => GetPermissionObjects<PermissionOfferResponse>(status);
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(params ManagementObjectStatus[] statuses)
+                    => GetPermissionObjects<PermissionOfferResponse>(statuses);
 
         /// <summary>
         /// Gets the permission changes that this user has created by invoking <see cref="ApplyPermissions"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionChange"/> objects.</returns>
-        /// <param name="status">An optional status to filter by.</param>
-        public IQueryable<PermissionChange> GetPermissionChanges(ManagementObjectStatus status = ManagementObjectStatus.Any)
-                    => GetPermissionObjects<PermissionChange>(status);
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        public IQueryable<PermissionChange> GetPermissionChanges(params ManagementObjectStatus[] statuses)
+                    => GetPermissionObjects<PermissionChange>(statuses);
 
-        private IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IStatusObject
+        private IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus[] statuses) where T : RealmObject, IStatusObject
         {
             var result = ManagementRealm.All<T>();
             int? successCode = 0;
             int? notProcessedCode = null;
 
-            if (!status.HasFlag(ManagementObjectStatus.Error))
+            if (statuses.Any())
             {
-                result = result.Where(p => p.StatusCode == successCode || p.StatusCode == notProcessedCode);
-            }
+                if (!statuses.Contains(ManagementObjectStatus.Error))
+                {
+                    result = result.Where(p => p.StatusCode == successCode || p.StatusCode == notProcessedCode);
+                }
 
-            if (!status.HasFlag(ManagementObjectStatus.NotProcessed))
-            {
-                result = result.Where(p => p.StatusCode != notProcessedCode);
-            }
+                if (!statuses.Contains(ManagementObjectStatus.NotProcessed))
+                {
+                    result = result.Where(p => p.StatusCode != notProcessedCode);
+                }
 
-            if (!status.HasFlag(ManagementObjectStatus.Success))
-            {
-                result = result.Where(p => p.StatusCode != successCode);
+                if (!statuses.Contains(ManagementObjectStatus.Success))
+                {
+                    result = result.Where(p => p.StatusCode != successCode);
+                }
             }
 
             return result;

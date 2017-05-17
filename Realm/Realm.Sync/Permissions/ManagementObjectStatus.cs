@@ -16,34 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms.Sync
 {
     /// <summary>
     /// The status of the management object as set by the server.
     /// </summary>
-    [Flags]
     public enum ManagementObjectStatus
     {
         /// <summary>
         /// The server hasn't yet processed the request.
         /// </summary>
-        NotProcessed = 1,
+        NotProcessed,
 
         /// <summary>
         /// The server has processed the request successfully.
         /// </summary>
-        Success = 2,
+        Success,
 
         /// <summary>
         /// There was an error while processing the request. See <see cref="IPermissionObject.StatusMessage"/> for more details.
         /// </summary>
-        Error = 4,
-
-        /// <summary>
-        /// Any status.
-        /// </summary>
-        Any = NotProcessed | Success | Error
+        Error,
     }
 }
