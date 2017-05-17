@@ -252,15 +252,15 @@ namespace Realms.Sync
 
         internal Realm ManagementRealm => _managementRealm.Value;
 
-		/// <summary>
-		/// Asynchronously retrieve all permissions associated with the user calling this method.
-		/// </summary>
-		/// <returns>
-		/// A queryable collection of <see cref="Permission"/> objects that provide detailed information
-		/// regarding the granted access.
+        /// <summary>
+        /// Asynchronously retrieve all permissions associated with the user calling this method.
+        /// </summary>
+        /// <returns>
+        /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
+        /// regarding the granted access.
         /// </returns>
-		/// <param name="receiver">The optional recepient of the permission.</param>
-		public async Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any)
+        /// <param name="receiver">The optional recepient of the permission.</param>
+        public async Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any)
         {
             // TODO: this should use the new openasync API once implemented
             var result = PermissionRealm.All<Permission>();
@@ -279,19 +279,19 @@ namespace Realms.Sync
             return result;
         }
 
-		/// <summary>
-		/// Changes the permissions of a Realm.
-		/// </summary>
-		/// <returns>
+        /// <summary>
+        /// Changes the permissions of a Realm.
+        /// </summary>
+        /// <returns>
         /// An awaitable task, that, upon completion, indicates that the permissions have been successfully applied by the server.
         /// </returns>
-		/// <param name="condition">A <see cref="PermissionCondition"/> that will be used to match existing users against.</param>
-		/// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
-		/// <param name="accessLevel">
-		/// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-		/// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
-		/// </param>
-		public Task ApplyPermissions(PermissionCondition condition, string realmUrl, AccessLevel accessLevel)
+        /// <param name="condition">A <see cref="PermissionCondition"/> that will be used to match existing users against.</param>
+        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
+        /// <param name="accessLevel">
+        /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
+        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
+        /// </param>
+        public Task ApplyPermissions(PermissionCondition condition, string realmUrl, AccessLevel accessLevel)
         {
             var mayRead = accessLevel >= AccessLevel.Read;
             var mayWrite = accessLevel >= AccessLevel.Write;
@@ -315,19 +315,19 @@ namespace Realms.Sync
             return WriteToManagementRealm(change);
         }
 
-		/// <summary>
-		/// Generates a token that can be used for sharing a Realm.
-		/// </summary>
-		/// <returns>
-		/// A token that can be shared with another user, e.g. via email or message and then consumed by
-		/// <see cref="AcceptPermissionOffer"/> to obtain permissions to a Realm.</returns>
-		/// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
-		/// <param name="accessLevel">
-		/// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-		/// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
-		/// </param>
-		/// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
-		public async Task<string> OfferPermissions(string realmUrl, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
+        /// <summary>
+        /// Generates a token that can be used for sharing a Realm.
+        /// </summary>
+        /// <returns>
+        /// A token that can be shared with another user, e.g. via email or message and then consumed by
+        /// <see cref="AcceptPermissionOffer"/> to obtain permissions to a Realm.</returns>
+        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
+        /// <param name="accessLevel">
+        /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
+        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
+        /// </param>
+        /// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
+        public async Task<string> OfferPermissions(string realmUrl, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
         {
             var offer = new PermissionOffer(realmUrl,
                                             accessLevel >= AccessLevel.Read,
@@ -339,30 +339,30 @@ namespace Realms.Sync
             return offer.RealmUrl;
         }
 
-		/// <summary>
-		/// Consumes a token generated by <see cref="OfferPermissions"/> to obtain permissions to a shared Realm.
-		/// </summary>
-		/// <returns>The url of the Realm that the token has granted permissions to.</returns>
-		/// <param name="offerToken">The token, generated by <see cref="OfferPermissions"/>.</param>
-		public async Task<string> AcceptPermissionOffer(string offerToken)
+        /// <summary>
+        /// Consumes a token generated by <see cref="OfferPermissions"/> to obtain permissions to a shared Realm.
+        /// </summary>
+        /// <returns>The url of the Realm that the token has granted permissions to.</returns>
+        /// <param name="offerToken">The token, generated by <see cref="OfferPermissions"/>.</param>
+        public async Task<string> AcceptPermissionOffer(string offerToken)
         {
             var permissionResponse = new PermissionOfferResponse(offerToken);
             await WriteToManagementRealm(permissionResponse);
             return permissionResponse.RealmUrl;
         }
 
-		/// <summary>
-		/// Invalidates a permission offer.
-		/// </summary>
+        /// <summary>
+        /// Invalidates a permission offer.
+        /// </summary>
         /// <remarks>
         /// Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
         /// already been granted.
         /// </remarks>
-		/// <returns>
+        /// <returns>
         /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
         /// </returns>
-		/// <param name="offer">The offer that should be invalidated.</param>
-		public Task InvalidateOffer(PermissionOffer offer)
+        /// <param name="offer">The offer that should be invalidated.</param>
+        public Task InvalidateOffer(PermissionOffer offer)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -377,31 +377,31 @@ namespace Realms.Sync
             return tcs.Task;
         }
 
-		/// <summary>
-		/// Gets the permission offers that this user has created by invoking <see cref="OfferPermissions"/>.
-		/// </summary>
-		/// <returns>A queryable collection of <see cref="PermissionOffer"/> objects.</returns>
-		/// <param name="status">An optional status to filter by.</param>
+        /// <summary>
+        /// Gets the permission offers that this user has created by invoking <see cref="OfferPermissions"/>.
+        /// </summary>
+        /// <returns>A queryable collection of <see cref="PermissionOffer"/> objects.</returns>
+        /// <param name="status">An optional status to filter by.</param>
         public IQueryable<PermissionOffer> GetPermissionOffers(ManagementObjectStatus status = ManagementObjectStatus.Any)
                     => GetPermissionObjects<PermissionOffer>(status);
 
-		/// <summary>
-		/// Gets the permission offer responses that this user has created by invoking <see cref="AcceptPermissionOffer"/>.
-		/// </summary>
-		/// <returns>A queryable collection of <see cref="PermissionOfferResponse"/> objects.</returns>
-		/// <param name="status">An optional status to filter by.</param>
-		public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(ManagementObjectStatus status = ManagementObjectStatus.Any)
-					=> GetPermissionObjects<PermissionOfferResponse>(status);
+        /// <summary>
+        /// Gets the permission offer responses that this user has created by invoking <see cref="AcceptPermissionOffer"/>.
+        /// </summary>
+        /// <returns>A queryable collection of <see cref="PermissionOfferResponse"/> objects.</returns>
+        /// <param name="status">An optional status to filter by.</param>
+        public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(ManagementObjectStatus status = ManagementObjectStatus.Any)
+                    => GetPermissionObjects<PermissionOfferResponse>(status);
 
-		/// <summary>
-		/// Gets the permission changes that this user has created by invoking <see cref="ApplyPermissions"/>.
-		/// </summary>
-		/// <returns>A queryable collection of <see cref="PermissionChange"/> objects.</returns>
-		/// <param name="status">An optional status to filter by.</param>
-		public IQueryable<PermissionChange> GetPermissionChanges(ManagementObjectStatus status = ManagementObjectStatus.Any)
-					=> GetPermissionObjects<PermissionChange>(status);
+        /// <summary>
+        /// Gets the permission changes that this user has created by invoking <see cref="ApplyPermissions"/>.
+        /// </summary>
+        /// <returns>A queryable collection of <see cref="PermissionChange"/> objects.</returns>
+        /// <param name="status">An optional status to filter by.</param>
+        public IQueryable<PermissionChange> GetPermissionChanges(ManagementObjectStatus status = ManagementObjectStatus.Any)
+                    => GetPermissionObjects<PermissionChange>(status);
 
-		private IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IStatusObject
+        private IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus status) where T : RealmObject, IStatusObject
         {
             var result = ManagementRealm.All<T>();
             int? successCode = 0;
@@ -453,6 +453,6 @@ namespace Realms.Sync
             return permissionObject.WaitForProcessing();
         }
 
-#endregion
+        #endregion
     }
 }
