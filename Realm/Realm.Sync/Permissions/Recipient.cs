@@ -21,7 +21,7 @@ namespace Realms.Sync
     /// <summary>
     /// The user affected by the permission change.
     /// </summary>
-    public enum Recepient
+    public enum Recipient
     {
         /// <summary>
         /// Any user - either current or someone else.

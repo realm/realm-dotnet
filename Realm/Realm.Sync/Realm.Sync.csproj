@@ -68,7 +68,7 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Permissions\AccessLevel.cs" />
-    <Compile Include="Permissions\Recepient.cs" />
+    <Compile Include="Permissions\Recipient.cs" />
     <Compile Include="Helpers\Observer.cs" />
     <Compile Include="Permissions\PermissionCondition.cs" />
   </ItemGroup>

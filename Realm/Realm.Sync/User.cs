@@ -259,19 +259,19 @@ namespace Realms.Sync
         /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
-        /// <param name="recepient">The optional recepient of the permission.</param>
-        public async Task<IQueryable<Permission>> GetGrantedPermissions(Recepient recepient = Recepient.Any)
+        /// <param name="recipient">The optional recepient of the permission.</param>
+        public async Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any)
         {
             // TODO: this should use the new openasync API once implemented
             var result = PermissionRealm.All<Permission>();
 
             var id = Identity;
-            switch (recepient)
+            switch (recipient)
             {
-                case Recepient.CurrentUser:
+                case Recipient.CurrentUser:
                     result = result.Where(p => p.UserId == id);
                     break;
-                case Recepient.OtherUser:
+                case Recipient.OtherUser:
                     result = result.Where(p => p.UserId != id);
                     break;
             }
