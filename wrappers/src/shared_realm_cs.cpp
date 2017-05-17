@@ -66,11 +66,9 @@ namespace binding {
 #endif // REALM_ENABLE_SYNC
         }
         else if (!try_update) {
-            throw SetDuplicatePrimaryKeyValueException(
-                                                       table->get_name(),
+            throw SetDuplicatePrimaryKeyValueException(table->get_name(),
                                                        table->get_column_name(column_index),
-                                                       key_to_string(key)
-                                                       );
+                                                       key_to_string(key));
         }
         else {
             is_new = false;
@@ -337,14 +335,14 @@ REALM_EXPORT Object* shared_realm_create_object_string_unique(SharedRealm* realm
 REALM_EXPORT Object* shared_realm_create_object_null_unique(SharedRealm* realm, Table* table, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return create_object_unique(realm, table, nullptr, try_update, [table](size_t column_index, void* _) {
+        return create_object_unique(realm, table, util::none, try_update, [table](size_t column_index, util::Optional<int64_t> _) {
             if (!table->is_nullable(column_index))
                 throw std::invalid_argument("Column is not nullable");
 
             return table->find_first_null(column_index);
-        }, [table](size_t column_index, size_t row_index, void* _) {
+        }, [table](size_t column_index, size_t row_index, util::Optional<int64_t> _) {
             table->set_null_unique(column_index, row_index);
-        }, [](void* _) {
+        }, [](util::Optional<int64_t> _) {
             return "null";
         }, is_new);
     });
