@@ -39,7 +39,7 @@ namespace Realms.Sync
     /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
     [Explicit]
-    public class PermissionOfferResponse : RealmObject, IPermissionObject
+    public class PermissionOfferResponse : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
         [PrimaryKey, Required]

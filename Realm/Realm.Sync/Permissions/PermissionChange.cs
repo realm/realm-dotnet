@@ -39,7 +39,7 @@ namespace Realms.Sync
     /// <see cref="ErrorCode"/> will be updated accordingly.
     /// </remarks>
     [Explicit]
-    public class PermissionChange : RealmObject, IPermissionObject
+    public class PermissionChange : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
         [PrimaryKey, Required]

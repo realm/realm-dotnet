@@ -39,6 +39,11 @@ namespace Realms.Sync
         /// <summary>
         /// There was an error while processing the request. See <see cref="IPermissionObject.StatusMessage"/> for more details.
         /// </summary>
-        Error = 4
+        Error = 4,
+
+        /// <summary>
+        /// Any status.
+        /// </summary>
+        Any = NotProcessed | Success | Error
     }
 }

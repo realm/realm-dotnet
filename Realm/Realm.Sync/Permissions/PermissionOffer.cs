@@ -40,7 +40,7 @@ namespace Realms.Sync
     /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
     [Explicit]
-    public class PermissionOffer : RealmObject, IPermissionObject
+    public class PermissionOffer : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
         [PrimaryKey, Required]
@@ -55,8 +55,8 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         [MapTo("statusCode")]
         public int? StatusCode { get; set; }
 
