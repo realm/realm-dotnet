@@ -31,7 +31,7 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>A <see cref="PermissionCondition"/> containing information about the user's Id.</returns>
         /// <param name="userId">The Id of the user or <c>*</c> to change the permissions for all users.</param>
-        public PermissionCondition UserId(string userId)
+        public static PermissionCondition UserId(string userId)
         {
             return new UserIdCondition(userId);
         }
@@ -41,7 +41,7 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>A <see cref="PermissionCondition"/> containing information about the user's email.</returns>
         /// <param name="email">The email (username) of the user that will be affected by this condition.</param>
-        public PermissionCondition Email(string email)
+        public static PermissionCondition Email(string email)
         {
             return KeyValue("email", email);
         }
@@ -55,7 +55,7 @@ namespace Realms.Sync
         /// </returns>
         /// <param name="key">The metadata key to look for.</param>
         /// <param name="value">The metadata value that must match the key.</param>
-        public PermissionCondition KeyValue(string key, string value)
+        public static PermissionCondition KeyValue(string key, string value)
         {
             return new KeyValueCondition(key, value);
         }

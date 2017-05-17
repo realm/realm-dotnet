@@ -200,8 +200,8 @@ namespace Realms.Sync
         /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
-        /// <param name="receiver">The optional recepient of the permission.</param>
-        public Task<IQueryable<Permission>> GetGrantedPermissions(Receiver receiver = Receiver.Any)
+        /// <param name="recepient">The optional recepient of the permission.</param>
+        public Task<IQueryable<Permission>> GetGrantedPermissions(Recepient recepient = Recepient.Any)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

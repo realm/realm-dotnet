@@ -30,7 +30,7 @@ namespace Realms.Sync
         /// <summary>
         /// No access whatsoever.
         /// </summary>
-        None = 0,
+        None,
 
         /// <summary>
         /// User can only read the contents of the Realm.
@@ -40,7 +40,7 @@ namespace Realms.Sync
         /// <see cref="Realm.GetInstanceAsync(RealmConfigurationBase)"/> Attempting to directly open the Realm is 
         /// an error; in this case the Realm must be deleted and re-opened.
         /// </remarks>
-        Read = 1,
+        Read,
 
         /// <summary>
         /// User can read and write the contents of the Realm.

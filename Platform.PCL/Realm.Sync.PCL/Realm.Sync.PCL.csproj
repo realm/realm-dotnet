@@ -88,8 +88,8 @@
     <Compile Include="..\..\Realm\Realm.Sync\Permissions\AccessLevel.cs">
       <Link>Permissions\AccessLevel.cs</Link>
     </Compile>
-    <Compile Include="..\..\Realm\Realm.Sync\Permissions\Receiver.cs">
-      <Link>Permissions\Receiver.cs</Link>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\Recepient.cs">
+      <Link>Permissions\Recepient.cs</Link>
     </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\Permissions\PermissionCondition.cs">
       <Link>Permissions\PermissionCondition.cs</Link>
