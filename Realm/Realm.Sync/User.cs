@@ -381,7 +381,7 @@ namespace Realms.Sync
         /// Gets the permission offers that this user has created by invoking <see cref="OfferPermissions"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionOffer"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
         public IQueryable<PermissionOffer> GetPermissionOffers(params ManagementObjectStatus[] statuses)
                     => GetPermissionObjects<PermissionOffer>(statuses);
 
@@ -389,7 +389,7 @@ namespace Realms.Sync
         /// Gets the permission offer responses that this user has created by invoking <see cref="AcceptPermissionOffer"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionOfferResponse"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
         public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(params ManagementObjectStatus[] statuses)
                     => GetPermissionObjects<PermissionOfferResponse>(statuses);
 
@@ -397,7 +397,7 @@ namespace Realms.Sync
         /// Gets the permission changes that this user has created by invoking <see cref="ApplyPermissions"/>.
         /// </summary>
         /// <returns>A queryable collection of <see cref="PermissionChange"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status</param>
+        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
         public IQueryable<PermissionChange> GetPermissionChanges(params ManagementObjectStatus[] statuses)
                     => GetPermissionObjects<PermissionChange>(statuses);
 
