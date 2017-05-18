@@ -318,7 +318,7 @@ namespace Realms.Sync
             }
             else if (condition is KeyValueCondition keyValueCondition)
             {
-                change = new PermissionChange(keyValueCondition.Key, keyValueCondition.Value, mayRead, mayWrite, mayManage);
+                change = new PermissionChange(keyValueCondition.Key, keyValueCondition.Value, realmUrl, mayRead, mayWrite, mayManage);
             }
             else
             {

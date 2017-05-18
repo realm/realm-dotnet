@@ -147,6 +147,8 @@ namespace Realms.Sync
         internal PermissionChange(string key, string value, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
             : this(mayRead, mayWrite, mayManage)
         {
+            MetadataKey = key;
+            MetadataValue = value;
             UserId = string.Empty;
             RealmUrl = realmUrl;
         }

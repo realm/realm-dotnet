@@ -439,25 +439,10 @@ namespace Tests.Sync
             await alice.ApplyPermissions(condition, realmUrl, AccessLevel.Write);
 
             await ValidateWriteAndSync(realmUrl, alice, bob, 1, 2);
-
-            var change = alice.GetPermissionChanges().SingleOrDefault(c => c.UserId == bob.Identity);
-
-            Assert.That(change, Is.Not.Null);
-            Assert.That(change.RealmUrl, Is.EqualTo(realmUrl));
-
             await AssertPermissions(alice, bob, realmPath, AccessLevel.Write);
 
             // Revoke permissions
             await alice.ApplyPermissions(condition, realmUrl, AccessLevel.None);
-            var revokedChange = alice.GetPermissionChanges()
-                                     .ToArray() // TODO: There's a bug with RealmResultsVisitor.AddSort: https://github.com/realm/realm-dotnet/issues/1373
-                                     .OrderByDescending(c => c.CreatedAt)
-                                     .First();
-
-            Assert.That(revokedChange, Is.Not.EqualTo(change));
-            Assert.That(revokedChange.MayRead, Is.False);
-            Assert.That(revokedChange.MayWrite, Is.False);
-            Assert.That(revokedChange.MayManage, Is.False);
 
             await AssertPermissions(alice, bob, realmPath, AccessLevel.None);
         }
