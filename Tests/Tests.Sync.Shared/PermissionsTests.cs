@@ -338,9 +338,9 @@ namespace Tests.Sync
         }
 
 #if !ROS_SETUP
-		[Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
 #endif
-		[Test]
+        [Test]
         public void User_OfferPermissions_WhenExpired_ShouldThrow()
         {
             AsyncContext.Run(async () =>
@@ -355,9 +355,9 @@ namespace Tests.Sync
         }
 
 #if !ROS_SETUP
-		[Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
 #endif
-		[Test]
+        [Test]
         public void User_OfferPermissions_WhenNoAccess_ShouldThrow()
         {
             AsyncContext.Run(async () =>
