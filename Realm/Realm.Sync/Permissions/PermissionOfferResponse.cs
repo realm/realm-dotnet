@@ -104,10 +104,6 @@ namespace Realms.Sync
             Token = token;
         }
 
-        internal PermissionOfferResponse()
-        {
-        }
-
         /// <inheritdoc />
         protected override void OnPropertyChanged(string propertyName)
         {

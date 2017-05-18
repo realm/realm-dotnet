@@ -136,10 +136,6 @@ namespace Realms.Sync
             ExpiresAt = expiresAt;
         }
 
-        private PermissionOffer()
-        {
-        }
-
         /// <inheritdoc />
         protected override void OnPropertyChanged(string propertyName)
         {
