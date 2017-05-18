@@ -95,7 +95,6 @@ namespace Realms.Sync
         /// Gets the metadata key (if any) of the user(s) to effect.
         /// </summary>
         /// <value>A metadata key or null if the change is not based on metadata values.</value>
-        [Required]
         [MapTo("metadataKey")]
         public string MetadataKey { get; private set; }
 
@@ -106,7 +105,6 @@ namespace Realms.Sync
         /// A value corresponding to <see cref="MetadataKey" /> or null if the change
         /// is not based on metadata values.
         /// </value>
-        [Required]
         [MapTo("metadataValue")]
         public string MetadataValue { get; private set; }
 

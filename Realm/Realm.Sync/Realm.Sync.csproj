@@ -71,6 +71,7 @@
     <Compile Include="Permissions\Recipient.cs" />
     <Compile Include="Helpers\Observer.cs" />
     <Compile Include="Permissions\PermissionCondition.cs" />
+    <Compile Include="Exceptions\PermissionException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

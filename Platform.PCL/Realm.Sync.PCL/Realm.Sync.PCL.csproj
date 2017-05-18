@@ -94,6 +94,9 @@
     <Compile Include="..\..\Realm\Realm.Sync\Permissions\PermissionCondition.cs">
       <Link>Permissions\PermissionCondition.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\PermissionException.cs">
+      <Link>Exceptions\PermissionException.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

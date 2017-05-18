@@ -19,6 +19,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -75,7 +76,7 @@ namespace Realms.Sync
                             tcs.TrySetResult(permissionObject);
                             break;
                         case ManagementObjectStatus.Error:
-                            tcs.TrySetException(new Exception(permissionObject.StatusMessage));
+                            tcs.TrySetException(new PermissionException(permissionObject.ErrorCode.Value, permissionObject.StatusMessage));
                             break;
                     }
                 }

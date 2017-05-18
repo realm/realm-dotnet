@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -74,9 +75,9 @@ namespace Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionChange_IsProcessedByServer()
         {
@@ -88,9 +89,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionOffer_WhenValid_TokenIsSet()
         {
@@ -103,9 +104,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionOffer_WhenExpired_ShouldGetError()
         {
@@ -120,9 +121,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionResponse_WhenOfferExpired_ShouldGetError()
         {
@@ -142,9 +143,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionResponse_WhenTokenIsInvalid_ShouldGetError()
         {
@@ -158,9 +159,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionResponse_WhenOfferIsValid_ShouldSetRealmUrl()
         {
@@ -190,9 +191,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void Permission_ValidateWrite()
         {
@@ -207,9 +208,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void Permission_ValidateManage()
         {
@@ -229,9 +230,9 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+#if !ROS_SETUP
         [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-        #endif
+#endif
         [Test]
         public void PermissionChange_UpdatesPermissionRealm()
         {
@@ -277,6 +278,209 @@ namespace Tests.Sync
                 permissionRealm.Dispose();
             });
         }
+
+        #region User API
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void User_ApplyPermissions_WithUserId_GrantsAndRevokesPermissions()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+
+                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity));
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void User_ApplyPermissions_WithEmail_GrantsAndRevokesPermissions()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bobEmail = $"{Guid.NewGuid()}@foo.bar";
+                var bobCredentials = Credentials.UsernamePassword(bobEmail, "a", createUser: true);
+                var bob = await User.LoginAsync(bobCredentials, new Uri($"http://{Constants.ServerUrl}"));
+
+                await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail));
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void User_OfferPermissions_GrantsPermissions()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+
+                var realmPath = $"/{alice.Identity}/testPermission";
+                var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+                EnsureRealmExists(alice, realmUrl);
+
+                var token = await alice.OfferPermissions(realmUrl, AccessLevel.Write);
+                var alicesUrl = await bob.AcceptPermissionOffer(token);
+
+                Assert.That(alicesUrl, Is.EqualTo(realmUrl));
+
+                await AssertPermissions(alice, bob, realmPath, AccessLevel.Write);
+            });
+        }
+
+        [Test]
+        public void User_OfferPermissions_WhenExpired_ShouldThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+
+                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                EnsureRealmExists(alice, realmUrl);
+
+                await AssertThrows<ArgumentException>(() => alice.OfferPermissions(realmUrl, AccessLevel.Write, DateTimeOffset.UtcNow.AddDays(-1)));
+            });
+        }
+
+        [Test]
+        public void User_OfferPermissions_WhenNoAccess_ShouldThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+
+                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                EnsureRealmExists(alice, realmUrl);
+
+                await AssertThrows<ArgumentException>(() => alice.OfferPermissions(realmUrl, AccessLevel.None));
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void User_AcceptPermissionOffer_WhenOfferExpired_ShouldGetError()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+
+                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                EnsureRealmExists(alice, realmUrl);
+
+                var token = await alice.OfferPermissions(realmUrl, AccessLevel.Write, expiresAt: DateTimeOffset.UtcNow.AddSeconds(1));
+
+                Assert.That(token, Is.Not.Null);
+
+                await Task.Delay(2000);
+
+                await AssertThrows<PermissionException>(() => bob.AcceptPermissionOffer(token), ex =>
+                {
+                    Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
+                });
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void User_AcceptPermissionOffer_WhenTokenIsInvalid_ShouldGetError()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUser();
+
+                await AssertThrows<PermissionException>(() => user.AcceptPermissionOffer("some string"), ex =>
+                {
+                    Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
+                });
+            });
+        }
+
+        private static async Task AssertThrows<T>(Func<Task> function, Action<T> exceptionAsserts = null)
+            where T : Exception
+        {
+            try
+            {
+                await function();
+                Assert.Fail($"Exception of type {typeof(T)} expected.");
+            }
+            catch (T ex)
+            {
+                exceptionAsserts?.Invoke(ex);
+            }
+        }
+
+        private static async Task TestApplyPermissions(User alice, User bob, PermissionCondition condition)
+        {
+            var realmPath = $"/{alice.Identity}/testPermission";
+            var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+            EnsureRealmExists(alice, realmUrl);
+
+            // Grant write permissions
+            await alice.ApplyPermissions(condition, realmUrl, AccessLevel.Write);
+
+            await ValidateWriteAndSync(realmUrl, alice, bob, 1, 2);
+
+            var change = alice.GetPermissionChanges().SingleOrDefault(c => c.UserId == bob.Identity);
+
+            Assert.That(change, Is.Not.Null);
+            Assert.That(change.RealmUrl, Is.EqualTo(realmUrl));
+
+            await AssertPermissions(alice, bob, realmPath, AccessLevel.Write);
+
+            // Revoke permissions
+            await alice.ApplyPermissions(condition, realmUrl, AccessLevel.None);
+            var revokedChange = alice.GetPermissionChanges()
+                                     .ToArray() // TODO: There's a bug with RealmResultsVisitor.AddSort: https://github.com/realm/realm-dotnet/issues/1373
+                                     .OrderByDescending(c => c.CreatedAt)
+                                     .First();
+
+            Assert.That(revokedChange, Is.Not.EqualTo(change));
+            Assert.That(revokedChange.MayRead, Is.False);
+            Assert.That(revokedChange.MayWrite, Is.False);
+            Assert.That(revokedChange.MayManage, Is.False);
+
+            await AssertPermissions(alice, bob, realmPath, AccessLevel.None);
+        }
+
+        private static async Task AssertPermissions(User granter, User receiver, string path, AccessLevel level)
+        {
+            // Seems like there's some time delay before the permission realm is updated
+            await Task.Delay(500);
+            var granted = (await granter.GetGrantedPermissions(Recipient.OtherUser)).SingleOrDefault(p => p.UserId == receiver.Identity);
+            var received = (await receiver.GetGrantedPermissions(Recipient.CurrentUser)).SingleOrDefault(p => p.Path == path);
+
+            if (level > AccessLevel.None)
+            {
+                Assert.That(granted, Is.Not.Null);
+                Assert.That(granted.Path, Is.EqualTo(path));
+
+                Assert.That(received, Is.Not.Null);
+                Assert.That(received.MayRead, Is.EqualTo(level >= AccessLevel.Read));
+                Assert.That(received.MayWrite, Is.EqualTo(level >= AccessLevel.Write));
+                Assert.That(received.MayManage, Is.EqualTo(level >= AccessLevel.Admin));
+            }
+            else
+            {
+                Assert.That(granted, Is.Null);
+                Assert.That(received, Is.Null);
+            }
+        }
+
+        #endregion
 
         private static async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
         {
@@ -350,7 +554,7 @@ namespace Tests.Sync
                 return new PermissionOffer(url, mayRead, mayWrite, mayManage, expiresAt);
             }, realmUrl);
         }
-    
+
         private static Task<PermissionOfferResponse> CreateResponse(User user, string token)
         {
             return CreatePermissionObject(user, _ => new PermissionOfferResponse(token));

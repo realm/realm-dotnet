@@ -21,7 +21,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Realms.Schema;
 
-// see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 namespace Realms
 {
     /// <summary>
