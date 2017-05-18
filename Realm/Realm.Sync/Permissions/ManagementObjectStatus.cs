@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,6 +36,6 @@ namespace Realms.Sync
         /// <summary>
         /// There was an error while processing the request. See <see cref="IPermissionObject.StatusMessage"/> for more details.
         /// </summary>
-        Error,
+        Error
     }
 }
