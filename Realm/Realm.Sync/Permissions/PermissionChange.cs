@@ -158,6 +158,10 @@ namespace Realms.Sync
             MayManage = mayManage;
         }
 
+        private PermissionChange()
+        {
+        }
+
         /// <inheritdoc />
         protected override void OnPropertyChanged(string propertyName)
         {
