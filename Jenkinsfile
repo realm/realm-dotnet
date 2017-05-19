@@ -188,6 +188,21 @@ stage('Build without sync') {
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
     },
+    'Linux': {
+      nodeWithCleanup('docker') {
+        getArchive()
+
+        dir('wrappers') {
+          def image = docker.build 'ci/realm-dotnet/wrappers:linux', '-f Dockerfile.linux .'
+          def uid = sh returnStdout: true, script: 'id -u'
+          image.inside("-u ${uid} -v /etc/passwd:/etc/passwd:ro") {
+            cmake 'build-linux', "${pwd()}/build", configuration, [ 'SANITIZER_FLAGS': '-fPIC -DPIC' ]
+          }
+        }
+
+        stash includes: "wrappers/build/Linux/${configuration}/**/*", name: 'linux-wrappers-nosync'
+      }
+    },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
