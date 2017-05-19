@@ -193,9 +193,7 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          def image = docker.build 'ci/realm-dotnet/wrappers:linux', '-f Dockerfile.linux .'
-          def uid = sh returnStdout: true, script: 'id -u'
-          image.inside("-u ${uid} -v /etc/passwd:/etc/passwd:ro") {
+          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
             cmake 'build-linux', "${pwd()}/build", configuration, [ 'SANITIZER_FLAGS': '-fPIC -DPIC' ]
           }
         }
@@ -289,6 +287,21 @@ stage('Build with sync') {
         }
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
+      }
+    },
+    'Linux': {
+      nodeWithCleanup('docker') {
+        getArchive()
+      
+        dir('wrappers') {
+          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
+            sshagent(['realm-ci-ssh']) { // we need this because CMake will try to clone realm-sync
+              cmake 'build-linux', "${pwd()}/build", configuration, [ 'SANITIZER_FLAGS': '-fPIC -DPIC', 'REALM_ENABLE_SYNC': 'ON' ]
+            }
+          }
+        }
+
+        stash includes: "wrappers/build/Linux/${configuration}/**/*", name: 'linux-wrappers-sync'
       }
     },
     'PCL': {
@@ -571,5 +584,19 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
     } else {
       bat cmakeInvocation
     }
+  }
+}
+
+def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
+  def image
+  if (dockerfile != null) {
+    image = docker.build(imageTag, "-f ${dockerfile} .")
+  } else {
+    image = docker.build(imageTag)
+  }
+
+  def uid = sh returnStdout: true, script: 'id -u'
+  image.inside("-e HOME=/tmp -u ${uid} -v /etc/passwd:/etc/passwd:ro") {
+    steps()
   }
 }
