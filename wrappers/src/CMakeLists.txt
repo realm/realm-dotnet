@@ -25,6 +25,18 @@ set(HEADERS
     shared_realm_cs.hpp
 )
 
+if(REALM_ENABLE_SYNC)
+    list(APPEND SOURCES
+        sync_manager_cs.cpp
+        sync_session_cs.cpp
+        sync_user_cs.cpp
+    )
+
+    list(APPEND HEADERS
+        sync_session_cs.hpp
+    )
+endif()
+
 if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
     list(APPEND SOURCES win32_polyfill.cpp)
 endif()

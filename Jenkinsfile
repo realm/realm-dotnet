@@ -177,6 +177,17 @@ stage('Build without sync') {
         stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-nosync'
       }
     },
+    'macOS': {
+      nodeWithCleanup('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          cmake 'build-osx', "${pwd()}/build", configuration
+        }
+
+        stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
+      }
+    },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
@@ -252,6 +263,17 @@ stage('Build with sync') {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
         }
+      }
+    },
+    'macOS': {
+      nodeWithCleanup('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          cmake 'build-osx', "${pwd()}/build", configuration, [ 'REALM_ENABLE_SYNC': 'ON' ]
+        }
+
+        stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
       }
     },
     'PCL': {
@@ -524,7 +546,7 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
   }
 
   def cmakeInvocation = """
-    "${tool 'cmake'}" -DCMAKE_INSTALL_PREFIX="${installPrefix}" ${command} "${pwd()}"
+    "${tool 'cmake'}" -DCMAKE_INSTALL_PREFIX="${installPrefix}" -DCMAKE_BUILD_TYPE=${configuration} ${command} "${pwd()}"
     "${tool 'cmake'}" --build . --target install --config ${configuration}
   """
 
