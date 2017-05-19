@@ -1,13 +1,9 @@
-2.0.0 (TBD)
+1.4.0 (2017-05-19)
 ------------------
 
 ### Enhancements
 - Expose `RealmObject.OnManaged` virtual method that can be used for init purposes, since the constructor is run before the object has knowledge of its Realm. (#1383)
 - Expose `Realm.GetInstanceAsync` API to asynchronously open a synchronized Realm. It will download all remote content available at the time the operation began on a background thread and then return a usable Realm. It is also the only supported way of opening Realms for which the user has only read permissions.
-
-### Bug fixes
-
-### Breaking Changes
 
 1.3.0 (2017-05-16)
 ------------------
