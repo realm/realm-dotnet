@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Realms;
 #if __ANDROID__
 using Application = Android.App.Application;
@@ -66,6 +67,17 @@ namespace Tests
 
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
 #endif
+        }
+
+        public static async Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout)
+        {
+            var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
+            if (completed == task)
+            {
+                return await task;
+            }
+
+            throw new TimeoutException("The operation has timed out.");
         }
     }
 }

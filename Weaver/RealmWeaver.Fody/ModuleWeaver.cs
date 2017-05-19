@@ -154,7 +154,7 @@ public partial class ModuleWeaver
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
         // Debugger.Launch();
 
-        Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
+        Debug.WriteLine("Weaving file: " + ModuleDefinition.FileName);
 
         var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {

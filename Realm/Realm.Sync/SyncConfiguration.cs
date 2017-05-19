@@ -1,4 +1,4 @@
-﻿﻿////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -53,22 +53,17 @@ namespace Realms.Sync
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
-        /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
+        /// <param name="serverUri">
+        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
+        /// </param>
+        /// <param name="optionalPath">
+        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
+        /// </param>
+        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
+            : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            if (serverUri == null)
-            {
-                throw new ArgumentNullException(nameof(serverUri));
-            }
-
-            User = user;
-            ServerUri = serverUri;
+            User = user ?? throw new ArgumentNullException(nameof(user));
+            ServerUri = serverUri ?? throw new ArgumentNullException(nameof(serverUri));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -99,4 +94,5 @@ namespace Realms.Sync
                 client_validate_ssl = EnableSSLValidation
             };
         }
+    }
 }

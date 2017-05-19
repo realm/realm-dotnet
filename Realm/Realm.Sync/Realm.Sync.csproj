@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Realms.Sync</RootNamespace>
     <AssemblyName>Realm.Sync</AssemblyName>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <DocumentationFile>bin\$(Configuration)\Realm.Sync.xml</DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
