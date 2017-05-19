@@ -379,12 +379,10 @@ namespace Tests.Sync
 
                 session.SimulateProgress(100, 100, 0, 0);
 
-                var completedTask = await Task.WhenAny(task, Task.Delay(500));
+                var progress = await task.Timeout(500);
 
-                Assert.That(completedTask, Is.EqualTo(task));
-
-                Assert.That(task.Result.TransferredBytes, Is.EqualTo(100));
-                Assert.That(task.Result.TransferableBytes, Is.EqualTo(100));
+                Assert.That(progress.TransferredBytes, Is.EqualTo(100));
+                Assert.That(progress.TransferableBytes, Is.EqualTo(100));
             });
         }
 

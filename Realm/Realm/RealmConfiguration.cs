@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
@@ -178,6 +179,11 @@ namespace Realms
 
             srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
+        }
+
+        internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
+        {
+            return Task.FromResult(CreateRealm(schema));
         }
 
         [NativeCallback(typeof(ShouldCompactCallback))]

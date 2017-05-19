@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading.Tasks;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -52,22 +53,17 @@ namespace Realms.Sync
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
-        /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null) : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
+        /// <param name="serverUri">
+        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
+        /// </param>
+        /// <param name="optionalPath">
+        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
+        /// </param>
+        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
+            : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            if (serverUri == null)
-            {
-                throw new ArgumentNullException(nameof(serverUri));
-            }
-
-            User = user;
-            ServerUri = serverUri;
+            User = user ?? throw new ArgumentNullException(nameof(user));
+            ServerUri = serverUri ?? throw new ArgumentNullException(nameof(serverUri));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -78,15 +74,25 @@ namespace Realms.Sync
                 schema_version = SchemaVersion
             };
 
-            var syncConfiguration = new Native.SyncConfiguration
+            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
+            return new Realm(srHandle, this, schema);
+        }
+
+        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
+        {
+            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
+            await session.WaitForDownloadAsync();
+            return CreateRealm(schema);
+        }
+
+        private Native.SyncConfiguration ToNative()
+        {
+            return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString(),
-                client_validate_ssl = EnableSSLValidation,
+                client_validate_ssl = EnableSSLValidation
             };
-
-            var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, syncConfiguration, schema, EncryptionKey);
-            return new Realm(srHandle, this, schema);
         }
     }
 }

@@ -19,10 +19,13 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Sync;
+
+using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync
 {
@@ -54,7 +57,7 @@ namespace Tests.Sync
                 {
                     if (populate)
                     {
-                        AddDummyData(realm);
+                        AddDummyData(realm, singleTransaction: false);
                     }
                 }
 
@@ -72,11 +75,136 @@ namespace Tests.Sync
             });
         }
 
-        private static void AddDummyData(Realm realm)
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
         {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUser();
+
+                var realmUri = new Uri(SyncTestHelpers.GetRealmUrl());
+
+                var config = new SyncConfiguration(user, realmUri);
+                var asyncConfig = new SyncConfiguration(user, realmUri, config.DatabasePath + "_async");
+
+                try
+                {
+                    using (var realm = Realm.GetInstance(config))
+                    {
+                        AddDummyData(realm, singleTransaction);
+
+                        await realm.GetSession().WaitForUploadAsync();
+                    }
+
+                    using (var asyncRealm = await Realm.GetInstanceAsync(asyncConfig))
+                    {
+                        Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
+                    }
+                }
+                finally
+                {
+                    Realm.DeleteRealm(config);
+                    Realm.DeleteRealm(asyncConfig);
+                }
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+                var bob = await SyncTestHelpers.GetUser();
+
+                var realmUrl = SyncTestHelpers.GetRealmUrl(userId: alice.Identity);
+                var aliceConfig = new SyncConfiguration(alice, new Uri(realmUrl));
+                var aliceRealm = Realm.GetInstance(aliceConfig);
+
+                // TODO: replace with wrapper API
+                await GrantPermissions(alice, bob, realmUrl);
+
+                AddDummyData(aliceRealm, singleTransaction);
+
+                var bobConfig = new SyncConfiguration(bob, new Uri(realmUrl));
+                var bobRealm = await Realm.GetInstanceAsync(bobConfig);
+
+                var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
+                var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();
+                Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
+
+                var bobTcs = new TaskCompletionSource<object>();
+                bobsObjects.AsRealmCollection().CollectionChanged += (sender, e) =>
+                {
+                    bobTcs.TrySetResult(null);
+                };
+
+                aliceRealm.Write(() =>
+                {
+                    aliceRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 9999,
+                        StringValue = "Some value"
+                    });
+                });
+
+                await bobTcs.Task.Timeout(1000);
+
+                Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
+
+                var bobObject = bobRealm.Find<IntPrimaryKeyWithValueObject>(9999);
+                Assert.That(bobObject, Is.Not.Null);
+                Assert.That(bobObject.StringValue, Is.EqualTo("Some value"));
+            });
+        }
+
+        private static Task GrantPermissions(User alice, User bob, string realmUrl)
+        {
+            var managementRealm = alice.GetManagementRealm();
+            var change = new PermissionChange(bob.Identity, realmUrl, mayRead: true);
+            managementRealm.Write(() =>
+            {
+                managementRealm.Add(change);
+            });
+
+            var tcs = new TaskCompletionSource<object>();
+            change.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(PermissionChange.Status))
+                {
+                    tcs.TrySetResult(null);
+                }
+            };
+
+            return tcs.Task.Timeout(1000);
+        }
+
+        private static void AddDummyData(Realm realm, bool singleTransaction)
+        {
+            Action<Action> write;
+            Transaction currentTransaction = null;
+
+            if (singleTransaction)
+            {
+                write = action => action();
+                currentTransaction = realm.BeginWrite();
+            }
+            else
+            {
+                write = realm.Write;
+            }
+
             for (var i = 0; i < 1000; i++)
             {
-                realm.Write(() =>
+                write(() =>
                 {
                     realm.Add(new IntPrimaryKeyWithValueObject
                     {
@@ -86,13 +214,24 @@ namespace Tests.Sync
                 });
             }
 
+            if (singleTransaction)
+            {
+                currentTransaction.Commit();
+                currentTransaction = realm.BeginWrite();
+            }
+
             for (var i = 0; i < 500; i++)
             {
-                realm.Write(() =>
+                write(() =>
                 {
                     var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i);
                     realm.Remove(item);
                 });
+            }
+
+            if (singleTransaction)
+            {
+                currentTransaction.Commit();
             }
         }
     }

@@ -374,11 +374,7 @@ namespace Tests.Sync
                 }
             };
 
-            var completedProcessingTask = await Task.WhenAny(tcs.Task, Task.Delay(5000));
-
-            Assert.That(completedProcessingTask, Is.EqualTo(tcs.Task));
-
-            await tcs.Task;
+            await tcs.Task.Timeout(5000);
 
             return item;
         }

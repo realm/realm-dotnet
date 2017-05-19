@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -32,6 +33,11 @@ namespace Tests.Sync
         {
             var credentials = Constants.CreateCredentials();
             return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+        }
+
+        public static string GetRealmUrl([CallerMemberName]string realmName = null, string userId = null)
+        {
+            return $"realm://{Constants.ServerUrl}/{userId ?? "~"}/{realmName}";
         }
 
         public static async Task<Realm> GetFakeRealm(bool isUserAdmin)

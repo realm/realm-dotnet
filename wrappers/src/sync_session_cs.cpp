@@ -35,6 +35,7 @@ namespace binding {
     void (*s_refresh_access_token_callback)(std::shared_ptr<SyncSession>*);
     void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len);
     void (*s_progress_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+    void (*s_wait_callback)(void* task_completion_source, int32_t error_code);
 
     void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
     {
@@ -132,11 +133,12 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
     
-REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback)
+REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_refresh_access_token_callback) refresh_callback, decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
 {
     s_refresh_access_token_callback = refresh_callback;
     s_session_error_callback = session_error_callback;
     s_progress_callback = progress_callback;
+    s_wait_callback = wait_callback;
 }
     
 enum class CSharpNotifierType : uint8_t {
@@ -163,7 +165,22 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
         session->unregister_progress_notifier(token);
     });
 }
-    
+
+REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        auto waiter = [task_completion_source](std::error_code error) {
+            s_wait_callback(task_completion_source, error.value());
+        };
+        
+        if (direction == CSharpNotifierType::Upload) {
+            return session->wait_for_upload_completion(waiter);
+        } else {
+            return session->wait_for_download_completion(waiter);
+        }
+    });
+}
+
 REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSyncSession& session, uint64_t downloaded, uint64_t downloadable,
                                                                     uint64_t uploaded, uint64_t uploadable)
 {

@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Realms.Schema;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
@@ -124,5 +125,7 @@ namespace Realms
         }
 
         internal abstract Realm CreateRealm(RealmSchema schema);
+
+        internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema);
     }
 }

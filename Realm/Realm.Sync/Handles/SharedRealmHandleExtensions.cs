@@ -22,6 +22,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
 using Realms.Sync.Exceptions;
@@ -49,6 +51,8 @@ namespace Realms.Sync
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
+            public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
                                                                    UserPersistenceMode* userPersistence, byte[] encryptionKey,
@@ -56,7 +60,7 @@ namespace Realms.Sync
                                                                    out NativeException exception);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback);
+            public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
@@ -70,11 +74,14 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect();
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
         {
-            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError, HandleSessionProgress);
+            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError, HandleSessionProgress, HandleSessionWaitCallback);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -154,6 +161,19 @@ namespace Realms.Sync
             NativeMethods.reconnect();
         }
 
+        public static SessionHandle GetSession(string path, Native.SyncConfiguration configuration, byte[] encryptionKey)
+        {
+            DoInitialFileSystemConfiguration();
+
+            NativeException nativeException;
+            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            var handle = new SessionHandle();
+            handle.SetHandle(result);
+            return handle;
+        }
+
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         private static unsafe void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
@@ -194,6 +214,29 @@ namespace Realms.Sync
         {
             var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
             token.Notify(transferredBytes, transferableBytes);
+        }
+
+        [NativeCallback(typeof(NativeMethods.SessionWaitCallback))]
+        private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code)
+        {
+            var handle = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<object>)handle.Target;
+
+            try
+            {
+                if (error_code == 0)
+                {
+                    tcs.TrySetResult(null);
+                }
+                else
+                {
+                    tcs.TrySetException(new RealmException($"A system error with code {error_code} occurred while waiting for completion"));
+                }
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
     }
 }
