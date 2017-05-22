@@ -514,6 +514,8 @@ stage('NuGet') {
         unstash 'android-wrappers-nosync'
         unstash 'win32-wrappers-nosync'
         unstash 'uwp-wrappers-nosync'
+        unstash 'macos-wrappers-nosync'
+        unstash 'linux-wrappers-nosync'
 
         dir('NuGet/Realm.Database') {
           nuget("pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
@@ -529,6 +531,8 @@ stage('NuGet') {
         unstash 'nuget-sync'
         unstash 'ios-wrappers-sync'
         unstash 'android-wrappers-sync'
+        unstash 'macos-wrappers-sync'
+        unstash 'linux-wrappers-sync'
 
         dir('NuGet/Realm') {
           nuget("pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")

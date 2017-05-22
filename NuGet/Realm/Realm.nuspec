@@ -17,10 +17,10 @@
     <tags>Realm database db persistence sqlite</tags>
     <dependencies>
       <group targetFramework="portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac">
-        <dependency id="Realm.Database" version="$version$"/>
+        <dependency id="Realm.Database" version="$version$" exclude="native" />
       </group>
       <group targetFramework="netstandard1.4">
-        <dependency id="Realm.Database" version="$version$"/>
+        <dependency id="Realm.Database" version="$version$" exclude="native"/>
         <dependency id="Newtonsoft.Json" version="9.0.1"/>
       </group>
     </dependencies>
@@ -39,5 +39,8 @@
     <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
     <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="native/android/x86" />
     <file src="../../wrappers/build/$Configuration$-android/x86_64/librealm-wrappers.so" target="native/android/x86_64" />
+<!-- .NET Core files -->
+    <file src="../../wrappers/build/Darwin/$Configuration$/librealm-wrappers.dylib" target="runtimes/osx.10.10-x64/native" />
+    <file src="../../wrappers/build/Linux/$Configuration$/librealm-wrappers.so" target="runtimes/linux-x64/native" />
   </files>
 </package>
