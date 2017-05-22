@@ -31,4 +31,17 @@ internal static class TaskExtensions
 
         throw new TimeoutException("The operation has timed out.");
     }
+
+    public static async Task Timeout(this Task task, int millisecondTimeout)
+    {
+        var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
+        if (completed == task)
+        {
+            await task;
+        }
+        else
+        {
+            throw new TimeoutException("The operation has timed out.");
+        }
+    }
 }

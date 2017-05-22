@@ -275,15 +275,9 @@ namespace Realms.Sync
 
             if (millisecondTimeout > 0)
             {
-                var tcs = new TaskCompletionSource<object>();
-
-                var progressObservable = PermissionRealm.GetSession().GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
-                var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
-                progressObservable.Subscribe(observer);
-
                 try
                 {
-                    await tcs.Task.Timeout(millisecondTimeout);
+                    await PermissionRealm.GetSession().WaitForDownloadAsync().Timeout(millisecondTimeout);
                 }
                 catch (TimeoutException)
                 {
