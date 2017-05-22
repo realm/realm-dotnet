@@ -2,8 +2,7 @@
 ------------------
 
 ### Enhancements
-- Exposed `RealmObject.OnManaged` virtual method that can be used for init purposes, since the constructor is run before the object has knowledge of its Realm. (#1383)
-- Exposed new API on the `User` class for working with permissions:
+- Exposed new API on the `User` class for working with permissions: (#1361)
   - `ApplyPermissions`, `OfferPermissions`, and `AcceptPermissionOffer` allow you to grant, revoke, offer, and accept permissions.
   - `GetPermissionOffers`, `GetPermissionOfferResponses`, and `GetPermissionChanges` allow you to review objects, added via the above mentioned methods.
   - `GetGrantedPermissions` allows you to inspect permissions granted to or by the current user.
