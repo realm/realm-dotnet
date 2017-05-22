@@ -4,6 +4,7 @@
 ### Enhancements
 
 ### Bug fixes
+- Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))
 
 ### Breaking Changes
 
