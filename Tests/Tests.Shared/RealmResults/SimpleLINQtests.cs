@@ -947,8 +947,8 @@ namespace Tests.Database
         {
             var objs = MakeThreeMappedObjects();
 
-            Assert.That(objs.Where(o => o.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(2));
-            Assert.That(objs.Where(o => o.Id > 2), Is.EqualTo(1));
+            Assert.That(objs.Count(o => o.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)), Is.EqualTo(2));
+            Assert.That(objs.Count(o => o.Id > 2), Is.EqualTo(1));
         }
 
         [Test]

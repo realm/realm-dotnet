@@ -140,13 +140,14 @@ namespace Realms
             OptionalSortDescriptorBuilder.AddClause(propertyChain, ascending);
         }
 
-        private static IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
+        private IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
         {
             var chain = new List<Tuple<Type, string>>();
 
             while (expression != null)
             {
-                chain.Add(Tuple.Create(expression.Member.DeclaringType, expression.Member.Name));
+                var columnName = GetColumnName(expression, expression.NodeType);
+                chain.Add(Tuple.Create(expression.Member.DeclaringType, columnName));
                 expression = expression.Expression as MemberExpression;
             }
 
@@ -392,7 +393,8 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a RealmObject member");
                     }
 
-                    var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
+                    var columnName = GetColumnName(member, node.NodeType);
+                    var columnIndex = CoreQueryHandle.GetColumnIndex(columnName);
 
                     CoreQueryHandle.GroupBegin();
                     CoreQueryHandle.NullEqual(columnIndex);
@@ -430,7 +432,8 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked on a RealmObject member");
                     }
 
-                    var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
+                    var columnName = GetColumnName(member, node.NodeType);
+                    var columnIndex = CoreQueryHandle.GetColumnIndex(columnName);
 
                     if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
@@ -569,15 +572,7 @@ namespace Realms
                     memberExpression = ((UnaryExpression)node.Left).Operand as MemberExpression;
                 }
 
-                var leftName = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
-                               memberExpression?.Member.Name;
-
-                if (leftName == null ||
-                    !(memberExpression.Member is PropertyInfo) ||
-                    !_metadata.Schema.PropertyNames.Contains(leftName))
-                {
-                    throw new NotSupportedException($"The left-hand side of the {node.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{node.Left}'.");
-                }
+                var leftName = GetColumnName(memberExpression, node.NodeType);
 
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
@@ -928,6 +923,21 @@ namespace Realms
 
             return caseSensitive;
         }
+        
+        private string GetColumnName(MemberExpression memberExpression, ExpressionType parentType)
+        {
+            var name = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
+                       memberExpression?.Member.Name;
+
+            if (name == null ||
+                !(memberExpression.Member is PropertyInfo) ||
+                !_metadata.Schema.PropertyNames.Contains(name))
+            {
+                throw new NotSupportedException($"The left-hand side of the {parentType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{memberExpression}'.");
+            }
+
+            return name;
+        }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         protected override Expression VisitConstant(ConstantExpression node)
@@ -957,7 +967,7 @@ namespace Realms
                 if (node.Type == typeof(bool))
                 {
                     object rhs = true;  // box value
-                    var leftName = node.Member.Name;
+                    var leftName = GetColumnName(node, node.NodeType);
                     AddQueryEqual(CoreQueryHandle, leftName, rhs);
                 }
 
