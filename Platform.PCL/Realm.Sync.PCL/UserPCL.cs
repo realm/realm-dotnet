@@ -201,7 +201,11 @@ namespace Realms.Sync
         /// regarding the granted access.
         /// </returns>
         /// <param name="recipient">The optional recepient of the permission.</param>
-        public Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any)
+        /// <param name="millisecondTimeout">
+        /// The timeout in milliseconds for downloading server changes. If set to 0, the latest state will be returned
+        /// immediately.
+        /// </param>
+        public Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

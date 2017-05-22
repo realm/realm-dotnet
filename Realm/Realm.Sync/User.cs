@@ -260,18 +260,34 @@ namespace Realms.Sync
         /// regarding the granted access.
         /// </returns>
         /// <param name="recipient">The optional recepient of the permission.</param>
-        public async Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any)
+        /// <param name="millisecondTimeout">
+        /// The timeout in milliseconds for downloading server changes. If set to 0, the latest state will be returned
+        /// immediately.
+        /// </param>
+        public async Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
         {
-            var tcs = new TaskCompletionSource<object>();
+			// TODO: this should eventually use GetInstanceAsync
 
-            // TODO: this should use the new openasync API once implemented
-            var progressObservable = PermissionRealm.GetSession().GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
-            var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
-            progressObservable.Subscribe(observer);
+			if (millisecondTimeout > 0)
+            {
+				var tcs = new TaskCompletionSource<object>();
 
-            await tcs.Task;
+				var progressObservable = PermissionRealm.GetSession().GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
+				var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
+				progressObservable.Subscribe(observer);
 
-            var result = PermissionRealm.All<Permission>();
+                try
+                {
+					await tcs.Task.Timeout(millisecondTimeout);
+				}
+                catch (TimeoutException)
+                {
+                }
+			}
+
+            var result = PermissionRealm.All<Permission>()
+                                        .Where(p => !p.Path.EndsWith("/__permission", StringComparison.OrdinalIgnoreCase) &&
+                                                    !p.Path.EndsWith("/__management", StringComparison.OrdinalIgnoreCase));
 
             var id = Identity;
             switch (recipient)
