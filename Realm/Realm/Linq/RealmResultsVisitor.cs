@@ -131,23 +131,30 @@ namespace Realms
                 }
             }
 
-            var propertyChain = TraverseSort(body).Select(n =>
-            {
-                var metadata = _realm.Metadata[n.Item1.Name];
-                return metadata.PropertyIndices[n.Item2];
-            });
+            var propertyChain = TraverseSort(body);
 
             OptionalSortDescriptorBuilder.AddClause(propertyChain, ascending);
         }
 
-        private IEnumerable<Tuple<Type, string>> TraverseSort(MemberExpression expression)
+        private IEnumerable<IntPtr> TraverseSort(MemberExpression expression)
         {
-            var chain = new List<Tuple<Type, string>>();
+            var chain = new List<IntPtr>();
 
             while (expression != null)
             {
-                var columnName = GetColumnName(expression, expression.NodeType);
-                chain.Add(Tuple.Create(expression.Member.DeclaringType, columnName));
+                var typeName = expression.Member.DeclaringType.Name;
+                if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
+                {
+                    throw new NotSupportedException($"The class {typeName} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");
+                }
+
+                var columnName = GetColumnName(expression);
+                if (!metadata.PropertyIndices.TryGetValue(columnName, out var index))
+                {
+                    throw new NotSupportedException($"The property {columnName} is not a persisted property on {typeName} so sorting by it is not allowed.");
+                }
+
+                chain.Add(index);
                 expression = expression.Expression as MemberExpression;
             }
 
@@ -923,17 +930,20 @@ namespace Realms
 
             return caseSensitive;
         }
-        
-        private string GetColumnName(MemberExpression memberExpression, ExpressionType parentType)
+
+        private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
         {
             var name = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
                        memberExpression?.Member.Name;
 
-            if (name == null ||
-                !(memberExpression.Member is PropertyInfo) ||
-                !_metadata.Schema.PropertyNames.Contains(name))
+            if (parentType.HasValue)
             {
-                throw new NotSupportedException($"The left-hand side of the {parentType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{memberExpression}'.");
+                if (name == null ||
+                    !(memberExpression.Member is PropertyInfo) ||
+                    !_metadata.Schema.PropertyNames.Contains(name))
+                {
+                    throw new NotSupportedException($"The left-hand side of the {parentType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{memberExpression}'.");
+                }
             }
 
             return name;
