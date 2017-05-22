@@ -67,7 +67,7 @@ namespace Realms
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
                 internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
-                
+
                 internal static readonly LazyMethod IsNullOrEmpty = Capture<string>(s => string.IsNullOrEmpty(s));
 
                 internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
@@ -155,63 +155,63 @@ namespace Realms
             return chain;
         }
 
-        protected override Expression VisitMethodCall(MethodCallExpression m)
+        protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (m.Method.DeclaringType == typeof(Queryable))
+            if (node.Method.DeclaringType == typeof(Queryable))
             {
-                if (m.Method.Name == nameof(Queryable.Where))
+                if (node.Method.Name == nameof(Queryable.Where))
                 {
-                    Visit(m.Arguments[0]);
-                    var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    Visit(node.Arguments[0]);
+                    var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
                     Visit(lambda.Body);
-                    return m;
+                    return node;
                 }
 
-                if (m.Method.Name == nameof(Queryable.OrderBy))
+                if (node.Method.Name == nameof(Queryable.OrderBy))
                 {
-                    Visit(m.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
-                    return m;
+                    Visit(node.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true, true);
+                    return node;
                 }
 
-                if (m.Method.Name == nameof(Queryable.OrderByDescending))
+                if (node.Method.Name == nameof(Queryable.OrderByDescending))
                 {
-                    Visit(m.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
-                    return m;
+                    Visit(node.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true, false);
+                    return node;
                 }
 
-                if (m.Method.Name == nameof(Queryable.ThenBy))
+                if (node.Method.Name == nameof(Queryable.ThenBy))
                 {
-                    Visit(m.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
-                    return m;
+                    Visit(node.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false, true);
+                    return node;
                 }
 
-                if (m.Method.Name == nameof(Queryable.ThenByDescending))
+                if (node.Method.Name == nameof(Queryable.ThenByDescending))
                 {
-                    Visit(m.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
-                    return m;
+                    Visit(node.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false, false);
+                    return node;
                 }
 
-                if (m.Method.Name == nameof(Queryable.Count))
+                if (node.Method.Name == nameof(Queryable.Count))
                 {
-                    RecurseToWhereOrRunLambda(m);
+                    RecurseToWhereOrRunLambda(node);
                     var foundCount = CoreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
 
-                if (m.Method.Name == nameof(Queryable.Any))
+                if (node.Method.Name == nameof(Queryable.Any))
                 {
-                    RecurseToWhereOrRunLambda(m);
+                    RecurseToWhereOrRunLambda(node);
                     var foundAny = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
 
-                if (m.Method.Name.StartsWith(nameof(Queryable.First)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
-                    RecurseToWhereOrRunLambda(m);
+                    RecurseToWhereOrRunLambda(node);
                     var firstObjectPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
@@ -230,12 +230,12 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObject(_metadata, firstObjectPtr));
                     }
 
-                    if (m.Method.Name == nameof(Queryable.First))
+                    if (node.Method.Name == nameof(Queryable.First))
                     {
                         throw new InvalidOperationException("Sequence contains no matching element");
                     }
 
-                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
+                    Debug.Assert(node.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
                     return Expression.Constant(null);
                 }
 
@@ -256,18 +256,18 @@ namespace Realms
                                     return Expression.Constant(singleNullItemList);
                                 }
                 */
-                if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
+                if (node.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
-                    RecurseToWhereOrRunLambda(m);
+                    RecurseToWhereOrRunLambda(node);
                     var firstObjectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle);
                     if (firstObjectPtr == IntPtr.Zero)
                     {
-                        if (m.Method.Name == nameof(Queryable.Single))
+                        if (node.Method.Name == nameof(Queryable.Single))
                         {
                             throw new InvalidOperationException("Sequence contains no matching element");
                         }
 
-                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
+                        Debug.Assert(node.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
                         return Expression.Constant(null);
                     }
 
@@ -281,9 +281,9 @@ namespace Realms
                     return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
                 }
 
-                if (m.Method.Name.StartsWith(nameof(Queryable.Last)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.Last)))
                 {
-                    RecurseToWhereOrRunLambda(m);
+                    RecurseToWhereOrRunLambda(node);
 
                     var lastObjectPtr = IntPtr.Zero;
                     using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
@@ -300,22 +300,21 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObject(_metadata, lastObjectPtr));
                     }
 
-                    if (m.Method.Name == nameof(Queryable.Last))
+                    if (node.Method.Name == nameof(Queryable.Last))
                     {
                         throw new InvalidOperationException("Sequence contains no matching element");
                     }
 
-                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.LastOrDefault)}.");
+                    Debug.Assert(node.Method.Name == nameof(Queryable.LastOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.LastOrDefault)}.");
                     return Expression.Constant(null);
                 }
 
-                if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
                 {
-                    Visit(m.Arguments.First());
-                    object argument;
-                    if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || argument.GetType() != typeof(int))
+                    Visit(node.Arguments.First());
+                    if (!TryExtractConstantValue(node.Arguments.Last(), out object argument) || argument.GetType() != typeof(int))
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single integer constant argument or closure variable");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single integer constant argument or closure variable");
                     }
 
                     IntPtr objectPtr;
@@ -338,18 +337,18 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
                     }
 
-                    if (m.Method.Name == nameof(Queryable.ElementAt))
+                    if (node.Method.Name == nameof(Queryable.ElementAt))
                     {
                         throw new ArgumentOutOfRangeException();
                     }
 
-                    Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
+                    Debug.Assert(node.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
                     return Expression.Constant(null);
                 }
             }
 
-            if (m.Method.DeclaringType == typeof(string) ||
-                m.Method.DeclaringType == typeof(StringExtensions))
+            if (node.Method.DeclaringType == typeof(string) ||
+                node.Method.DeclaringType == typeof(StringExtensions))
             {
                 QueryHandle.Operation<string> queryMethod = null;
 
@@ -359,38 +358,38 @@ namespace Realms
                 // For extension methods, that should be 1
                 var stringArgumentIndex = 0;
 
-                if (AreMethodsSame(m.Method, Methods.String.Contains.Value))
+                if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
                 {
                     queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.ContainsStringComparison.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
                 {
-                    member = m.Arguments[0] as MemberExpression;
+                    member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
-                    queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(m));
+                    queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.StartsWith.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
                 {
                     queryMethod = (q, c, v) => q.StringStartsWith(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.StartsWithStringComparison.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, GetComparisonCaseSensitive(m));
+                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.EndsWith.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.EndsWithStringComparison.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, GetComparisonCaseSensitive(m));
+                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.IsNullOrEmpty.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.IsNullOrEmpty.Value))
                 {
-                    member = m.Arguments.SingleOrDefault() as MemberExpression;
+                    member = node.Arguments.SingleOrDefault() as MemberExpression;
                     if (member == null)
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a RealmObject member");
                     }
 
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
@@ -400,24 +399,23 @@ namespace Realms
                     CoreQueryHandle.Or();
                     CoreQueryHandle.StringEqual(columnIndex, string.Empty, caseSensitive: true);
                     CoreQueryHandle.GroupEnd();
-                    return m;
+                    return node;
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.EqualsMethod.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
                 {
                     queryMethod = (q, c, v) => q.StringEqual(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.EqualsStringComparison.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(m));
+                    queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(m.Method, Methods.String.Like.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
-                    member = m.Arguments[0] as MemberExpression;
+                    member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
-                    object caseSensitive;
-                    if (!TryExtractConstantValue(m.Arguments.Last(), out caseSensitive) || !(caseSensitive is bool))
+                    if (!TryExtractConstantValue(node.Arguments.Last(), out object caseSensitive) || !(caseSensitive is bool))
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and boolean constant arguments.");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a string and boolean constant arguments.");
                     }
 
                     queryMethod = (q, c, v) => q.StringLike(c, v, (bool)caseSensitive);
@@ -425,28 +423,27 @@ namespace Realms
 
                 if (queryMethod != null)
                 {
-                    member = member ?? m.Object as MemberExpression;
+                    member = member ?? node.Object as MemberExpression;
 
                     if (member == null)
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked on a RealmObject member");
                     }
 
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
-                    object argument;
-                    if (!TryExtractConstantValue(m.Arguments[stringArgumentIndex], out argument) || 
+                    if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
 
                     queryMethod(CoreQueryHandle, columnIndex, (string)argument);
-                    return m;
+                    return node;
                 }
             }
 
-            throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
+            throw new NotSupportedException($"The method '{node.Method.Name}' is not supported");
         }
 
         // Compares two methods for equality. .NET Native's == doesn't return expected results.
@@ -482,19 +479,19 @@ namespace Realms
             return true;
         }
 
-        protected override Expression VisitUnary(UnaryExpression u)
+        protected override Expression VisitUnary(UnaryExpression node)
         {
-            switch (u.NodeType)
+            switch (node.NodeType)
             {
                 case ExpressionType.Not:
                     CoreQueryHandle.Not();
-                    Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
+                    Visit(node.Operand);  // recurse into richer expression, expect to VisitCombination
                     break;
                 default:
-                    throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
+                    throw new NotSupportedException($"The unary operator '{node.NodeType}' is not supported");
             }
 
-            return u;
+            return node;
         }
 
         protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
@@ -508,16 +505,14 @@ namespace Realms
 
         internal static bool TryExtractConstantValue(Expression expr, out object value)
         {
-            var constant = expr as ConstantExpression;
-            if (constant != null)
+            if (expr is ConstantExpression constant)
             {
                 value = constant.Value;
                 return true;
             }
 
             var memberAccess = expr as MemberExpression;
-            var fieldInfo = memberAccess?.Member as FieldInfo;
-            if (fieldInfo != null)
+            if (memberAccess?.Member is FieldInfo fieldInfo)
             {
                 if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
                 {
@@ -526,16 +521,14 @@ namespace Realms
                     return true;
                 }
 
-                object targetObject;
-                if (TryExtractConstantValue(memberAccess.Expression, out targetObject))
+                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
                 {
                     value = fieldInfo.GetValue(targetObject);
                     return true;
                 }
             }
 
-            var propertyInfo = memberAccess?.Member as PropertyInfo;
-            if (propertyInfo != null)
+            if (memberAccess?.Member is PropertyInfo propertyInfo)
             {
                 if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
                 {
@@ -543,8 +536,7 @@ namespace Realms
                     return true;
                 }
 
-                object targetObject;
-                if (TryExtractConstantValue(memberAccess.Expression, out targetObject))
+                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
                 {
                     value = propertyInfo.GetValue(targetObject);
                     return true;
@@ -555,45 +547,44 @@ namespace Realms
             return false;
         }
 
-        protected override Expression VisitBinary(BinaryExpression b)
+        protected override Expression VisitBinary(BinaryExpression node)
         {
-            if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
+            if (node.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
-                VisitCombination(b, (qh) => { /* noop -- AND is the default combinator */ });
+                VisitCombination(node, (qh) => { /* noop -- AND is the default combinator */ });
             }
-            else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
+            else if (node.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
-                VisitCombination(b, qh => qh.Or());
+                VisitCombination(node, qh => qh.Or());
             }
             else
             {
-                var memberExpression = b.Left as MemberExpression;
+                var memberExpression = node.Left as MemberExpression;
 
                 // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
                 // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
                 // from Where(p => p.CharProperty == 'A')
-                if (memberExpression == null && b.Left.NodeType == ExpressionType.Convert)
+                if (memberExpression == null && node.Left.NodeType == ExpressionType.Convert)
                 {
-                    memberExpression = ((UnaryExpression)b.Left).Operand as MemberExpression;
+                    memberExpression = ((UnaryExpression)node.Left).Operand as MemberExpression;
                 }
 
-                var leftName = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ?? 
+                var leftName = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
                                memberExpression?.Member.Name;
 
                 if (leftName == null ||
                     !(memberExpression.Member is PropertyInfo) ||
                     !_metadata.Schema.PropertyNames.Contains(leftName))
                 {
-                    throw new NotSupportedException($"The left-hand side of the {b.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{b.Left}'.");
+                    throw new NotSupportedException($"The left-hand side of the {node.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{node.Left}'.");
                 }
 
-                object rightValue;
-                if (!TryExtractConstantValue(b.Right, out rightValue))
+                if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression. \nUnable to process `{b.Right}`");
+                    throw new NotSupportedException($"The rhs of the binary operator '{node.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
                 }
 
-                switch (b.NodeType)
+                switch (node.NodeType)
                 {
                     case ExpressionType.Equal:
                         AddQueryEqual(CoreQueryHandle, leftName, rightValue);
@@ -620,11 +611,11 @@ namespace Realms
                         break;
 
                     default:
-                        throw new NotSupportedException($"The binary operator '{b.NodeType}' is not supported");
+                        throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
                 }
             }
 
-            return b;
+            return node;
         }
 
         private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
@@ -667,9 +658,8 @@ namespace Realms
             {
                 queryHandle.TimestampTicksEqual(columnIndex, (DateTimeOffset)value);
             }
-            else if (value is byte[])
+            else if (value is byte[] buffer)
             {
-                var buffer = (byte[])value;
                 if (buffer.Length == 0)
                 {
                     // see RealmObject.SetByteArrayValue
@@ -735,9 +725,8 @@ namespace Realms
             {
                 queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
             }
-            else if (value is byte[])
+            else if (value is byte[] buffer)
             {
-                var buffer = (byte[])value;
                 if (buffer.Length == 0)
                 {
                     // see RealmObject.SetByteArrayValue
@@ -918,8 +907,7 @@ namespace Realms
 
         private static bool GetComparisonCaseSensitive(MethodCallExpression m)
         {
-            object argument;
-            if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || !(argument is StringComparison))
+            if (!TryExtractConstantValue(m.Arguments.Last(), out object argument) || !(argument is StringComparison))
             {
                 throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and StringComparison constant arguments.");
             }
@@ -942,10 +930,9 @@ namespace Realms
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
-        protected override Expression VisitConstant(ConstantExpression c)
+        protected override Expression VisitConstant(ConstantExpression node)
         {
-            var results = c.Value as IQueryableCollection;
-            if (results != null)
+            if (node.Value is IQueryableCollection results)
             {
                 // assume constant nodes w/ IQueryables are table references
                 if (CoreQueryHandle != null)
@@ -955,12 +942,12 @@ namespace Realms
 
                 CoreQueryHandle = results.CreateQuery();
             }
-            else if (c.Value?.GetType() == typeof(object))
+            else if (node.Value?.GetType() == typeof(object))
             {
-                throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
+                throw new NotSupportedException($"The constant for '{node.Value}' is not supported");
             }
 
-            return c;
+            return node;
         }
 
         protected override Expression VisitMember(MemberExpression node)
