@@ -15,38 +15,76 @@ def versionString
 def dataBindingVersion
 def dataBindingVersionString
 
+def dependencies
+
 stage('Checkout') {
   node('xamarin-mac') {
     checkout([
-        $class: 'GitSCM',
-        branches: scm.branches,
-        gitTool: 'native git',
-        extensions: scm.extensions + [
-          [$class: 'CleanCheckout'],
-          [$class: 'SubmoduleOption', recursiveSubmodules: true]
-        ],
-        userRemoteConfigs: scm.userRemoteConfigs
-      ])
+      $class: 'GitSCM',
+      branches: scm.branches,
+      gitTool: 'native git',
+      extensions: scm.extensions + [
+        [$class: 'CleanCheckout'],
+        [$class: 'SubmoduleOption', recursiveSubmodules: true]
+      ],
+      userRemoteConfigs: scm.userRemoteConfigs
+    ])
 
-      version = readAssemblyVersion('RealmAssemblyInfo.cs')
-      versionString = "${version.major}.${version.minor}.${version.patch}"
+    dir('wrappers') {
+      dependencies = readProperties file: 'dependencies.list'
 
-      dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
-      dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
-
-      nuget('restore Realm.sln')
-      dir('Realm/Realm') {
-        sh "${tool 'msbuild'} Realm.csproj /t:restore"
+      dir('realm-core') {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
+          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+          changelog: false, poll: false,
+          gitTool: 'native git', 
+          userRemoteConfigs: [[
+            credentialsId: 'realm-ci-ssh',
+            url: 'git@github.com:realm/realm-core.git'
+          ]]
+        ])
+        stash includes: '**', name: 'core-source'
+        deleteDir()
       }
-      dir('Realm/Realm.Sync') {
-        sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
-      }
-      dir('DataBinding/Realm.DataBinding.PCL') {
-        sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
-      }
 
-      stash includes: '**', name: 'dotnet-source'
-      deleteDir()
+      dir('realm-sync') {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
+          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+          changelog: false, poll: false,
+          gitTool: 'native git', 
+          userRemoteConfigs: [[
+            credentialsId: 'realm-ci-ssh',
+            url: 'git@github.com:realm/realm-sync.git'
+          ]]
+        ])
+        stash includes: '**', name: 'sync-source'
+        deleteDir()
+      }
+    }
+
+    version = readAssemblyVersion('RealmAssemblyInfo.cs')
+    versionString = "${version.major}.${version.minor}.${version.patch}"
+
+    dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
+    dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
+
+    nuget('restore Realm.sln')
+    dir('Realm/Realm') {
+      sh "${tool 'msbuild'} Realm.csproj /t:restore"
+    }
+    dir('Realm/Realm.Sync') {
+      sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
+    }
+    dir('DataBinding/Realm.DataBinding.PCL') {
+      sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
+    }
+
+    stash includes: '**', name: 'dotnet-source'
+    deleteDir()
   }
 }
 
@@ -193,8 +231,16 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+
           insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            cmake 'build-linux', "${pwd()}/build", configuration, [ 'SANITIZER_FLAGS': '-fPIC -DPIC' ]
+            cmake 'build-linux', "${pwd()}/build", configuration, [
+              'SANITIZER_FLAGS': '-fPIC -DPIC',
+              'REALM_CORE_PREFIX': "${pwd()}/realm-core"
+            ]
           }
         }
 
@@ -283,7 +329,20 @@ stage('Build with sync') {
         getArchive()
 
         dir('wrappers') {
-          cmake 'build-osx', "${pwd()}/build", configuration, [ 'REALM_ENABLE_SYNC': 'ON' ]
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+          dir('realm-sync') { 
+            unstash 'sync-source'
+            sh 'sh build.sh config'
+          }
+
+          cmake 'build-osx', "${pwd()}/build", configuration, [
+            'REALM_ENABLE_SYNC': 'ON',
+            'REALM_CORE_PREFIX': "${pwd()}/realm-core",
+            'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+          ]
         }
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
@@ -294,10 +353,22 @@ stage('Build with sync') {
         getArchive()
       
         dir('wrappers') {
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+          dir('realm-sync') { 
+            unstash 'sync-source'
+            sh 'sh build.sh config'
+          }
+
           insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            sshagent(['realm-ci-ssh']) { // we need this because CMake will try to clone realm-sync
-              cmake 'build-linux', "${pwd()}/build", configuration, [ 'SANITIZER_FLAGS': '-fPIC -DPIC', 'REALM_ENABLE_SYNC': 'ON' ]
-            }
+            cmake 'build-linux', "${pwd()}/build", configuration, [
+              'SANITIZER_FLAGS': '-fPIC -DPIC',
+              'REALM_ENABLE_SYNC': 'ON',
+              'REALM_CORE_PREFIX': "${pwd()}/realm-core",
+              'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+            ]
           }
         }
 
@@ -595,8 +666,7 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
     image = docker.build(imageTag)
   }
 
-  def uid = sh returnStdout: true, script: 'id -u'
-  image.inside("-e HOME=/tmp -u ${uid} -v /etc/passwd:/etc/passwd:ro") {
+  image.inside() {
     steps()
   }
 }
