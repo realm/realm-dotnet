@@ -261,29 +261,34 @@ namespace Realms.Sync
         /// </returns>
         /// <param name="recipient">The optional recepient of the permission.</param>
         /// <param name="millisecondTimeout">
-        /// The timeout in milliseconds for downloading server changes. If set to 0, the latest state will be returned
-        /// immediately.
+        /// The timeout in milliseconds for downloading server changes. If the download times out, no error will be thrown
+        /// and instead the latest local state will be returned. If set to 0, the latest state will be returned immediately.
         /// </param>
+        /// <remarks>
+        /// The collection is a live query, similar to what you would get by calling <see cref="Realm.All"/>, so the same
+        /// features and limitations apply - you can query and subscribe for notifications, but you cannot pass it between
+        /// threads.
+        /// </remarks>
         public async Task<IQueryable<Permission>> GetGrantedPermissions(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
         {
-			// TODO: this should eventually use GetInstanceAsync
+            // TODO: this should eventually use GetInstanceAsync
 
-			if (millisecondTimeout > 0)
+            if (millisecondTimeout > 0)
             {
-				var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<object>();
 
-				var progressObservable = PermissionRealm.GetSession().GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
-				var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
-				progressObservable.Subscribe(observer);
+                var progressObservable = PermissionRealm.GetSession().GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork);
+                var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
+                progressObservable.Subscribe(observer);
 
                 try
                 {
-					await tcs.Task.Timeout(millisecondTimeout);
-				}
+                    await tcs.Task.Timeout(millisecondTimeout);
+                }
                 catch (TimeoutException)
                 {
                 }
-			}
+            }
 
             var result = PermissionRealm.All<Permission>()
                                         .Where(p => !p.Path.EndsWith("/__permission", StringComparison.OrdinalIgnoreCase) &&
