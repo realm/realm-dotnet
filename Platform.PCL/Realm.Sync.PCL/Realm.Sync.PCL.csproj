@@ -85,6 +85,18 @@
     <Compile Include="..\..\Realm\Realm.Sync\ProgressNotifications\SyncProgress.cs">
       <Link>ProgressNotifications\SyncProgress.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\AccessLevel.cs">
+      <Link>Permissions\AccessLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\Recipient.cs">
+      <Link>Permissions\Recipient.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\PermissionCondition.cs">
+      <Link>Permissions\PermissionCondition.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Exceptions\PermissionException.cs">
+      <Link>Exceptions\PermissionException.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.ComponentModel;
 
 namespace Realms.Sync
@@ -36,6 +37,7 @@ namespace Realms.Sync
         /// <seealso href="https://realm.io/docs/realm-object-server/#modifying-permissions">How to control permissions</seealso>
         /// <param name="user">The user whose Management Realm to get.</param>
         /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
+        [Obsolete("Use User.ApplyPermissions instead")]
         public static Realm GetManagementRealm(this User user)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -51,6 +53,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="user">The user whose Permission Realm to get.</param>
         /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
+        [Obsolete("Use User.GetGrantedPermissions instead")]
         public static Realm GetPermissionRealm(this User user)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

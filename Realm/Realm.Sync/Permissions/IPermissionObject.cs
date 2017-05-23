@@ -79,4 +79,9 @@ namespace Realms.Sync
         /// <value>An enum indicating whether the operation has completed successfully.</value>
         ManagementObjectStatus Status { get; }
     }
+
+    internal interface IStatusObject
+    {
+        int? StatusCode { get; set; }
+    }
 }

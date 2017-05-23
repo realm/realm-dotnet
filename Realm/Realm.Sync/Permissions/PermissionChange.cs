@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -37,7 +39,7 @@ namespace Realms.Sync
     /// <see cref="ErrorCode"/> will be updated accordingly.
     /// </remarks>
     [Explicit]
-    public class PermissionChange : RealmObject, IPermissionObject
+    public class PermissionChange : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
         [PrimaryKey, Required]
@@ -52,8 +54,10 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         [MapTo("statusCode")]
-        private int? StatusCode { get; set; }
+        public int? StatusCode { get; set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
@@ -88,6 +92,23 @@ namespace Realms.Sync
         public string UserId { get; private set; }
 
         /// <summary>
+        /// Gets the metadata key (if any) of the user(s) to effect.
+        /// </summary>
+        /// <value>A metadata key or null if the change is not based on metadata values.</value>
+        [MapTo("metadataKey")]
+        public string MetadataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the metadata value (if any) of the user(s) to effect.
+        /// </summary>
+        /// <value>
+        /// A value corresponding to <see cref="MetadataKey" /> or null if the change
+        /// is not based on metadata values.
+        /// </value>
+        [MapTo("metadataValue")]
+        public string MetadataValue { get; private set; }
+
+        /// <summary>
         /// Gets the Realm to change permissions for.
         /// </summary>
         /// <value><c>*</c> to change the permissions of all Realms.</value>
@@ -116,18 +137,24 @@ namespace Realms.Sync
         [MapTo("mayManage")]
         public bool? MayManage { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionChange"/> class.
-        /// </summary>
-        /// <param name="userId">The user or users who should be granted these permission changes. Use * to change permissions for all users.</param>
-        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use `*` to change the permissions of all Realms managed by the management Realm's <see cref="User"/>.</param>
-        /// <param name="mayRead">Define read access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
-        /// <param name="mayWrite">Define write access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
-        /// <param name="mayManage">Define manage access. <c>true</c> or <c>false</c> to request this new value. <c>null</c> to keep current value.</param>
-        public PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        internal PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null) 
+            : this(mayRead, mayWrite, mayManage)
         {
             UserId = userId;
             RealmUrl = realmUrl;
+        }
+
+        internal PermissionChange(string key, string value, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+            : this(mayRead, mayWrite, mayManage)
+        {
+            MetadataKey = key;
+            MetadataValue = value;
+            UserId = string.Empty;
+            RealmUrl = realmUrl;
+        }
+
+        private PermissionChange(bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
+        {
             MayRead = mayRead;
             MayWrite = mayWrite;
             MayManage = mayManage;
@@ -145,6 +172,7 @@ namespace Realms.Sync
             if (propertyName == nameof(StatusCode))
             {
                 RaisePropertyChanged(nameof(Status));
+                RaisePropertyChanged(nameof(ErrorCode));
             }
         }
     }

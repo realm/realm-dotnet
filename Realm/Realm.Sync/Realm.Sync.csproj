@@ -67,6 +67,11 @@
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Permissions\AccessLevel.cs" />
+    <Compile Include="Permissions\Recipient.cs" />
+    <Compile Include="Helpers\Observer.cs" />
+    <Compile Include="Permissions\PermissionCondition.cs" />
+    <Compile Include="Exceptions\PermissionException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

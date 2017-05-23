@@ -2,10 +2,16 @@
 ------------------
 
 ### Enhancements
+- Exposed new API on the `User` class for working with permissions: (#1361)
+  - `ApplyPermissions`, `OfferPermissions`, and `AcceptPermissionOffer` allow you to grant, revoke, offer, and accept permissions.
+  - `GetPermissionOffers`, `GetPermissionOfferResponses`, and `GetPermissionChanges` allow you to review objects, added via the above mentioned methods.
+  - `GetGrantedPermissions` allows you to inspect permissions granted to or by the current user.
 
 ### Bug fixes
 
 ### Breaking Changes
+- The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissions`, `User.OfferPermissions`, and `User.AcceptPermissionOffer` API. (#1361)
+- `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. (#1361)
 
 1.4.0 (2017-05-19)
 ------------------

@@ -118,6 +118,7 @@
     <Compile Include="Handles\IThreadConfinedHandle.cs" />
     <Compile Include="Handles\NotifiableObjectHandleBase.cs" />
     <Compile Include="NotificationsHelper.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

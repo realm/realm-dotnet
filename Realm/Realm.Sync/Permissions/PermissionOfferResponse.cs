@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
@@ -37,7 +39,7 @@ namespace Realms.Sync
     /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
     [Explicit]
-    public class PermissionOfferResponse : RealmObject, IPermissionObject
+    public class PermissionOfferResponse : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
         [PrimaryKey, Required]
@@ -52,8 +54,10 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         [MapTo("statusCode")]
-        private int? StatusCode { get; set; }
+        public int? StatusCode { get; set; }
 
         /// <inheritdoc />
         [MapTo("statusMessage")]
@@ -95,11 +99,7 @@ namespace Realms.Sync
         [MapTo("realmUrl")]
         public string RealmUrl { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionOfferResponse"/> class.
-        /// </summary>
-        /// <param name="token">The token that was provided by the offering user.</param>
-        public PermissionOfferResponse(string token)
+        internal PermissionOfferResponse(string token)
         {
             Token = token;
         }
@@ -116,6 +116,7 @@ namespace Realms.Sync
             if (propertyName == nameof(StatusCode))
             {
                 RaisePropertyChanged(nameof(Status));
+                RaisePropertyChanged(nameof(ErrorCode));
             }
         }
     }
