@@ -37,7 +37,7 @@ namespace Realms.Sync
         private const int ErrorContentTruncationLimit = 256 * 1024;
         private static readonly string AppId = string.Empty; // FIXME
         private static readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() => new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
-        
+
         private static readonly ConcurrentDictionary<string, Timer> _tokenRefreshTimers = new ConcurrentDictionary<string, Timer>();
         private static readonly DateTimeOffset _date_1970 = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
@@ -75,7 +75,11 @@ namespace Realms.Sync
                 var accessToken = result["access_token"];
 
                 session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
-                ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
+                if (session.State != SessionState.Invalid)
+                {
+                    Session.Reconnect();
+                    ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
+                }
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {

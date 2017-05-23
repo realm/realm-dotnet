@@ -10,6 +10,7 @@
 
 ### Bug fixes
 - Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))
+- Fix an issue where synchronized Realms did not connect to the remote server in certain situations, such as when an application was offline when the Realms were opened but later regained network connectivity. ([#1407](https://github.com/realm/realm-dotnet/pull/1407))
 
 ### Breaking Changes
 - The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissions`, `User.OfferPermissions`, and `User.AcceptPermissionOffer` API. (#1361)
