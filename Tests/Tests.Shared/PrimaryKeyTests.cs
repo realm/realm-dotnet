@@ -103,8 +103,6 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
-
             _realm.Write(() =>
             {
                 var first = _realm.CreateObject(type.Name, primaryKeyValue);
