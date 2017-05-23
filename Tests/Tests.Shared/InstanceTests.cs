@@ -583,7 +583,7 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 Realm realm = null;
-                var config = new RealmConfiguration(SpecialRealmName)
+                var config = new RealmConfiguration("asyncmigration.realm")
                 {
                     SchemaVersion = 1,
                 };
