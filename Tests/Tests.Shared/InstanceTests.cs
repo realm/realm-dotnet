@@ -583,70 +583,63 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 Realm realm = null;
-                var config = new RealmConfiguration("GetInstanceAsync.realm")
+                var config = new RealmConfiguration(SpecialRealmName)
                 {
                     SchemaVersion = 1,
                 };
 
                 Realm.DeleteRealm(config);
 
-                try
+                using (var firstRealm = Realm.GetInstance(config))
                 {
-                    using (var firstRealm = Realm.GetInstance(config))
-                    {
-                        Assert.That(firstRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.Zero);
-                    }
-
-                    var threadId = Environment.CurrentManagedThreadId;
-                    var hasCompletedMigration = false;
-                    config.SchemaVersion = 2;
-                    config.MigrationCallback = (migration, oldSchemaVersion) =>
-                    {
-                        Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
-                        Thread.Sleep(300);
-                        migration.NewRealm.Add(new IntPrimaryKeyWithValueObject
-                        {
-                            Id = 123
-                        });
-                        hasCompletedMigration = true;
-                    };
-
-                    Exception ex = null;
-                    Realm.GetInstanceAsync(config)
-                         .ContinueWith(t =>
-                    {
-                        if (t.IsFaulted)
-                        {
-                            ex = t.Exception;
-                        }
-                        else
-                        {
-                            realm = t.Result;
-                        }
-                    }, TaskScheduler.FromCurrentSynchronizationContext());
-
-                    var ticks = 0;
-                    while (!hasCompletedMigration)
-                    {
-                        await Task.Delay(100);
-                        ticks++;
-
-                        if (ticks > 10)
-                        {
-                            Assert.Fail("Migration should have completed by now.");
-                        }
-                    }
-
-                    Assert.That(ex, Is.Null);
-                    Assert.That(hasCompletedMigration);
-                    Assert.That(ticks, Is.GreaterThanOrEqualTo(3));
-                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
+                    Assert.That(firstRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.Zero);
                 }
-                finally
+
+                var threadId = Environment.CurrentManagedThreadId;
+                var hasCompletedMigration = false;
+                config.SchemaVersion = 2;
+                config.MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    realm?.Dispose();
-                    Realm.DeleteRealm(config);
+                    Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
+                    Thread.Sleep(300);
+                    migration.NewRealm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 123
+                    });
+                    hasCompletedMigration = true;
+                };
+
+                Exception ex = null;
+                Realm.GetInstanceAsync(config)
+                     .ContinueWith(t =>
+                     {
+                         if (t.IsFaulted)
+                         {
+                             ex = t.Exception;
+                         }
+                         else
+                         {
+                             realm = t.Result;
+                         }
+                     }, TaskScheduler.FromCurrentSynchronizationContext());
+
+                var ticks = 0;
+                while (!hasCompletedMigration)
+                {
+                    await Task.Delay(100);
+                    ticks++;
+
+                    if (ticks > 10)
+                    {
+                        Assert.Fail("Migration should have completed by now.");
+                    }
                 }
+
+                Assert.That(ex, Is.Null);
+                Assert.That(hasCompletedMigration);
+                Assert.That(ticks, Is.GreaterThanOrEqualTo(3));
+                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
+                realm.Dispose();
             });
         }
 

@@ -6,6 +6,7 @@
   - `ApplyPermissions`, `OfferPermissions`, and `AcceptPermissionOffer` allow you to grant, revoke, offer, and accept permissions.
   - `GetPermissionOffers`, `GetPermissionOfferResponses`, and `GetPermissionChanges` allow you to review objects, added via the above mentioned methods.
   - `GetGrantedPermissions` allows you to inspect permissions granted to or by the current user.
+- When used with `RealmConfiguration` (i.e. local Realm), `Realm.GetInstanceAsync` will perform potentially costly operation, such as executing migrations or compaction on a background thread. ([#1406](https://github.com/realm/realm-dotnet/pull/1406))
 
 ### Bug fixes
 - Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))
