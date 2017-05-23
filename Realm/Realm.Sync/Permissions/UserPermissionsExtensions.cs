@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Sync.Exceptions;
 
@@ -60,31 +61,40 @@ namespace Realms.Sync
             return user.PermissionRealm;
         }
 
-        internal static Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
+        internal static async Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
         {
-            var tcs = new TaskCompletionSource<object>();
-            PropertyChangedEventHandler handler = null;
-            handler = new PropertyChangedEventHandler((sender, e) =>
+            // Retain the object, otherwise it gets GC'd and the handler is never invoked
+            var handle = GCHandle.Alloc(permissionObject);
+            try
             {
-                if (e.PropertyName == nameof(PermissionChange.Status) &&
-                    permissionObject.Status != ManagementObjectStatus.NotProcessed)
+                var tcs = new TaskCompletionSource<object>();
+                PropertyChangedEventHandler handler = null;
+                handler = new PropertyChangedEventHandler((sender, e) =>
                 {
-                    permissionObject.PropertyChanged -= handler;
-                    switch (permissionObject.Status)
+                    if (e.PropertyName == nameof(PermissionChange.Status) &&
+                        permissionObject.Status != ManagementObjectStatus.NotProcessed)
                     {
-                        case ManagementObjectStatus.Success:
-                            tcs.TrySetResult(permissionObject);
-                            break;
-                        case ManagementObjectStatus.Error:
-                            tcs.TrySetException(new PermissionException(permissionObject.ErrorCode.Value, permissionObject.StatusMessage));
-                            break;
+                        permissionObject.PropertyChanged -= handler;
+                        switch (permissionObject.Status)
+                        {
+                            case ManagementObjectStatus.Success:
+                                tcs.TrySetResult(permissionObject);
+                                break;
+                            case ManagementObjectStatus.Error:
+                                tcs.TrySetException(new PermissionException(permissionObject.ErrorCode.Value, permissionObject.StatusMessage));
+                                break;
+                        }
                     }
-                }
-            });
+                });
 
-            permissionObject.PropertyChanged += handler;
+                permissionObject.PropertyChanged += handler;
 
-            return tcs.Task;
+                await tcs.Task;
+            }
+            finally
+            {
+                handle.Free();
+            }
         }
     }
 }
