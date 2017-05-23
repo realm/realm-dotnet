@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Realms</RootNamespace>
     <AssemblyName>Realm</AssemblyName>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <DocumentationFile>bin\$(Configuration)\Realm.xml</DocumentationFile>
   </PropertyGroup>

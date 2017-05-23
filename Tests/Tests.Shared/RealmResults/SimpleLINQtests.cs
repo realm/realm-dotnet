@@ -364,7 +364,7 @@ namespace Tests.Database
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
         }
-       
+
         [Test]
         public void SearchComparingInstanceProperties()
         {
@@ -596,7 +596,7 @@ namespace Tests.Database
 
             var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
             var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue.Like(pattern, caseSensitive));
-            
+
             if (expected)
             {
                 Assert.That(regularQuery.Count(), Is.EqualTo(1));
@@ -940,6 +940,61 @@ namespace Tests.Database
             Assert.That(hasJohnSmith, Is.False);
         }
 
+        #region [MapTo] Test cases
+
+        [Test]
+        public void Where_WhenPropertyIsMappedTo_FiltersCorrectly()
+        {
+            var objs = MakeThreeMappedObjects();
+
+            Assert.That(objs.Count(o => o.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)), Is.EqualTo(2));
+            Assert.That(objs.Count(o => o.Id > 2), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OrderBy_WhenPropertyIsMappedTo_OrderdsCorrectly()
+        {
+            var objs = MakeThreeMappedObjects();
+
+            var objsById = objs.OrderByDescending(o => o.Id).ToArray().Select(o => o.Id);
+
+            Assert.That(objsById, Is.EqualTo(new[] { 3, 2, 1 }));
+
+            var objsByName = objs.OrderBy(o => o.Name).ToArray().Select(o => o.Id);
+
+            Assert.That(objsByName, Is.EqualTo(new[] { 3, 2, 1 }));
+        }
+
+        #endregion
+
+        private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()
+        {
+            _realm.Write(() =>
+            {
+                _realm.RemoveAll<RemappedPropertiesObject>();
+
+                _realm.Add(new RemappedPropertiesObject
+                {
+                    Id = 1,
+                    Name = "Peter"
+                });
+
+                _realm.Add(new RemappedPropertiesObject
+                {
+                    Id = 2,
+                    Name = "Patrick"
+                });
+
+                _realm.Add(new RemappedPropertiesObject
+                {
+                    Id = 3,
+                    Name = "George"
+                });
+            });
+
+            return _realm.All<RemappedPropertiesObject>();
+        }
+
         private void MakeThreePatricks()
         {
             _realm.Write(() =>
@@ -980,7 +1035,7 @@ namespace Tests.Database
         private class InstanceConstants
         {
             public readonly long SixtyThousandField = 60000;
-           
+
             public long SixtyThousandProperty { get; } = 60000;
         }
     }

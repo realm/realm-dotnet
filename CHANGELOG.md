@@ -8,6 +8,7 @@
   - `GetGrantedPermissions` allows you to inspect permissions granted to or by the current user.
 
 ### Bug fixes
+- Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))
 
 ### Breaking Changes
 - The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissions`, `User.OfferPermissions`, and `User.AcceptPermissionOffer` API. (#1361)

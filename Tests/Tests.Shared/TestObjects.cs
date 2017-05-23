@@ -166,7 +166,7 @@ namespace Tests
 
         public string PublicMethod()
         {
-            return null; 
+            return null;
         }
 
         [Ignored]
@@ -236,5 +236,16 @@ namespace Tests
 
         [Backlink(nameof(Parent))]
         public IQueryable<RecursiveBacklinksObject> Children { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RemappedPropertiesObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("id")]
+        public int Id { get; set; }
+
+        [MapTo("name")]
+        public string Name { get; set; }
     }
 }
