@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <utility>
-#include "util/event_loop_signal.hpp"
+#include "util/generic/event_loop_signal.hpp"
 #include "realm_export_decls.hpp"
 
 using namespace realm::util;

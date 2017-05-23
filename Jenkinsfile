@@ -15,38 +15,76 @@ def versionString
 def dataBindingVersion
 def dataBindingVersionString
 
+def dependencies
+
 stage('Checkout') {
   node('xamarin-mac') {
     checkout([
-        $class: 'GitSCM',
-        branches: scm.branches,
-        gitTool: 'native git',
-        extensions: scm.extensions + [
-          [$class: 'CleanCheckout'],
-          [$class: 'SubmoduleOption', recursiveSubmodules: true]
-        ],
-        userRemoteConfigs: scm.userRemoteConfigs
-      ])
+      $class: 'GitSCM',
+      branches: scm.branches,
+      gitTool: 'native git',
+      extensions: scm.extensions + [
+        [$class: 'CleanCheckout'],
+        [$class: 'SubmoduleOption', recursiveSubmodules: true]
+      ],
+      userRemoteConfigs: scm.userRemoteConfigs
+    ])
 
-      version = readAssemblyVersion('RealmAssemblyInfo.cs')
-      versionString = "${version.major}.${version.minor}.${version.patch}"
+    dir('wrappers') {
+      dependencies = readProperties file: 'dependencies.list'
 
-      dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
-      dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
-
-      nuget('restore Realm.sln')
-      dir('Realm/Realm') {
-        sh "${tool 'msbuild'} Realm.csproj /t:restore"
+      dir('realm-core') {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
+          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+          changelog: false, poll: false,
+          gitTool: 'native git', 
+          userRemoteConfigs: [[
+            credentialsId: 'realm-ci-ssh',
+            url: 'git@github.com:realm/realm-core.git'
+          ]]
+        ])
+        stash includes: '**', name: 'core-source'
+        deleteDir()
       }
-      dir('Realm/Realm.Sync') {
-        sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
-      }
-      dir('DataBinding/Realm.DataBinding.PCL') {
-        sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
-      }
 
-      stash includes: '**', name: 'dotnet-source'
-      deleteDir()
+      dir('realm-sync') {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
+          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+          changelog: false, poll: false,
+          gitTool: 'native git', 
+          userRemoteConfigs: [[
+            credentialsId: 'realm-ci-ssh',
+            url: 'git@github.com:realm/realm-sync.git'
+          ]]
+        ])
+        stash includes: '**', name: 'sync-source'
+        deleteDir()
+      }
+    }
+
+    version = readAssemblyVersion('RealmAssemblyInfo.cs')
+    versionString = "${version.major}.${version.minor}.${version.patch}"
+
+    dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
+    dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
+
+    nuget('restore Realm.sln')
+    dir('Realm/Realm') {
+      sh "${tool 'msbuild'} Realm.csproj /t:restore"
+    }
+    dir('Realm/Realm.Sync') {
+      sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
+    }
+    dir('DataBinding/Realm.DataBinding.PCL') {
+      sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
+    }
+
+    stash includes: '**', name: 'dotnet-source'
+    deleteDir()
   }
 }
 
@@ -177,6 +215,38 @@ stage('Build without sync') {
         stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-nosync'
       }
     },
+    'macOS': {
+      nodeWithCleanup('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          cmake 'build-osx', "${pwd()}/build", configuration
+        }
+
+        stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
+      }
+    },
+    'Linux': {
+      nodeWithCleanup('docker') {
+        getArchive()
+
+        dir('wrappers') {
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+
+          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
+            cmake 'build-linux', "${pwd()}/build", configuration, [
+              'SANITIZER_FLAGS': '-fPIC -DPIC',
+              'REALM_CORE_PREFIX': "${pwd()}/realm-core"
+            ]
+          }
+        }
+
+        stash includes: "wrappers/build/Linux/${configuration}/**/*", name: 'linux-wrappers-nosync'
+      }
+    },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
@@ -252,6 +322,57 @@ stage('Build with sync') {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
           }
         }
+      }
+    },
+    'macOS': {
+      nodeWithCleanup('osx') {
+        getArchive()
+
+        dir('wrappers') {
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+          dir('realm-sync') { 
+            unstash 'sync-source'
+            sh 'sh build.sh config'
+          }
+
+          cmake 'build-osx', "${pwd()}/build", configuration, [
+            'REALM_ENABLE_SYNC': 'ON',
+            'REALM_CORE_PREFIX': "${pwd()}/realm-core",
+            'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+          ]
+        }
+
+        stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
+      }
+    },
+    'Linux': {
+      nodeWithCleanup('docker') {
+        getArchive()
+      
+        dir('wrappers') {
+          dir('realm-core') {
+            unstash 'core-source'
+            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
+          }
+          dir('realm-sync') { 
+            unstash 'sync-source'
+            sh 'sh build.sh config'
+          }
+
+          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
+            cmake 'build-linux', "${pwd()}/build", configuration, [
+              'SANITIZER_FLAGS': '-fPIC -DPIC',
+              'REALM_ENABLE_SYNC': 'ON',
+              'REALM_CORE_PREFIX': "${pwd()}/realm-core",
+              'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+            ]
+          }
+        }
+
+        stash includes: "wrappers/build/Linux/${configuration}/**/*", name: 'linux-wrappers-sync'
       }
     },
     'PCL': {
@@ -393,6 +514,8 @@ stage('NuGet') {
         unstash 'android-wrappers-nosync'
         unstash 'win32-wrappers-nosync'
         unstash 'uwp-wrappers-nosync'
+        unstash 'macos-wrappers-nosync'
+        unstash 'linux-wrappers-nosync'
 
         dir('NuGet/Realm.Database') {
           nuget("pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
@@ -408,6 +531,8 @@ stage('NuGet') {
         unstash 'nuget-sync'
         unstash 'ios-wrappers-sync'
         unstash 'android-wrappers-sync'
+        unstash 'macos-wrappers-sync'
+        unstash 'linux-wrappers-sync'
 
         dir('NuGet/Realm') {
           nuget("pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
@@ -524,7 +649,7 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
   }
 
   def cmakeInvocation = """
-    "${tool 'cmake'}" -DCMAKE_INSTALL_PREFIX="${installPrefix}" ${command} "${pwd()}"
+    "${tool 'cmake'}" -DCMAKE_INSTALL_PREFIX="${installPrefix}" -DCMAKE_BUILD_TYPE=${configuration} ${command} "${pwd()}"
     "${tool 'cmake'}" --build . --target install --config ${configuration}
   """
 
@@ -534,5 +659,18 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
     } else {
       bat cmakeInvocation
     }
+  }
+}
+
+def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
+  def image
+  if (dockerfile != null) {
+    image = docker.build(imageTag, "-f ${dockerfile} .")
+  } else {
+    image = docker.build(imageTag)
+  }
+
+  image.inside() {
+    steps()
   }
 }
