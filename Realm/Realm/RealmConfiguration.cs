@@ -190,7 +190,9 @@ namespace Realms
                 // This doesn't use await, because MTouch crashes with MT2091 at a completely unrelated location.
                 return Task.Run(() =>
                 {
-                    CreateRealm(schema);
+                    using (CreateRealm(schema))
+                    {
+                    }
                 }).ContinueWith(t =>
                 {
                     return CreateRealm(schema);
