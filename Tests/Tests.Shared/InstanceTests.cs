@@ -624,7 +624,7 @@ namespace Tests.Database
                      }, TaskScheduler.FromCurrentSynchronizationContext());
 
                 var ticks = 0;
-                while (!hasCompletedMigration)
+                while (realm == null)
                 {
                     await Task.Delay(100);
                     ticks++;
