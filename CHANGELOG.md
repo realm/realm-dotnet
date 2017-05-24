@@ -2,10 +2,10 @@
 ------------------
 
 ### Enhancements
-- Exposed new API on the `User` class for working with permissions: (#1361)
-  - `ApplyPermissions`, `OfferPermissions`, and `AcceptPermissionOffer` allow you to grant, revoke, offer, and accept permissions.
+- Exposed new API on the `User` class for working with permissions: ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
+  - `ApplyPermissionsAsync`, `OfferPermissionsAsync`, and `AcceptPermissionOfferAsync` allow you to grant, revoke, offer, and accept permissions.
   - `GetPermissionOffers`, `GetPermissionOfferResponses`, and `GetPermissionChanges` allow you to review objects, added via the above mentioned methods.
-  - `GetGrantedPermissions` allows you to inspect permissions granted to or by the current user.
+  - `GetGrantedPermissionsAsync` allows you to inspect permissions granted to or by the current user.
 - When used with `RealmConfiguration` (i.e. local Realm), `Realm.GetInstanceAsync` will perform potentially costly operation, such as executing migrations or compaction on a background thread. ([#1406](https://github.com/realm/realm-dotnet/pull/1406))
 
 ### Bug fixes
@@ -13,8 +13,8 @@
 - Fix an issue where synchronized Realms did not connect to the remote server in certain situations, such as when an application was offline when the Realms were opened but later regained network connectivity. ([#1407](https://github.com/realm/realm-dotnet/pull/1407))
 
 ### Breaking Changes
-- The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissions`, `User.OfferPermissions`, and `User.AcceptPermissionOffer` API. (#1361)
-- `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. (#1361)
+- The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissionsAsync`, `User.OfferPermissionsAsync`, and `User.AcceptPermissionOfferAsync` API. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
+- `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
 
 1.4.0 (2017-05-19)
 ------------------
