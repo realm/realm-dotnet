@@ -182,25 +182,30 @@ namespace Realms
             return new Realm(srHandle, this, schema);
         }
 
+#if DEBUG
+        // Due to a Xamarin bug (https://bugzilla.xamarin.com/show_bug.cgi?id=54617), we can't
+        // provide a proper implementation in Debug.
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
+        {
+            return Task.FromResult(CreateRealm(schema));
+        }
+#else
+        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
             {
-                // This doesn't use await, because MTouch crashes with MT2091 at a completely unrelated location.
-                return Task.Run(() =>
+                await Task.Run(() =>
                 {
                     using (CreateRealm(schema))
                     {
                     }
-                }).ContinueWith(t =>
-                {
-                    return CreateRealm(schema);
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                });
             }
 
-            return Task.FromResult(CreateRealm(schema));
+            return CreateRealm(schema);
         }
+#endif
 
         [NativeCallback(typeof(ShouldCompactCallback))]
         private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
