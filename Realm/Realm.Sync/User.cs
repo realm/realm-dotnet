@@ -222,32 +222,32 @@ namespace Realms.Sync
                 throw new InvalidOperationException("Password may be changed only by active users.");
             }
 
-			if (string.IsNullOrEmpty(newPassword))
-			{
-				throw new ArgumentNullException(nameof(newPassword));
-			}
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                throw new ArgumentNullException(nameof(newPassword));
+            }
 
-			return AuthenticationHelper.ChangePasswordAsync(this, newPassword);
+            return AuthenticationHelper.ChangePasswordAsync(this, newPassword);
         }
 
-		/// <summary>
-		/// Changes another user's password.
-		/// </summary>
+        /// <summary>
+        /// Changes another user's password.
+        /// </summary>
         /// <param name="userId">The <see cref="Identity"/> of the user we want to change the password for.</param>
-		/// <param name="newPassword">The user's new password.</param>
-		/// <remarks>
-		/// This user needs admin privilege in order to change someone else's password.
-		/// <br/>
-		/// Changing a user's password using an authentication server that doesn't
-		/// use HTTPS is a major security flaw, and should only be done while testing.
-		/// </remarks>
-		/// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
-		public Task ChangePasswordAsync(string userId, string newPassword)
+        /// <param name="newPassword">The user's new password.</param>
+        /// <remarks>
+        /// This user needs admin privilege in order to change someone else's password.
+        /// <br/>
+        /// Changing a user's password using an authentication server that doesn't
+        /// use HTTPS is a major security flaw, and should only be done while testing.
+        /// </remarks>
+        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
+        public Task ChangePasswordAsync(string userId, string newPassword)
         {
-			if (State != UserState.Active)
-			{
-				throw new InvalidOperationException("Password may be changed only by active users.");
-			}
+            if (State != UserState.Active)
+            {
+                throw new InvalidOperationException("Password may be changed only by active users.");
+            }
 
             if (string.IsNullOrEmpty(userId))
             {
@@ -260,7 +260,7 @@ namespace Realms.Sync
             }
 
             return AuthenticationHelper.ChangePasswordAsync(this, newPassword, userId);
-		}
+        }
 
         /// <inheritdoc />
         public override bool Equals(object obj)

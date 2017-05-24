@@ -137,7 +137,7 @@ namespace Realms.Sync
         [MapTo("mayManage")]
         public bool? MayManage { get; private set; }
 
-        internal PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null) 
+        internal PermissionChange(string userId, string realmUrl, bool? mayRead = null, bool? mayWrite = null, bool? mayManage = null)
             : this(mayRead, mayWrite, mayManage)
         {
             UserId = userId;
