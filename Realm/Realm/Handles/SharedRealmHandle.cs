@@ -94,20 +94,20 @@ namespace Realms
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_int_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, long key,
-                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
-                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, long key,
+                                                             [MarshalAs(UnmanagedType.I1)] bool update,
+                                                             [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_string_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, 
-                                                      [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
-                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
-                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
+                                                             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                                                             [MarshalAs(UnmanagedType.I1)] bool update,
+                                                             [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_null_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table,
-                                                      [MarshalAs(UnmanagedType.I1)] bool update, 
-                                                      [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
+                                                             [MarshalAs(UnmanagedType.I1)] bool update,
+                                                             [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
         }
 
         [Preserve]
@@ -252,26 +252,56 @@ namespace Realms
             return result;
         }
 
-        public IntPtr CreateObject(TableHandle table, long key, bool update, out bool isNew)
+        public IntPtr CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
+        {
+            switch (pkProperty.Type)
+            {
+                case PropertyType.String:
+                    if (primaryKey == null)
+                    {
+                        throw new ArgumentNullException(nameof(primaryKey), "Object identifiers cannot be null");
+                    }
+
+                    var stringKey = primaryKey as string;
+                    if (stringKey == null)
+                    {
+                        throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
+                    }
+
+                    return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+                case PropertyType.Int:
+                    if (primaryKey == null)
+                    {
+                        return CreateObjectWithPrimaryKey(table, update, out isNew);
+                    }
+
+                    var longKey = Convert.ToInt64(primaryKey);
+                    return CreateObjectWithPrimaryKey(table, longKey, update, out isNew);
+                default:
+                    throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
+            }
+        }
+
+        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long key, bool update, out bool isNew)
         {
             NativeException ex;
-            var result = NativeMethods.create_object(this, table, key, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, key, update, out isNew, out ex);
             ex.ThrowIfNecessary();
             return result;
         }
 
-        public IntPtr CreateObject(TableHandle table, string key, bool update, out bool isNew)
+        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
         {
             NativeException ex;
-            var result = NativeMethods.create_object(this, table, key, (IntPtr)key.Length, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)key.Length, update, out isNew, out ex);
             ex.ThrowIfNecessary();
             return result;
         }
 
-        public IntPtr CreateObject(TableHandle table, bool update, out bool isNew)
+        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, bool update, out bool isNew)
         {
             NativeException ex;
-            var result = NativeMethods.create_object(this, table, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, update, out isNew, out ex);
             ex.ThrowIfNecessary();
             return result;
         }

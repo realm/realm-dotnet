@@ -468,37 +468,7 @@ namespace Realms
             var pkProperty = metadata.Schema.PrimaryKeyProperty;
             if (pkProperty.HasValue)
             {
-                bool isNew;
-                switch (pkProperty.Value.Type)
-                {
-                    case PropertyType.String:
-                        if (primaryKey == null)
-                        {
-                            throw new ArgumentNullException(nameof(primaryKey), "Object identifiers cannot be null");
-                        }
-
-                        var stringKey = primaryKey as string;
-                        if (stringKey == null)
-                        {
-                            throw new ArgumentException($"{className}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
-                        }
-
-                        objectPtr = SharedRealmHandle.CreateObject(metadata.Table, stringKey, update: false, isNew: out isNew);
-                        break;
-                    case PropertyType.Int:
-                        if (primaryKey == null)
-                        {
-                            objectPtr = SharedRealmHandle.CreateObject(metadata.Table, update: false, isNew: out isNew);
-                        }
-                        else
-                        {
-                            var longKey = Convert.ToInt64(primaryKey);
-                            objectPtr = SharedRealmHandle.CreateObject(metadata.Table, longKey, update: false, isNew: out isNew);
-                        }
-                        break;
-                    default:
-                        throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Value.Type}");
-                }
+                objectPtr = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
             }
             else
             {
@@ -643,26 +613,10 @@ namespace Realms
 
             var objectPtr = IntPtr.Zero;
             bool isNew;
-            if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var pkValue))
+            if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
-                if (pkValue == null)
-                {
-                    if (metadata.Schema.PrimaryKeyProperty.Value.Type == PropertyType.String)
-                    {
-                        throw new ArgumentNullException(nameof(pkValue), "Object identifiers cannot be null");
-                    }
-
-                    objectPtr = SharedRealmHandle.CreateObject(metadata.Table, update, out isNew);
-                }
-                else if (pkValue is string)
-                {
-                    objectPtr = SharedRealmHandle.CreateObject(metadata.Table, (string)pkValue, update, out isNew);
-                }
-                else
-                {
-                    // We know it must be convertible to long, so optimistically do it.
-                    objectPtr = SharedRealmHandle.CreateObject(metadata.Table, Convert.ToInt64(pkValue), update, out isNew);
-                }
+                var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
+                objectPtr = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.Table, objectType.Name, update, out isNew);
             }
             else
             {
