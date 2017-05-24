@@ -436,7 +436,7 @@ def iOSTest(stashName) {
 
 def AndroidTest(stashName) {
   return {
-    nodeWithCleanup('android-hub') {
+    nodeWithCleanup('fastlinux') {
       unstash stashName
 
       lock("${env.NODE_NAME}-android") {
