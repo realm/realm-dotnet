@@ -328,8 +328,8 @@ namespace Tests.Sync
                 var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
                 EnsureRealmExists(alice, realmUrl);
 
-                var token = await alice.OfferPermissions(realmUrl, AccessLevel.Write);
-                var alicesUrl = await bob.AcceptPermissionOffer(token);
+                var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write);
+                var alicesUrl = await bob.AcceptPermissionOfferAsync(token);
 
                 Assert.That(alicesUrl, Is.EqualTo(realmUrl));
 
@@ -350,7 +350,7 @@ namespace Tests.Sync
                 var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
                 EnsureRealmExists(alice, realmUrl);
 
-                await AssertThrows<ArgumentException>(() => alice.OfferPermissions(realmUrl, AccessLevel.Write, DateTimeOffset.UtcNow.AddDays(-1)));
+                await AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, DateTimeOffset.UtcNow.AddDays(-1)));
             });
         }
 
@@ -367,7 +367,7 @@ namespace Tests.Sync
                 var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
                 EnsureRealmExists(alice, realmUrl);
 
-                await AssertThrows<ArgumentException>(() => alice.OfferPermissions(realmUrl, AccessLevel.None));
+                await AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.None));
             });
         }
 
@@ -385,13 +385,13 @@ namespace Tests.Sync
                 var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
                 EnsureRealmExists(alice, realmUrl);
 
-                var token = await alice.OfferPermissions(realmUrl, AccessLevel.Write, expiresAt: DateTimeOffset.UtcNow.AddSeconds(1));
+                var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, expiresAt: DateTimeOffset.UtcNow.AddSeconds(1));
 
                 Assert.That(token, Is.Not.Null);
 
                 await Task.Delay(2000);
 
-                await AssertThrows<PermissionException>(() => bob.AcceptPermissionOffer(token), ex =>
+                await AssertThrows<PermissionException>(() => bob.AcceptPermissionOfferAsync(token), ex =>
                 {
                     Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
                 });
@@ -408,7 +408,7 @@ namespace Tests.Sync
             {
                 var user = await SyncTestHelpers.GetUser();
 
-                await AssertThrows<PermissionException>(() => user.AcceptPermissionOffer("some string"), ex =>
+                await AssertThrows<PermissionException>(() => user.AcceptPermissionOfferAsync("some string"), ex =>
                 {
                     Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
                 });
@@ -436,13 +436,13 @@ namespace Tests.Sync
             EnsureRealmExists(alice, realmUrl);
 
             // Grant write permissions
-            await alice.ApplyPermissions(condition, realmUrl, AccessLevel.Write);
+            await alice.ApplyPermissionsAsync(condition, realmUrl, AccessLevel.Write);
 
             await ValidateWriteAndSync(realmUrl, alice, bob, 1, 2);
             await AssertPermissions(alice, bob, realmPath, AccessLevel.Write);
 
             // Revoke permissions
-            await alice.ApplyPermissions(condition, realmUrl, AccessLevel.None);
+            await alice.ApplyPermissionsAsync(condition, realmUrl, AccessLevel.None);
 
             await AssertPermissions(alice, bob, realmPath, AccessLevel.None);
         }
@@ -451,8 +451,8 @@ namespace Tests.Sync
         {
             // Seems like there's some time delay before the permission realm is updated
             await Task.Delay(500);
-            var granted = (await granter.GetGrantedPermissions(Recipient.OtherUser)).SingleOrDefault(p => p.UserId == receiver.Identity);
-            var received = (await receiver.GetGrantedPermissions(Recipient.CurrentUser)).SingleOrDefault(p => p.Path == path);
+            var granted = (await granter.GetGrantedPermissionsAsync(Recipient.OtherUser)).SingleOrDefault(p => p.UserId == receiver.Identity);
+            var received = (await receiver.GetGrantedPermissionsAsync(Recipient.CurrentUser)).SingleOrDefault(p => p.Path == path);
 
             if (level > AccessLevel.None)
             {
