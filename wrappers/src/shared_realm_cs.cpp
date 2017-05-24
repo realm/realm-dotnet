@@ -29,6 +29,7 @@
 #include "object-store/src/binding_context.hpp"
 #include <unordered_set>
 #include "object-store/src/thread_safe_reference.hpp"
+#include <sstream>
 
 using namespace realm;
 using namespace realm::binding;
@@ -53,8 +54,8 @@ namespace binding {
         return const_cast<ObjectSchema&>(*realm->get()->schema().find(object_name));
     }
     
-    template<typename KeyType, typename KeyToString, typename FindFirst>
-    Object* create_object_unique(SharedRealm* realm, Table* table, ObjectSchema& object_schema, KeyType key, FindFirst findFirst, bool try_update, KeyToString key_to_string, bool& is_new)
+    template<typename KeyType, typename FindFirst>
+    Object* create_object_unique(SharedRealm* realm, Table* table, ObjectSchema& object_schema, KeyType key, FindFirst findFirst, bool try_update, bool& is_new)
     {
         size_t column_index = object_schema.primary_key_property()->table_column;
         size_t row_index = findFirst(key, table, column_index, object_schema.primary_key_property()->is_nullable);
@@ -69,9 +70,11 @@ namespace binding {
 #endif // REALM_ENABLE_SYNC
         }
         else if (!try_update) {
+            std::ostringstream string_builder;
+            string_builder << key;
             throw SetDuplicatePrimaryKeyValueException(table->get_name(),
                                                        table->get_column_name(column_index),
-                                                       key_to_string(key));
+                                                       string_builder.str());
         }
         else {
             is_new = false;
@@ -317,9 +320,7 @@ REALM_EXPORT Object* shared_realm_create_object_int_unique(SharedRealm* realm, T
                 return table->find_first(table_column, util::Optional<int64_t>(key));
             
             return table->find_first(table_column, key);
-        }, try_update, [](int64_t key) {
-            return util::format("%1", key);
-        }, is_new);
+        }, try_update, is_new);
     });
 }
 
@@ -330,9 +331,7 @@ REALM_EXPORT Object* shared_realm_create_object_string_unique(SharedRealm* realm
         Utf16StringAccessor key(key_buf, key_len);
         return create_object_unique(realm, table, object_schema, (StringData)key, [](StringData key, Table* table, size_t table_column, bool is_nullable) {
             return table->find_first(table_column, key);
-        }, try_update, [](StringData key) {
-            return key;
-        }, is_new);
+        }, try_update, is_new);
     });
 }
 
@@ -345,9 +344,7 @@ REALM_EXPORT Object* shared_realm_create_object_null_unique(SharedRealm* realm, 
                 throw std::invalid_argument("Column is not nullable");
             
             return table->find_first(table_column, key);
-        }, try_update, [](util::Optional<int64_t> _) {
-            return "null";
-        }, is_new);
+        }, try_update, is_new);
     });
 }
 
