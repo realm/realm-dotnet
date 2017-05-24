@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
@@ -117,9 +118,12 @@ namespace Tests.Sync
             });
         }
 
-        #if !ROS_SETUP
+        private const string OriginalPassword = "a";
+        private const string NewPassword = "b";
+
+#if !ROS_SETUP
         [NUnit.Framework.Explicit]
-        #endif
+#endif
         [Test]
         public void UserChangePasswordTest()
         {
@@ -127,34 +131,74 @@ namespace Tests.Sync
             {
                 var userId = Guid.NewGuid().ToString();
                 var serverUri = new Uri($"http://{Constants.ServerUrl}");
-                var credentials = Credentials.UsernamePassword(userId, "a", createUser: true);
+                var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
                 var user = await User.LoginAsync(credentials, serverUri);
-                await user.ChangePassword("b");
+                await user.ChangePasswordAsync(NewPassword);
                 user.LogOut();
 
-                Assert.That(async () => await user.ChangePassword("c"), Throws.TypeOf<InvalidOperationException>());
+                Assert.That(async () => await user.ChangePasswordAsync("c"), Throws.TypeOf<InvalidOperationException>());
 
-                // Try to login with the same credentials
-                try
-                {
-                    await User.LoginAsync(credentials, serverUri);
-                    Assert.Fail("Should be impossible to login with old password");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<AuthenticationException>());
-                    var authEx = (AuthenticationException)ex;
-                    Assert.That(authEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
-                }
-
-                var newCredentials = Credentials.UsernamePassword(userId, "b", createUser: false);
-                var newUser = await User.LoginAsync(newCredentials, serverUri);
-
-                Assert.That(newUser.State, Is.EqualTo(UserState.Active));
-                Assert.That(newUser, Is.EqualTo(User.Current));
-                newUser.LogOut();
-                Assert.That(User.Current, Is.Null);
+                await TestNewPassword(userId);
             });
+        }
+
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void AdminChangePasswordTest()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var b = User.AllLoggedIn;
+                var a = User.Current;
+                var userId = Guid.NewGuid().ToString();
+                var serverUri = new Uri($"http://{Constants.ServerUrl}");
+                var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
+                var user = await User.LoginAsync(credentials, serverUri);
+                var identity = user.Identity;
+                user.LogOut();
+
+                var admin = await User.LoginAsync(Constants.AdminCredentials(), serverUri);
+                await admin.ChangePasswordAsync(identity, NewPassword);
+
+                admin.LogOut();
+
+                Assert.That(async () => await admin.ChangePasswordAsync(identity, "c"), Throws.TypeOf<InvalidOperationException>());
+
+                await TestNewPassword(userId);
+            });
+        }
+
+        private static async Task TestNewPassword(string userId)
+        {
+            // Ensure that users are logged out
+            await Task.Delay(100);
+
+            Assert.That(User.Current, Is.Null);
+
+            var serverUri = new Uri($"http://{Constants.ServerUrl}");
+
+            // Try to login with the same credentials
+            try
+            {
+                await User.LoginAsync(Credentials.UsernamePassword(userId, OriginalPassword, createUser: false), serverUri);
+                Assert.Fail("Should be impossible to login with old password");
+            }
+            catch (Exception ex)
+            {
+                Assert.That(ex, Is.TypeOf<AuthenticationException>());
+                var authEx = (AuthenticationException)ex;
+                Assert.That(authEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
+            }
+
+            var newCredentials = Credentials.UsernamePassword(userId, NewPassword, createUser: false);
+            var newUser = await User.LoginAsync(newCredentials, serverUri);
+
+            Assert.That(newUser.State, Is.EqualTo(UserState.Active));
+            Assert.That(newUser, Is.EqualTo(User.Current));
+            newUser.LogOut();
+            Assert.That(User.Current, Is.Null);
         }
     }
 }
