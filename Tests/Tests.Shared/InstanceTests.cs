@@ -577,6 +577,9 @@ namespace Tests.Database
             });
         }
 
+#if DEBUG
+        [Ignore("Due to a Xamarin bug, the Debug implementation of GetInstanceAsync isn't asynchronous. See RealmConfiguration.CreateRealmAsync.")]
+#endif
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()
         {
