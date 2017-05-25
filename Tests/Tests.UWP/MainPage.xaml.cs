@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
 using NUnit.Runner.Services;
-using Windows.UI.Xaml.Navigation;
 using System.IO;
+using System.Reflection;
 using Windows.ApplicationModel;
+using Windows.UI.Xaml.Navigation;
 
 namespace Tests.UWP
 {
