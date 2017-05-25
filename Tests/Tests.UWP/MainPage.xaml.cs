@@ -18,6 +18,9 @@
 
 using System.Reflection;
 using NUnit.Runner.Services;
+using Windows.UI.Xaml.Navigation;
+using System.IO;
+using Windows.ApplicationModel;
 
 namespace Tests.UWP
 {
@@ -26,15 +29,29 @@ namespace Tests.UWP
         public MainPage()
         {
             InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
 
             var nunit = new NUnit.Runner.App();
             nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
 
-            nunit.Options = new TestOptions
+            var options = new TestOptions
             {
                 LogToOutput = true
             };
 
+            if (e.Parameter is string arguments && arguments.Contains("--headless"))
+            {
+                options.AutoRun = true;
+                options.CreateXmlResultFile = true;
+                options.TerminateAfterExecution = true;
+                options.XmlTransformFile = Path.Combine(Package.Current.InstalledLocation.Path, "nunit3-junit.xslt");
+            }
+
+            nunit.Options = options;
             LoadApplication(nunit);
         }
     }

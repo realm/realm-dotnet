@@ -22,8 +22,14 @@ add-type -TypeDefinition $code
 $appman = new-object ApplicationActivationManager
 
 $appx = Get-AppxPackage "RealmTestsApp"
-$id = $null;
-$appman.ActivateApplication("$($appx.PackageFamilyName)!App", "--headless", 0, ([ref]$id))
+$id = $null
+$appman.ActivateApplication("$($appx.PackageFamilyName)!App", "--headless", 0, ([ref]$id)) | Out-Null
 $process = Get-Process -Id $id
 Wait-Process -InputObject $process
-$process.ExitCode
+
+Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) -ChildPath "Packages" |
+    Join-Path -ChildPath $appx.PackageFamilyName |
+    Join-Path -ChildPath "LocalState\TestResults.xml" |
+    Out-Default
+
+exit $process.ExitCode
