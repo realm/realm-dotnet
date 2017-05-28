@@ -206,9 +206,18 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
-          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
-          cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-win32', "${env.WORKSPACE}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-x64', "${env.WORKSPACE}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          cmake 'build-arm', "${env.WORKSPACE}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+        }
+
+        bat """
+          "${windowsNugetCmd}" restore Realm.sln
+          "${tool 'msbuild'}" Tests/Tests.UWP/Tests.UWP.csproj /p:Configuration=${configuration} /p:UseDotNetNativeToolchain=false /p:AppxBundlePlatforms="x86|x64|ARM" /p:AppxBundle=Always /p:SolutionDir=${env.WORKSPACE}\\
+        """
+
+        dir('Tests/Tests.UWP') {
+          stash includes: 'run-tests.ps1,AppPackages/**/*', name: 'uwp-tests-nosync'
         }
 
         archive 'wrappers/build/**/*.pdb'
@@ -265,7 +274,8 @@ stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
-    'Win32': Win32Test('win32-tests-nosync')
+    'Win32': Win32Test('win32-tests-nosync'),
+    'UWP': UWPTest('uwp-tests-nosync')
   )
 }
 
@@ -390,6 +400,25 @@ stage('Test with sync') {
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync')
   )
+}
+
+def UWPTest(stashName) {
+  return {
+    nodeWithCleanup('windows') {
+      unstash stashName
+
+      lock("${env.NODE_NAME}-DotnetTestsApp") {
+        bat 'powershell .\\AppPackages\\*\\Add-AppDevPackage.ps1 -Force'
+        def testResults
+        try {
+          testResults = bat returnStdout: true, script: 'powershell .\\run-tests.ps1'
+        } finally {
+          bat 'powershell "Get-AppxPackage RealmTestsApp | Remove-AppxPackage"'
+          junit testResults
+        }
+      }
+    }
+  }
 }
 
 def Win32Test(stashName) {
