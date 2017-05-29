@@ -211,6 +211,8 @@ stage('Build without sync') {
           cmake 'build-arm', "${env.WORKSPACE}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
         }
 
+        unstash 'tools-weaver'
+
         dir('Tests/Tests.UWP') {
           bat """
             "${tool 'msbuild'}" /t:restore
