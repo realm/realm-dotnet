@@ -211,12 +211,11 @@ stage('Build without sync') {
           cmake 'build-arm', "${env.WORKSPACE}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
         }
 
-        bat """
-          "${windowsNugetCmd}" restore Realm.sln
-          "${tool 'msbuild'}" Tests/Tests.UWP/Tests.UWP.csproj /p:Configuration=${configuration} /p:UseDotNetNativeToolchain=false /p:AppxBundlePlatforms="x86|x64|ARM" /p:AppxBundle=Always /p:SolutionDir=${env.WORKSPACE}\\
-        """
-
         dir('Tests/Tests.UWP') {
+          bat """
+            "${tool 'msbuild'}" /t:restore
+            "${tool 'msbuild'}" /p:Configuration=${configuration} /p:UseDotNetNativeToolchain=false /p:AppxBundlePlatforms="x86|x64|ARM" /p:AppxBundle=Always /p:SolutionDir=${env.WORKSPACE}\\
+          """
           stash includes: 'run-tests.ps1,AppPackages/**/*', name: 'uwp-tests-nosync'
         }
 
