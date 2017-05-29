@@ -113,10 +113,10 @@
       <Link>nunit3-junit.xslt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\Logo.png" />
-    <Content Include="Assets\MediumTile.png" />
-    <Content Include="Assets\SmallTile.png" />
-    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Logo.scale-100.png" />
+    <Content Include="Assets\MediumTile.scale-100.png" />
+    <Content Include="Assets\SmallTile.scale-100.png" />
+    <Content Include="Assets\StoreLogo.scale-100.png" />
     <Content Include="FodyWeavers.xml" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="C:\Program Files %28x86%29\Windows Kits\10\bin\$(Platform)\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'">
