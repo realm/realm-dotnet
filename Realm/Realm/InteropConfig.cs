@@ -26,17 +26,21 @@ namespace Realms
     {
         private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
         {
-            var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
-
-            if (specialFolderType != null)
+            try
             {
-                var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
-
-                if (getFolderPath != null)
+                var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
+                if (specialFolderType != null)
                 {
-                    var personalField = specialFolderType.GetField("Personal");
-                    return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
+                    var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
+                    if (getFolderPath != null)
+                    {
+                        var personalField = specialFolderType.GetField("Personal");
+                        return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
+                    }
                 }
+            }
+            catch
+            {
             }
 
             try
@@ -59,16 +63,34 @@ namespace Realms
             {
             }
 
-            var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-            if (assemblyLocationPI != null)
+            var currentDirectory = Directory.GetCurrentDirectory();
+            if (!IsDirectoryWritable(currentDirectory))
             {
-                var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(InteropConfig).GetTypeInfo().Assembly));
-                var folder = Path.Combine(assemblyLocation, "Documents");
-                Directory.CreateDirectory(folder);
-                return folder;
+                throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
             }
+            var folder = Path.Combine(currentDirectory, "Documents");
+            Directory.CreateDirectory(folder);
+            return folder;
 
-            throw new NotSupportedException();
+            bool IsDirectoryWritable(string path)
+            {
+                if (!Directory.Exists(path))
+                {
+                    return false;
+                }
+
+                try 
+                {
+                    using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
+                    { }
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+
+            }
         });
 
         /// <summary>

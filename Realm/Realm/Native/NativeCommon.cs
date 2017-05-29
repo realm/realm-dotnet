@@ -59,28 +59,28 @@ namespace Realms
 
         public static unsafe void Initialize()
         {
-            var osVersionPI = typeof(Environment).GetProperty("OSVersion");
-            var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
-            var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-            if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
+            try
             {
-                var osVersion = osVersionPI.GetValue(null);
-                var platform = platformPI.GetValue(osVersion);
-
-                if (platform.ToString() == "Win32NT")
+                var osVersionPI = typeof(Environment).GetProperty("OSVersion");
+                var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
+                var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+                if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
                 {
-                    try
+                    var osVersion = osVersionPI.GetValue(null);
+                    var platform = platformPI.GetValue(osVersion);
+
+                    if (platform.ToString() == "Win32NT")
                     {
                         var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
                         var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
                         var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
                         Environment.SetEnvironmentVariable("PATH", path);
                     }
-                    catch (PlatformNotSupportedException)
-                    {
-                        // Thrown on UWP
-                    }
                 }
+            }
+            catch
+            {
+                // Try to put wrappers in PATH on Windows Desktop, but be silent if anything fails.
             }
 
 #if DEBUG
