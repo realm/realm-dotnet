@@ -16,8 +16,6 @@
 ### Breaking Changes
 - The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissionsAsync`, `User.OfferPermissionsAsync`, and `User.AcceptPermissionOfferAsync` API. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
 - `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
-- The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissions`, `User.OfferPermissions`, and `User.AcceptPermissionOffer` API. (#1361)
-- `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. (#1361)
 - `User.ChangePassword(password)` has been renamed to `User.ChangePasswordAsync(password)`. ([#1412](https://github.com/realm/realm-dotnet/pull/1412))
 
 1.4.0 (2017-05-19)
