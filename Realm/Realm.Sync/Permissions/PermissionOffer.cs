@@ -55,8 +55,8 @@ namespace Realms.Sync
         [MapTo("updatedAt")]
         public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         [MapTo("statusCode")]
         public int? StatusCode { get; set; }
 

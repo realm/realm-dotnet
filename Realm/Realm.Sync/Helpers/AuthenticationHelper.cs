@@ -52,7 +52,7 @@ namespace Realms.Sync
             HttpStatusCode.RequestTimeout,
         };
 
-        public static async Task RefreshAccessToken(Session session, bool reportErrors = true)
+        public static async Task RefreshAccessTokenAsync(Session session, bool reportErrors = true)
         {
             var user = session.User;
             if (user == null || session.State == SessionState.Invalid)
@@ -106,7 +106,7 @@ namespace Realms.Sync
         }
 
         // Returns a Tuple<userId, refreshToken>
-        public static async Task<UserLoginData> Login(Credentials credentials, Uri serverUrl)
+        public static async Task<UserLoginData> LoginAsync(Credentials credentials, Uri serverUrl)
         {
             var body = credentials.ToDictionary();
             body["app_id"] = AppId;
@@ -120,13 +120,18 @@ namespace Realms.Sync
             };
         }
 
-        public static Task ChangePassword(User user, string password)
+        public static Task ChangePasswordAsync(User user, string password, string otherUserId = null)
         {
             var json = new Dictionary<string, object>
             {
                 ["token"] = user.RefreshToken,
                 ["password"] = password
             };
+
+            if (otherUserId != null)
+            {
+                json["user_id"] = otherUserId;
+            }
 
             return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json);
         }
@@ -168,7 +173,7 @@ namespace Realms.Sync
                     var session = Session.Create(sessionPointer);
                     if (session != null)
                     {
-                        RefreshAccessToken(session, reportErrors: false).ContinueWith(_ =>
+                        RefreshAccessTokenAsync(session, reportErrors: false).ContinueWith(_ =>
                         {
                             user.Handle.Dispose();
                             session.Handle.Dispose();
