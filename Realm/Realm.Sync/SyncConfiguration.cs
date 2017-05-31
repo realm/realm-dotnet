@@ -50,6 +50,26 @@ namespace Realms.Sync
         public bool EnableSSLValidation { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the path to the trusted root certificate(s) authority (CA) in PEM format, that should
+        /// be used to validate the TLS connections to the Realm Object Server.
+        /// </summary>
+        /// <value>The path to the certificate.</value>
+        /// <remarks>
+        /// The file will be copied at runtime into the internal storage.
+        /// <br/>
+        /// It is recommended to include only the root CA you trust, and not the entire list of root CA as this file
+        /// will be loaded at runtime. It is your responsibility to download and verify the correct PEM for the root CA
+        /// you trust.
+        /// </remarks>
+        /// <seealso href="https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_load_verify_locations.html">
+        /// OpenSSL documentation for SSL_CTX_load_verify_locations.
+        /// </seealso>
+        /// <seealso href="https://ccadb-public.secure.force.com/mozilla/IncludedCACertificateReport">
+        /// Mozilla Included CA Certificate List
+        /// </seealso>
+        public string TrustedCAPath { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
@@ -91,7 +111,8 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString(),
-                client_validate_ssl = EnableSSLValidation
+                client_validate_ssl = EnableSSLValidation,
+                TrustedCAPath = TrustedCAPath
             };
         }
     }

@@ -43,6 +43,9 @@ struct SyncConfiguration
     size_t url_len;
     
     bool client_validate_ssl;
+    
+    uint16_t* trusted_ca_path;
+    size_t trusted_ca_path_len;
 };
 
 extern "C" {
@@ -91,6 +94,11 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
             
             config.encryption_key = std::vector<char>(key.begin(), key.end());
             config.sync_config->realm_encryption_key = key;
+        }
+        
+        if (sync_configuration.trusted_ca_path_len) {
+            Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
+            config.sync_config->ssl_trust_certificate_path = trusted_ca_path.to_string();
         }
         
         config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
