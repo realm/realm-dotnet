@@ -69,9 +69,6 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void reset_for_testing();
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect();
 
@@ -141,9 +138,7 @@ namespace Realms.Sync
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
-            // TODO: This should reference NativeCommon.reset_for_testing
-            // Due to mono compiler bug, it's copied to NativeMethods
-            NativeMethods.reset_for_testing();
+            NativeCommon.reset_for_testing();
             ConfigureFileSystem(userPersistenceMode, null, false);
         }
 
