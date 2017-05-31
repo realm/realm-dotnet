@@ -110,14 +110,6 @@ namespace Realms
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         /// <summary>
-        /// Gets the <see cref="ObjectSchema"/> of the contained objects.
-        /// </summary>
-        /// <value>The ObjectSchema of the contained objects.</value>
-        /// <seealso cref="ISchemaSource.ObjectSchema"/>
-        [Obsolete("Use ISchemaObject.ObjectSchema instead.")]
-        ObjectSchema ObjectSchema { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this collection is still valid to use, i.e. the <see cref="Realm"/> instance
         /// hasn't been closed and, if it represents a to-many relationship, it's parent object hasn't been deleted.
         /// </summary>

@@ -17,6 +17,17 @@
 - The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissionsAsync`, `User.OfferPermissionsAsync`, and `User.AcceptPermissionOfferAsync` API. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
 - `User.GetManagementRealm` and `User.GetPermissionRealm` are now deprecated. Use the new permission related API on `User` to achieve the same results. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))
 - `User.ChangePassword(password)` has been renamed to `User.ChangePasswordAsync(password)`. ([#1412](https://github.com/realm/realm-dotnet/pull/1412))
+- Removed the following obsolete API: ([#1425](https://github.com/realm/realm-dotnet/pull/1425))
+  - `Realm.ObjectForPrimaryKey<T>(long id)`
+  - `Realm.ObjectForPrimaryKey<T>(string id)`
+  - `Realm.ObjectForPrimaryKey(string className, long id)`
+  - `Realm.ObjectForPrimaryKey(string className, string id)`
+  - `Realm.Manage<T>(T obj, bool update)`
+  - `Realm.Close()`
+  - `Realm.CreateObject<T>()`
+  - `IOrderedQueryable<T>.ToNotifyCollectionChanged<T>(Action<Exception> errorCallback)`
+  - `IOrderedQueryable<T>.ToNotifyCollectionChanged<T>(Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset)`
+  - `IRealmCollection<T>.ObjectSchema`
 
 1.4.0 (2017-05-19)
 ------------------
