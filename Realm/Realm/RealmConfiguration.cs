@@ -171,7 +171,7 @@ namespace Realms
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (SynchronizationContext.Current != null)
+            if (System.Threading.SynchronizationContext.Current != null)
             {
                 await Task.Run(() =>
                 {
