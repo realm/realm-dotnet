@@ -126,10 +126,5 @@ namespace Realms
         internal abstract Realm CreateRealm(RealmSchema schema);
 
         internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema);
-
-        internal RealmConfigurationBase Clone()
-        {
-            return (RealmConfigurationBase)MemberwiseClone();
-        }
     }
 }
