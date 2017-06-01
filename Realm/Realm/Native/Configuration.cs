@@ -34,10 +34,8 @@ namespace Realms.Native
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct Configuration
     {
-        // TODO: make path private
-        // It's public due to mono compiler bug
         [MarshalAs(UnmanagedType.LPWStr)]
-        public string path;
+        private string path;
         private IntPtr path_len;
 
         internal string Path
