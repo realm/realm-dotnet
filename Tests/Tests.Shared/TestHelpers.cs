@@ -46,7 +46,7 @@ namespace Tests
             return (T)GetPropertyValue(obj, propertyName);
         }
 
-        public static void CopyBundledDatabaseToDocuments(string realmName, string destPath = null, bool overwrite = true)
+        public static string CopyBundledDatabaseToDocuments(string realmName, string destPath = null, bool overwrite = true)
         {
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
 
@@ -67,6 +67,8 @@ namespace Tests
 
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
 #endif
+
+            return destPath;
         }
     }
 }
