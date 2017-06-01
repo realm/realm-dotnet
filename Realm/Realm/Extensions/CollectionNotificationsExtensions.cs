@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
@@ -125,40 +124,6 @@ namespace Realms
                 list.Remove(item);
                 list.Insert(index, item);
             }
-        }
-
-        /// <summary>
-        /// <b>Deprecated</b> A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
-        /// </summary>
-        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">The parameter is not used.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
-        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
-        [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
-        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
-        {
-            return ToNotifyCollectionChanged(results, errorCallback, coalesceMultipleChangesIntoReset: false);
-        }
-
-        /// <summary>
-        /// <b>Deprecated</b> A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which implements INotifyCollectionChanged.
-        /// </summary>
-        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <param name="errorCallback">The parameter is not used.</param>
-        /// <param name="coalesceMultipleChangesIntoReset">The parameter is not used.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
-        /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
-        [Obsolete("Use .AsRealmCollection to get a collection that implements INotifyCollectionChanged. For error callback, use Realm.Error.")]
-        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
-        {
-            if (errorCallback == null)
-            {
-                throw new ArgumentNullException(nameof(errorCallback));
-            }
-
-            return results.AsRealmCollection();
         }
     }
 }
