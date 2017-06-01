@@ -96,7 +96,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
             config.sync_config->realm_encryption_key = key;
         }
         
-        if (sync_configuration.trusted_ca_path_len) {
+        if (sync_configuration.trusted_ca_path) {
             Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
             config.sync_config->ssl_trust_certificate_path = trusted_ca_path.to_string();
         }

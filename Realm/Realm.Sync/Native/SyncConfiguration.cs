@@ -58,7 +58,7 @@ namespace Realms.Sync.Native
             set
             {
                 trusted_ca_path = value;
-                trusted_ca_path_len = (IntPtr)value.Length;
+                trusted_ca_path_len = (IntPtr)(value?.Length ?? 0);
             }
         }
 
