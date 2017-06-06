@@ -222,15 +222,13 @@ namespace Realms
 
         public void BinaryEqual(IntPtr columnIndex, IntPtr buffer, IntPtr bufferLength)
         {
-            NativeException nativeException;
-            NativeMethods.binary_equal(this, columnIndex, buffer, bufferLength, out nativeException);
+            NativeMethods.binary_equal(this, columnIndex, buffer, bufferLength, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void BinaryNotEqual(IntPtr columnIndex, IntPtr buffer, IntPtr bufferLength)
         {
-            NativeException nativeException;
-            NativeMethods.binary_not_equal(this, columnIndex, buffer, bufferLength, out nativeException);
+            NativeMethods.binary_not_equal(this, columnIndex, buffer, bufferLength, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -239,8 +237,7 @@ namespace Realms
         /// </summary>
         public void StringContains(IntPtr columnIndex, string value, bool caseSensitive)
         {
-            NativeException nativeException;
-            NativeMethods.string_contains(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            NativeMethods.string_contains(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -249,8 +246,7 @@ namespace Realms
         /// </summary>
         public void StringStartsWith(IntPtr columnIndex, string value, bool caseSensitive)
         {
-            NativeException nativeException;
-            NativeMethods.string_starts_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            NativeMethods.string_starts_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -259,8 +255,7 @@ namespace Realms
         /// </summary>
         public void StringEndsWith(IntPtr columnIndex, string value, bool caseSensitive)
         {
-            NativeException nativeException;
-            NativeMethods.string_ends_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            NativeMethods.string_ends_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -269,8 +264,7 @@ namespace Realms
         /// </summary>
         public void StringEqual(IntPtr columnIndex, string value, bool caseSensitive)
         {
-            NativeException nativeException;
-            NativeMethods.string_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            NativeMethods.string_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -279,8 +273,7 @@ namespace Realms
         /// </summary>
         public void StringNotEqual(IntPtr columnIndex, string value, bool caseSensitive)
         {
-            NativeException nativeException;
-            NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+            NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -300,322 +293,277 @@ namespace Realms
 
         public void BoolEqual(IntPtr columnIndex, bool value)
         {
-            NativeException nativeException;
-            NativeMethods.bool_equal(this, columnIndex, MarshalHelpers.BoolToIntPtr(value), out nativeException);
+            NativeMethods.bool_equal(this, columnIndex, MarshalHelpers.BoolToIntPtr(value), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void BoolNotEqual(IntPtr columnIndex, bool value)
         {
-            NativeException nativeException;
-            NativeMethods.bool_not_equal(this, columnIndex, MarshalHelpers.BoolToIntPtr(value), out nativeException);
+            NativeMethods.bool_not_equal(this, columnIndex, MarshalHelpers.BoolToIntPtr(value), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntEqual(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_equal(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_equal(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntNotEqual(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_not_equal(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_not_equal(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntLess(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_less(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_less(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntLessEqual(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_less_equal(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_less_equal(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntGreater(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_greater(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_greater(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void IntGreaterEqual(IntPtr columnIndex, int value)
         {
-            NativeException nativeException;
-            NativeMethods.int_greater_equal(this, columnIndex, (IntPtr)value, out nativeException);
+            NativeMethods.int_greater_equal(this, columnIndex, (IntPtr)value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongEqual(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.long_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongNotEqual(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_not_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.long_not_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongLess(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_less(this, columnIndex, value, out nativeException);
+            NativeMethods.long_less(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongLessEqual(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_less_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.long_less_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongGreater(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_greater(this, columnIndex, value, out nativeException);
+            NativeMethods.long_greater(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void LongGreaterEqual(IntPtr columnIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.long_greater_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.long_greater_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatEqual(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.float_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatNotEqual(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_not_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.float_not_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatLess(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_less(this, columnIndex, value, out nativeException);
+            NativeMethods.float_less(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatLessEqual(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_less_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.float_less_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatGreater(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_greater(this, columnIndex, value, out nativeException);
+            NativeMethods.float_greater(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void FloatGreaterEqual(IntPtr columnIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.float_greater_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.float_greater_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleEqual(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.double_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleNotEqual(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_not_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.double_not_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleLess(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_less(this, columnIndex, value, out nativeException);
+            NativeMethods.double_less(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleLessEqual(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_less_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.double_less_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleGreater(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_greater(this, columnIndex, value, out nativeException);
+            NativeMethods.double_greater(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void DoubleGreaterEqual(IntPtr columnIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.double_greater_equal(this, columnIndex, value, out nativeException);
+            NativeMethods.double_greater_equal(this, columnIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksEqual(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_equal(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksNotEqual(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_not_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_not_equal(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksLess(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_less(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_less(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksLessEqual(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_less_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_less_equal(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksGreater(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_greater(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_greater(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void TimestampTicksGreaterEqual(IntPtr columnIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
-            NativeMethods.timestamp_ticks_greater_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
+            NativeMethods.timestamp_ticks_greater_equal(this, columnIndex, value.ToUniversalTime().Ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void ObjectEqual(IntPtr columnIndex, ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            NativeMethods.query_object_equal(this, columnIndex, objectHandle, out nativeException);
+            NativeMethods.query_object_equal(this, columnIndex, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void NullEqual(IntPtr columnIndex)
         {
-            NativeException nativeException;
-            NativeMethods.null_equal(this, columnIndex, out nativeException);
+            NativeMethods.null_equal(this, columnIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void NullNotEqual(IntPtr columnIndex)
         {
-            NativeException nativeException;
-            NativeMethods.null_not_equal(this, columnIndex, out nativeException);
+            NativeMethods.null_not_equal(this, columnIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public IntPtr FindNext(ObjectHandle afterObject)
         {
-            NativeException nativeException;
-            var result = NativeMethods.findNext(this, afterObject, out nativeException);
+            var result = NativeMethods.findNext(this, afterObject, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr FindDirect(SharedRealmHandle sharedRealm, IntPtr? beginAtIndex = null)
         {
-            NativeException nativeException;
-            var result = NativeMethods.findDirect(this, beginAtIndex ?? IntPtr.Zero, sharedRealm, out nativeException);
+            var result = NativeMethods.findDirect(this, beginAtIndex ?? IntPtr.Zero, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr GetColumnIndex(string columnName)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_column_index(this, columnName, (IntPtr)columnName.Length, out nativeException);
+            var result = NativeMethods.get_column_index(this, columnName, (IntPtr)columnName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public void Not()
         {
-            NativeException nativeException;
-            NativeMethods.not(this, out nativeException);
+            NativeMethods.not(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void GroupBegin()
         {
-            NativeException nativeException;
-            NativeMethods.group_begin(this, out nativeException);
+            NativeMethods.group_begin(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void GroupEnd()
         {
-            NativeException nativeException;
-            NativeMethods.group_end(this, out nativeException);
+            NativeMethods.group_end(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Or()
         {
-            NativeException nativeException;
-            NativeMethods.or(this, out nativeException);
+            NativeMethods.or(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public int Count()
         {
-            NativeException nativeException;
-            var result = NativeMethods.count(this, out nativeException);
+            var result = NativeMethods.count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
 
         public IntPtr CreateResults(SharedRealmHandle sharedRealm)
         {
-            NativeException nativeException;
-            var result = NativeMethods.create_results(this, sharedRealm, out nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
         {
-            NativeException nativeException;
             var marshaledValues = sortDescriptorBuilder.Flatten();
-            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TableHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
+            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TableHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

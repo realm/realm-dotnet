@@ -247,7 +247,7 @@ namespace Tests.Database
         {
             var dani = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
             Assert.That(dani.Dogs.Count(), Is.EqualTo(0));  // ToMany relationships always return a RealmList
-            int dogsIterated = 0;
+            var dogsIterated = 0;
             foreach (var d in dani.Dogs)
             {
                 dogsIterated++;
@@ -422,7 +422,7 @@ namespace Tests.Database
             var tim = realm.All<Owner>().Single(o => o.Name == "Tim");
             foreach (var dog in tim.Dogs)
             {
-                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim })); 
+                Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim }));
             }
 
             var dani = realm.All<Owner>().Single(o => o.Name == "Dani");

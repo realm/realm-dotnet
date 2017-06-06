@@ -22,7 +22,7 @@ using System.Net;
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
-    /// An exception thrown when a transport error occurs during authentication. 
+    /// An exception thrown when a transport error occurs during authentication.
     /// </summary>
     public class HttpException : Exception
     {

@@ -30,8 +30,8 @@ namespace Realms.Schema
     /// dynamically, by evaluating a Realm from disk.
     /// </summary>
     /// <remarks>
-    /// By default this will be all the <see cref="RealmObject"/>s in all your assemblies unless you restrict with 
-    /// <see cref="RealmConfigurationBase.ObjectClasses"/>. Just because a given class <em>may</em> be stored in a 
+    /// By default this will be all the <see cref="RealmObject"/>s in all your assemblies unless you restrict with
+    /// <see cref="RealmConfigurationBase.ObjectClasses"/>. Just because a given class <em>may</em> be stored in a
     /// Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
     /// </remarks>
@@ -84,8 +84,7 @@ namespace Realms.Schema
                 throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
             }
 
-            ObjectSchema obj;
-            _objects.TryGetValue(name, out obj);
+            _objects.TryGetValue(name, out var obj);
             return obj;
         }
 
@@ -105,7 +104,7 @@ namespace Realms.Schema
             var builder = new Builder();
             foreach (var @class in classes)
             {
-                builder.Add(ObjectSchema.FromType(@class)); 
+                builder.Add(ObjectSchema.FromType(@class));
             }
 
             return builder.Build();
@@ -144,7 +143,7 @@ namespace Realms.Schema
         {
             public RealmSchema Build()
             {
-                if (Count == 0) 
+                if (Count == 0)
                 {
                     throw new InvalidOperationException(
                         "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");

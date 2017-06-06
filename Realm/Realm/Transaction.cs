@@ -43,6 +43,7 @@ namespace Realms
         /// </summary>
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (!_isOpen)
             {
                 return;
@@ -52,7 +53,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Use explicitly to undo the changes in a <see cref="Transaction"/>, otherwise it is automatically invoked by 
+        /// Use explicitly to undo the changes in a <see cref="Transaction"/>, otherwise it is automatically invoked by
         /// exiting the block.
         /// </summary>
         public void Rollback()

@@ -50,9 +50,9 @@ namespace Realms.Sync
             private Session _session;
             private IObserver<SyncProgress> _observer;
 
-            public ProgressNotificationToken(Session session, 
-                                             IObserver<SyncProgress> observer, 
-                                             ProgressDirection direction, 
+            public ProgressNotificationToken(Session session,
+                                             IObserver<SyncProgress> observer,
+                                             ProgressDirection direction,
                                              ProgressMode mode)
             {
                 _session = session;
@@ -76,7 +76,7 @@ namespace Realms.Sync
                 {
                     _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
 
-                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork && 
+                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork &&
                         transferredBytes >= transferableBytes)
                     {
                         _observer.OnCompleted();
@@ -88,6 +88,8 @@ namespace Realms.Sync
             {
                 if (!isDisposed)
                 {
+                    GC.SuppressFinalize(this);
+
                     isDisposed = true;
 
                     _session.Handle.UnregisterProgressNotifier(_nativeToken);

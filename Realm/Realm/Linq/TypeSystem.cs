@@ -50,7 +50,7 @@ namespace Realms
 
             if (seqType.GetTypeInfo().IsGenericType)
             {
-                foreach (Type arg in seqType.GetGenericArguments())
+                foreach (var arg in seqType.GetGenericArguments())
                 {
                     var ienum = typeof(IEnumerable<>).MakeGenericType(arg);
                     if (ienum.IsAssignableFrom(seqType))
@@ -63,7 +63,7 @@ namespace Realms
             var ifaces = seqType.GetInterfaces().ToArray();
             if (ifaces != null && ifaces.Length > 0)
             {
-                foreach (Type iface in ifaces)
+                foreach (var iface in ifaces)
                 {
                     var ienum = FindIEnumerable(iface);
                     if (ienum != null)

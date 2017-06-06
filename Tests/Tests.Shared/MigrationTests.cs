@@ -94,15 +94,17 @@ namespace Tests.Database
         [Test]
         public void ExceptionInMigrationCallback()
         {
-            TestHelpers.CopyBundledDatabaseToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+            TestHelpers.CopyBundledDatabaseToDocuments("ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
 
             var dummyException = new Exception();
 
-            var configuration = new RealmConfiguration("NeedsMigrating.realm") { SchemaVersion = 100 };
-            configuration.MigrationCallback = (migration, oldSchemaVersion) =>
+            var configuration = new RealmConfiguration("NeedsMigrating.realm")
             {
-                throw dummyException;
+                SchemaVersion = 100,
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    throw dummyException;
+                }
             };
 
             var ex = Assert.Throws<AggregateException>(() => Realm.GetInstance(configuration).Dispose());

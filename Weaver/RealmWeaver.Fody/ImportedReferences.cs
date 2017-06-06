@@ -137,7 +137,7 @@ namespace RealmWeaver
 
             System_Type = new TypeReference("System", "Type", Module, Types.CoreLibrary);
             System_Type_GetTypeFromHandle = new MethodReference("GetTypeFromHandle", System_Type, System_Type)
-            { 
+            {
                 HasThis = false,
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
@@ -270,11 +270,11 @@ namespace RealmWeaver
             var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
             RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.Void, realmSchema) { HasThis = false };
             {
-                var ienumerableOfType = new GenericInstanceType(IEnumerableOfT) 
-                { 
-                    GenericArguments = { System_Type } 
+                var ienumerableOfType = new GenericInstanceType(IEnumerableOfT)
+                {
+                    GenericArguments = { System_Type }
                 };
-            
+
                 RealmSchema_AddDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
             }
         }

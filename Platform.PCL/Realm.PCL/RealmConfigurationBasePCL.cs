@@ -31,7 +31,7 @@ namespace Realms
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
-        /// <value>A string representing a filename only, no path.</value>      
+        /// <value>A string representing a filename only, no path.</value>
         public static string DefaultRealmName { get; }
 
         /// <summary>
@@ -48,10 +48,10 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// config.ObjectClasses = new Type[] 
-        /// { 
-        ///     typeof(CommonClass), 
-        ///     typeof(RareClass) 
+        /// config.ObjectClasses = new Type[]
+        /// {
+        ///     typeof(CommonClass),
+        ///     typeof(RareClass)
         /// };
         /// </code>
         /// </example>

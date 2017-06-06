@@ -48,12 +48,12 @@ namespace Realms
         {
             private SynchronizationContext _context;
 
-            private volatile bool _isReleased = false;
+            private volatile bool _isReleased;
 
             internal EventLoop(SynchronizationContext context)
             {
                 Debug.Assert(context != null, "The SynchronizationContext EventLoopSignal implementation always needs a SynchronizationContext");
-                _context = context; 
+                _context = context;
             }
 
             internal void Post(EventLoopPostHandler callback, IntPtr user_data)

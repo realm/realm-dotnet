@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms.Schema;
 
 namespace Realms
@@ -32,16 +31,16 @@ namespace Realms
         /// <summary>
         /// In order to handle manual migrations, you need to supply a migration callback to your
         /// <see cref="RealmConfiguration"/>. It will be called with a <see cref="Migration"/> instance containing
-        /// the pre- and the post-migration <see cref="Realm"/>. You should make sure that the <see cref="Migration.NewRealm"/> 
+        /// the pre- and the post-migration <see cref="Realm"/>. You should make sure that the <see cref="Migration.NewRealm"/>
         /// property on it contains a database that is up to date when returning. The <c>oldSchemaVersion</c>
-        /// parameter will tell you which <see cref="RealmConfigurationBase.SchemaVersion"/> the user is migrating 
+        /// parameter will tell you which <see cref="RealmConfigurationBase.SchemaVersion"/> the user is migrating
         /// <b>from</b>. They should always be migrating to the current <see cref="RealmConfigurationBase.SchemaVersion"/>.
         /// </summary>
         /// <param name="migration">
         /// The <see cref="Migration"/> instance, containing information about the old and the new <see cref="Realm"/>.
         /// </param>
         /// <param name="oldSchemaVersion">
-        /// An unsigned long value indicating the <see cref="RealmConfigurationBase.SchemaVersion"/> of the old 
+        /// An unsigned long value indicating the <see cref="RealmConfigurationBase.SchemaVersion"/> of the old
         /// <see cref="Realm"/>.
         /// </param>
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
@@ -58,7 +57,7 @@ namespace Realms
         public delegate bool ShouldCompactDelegate(uint totalBytes, uint bytesUsed);
 
         /// <summary>
-        /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/> 
+        /// Gets or sets a value indicating whether the database will be deleted if the <see cref="RealmSchema"/>
         /// mismatches the one in the code. Use this when debugging and developing your app but never release it with
         /// this flag set to <c>true</c>.
         /// </summary>
@@ -66,7 +65,7 @@ namespace Realms
         public bool ShouldDeleteIfMigrationNeeded { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether a <see cref="Realm"/> is opened as readonly. This allows opening it 
+        /// Gets or sets a value indicating whether a <see cref="Realm"/> is opened as readonly. This allows opening it
         /// from locked locations such as resources, bundled with an application.
         /// </summary>
         /// <value><c>true</c> if the <see cref="Realm"/> will be opened as readonly; <c>false</c> otherwise.</value>
@@ -76,7 +75,7 @@ namespace Realms
         /// Gets or sets the migration callback.
         /// </summary>
         /// <value>
-        /// The <see cref="MigrationCallbackDelegate"/> that will be invoked if the <see cref="Realm"/> needs 
+        /// The <see cref="MigrationCallbackDelegate"/> that will be invoked if the <see cref="Realm"/> needs
         /// to be migrated.
         /// </value>
         public MigrationCallbackDelegate MigrationCallback { get; set; }

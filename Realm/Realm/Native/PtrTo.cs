@@ -45,6 +45,6 @@ namespace Realms
         public PtrTo(IntPtr intPtr)
         {
             ptr = intPtr.ToPointer();
-        } 
+        }
     }
 }

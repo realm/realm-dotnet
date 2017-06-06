@@ -28,7 +28,7 @@ namespace Realms.Sync
     /// </summary>
     /// <remarks>
     /// <see cref="PermissionChange"/> objects allow to grant and revoke permissions by setting
-    /// <see cref="MayRead" />, <see cref="MayWrite" /> and <see cref="MayManage" /> accordingly. 
+    /// <see cref="MayRead" />, <see cref="MayWrite" /> and <see cref="MayManage" /> accordingly.
     /// If any of these flags are not set, these are merged
     /// with either the existing or default permissions as applicable. As a
     /// side-effect this causes that the default permissions are permanently

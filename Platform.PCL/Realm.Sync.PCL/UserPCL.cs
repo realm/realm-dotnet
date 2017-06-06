@@ -33,7 +33,7 @@ namespace Realms.Sync
         #region static
 
         /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned. 
+        /// Gets the currently logged-in user. If none exists, null is returned.
         /// If more than one user is currently logged in, an exception is thrown.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>

@@ -56,8 +56,7 @@ namespace Realms
 
         public IntPtr DestroyNotificationToken(IntPtr token)
         {
-            NativeException nativeException;
-            var result = NativeMethods.destroy_notificationtoken(token, out nativeException);
+            var result = NativeMethods.destroy_notificationtoken(token, out NativeException nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

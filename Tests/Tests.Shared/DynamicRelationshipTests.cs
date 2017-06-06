@@ -68,8 +68,8 @@ namespace Tests.Database
 
         protected override void CustomSetUp()
         {
-            _configuration = new RealmConfiguration 
-            { 
+            _configuration = new RealmConfiguration
+            {
                 ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
                 Dynamic = _mode == DynamicTestObjectType.DynamicRealmObject
             };

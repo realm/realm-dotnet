@@ -53,10 +53,10 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// config.ObjectClasses = new Type[] 
-        /// { 
-        ///     typeof(CommonClass), 
-        ///     typeof(RareClass) 
+        /// config.ObjectClasses = new Type[]
+        /// {
+        ///     typeof(CommonClass),
+        ///     typeof(RareClass)
         /// };
         /// </code>
         /// </example>

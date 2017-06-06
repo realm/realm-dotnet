@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 // Replaces IntPtr as a handle to a c++ realm class
 // Using criticalHandle makes the binding more robust with regards to out-of-band exceptions and finalization
@@ -97,7 +96,7 @@ namespace Realms
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
-        // I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be, 
+        // I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be,
         // but I think that is an internal comment to msft developers
 
         // goes to true when we don't expect more calls from user threads on this handle
@@ -109,7 +108,7 @@ namespace Realms
 
         private readonly object _unbindListLock = new object(); // used to serialize calls to unbind between finalizer threads
 
-        private readonly List<RealmHandle> _unbindList; // set only once, to a list if we are a root. 
+        private readonly List<RealmHandle> _unbindList; // set only once, to a list if we are a root.
         // list of owned handles that should be unbound as soon as possible by a user thread
 
         // this object is set to the root/owner if it is a child, or null if this object is itself a root/owner
@@ -126,7 +125,7 @@ namespace Realms
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        public RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
+        protected RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
         {
             if (root == null) // if we are a root object, we need a list for our children and Root is already null
             {
@@ -171,7 +170,7 @@ namespace Realms
         //  var th = RootedHandle<TableViewHandle>(this)
         //  or in a table and want a Query :
         //  var qr = RootedHandle<QueryHandle>(this)
-        // so in general 
+        // so in general
         //  var xx = RootedHandle<Type>(this)  //written in any RealmHandle class
         //  will create a new RealmHandle descendant of type Type where its root is set to the same
         //  root that this have (if this.root==null then it is set to this, otherwise it is set to this.root)
@@ -180,7 +179,7 @@ namespace Realms
         // does not really matter if root is set in an atomic fashion or not - because we are in a stage before the
         // native handle value is actually set.
         // if out-of-band exceptions leaves this class constructed before it has gotten a handle to manage, it will
-        // simply finalize itself silently as the finalizer in CriticalHandle will realize the 0 value of the 
+        // simply finalize itself silently as the finalizer in CriticalHandle will realize the 0 value of the
         // handle and do nothing
         // legal:
         /*
@@ -229,7 +228,7 @@ namespace Realms
 
             try
             {
-                // if we are a root object then we can safely assume that no more user threads are going this way:                    
+                // if we are a root object then we can safely assume that no more user threads are going this way:
                 // if we are a root object and in a finalizer thread , then we know that no more user threads will hit us
                 // if we are a root object and being called via dispose, then we know that the Table(or whatever) wrapper will block any further calls
                 // because we are closed(disposed)
@@ -293,8 +292,8 @@ namespace Realms
         }
 
         /// <summary>
-        /// Called by children to this root, when they would like to 
-        /// be unbound, but are (possibly) running in a finalizer thread 
+        /// Called by children to this root, when they would like to
+        /// be unbound, but are (possibly) running in a finalizer thread
         /// so it is (possibly) not safe to unbind then directly.
         /// </summary>
         /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound.</param>

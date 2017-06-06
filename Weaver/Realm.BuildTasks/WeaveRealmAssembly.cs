@@ -137,7 +137,7 @@ namespace RealmBuildTasks
             }
         }
 
-        private void WeaveMonoPInvoke(ModuleDefinition mainModule, AssemblyDefinition assemblyToWeave)
+        private static void WeaveMonoPInvoke(ModuleDefinition mainModule, AssemblyDefinition assemblyToWeave)
         {
             var xamariniOSAssemlby = mainModule.AssemblyReferences.Single(r => r.Name == "Xamarin.iOS");
             var monoPInvokeCallbackAttribute = new TypeReference("ObjCRuntime", "MonoPInvokeCallbackAttribute", mainModule, xamariniOSAssemlby);
@@ -165,7 +165,7 @@ namespace RealmBuildTasks
             }
         }
 
-        private void WeaveDllImport(AssemblyDefinition assemblyToWeave, string dllName)
+        private static void WeaveDllImport(AssemblyDefinition assemblyToWeave, string dllName)
         {
             var dllImportModule = assemblyToWeave.MainModule.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
             if (dllImportModule != null)

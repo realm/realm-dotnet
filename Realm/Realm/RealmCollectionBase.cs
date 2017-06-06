@@ -30,10 +30,10 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public abstract class RealmCollectionBase<T> 
-        : NotificationsHelper.INotifiable, 
-          IRealmCollection<T>, 
-          INotifyCollectionChanged, 
+    public abstract class RealmCollectionBase<T>
+        : NotificationsHelper.INotifiable,
+          IRealmCollection<T>,
+          INotifyCollectionChanged,
           INotifyPropertyChanged,
           ISchemaSource,
           IThreadConfined
@@ -193,7 +193,7 @@ namespace Realms
             }
             else if (change != null)
             {
-                if (change.Moves.Length > 0 && 
+                if (change.Moves.Length > 0 &&
                     change.Moves.Length == change.InsertedIndices.Length &&
                     change.Moves.Length == change.DeletedIndices.Length)
                 {
@@ -231,13 +231,9 @@ namespace Realms
                     return;
                 }
 
-                IList removedItems;
-                int removedStartIndex;
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default(T), out removedItems, out removedStartIndex);
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default(T), out var removedItems, out var removedStartIndex);
 
-                IList addedItems;
-                int addedStartIndex;
-                var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out addedItems, out addedStartIndex);
+                var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
                 if (raiseAdded || raiseRemoved)
                 {
@@ -357,6 +353,7 @@ namespace Realms
             }
         }
 
+        // TODO: can this be private?
         public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;

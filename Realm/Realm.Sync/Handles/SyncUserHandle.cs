@@ -100,8 +100,7 @@ namespace Realms.Sync
 
         public UserState GetState()
         {
-            NativeException ex;
-            var result = NativeMethods.get_state(this, out ex);
+            var result = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }
@@ -113,15 +112,13 @@ namespace Realms.Sync
 
         public void SetIsAdmin(bool value)
         {
-            NativeException ex;
-            NativeMethods.set_is_admin(this, value, out ex);
+            NativeMethods.set_is_admin(this, value, out var ex);
             ex.ThrowIfNecessary();
         }
 
         public IntPtr GetSessionPointer(string path)
         {
-            NativeException ex;
-            var result = NativeMethods.get_session(this, path, (IntPtr)path.Length, out ex);
+            var result = NativeMethods.get_session(this, path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
 
             return result;
@@ -129,19 +126,17 @@ namespace Realms.Sync
 
         public void LogOut()
         {
-            NativeException ex;
-            NativeMethods.log_out(this, out ex);
+            NativeMethods.log_out(this, out var ex);
             ex.ThrowIfNecessary();
         }
 
         // isAdmin should only be true when logging in with an admin token.
         public static SyncUserHandle GetSyncUser(string identity, string refreshToken, string authServerUrl, bool isAdmin)
         {
-            NativeException ex;
             var userPtr = NativeMethods.get_sync_user(identity, (IntPtr)identity.Length,
-                                                      refreshToken, (IntPtr)refreshToken.Length,
-                                                      authServerUrl, (IntPtr)authServerUrl?.Length,
-                                                      isAdmin, out ex);
+                                          refreshToken, (IntPtr)refreshToken.Length,
+                                          authServerUrl, (IntPtr)authServerUrl?.Length,
+                                          isAdmin, out var ex);
             ex.ThrowIfNecessary();
 
             return GetHandle(userPtr);
@@ -149,8 +144,7 @@ namespace Realms.Sync
 
         public static SyncUserHandle GetCurrentUser()
         {
-            NativeException ex;
-            var userPtr = NativeMethods.get_current_user(out ex);
+            var userPtr = NativeMethods.get_current_user(out var ex);
             ex.ThrowIfNecessary();
 
             return GetHandle(userPtr);
@@ -164,8 +158,7 @@ namespace Realms.Sync
 
         public static SyncUserHandle GetLoggedInUser(string identity)
         {
-            NativeException ex;
-            var userPtr = NativeMethods.get_logged_in_user(identity, (IntPtr)identity.Length, out ex);
+            var userPtr = NativeMethods.get_logged_in_user(identity, (IntPtr)identity.Length, out var ex);
             ex.ThrowIfNecessary();
 
             return GetHandle(userPtr);

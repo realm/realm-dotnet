@@ -77,7 +77,7 @@ namespace Tests.Database
             // Act
             openRealm.Dispose();
 
-            // Assert 
+            // Assert
             Assert.That(File.Exists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
             Assert.That(File.Exists(config.DatabasePath), Is.False);
@@ -257,7 +257,7 @@ namespace Tests.Database
 
             var oldSize = new FileInfo(config.DatabasePath).Length;
             long projectedNewSize = 0;
-            bool hasPrompted = false;
+            var hasPrompted = false;
             config.ShouldCompactOnLaunch = (totalBytes, bytesUsed) =>
             {
                 Assert.That(totalBytes, Is.EqualTo(oldSize));

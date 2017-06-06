@@ -59,8 +59,7 @@ namespace Realms
         {
             get
             {
-                NativeException nativeException;
-                var result = NativeMethods.get_is_valid(this, out nativeException);
+                var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
@@ -80,24 +79,21 @@ namespace Realms
 
         public override IntPtr GetObjectAtIndex(int index)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_row(this, (IntPtr)index, out nativeException);
+            var result = NativeMethods.get_row(this, (IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public override int Count()
         {
-            NativeException nativeException;
-            var result = NativeMethods.count(this, out nativeException);
+            var result = NativeMethods.count(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
 
         public void Clear(SharedRealmHandle realmHandle)
         {
-            NativeException nativeException;
-            NativeMethods.clear(this, realmHandle, out nativeException);
+            NativeMethods.clear(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -105,8 +101,7 @@ namespace Realms
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public QueryHandle CreateQuery()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_query(this, out nativeException);
+            var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             var queryHandle = new QueryHandle(Root ?? this);
@@ -116,36 +111,33 @@ namespace Realms
 
         public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
-            NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public override bool Equals(object obj)
         {
-            // If parameter is null, return false. 
+            // If parameter is null, return false.
             if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
-            // Optimization for a common success case. 
+            // Optimization for a common success case.
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
 
-            NativeException nativeException;
-            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)obj, out nativeException);
+            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)obj, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result != IntPtr.Zero;
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;

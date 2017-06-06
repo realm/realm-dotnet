@@ -83,7 +83,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_list_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_list_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
-        
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
         }
@@ -98,103 +98,90 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
-            NativeException nativeException;
-            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out nativeException);
+            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out NativeException nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public void CloseRealm()
         {
-            NativeException nativeException;
-            NativeMethods.close_realm(this, out nativeException);
+            NativeMethods.close_realm(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void SetManagedStateHandle(IntPtr managedStateHandle)
         {
-            NativeException nativeException;
-            NativeMethods.set_managed_state_handle(this, managedStateHandle, out nativeException);
+            NativeMethods.set_managed_state_handle(this, managedStateHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public IntPtr GetManagedStateHandle()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_managed_state_handle(this, out nativeException);
+            var result = NativeMethods.get_managed_state_handle(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public void BeginTransaction()
         {
-            NativeException nativeException;
-            NativeMethods.begin_transaction(this, out nativeException);
+            NativeMethods.begin_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void CommitTransaction()
         {
-            NativeException nativeException;
-            NativeMethods.commit_transaction(this, out nativeException);
+            NativeMethods.commit_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void CancelTransaction()
         {
-            NativeException nativeException;
-            NativeMethods.cancel_transaction(this, out nativeException);
+            NativeMethods.cancel_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public bool IsInTransaction()
         {
-            NativeException nativeException;
-            var result = NativeMethods.is_in_transaction(this, out nativeException);
+            var result = NativeMethods.is_in_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         public bool Refresh()
         {
-            NativeException nativeException;
-            var result = NativeMethods.refresh(this, out nativeException);
+            var result = NativeMethods.refresh(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         public IntPtr GetTable(string tableName)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_table(this, tableName, (IntPtr)tableName.Length, out nativeException);
+            var result = NativeMethods.get_table(this, tableName, (IntPtr)tableName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public bool IsSameInstance(SharedRealmHandle other)
         {
-            NativeException nativeException;
-            var result = NativeMethods.is_same_instance(this, other, out nativeException);
+            var result = NativeMethods.is_same_instance(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         public ulong GetSchemaVersion()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_schema_version(this, out nativeException);
+            var result = NativeMethods.get_schema_version(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public bool Compact()
         {
-            NativeException nativeException;
-            var result = NativeMethods.compact(this, out nativeException);
+            var result = NativeMethods.compact(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

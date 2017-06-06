@@ -36,8 +36,7 @@ namespace Tests.Database
         {
             var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass));
 
-            Property prop;
-            if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out prop))
+            if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out var prop))
             {
                 Assert.Fail("Could not find property");
             }

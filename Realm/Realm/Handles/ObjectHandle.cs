@@ -149,8 +149,7 @@ namespace Realms
         {
             get
             {
-                NativeException nativeException;
-                var result = NativeMethods.get_is_valid(this, out nativeException);
+                var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
@@ -165,13 +164,13 @@ namespace Realms
 
         public override bool Equals(object obj)
         {
-            // If parameter is null, return false. 
+            // If parameter is null, return false.
             if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
-            // Optimization for a common success case. 
+            // Optimization for a common success case.
             if (ReferenceEquals(this, obj))
             {
                 return true;
@@ -183,8 +182,7 @@ namespace Realms
                 return false;
             }
 
-            NativeException nativeException;
-            var result = NativeMethods.equals_object(this, otherHandle, out nativeException);
+            var result = NativeMethods.equals_object(this, otherHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
@@ -195,20 +193,19 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        // acquire a ListHandle from object_get_list And set root in an atomic fashion 
+        // acquire a ListHandle from object_get_list And set root in an atomic fashion
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal ListHandle TableLinkList(IntPtr propertyIndex)
         {
             var listHandle = new ListHandle(Root ?? this);
-            listHandle.SetHandle(this.GetLinklist(propertyIndex));
+            listHandle.SetHandle(GetLinklist(propertyIndex));
             return listHandle;
         }
-    
+
         public void SetDateTimeOffset(IntPtr propertyIndex, DateTimeOffset value)
         {
-            NativeException nativeException;
             var ticks = value.ToUniversalTime().Ticks;
-            NativeMethods.set_timestamp_ticks(this, propertyIndex, ticks, out nativeException);
+            NativeMethods.set_timestamp_ticks(this, propertyIndex, ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -230,17 +227,14 @@ namespace Realms
 
         public DateTimeOffset GetDateTimeOffset(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var ticks = NativeMethods.get_timestamp_ticks(this, propertyIndex, out nativeException);
+            var ticks = NativeMethods.get_timestamp_ticks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
 
         public DateTimeOffset? GetNullableDateTimeOffset(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            long ticks;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_timestamp_ticks(this, propertyIndex, out ticks, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_timestamp_ticks(this, propertyIndex, out var ticks, out var nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
@@ -267,8 +261,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(value), "Object identifiers cannot be null");
             }
 
-            NativeException nativeException;
-            NativeMethods.set_string_unique(this, propertyIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.set_string_unique(this, propertyIndex, value, (IntPtr)value.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -279,46 +272,40 @@ namespace Realms
 
         public void SetLink(IntPtr propertyIndex, ObjectHandle targetHandle)
         {
-            NativeException nativeException;
-            NativeMethods.set_link(this, propertyIndex, targetHandle, out nativeException);
+            NativeMethods.set_link(this, propertyIndex, targetHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void ClearLink(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            NativeMethods.clear_link(this, propertyIndex, out nativeException);
+            NativeMethods.clear_link(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public IntPtr GetLink(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_link(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_link(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr GetLinklist(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_list(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public bool LinklistIsEmpty(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.list_is_empty(this, propertyIndex, out nativeException);
+            var result = MarshalHelpers.IntPtrToBool(NativeMethods.list_is_empty(this, propertyIndex, out var nativeException));
             nativeException.ThrowIfNecessary();
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         public void SetBoolean(IntPtr propertyIndex, bool value)
         {
-            NativeException nativeException;
-            NativeMethods.set_bool(this, propertyIndex, MarshalHelpers.BoolToIntPtr(value), out nativeException);
+            NativeMethods.set_bool(this, propertyIndex, MarshalHelpers.BoolToIntPtr(value), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -339,25 +326,21 @@ namespace Realms
 
         public bool GetBoolean(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_bool(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_bool(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         public bool? GetNullableBoolean(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            IntPtr value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_bool(this, propertyIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_bool(this, propertyIndex, out var value, out var nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? MarshalHelpers.IntPtrToBool(value) : (bool?)null;
         }
 
         public void SetInt64(IntPtr propertyIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.set_int64(this, propertyIndex, value, out nativeException);
+            NativeMethods.set_int64(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -378,8 +361,7 @@ namespace Realms
 
         public void SetInt64Unique(IntPtr propertyIndex, long value)
         {
-            NativeException nativeException;
-            NativeMethods.set_int64_unique(this, propertyIndex, value, out nativeException);
+            NativeMethods.set_int64_unique(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -400,25 +382,21 @@ namespace Realms
 
         public long GetInt64(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_int64(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_int64(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public long? GetNullableInt64(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            long value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_int64(this, propertyIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_int64(this, propertyIndex, out var value, out var nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (long?)null;
         }
 
         public void SetSingle(IntPtr propertyIndex, float value)
         {
-            NativeException nativeException;
-            NativeMethods.set_float(this, propertyIndex, value, out nativeException);
+            NativeMethods.set_float(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -439,25 +417,21 @@ namespace Realms
 
         public float GetSingle(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_float(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_float(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public float? GetNullableSingle(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            float value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_float(this, propertyIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_float(this, propertyIndex, out var value, out var nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (float?)null;
         }
 
         public void SetDouble(IntPtr propertyIndex, double value)
         {
-            NativeException nativeException;
-            NativeMethods.set_double(this, propertyIndex, value, out nativeException);
+            NativeMethods.set_double(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -478,17 +452,14 @@ namespace Realms
 
         public double GetDouble(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_double(this, propertyIndex, out nativeException);
+            var result = NativeMethods.get_double(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public double? GetNullableDouble(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            double value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_double(this, propertyIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_double(this, propertyIndex, out var value, out var nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (double?)null;
         }
@@ -551,8 +522,7 @@ namespace Realms
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
         {
-            NativeException nativeException;
-            NativeMethods.remove_row(this, realmHandle, out nativeException);
+            NativeMethods.remove_row(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -592,8 +562,7 @@ namespace Realms
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)
         {
-            NativeException nativeException;
-            var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out nativeException);
+            var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return resultsHandle;
@@ -601,8 +570,7 @@ namespace Realms
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
@@ -610,8 +578,7 @@ namespace Realms
 
         public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
-            NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

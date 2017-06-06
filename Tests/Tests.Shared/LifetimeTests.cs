@@ -28,7 +28,7 @@ namespace Tests.Database
     {
         // This method was extracted to ensure that the actual realm instance
         // isn't preserved in the scope of the test, even when the debugger is running.
-        private WeakReference GetWeakRealm()
+        private static WeakReference GetWeakRealm()
         {
             return new WeakReference(Realm.GetInstance("LifetimeTests.realm"));
         }
@@ -48,9 +48,9 @@ namespace Tests.Database
             // Arrange
             var realm = GetWeakRealm();
             Person person = null;
-            ((Realm)realm.Target).Write(() => 
-            { 
-                person = ((Realm)realm.Target).Add(new Person()); 
+            ((Realm)realm.Target).Write(() =>
+            {
+                person = ((Realm)realm.Target).Add(new Person());
             });
 
             // Act
@@ -76,8 +76,8 @@ namespace Tests.Database
             var realm = Realm.GetInstance("LifetimeTests.realm");
             var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
-            realm.Write(() => 
-            { 
+            realm.Write(() =>
+            {
                 person = realm.Add(new Person());
             });
 

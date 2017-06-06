@@ -24,7 +24,7 @@ namespace Realms.Sync.Native
     internal struct StringStringPair
     {
         internal static readonly int Size = Marshal.SizeOf<StringStringPair>();
-        
+
         [MarshalAs(UnmanagedType.LPStr)]
         public string Key;
 

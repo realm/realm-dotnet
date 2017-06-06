@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -35,7 +33,7 @@ namespace Realms.Sync
         #region static
 
         /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned. 
+        /// Gets the currently logged-in user. If none exists, null is returned.
         /// If more than one user is currently logged in, an exception is thrown.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
@@ -377,7 +375,7 @@ namespace Realms.Sync
                 throw new NotSupportedException("Invalid PermissionCondition.");
             }
 
-            return WriteToManagementRealm(change);
+            return WriteToManagementRealmAsync(change);
         }
 
         /// <summary>
@@ -415,7 +413,7 @@ namespace Realms.Sync
                                             accessLevel >= AccessLevel.Admin,
                                             expiresAt);
 
-            await WriteToManagementRealm(offer);
+            await WriteToManagementRealmAsync(offer);
             return offer.Token;
         }
 
@@ -432,7 +430,7 @@ namespace Realms.Sync
             }
 
             var permissionResponse = new PermissionOfferResponse(offerToken);
-            await WriteToManagementRealm(permissionResponse);
+            await WriteToManagementRealmAsync(permissionResponse);
             return permissionResponse.RealmUrl;
         }
 
@@ -535,10 +533,10 @@ namespace Realms.Sync
             return Realm.GetInstance(configuration);
         }
 
-        private Task WriteToManagementRealm<T>(T permissionObject) where T : RealmObject, IPermissionObject
+        private Task WriteToManagementRealmAsync<T>(T permissionObject) where T : RealmObject, IPermissionObject
         {
             ManagementRealm.Write(() => ManagementRealm.Add(permissionObject));
-            return permissionObject.WaitForProcessing();
+            return permissionObject.WaitForProcessingAsync();
         }
 
         #endregion
