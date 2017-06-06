@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -33,7 +36,39 @@ namespace Tests.Sync
     {
         [TestCase(true)]
         [TestCase(false)]
-        public void TrustedRootCA_WhenProvided_ValidatesCorrectly(bool openAsync)
+        public void TrustedCA_WhenProvided_ValidatesCorrectly(bool openAsync)
+        {
+            TestSSLCore(config =>
+            {
+                config.TrustedCAPath = TestHelpers.CopyBundledDatabaseToDocuments("trusted_ca.pem", "trusted_ca.pem");
+            }, openAsync);
+        }
+
+        [Test]
+        public void TrustedCA_WhenFileDoesntExist_Throws()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUser();
+                var config = new SyncConfiguration(user, new Uri(SyncTestHelpers.GetRealmUrl()))
+                {
+                    TrustedCAPath = "something.pem"
+                };
+                Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<RealmFileNotFoundException>());
+            });
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void EnableSSLValidation_WhenFalse_ValidatesCorrectly(bool openAsync)
+        {
+            TestSSLCore(config =>
+            {
+                config.EnableSSLValidation = false;
+            }, openAsync);
+        }
+
+        private static void TestSSLCore(Action<SyncConfiguration> setupSecureConfig, bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
@@ -42,10 +77,8 @@ namespace Tests.Sync
                 var config = new SyncConfiguration(user, new Uri(realmUrl));
 
                 var secureRealmUrl = realmUrl.Replace("realm://", "realms://").Replace("9080", "9443");
-                var secureConfig = new SyncConfiguration(user, new Uri(secureRealmUrl), config.DatabasePath + "2")
-                {
-                    TrustedCAPath = TestHelpers.CopyBundledDatabaseToDocuments("trusted_ca.pem", "trusted_ca.pem")
-                };
+                var secureConfig = new SyncConfiguration(user, new Uri(secureRealmUrl), config.DatabasePath + "2");
+                setupSecureConfig(secureConfig);
 
                 try
                 {

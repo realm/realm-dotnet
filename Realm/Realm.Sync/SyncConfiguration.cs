@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -107,6 +109,12 @@ namespace Realms.Sync
 
         private Native.SyncConfiguration ToNative()
         {
+            if (!string.IsNullOrEmpty(TrustedCAPath) &&
+                !File.Exists(TrustedCAPath))
+            {
+                throw new RealmFileNotFoundException($"File not found: {TrustedCAPath}");
+            }
+
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
