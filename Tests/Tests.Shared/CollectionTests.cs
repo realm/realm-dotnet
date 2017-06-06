@@ -155,7 +155,7 @@ namespace Tests.Database
 
             _realm.Dispose();
 
-            var config = _configuration.ConfigWithPath(null);
+            var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
             config.IsReadOnly = true;
 
             _realm = Realm.GetInstance(config);
