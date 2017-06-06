@@ -47,7 +47,8 @@ namespace Realms.Schema
         /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
         public static void AddDefaultTypes(IEnumerable<Type> types)
         {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            // This will be called in the module initializer. Don't throw because in a PCL-only test project,
+            // it will crash, even if no Realm code is executed.
         }
 
         private RealmSchema()
