@@ -2,6 +2,7 @@
   "dependencies": {
     "Remotion.Linq": "2.1.1",
     "StyleCop.MSBuild": "4.7.55",
+    "System.Collections.Concurrent": "4.3.0",
     "System.Console": "4.3.0",
     "System.Diagnostics.Tools": "4.3.0",
     "System.Dynamic.Runtime": "4.3.0",

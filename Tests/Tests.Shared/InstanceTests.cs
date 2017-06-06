@@ -143,7 +143,7 @@ namespace Tests.Database
             }
         }
 
-        [Test, Ignore("Currently doesn't work. Ref #308")]
+        [Test]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
@@ -166,11 +166,17 @@ namespace Tests.Database
             }
         }
 
-        [Test, Ignore("Currently doesn't work. Ref #338")]
+        [Test]
         public void GetInstanceShouldThrowWithBadPath()
         {
+#if WINDOWS
+            const string Path = "C:\\Windows";
+#else
+            const string Path = "/";
+#endif
+
             // Arrange
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(Path));
         }
 
         private class LoneClass : RealmObject

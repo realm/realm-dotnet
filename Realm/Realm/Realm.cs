@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -161,19 +162,19 @@ namespace Realms
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
-            // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
-            // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
-            var lockOnWhileDeleting = new object();
-            lock (lockOnWhileDeleting)
+            var fullpath = configuration.DatabasePath;
+            if (RealmState.TryGetState(fullpath, out var state) &&
+                state.RealmCount > 0)
             {
-                var fullpath = configuration.DatabasePath;
-                File.Delete(fullpath);
-                File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a   
-                File.Delete(fullpath + ".log_b");
-                File.Delete(fullpath + ".log");
-                File.Delete(fullpath + ".lock");
-                File.Delete(fullpath + ".note");
+                throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
             }
+
+            File.Delete(fullpath);
+            File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a
+            File.Delete(fullpath + ".log_b");
+            File.Delete(fullpath + ".log");
+            File.Delete(fullpath + ".lock");
+            File.Delete(fullpath + ".note");
         }
 
         internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
@@ -221,17 +222,20 @@ namespace Realms
                 state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
             }
 
+            Config = config;
+
             if (state == null)
             {
-                state = new RealmState();
+                state = new RealmState(this);
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
             }
-
-            state.AddRealm(this);
+            else
+            {
+                state.AddRealm(this);
+            }
             _state = state;
 
             SharedRealmHandle = sharedRealmHandle;
-            Config = config;
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
@@ -429,8 +433,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            RealmObject.Metadata ignored;
-            return CreateObject(className, out ignored);
+            return CreateObject(className, out var _);
         }
 
         private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
@@ -492,7 +495,7 @@ namespace Realms
 
             return CreateResultsHandle(resultsPtr);
         }
-        
+
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
@@ -574,29 +577,27 @@ namespace Realms
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            RealmObject.Metadata metadata;
-            if (!Metadata.TryGetValue(objectType.Name, out metadata))
+            if (!Metadata.TryGetValue(objectType.Name, out var metadata))
             {
                 throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
             }
 
             var objectPtr = IntPtr.Zero;
 
-            object pkValue;
-            if (update && metadata.Helper.TryGetPrimaryKeyValue(obj, out pkValue))
+            if (update && metadata.Helper.TryGetPrimaryKeyValue(obj, out var pkValue))
             {
-                if (pkValue is string)
+                switch (pkValue)
                 {
-                    objectPtr = metadata.Table.Find(SharedRealmHandle, (string)pkValue);
-                }
-                else if (pkValue == null)
-                {
-                    objectPtr = metadata.Table.Find(SharedRealmHandle, (long?)null);
-                }
-                else
-                {
-                    // We know it must be convertible to long, so optimistically do it.
-                    objectPtr = metadata.Table.Find(SharedRealmHandle, Convert.ToInt64(pkValue));
+                    case string stringValue:
+                        objectPtr = metadata.Table.Find(SharedRealmHandle, stringValue);
+                        break;
+                    case null:
+                        objectPtr = metadata.Table.Find(SharedRealmHandle, (long?)null);
+                        break;
+                    default:
+                        // We know it must be convertible to long, so optimistically do it.
+                        objectPtr = metadata.Table.Find(SharedRealmHandle, Convert.ToInt64(pkValue));
+                        break;
                 }
             }
 
@@ -619,8 +620,8 @@ namespace Realms
         /// </summary>
         /// <example>
         /// <code>
-        /// using (var trans = realm.BeginWrite()) 
-        /// { 
+        /// using (var trans = realm.BeginWrite())
+        /// {
         ///     realm.Add(new Dog
         ///     {
         ///         Name = "Rex"
@@ -638,18 +639,18 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> 
+        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
         /// will be committed.
         /// </summary>
         /// <remarks>
-        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>. 
-        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls. 
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>.
+        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
         /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
         /// unless you need to guarantee finer-grained updates.
         /// </remarks>
         /// <example>
         /// <code>
-        /// realm.Write(() => 
+        /// realm.Write(() =>
         /// {
         ///     realm.Add(new Dog
         ///     {
@@ -679,14 +680,14 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in 
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in
         /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
         /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt; 
+        /// await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
@@ -759,8 +760,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var type = typeof(T);
-            RealmObject.Metadata metadata;
-            if (!Metadata.TryGetValue(type.Name, out metadata) || metadata.Schema.Type != type)
+            if (!Metadata.TryGetValue(type.Name, out var metadata) || metadata.Schema.Type != type)
             {
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
             }
@@ -778,8 +778,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            RealmObject.Metadata metadata;
-            if (!Metadata.TryGetValue(className, out metadata))
+            if (!Metadata.TryGetValue(className, out var metadata))
             {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
             }
@@ -1092,6 +1091,8 @@ namespace Realms
         {
             #region static
 
+            private static readonly ConcurrentDictionary<string, WeakReference<RealmState>> _states = new ConcurrentDictionary<string, WeakReference<RealmState>>();
+
             [NativeCallback(typeof(NativeCommon.NotifyRealmCallback))]
             public static void NotifyRealmChanged(IntPtr stateHandle)
             {
@@ -1099,17 +1100,31 @@ namespace Realms
                 ((RealmState)gch.Target).NotifyChanged(EventArgs.Empty);
             }
 
+            public static bool TryGetState(string path, out RealmState state)
+            {
+                state = null;
+                return _states.TryGetValue(path, out var weakState) &&
+                       weakState.TryGetTarget(out state);
+            }
+
             #endregion
 
-            private readonly List<WeakReference<Realm>> weakRealms = new List<WeakReference<Realm>>();
+            private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
+            private readonly string _databasePath;
 
             public readonly GCHandle GCHandle;
             public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
-            
-            public RealmState()
+
+            public int RealmCount => GetLiveRealms().Count();
+
+            public RealmState(Realm realm)
             {
                 // this is freed in a native callback when the CSharpBindingContext is destroyed
                 GCHandle = GCHandle.Alloc(this);
+                _databasePath = realm.Config.DatabasePath;
+                _states.TryAdd(_databasePath, new WeakReference<RealmState>(this));
+
+                AddRealm(realm);
             }
 
             private void NotifyChanged(EventArgs e)
@@ -1124,27 +1139,28 @@ namespace Realms
             {
                 // We only want to have each realm once. That should be the case as AddRealm
                 // is only called in the Realm ctor, but let's check just in case.
-                Debug.Assert(!weakRealms.Any(r =>
+                Debug.Assert(!_weakRealms.Any(r =>
                 {
-                    Realm other;
-                    return r.TryGetTarget(out other) && ReferenceEquals(realm, other);
+                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
                 }), "Trying to add a duplicate Realm to the RealmState.");
 
-                weakRealms.Add(new WeakReference<Realm>(realm));
+                Debug.Assert(realm.Config.DatabasePath == _databasePath, "Realm and state have different paths.");
+
+                _weakRealms.Add(new WeakReference<Realm>(realm));
             }
 
             public void RemoveRealm(Realm realm)
             {
-                var weakRealm = weakRealms.SingleOrDefault(r =>
+                var weakRealm = _weakRealms.SingleOrDefault(r =>
                 {
-                    Realm other;
-                    return r.TryGetTarget(out other) && ReferenceEquals(realm, other);
+                    return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
                 });
-                weakRealms.Remove(weakRealm);
+                _weakRealms.Remove(weakRealm);
 
-                if (!weakRealms.Any())
+                if (!_weakRealms.Any())
                 {
                     realm.SharedRealmHandle.CloseRealm();
+                    _states.TryRemove(_databasePath, out var _);
                 }
             }
 
@@ -1152,10 +1168,9 @@ namespace Realms
             {
                 var realms = new List<Realm>();
 
-                weakRealms.RemoveAll(r =>
+                _weakRealms.RemoveAll(r =>
                 {
-                    Realm realm;
-                    if (r.TryGetTarget(out realm))
+                    if (r.TryGetTarget(out var realm))
                     {
                         realms.Add(realm);
                         return false;

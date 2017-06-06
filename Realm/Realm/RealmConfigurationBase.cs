@@ -80,12 +80,12 @@ namespace Realms
                 optionalPath = Path.Combine(InteropConfig.DefaultStorageFolder, optionalPath);
             }
 
-            if (optionalPath[optionalPath.Length - 1] == Path.DirectorySeparatorChar) // ends with dir sep
+            if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);
             }
 
-            return optionalPath;
+            return Path.GetFullPath(optionalPath);
         }
 
         /// <summary>

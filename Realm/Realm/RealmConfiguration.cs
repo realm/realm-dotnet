@@ -17,9 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Native;
@@ -118,27 +116,7 @@ namespace Realms
         public RealmConfiguration ConfigWithPath(string newConfigPath)
         {
             var ret = (RealmConfiguration)MemberwiseClone();
-            string candidatePath;  // may need canonicalising
-            if (!string.IsNullOrEmpty(newConfigPath))
-            {
-                if (Path.IsPathRooted(newConfigPath))
-                {
-                    candidatePath = newConfigPath;
-                }
-                else
-                {  // append a relative path, maybe just a relative subdir needing filename
-                    var usWithoutFile = Path.GetDirectoryName(DatabasePath);
-                    if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar) // ends with separator
-                    {
-                        newConfigPath = Path.Combine(newConfigPath, DefaultRealmName);  // add filename to relative subdir
-                    }
-
-                    candidatePath = Path.Combine(usWithoutFile, newConfigPath);
-                }
-
-                ret.DatabasePath = Path.GetFullPath(candidatePath);  // canonical version, removing embedded ../ and other relative artifacts
-            }
-
+            ret.DatabasePath = GetPathToRealm(newConfigPath);
             return ret;
         }
 
@@ -193,7 +171,7 @@ namespace Realms
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (SynchronizationContext.Current != null)
+            if (System.Threading.SynchronizationContext.Current != null)
             {
                 await Task.Run(() =>
                 {
