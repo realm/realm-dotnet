@@ -170,13 +170,13 @@ namespace Tests.Database
         public void GetInstanceShouldThrowWithBadPath()
         {
 #if WINDOWS
-            const string path = "C:\\Windows";
+            const string Path = "C:\\Windows";
 #else
-            const string path = "/";
+            const string Path = "/";
 #endif
 
             // Arrange
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(path));
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(Path));
         }
 
         private class LoneClass : RealmObject
