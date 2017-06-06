@@ -31,50 +31,51 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SSLConfigurationTests
     {
-        [Test]
-        public void TrustedRootCA_WhenProvided_ValidatesCorrectly()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void TrustedRootCA_WhenProvided_ValidatesCorrectly(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUser();
-                var realmUrl = SyncTestHelpers.GetRealmUrl("bb");
-                var oldConfig = new SyncConfiguration(user, new Uri(realmUrl));
-
-                using (var realm = Realm.GetInstance(oldConfig))
-                {
-                    Session.Error += (sender, e) => 
-                    {
-                        var a = e;
-                    };
-                    realm.Write(() =>
-                    {
-                        realm.Add(new IntPrimaryKeyWithValueObject
-                        {
-                            Id = 1,
-                            StringValue = "some value"
-                        });
-                    });
-
-                    await realm.GetSession().WaitForUploadAsync();
-                };
-
-                Realm.DeleteRealm(oldConfig);
+                var realmUrl = SyncTestHelpers.GetRealmUrl();
+                var config = new SyncConfiguration(user, new Uri(realmUrl));
 
                 var secureRealmUrl = realmUrl.Replace("realm://", "realms://").Replace("9080", "9443");
-                var newConfig = new SyncConfiguration(user, new Uri(secureRealmUrl))
+                var secureConfig = new SyncConfiguration(user, new Uri(secureRealmUrl), config.DatabasePath + "2")
                 {
                     TrustedCAPath = TestHelpers.CopyBundledDatabaseToDocuments("trusted_ca.pem", "trusted_ca.pem")
                 };
 
-                using (var newRealm = await Realm.GetInstanceAsync(newConfig))
+                try
                 {
-                    var items = newRealm.All<IntPrimaryKeyWithValueObject>();
+                    using (var realm = Realm.GetInstance(config))
+                    {
+                        realm.Write(() =>
+                        {
+                            realm.Add(new IntPrimaryKeyWithValueObject
+                            {
+                                Id = 1,
+                                StringValue = "some value"
+                            });
+                        });
 
-                    Assert.That(items.Count(), Is.EqualTo(1));
-                    Assert.That(items.Single().StringValue, Is.EqualTo("some value"));
+                        await realm.GetSession().WaitForUploadAsync();
+                    }
+
+                    using (var newRealm = await SyncTestHelpers.GetInstanceAsync(secureConfig, openAsync))
+                    {
+                        var items = newRealm.All<IntPrimaryKeyWithValueObject>();
+
+                        Assert.That(items.Count(), Is.EqualTo(1));
+                        Assert.That(items.Single().StringValue, Is.EqualTo("some value"));
+                    }
                 }
-
-                Realm.DeleteRealm(newConfig);
+                finally
+                {
+                    Realm.DeleteRealm(config);
+                    Realm.DeleteRealm(secureConfig);
+                }
             });
         }
     }

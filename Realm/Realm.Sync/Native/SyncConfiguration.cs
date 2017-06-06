@@ -49,6 +49,9 @@ namespace Realms.Sync.Native
             }
         }
 
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool client_validate_ssl;
+
         [MarshalAs(UnmanagedType.LPWStr)]
         private string trusted_ca_path;
         private IntPtr trusted_ca_path_len;
@@ -61,8 +64,5 @@ namespace Realms.Sync.Native
                 trusted_ca_path_len = (IntPtr)(value?.Length ?? 0);
             }
         }
-
-        [MarshalAs(UnmanagedType.I1)]
-        internal bool client_validate_ssl;
     }
 }

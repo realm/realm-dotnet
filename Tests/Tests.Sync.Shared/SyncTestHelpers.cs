@@ -54,6 +54,23 @@ namespace Tests.Sync
             return Realm.GetInstance(config);
         }
 
+        public static async Task<Realm> GetInstanceAsync(SyncConfiguration config, bool openAsync, bool waitForRemote = true)
+        {
+            if (openAsync)
+            {
+                return await Realm.GetInstanceAsync(config);
+            }
+
+            var realm = Realm.GetInstance(config);
+
+            if (waitForRemote)
+            {
+                await realm.GetSession().WaitForDownloadAsync();
+            }
+
+            return realm;
+        }
+
         public static Task<Tuple<Session, T>> SimulateSessionError<T>(Session session, ErrorCode code, string message) where T : Exception
         {
             var tcs = new TaskCompletionSource<Tuple<Session, T>>();

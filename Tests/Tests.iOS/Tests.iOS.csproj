@@ -85,6 +85,10 @@
       <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </BundleResource>
+    <BundleResource Include="..\Tests.Sync.Shared\trusted_ca.pem">
+      <Link>Resources\trusted_ca.pem</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
