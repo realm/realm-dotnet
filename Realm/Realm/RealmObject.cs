@@ -38,7 +38,7 @@ namespace Realms
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
         private NotificationTokenHandle _notificationToken;
-        
+
         private event PropertyChangedEventHandler _propertyChanged;
 
         /// <inheritdoc />
@@ -727,10 +727,26 @@ namespace Realms
             }
             else if (changes.HasValue)
             {
-                foreach (var propertyIndex in changes.Value.Properties.AsEnumerable())
+                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
                 {
-                    var property = ObjectSchema.ElementAtOrDefault((int)propertyIndex);
-                    RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                    // Due to a yet another Mono compiler bug, using LINQ fails here :/
+                    var i = 0;
+                    foreach (var property in ObjectSchema)
+                    {
+                        // Backlinks should be ignored. See Realm.CreateRealmObjectMetadata
+                        if (property.Type.IsComputed())
+                        {
+                            continue;
+                        }
+
+                        if (i == propertyIndex)
+                        {
+                            RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                            break;
+                        }
+
+                        ++i;
+                    }
                 }
             }
         }
