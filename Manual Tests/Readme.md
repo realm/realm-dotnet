@@ -18,3 +18,8 @@ The NuGetReleaseTests project is a clone of the regular test projects that refer
 You need Android 5.0+ device to run all unit tests.
 1. Execute `adb reverse tcp:9080 tcp:9080`
 1. Execute `adb reverse tcp:9443 tcp:9443`
+
+## Setting up iOS
+
+If you're running a simulator, no additional setup is required.
+If you're running tests on a device, you need to update `Constants.ServerUrl` with the url of your server (make sure it's reachable from the device).

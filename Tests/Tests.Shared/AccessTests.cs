@@ -110,9 +110,9 @@ namespace Tests.Database
             });
 
             // Act and assert
-            Assert.Throws<RealmInvalidObjectException>(() => 
-            { 
-                var illegalAccess = p1.FirstName; 
+            Assert.Throws<RealmInvalidObjectException>(() =>
+            {
+                var illegalAccess = p1.FirstName;
             });
         }
 
@@ -135,8 +135,8 @@ namespace Tests.Database
         public void RealmObjectProperties_WhenNotSet_ShouldHaveDefaultValues()
         {
             var obj = new AllTypesObject
-            { 
-                RequiredStringProperty = string.Empty 
+            {
+                RequiredStringProperty = string.Empty
             };
 
             _realm.Write(() => _realm.Add(obj));

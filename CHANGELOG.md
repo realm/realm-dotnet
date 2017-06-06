@@ -8,12 +8,14 @@
   - `GetGrantedPermissionsAsync` allows you to inspect permissions granted to or by the current user.
 - When used with `RealmConfiguration` (i.e. local Realm), `Realm.GetInstanceAsync` will perform potentially costly operation, such as executing migrations or compaction on a background thread. ([#1406](https://github.com/realm/realm-dotnet/pull/1406))
 - Expose `User.ChangePasswordAsync(userId, password)` API to allow admin users to change other users' passwords. ([#1412](https://github.com/realm/realm-dotnet/pull/1412))
+- Expose `SyncConfiguration.TrustedCAPath` API to allow providing a custom CA that will be used to validate SSL traffic to the Realm Object Server.  ([#1423](https://github.com/realm/realm-dotnet/pull/1423))
 
 ### Bug fixes
 - Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))
 - Fix an issue where synchronized Realms did not connect to the remote server in certain situations, such as when an application was offline when the Realms were opened but later regained network connectivity. ([#1407](https://github.com/realm/realm-dotnet/pull/1407))
 - Fix an issue where incorrect property name will be passed to `RealmObject.PropertyChanged` subscribers when the actual changed property is below a `Backlink` property. ([#1433](https://github.com/realm/realm-dotnet/pull/1433))
 - Fix an exception being thrown when referencing Realm in a PCL test assembly without actually using it. ([#1434](https://github.com/realm/realm-dotnet/pull/1434))
+- Fix a bug when `SyncConfiguration.EnableSSLValidation` would be ignored when passed to `Realm.GetInstanceAsync`. ([#1423](https://github.com/realm/realm-dotnet/pull/1423))
 
 ### Breaking Changes
 - The constructors of `PermissionChange`, `PermissionOffer`, and `PermissionOfferResponse` are now private. Use the new `User.ApplyPermissionsAsync`, `User.OfferPermissionsAsync`, and `User.AcceptPermissionOfferAsync` API. ([#1361](https://github.com/realm/realm-dotnet/pull/1361))

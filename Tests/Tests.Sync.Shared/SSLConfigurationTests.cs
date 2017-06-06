@@ -34,6 +34,9 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SSLConfigurationTests
     {
+#if __IOS__
+        [Ignore("On iOS TrustedCAPath is ignored.")]
+#endif
         [TestCase(true)]
         [TestCase(false)]
         public void TrustedCA_WhenProvided_ValidatesCorrectly(bool openAsync)
