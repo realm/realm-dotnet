@@ -83,7 +83,7 @@ namespace Tests.Database
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
             Assert.That(config.DatabasePath, Does.EndWith(Path.Combine("Documents", "fred.realm")));
-            Assert.That(config.DatabasePath.Contains(".."), Is.False);  // our use of relative up and down again was normalised out
+            Assert.That(config.DatabasePath, Does.Not.Contain(".."));  // our use of relative up and down again was normalised out
         }
 
         [Test]
