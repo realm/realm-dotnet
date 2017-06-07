@@ -44,7 +44,10 @@ namespace Realms
 
         // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
         // Theoretically we could use trackAllValues: true, but that would create locking issues.
-        private static readonly ThreadLocal<IDictionary<string, WeakReference<RealmState>>> _states = new ThreadLocal<IDictionary<string, WeakReference<RealmState>>>(() => new Dictionary<string, WeakReference<RealmState>>());
+        private static readonly ThreadLocal<IDictionary<string, WeakReference<RealmState>>> _states = new ThreadLocal<IDictionary<string, WeakReference<RealmState>>>(DictionaryConstructor<string, WeakReference<RealmState>>);
+
+        // TODO: due to a Mono bug, this needs to be a function rather than a lambda
+        private static IDictionary<T, U> DictionaryConstructor<T, U>() => new Dictionary<T, U>();
 
         static Realm()
         {
@@ -251,7 +254,7 @@ namespace Realms
 
         private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var table = this.GetTable(schema);
+            var table = GetTable(schema);
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.Dynamic)
