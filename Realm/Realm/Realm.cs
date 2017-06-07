@@ -42,9 +42,9 @@ namespace Realms
     {
         #region static
 
-        // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file
-        [ThreadStatic]
-        private static IDictionary<string, WeakReference<RealmState>> _states = new Dictionary<string, WeakReference<RealmState>>();
+        // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
+        // Theoretically we could use trackAllValues: true, but that would create locking issues.
+        private static readonly ThreadLocal<IDictionary<string, WeakReference<RealmState>>> _states = new ThreadLocal<IDictionary<string, WeakReference<RealmState>>>(() => new Dictionary<string, WeakReference<RealmState>>());
 
         static Realm()
         {
@@ -166,8 +166,7 @@ namespace Realms
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             var fullpath = configuration.DatabasePath;
-            if (TryGetState(fullpath, out var state) &&
-                state.GetLiveRealms().Any())
+            if (IsRealmOpen(fullpath))
             {
                 throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
             }
@@ -194,11 +193,11 @@ namespace Realms
             return objectHandle;
         }
 
-        private static bool TryGetState(string path, out RealmState state)
+        private static bool IsRealmOpen(string path)
         {
-            state = null;
-            return _states.TryGetValue(path, out var weakState) &&
-                   weakState.TryGetTarget(out state);
+            return _states.Value.TryGetValue(path, out var reference) &&
+                   reference.TryGetTarget(out var state) &&
+                   state.GetLiveRealms().Any();
         }
 
         #endregion
@@ -238,7 +237,7 @@ namespace Realms
             {
                 state = new RealmState();
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
-                _states[config.DatabasePath] = new WeakReference<RealmState>(state);
+                _states.Value[config.DatabasePath] = new WeakReference<RealmState>(state);
             }
 
             state.AddRealm(this);
@@ -353,7 +352,7 @@ namespace Realms
                 // otherwise we do so on the finalizer thread
                 if (_state.RemoveRealm(this))
                 {
-                    _states.Remove(Config.DatabasePath);
+                    _states.Value.Remove(Config.DatabasePath);
                 }
             }
             _state = null;
