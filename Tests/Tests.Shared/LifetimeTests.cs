@@ -24,19 +24,13 @@ using Realms;
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class LifetimeTests
+    public class LifetimeTests : RealmTest
     {
         // This method was extracted to ensure that the actual realm instance
         // isn't preserved in the scope of the test, even when the debugger is running.
         private static WeakReference GetWeakRealm()
         {
-            return new WeakReference(Realm.GetInstance("LifetimeTests.realm"));
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            Realm.DeleteRealm(new RealmConfiguration("LifetimeTests.realm"));
+            return new WeakReference(Realm.GetInstance());
         }
 
         [Test]
@@ -73,7 +67,7 @@ namespace Tests.Database
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
             // Arrange
-            var realm = Realm.GetInstance("LifetimeTests.realm");
+            var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
             var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
             realm.Write(() =>

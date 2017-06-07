@@ -26,7 +26,7 @@ using Realms;
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class DisallowedPredicateParameters
+    public class DisallowedPredicateParameters : RealmTest
     {
         [Test]
         public void DisallowedPredicateParametersShouldThrow()

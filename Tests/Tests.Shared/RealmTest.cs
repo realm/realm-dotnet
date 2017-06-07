@@ -27,12 +27,18 @@ namespace Tests.Database
     {
         private bool _isSetup;
 
+        protected virtual bool OverrideDefaultConfig => true;
+
         [SetUp]
         public void SetUp()
         {
             if (!_isSetup)
             {
-                RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+                if (OverrideDefaultConfig)
+                {
+                    RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+                }
+
                 CustomSetUp();
                 _isSetup = true;
             }
@@ -50,6 +56,7 @@ namespace Tests.Database
                 CustomTearDown();
                 NativeCommon.reset_for_testing();
                 _isSetup = false;
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             }
         }
 

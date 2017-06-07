@@ -31,16 +31,6 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class InstanceTests : RealmTest
     {
-        private const string SpecialRealmName = "EnterTheMagic.realm";
-
-        protected override void CustomTearDown()
-        {
-            base.CustomTearDown();
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
-            Realm.DeleteRealm(uniqueConfig);
-        }
-
         [Test]
         public void GetInstanceTest()
         {
@@ -63,8 +53,22 @@ namespace Tests.Database
         [Test]
         public void GetInstanceWithJustFilenameTest()
         {
-            // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            Realm.GetInstance(SpecialRealmName).Dispose();
+            var filename = Path.GetTempFileName();
+
+            try
+            {
+                Assert.That(() =>
+                {
+                    using (Realm.GetInstance(filename))
+                    {
+                    }
+                }, Throws.Nothing);
+            }
+            finally
+            {
+                var config = new RealmConfiguration(filename);
+                Realm.DeleteRealm(config);
+            }
         }
 
         [Test]
@@ -147,11 +151,17 @@ namespace Tests.Database
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
-            var config = new RealmConfiguration();
-            var openRealm = Realm.GetInstance(config);
+            var openRealm = Realm.GetInstance();
 
-            // Assert
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
+            try
+            {
+                // Assert
+                Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration));
+            }
+            finally
+            {
+                openRealm.Dispose();
+            }
         }
 
         [Test, Ignore("Currently doesn't work. Ref #199")]
@@ -188,12 +198,10 @@ namespace Tests.Database
         public void RealmWithOneClassWritesDesiredClass()
         {
             // Arrange
-            var config = new RealmConfiguration("RealmWithOneClass.realm");
-            Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
 
             // Act
-            using (var lonelyRealm = Realm.GetInstance(config))
+            using (var lonelyRealm = Realm.GetInstance())
             {
                 lonelyRealm.Write(() =>
                 {
@@ -212,12 +220,10 @@ namespace Tests.Database
         public void RealmWithOneClassThrowsIfUseOther()
         {
             // Arrange
-            var config = new RealmConfiguration("RealmWithOneClass.realm");
-            Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] { typeof(LoneClass) };
+            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass) };
 
             // Act and assert
-            using (var lonelyRealm = Realm.GetInstance(config))
+            using (var lonelyRealm = Realm.GetInstance())
             {
                 // Can't create an object with a class not included in this Realm
                 lonelyRealm.Write(() =>
@@ -231,13 +237,11 @@ namespace Tests.Database
         public void RealmObjectClassesOnlyAllowRealmObjects()
         {
             // Arrange
-            var config = new RealmConfiguration("RealmWithOneClass.realm");
-            Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] { typeof(LoneClass), typeof(object) };
+            RealmConfiguration.DefaultConfiguration.ObjectClasses = new[] { typeof(LoneClass), typeof(object) };
 
             // Act and assert
             // Can't have classes in the list which are not RealmObjects
-            Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<ArgumentException>());
+            Assert.That(() => Realm.GetInstance(), Throws.TypeOf<ArgumentException>());
         }
 
         [TestCase(true)]
@@ -247,9 +251,8 @@ namespace Tests.Database
 #endif
         public void ShouldCompact_IsInvokedAfterOpening(bool shouldCompact)
         {
-            var config = new RealmConfiguration($"shouldcompact.realm");
+            var config = RealmConfiguration.DefaultConfiguration;
 
-            Realm.DeleteRealm(config);
             using (var realm = Realm.GetInstance(config))
             {
                 AddDummyData(realm);
@@ -297,14 +300,12 @@ namespace Tests.Database
 #endif
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            var config = new RealmConfiguration($"compactrealm_{encrypt}_{populate}.realm");
+            var config = RealmConfiguration.DefaultConfiguration;
             if (encrypt)
             {
                 config.EncryptionKey = new byte[64];
                 config.EncryptionKey[0] = 5;
             }
-
-            Realm.DeleteRealm(config);
 
             using (var realm = Realm.GetInstance(config))
             {
@@ -341,12 +342,9 @@ namespace Tests.Database
 #endif
         public void ShouldCompactOnLaunch_OnWindows_ThrowsRealmException()
         {
-            var config = new RealmConfiguration
-            {
-                ShouldCompactOnLaunch = (totalBytes, bytesUsed) => true
-            };
+            RealmConfiguration.DefaultConfiguration.ShouldCompactOnLaunch = (_, __) => true;
 
-            Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<RealmException>());
+            Assert.That(() => Realm.GetInstance(), Throws.TypeOf<RealmException>());
         }
 
         [Test]
@@ -592,12 +590,8 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 Realm realm = null;
-                var config = new RealmConfiguration("asyncmigration.realm")
-                {
-                    SchemaVersion = 1,
-                };
-
-                Realm.DeleteRealm(config);
+                var config = RealmConfiguration.DefaultConfiguration;
+                config.SchemaVersion = 1;
 
                 using (var firstRealm = Realm.GetInstance(config))
                 {

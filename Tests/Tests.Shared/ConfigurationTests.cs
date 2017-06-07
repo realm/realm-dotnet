@@ -27,8 +27,25 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ConfigurationTests
+    public class ConfigurationTests : RealmTest
     {
+        private RealmConfiguration _configuration;
+
+        protected override bool OverrideDefaultConfig => false;
+
+        protected override void CustomSetUp()
+        {
+            base.CustomSetUp();
+            _configuration = new RealmConfiguration(Path.GetTempFileName());
+        }
+
+        protected override void CustomTearDown()
+        {
+            base.CustomTearDown();
+
+            Realm.DeleteRealm(_configuration);
+        }
+
         private static void ReliesOnEncryption()
         {
 #if ENCRYPTION_DISABLED
@@ -66,7 +83,7 @@ namespace Tests.Database
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
             Assert.That(config.DatabasePath, Does.EndWith(Path.Combine("Documents", "fred.realm")));
-            Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
+            Assert.That(config.DatabasePath.Contains(".."), Is.False);  // our use of relative up and down again was normalised out
         }
 
         [Test]
@@ -97,13 +114,13 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("EncryptionKeyMustBe64Bytes.realm");
+            var config = new RealmConfiguration();
             var smallKey = new byte[] { 1, 2, 3 };
             var bigKey = new byte[656];
 
             // Assert
-            Assert.Throws<FormatException>(() => config.EncryptionKey = smallKey);
-            Assert.Throws<FormatException>(() => config.EncryptionKey = bigKey);
+            Assert.That(() => config.EncryptionKey = smallKey, Throws.TypeOf<FormatException>());
+            Assert.That(() => config.EncryptionKey = bigKey, Throws.TypeOf<FormatException>());
         }
 
         [Test]
@@ -112,12 +129,12 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("ValidEncryptionKeyAcceoted.realm");
+            var config = new RealmConfiguration();
             var goldilocksKey = new byte[64];
 
             // Assert
-            Assert.DoesNotThrow(() => config.EncryptionKey = goldilocksKey);
-            Assert.DoesNotThrow(() => config.EncryptionKey = null);
+            Assert.That(() => config.EncryptionKey = goldilocksKey, Throws.Nothing);
+            Assert.That(() => config.EncryptionKey = null, Throws.Nothing);
         }
 
         [Test]
@@ -126,23 +143,15 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("UnableToOpenWithNoKey.realm");
-            Realm.DeleteRealm(config);  // ensure guarded from prev tests
-            var emptyKey = new byte[64];
-            config.EncryptionKey = emptyKey;
-            using (Realm.GetInstance(config))
+            _configuration.EncryptionKey = new byte[64];
+            using (Realm.GetInstance(_configuration))
             {
             }
 
-            config.EncryptionKey = null;
+            _configuration.EncryptionKey = null;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() =>
-            {
-                using (Realm.GetInstance(config))
-                {
-                }
-            });
+            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
@@ -151,20 +160,14 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("UnableToOpenWithKeyIfNotEncrypted.realm");
-            Realm.DeleteRealm(config);  // ensure guarded from prev tests
-            var openedWithoutKey = Realm.GetInstance(config);
-            openedWithoutKey.Dispose();
-            var emptyKey = new byte[64];
-            config.EncryptionKey = emptyKey;
+            using (Realm.GetInstance(_configuration))
+            {
+            }
+
+            _configuration.EncryptionKey = new byte[64];
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() =>
-            {
-                using (Realm.GetInstance(config))
-                {
-                }
-            });
+            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
@@ -173,21 +176,16 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("UnableToOpenWithDifferentKey.realm");
-            Realm.DeleteRealm(config);  // ensure guarded from prev tests
-            var emptyKey = new byte[64];
-            config.EncryptionKey = emptyKey;
-            var openedWithKey = Realm.GetInstance(config);
-            openedWithKey.Dispose();
-            config.EncryptionKey[0] = 42;
+            _configuration.EncryptionKey = new byte[64];
+
+            using (Realm.GetInstance(_configuration))
+            {
+            }
+
+            _configuration.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() =>
-            {
-                using (Realm.GetInstance(config))
-                {
-                }
-            });
+            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
@@ -196,70 +194,59 @@ namespace Tests.Database
             ReliesOnEncryption();
 
             // Arrange
-            var config = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
-            Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var answerKey = new byte[64];
-            answerKey[0] = 42;
-            config.EncryptionKey = answerKey;
-            var openedWithKey = Realm.GetInstance(config);
-            openedWithKey.Dispose();
+            _configuration.EncryptionKey = new byte[64];
+            _configuration.EncryptionKey[0] = 42;
 
-            var config2 = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
-            var answerKey2 = new byte[64];
-            answerKey2[0] = 42;
-            config2.EncryptionKey = answerKey2;
+            using (Realm.GetInstance(_configuration))
+            {
+            }
+
+            var config2 = new RealmConfiguration(_configuration.DatabasePath)
+            {
+                EncryptionKey = new byte[64]
+            };
+
+            config2.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.DoesNotThrow(() =>
+            Assert.That(() => 
             {
                 using (Realm.GetInstance(config2))
                 {
                 }
-            });
+            }, Throws.Nothing);
         }
 
         [Test]
         public void ReadOnlyFilesMustExist()
         {
             // Arrange
-            var config = new RealmConfiguration("FileNotThere.realm")
-            {
-                IsReadOnly = true
-            };
+            _configuration.IsReadOnly = true;
 
             // Assert
-            Assert.Throws<RealmFileNotFoundException>(() =>
-            {
-                Realm.GetInstance(config);
-            });
+            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test, Explicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
         public void ReadOnlyRealmsWillNotAutoMigrate()
         {
             // Arrange
-            var config = new RealmConfiguration("WillBeReadonly.realm");
-            Realm.DeleteRealm(config);  // ensure start clean
-            config.IsReadOnly = true;
-            config.SchemaVersion = 42;
+            _configuration.IsReadOnly = true;
+            _configuration.SchemaVersion = 42;
             TestHelpers.CopyBundledDatabaseToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", "WillBeReadonly.realm");
+                "ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
 
             // Assert
-            Assert.Throws<RealmMigrationNeededException>(() =>
-            {
-                Realm.GetInstance(config);
-            });
+            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmMigrationNeededException>());
         }
 
         [Test]
         public void ReadOnlyRealmsArentWritable()
         {
             // Arrange
-            var config = new RealmConfiguration("WillBeReadonly.realm");
-            Realm.DeleteRealm(config);  // ensure start clean
-            config.SchemaVersion = 0;  // must set version before file can be opened readOnly
-            using (var openToCreate = Realm.GetInstance(config))
+            _configuration.SchemaVersion = 0;  // must set version before file can be opened readOnly
+            using (var openToCreate = Realm.GetInstance(_configuration))
             {
                 openToCreate.Write(() =>
                 {
@@ -267,18 +254,18 @@ namespace Tests.Database
                 });
             }
 
-            config.IsReadOnly = true;
+            _configuration.IsReadOnly = true;
 
-            using (var openedReadonly = Realm.GetInstance(config))
+            using (var openedReadonly = Realm.GetInstance(_configuration))
             {
                 // Assert
-                Assert.Throws<RealmInvalidTransactionException>(() =>
+                Assert.That(() =>
                 {
                     openedReadonly.Write(() =>
                     {
                         openedReadonly.Add(new Person());
                     });
-                });
+                }, Throws.TypeOf<RealmInvalidTransactionException>());
             }
         }
     }
