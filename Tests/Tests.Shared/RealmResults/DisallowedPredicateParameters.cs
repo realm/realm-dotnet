@@ -26,31 +26,31 @@ using Realms;
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class DisallowedPredicateParameters
+    public class DisallowedPredicateParameters : RealmTest
     {
         [Test]
         public void DisallowedPredicateParametersShouldThrow()
         {
-            var realm = Realm.GetInstance();
+            using (var realm = Realm.GetInstance())
+            {
+                var accessPublicField = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicField == null);
+                Assert.Throws<NotSupportedException>(() => accessPublicField.ToList());
 
-            var accessPublicField = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicField == null);
-            Assert.Throws<NotSupportedException>(() => accessPublicField.ToList());
+                var accessPublicMethod = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicMethod() == null);
+                Assert.Throws<NotSupportedException>(() => accessPublicMethod.ToList());
 
-            var accessPublicMethod = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicMethod() == null);
-            Assert.Throws<NotSupportedException>(() => accessPublicMethod.ToList());
+                var accessIgnoredProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.IgnoredProperty == null);
+                Assert.Throws<NotSupportedException>(() => accessIgnoredProperty.ToList());
 
-            var accessIgnoredProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.IgnoredProperty == null);
-            Assert.Throws<NotSupportedException>(() => accessIgnoredProperty.ToList());
+                var accessNonAutomaticProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.NonAutomaticProperty == null);
+                Assert.Throws<NotSupportedException>(() => accessNonAutomaticProperty.ToList());
 
-            var accessNonAutomaticProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.NonAutomaticProperty == null);
-            Assert.Throws<NotSupportedException>(() => accessNonAutomaticProperty.ToList());
+                var accessPropertyWithOnlyGet = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PropertyWithOnlyGet == null);
+                Assert.Throws<NotSupportedException>(() => accessPropertyWithOnlyGet.ToList());
 
-            var accessPropertyWithOnlyGet = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PropertyWithOnlyGet == null);
-            Assert.Throws<NotSupportedException>(() => accessPropertyWithOnlyGet.ToList());
-
-            var indirectAccess =
-                realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty.FirstName == null);
-            Assert.Throws<NotSupportedException>(() => indirectAccess.ToList());
+                var indirectAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty.FirstName == null);
+                Assert.Throws<NotSupportedException>(() => indirectAccess.ToList());
+            }
         }
     }
 }

@@ -19,35 +19,45 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class MigrationTests
+    public class MigrationTests : RealmTest
     {
+        private const string FileToMigrate = "ForMigrationsToCopyAndMigrate.realm";
+
         [Test]
         public void TriggerMigrationBySchemaVersion()
         {
-            // Arrange
-            var config1 = new RealmConfiguration("ChangingVersion.realm");
-            Realm.DeleteRealm(config1);  // ensure start clean
-            var realm1 = Realm.GetInstance(config1);
+            var config = RealmConfiguration.DefaultConfiguration;
 
-            // new database doesn't push back a version number
-            Assert.That(config1.SchemaVersion, Is.EqualTo(0));
-            realm1.Dispose();
+            // Arrange
+            using (var realm = Realm.GetInstance())
+            {
+                // new database doesn't push back a version number
+                Assert.That(realm.Config.SchemaVersion, Is.EqualTo(0));
+            }
 
             // Act
-            var config2 = config1.ConfigWithPath("ChangingVersion.realm");
+            var config2 = config.ConfigWithPath(config.DatabasePath);
             config2.SchemaVersion = 99;
             Realm realm2 = null;  // should be updated by DoesNotThrow
 
-            // Assert
-            Assert.DoesNotThrow(() => realm2 = Realm.GetInstance(config2)); // same path, different version, should auto-migrate quietly
-            Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
-            realm2.Dispose();
+            try
+            {
+                // Assert
+                Assert.That(() => realm2 = Realm.GetInstance(config2), Throws.Nothing); // same path, different version, should auto-migrate quietly
+                Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
+            }
+            finally
+            {
+                realm2.Dispose();
+            }
         }
 
         [Test]
@@ -56,12 +66,15 @@ namespace Tests.Database
             // NOTE to regnerate the bundled database go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
             // running in between and saving a copy with the added field
             // this should never be needed as this test just needs the Realm to need migrating
-            TestHelpers.CopyBundledDatabaseToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+
+            // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
+            // To circumvent that, we're leaking realm files.
+            // See https://github.com/realm/realm-dotnet/issues/1357
+            var path = TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, Path.GetTempFileName());
 
             var triggersSchemaFieldValue = string.Empty;
 
-            var configuration = new RealmConfiguration("NeedsMigrating.realm")
+            var configuration = new RealmConfiguration(path)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -94,11 +107,14 @@ namespace Tests.Database
         [Test]
         public void ExceptionInMigrationCallback()
         {
-            TestHelpers.CopyBundledDatabaseToDocuments("ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+            // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
+            // To circumvent that, we're leaking realm files.
+            // See https://github.com/realm/realm-dotnet/issues/1357
+            var path = TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, Path.GetTempFileName());
 
             var dummyException = new Exception();
 
-            var configuration = new RealmConfiguration("NeedsMigrating.realm")
+            var configuration = new RealmConfiguration(path)
             {
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
@@ -114,24 +130,29 @@ namespace Tests.Database
         [Test]
         public void MigrationTriggersDelete()
         {
+            var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
+
             // Arrange
-            var config = new RealmConfiguration("MigrateWWillRecreate.realm")
+            var config = new RealmConfiguration(path)
             {
                 ShouldDeleteIfMigrationNeeded = true
             };
-            Realm.DeleteRealm(config);
-            Assert.False(File.Exists(config.DatabasePath));
 
-            TestHelpers.CopyBundledDatabaseToDocuments(
-                "ForMigrationsToCopyAndMigrate.realm", "MigrateWWillRecreate.realm");
+            TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, path);
 
-            // Act - should cope by deleting and silently recreating
-            var realm = Realm.GetInstance(config);
-
-            // Assert
-            Assert.That(File.Exists(config.DatabasePath));
-
-            realm.Dispose();
+            try
+            {
+                // Act - should cope by deleting and silently recreating
+                using (var realm = Realm.GetInstance(config))
+                {
+                    // Assert
+                    Assert.That(File.Exists(config.DatabasePath));
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
         }
     }
 }

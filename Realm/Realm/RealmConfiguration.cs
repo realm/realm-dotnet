@@ -122,7 +122,6 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-
             var configuration = new Native.Configuration
             {
                 Path = DatabasePath,

@@ -25,21 +25,14 @@ using Realms;
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class StandAloneObjectTests
+    public class StandAloneObjectTests : RealmTest
     {
         private Person _person;
 
-        [SetUp]
-        public void SetUp()
+        protected override void CustomSetUp()
         {
             _person = new Person();
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            NativeCommon.reset_for_testing();
+            base.CustomSetUp();
         }
 
         [Test]
@@ -67,11 +60,10 @@ namespace Tests.Database
 
             using (var realm = Realm.GetInstance())
             {
-                using (var transaction = realm.BeginWrite())
+                realm.Write(() =>
                 {
                     realm.Add(_person);
-                    transaction.Commit();
-                }
+                });
 
                 Assert.That(_person.IsManaged);
 
