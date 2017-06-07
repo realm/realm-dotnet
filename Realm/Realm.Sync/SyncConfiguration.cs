@@ -112,7 +112,7 @@ namespace Realms.Sync
             if (!string.IsNullOrEmpty(TrustedCAPath) &&
                 !File.Exists(TrustedCAPath))
             {
-                throw new RealmFileNotFoundException($"File not found: {TrustedCAPath}");
+                throw new FileNotFoundException($"{nameof(TrustedCAPath)} has been specified, but the file was not found.", TrustedCAPath);
             }
 
             return new Native.SyncConfiguration

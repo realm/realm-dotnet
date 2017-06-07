@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -57,7 +58,7 @@ namespace Tests.Sync
                 {
                     TrustedCAPath = "something.pem"
                 };
-                Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<RealmFileNotFoundException>());
+                Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<FileNotFoundException>());
             });
         }
 
