@@ -150,8 +150,6 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var b = User.AllLoggedIn;
-                var a = User.Current;
                 var userId = Guid.NewGuid().ToString();
                 var serverUri = new Uri($"http://{Constants.ServerUrl}");
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);

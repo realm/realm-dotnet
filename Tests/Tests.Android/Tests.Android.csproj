@@ -183,6 +183,9 @@
     <AndroidAsset Include="..\Tests.Shared\nunit3-junit.xslt">
       <Link>Assets\nunit3-junit.xslt</Link>
     </AndroidAsset>
+    <AndroidAsset Include="..\Tests.Sync.Shared\trusted_ca.pem">
+      <Link>Assets\trusted_ca.pem</Link>
+    </AndroidAsset>
   </ItemGroup>
   <ItemGroup>
     <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\armeabi-v7a\librealm-wrappers.so">
