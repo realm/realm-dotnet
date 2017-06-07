@@ -76,7 +76,6 @@ namespace Realms.Sync
                 session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
                 if (session.State != SessionState.Invalid)
                 {
-                    Session.Reconnect();
                     ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
                 }
             }
