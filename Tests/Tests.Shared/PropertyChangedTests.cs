@@ -750,8 +750,46 @@ namespace Tests.Database
 
             _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.EqualTo(new[] { nameof(Person.FirstName) }));
-            
+
             person.PropertyChanged -= handler;
+        }
+
+        [Test]
+        public void ManagedObject_WhenPropertyIsAfterBacklinks()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var obj = new BacklinkObject
+            {
+                AfterBacklinks = "a",
+                BeforeBacklinks = "a"
+            };
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            var handler = new PropertyChangedEventHandler((sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            });
+
+            obj.PropertyChanged += handler;
+
+            _realm.Write(() =>
+            {
+                obj.BeforeBacklinks = "b";
+                obj.AfterBacklinks = "b";
+            });
+
+            _realm.Refresh();
+
+            var expected = new[]
+            {
+                nameof(BacklinkObject.BeforeBacklinks),
+                nameof(BacklinkObject.AfterBacklinks)
+            };
+            Assert.That(notifiedPropertyNames, Is.EquivalentTo(expected));
+            obj.PropertyChanged -= handler;
         }
 
         private async Task TestManaged(Func<Person, string, Task> writeFirstNameAction)
@@ -846,6 +884,21 @@ namespace Tests.Database
                     RaisePropertyChanged(nameof(Age));
                 }
             }
+        }
+
+        private class BacklinkObject : RealmObject
+        {
+            public string BeforeBacklinks { get; set; }
+
+            [Backlink(nameof(SomeClass.BacklinkObject))]
+            public IQueryable<SomeClass> Links { get; }
+
+            public string AfterBacklinks { get; set; }
+        }
+
+        private class SomeClass : RealmObject
+        {
+            public BacklinkObject BacklinkObject { get; set; }
         }
     }
 }
