@@ -54,8 +54,8 @@ namespace Realms.Sync.Testing
         /// Use this method to test your progress handling code without connecting to a Realm Object Server.
         /// Some throttling may occur at a native level, so it is recommended to use <c>Task.Delay()</c> between invocations.
         /// </remarks>
-        public static void SimulateProgress(this Session session, 
-                                            ulong downloadedBytes, ulong downloadableBytes, 
+        public static void SimulateProgress(this Session session,
+                                            ulong downloadedBytes, ulong downloadableBytes,
                                             ulong uploadedBytes, ulong uploadableBytes)
         {
             session.Handle.ReportProgressForTesting(downloadedBytes, downloadableBytes, uploadedBytes, uploadableBytes);

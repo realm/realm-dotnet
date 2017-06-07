@@ -34,8 +34,7 @@ namespace Realms
         [NativeCallback(typeof(NotifiableObjectHandleBase.NotificationCallbackDelegate))]
         private static void NotificationCallbackImpl(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
-            var notifiable = GCHandle.FromIntPtr(managedHandle).Target as INotifiable;
-            if (notifiable != null)
+            if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable notifiable)
             {
                 notifiable.NotifyCallbacks(new PtrTo<NotifiableObjectHandleBase.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
             }

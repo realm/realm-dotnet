@@ -51,8 +51,8 @@ namespace Realms.Sync
         /// Gets the <see cref="ErrorCode"/> if any.
         /// </summary>
         /// <remarks>
-        /// Filled by the server after an object was processed indicating the status of the operation. 
-        /// If <see cref="Status"/> returns <see cref="ManagementObjectStatus.Error"/>, the <see cref="ErrorCode"/> 
+        /// Filled by the server after an object was processed indicating the status of the operation.
+        /// If <see cref="Status"/> returns <see cref="ManagementObjectStatus.Error"/>, the <see cref="ErrorCode"/>
         /// property can be used to get a strongly typed code for the error and handle expected error conditions, such as
         /// expired offer or attempting to share a realm without having manage access.
         /// </remarks>

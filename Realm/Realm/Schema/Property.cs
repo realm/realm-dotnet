@@ -46,7 +46,7 @@ namespace Realms.Schema
         public string ObjectType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the property that links to the model containing this 
+        /// Gets or sets the name of the property that links to the model containing this
         /// <see cref="PropertyType.LinkingObjects"/> property.
         /// </summary>
         /// <value>The name of the linking property.</value>
@@ -73,7 +73,7 @@ namespace Realms.Schema
         /// Gets or sets a value indicating whether this <see cref="Property"/> is indexed.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the property should be indexed (the matching property in the class definition is 
+        /// <c>true</c> if the property should be indexed (the matching property in the class definition is
         /// marked with <see cref="IndexedAttribute"/>); <c>false</c> otherwise.</value>
         public bool IsIndexed { get; set; }
 

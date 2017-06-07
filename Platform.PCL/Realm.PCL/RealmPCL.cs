@@ -32,7 +32,7 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// <b>Warning</b>: Realm instances are not thread safe and can not be shared across threads.
-    /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm. 
+    /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm.
     /// </remarks>
     public class Realm : IDisposable
     {
@@ -85,7 +85,7 @@ namespace Realms
         /// the realm will be downloaded and fully synchronized with the server prior to the completion
         /// of the returned Task object.
         /// Otherwise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
-        /// and immediately returns a completed Task.  
+        /// and immediately returns a completed Task.
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
@@ -136,7 +136,7 @@ namespace Realms
         public RealmSchema Schema { get; }
 
         /// <summary>
-        /// Handler type used by <see cref="RealmChanged"/> 
+        /// Handler type used by <see cref="RealmChanged"/>
         /// </summary>
         /// <param name="sender">The <see cref="Realm"/> which has changed.</param>
         /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
@@ -198,7 +198,7 @@ namespace Realms
         /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
         /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
         /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
-        /// object will be an instance of a user-defined class, as if created by <see cref="CreateObject{T}"/>.
+        /// object will be an instance of a user-defined class.
         /// </para>
         /// </remarks>
         public dynamic CreateObject(string className)
@@ -224,7 +224,7 @@ namespace Realms
         /// </exception>
         /// <remarks>
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed. 
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
         /// You have to break the cycle manually and assign relationships after all object have been managed.
@@ -265,8 +265,8 @@ namespace Realms
         /// </summary>
         /// <example>
         /// <code>
-        /// using (var trans = realm.BeginWrite()) 
-        /// { 
+        /// using (var trans = realm.BeginWrite())
+        /// {
         ///     realm.Add(new Dog
         ///     {
         ///         Name = "Rex"
@@ -283,18 +283,18 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> 
+        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
         /// will be committed.
         /// </summary>
         /// <remarks>
-        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>. 
-        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls. 
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>.
+        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
         /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
         /// unless you need to guarantee finer-grained updates.
         /// </remarks>
         /// <example>
         /// <code>
-        /// realm.Write(() => 
+        /// realm.Write(() =>
         /// {
         ///     realm.Add(new Dog
         ///     {
@@ -318,14 +318,14 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in 
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in
         /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
         /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt; 
+        /// await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
@@ -425,7 +425,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="primaryKey">
-        /// Primary key to be matched exactly, same as an == search. 
+        /// Primary key to be matched exactly, same as an == search.
         /// An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.
         /// </param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>

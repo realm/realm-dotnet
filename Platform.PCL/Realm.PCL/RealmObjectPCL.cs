@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Realms.Schema;
 
@@ -47,7 +46,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via 
+        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
         /// <see cref="Realm.Add"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
@@ -484,9 +483,9 @@ namespace Realms
         /// class MyClass : RealmObject
         /// {
         ///     public int StatusCodeRaw { get; set; }
-        /// 
+        ///
         ///     public StatusCodeEnum StatusCode => (StatusCodeEnum)StatusCodeRaw;
-        /// 
+        ///
         ///     protected override void OnPropertyChanged(string propertyName)
         ///     {
         ///         if (propertyName == nameof(StatusCodeRaw))
@@ -497,7 +496,7 @@ namespace Realms
         /// }
         /// </code>
         /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
-        /// subscribers that <c>StatusCode</c> has changed, we override <see cref="OnPropertyChanged"/> and 
+        /// subscribers that <c>StatusCode</c> has changed, we override <see cref="OnPropertyChanged"/> and
         /// raise <see cref="PropertyChanged"/> manually by calling <see cref="RaisePropertyChanged"/>.
         /// </example>
         protected virtual void OnPropertyChanged(string propertyName)

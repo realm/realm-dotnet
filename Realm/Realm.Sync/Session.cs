@@ -76,7 +76,7 @@ namespace Realms.Sync
         /// class ProgressNotifyingViewModel
         /// {
         ///     private IDisposable notificationToken;
-        /// 
+        ///
         ///     public void ShowProgress()
         ///     {
         ///         var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
@@ -86,7 +86,7 @@ namespace Realms.Sync
         ///             // progress.TransferredBytes and progress.TransferableBytes
         ///         });
         ///     }
-        /// 
+        ///
         ///     public void HideProgress()
         ///     {
         ///         notificationToken?.Dispose();

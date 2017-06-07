@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -97,7 +96,7 @@ namespace Realms
             - with embedded Lambda `Count(p => !p.IsInteresting)`
             - at the end of a Where `Where(p => !p.IsInteresting).Where()`
 
-            The latter form is handled by recursion where evaluation of Visit will 
+            The latter form is handled by recursion where evaluation of Visit will
             take us back into VisitMethodCall to evaluate the Where call.
         */
         private void RecurseToWhereOrRunLambda(MethodCallExpression m)

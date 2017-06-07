@@ -21,8 +21,8 @@ namespace Realms.Sync
     /// <summary>
     /// Access levels which can be granted to Realm Mobile Platform users for specific synchronized Realms, using the permissions APIs.
     /// <br/>
-    /// Note that each access level guarantees all allowed actions provided by less permissive access levels. 
-    /// Specifically, users with write access to a Realm can always read from that Realm, and users with administrative 
+    /// Note that each access level guarantees all allowed actions provided by less permissive access levels.
+    /// Specifically, users with write access to a Realm can always read from that Realm, and users with administrative
     /// access can always read or write from the Realm.
     /// </summary>
     public enum AccessLevel
@@ -36,8 +36,8 @@ namespace Realms.Sync
         /// User can only read the contents of the Realm.
         /// </summary>
         /// <remarks>
-        /// Users who have read-only access to a Realm should open the Realm using 
-        /// <see cref="Realm.GetInstanceAsync(RealmConfigurationBase)"/> Attempting to directly open the Realm is 
+        /// Users who have read-only access to a Realm should open the Realm using
+        /// <see cref="Realm.GetInstanceAsync(RealmConfigurationBase)"/> Attempting to directly open the Realm is
         /// an error; in this case the Realm must be deleted and re-opened.
         /// </remarks>
         Read,

@@ -336,8 +336,7 @@ public partial class ModuleWeaver
             }
 
             var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : string.Empty);
-            Tuple<MethodReference, MethodReference> realmAccessors;
-            if (!methodTable.TryGetValue(typeId, out realmAccessors))
+            if (!methodTable.TryGetValue(typeId, out var realmAccessors))
             {
                 var getter = new MethodReference("Get" + _typeTable[prop.PropertyType.FullName] + "Value", prop.PropertyType, _references.RealmObject)
                 {
@@ -376,8 +375,7 @@ public partial class ModuleWeaver
             var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
 
             // weaves list getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-            var backingDef = backingField as FieldDefinition;
-            if (backingDef != null)
+            if (backingField is FieldDefinition backingDef)
             {
                 backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
             }
@@ -415,8 +413,7 @@ public partial class ModuleWeaver
                 return WeaveResult.Error($"The property '{elementType.Name}.{inversePropertyName}' does not constitute a link to '{type.Name}' as described by '{type.Name}.{prop.Name}'.");
             }
 
-            var backingDef = backingField as FieldDefinition;
-            if (backingDef != null)
+            if (backingField is FieldDefinition backingDef)
             {
                 // without a set; auto property has this flag we must clear
                 backingDef.Attributes &= ~FieldAttributes.InitOnly;
@@ -529,7 +526,7 @@ public partial class ModuleWeaver
         // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
 
         var labelElse = il.Create(OpCodes.Nop);  // [this]
-        il.InsertBefore(start, labelElse); // else 
+        il.InsertBefore(start, labelElse); // else
         il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor)); // [this ->  this, listRef ]
         il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  // [this, listRef -> ]
         // fall through to start to read it back from backing field and return
@@ -545,7 +542,7 @@ public partial class ModuleWeaver
         // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
         // FALL THROUGH to return the backing field.
 
-        // Let Cecil optimize things for us. 
+        // Let Cecil optimize things for us.
         // TODO prop.SetMethod.Body.OptimizeMacros();
 
         Debug.Write("[get list] ");
@@ -605,7 +602,7 @@ public partial class ModuleWeaver
         // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
         // FALL THROUGH to return the backing field.
 
-        // Let Cecil optimize things for us. 
+        // Let Cecil optimize things for us.
         // TODO prop.SetMethod.Body.OptimizeMacros();
 
         Debug.Write("[get list] ");
@@ -618,7 +615,7 @@ public partial class ModuleWeaver
         ////   1: ldarg.1
         ////   2: stfld <backingField>
         ////   3: ret
-        ////   
+        ////
         //// We want to change it so it looks like this:
         ////   0: ldarg.0
         ////   1: call Realms.RealmObject.get_IsManaged
@@ -632,7 +629,7 @@ public partial class ModuleWeaver
         ////   9: ldarg.1
         ////   10: stfld <backingField>
         ////   11: ret
-        ////   
+        ////
         //// This is roughly equivalent to:
         ////   if (!base.IsManaged) this.<backingField> = value;
         ////   else base.SetValue<T>(<columnName>, value);
@@ -701,7 +698,7 @@ public partial class ModuleWeaver
             // This roughly translates to
             /*
                 var castInstance = (ObjectType)instance;
-                
+
                 *foreach* non-list woven property in castInstance's schema
                 *if* castInstace.field is a RealmObject descendant
                     castInstance.Realm.Add(castInstance.field, update);
@@ -713,7 +710,7 @@ public partial class ModuleWeaver
                     }
                 *else if* property is [Required] or nullable
                     castInstance.Property = castInstance.Field;
-                *else* 
+                *else*
                     if (!setPrimaryKey || castInstance.field != default(fieldType))
                     {
                         castInstance.Property = castInstance.Field;

@@ -71,7 +71,7 @@ namespace Realms
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
-        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via 
+        /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
         /// <see cref="Realm.Add"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
@@ -279,8 +279,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            Property property;
-            _metadata.Schema.TryFindProperty(propertyName, out property);
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
             var listHandle = _objectHandle.TableLinkList(_metadata.PropertyIndices[propertyName]);
@@ -298,8 +297,7 @@ namespace Realms
                 return null;
             }
 
-            Property property;
-            _metadata.Schema.TryFindProperty(propertyName, out property);
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
             var objectType = property.ObjectType;
             return (T)_realm.MakeObject(objectType, linkedObjectPtr);
         }
@@ -323,8 +321,7 @@ namespace Realms
 
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
         {
-            Property property;
-            _metadata.Schema.TryFindProperty(propertyName, out property);
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
@@ -609,19 +606,19 @@ namespace Realms
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            // If parameter is null, return false. 
+            // If parameter is null, return false.
             if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
-            // Optimization for a common success case. 
+            // Optimization for a common success case.
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
 
-            // If run-time types are not exactly the same, return false. 
+            // If run-time types are not exactly the same, return false.
             if (GetType() != obj.GetType())
             {
                 return false;
@@ -633,9 +630,9 @@ namespace Realms
                 return false;
             }
 
-            // Return true if the fields match. 
-            // Note that the base class is not invoked because it is 
-            // System.Object, which defines Equals as reference equality. 
+            // Return true if the fields match.
+            // Note that the base class is not invoked because it is
+            // System.Object, which defines Equals as reference equality.
             return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
         }
 
@@ -673,7 +670,7 @@ namespace Realms
         /// }
         /// </code>
         /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
-        /// subscribers that <c>StatusCode</c> has changed, we override <see cref="OnPropertyChanged"/> and 
+        /// subscribers that <c>StatusCode</c> has changed, we override <see cref="OnPropertyChanged"/> and
         /// raise <see cref="PropertyChanged"/> manually by calling <see cref="RaisePropertyChanged"/>.
         /// </example>
         protected virtual void OnPropertyChanged(string propertyName)

@@ -67,8 +67,7 @@ namespace Realms
         {
             get
             {
-                NativeException nativeException;
-                var result = NativeMethods.get_is_valid(this, out nativeException);
+                var result = NativeMethods.get_is_valid(this, out var nativeException);
                 nativeException.ThrowIfNecessary();
                 return result;
             }
@@ -85,75 +84,65 @@ namespace Realms
 
         public void Add(ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            NativeMethods.add(this, objectHandle, out nativeException);
+            NativeMethods.add(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Insert(IntPtr targetIndex, ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            NativeMethods.insert(this, targetIndex, objectHandle, out nativeException);
+            NativeMethods.insert(this, targetIndex, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Erase(IntPtr rowIndex)
         {
-            NativeException nativeException;
-            NativeMethods.erase(this, rowIndex, out nativeException);
+            NativeMethods.erase(this, rowIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public void Clear()
         {
-            NativeException nativeException;
-            NativeMethods.clear(this, out nativeException);
+            NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public IntPtr Find(ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            var result = NativeMethods.find(this, objectHandle, out nativeException);
+            var result = NativeMethods.find(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public void Move(ObjectHandle objectHandle, IntPtr targetIndex)
         {
-            NativeException nativeException;
-            NativeMethods.move(this, objectHandle, targetIndex, out nativeException);
+            NativeMethods.move(this, objectHandle, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
-            NativeException nativeException;
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public override IntPtr GetObjectAtIndex(int index)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get(this, (IntPtr)index, out nativeException);
+            var result = NativeMethods.get(this, (IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public override int Count()
         {
-            NativeException nativeException;
-            var result = NativeMethods.size(this, out nativeException);
+            var result = NativeMethods.size(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_thread_safe_reference(this, out nativeException);
+            var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;

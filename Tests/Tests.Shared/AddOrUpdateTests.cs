@@ -919,7 +919,7 @@ namespace Tests.Database
 
             Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));
 
-            // Verify that the original list was cleared 
+            // Verify that the original list was cleared
             Assert.That(first.ListValue.Count, Is.EqualTo(0));
 
             // Verify that clearing the list hasn't deleted the item from the Realm.

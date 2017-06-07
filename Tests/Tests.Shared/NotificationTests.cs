@@ -47,7 +47,7 @@ namespace Tests.Database
 
             public override string ToString()
             {
-                return string.Format("[OrderedObject: Order={0}]", Order);
+                return $"[OrderedObject: Order={Order}]";
             }
         }
 
@@ -152,14 +152,14 @@ namespace Tests.Database
                 var query = _realm.All<Person>();
                 IDisposable notificationToken = null;
 
-                int notificationCount = 0;
+                var notificationCount = 0;
                 notificationToken = query.SubscribeForNotifications(delegate
                 {
                     notificationCount++;
                     notificationToken.Dispose();
                 });
 
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     _realm.Write(() => _realm.Add(new Person()));
                     await Task.Delay(MillisecondsToWaitForCollectionNotification);
@@ -414,7 +414,7 @@ namespace Tests.Database
             {
                 OrderedObject object1 = null;
                 OrderedObject object2 = null;
-                var args = await TestMoves(items =>
+                var args = await TestMovesAsync(items =>
                 {
                     object1 = items[oldIndex1];
                     items.Move(object1, newIndex1);
@@ -457,7 +457,7 @@ namespace Tests.Database
             AsyncContext.Run(async delegate
             {
                 OrderedObject movedObject = null;
-                var args = await TestMoves(items =>
+                var args = await TestMovesAsync(items =>
                 {
                     movedObject = items[oldIndex];
                     items.Move(movedObject, newIndex);
@@ -471,7 +471,7 @@ namespace Tests.Database
         }
 
         // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
-        private async Task<NotifyCollectionChangedEventArgs> TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
+        private async Task<NotifyCollectionChangedEventArgs> TestMovesAsync(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
         {
             var container = new OrderedContainer();
             for (var i = 0; i < 5; i++)

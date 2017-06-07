@@ -30,7 +30,7 @@ namespace Realms.Sync
     /// </summary>
     /// <remarks>
     /// When offering permissions, you should create the offer and add it to the <see cref="User"/>'s Management Realm.
-    /// Then you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has 
+    /// Then you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has
     /// processed the request.
     /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
     /// <see cref="ErrorCode"/> will be updated accordingly.

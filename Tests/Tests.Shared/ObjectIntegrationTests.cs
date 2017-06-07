@@ -38,7 +38,7 @@ namespace Tests.Database
             var allPeople = _realm.All<Person>().Count();
             Debug.WriteLine($"There are {allPeople} in total");
 
-            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
+            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting select p;
 
             Debug.WriteLine("Interesting people include:");
             foreach (var p in interestingPeople)
@@ -224,7 +224,7 @@ namespace Tests.Database
             MakeThreePeople();
 
             // primarily just testing we iterate through all the people in the realm
-            int iterCount = 0;
+            var iterCount = 0;
             var emails = new[] { "john@smith.com", "john@doe.com", "peter@jameson.net" };
             foreach (var p in _realm.All<Person>())
             {

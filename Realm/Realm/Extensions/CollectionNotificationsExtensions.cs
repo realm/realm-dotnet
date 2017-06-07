@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
@@ -113,9 +114,7 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
         {
-            var realmList = list as RealmList<T>;
-
-            if (realmList != null)
+            if (list is RealmList<T> realmList)
             {
                 realmList.Move(item, index);
             }

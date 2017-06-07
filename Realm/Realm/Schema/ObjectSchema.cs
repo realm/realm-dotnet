@@ -137,9 +137,7 @@ namespace Realms.Schema
                 }
                 else
                 {
-                    Type innerType;
-                    bool isNullable;
-                    schemaProperty.Type = property.PropertyType.ToPropertyType(out isNullable, out innerType);
+                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var isNullable, out var innerType);
                     schemaProperty.ObjectType = innerType?.Name;
                     schemaProperty.IsNullable = isNullable;
                 }

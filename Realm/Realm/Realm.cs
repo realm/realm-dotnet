@@ -36,7 +36,7 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// <b>Warning</b>: Realm instances are not thread safe and can not be shared across threads.
-    /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm. 
+    /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm.
     /// </remarks>
     public class Realm : IDisposable
     {
@@ -106,7 +106,7 @@ namespace Realms
         /// the realm will be downloaded and fully synchronized with the server prior to the completion
         /// of the returned Task object.
         /// Otherwise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
-        /// and immediately returns a completed Task.  
+        /// and immediately returns a completed Task.
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
@@ -291,7 +291,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Handler type used by <see cref="RealmChanged"/> 
+        /// Handler type used by <see cref="RealmChanged"/>
         /// </summary>
         /// <param name="sender">The <see cref="Realm"/> which has changed.</param>
         /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
@@ -440,7 +440,7 @@ namespace Realms
         /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
         /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
         /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
-        /// object will be an instance of a user-defined class, as if created by <see cref="CreateObject{T}"/>.
+        /// object will be an instance of a user-defined class.
         /// </para>
         /// </remarks>
         public dynamic CreateObject(string className)
@@ -527,7 +527,7 @@ namespace Realms
         /// </exception>
         /// <remarks>
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed. 
+        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
         /// You have to break the cycle manually and assign relationships after all object have been managed.
@@ -856,7 +856,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="primaryKey">
-        /// Primary key to be matched exactly, same as an == search. 
+        /// Primary key to be matched exactly, same as an == search.
         /// An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.
         /// </param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>

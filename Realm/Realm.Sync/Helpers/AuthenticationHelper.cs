@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -186,8 +185,7 @@ namespace Realms.Sync
             }
             finally
             {
-                Timer timer;
-                if (_tokenRefreshTimers.TryRemove(data.RealmPath, out timer))
+                if (_tokenRefreshTimers.TryRemove(data.RealmPath, out var timer))
                 {
                     timer.Dispose();
                 }
@@ -197,8 +195,10 @@ namespace Realms.Sync
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
         private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body)
         {
-            var request = new HttpRequestMessage(method, uri);
-            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(method, uri)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
+            };
             request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
             request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
 
@@ -220,27 +220,6 @@ namespace Realms.Sync
             }
 
             throw new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
-        }
-
-        private static string ReadContent(Stream stream, int maxNumberOfCharacters, string prefixIfExceeded)
-        {
-            using (var sr = new StreamReader(stream))
-            {
-                var sb = new StringBuilder();
-
-                int current;
-                while ((current = sr.Read()) > 0)
-                {
-                    sb.Append((char)current);
-                    if (sb.Length > maxNumberOfCharacters - 1)
-                    {
-                        sb.Insert(0, prefixIfExceeded);
-                        break;
-                    }
-                }
-
-                return sb.ToString();
-            }
         }
 
         private class TokenRefreshData

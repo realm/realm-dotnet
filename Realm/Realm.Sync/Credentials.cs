@@ -122,8 +122,8 @@ namespace Realms.Sync
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials UsernamePassword(string username, string password, bool createUser)
         {
-            return new Credentials 
-            { 
+            return new Credentials
+            {
                 IdentityProvider = Providers.Password,
                 Token = username,
                 UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }

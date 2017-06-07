@@ -61,7 +61,7 @@ namespace Realms.Sync
             return user.PermissionRealm;
         }
 
-        internal static async Task WaitForProcessing<T>(this T permissionObject) where T : RealmObject, IPermissionObject
+        internal static async Task WaitForProcessingAsync<T>(this T permissionObject) where T : RealmObject, IPermissionObject
         {
             // Retain the object, otherwise it gets GC'd and the handler is never invoked
             var handle = GCHandle.Alloc(permissionObject);

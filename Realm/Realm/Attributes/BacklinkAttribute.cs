@@ -30,16 +30,16 @@ namespace Realms
     ///     // One to many relationship with Person.Dogs
     ///     public Person Owner { get; set; }
     /// }
-    /// 
+    ///
     /// class Person : RealmObject
     /// {
     ///     [Backlink(nameof(Dog.Owner))]
     ///     public IQueryable&lt;Dog&gt; Dogs { get; }
-    /// 
+    ///
     ///     // Many to many relationship with Hobby.PeopleWithThatHobby
     ///     public IList&lt;Hobby&gt; Hobbies { get; }
     /// }
-    /// 
+    ///
     /// class Hobby : RealmObject
     /// {
     ///     [Backlink(nameof(Person.Hobbies))]

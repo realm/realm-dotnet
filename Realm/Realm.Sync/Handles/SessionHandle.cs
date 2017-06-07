@@ -59,7 +59,7 @@ namespace Realms.Sync
                                                                   ProgressDirection direction,
                                                                   [MarshalAs(UnmanagedType.I1)] bool is_streaming,
                                                                   out NativeException ex);
-            
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(SessionHandle session, ulong token, out NativeException ex);
 
@@ -98,8 +98,7 @@ namespace Realms.Sync
 
         public SessionState GetState()
         {
-            NativeException ex;
-            var state = NativeMethods.get_state(this, out ex);
+            var state = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return state;
         }
@@ -115,32 +114,28 @@ namespace Realms.Sync
 
         public void RefreshAccessToken(string accessToken, string serverPath)
         {
-            NativeException ex;
-            NativeMethods.refresh_access_token(this, accessToken, (IntPtr)accessToken.Length, serverPath, (IntPtr)serverPath.Length, out ex);
+            NativeMethods.refresh_access_token(this, accessToken, (IntPtr)accessToken.Length, serverPath, (IntPtr)serverPath.Length, out var ex);
             ex.ThrowIfNecessary();
         }
 
         public ulong RegisterProgressNotifier(IntPtr tokenPtr, ProgressDirection direction, ProgressMode mode)
         {
-            NativeException ex;
             var isStreaming = mode == ProgressMode.ReportIndefinitely;
-            var token = NativeMethods.register_progress_notifier(this, tokenPtr, direction, isStreaming, out ex);
+            var token = NativeMethods.register_progress_notifier(this, tokenPtr, direction, isStreaming, out var ex);
             ex.ThrowIfNecessary();
             return token;
         }
 
         public void UnregisterProgressNotifier(ulong token)
         {
-            NativeException ex;
-            NativeMethods.unregister_progress_notifier(this, token, out ex);
+            NativeMethods.unregister_progress_notifier(this, token, out var ex);
             ex.ThrowIfNecessary();
         }
 
         public bool Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
         {
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeException ex;
-            var result = NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out ex);
+            var result = NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }
@@ -162,8 +157,7 @@ namespace Realms.Sync
 
         public static IntPtr SessionForPath(string path)
         {
-            NativeException ex;
-            var ptr = NativeMethods.get_from_path(path, (IntPtr)path.Length, out ex);
+            var ptr = NativeMethods.get_from_path(path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
             return ptr;
         }

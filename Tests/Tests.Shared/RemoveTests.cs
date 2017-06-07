@@ -180,7 +180,7 @@ namespace Tests.Database
 
                 var people = other.All<Person>();
 
-                Assert.That(() => _realm.Write(() => _realm.RemoveRange(people)), 
+                Assert.That(() => _realm.Write(() => _realm.RemoveRange(people)),
                             Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
             });
         }

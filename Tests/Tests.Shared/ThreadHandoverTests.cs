@@ -84,7 +84,7 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 var queryReference = SetupQueryReference(q => q);
-                await AssertQueryReference(queryReference, new[] { 1, 2, 3, 4 });
+                await AssertQueryReferenceAsync(queryReference, new[] { 1, 2, 3, 4 });
             });
         }
 
@@ -154,8 +154,10 @@ namespace Tests.Database
         [Test]
         public void ListReference_WhenListIsNotRealmList_ShouldFail()
         {
-            IList<Dog> unmanagedDogs = new List<Dog>();
-            unmanagedDogs.Add(new Dog());
+            IList<Dog> unmanagedDogs = new List<Dog>
+            {
+                new Dog()
+            };
 
             Assert.That(() => ThreadSafeReference.Create(unmanagedDogs), Throws.InstanceOf<InvalidCastException>());
 
@@ -295,7 +297,7 @@ namespace Tests.Database
 
                 var query = _realm.All<IntPropertyObject>().Where(o => o.Int != 2);
                 var queryReference = ThreadSafeReference.Create(query);
-                await AssertQueryReference(queryReference, new[] { 1, 3, 4 });
+                await AssertQueryReferenceAsync(queryReference, new[] { 1, 3, 4 });
             });
         }
 
@@ -305,7 +307,7 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 var queryReference = SetupQueryReference(q => q.OrderByDescending(o => o.Int));
-                await AssertQueryReference(queryReference, new[] { 4, 3, 2, 1 });
+                await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 2, 1 });
             });
         }
 
@@ -315,7 +317,7 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 var queryReference = SetupQueryReference(q => q.Where(o => o.Int != 2).OrderByDescending(o => o.Int));
-                await AssertQueryReference(queryReference, new[] { 4, 3, 1 });
+                await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 1 });
             });
         }
 
@@ -342,7 +344,7 @@ namespace Tests.Database
             return ThreadSafeReference.Create(obj);
         }
 
-        private Task AssertQueryReference(ThreadSafeReference.Query<IntPropertyObject> reference, int[] expected)
+        private Task AssertQueryReferenceAsync(ThreadSafeReference.Query<IntPropertyObject> reference, int[] expected)
         {
             return Task.Run(() =>
             {

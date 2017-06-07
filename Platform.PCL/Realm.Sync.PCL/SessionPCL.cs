@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client 
+    /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client
     /// (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
     /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated
     /// with Realms are managed automatically.
@@ -107,7 +107,7 @@ namespace Realms.Sync
         /// class ProgressNotifyingViewModel
         /// {
         ///     private IDisposable notificationToken;
-        /// 
+        ///
         ///     public void ShowProgress()
         ///     {
         ///         var observable = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
@@ -117,7 +117,7 @@ namespace Realms.Sync
         ///             // progress.TransferredBytes and progress.TransferableBytes
         ///         });
         ///     }
-        /// 
+        ///
         ///     public void HideProgress()
         ///     {
         ///         notificationToken?.Dispose();

@@ -42,8 +42,7 @@ namespace Tests.Database
                 _realm.Add(obj);
             });
 
-            object pk;
-            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
             Assert.That(success, Is.False);
             Assert.That(pk, Is.Null);
         }
@@ -56,8 +55,7 @@ namespace Tests.Database
                 BooleanProperty = true
             };
 
-            object pk;
-            var success = GetHelper(obj.GetType()).TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(obj.GetType()).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.False);
             Assert.That(pk, Is.Null);
@@ -80,8 +78,7 @@ namespace Tests.Database
                 _realm.Add(obj);
             });
 
-            object pk;
-            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
             Assert.That(pk, Is.EqualTo(pkValue));
@@ -99,14 +96,13 @@ namespace Tests.Database
             var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
-            object pk;
-            var success = GetHelper(objectType).TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(objectType).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
             Assert.That(pk, Is.EqualTo(pkValue));
         }
 
-        private IRealmObjectHelper GetHelper(RealmObject obj)
+        private static IRealmObjectHelper GetHelper(RealmObject obj)
         {
             return obj.ObjectMetadata.Helper;
         }

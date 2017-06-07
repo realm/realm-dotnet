@@ -127,7 +127,7 @@ namespace Tests.Database
         {
             AsyncContext.Run(delegate
             {
-                return TestManaged((person, name) =>
+                return TestManagedAsync((person, name) =>
                 {
                     _realm.Write(() =>
                     {
@@ -143,7 +143,7 @@ namespace Tests.Database
         {
             AsyncContext.Run(delegate
             {
-                return TestManaged((_, name) =>
+                return TestManagedAsync((_, name) =>
                 {
                     _realm.Write(() =>
                     {
@@ -160,7 +160,7 @@ namespace Tests.Database
         {
             AsyncContext.Run(delegate
             {
-                return TestManaged(async (_, name) =>
+                return TestManagedAsync(async (_, name) =>
                 {
                     await _realm.WriteAsync(otherRealm =>
                     {
@@ -792,7 +792,7 @@ namespace Tests.Database
             obj.PropertyChanged -= handler;
         }
 
-        private async Task TestManaged(Func<Person, string, Task> writeFirstNameAction)
+        private async Task TestManagedAsync(Func<Person, string, Task> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
             var person = new Person();

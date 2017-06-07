@@ -75,23 +75,20 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeException nativeException;
-            NativeMethods.unbind(handle, out nativeException);
+            NativeMethods.unbind(handle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public IntPtr AddEmptyObject(SharedRealmHandle sharedRealm)
         {
-            NativeException nativeException;
-            var result = NativeMethods.add_empty_object(this, sharedRealm, out nativeException);
+            var result = NativeMethods.add_empty_object(this, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public long CountAll()
         {
-            NativeException nativeException;
-            var result = NativeMethods.count_all(this, out nativeException);
+            var result = NativeMethods.count_all(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -99,25 +96,22 @@ namespace Realms
         // returns -1 if the column string does not match a column index
         public IntPtr GetColumnIndex(string name)
         {
-            NativeException nativeException;
-            var result = NativeMethods.get_column_index(this, name, (IntPtr)name.Length, out nativeException);
+            var result = NativeMethods.get_column_index(this, name, (IntPtr)name.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr CreateResults(SharedRealmHandle sharedRealmHandle)
         {
-            NativeException nativeException;
-            var result = NativeMethods.create_results(this, sharedRealmHandle, out nativeException);
+            var result = NativeMethods.create_results(this, sharedRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public IntPtr CreateSortedResults(SharedRealmHandle sharedRealmHandle, SortDescriptorBuilder sortDescriptorBuilder)
         {
-            NativeException nativeException;
             var marshaledValues = sortDescriptorBuilder.Flatten();
-            var result = NativeMethods.create_sorted_results(this, sharedRealmHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
+            var result = NativeMethods.create_sorted_results(this, sharedRealmHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -129,8 +123,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(id));
             }
 
-            NativeException nativeException;
-            var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
+            var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

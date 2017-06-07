@@ -99,10 +99,11 @@ namespace RealmWeaver
                 var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
                 scope.Connect();
                 var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
-                var searcher = new ManagementObjectSearcher(scope, query);
-
-                var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
-                return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
+                using (var searcher = new ManagementObjectSearcher(scope, query))
+                {
+                    var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
+                    return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
+                }
             }
 
             // Assume OS X if not Windows.
@@ -148,8 +149,7 @@ namespace RealmWeaver
         {
             get
             {
-                string osName, osVersion;
-                ComputeHostOSNameAndVersion(out osName, out osVersion);
+                ComputeHostOSNameAndVersion(out var osName, out var osVersion);
 
                 return JsonTemplate
                     .Replace("%EVENT%", "Run")
@@ -175,7 +175,7 @@ namespace RealmWeaver
         {
             // uncomment next two lines to inspect the payload under Windows VS build
             //    var load = JsonPayload;
-            //    Debugger.Launch();  
+            //    Debugger.Launch();
 
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonPayload));
             var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));

@@ -54,7 +54,7 @@ namespace Realms.Sync
             public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth, 
+            public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth,
                                                                    UserPersistenceMode* userPersistence, byte[] encryptionKey,
                                                                    [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
                                                                    out NativeException exception);
@@ -87,8 +87,7 @@ namespace Realms.Sync
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
-            NativeException nativeException;
-            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out nativeException);
+            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             var handle = new SharedRealmHandle();
@@ -131,8 +130,7 @@ namespace Realms.Sync
                 modePtr = &mode;
             }
 
-            NativeException ex;
-            NativeMethods.configure_file_system(basePath, (IntPtr)basePath.Length, modePtr, encryptionKey, resetMetadataOnError, out ex);
+            NativeMethods.configure_file_system(basePath, (IntPtr)basePath.Length, modePtr, encryptionKey, resetMetadataOnError, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -144,8 +142,7 @@ namespace Realms.Sync
 
         public static bool ImmediatelyRunFileActions(string path)
         {
-            NativeException ex;
-            var result = NativeMethods.immediately_run_file_actions(path, (IntPtr)path.Length, out ex);
+            var result = NativeMethods.immediately_run_file_actions(path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
 
             return result;
@@ -160,8 +157,7 @@ namespace Realms.Sync
         {
             DoInitialFileSystemConfiguration();
 
-            NativeException nativeException;
-            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out nativeException);
+            var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             var handle = new SessionHandle();

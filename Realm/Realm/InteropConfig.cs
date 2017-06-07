@@ -79,7 +79,7 @@ namespace Realms
                     return false;
                 }
 
-                try 
+                try
                 {
                     using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
                     { }
