@@ -604,7 +604,7 @@ namespace Tests.Database
                 config.MigrationCallback = (migration, oldSchemaVersion) =>
                 {
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(threadId));
-                    Thread.Sleep(300);
+                    Task.Delay(300).Wait();
                     migration.NewRealm.Add(new IntPrimaryKeyWithValueObject
                     {
                         Id = 123

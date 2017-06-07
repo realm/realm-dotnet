@@ -218,7 +218,7 @@ namespace Realms.Sync
         /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
-        /// <param name="recipient">The optional recepient of the permission.</param>
+        /// <param name="recipient">The optional recipient of the permission.</param>
         /// <param name="millisecondTimeout">
         /// The timeout in milliseconds for downloading server changes. If the download times out, no error will be thrown
         /// and instead the latest local state will be returned. If set to 0, the latest state will be returned immediately.
