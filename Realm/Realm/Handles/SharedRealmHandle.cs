@@ -262,13 +262,12 @@ namespace Realms
                         throw new ArgumentNullException(nameof(primaryKey), "Object identifiers cannot be null");
                     }
 
-                    var stringKey = primaryKey as string;
-                    if (stringKey == null)
+                    if (primaryKey is string stringKey)
                     {
-                        throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
-                    }
+						return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+					}
 
-                    return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+					throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
                 case PropertyType.Int:
                     if (primaryKey == null)
                     {
