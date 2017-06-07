@@ -30,6 +30,7 @@
   - `IOrderedQueryable<T>.ToNotifyCollectionChanged<T>(Action<Exception> errorCallback)`
   - `IOrderedQueryable<T>.ToNotifyCollectionChanged<T>(Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset)`
   - `IRealmCollection<T>.ObjectSchema`
+- `Realm.DeleteRealm` now throws an exception if called while an instance of that Realm is still open.
 
 1.4.0 (2017-05-19)
 ------------------

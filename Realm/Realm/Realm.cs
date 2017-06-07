@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -42,6 +41,10 @@ namespace Realms
     public class Realm : IDisposable
     {
         #region static
+
+        // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
+        // Theoretically we could use trackAllValues: true, but that would create locking issues.
+        private static readonly ThreadLocal<IDictionary<string, WeakReference<RealmState>>> _states = new ThreadLocal<IDictionary<string, WeakReference<RealmState>>>(() => new Dictionary<string, WeakReference<RealmState>>());
 
         static Realm()
         {
@@ -163,8 +166,7 @@ namespace Realms
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
             var fullpath = configuration.DatabasePath;
-            if (RealmState.TryGetState(fullpath, out var state) &&
-                state.RealmCount > 0)
+            if (IsRealmOpen(fullpath))
             {
                 throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
             }
@@ -191,6 +193,13 @@ namespace Realms
             return objectHandle;
         }
 
+        private static bool IsRealmOpen(string path)
+        {
+            return _states.Value.TryGetValue(path, out var reference) &&
+                   reference.TryGetTarget(out var state) &&
+                   state.GetLiveRealms().Any();
+        }
+
         #endregion
 
         private RealmState _state;
@@ -214,6 +223,8 @@ namespace Realms
 
         internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema)
         {
+            Config = config;
+
             RealmState state = null;
 
             var statePtr = sharedRealmHandle.GetManagedStateHandle();
@@ -222,21 +233,18 @@ namespace Realms
                 state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
             }
 
-            Config = config;
-
             if (state == null)
             {
-                state = new RealmState(this);
+                state = new RealmState();
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
+                _states.Value[config.DatabasePath] = new WeakReference<RealmState>(state);
             }
-            else
-            {
-                state.AddRealm(this);
-            }
+
+            state.AddRealm(this);
+
             _state = state;
 
             SharedRealmHandle = sharedRealmHandle;
-
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
         }
@@ -342,7 +350,10 @@ namespace Realms
             {
                 // only mutate the state on explicit disposal
                 // otherwise we do so on the finalizer thread
-                _state.RemoveRealm(this);
+                if (_state.RemoveRealm(this))
+                {
+                    _states.Value.Remove(Config.DatabasePath);
+                }
             }
             _state = null;
 
@@ -1091,8 +1102,6 @@ namespace Realms
         {
             #region static
 
-            private static readonly ConcurrentDictionary<string, WeakReference<RealmState>> _states = new ConcurrentDictionary<string, WeakReference<RealmState>>();
-
             [NativeCallback(typeof(NativeCommon.NotifyRealmCallback))]
             public static void NotifyRealmChanged(IntPtr stateHandle)
             {
@@ -1100,31 +1109,17 @@ namespace Realms
                 ((RealmState)gch.Target).NotifyChanged(EventArgs.Empty);
             }
 
-            public static bool TryGetState(string path, out RealmState state)
-            {
-                state = null;
-                return _states.TryGetValue(path, out var weakState) &&
-                       weakState.TryGetTarget(out state);
-            }
-
             #endregion
 
             private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
-            private readonly string _databasePath;
 
             public readonly GCHandle GCHandle;
             public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
 
-            public int RealmCount => GetLiveRealms().Count();
-
-            public RealmState(Realm realm)
+            public RealmState()
             {
                 // this is freed in a native callback when the CSharpBindingContext is destroyed
                 GCHandle = GCHandle.Alloc(this);
-                _databasePath = realm.Config.DatabasePath;
-                _states.TryAdd(_databasePath, new WeakReference<RealmState>(this));
-
-                AddRealm(realm);
             }
 
             private void NotifyChanged(EventArgs e)
@@ -1144,12 +1139,10 @@ namespace Realms
                     return r.TryGetTarget(out var other) && ReferenceEquals(realm, other);
                 }), "Trying to add a duplicate Realm to the RealmState.");
 
-                Debug.Assert(realm.Config.DatabasePath == _databasePath, "Realm and state have different paths.");
-
                 _weakRealms.Add(new WeakReference<Realm>(realm));
             }
 
-            public void RemoveRealm(Realm realm)
+            public bool RemoveRealm(Realm realm)
             {
                 var weakRealm = _weakRealms.SingleOrDefault(r =>
                 {
@@ -1160,11 +1153,13 @@ namespace Realms
                 if (!_weakRealms.Any())
                 {
                     realm.SharedRealmHandle.CloseRealm();
-                    _states.TryRemove(_databasePath, out var _);
+                    return true;
                 }
+
+                return false;
             }
 
-            private IEnumerable<Realm> GetLiveRealms()
+            public IEnumerable<Realm> GetLiveRealms()
             {
                 var realms = new List<Realm>();
 
