@@ -7,10 +7,10 @@ The NuGetReleaseTests project is a clone of the regular test projects that refer
 1. Download the latest [public ROS](https://realm.io/products/realm-mobile-platform/).
 1. Run `start-object-server.command` and create an admin user `a@a` with password `a`.
 1. Edit `configuration.yml`:
-  1. In the `https` section:
-    1. `enable: true`
-    1. `certificate_path: 'keys/127_0_0_1-chain.crt.pem'`
-    1. `private_key_path: 'keys/127_0_0_1-server.key.pem'`
+    1. In the `https` section:
+        1. `enable: true`
+        1. `certificate_path: 'keys/127_0_0_1-chain.crt.pem'`
+        1. `private_key_path: 'keys/127_0_0_1-server.key.pem'`
 1. Copy `Tests/ROS/keys` to `path-to-ros/realm-object-server/object-server`
 
 ## Setting up Android
