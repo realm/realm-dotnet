@@ -78,24 +78,36 @@ public partial class ModuleWeaver
     {
         { StringTypeName, "String" },
         { CharTypeName, "Char" },
-        { ByteTypeName, "Byte" },
-        { Int16TypeName, "Int16" },
-        { Int32TypeName, "Int32" },
-        { Int64TypeName, "Int64" },
         { SingleTypeName, "Single" },
         { DoubleTypeName, "Double" },
         { BooleanTypeName, "Boolean" },
         { DateTimeOffsetTypeName, "DateTimeOffset" },
         { ByteArrayTypeName, "ByteArray" },
         { NullableCharTypeName, "NullableChar" },
-        { NullableByteTypeName, "NullableByte" },
-        { NullableInt16TypeName, "NullableInt16" },
-        { NullableInt32TypeName, "NullableInt32" },
-        { NullableInt64TypeName, "NullableInt64" },
         { NullableSingleTypeName, "NullableSingle" },
         { NullableDoubleTypeName, "NullableDouble" },
         { NullableBooleanTypeName, "NullableBoolean" },
         { NullableDateTimeOffsetTypeName, "NullableDateTimeOffset" }
+    };
+
+    private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
+    {
+        ByteTypeName,
+        Int16TypeName,
+        Int32TypeName,
+        Int64TypeName,
+        NullableByteTypeName,
+        NullableInt16TypeName,
+        NullableInt32TypeName,
+        NullableInt64TypeName,
+        $"Realms.RealmInteger`1<{ByteTypeName}>",
+        $"Realms.RealmInteger`1<{Int16TypeName}>",
+        $"Realms.RealmInteger`1<{Int32TypeName}>",
+        $"Realms.RealmInteger`1<{Int64TypeName}>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
     };
 
     private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -111,18 +123,6 @@ public partial class ModuleWeaver
         NullableInt16TypeName,
         NullableInt32TypeName,
         NullableInt64TypeName,
-    };
-
-    private static readonly IEnumerable<string> _indexableTypes = new[]
-    {
-        StringTypeName,
-        CharTypeName,
-        ByteTypeName,
-        Int16TypeName,
-        Int32TypeName,
-        Int64TypeName,
-        BooleanTypeName,
-        DateTimeOffsetTypeName
     };
 
     private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
@@ -172,7 +172,7 @@ public partial class ModuleWeaver
         _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
 
         // Cache of getter and setter methods for the various types.
-        var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
+        var methodTable = new Dictionary<string, Accessors>();
 
         var matchingTypes = GetMatchingTypes().ToArray();
         foreach (var type in matchingTypes)
@@ -192,7 +192,7 @@ public partial class ModuleWeaver
         submitAnalytics.Wait();
     }
 
-    private void WeaveType(TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable)
+    private void WeaveType(TypeDefinition type, Dictionary<string, Accessors> methodTable)
     {
         Debug.WriteLine("Weaving " + type.Name);
 
@@ -280,7 +280,7 @@ public partial class ModuleWeaver
         WeaveReflectableType(type);
     }
 
-    private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable)
+    private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Accessors> methodTable)
     {
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
@@ -291,7 +291,7 @@ public partial class ModuleWeaver
 
         var backingField = prop.GetBackingField();
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-        if (isIndexed && (!_indexableTypes.Contains(prop.PropertyType.FullName)))
+        if (isIndexed && !prop.IsIndexable())
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
         }
@@ -335,29 +335,81 @@ public partial class ModuleWeaver
                 return WeaveResult.Skipped();
             }
 
-            var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : string.Empty);
-            if (!methodTable.TryGetValue(typeId, out var realmAccessors))
+            var realmAccessors = GetAccessors(prop.PropertyType, isPrimaryKey, methodTable);
+
+            ReplaceGetter(prop, columnName, realmAccessors.Getter);
+            ReplaceSetter(prop, backingField, columnName, realmAccessors.Setter);
+        }
+        else if (_realmIntegerBackedTypes.Contains(prop.PropertyType.FullName))
+        {
+            // If the property is automatic but doesn't have a setter, we should still ignore it.
+            if (prop.SetMethod == null)
             {
-                var getter = new MethodReference("Get" + _typeTable[prop.PropertyType.FullName] + "Value", prop.PropertyType, _references.RealmObject)
+                return WeaveResult.Skipped();
+            }
+
+            if (!prop.PropertyType.IsRealmInteger(out var isNullable, out var integerType))
+            {
+                isNullable = prop.PropertyType.IsNullable();
+                if (isNullable)
+                {
+                    var genericType = (GenericInstanceType)prop.PropertyType;
+                    integerType = genericType.GenericArguments.Single();
+                }
+                else
+                {
+                    integerType = prop.PropertyType;
+                }
+            }
+
+            var prefix = isNullable ? "Nullable" : string.Empty;
+            var suffix = isPrimaryKey ? "Unique" : string.Empty;
+
+            var typeId = $"{prefix}{integerType.FullName}{suffix}";
+            if (!methodTable.TryGetValue(typeId, out var accessors))
+            {
+                var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
                 {
                     HasThis = true,
                     Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
                 };
-                var setter = new MethodReference("Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+
+                var getterGenericParameter = _references.GetRealmIntegerGenericParameter(genericGetter);
+                genericGetter.GenericParameters.Add(getterGenericParameter);
+
+                var returnType = _references.RealmIntegerOfT.MakeGenericInstanceType(getterGenericParameter);
+                if (isNullable)
+                {
+                    returnType = _references.System_NullableOfT.MakeGenericInstanceType(returnType);
+                }
+                genericGetter.ReturnType = returnType;
+
+                var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
                 {
                     HasThis = true,
                     Parameters =
                     {
                         new ParameterDefinition(ModuleDefinition.TypeSystem.String),
-                        new ParameterDefinition(prop.PropertyType)
                     }
                 };
 
-                methodTable[typeId] = realmAccessors = Tuple.Create(getter, setter);
+                var setterGenericParameter = _references.GetRealmIntegerGenericParameter(genericSetter);
+                genericSetter.GenericParameters.Add(setterGenericParameter);
+
+                var parameterType = _references.RealmIntegerOfT.MakeGenericInstanceType(setterGenericParameter);
+                if (isNullable)
+                {
+                    parameterType = _references.System_NullableOfT.MakeGenericInstanceType(parameterType);
+                }
+                genericSetter.Parameters.Add(new ParameterDefinition(parameterType));
+
+                var getter = new GenericInstanceMethod(genericGetter) { GenericArguments = { integerType } };
+                var setter = new GenericInstanceMethod(genericSetter) { GenericArguments = { integerType } };
+                methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
             }
 
-            ReplaceGetter(prop, columnName, realmAccessors.Item1);
-            ReplaceSetter(prop, backingField, columnName, realmAccessors.Item2);
+            ReplaceRealmIntegerGetter(prop, columnName, accessors.Getter, isNullable, integerType);
+            ReplaceRealmIntegerSetter(prop, backingField, columnName, accessors.Setter, isNullable, integerType);
         }
         else if (prop.IsIList())
         {
@@ -452,6 +504,38 @@ public partial class ModuleWeaver
         return WeaveResult.Success(prop, backingField, isPrimaryKey);
     }
 
+    private Accessors GetAccessors(TypeReference backingType, bool isPrimaryKey, IDictionary<string, Accessors> methodTable)
+    {
+        var typeId = backingType.FullName + (isPrimaryKey ? " unique" : string.Empty);
+
+        if (!_typeTable.TryGetValue(backingType.FullName, out var typeName))
+        {
+            throw new NotSupportedException($"Unable to find {backingType.FullName} in _typeTable. Please report that to help@realm.io");
+        }
+
+        if (!methodTable.TryGetValue(typeId, out var realmAccessors))
+        {
+            var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObject)
+            {
+                HasThis = true,
+                Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
+            };
+            var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+            {
+                HasThis = true,
+                Parameters =
+                {
+                    new ParameterDefinition(ModuleDefinition.TypeSystem.String),
+                    new ParameterDefinition(backingType)
+                }
+            };
+
+            methodTable[typeId] = realmAccessors = new Accessors { Getter = getter, Setter = setter };
+        }
+
+        return realmAccessors;
+    }
+
     private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
         // A synthesized property getter looks like this:
@@ -482,6 +566,76 @@ public partial class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
+
+        Debug.Write("[get] ");
+    }
+
+    private void ReplaceRealmIntegerGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, bool isNullable, TypeReference integerType)
+    {
+        var start = prop.GetMethod.Body.Instructions.First();
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
+
+        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        {
+            var convert = _references.RealmIntegerOfT_ConvertToT.MakeHostInstanceGeneric(integerType);
+            if (isNullable)
+            {
+                var nullableRealmIntegerType = new GenericInstanceType(_references.System_NullableOfT)
+                {
+                    GenericArguments =
+                    {
+                        new GenericInstanceType(_references.RealmIntegerOfT)
+                        {
+                            GenericArguments = { integerType }
+                        }
+                    }
+                };
+
+                var localRealmIntegerVariable = new VariableDefinition(nullableRealmIntegerType);
+                prop.GetMethod.Body.Variables.Add(localRealmIntegerVariable);
+
+                var localIntegerVariable = new VariableDefinition(prop.PropertyType);
+                prop.GetMethod.Body.Variables.Add(localIntegerVariable);
+
+                il.InsertBefore(start, il.Create(OpCodes.Stloc_0));
+                il.InsertBefore(start, il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable));
+
+                var hasValue = new MethodReference("get_HasValue", ModuleDefinition.TypeSystem.Boolean, nullableRealmIntegerType) { HasThis = true };
+                il.InsertBefore(start, il.Create(OpCodes.Call, hasValue));
+
+                var hasValueBranch = il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable);
+
+                il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, hasValueBranch));
+                il.InsertBefore(start, il.Create(OpCodes.Ldloca_S, localIntegerVariable));
+                il.InsertBefore(start, il.Create(OpCodes.Initobj, prop.PropertyType));
+                il.InsertBefore(start, il.Create(OpCodes.Ldloc_1));
+                il.InsertBefore(start, il.Create(OpCodes.Ret));
+
+                il.InsertBefore(start, hasValueBranch);
+
+                var concreteRealmIntegerType = _references.RealmIntegerOfT.MakeGenericInstanceType(integerType);
+                var getValueOrDefault = _references.System_NullableOfT_GetValueOrDefault.MakeHostInstanceGeneric(concreteRealmIntegerType);
+                il.InsertBefore(start, il.Create(OpCodes.Call, getValueOrDefault));
+                il.InsertBefore(start, il.Create(OpCodes.Call, convert));
+
+                var ctor = _references.System_NullableOfT_Ctor.MakeHostInstanceGeneric(integerType);
+                il.InsertBefore(start, il.Create(OpCodes.Newobj, ctor));
+            }
+            else
+            {
+                il.InsertBefore(start, il.Create(OpCodes.Call, convert));
+            }
+        }
+
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[get] ");
@@ -676,6 +830,90 @@ public partial class ModuleWeaver
         Debug.Write("[set] ");
     }
 
+    private void ReplaceRealmIntegerSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool isNullable, TypeReference integerType)
+    {
+        // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+        // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
+        var il = prop.SetMethod.Body.GetILProcessor();
+        prop.SetMethod.Body.Instructions.Clear();
+        prop.SetMethod.Body.Variables.Clear();
+
+        // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
+        // if they're the last one in.
+        // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
+        // the property such that PropertyChanged.Fody won't touch it.
+        if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
+        {
+            prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
+        }
+
+        var managedSetStart = il.Create(OpCodes.Ldarg_0);
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
+        il.Append(il.Create(OpCodes.Brtrue_S, managedSetStart));
+
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Ldarg_1));
+        il.Append(il.Create(OpCodes.Stfld, backingField));
+        il.Append(il.Create(OpCodes.Ldarg_0));
+        il.Append(il.Create(OpCodes.Ldstr, prop.Name));
+        il.Append(il.Create(OpCodes.Call, _references.RealmObject_RaisePropertyChanged));
+        il.Append(il.Create(OpCodes.Ret));
+
+        il.Append(managedSetStart);
+        il.Append(il.Create(OpCodes.Ldstr, columnName));
+        il.Append(il.Create(OpCodes.Ldarg_1));
+
+        var callSetter = il.Create(OpCodes.Call, setValueReference);
+        il.Append(callSetter);
+
+        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        {
+            var convert = _references.RealmIntegerOfT_ConvertFromT.MakeHostInstanceGeneric(integerType);
+            if (isNullable)
+            {
+                var realmIntegerType = _references.RealmIntegerOfT.MakeGenericInstanceType(integerType);
+                var nullableRealmIntegerType = _references.System_NullableOfT.MakeGenericInstanceType(realmIntegerType);
+
+                var localIntegerVariable = new VariableDefinition(prop.PropertyType);
+                prop.SetMethod.Body.Variables.Add(localIntegerVariable);
+
+                var localRealmIntegerVariable = new VariableDefinition(nullableRealmIntegerType);
+                prop.SetMethod.Body.Variables.Add(localRealmIntegerVariable);
+
+                il.InsertBefore(callSetter, il.Create(OpCodes.Stloc_0));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Ldloca_S, localIntegerVariable));
+
+                var hasValue = new MethodReference("get_HasValue", ModuleDefinition.TypeSystem.Boolean, prop.PropertyType) { HasThis = true };
+                il.InsertBefore(callSetter, il.Create(OpCodes.Call, hasValue));
+
+                var hasValueBranch = il.Create(OpCodes.Ldloca_S, localIntegerVariable);
+                il.InsertBefore(callSetter, il.Create(OpCodes.Brtrue_S, hasValueBranch));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Initobj, nullableRealmIntegerType));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Ldloc_1));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Br_S, callSetter));
+
+                il.InsertBefore(callSetter, hasValueBranch);
+                var getValueOrDefault = _references.System_NullableOfT_GetValueOrDefault.MakeHostInstanceGeneric(integerType);
+                il.InsertBefore(callSetter, il.Create(OpCodes.Call, getValueOrDefault));
+                il.InsertBefore(callSetter, il.Create(OpCodes.Call, convert));
+
+
+                var nullableRealmIntegerCtor = _references.System_NullableOfT_Ctor.MakeHostInstanceGeneric(realmIntegerType);
+                il.InsertBefore(callSetter, il.Create(OpCodes.Newobj, nullableRealmIntegerCtor));
+            }
+            else
+            {
+                il.InsertBefore(callSetter, il.Create(OpCodes.Call, convert));
+            }
+        }
+
+        il.Append(il.Create(OpCodes.Ret));
+
+        Debug.Write("[set] ");
+    }
+
     private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodDefinition objectConstructor, List<WeaveResult> properties)
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
@@ -783,7 +1021,8 @@ public partial class ModuleWeaver
                     var shouldSetAlways = property.IsNullable() ||     // The property is nullable - those should be set explicitly to null
                                           property.IsPrimaryKey() ||   // setPrimaryKey should always be called as the first instruction
                                           property.IsRequired() ||     // Needed for validating that the property is not null (string)
-                                          property.IsDateTimeOffset(); // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
+                                          property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
+                                          property.PropertyType.IsRealmInteger(out var _, out var __); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!setPrimaryKey || castInstance.field != default(fieldType))
@@ -1090,5 +1329,12 @@ public partial class ModuleWeaver
             ErrorMessage = error;
             WarningMessage = warning;
         }
+    }
+
+    private struct Accessors
+    {
+        public MethodReference Getter;
+
+        public MethodReference Setter;
     }
 }

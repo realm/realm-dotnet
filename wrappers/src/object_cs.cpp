@@ -473,5 +473,15 @@ extern "C" {
 			}, new ObjectSchema(object->get_object_schema()));
 		});
 	}
+    
+    REALM_EXPORT void object_add_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_set(object);
+            
+            const size_t column_ndx = get_column_index(object, property_ndx);
+            object.row().add_int(column_ndx, value);
+        });
+    }
 
 }   // extern "C"

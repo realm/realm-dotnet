@@ -75,11 +75,29 @@ namespace RealmWeaver
 
         public MethodReference System_Linq_Queryable_AsQueryable { get; private set; }
 
+        public TypeReference System_ValueType { get; }
+
+        public TypeReference System_IFormattable { get; }
+
+        public TypeReference System_IComparableOfT { get; }
+
+        public TypeReference System_NullableOfT { get; }
+
+        public MethodReference System_NullableOfT_GetValueOrDefault { get; }
+
+        public MethodReference System_NullableOfT_Ctor { get; }
+
         public TypeReference Realm { get; private set; }
 
         public MethodReference Realm_Add { get; private set; }
 
         public TypeReference RealmObject { get; private set; }
+
+        public TypeReference RealmIntegerOfT { get; private set; }
+
+        public MethodReference RealmIntegerOfT_ConvertToT { get; private set; }
+
+        public MethodReference RealmIntegerOfT_ConvertFromT { get; private set; }
 
         public MethodReference RealmObject_get_IsManaged { get; private set; }
 
@@ -129,6 +147,30 @@ namespace RealmWeaver
 
             IListOfT = new TypeReference("System.Collections.Generic", "IList`1", Module, Types.CoreLibrary);
             IListOfT.GenericParameters.Add(new GenericParameter(IListOfT));
+
+            System_ValueType = new TypeReference("System", "ValueType", Module, Types.CoreLibrary);
+
+            System_IFormattable = new TypeReference("System", "IFormattable", Module, Types.CoreLibrary);
+
+            System_IComparableOfT = new TypeReference("System", "IComparable`1", Module, Types.CoreLibrary);
+            System_IComparableOfT.GenericParameters.Add(new GenericParameter(System_IComparableOfT));
+
+            System_NullableOfT = new TypeReference("System", "Nullable`1", Module, Types.CoreLibrary) { IsValueType = true };
+            System_NullableOfT.GenericParameters.Add(new GenericParameter(System_NullableOfT)
+            {
+                Constraints = { System_ValueType }
+            });
+
+            System_NullableOfT_GetValueOrDefault = new MethodReference("GetValueOrDefault", System_NullableOfT.GenericParameters[0], System_NullableOfT)
+            {
+                HasThis = true
+            };
+
+            System_NullableOfT_Ctor = new MethodReference(".ctor", Types.Void, System_NullableOfT)
+            {
+                HasThis = true,
+                Parameters = { new ParameterDefinition(System_NullableOfT.GenericParameters[0]) }
+            };
 
             var runtimeTypeHandle = new TypeReference("System", "RuntimeTypeHandle", Module, Types.CoreLibrary)
             {
@@ -197,6 +239,28 @@ namespace RealmWeaver
         {
             Realm = new TypeReference("Realms", "Realm", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
+
+            {
+                RealmIntegerOfT = new TypeReference("Realms", "RealmInteger`1", Module, realmAssembly)
+                {
+                    IsValueType = true
+                };
+                var T = GetRealmIntegerGenericParameter(RealmIntegerOfT);
+                RealmIntegerOfT.GenericParameters.Add(T);
+
+                RealmIntegerOfT_ConvertToT = new MethodReference("op_Implicit", T, RealmIntegerOfT)
+                {
+                    Parameters = { new ParameterDefinition(new GenericInstanceType(RealmIntegerOfT) { GenericArguments = { T } }) },
+                    HasThis = false
+                };
+
+                RealmIntegerOfT_ConvertFromT = new MethodReference("op_Implicit", new GenericInstanceType(RealmIntegerOfT) { GenericArguments = { T } }, RealmIntegerOfT)
+                {
+                    Parameters = { new ParameterDefinition(T) },
+                    HasThis = false
+                };
+
+            }
 
             {
                 Realm_Add = new MethodReference("Add", Types.Void, Realm) { HasThis = true };
@@ -316,6 +380,21 @@ namespace RealmWeaver
             }
 
             return assembly;
+        }
+
+        public GenericParameter GetRealmIntegerGenericParameter(IGenericParameterProvider owner)
+        {
+            var T = new GenericParameter(owner)
+            {
+                Constraints = { System_ValueType, System_IFormattable }
+            };
+
+            T.Constraints.Add(new GenericInstanceType(System_IComparableOfT)
+            {
+                GenericParameters = { T }
+            });
+
+            return T;
         }
 
         private sealed class NETFramework : ImportedReferences

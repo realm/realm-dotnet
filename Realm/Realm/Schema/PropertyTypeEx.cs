@@ -50,7 +50,11 @@ namespace Realms.Schema
                 type == typeof(byte) ||
                 type == typeof(short) ||
                 type == typeof(int) ||
-                type == typeof(long))
+                type == typeof(long) ||
+                type == typeof(RealmInteger<byte>) ||
+                type == typeof(RealmInteger<short>) ||
+                type == typeof(RealmInteger<int>) ||
+                type == typeof(RealmInteger<long>))
             {
                 return PropertyType.Int;
             }

@@ -29,7 +29,7 @@ namespace Realms
         public List<string> LogList = new List<string>();
 
         public event PropertyChangedEventHandler PropertyChanged;
-        
+
         private void LogString(string s)
         {
             LogList.Add(s);
@@ -104,90 +104,6 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected byte GetByteValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetByteValue(string propertyName, byte value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetByteValueUnique(string propertyName, byte value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableByteValueUnique(string propertyName, byte? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected short GetInt16Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetInt16Value(string propertyName, short value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetInt16ValueUnique(string propertyName, short value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableInt16ValueUnique(string propertyName, short? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected int GetInt32Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetInt32Value(string propertyName, int value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetInt32ValueUnique(string propertyName, int value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableInt32ValueUnique(string propertyName, int? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected long GetInt64Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetInt64Value(string propertyName, long value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetInt64ValueUnique(string propertyName, long value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
         protected float GetSingleValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -250,50 +166,6 @@ namespace Realms
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected byte? GetNullableByteValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableByteValue(string propertyName, byte? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected short? GetNullableInt16Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableInt16Value(string propertyName, short? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected int? GetNullableInt32Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableInt32Value(string propertyName, int? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected long? GetNullableInt64Value(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableInt64Value(string propertyName, long? value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
@@ -373,6 +245,44 @@ namespace Realms
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return default(RealmInteger<T>);
+        }
+
+        protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return null;
         }
     }
 }

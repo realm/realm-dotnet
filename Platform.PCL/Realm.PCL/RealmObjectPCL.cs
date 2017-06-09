@@ -125,62 +125,6 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected byte GetByteValue(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return 0;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected byte? GetNullableByteValue(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected short GetInt16Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return 0;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected short? GetNullableInt16Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected int GetInt32Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return 0;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected int? GetNullableInt32Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected long GetInt64Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return 0;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected long? GetNullableInt64Value(string propertyName)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected float GetSingleValue(string propertyName)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -263,6 +207,24 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return default(RealmInteger<T>);
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+
         #endregion
 
         #region Setters
@@ -298,103 +260,7 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetByteValue(string propertyName, byte value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableCharValueUnique(string propertyName, char? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetByteValueUnique(string propertyName, byte value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableByteValue(string propertyName, byte? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableByteValueUnique(string propertyName, byte? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt16Value(string propertyName, short value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt16ValueUnique(string propertyName, short value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt16ValueUnique(string propertyName, short? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt16Value(string propertyName, short? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt32Value(string propertyName, int value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt32ValueUnique(string propertyName, int value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt32ValueUnique(string propertyName, int? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt32Value(string propertyName, int? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt64Value(string propertyName, long value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt64ValueUnique(string propertyName, long value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt64Value(string propertyName, long? value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -455,6 +321,34 @@ namespace Realms
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetByteArrayValue(string propertyName, byte[] value)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
