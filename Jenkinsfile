@@ -18,7 +18,7 @@ def dataBindingVersionString
 def dependencies
 
 stage('Checkout') {
-  node('xamarin-mac') {
+  node {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -32,38 +32,6 @@ stage('Checkout') {
 
     dir('wrappers') {
       dependencies = readProperties file: 'dependencies.list'
-
-      dir('realm-core') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-core.git'
-          ]]
-        ])
-        stash includes: '**', name: 'core-source'
-        deleteDir()
-      }
-
-      dir('realm-sync') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-sync.git'
-          ]]
-        ])
-        stash includes: '**', name: 'sync-source'
-        deleteDir()
-      }
     }
 
     version = readAssemblyVersion('RealmAssemblyInfo.cs')
@@ -72,20 +40,67 @@ stage('Checkout') {
     dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
     dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
-    nuget('restore Realm.sln')
-    dir('Realm/Realm') {
-      sh "${tool 'msbuild'} Realm.csproj /t:restore"
-    }
-    dir('Realm/Realm.Sync') {
-      sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
-    }
-    dir('DataBinding/Realm.DataBinding.PCL') {
-      sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
-    }
-
     stash includes: '**', name: 'dotnet-source'
     deleteDir()
   }
+  parallel(
+    'NuGet Restore': {
+      nodeWithCleanup('xamarin-mac') {
+        unstash 'dotnet-source'
+
+        nuget('restore Realm.sln')
+        dir('Realm/Realm') {
+          sh "${tool 'msbuild'} Realm.csproj /t:restore"
+        }
+        dir('Realm/Realm.Sync') {
+          sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
+        }
+        dir('DataBinding/Realm.DataBinding.PCL') {
+          sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
+        }
+
+        stash includes: '**', name: 'dotnet-source'
+      }
+    },
+    'realm-core': {
+      node {
+        dir('realm-core') {
+          checkout([
+            $class: 'GitSCM',
+            branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
+            extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+            changelog: false, poll: false,
+            gitTool: 'native git', 
+            userRemoteConfigs: [[
+              credentialsId: 'realm-ci-ssh',
+              url: 'git@github.com:realm/realm-core.git'
+            ]]
+          ])
+          stash includes: '**', name: 'core-source'
+        }
+        deleteDir()
+      }
+    },
+    'realm-sync': {
+      node {
+        dir('realm-sync') {
+          checkout([
+            $class: 'GitSCM',
+            branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
+            extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
+            changelog: false, poll: false,
+            gitTool: 'native git', 
+            userRemoteConfigs: [[
+              credentialsId: 'realm-ci-ssh',
+              url: 'git@github.com:realm/realm-sync.git'
+            ]]
+          ])
+          stash includes: '**', name: 'sync-source'
+        }
+        deleteDir()
+      }
+    }
+  )
 }
 
 def getArchive() {
