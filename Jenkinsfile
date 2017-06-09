@@ -47,6 +47,7 @@ stage('Checkout') {
     'NuGet Restore': {
       nodeWithCleanup('xamarin-mac') {
         unstash 'dotnet-source'
+        sh 'mv NuGet.config.ci NuGet.config'
 
         nuget('restore Realm.sln')
         dir('Realm/Realm') {
