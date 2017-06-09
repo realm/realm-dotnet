@@ -95,6 +95,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_int_unique", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, long key,
+                                                             [MarshalAs(UnmanagedType.I1)] bool is_nullable,
                                                              [MarshalAs(UnmanagedType.I1)] bool update,
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
@@ -271,20 +272,25 @@ namespace Realms
                 case PropertyType.Int:
                     if (primaryKey == null)
                     {
+                        if (!pkProperty.IsNullable)
+                        {
+                            throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
+                        }
+
                         return CreateObjectWithPrimaryKey(table, update, out isNew);
                     }
 
                     var longKey = Convert.ToInt64(primaryKey);
-                    return CreateObjectWithPrimaryKey(table, longKey, update, out isNew);
+                    return CreateObjectWithPrimaryKey(table, longKey, pkProperty.IsNullable, update, out isNew);
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long key, bool update, out bool isNew)
+        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long key, bool isNullable, bool update, out bool isNew)
         {
             NativeException ex;
-            var result = NativeMethods.create_object_unique(this, table, key, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, key, isNullable, update, out isNew, out ex);
             ex.ThrowIfNecessary();
             return result;
         }
