@@ -24,7 +24,7 @@ stage('Checkout') {
       branches: scm.branches,
       gitTool: 'native git',
       extensions: scm.extensions + [
-        [$class: 'CleanCheckout'],
+        [$class: 'CloneOption', depth: 0, shallow: true],
         [$class: 'SubmoduleOption', recursiveSubmodules: true]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
