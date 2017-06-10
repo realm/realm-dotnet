@@ -4,9 +4,7 @@ wrapperConfigurations = [
 ]
 configuration = 'Release'
 
-msbuildCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/msbuild'
 nugetCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
-def windowsNugetCmd = 'C:\\ProgramData\\chocolatey\\bin\\NuGet.exe'
 def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
 
 def version
@@ -24,7 +22,7 @@ stage('Checkout') {
       branches: scm.branches,
       gitTool: 'native git',
       extensions: scm.extensions + [
-        [$class: 'CleanCheckout'],
+        [$class: 'CloneOption', depth: 0, shallow: true],
         [$class: 'SubmoduleOption', recursiveSubmodules: true]
       ],
       userRemoteConfigs: scm.userRemoteConfigs
@@ -73,16 +71,6 @@ stage('Checkout') {
     dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
     nuget('restore Realm.sln')
-    dir('Realm/Realm') {
-      sh "${tool 'msbuild'} Realm.csproj /t:restore"
-    }
-    dir('Realm/Realm.Sync') {
-      sh "${tool 'msbuild'} Realm.Sync.csproj /t:restore"
-    }
-    dir('DataBinding/Realm.DataBinding.PCL') {
-      sh "${tool 'msbuild'} Realm.DataBinding.PCL.csproj /t:restore"
-    }
-
     stash includes: '**', name: 'dotnet-source'
     deleteDir()
   }
@@ -97,11 +85,10 @@ stage('Weavers') {
     'RealmWeaver': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        def workspace = pwd()
 
         dir('Weaver/WeaverTests/RealmWeaver.Tests') {
-          msbuild("RealmWeaver.Tests.csproj /p:Configuration=${configuration} /p:SolutionDir=\"${workspace}/\"")
-          sh "${mono} \"${workspace}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          msbuild target: 'Restore,Build', properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+          sh "${mono} \"${env.WORKSPACE}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
           publishTests 'TestResult.xml'
         }
         stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
@@ -111,10 +98,9 @@ stage('Weavers') {
     'BuildTasks': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        def workspace = pwd()
 
         dir('Weaver/Realm.BuildTasks') {
-          msbuild("Realm.BuildTasks.csproj /p:Configuration=${configuration}")
+          msbuild properties: [ Configuration: configuration ]
         }
         stash includes: "Weaver/Realm.BuildTasks/bin/${configuration}/*.dll", name: 'buildtasks-output'
       }
@@ -136,12 +122,12 @@ stage('Build without sync') {
       }
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        def workspace = pwd()
         unstash 'ios-wrappers-nosync'
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
-        msbuild("Tests/Tests.iOS/Tests.iOS.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+        msbuild project: 'Tests/Tests.iOS/Tests.iOS.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true, Platform: 'iPhoneSimulator' ]
 
         stash includes: "Realm/Realm/bin/${configuration}/Realm.*", name: 'nuget-database'
         stash includes: "DataBinding/Realm.DataBinding.iOS/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-ios-databinding'
@@ -165,12 +151,13 @@ stage('Build without sync') {
       }
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        def workspace = pwd()
 
         unstash 'android-wrappers-nosync'
         unstash 'tools-weaver'
 
-        msbuild("Tests/Tests.Android/Tests.Android.csproj /p:RealmNoSync=true /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
+        msbuild project: 'Tests/Tests.Android/Tests.Android.csproj', target: 'Restore,SignAndroidPackage',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true,
+                              AndroidUseSharedRuntime: true, AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
 
         stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
 
@@ -192,10 +179,8 @@ stage('Build without sync') {
 
         archive 'wrappers/build/**/*.pdb'
 
-        bat """
-          "${windowsNugetCmd}" restore Realm.sln
-          "${tool 'msbuild'}" Tests/Tests.Win32/Tests.Win32.csproj /p:Configuration=${configuration} /p:SolutionDir="${workspace}/"
-        """
+        msbuild project: 'Tests/Tests.Win32/Tests.Win32.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
 
         stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
         stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
@@ -251,8 +236,10 @@ stage('Build without sync') {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
 
-        msbuild("Platform.PCL/Realm.PCL/Realm.PCL.csproj /p:Configuration=${configuration}")
-        msbuild("DataBinding/Realm.DataBinding.PCL/Realm.DataBinding.PCL.csproj /p:Configuration=${configuration}")
+        msbuild project: 'Platform.PCL/Realm.PCL/Realm.PCL.csproj',
+                properties: [ Configuration: configuration ]
+        msbuild project: 'DataBinding/Realm.DataBinding.PCL/Realm.DataBinding.PCL.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration ]
 
         stash includes: "Platform.PCL/Realm.PCL/bin/${configuration}/Realm.*", name: 'nuget-pcl-database'
         stash includes: "DataBinding/Realm.DataBinding.PCL/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-pcl-databinding'
@@ -288,7 +275,9 @@ stage('Build with sync') {
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
-        msbuild("Tests/Tests.iOS/Tests.iOS.csproj /p:Configuration=${configuration} /p:Platform=iPhoneSimulator /p:SolutionDir=\"${workspace}/\"")
+
+        msbuild project: 'Tests/Tests.iOS/Tests.iOS.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", Platform: 'iPhoneSimulator' ]
 
         stash includes: "Realm/Realm.Sync/bin/${configuration}/Realm.Sync.*", name: 'nuget-sync'
 
@@ -311,16 +300,16 @@ stage('Build with sync') {
       }
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        def workspace = pwd()
 
         unstash 'android-wrappers-sync'
         unstash 'tools-weaver'
 
-        dir('Tests/Tests.Android') {
-          msbuild("Tests.Android.csproj /p:Configuration=${configuration} /t:SignAndroidPackage /p:AndroidUseSharedRuntime=false /p:EmbedAssembliesIntoApk=True /p:SolutionDir=\"${workspace}/\"")
-          dir("bin/${configuration}") {
-            stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
-          }
+        msbuild project: 'Tests/Tests.Android/Tests.Android.csproj', target: 'Restore,SignAndroidPackage',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/",
+                              AndroidUseSharedRuntime: true, AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
+
+        dir("Tests/Tests.Android/bin/${configuration}") {
+          stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
         }
       }
     },
@@ -378,7 +367,8 @@ stage('Build with sync') {
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
-        msbuild("Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj /p:Configuration=${configuration}")
+        msbuild project: 'Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj',
+                properties: [ Configuration: configuration ]
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
       }
     }
@@ -623,16 +613,27 @@ def runSimulator(String appPath, String bundleId, String arguments) {
   }
 }
 
-def msbuild(String arguments) {
-  def exitCode = sh returnStatus: true, script: "${msbuildCmd} ${arguments} > msbuildOutput"
-  def out = readFile('msbuildOutput')
-  echo out
-  if (exitCode != 0) {
-    if (out.contains("Assertion at gc.c:910, condition `ret != WAIT_TIMEOUT' not met")) {
-      echo 'StyleCop crashed, no big deal.'
-    } else {
-      error("msbuild failed with exit code: ${exitCode}")
+def msbuild(Map args = [:]) {
+  String invocation = "\"${tool 'msbuild'}\""
+  if ('project' in args) {
+    invocation += " ${args.project}"
+  }
+  if ('target' in args) {
+    invocation += " /t:${args.target}"
+  }
+  if ('properties' in args) {
+    for (property in args.properties) {
+      invocation += " /p:${property.key}=\"${property.value}\""
     }
+  }
+  if ('extraArguments' in args) {
+    invocation += " ${args.extraArguments}"
+  }
+  
+  if (isUnix()) {
+    sh invocation
+  } else {
+    bat invocation
   }
 }
 
