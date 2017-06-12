@@ -83,7 +83,7 @@ namespace Tests.Sync
                 var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
                 var serverUri = new Uri("realm://localhost:9080/foobar");
 
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "bla.realm");
+                var path = Path.Combine(Path.GetTempFileName());
                 var config = new SyncConfiguration(user, serverUri, path);
 
                 Realm.DeleteRealm(config);

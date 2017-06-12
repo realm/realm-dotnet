@@ -26,6 +26,8 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
 #if WINDOWS
     [Ignore("ReflectableType is not respected by WPF.")]
+#elif NETCOREAPP1_1
+    [Ignore("ReflectableType is not needed/supported on .NET Core")]
 #endif
     public class ReflectableTypeTests : RealmInstanceTest
     {
