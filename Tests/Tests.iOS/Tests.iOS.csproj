@@ -29,6 +29,7 @@
     <DeviceSpecificBuild>false</DeviceSpecificBuild>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
     <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=Realm -v -v -v -v</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>pdbonly</DebugType>
@@ -42,6 +43,7 @@
     <CodesignEntitlements></CodesignEntitlements>
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=Realm -v -v -v -v</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugType>full</DebugType>
@@ -58,6 +60,7 @@
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
     <MtouchLink>Full</MtouchLink>
     <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=Realm -v -v -v -v</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>pdbonly</DebugType>
@@ -71,6 +74,7 @@
     <CodesignEntitlements></CodesignEntitlements>
     <MtouchLink>Full</MtouchLink>
     <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=Realm -v -v -v -v</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS</MtouchExtraArgs>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
