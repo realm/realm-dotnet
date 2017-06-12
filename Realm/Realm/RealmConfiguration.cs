@@ -159,30 +159,22 @@ namespace Realms
             return new Realm(srHandle, this, schema);
         }
 
-#if DEBUG
-        // Due to a Xamarin bug (https://bugzilla.xamarin.com/show_bug.cgi?id=54617), we can't
-        // provide a proper implementation in Debug.
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
-            return Task.FromResult(CreateRealm(schema));
-        }
-#else
-        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
-        {
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (System.Threading.SynchronizationContext.Current != null)
+            var scheduler = System.Threading.SynchronizationContext.Current != null ? TaskScheduler.FromCurrentSynchronizationContext() : null;
+            if (scheduler != null)
             {
-                await Task.Run(() =>
+                return Task.Run(() =>
                 {
                     using (CreateRealm(schema))
                     {
                     }
-                });
+                }).ContinueWith(_ => CreateRealm(schema), scheduler);
             }
 
-            return CreateRealm(schema);
+            return Task.FromResult(CreateRealm(schema));
         }
-#endif
 
         [NativeCallback(typeof(ShouldCompactCallback))]
         private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
