@@ -210,7 +210,19 @@ namespace Realms
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
 
-        internal bool IsInTransaction => SharedRealmHandle.IsInTransaction();
+        /// <summary>
+        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// </summary>
+        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        public bool IsInTransaction
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                return SharedRealmHandle.IsInTransaction();
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.

@@ -160,6 +160,12 @@ namespace Realms
         public bool IsClosed { get; }
 
         /// <summary>
+        /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
+        /// </summary>
+        /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
+        public bool IsInTransaction { get; }
+
+        /// <summary>
         /// Dispose automatically closes the Realm if not already closed.
         /// </summary>
         public void Dispose()
