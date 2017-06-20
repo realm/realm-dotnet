@@ -129,8 +129,7 @@ namespace Tests.Sync
                 var aliceConfig = new SyncConfiguration(alice, new Uri(realmUrl));
                 var aliceRealm = Realm.GetInstance(aliceConfig);
 
-                // TODO: replace with wrapper API
-                await GrantPermissions(alice, bob, realmUrl);
+                await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read).Timeout(1000);
 
                 AddDummyData(aliceRealm, singleTransaction);
 
@@ -164,27 +163,6 @@ namespace Tests.Sync
                 Assert.That(bobObject, Is.Not.Null);
                 Assert.That(bobObject.StringValue, Is.EqualTo("Some value"));
             });
-        }
-
-        private static Task GrantPermissions(User alice, User bob, string realmUrl)
-        {
-            var managementRealm = alice.GetManagementRealm();
-            var change = new PermissionChange(bob.Identity, realmUrl, mayRead: true);
-            managementRealm.Write(() =>
-            {
-                managementRealm.Add(change);
-            });
-
-            var tcs = new TaskCompletionSource<object>();
-            change.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(PermissionChange.Status))
-                {
-                    tcs.TrySetResult(null);
-                }
-            };
-
-            return tcs.Task.Timeout(1000);
         }
 
         private static void AddDummyData(Realm realm, bool singleTransaction)

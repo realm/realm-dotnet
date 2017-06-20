@@ -465,7 +465,6 @@ namespace Tests.Sync
                                           .Subscribe(p =>
                                           {
                                               callbacksInvoked++;
-                                              Console.WriteLine(p.TransferableBytes);
                                           });
 
                 await Task.Delay(SafeDelay);

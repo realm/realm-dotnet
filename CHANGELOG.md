@@ -1,4 +1,4 @@
-2.0.0 (TBD)
+1.5.0 (TBD)
 ------------------
 
 ### Enhancements
@@ -9,6 +9,7 @@
 - When used with `RealmConfiguration` (i.e. local Realm), `Realm.GetInstanceAsync` will perform potentially costly operation, such as executing migrations or compaction on a background thread. ([#1406](https://github.com/realm/realm-dotnet/pull/1406))
 - Expose `User.ChangePasswordAsync(userId, password)` API to allow admin users to change other users' passwords. ([#1412](https://github.com/realm/realm-dotnet/pull/1412))
 - Expose `SyncConfiguration.TrustedCAPath` API to allow providing a custom CA that will be used to validate SSL traffic to the Realm Object Server.  ([#1423](https://github.com/realm/realm-dotnet/pull/1423))
+- Expose `Realm.IsInTransaction` API to check if there's an active transaction for that Realm. ([#1452](https://github.com/realm/realm-dotnet/pull/1452))
 
 ### Bug fixes
 - Fix a crash when querying over properties that have `[MapTo]` applied. ([#1405](https://github.com/realm/realm-dotnet/pull/1405))

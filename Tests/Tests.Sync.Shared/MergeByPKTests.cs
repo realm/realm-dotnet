@@ -118,7 +118,7 @@ namespace Tests.Sync
         {
             var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
             var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
-            var configuration = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/merge_by_pk_{objectType.Name}"))
+            var configuration = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/merge_by_pk_{objectType.Name}"), Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { objectType }
             };
