@@ -95,11 +95,14 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.4.3.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="Realm">
-      <HintPath>..\..\packages\Realm.Database.1.4.0\lib\netstandard1.4\Realm.dll</HintPath>
+      <HintPath>..\..\packages\Realm.Database.1.5.0\lib\netstandard1.4\Realm.dll</HintPath>
     </Reference>
     <Reference Include="Realm.Sync">
-      <HintPath>..\..\packages\Realm.1.4.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
+      <HintPath>..\..\packages\Realm.1.5.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +145,6 @@
     <Folder Include="NativeLibs\" />
   </ItemGroup>
   <Import Project="..\..\packages\Fody.2.0.8\build\netstandard1.4\Fody.targets" Condition="Exists('..\..\packages\Fody.2.0.8\build\netstandard1.4\Fody.targets')" />
-  <Import Project="..\..\packages\Realm.Database.1.4.0\build\Realm.Database.targets" Condition="Exists('..\..\packages\Realm.Database.1.4.0\build\Realm.Database.targets')" />
-  <Import Project="..\..\packages\Realm.1.4.0\build\Realm.targets" Condition="Exists('..\..\packages\Realm.1.4.0\build\Realm.targets')" />
+  <Import Project="..\..\packages\Realm.Database.1.5.0\build\Realm.Database.targets" Condition="Exists('..\..\packages\Realm.Database.1.5.0\build\Realm.Database.targets')" />
+  <Import Project="..\..\packages\Realm.1.5.0\build\Realm.targets" Condition="Exists('..\..\packages\Realm.1.5.0\build\Realm.targets')" />
 </Project>
