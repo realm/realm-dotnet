@@ -394,6 +394,7 @@ namespace RealmWeaver
                 case ".NETFramework":
                 case "Xamarin.iOS":
                 case "MonoAndroid":
+                case "Xamarin.Mac":
                     references = new NETFramework(module);
                     break;
                 case ".NETStandard":

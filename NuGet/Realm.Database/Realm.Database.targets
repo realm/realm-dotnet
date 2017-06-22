@@ -41,6 +41,14 @@
       <LinkerFlags>-lz -framework Security</LinkerFlags>
     </NativeReference>
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
+    <NativeReference Include="$(_RealmNugetNativePath)..\runtimes\osx.10.10-x64\native\librealm-wrappers.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>True</SmartLink>
+      <IsCxx>True</IsCxx>
+      <LinkerFlags>-lz -framework Security</LinkerFlags>
+    </NativeReference>
+  </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
     <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so">
       <Link>$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so</Link>
