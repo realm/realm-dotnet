@@ -1087,6 +1087,22 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Writes a compacted copy of the Realm to the path in the specified config. If the configuration object has
+        /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
+        /// </summary>
+        /// <remarks>
+        /// The destination file cannot already exist.
+        /// <para/>
+        /// If this is called from within a transaction it writes the current data, and not the data as it was when
+        /// the last transaction was committed.
+        /// </remarks>
+        /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
+        public void WriteCopy(RealmConfigurationBase config)
+        {
+            SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
+        }
+
         #region Transactions
 
         internal void DrainTransactionQueue()

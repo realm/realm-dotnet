@@ -86,6 +86,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
         }
 
         [Preserve]
@@ -214,6 +217,12 @@ namespace Realms
             reference.Handle.Close();
 
             return result;
+        }
+
+        public void WriteCopy(string path, byte[] encryptionKey)
+        {
+            NativeMethods.write_copy(this, path, (IntPtr)path.Length, encryptionKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public class SchemaMarshaler
