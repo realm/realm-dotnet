@@ -1,4 +1,13 @@
-1.5.0 (TBD)
+1.6.0 (TBD)
+------------------
+
+### Enhancements
+
+### Bug fixes
+
+### Breaking Changes
+
+1.5.0 (2017-06-20)
 ------------------
 
 ### Enhancements
