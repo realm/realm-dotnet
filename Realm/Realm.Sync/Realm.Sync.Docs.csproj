@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\Docs\SourceProjects\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,6 +53,7 @@
     <Compile Include="Exceptions\ErrorCode.cs" />
     <Compile Include="Exceptions\ErrorCodeHelper.cs" />
     <Compile Include="Exceptions\HttpException.cs" />
+    <Compile Include="Exceptions\PermissionException.cs" />
     <Compile Include="Exceptions\SessionException.cs" />
     <Compile Include="Extensions\RealmSyncExtensions.cs" />
     <Compile Include="Extensions\TestingExtensions.cs" />
@@ -60,14 +61,18 @@
     <Compile Include="Handles\SharedRealmHandleExtensions.cs" />
     <Compile Include="Handles\SyncUserHandle.cs" />
     <Compile Include="Helpers\AuthenticationHelper.cs" />
+    <Compile Include="Helpers\Observer.cs" />
     <Compile Include="Native\StringStringPair.cs" />
     <Compile Include="Native\SyncConfiguration.cs" />
+    <Compile Include="Permissions\AccessLevel.cs" />
     <Compile Include="Permissions\IPermissionObject.cs" />
     <Compile Include="Permissions\ManagementObjectStatus.cs" />
     <Compile Include="Permissions\Permission.cs" />
     <Compile Include="Permissions\PermissionChange.cs" />
+    <Compile Include="Permissions\PermissionCondition.cs" />
     <Compile Include="Permissions\PermissionOffer.cs" />
     <Compile Include="Permissions\PermissionOfferResponse.cs" />
+    <Compile Include="Permissions\Recipient.cs" />
     <Compile Include="Permissions\UserPermissionsExtensions.cs" />
     <Compile Include="ProgressNotifications\ProgressDirection.cs" />
     <Compile Include="ProgressNotifications\ProgressMode.cs" />
@@ -82,13 +87,13 @@
     <Compile Include="UserState.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Realm\Realm.Docs.csproj">
       <Project>{a7dab9b6-15f3-4647-bd13-f4eee8b0338e}</Project>
       <Name>Realm.Docs</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
