@@ -1,4 +1,15 @@
 1.6.0 (2017-08-14)
+2.0.0 (TBD)
+------------------
+
+### Enhancements
+
+### Bug fixes
+
+### Breaking Changes
+- `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. ([#1381](https://github.com/realm/realm-dotnet/pull/1381))
+
+1.6.0 (TBD)
 ------------------
 
 ### Enhancements
@@ -62,8 +73,6 @@
 ### Enhancements
 - Expose `RealmObject.OnManaged` virtual method that can be used for init purposes, since the constructor is run before the object has knowledge of its Realm. (#1383)
 - Expose `Realm.GetInstanceAsync` API to asynchronously open a synchronized Realm. It will download all remote content available at the time the operation began on a background thread and then return a usable Realm. It is also the only supported way of opening Realms for which the user has only read permissions.
-- `Realm.CreateObject<T>` has been removed. Please use `Realm.Add<T>(T object)` instead. (#1381)
-- `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. (#1381)
 
 1.3.0 (2017-05-16)
 ------------------
