@@ -370,7 +370,7 @@ REALM_EXPORT Object* shared_realm_create_object_string_unique(const SharedRealm&
 REALM_EXPORT Object* shared_realm_create_object_null_unique(const SharedRealm& realm, Table& table, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return create_object_unique(realm, table, null(), try_update, is_new);
+        return create_object_unique<util::Optional<int64_t>>(realm, table, null(), try_update, is_new);
     });
 }
 
