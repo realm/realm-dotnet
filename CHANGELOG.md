@@ -2,6 +2,7 @@
 ------------------
 
 ### Enhancements
+- Exposed `Realm.WriteCopy` API to copy a Realm file and optionally encrypt it with a different key.: ([#1464](https://github.com/realm/realm-dotnet/pull/1464))
 
 ### Bug fixes
 

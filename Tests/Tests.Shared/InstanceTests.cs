@@ -646,6 +646,74 @@ namespace Tests.Database
             });
         }
 
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void WriteEncryptedCopy_WhenEncryptionKeyProvided_WritesACopy(bool originalEncrypted, bool copyEncrypted)
+        {
+            if (originalEncrypted || copyEncrypted)
+            {
+                ReliesOnEncryption();
+            }
+
+            var originalConfig = new RealmConfiguration(Path.GetTempFileName());
+            if (originalEncrypted)
+            {
+                originalConfig.EncryptionKey = new byte[64];
+                originalConfig.EncryptionKey[0] = 42;
+            }
+
+            var copyConfig = new RealmConfiguration(Path.GetTempFileName());
+            if (copyEncrypted)
+            {
+                copyConfig.EncryptionKey = new byte[64];
+                copyConfig.EncryptionKey[0] = 14;
+            }
+
+            File.Delete(copyConfig.DatabasePath);
+
+            try
+            {
+                using (var original = Realm.GetInstance(originalConfig))
+                {
+                    original.Write(() =>
+                    {
+                        original.Add(new Person
+                        {
+                            FirstName = "John",
+                            LastName = "Doe"
+                        });
+
+                        original.WriteCopy(copyConfig);
+
+                        using (var copy = Realm.GetInstance(copyConfig))
+                        {
+                            var copiedPerson = copy.All<Person>().SingleOrDefault();
+                            Assert.That(copiedPerson, Is.Not.Null);
+                            Assert.That(copiedPerson.FirstName, Is.EqualTo("John"));
+                            Assert.That(copiedPerson.LastName, Is.EqualTo("Doe"));
+                        }
+
+                        if (copyEncrypted)
+                        {
+                            var invalidConfig = new RealmConfiguration(copyConfig.DatabasePath)
+                            {
+                                EncryptionKey = originalConfig.EncryptionKey
+                            };
+
+                            Assert.That(() => Realm.GetInstance(invalidConfig), Throws.TypeOf<RealmFileAccessErrorException>());
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(originalConfig);
+                Realm.DeleteRealm(copyConfig);
+            }
+        }
+
         private static void AddDummyData(Realm realm)
         {
             for (var i = 0; i < 1000; i++)

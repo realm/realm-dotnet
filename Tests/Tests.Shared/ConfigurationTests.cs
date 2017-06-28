@@ -46,13 +46,6 @@ namespace Tests.Database
             Realm.DeleteRealm(_configuration);
         }
 
-        private static void ReliesOnEncryption()
-        {
-#if ENCRYPTION_DISABLED
-            Assert.Ignore("This test relies on encryption which is not enabled in this build");
-#endif
-        }
-
         [Test]
         public void DefaultConfigurationShouldHaveValidPath()
         {
@@ -210,7 +203,7 @@ namespace Tests.Database
             config2.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.That(() => 
+            Assert.That(() =>
             {
                 using (Realm.GetInstance(config2))
                 {
