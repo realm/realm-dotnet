@@ -257,7 +257,8 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
         realm->get()->write_copy(pathStr, BinaryData(encryption_key, encryption_key ? 64 : 0));
     });
 }
-
+    
+}
 #pragma mark - Creating objects
 
 inline const ObjectSchema& find_schema(const SharedRealm& realm, const Table& table)
@@ -292,7 +293,6 @@ size_t Table::set_unique(size_t column_ndx, size_t row_ndx, util::Optional<int64
     } else {
         return set_unique(column_ndx, row_ndx, null());
     }
-}
 }
 
 template<class KeyType>
@@ -374,4 +374,5 @@ REALM_EXPORT Object* shared_realm_create_object_null_unique(const SharedRealm& r
     });
 }
 
+}
 }
