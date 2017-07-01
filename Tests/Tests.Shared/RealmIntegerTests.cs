@@ -16,45 +16,119 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Realms;
+using Realms.Helpers;
 
 namespace Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class RealmIntegerTests : RealmInstanceTest
     {
-        [Test]
-        public void ManagedIntegerTests()
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(255)]
+        [TestCase(-1)]
+        [TestCase(-100)]
+        public void RealmInteger_HasDefaultValue(int defaultValue)
         {
-            var counter = new CounterObject();
+            var byteValue = (byte)Math.Max(defaultValue, 0);
+
+            var counter = new CounterObject
+            {
+                ByteProperty = byteValue,
+                Int16Property = (short)defaultValue,
+                Int32Property = defaultValue,
+                Int64Property = defaultValue,
+            };
+
+            Assert.That(counter.ByteProperty == byteValue);
+            Assert.That(counter.Int16Property == defaultValue);
+            Assert.That(counter.Int32Property == defaultValue);
+            Assert.That(counter.Int64Property == defaultValue);
+
             _realm.Write(() =>
             {
                 _realm.Add(counter);
             });
 
-            Assert.That(counter.ByteProperty == 0);
-            Assert.That(counter.Int16Property == 0);
-            Assert.That(counter.Int32Property == 0);
-            Assert.That(counter.Int64Property == 0);
-            Assert.That(counter.NullableByteProperty, Is.Null);
-            Assert.That(counter.NullableInt16Property, Is.Null);
-            Assert.That(counter.NullableInt32Property, Is.Null);
-            Assert.That(counter.NullableInt64Property, Is.Null);
+            Assert.That(counter.ByteProperty == byteValue);
+            Assert.That(counter.Int16Property == defaultValue);
+            Assert.That(counter.Int32Property == defaultValue);
+            Assert.That(counter.Int64Property == defaultValue);
+        }
+
+        [TestCase(null)]
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(255)]
+        [TestCase(-1)]
+        [TestCase(-100)]
+        public void NullableRealmInteger_HasDefaultValue(int? defaultValue)
+        {
+            var byteValue = defaultValue.HasValue ? (byte?)Math.Max(defaultValue.Value, 0) : null;
+
+            var counter = new CounterObject
+            {
+                NullableByteProperty = byteValue,
+                NullableInt16Property = (short?)defaultValue,
+                NullableInt32Property = defaultValue,
+                NullableInt64Property = defaultValue,
+            };
+
+            Assert.That(counter.NullableByteProperty == byteValue);
+            Assert.That(counter.NullableInt16Property == defaultValue);
+            Assert.That(counter.NullableInt32Property == defaultValue);
+            Assert.That(counter.NullableInt64Property == defaultValue);
 
             _realm.Write(() =>
             {
-                counter.ByteProperty.Increment();
+                _realm.Add(counter);
             });
 
-            Assert.That(counter.ByteProperty == 1);
+            Assert.That(counter.NullableByteProperty == byteValue);
+            Assert.That(counter.NullableInt16Property == defaultValue);
+            Assert.That(counter.NullableInt32Property == defaultValue);
+            Assert.That(counter.NullableInt64Property == defaultValue);
+        }
 
-            _realm.Write(() =>
+        [TestCaseSource(nameof(IncrementTestCases))]
+        public void RealmInteger_IncrementTests(int original, int value, bool managed)
+        {
+            var counter = new CounterObject
             {
-                counter.ByteProperty++;
-            });
+                Int32Property = original,
+            };
 
-            Assert.That(counter.ByteProperty == 2);
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(counter));
+                _realm.Write(() => counter.Int32Property.Increment(value));
+            }
+            else
+            {
+                counter.Int32Property.Increment(value);
+            }
+
+            var expected = original + (managed ? value : 0);
+            Assert.That((int)counter.Int32Property, Is.EqualTo(expected));
+        }
+
+        private static IEnumerable<object> IncrementTestCases()
+        {
+            var values = new int[] { 0, 1, -1, 100, int.MaxValue, int.MinValue };
+            foreach (var original in values)
+            {
+                foreach (var value in values)
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        yield return new object[] { original, value, i == 0 };
+                    }
+                }
+            }
         }
     }
 }

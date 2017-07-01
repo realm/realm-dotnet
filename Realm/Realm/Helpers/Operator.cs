@@ -22,22 +22,57 @@ using System.Linq.Expressions;
 namespace Realms.Helpers
 {
     // Heavily based on http://www.yoda.arachsys.com/csharp/miscutil/index.html
-    internal static class Operator<T>
+    internal static class Operator
     {
-        public static Func<T, T, T> Add { get; }
-
-        static Operator()
+        public static T Add<T>(T first, T second)
         {
-            var lhs = Expression.Parameter(typeof(T), "lhs");
-            var rhs = Expression.Parameter(typeof(T), "rhs");
-            try
+            return GenericOperator<T, T>.Add(first, second);
+        }
+
+        public static TResult Convert<TFrom, TResult>(TFrom value)
+        {
+            return GenericOperator<TFrom, TResult>.Convert(value);
+        }
+
+        private static class GenericOperator<T, U>
+        {
+            public static Func<T, U, T> Add { get; }
+
+            public static Func<T, U> Convert { get; }
+
+            static GenericOperator()
             {
-                Add = Expression.Lambda<Func<T, T, T>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
+                Add = CreateAdd();
+                Convert = CreateConvert();
             }
-            catch (Exception ex)
+
+            private static Func<T, U, T> CreateAdd()
             {
-                var message = ex.Message;
-                Add = delegate { throw new InvalidOperationException(message); };
+                var lhs = Expression.Parameter(typeof(T), "lhs");
+                var rhs = Expression.Parameter(typeof(U), "rhs");
+                try
+                {
+                    return Expression.Lambda<Func<T, U, T>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
+                }
+                catch (Exception ex)
+                {
+                    var message = ex.Message;
+                    return delegate { throw new InvalidOperationException(message); };
+                }
+            }
+
+            private static Func<T, U> CreateConvert()
+            {
+                var input = Expression.Parameter(typeof(T), "input");
+                try
+                {
+                    return Expression.Lambda<Func<T, U>>(Expression.Convert(input, typeof(U)), input).Compile();
+                }
+                catch (Exception ex)
+                {
+                    string msg = ex.Message; // avoid capture of ex itself
+                    return delegate { throw new InvalidOperationException(msg); };
+                }
             }
         }
     }

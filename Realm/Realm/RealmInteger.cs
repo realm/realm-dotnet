@@ -52,12 +52,12 @@ namespace Realms
 
         public RealmInteger<T> Increment()
         {
-            return Increment((T)Convert.ChangeType(1, typeof(T)));
+            return Increment(Operator.Convert<int, T>(1));
         }
 
         public RealmInteger<T> Decrement()
         {
-            return Increment((T)Convert.ChangeType(-1, typeof(T)));
+            return Increment(Operator.Convert<int, T>(-1));
         }
 
         public RealmInteger<T> Increment(T value)
@@ -65,11 +65,11 @@ namespace Realms
             if (IsManaged)
             {
                 _objectHandle.AddInt64(_propertyIndex, value.ToLong());
-                var result = (T)Convert.ChangeType(_objectHandle.GetInt64(_propertyIndex), typeof(T));
+                var result = Operator.Convert<long, T>(_objectHandle.GetInt64(_propertyIndex));
 				return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
             }
 
-            return new RealmInteger<T>(Operator<T>.Add(value, _value));
+            return new RealmInteger<T>(Operator.Add(value, _value));
         }
 
         #region Equals

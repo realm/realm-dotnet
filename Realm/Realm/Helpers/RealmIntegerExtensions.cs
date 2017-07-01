@@ -18,23 +18,30 @@
 
 using System;
 using Realms;
+using Realms.Helpers;
 
 internal static class RealmIntegerExtensions
 {
-	public static long? ToLong<T>(this RealmInteger<T>? integer)
-		where T : struct, IComparable<T>, IFormattable
-	{
-		if (integer.HasValue)
-		{
-			return integer.Value.ToLong();
-		}
+    public static long? ToLong<T>(this RealmInteger<T>? integer)
+        where T : struct, IComparable<T>, IFormattable
+    {
+        if (integer.HasValue)
+        {
+            return integer.Value.ToLong();
+        }
 
-		return null;
-	}
+        return null;
+    }
+
+    public static long ToLong<T>(this RealmInteger<T> integer)
+        where T : struct, IComparable<T>, IFormattable
+    {
+        return ToLong((T)integer);
+    }
 
     public static long ToLong<T>(this T integer)
-		where T : struct, IComparable<T>, IFormattable
-	{
-		return (long)Convert.ChangeType(integer, typeof(long));
-	}
+        where T : struct, IComparable<T>, IFormattable
+    {
+        return Operator.Convert<T, long>(integer);
+    }
 }

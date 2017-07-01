@@ -24,6 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms
@@ -268,7 +269,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = (T)Convert.ChangeType(_objectHandle.GetInt64(propertyIndex), typeof(T));
+            var result = Operator.Convert<long, T>(_objectHandle.GetInt64(propertyIndex));
             return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
         }
 
@@ -281,7 +282,7 @@ namespace Realms
 
             if (result.HasValue)
             {
-                return new RealmInteger<T>((T)Convert.ChangeType(result.Value, typeof(T)), ObjectHandle, propertyIndex);
+                return new RealmInteger<T>(Operator.Convert<long, T>(result.Value), ObjectHandle, propertyIndex);
             }
 
             return null;

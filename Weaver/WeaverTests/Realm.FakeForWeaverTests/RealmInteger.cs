@@ -37,12 +37,12 @@ namespace Realms
 
         public RealmInteger<T> Increment()
         {
-            return Increment((T)Convert.ChangeType(1, typeof(T)));
+            return Increment(default(T));
         }
 
         public RealmInteger<T> Decrement()
         {
-            return Increment((T)Convert.ChangeType(-1, typeof(T)));
+            return Increment(default(T));
         }
 
         public RealmInteger<T> Increment(T value)
