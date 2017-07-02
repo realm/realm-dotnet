@@ -33,6 +33,7 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
+          IList,
           INotifyCollectionChanged,
           INotifyPropertyChanged,
           ISchemaSource,
@@ -333,6 +334,59 @@ namespace Realms
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(); // using our class generic type, just redirect the legacy get
+
+        #region IList
+
+        public bool IsFixedSize => false;
+
+        public virtual bool IsReadOnly => true;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => null;
+
+        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+
+        public virtual int Add(object value) => throw new NotSupportedException();
+
+        public virtual void Clear() => throw new NotSupportedException();
+
+        public abstract bool Contains(object value);
+
+        public abstract int IndexOf(object value);
+
+        public virtual void Insert(int index, object value) => throw new NotSupportedException();
+
+        public virtual void Remove(object value) => throw new NotSupportedException();
+
+        public virtual void RemoveAt(int index) => throw new NotSupportedException();
+
+        public void CopyTo(Array array, int index)
+        {
+            if (array == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if (index + Count > array.Length)
+            {
+                throw new ArgumentException();
+            }
+
+            var list = (IList)array;
+            foreach (var obj in this)
+            {
+
+                list[index++] = obj;
+            }
+        }
+
+        #endregion
 
         private class NotificationToken : IDisposable
         {
