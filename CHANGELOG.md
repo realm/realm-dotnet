@@ -2,7 +2,8 @@
 ------------------
 
 ### Enhancements
-- Exposed `Realm.WriteCopy` API to copy a Realm file and optionally encrypt it with a different key.: ([#1464](https://github.com/realm/realm-dotnet/pull/1464))
+- Exposed `Realm.WriteCopy` API to copy a Realm file and optionally encrypt it with a different key. ([#1464](https://github.com/realm/realm-dotnet/pull/1464))
+- The runtime representations of all Realm collections (`IQueryable<T>` and `IList<T>`) now implement the `IList` interface that is needed for data-binding to `ListView` in UWP applications. ([#1469](https://github.com/realm/realm-dotnet/pull/1469))
 
 ### Bug fixes
 
