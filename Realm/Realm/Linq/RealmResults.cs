@@ -83,5 +83,13 @@ namespace Realms
             var sortHandle = qv.OptionalSortDescriptorBuilder;
             return Realm.MakeResultsForQuery(queryHandle, sortHandle);
         }
+
+        #region IList members
+
+        public override bool Contains(object value) => Contains((T)value);
+
+        public override int IndexOf(object value) => IndexOf((T)value);
+
+        #endregion
     }
 }

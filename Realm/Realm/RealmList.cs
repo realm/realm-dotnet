@@ -59,7 +59,7 @@ namespace Realms
 
         #region implementing IList properties
 
-        public bool IsReadOnly => (_realm?.Config as RealmConfiguration)?.IsReadOnly == true;
+        public override bool IsReadOnly => (_realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -68,7 +68,6 @@ namespace Realms
             {
                 return base[index];
             }
-
             set
             {
                 throw new NotSupportedException("Setting items directly is not supported.");
@@ -85,7 +84,13 @@ namespace Realms
             _listHandle.Add(item.ObjectHandle);
         }
 
-        public void Clear()
+        public override int Add(object value)
+        {
+            Add((T)value);
+            return Count;
+        }
+
+        public override void Clear()
         {
             _listHandle.Clear();
         }
@@ -94,6 +99,8 @@ namespace Realms
         {
             return IndexOf(item) > -1;
         }
+
+        public override bool Contains(object value) => Contains((T)value);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -128,6 +135,8 @@ namespace Realms
             return (int)_listHandle.Find(item.ObjectHandle);
         }
 
+        public override int IndexOf(object value) => IndexOf((T)value);
+
         public void Insert(int index, T item)
         {
             if (index < 0)
@@ -138,6 +147,8 @@ namespace Realms
             AddObjectToRealmIfNeeded(item);
             _listHandle.Insert((IntPtr)index, item.ObjectHandle);
         }
+
+        public override void Insert(int index, object value) => Insert(index, (T)value);
 
         public bool Remove(T item)
         {
@@ -151,7 +162,9 @@ namespace Realms
             return true;
         }
 
-        public void RemoveAt(int index)
+        public override void Remove(object value) => Remove((T)value);
+
+        public override void RemoveAt(int index)
         {
             if (index < 0)
             {
