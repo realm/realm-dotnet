@@ -9,7 +9,7 @@
     <RootNamespace>Tests</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Tests.iOS</AssemblyName>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <NuGetPackageImportStamp></NuGetPackageImportStamp>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
