@@ -29,7 +29,7 @@
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <TargetFrameworkVersion>v7.1</TargetFrameworkVersion>
     <AndroidLinkMode>Full</AndroidLinkMode>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
