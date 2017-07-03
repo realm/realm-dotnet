@@ -327,20 +327,20 @@ namespace Tests.Database
             Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
             Assert.That(varLessThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
-            var lessOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
-            var varLessOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= c).ToArray();
-            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
-            Assert.That(varLessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
+            var lessThanOrEqual = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
+            var varLessThanOrEqual = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= c).ToArray();
+            Assert.That(lessThanOrEqual.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
+            Assert.That(varLessThanOrEqual.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
 
             var greaterThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
             var varGreaterThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > a).ToArray();
             Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'c' }));
             Assert.That(varGreaterThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'c' }));
 
-            var greaterOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
-            var varGreaterOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= B).ToArray();
-            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
-            Assert.That(varGreaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
+            var greaterThanOrEqual = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
+            var varGreaterThanOrEqual = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= B).ToArray();
+            Assert.That(greaterThanOrEqual.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
+            Assert.That(varGreaterThanOrEqual.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
 
             var between = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
             var varBetween = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > A && p.CharProperty < a).ToArray();
@@ -351,6 +351,106 @@ namespace Tests.Database
             var varMissing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == X).ToArray();
             Assert.That(missing.Length, Is.EqualTo(0));
             Assert.That(varMissing.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SearchComparingShort()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new PrimaryKeyInt16Object { Int16Property = 0 });
+                _realm.Add(new PrimaryKeyInt16Object { Int16Property = 1 });
+                _realm.Add(new PrimaryKeyInt16Object { Int16Property = 2 });
+            });
+
+            short zero = 0;
+            short one = 1;
+            short two = 2;
+
+            var equality = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property == 0).ToArray().Select(o => o.Int16Property);
+            var varEquality = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property == zero).ToArray().Select(o => o.Int16Property);
+            Assert.That(equality, Is.EquivalentTo(new short[] { 0 }));
+            Assert.That(varEquality, Is.EquivalentTo(new short[] { 0 }));
+
+            var inequality = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property != 0).ToArray().Select(o => o.Int16Property);
+            var varInequality = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property != zero).ToArray().Select(o => o.Int16Property);
+            Assert.That(inequality, Is.EquivalentTo(new short[] { 1, 2 }));
+            Assert.That(varInequality, Is.EquivalentTo(new short[] { 1, 2 }));
+
+            var lessThan = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property < 1).ToArray().Select(o => o.Int16Property);
+            var varLessThan = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property < one).ToArray().Select(o => o.Int16Property);
+            Assert.That(lessThan, Is.EquivalentTo(new short[] { 0 }));
+            Assert.That(varLessThan, Is.EquivalentTo(new short[] { 0 }));
+
+            var lessThanOrEqual = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property <= 1).ToArray().Select(o => o.Int16Property);
+            var varLessThanOrEqual = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property <= one).ToArray().Select(o => o.Int16Property);
+            Assert.That(lessThanOrEqual, Is.EquivalentTo(new short[] { 0, 1 }));
+            Assert.That(varLessThanOrEqual, Is.EquivalentTo(new short[] { 0, 1 }));
+
+            var greaterThan = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property > 1).ToArray().Select(o => o.Int16Property);
+            var varGreaterThan = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property > one).ToArray().Select(o => o.Int16Property);
+            Assert.That(greaterThan, Is.EquivalentTo(new short[] { 2 }));
+            Assert.That(varGreaterThan, Is.EquivalentTo(new short[] { 2 }));
+
+            var greaterThanOrEqual = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property >= 1).ToArray().Select(o => o.Int16Property);
+            var varGreaterThanOrEqual = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property >= one).ToArray().Select(o => o.Int16Property);
+            Assert.That(greaterThanOrEqual, Is.EquivalentTo(new short[] { 1, 2 }));
+            Assert.That(varGreaterThanOrEqual, Is.EquivalentTo(new short[] { 1, 2 }));
+
+            var between = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property > 0 && o.Int16Property < 2).ToArray().Select(o => o.Int16Property);
+            var varBetween = _realm.All<PrimaryKeyInt16Object>().Where(o => o.Int16Property > zero && o.Int16Property < two).ToArray().Select(o => o.Int16Property);
+            Assert.That(between, Is.EquivalentTo(new short[] { 1 }));
+            Assert.That(varBetween, Is.EquivalentTo(new short[] { 1 }));
+        }
+
+        [Test]
+        public void SearchComparingByte()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new PrimaryKeyByteObject { ByteProperty = 0 });
+                _realm.Add(new PrimaryKeyByteObject { ByteProperty = 1 });
+                _realm.Add(new PrimaryKeyByteObject { ByteProperty = 2 });
+            });
+
+            byte zero = 0;
+            byte one = 1;
+            byte two = 2;
+
+            var equality = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty == 0).ToArray().Select(o => o.ByteProperty);
+            var varEquality = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty == zero).ToArray().Select(o => o.ByteProperty);
+            Assert.That(equality, Is.EquivalentTo(new byte[] { 0 }));
+            Assert.That(varEquality, Is.EquivalentTo(new byte[] { 0 }));
+
+            var inequality = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty != 0).ToArray().Select(o => o.ByteProperty);
+            var varInequality = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty != zero).ToArray().Select(o => o.ByteProperty);
+            Assert.That(inequality, Is.EquivalentTo(new byte[] { 1, 2 }));
+            Assert.That(varInequality, Is.EquivalentTo(new byte[] { 1, 2 }));
+
+            var lessThan = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty < 1).ToArray().Select(o => o.ByteProperty);
+            var varLessThan = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty < one).ToArray().Select(o => o.ByteProperty);
+            Assert.That(lessThan, Is.EquivalentTo(new byte[] { 0 }));
+            Assert.That(varLessThan, Is.EquivalentTo(new byte[] { 0 }));
+
+            var lessThanOrEqual = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty <= 1).ToArray().Select(o => o.ByteProperty);
+            var varLessThanOrEqual = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty <= one).ToArray().Select(o => o.ByteProperty);
+            Assert.That(lessThanOrEqual, Is.EquivalentTo(new byte[] { 0, 1 }));
+            Assert.That(varLessThanOrEqual, Is.EquivalentTo(new byte[] { 0, 1 }));
+
+            var greaterThan = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty > 1).ToArray().Select(o => o.ByteProperty);
+            var varGreaterThan = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty > one).ToArray().Select(o => o.ByteProperty);
+            Assert.That(greaterThan, Is.EquivalentTo(new byte[] { 2 }));
+            Assert.That(varGreaterThan, Is.EquivalentTo(new byte[] { 2 }));
+
+            var greaterThanOrEqual = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty >= 1).ToArray().Select(o => o.ByteProperty);
+            var varGreaterThanOrEqual = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty >= one).ToArray().Select(o => o.ByteProperty);
+            Assert.That(greaterThanOrEqual, Is.EquivalentTo(new byte[] { 1, 2 }));
+            Assert.That(varGreaterThanOrEqual, Is.EquivalentTo(new byte[] { 1, 2 }));
+
+            var between = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty > 0 && o.ByteProperty < 2).ToArray().Select(o => o.ByteProperty);
+            var varBetween = _realm.All<PrimaryKeyByteObject>().Where(o => o.ByteProperty > zero && o.ByteProperty < two).ToArray().Select(o => o.ByteProperty);
+            Assert.That(between, Is.EquivalentTo(new byte[] { 1 }));
+            Assert.That(varBetween, Is.EquivalentTo(new byte[] { 1 }));
         }
 
         [Test]
