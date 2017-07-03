@@ -633,6 +633,12 @@ namespace Realms
                 case bool boolValue:
                     queryHandle.BoolEqual(columnIndex, boolValue);
                     break;
+                case byte byteValue:
+                    queryHandle.IntEqual(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntEqual(columnIndex, shortValue);
+                    break;
                 case char charValue:
                     queryHandle.IntEqual(columnIndex, charValue);
                     break;
@@ -692,6 +698,12 @@ namespace Realms
                 case char charValue:
                     queryHandle.IntNotEqual(columnIndex, charValue);
                     break;
+                case byte byteValue:
+                    queryHandle.IntNotEqual(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntNotEqual(columnIndex, shortValue);
+                    break;
                 case int intValue:
                     queryHandle.IntNotEqual(columnIndex, intValue);
                     break;
@@ -740,6 +752,12 @@ namespace Realms
                 case char charValue:
                     queryHandle.IntLess(columnIndex, charValue);
                     break;
+                case byte byteValue:
+                    queryHandle.IntLess(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntLess(columnIndex, shortValue);
+                    break;
                 case int intValue:
                     queryHandle.IntLess(columnIndex, intValue);
                     break;
@@ -770,6 +788,12 @@ namespace Realms
             {
                 case char charValue:
                     queryHandle.IntLessEqual(columnIndex, charValue);
+                    break;
+                case byte byteValue:
+                    queryHandle.IntLessEqual(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntLessEqual(columnIndex, shortValue);
                     break;
                 case int intValue:
                     queryHandle.IntLessEqual(columnIndex, intValue);
@@ -802,6 +826,12 @@ namespace Realms
                 case char charValue:
                     queryHandle.IntGreater(columnIndex, charValue);
                     break;
+                case byte byteValue:
+                    queryHandle.IntGreater(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntGreater(columnIndex, shortValue);
+                    break;
                 case int intValue:
                     queryHandle.IntGreater(columnIndex, intValue);
                     break;
@@ -832,6 +862,12 @@ namespace Realms
             {
                 case char charValue:
                     queryHandle.IntGreaterEqual(columnIndex, charValue);
+                    break;
+                case byte byteValue:
+                    queryHandle.IntGreaterEqual(columnIndex, byteValue);
+                    break;
+                case short shortValue:
+                    queryHandle.IntGreaterEqual(columnIndex, shortValue);
                     break;
                 case int intValue:
                     queryHandle.IntGreaterEqual(columnIndex, intValue);
