@@ -52,6 +52,12 @@ namespace Realms.Helpers
                 var rhs = Expression.Parameter(typeof(U), "rhs");
                 try
                 {
+                    if (typeof(T) == typeof(byte))
+                    {
+                        // Add is not defined for byte...
+                        var addExpression = Expression.Add(Expression.Convert(lhs, typeof(int)), Expression.Convert(rhs, typeof(int)));
+                        return Expression.Lambda<Func<T, U, T>>(Expression.Convert(addExpression, typeof(byte)), lhs, rhs).Compile();
+                    }
                     return Expression.Lambda<Func<T, U, T>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
                 }
                 catch (Exception ex)

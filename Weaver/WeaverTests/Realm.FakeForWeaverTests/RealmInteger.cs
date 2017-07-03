@@ -116,16 +116,6 @@ namespace Realms
             return new RealmInteger<T>(i);
         }
 
-        public static RealmInteger<T> operator ++(RealmInteger<T> i)
-        {
-            return i.Increment();
-        }
-
-        public static RealmInteger<T> operator --(RealmInteger<T> i)
-        {
-            return i.Decrement();
-        }
-
         public static bool operator ==(RealmInteger<T> first, RealmInteger<T> second)
         {
             return first.Equals(second);

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Realms;
 using Realms.Helpers;
@@ -94,31 +95,146 @@ namespace Tests.Database
             Assert.That(counter.NullableInt64Property == defaultValue);
         }
 
-        [TestCaseSource(nameof(IncrementTestCases))]
-        public void RealmInteger_IncrementTests(int original, int value, bool managed)
+        [TestCaseSource(nameof(ByteIncrementTestCases))]
+        public void RealmInteger_WhenByte_IncrementTests(byte original, byte value, bool managed)
+        {
+            var counter = new CounterObject
+            {
+                ByteProperty = original,
+            };
+
+            var sum = (byte)(original + value);
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(counter));
+                _realm.Write(() => counter.ByteProperty.Increment(value));
+                Assert.That((byte)counter.ByteProperty, Is.EqualTo(sum));
+            }
+            else
+            {
+                var result = counter.ByteProperty.Increment(value);
+                Assert.That((byte)result, Is.EqualTo(sum));
+                Assert.That((byte)counter.ByteProperty, Is.EqualTo(original));
+            }
+        }
+
+        [TestCaseSource(nameof(ShortIncrementTestCases))]
+        public void RealmInteger_WhenShort_IncrementTests(short original, short value, bool managed)
+        {
+            var counter = new CounterObject
+            {
+                Int16Property = original,
+            };
+
+            var sum = (short)(original + value);
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(counter));
+                _realm.Write(() => counter.Int16Property.Increment(value));
+                Assert.That((short)counter.Int16Property, Is.EqualTo(sum));
+            }
+            else
+            {
+                var result = counter.Int16Property.Increment(value);
+                Assert.That((short)result, Is.EqualTo(sum));
+                Assert.That((short)counter.Int16Property, Is.EqualTo(original));
+            }
+        }
+
+        [TestCaseSource(nameof(IntIncrementTestCases))]
+        public void RealmInteger_WhenInt_IncrementTests(int original, int value, bool managed)
         {
             var counter = new CounterObject
             {
                 Int32Property = original,
             };
 
+            var sum = original + value;
             if (managed)
             {
                 _realm.Write(() => _realm.Add(counter));
                 _realm.Write(() => counter.Int32Property.Increment(value));
+                Assert.That((int)counter.Int32Property, Is.EqualTo(sum));
             }
             else
             {
-                counter.Int32Property.Increment(value);
+                var result = counter.Int32Property.Increment(value);
+                Assert.That((int)result, Is.EqualTo(sum));
+                Assert.That((int)counter.Int32Property, Is.EqualTo(original));
             }
-
-            var expected = original + (managed ? value : 0);
-            Assert.That((int)counter.Int32Property, Is.EqualTo(expected));
         }
 
-        private static IEnumerable<object> IncrementTestCases()
+        [TestCaseSource(nameof(LongIncrementTestCases))]
+        public void RealmInteger_WhenLong_IncrementTests(long original, long value, bool managed)
         {
-            var values = new int[] { 0, 1, -1, 100, int.MaxValue, int.MinValue };
+            var counter = new CounterObject
+            {
+                Int64Property = original,
+            };
+
+            var sum = original + value;
+            if (managed)
+            {
+                _realm.Write(() => _realm.Add(counter));
+                _realm.Write(() => counter.Int64Property.Increment(value));
+                Assert.That((long)counter.Int64Property, Is.EqualTo(sum));
+            }
+            else
+            {
+                var result = counter.Int64Property.Increment(value);
+                Assert.That((long)result, Is.EqualTo(sum));
+                Assert.That((long)counter.Int64Property, Is.EqualTo(original));
+            }
+        }
+
+        private static IEnumerable<object> ByteIncrementTestCases()
+        {
+            var values = new byte[] { 0, 1, byte.MaxValue };
+            foreach (var original in values)
+            {
+                foreach (var value in values)
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        yield return new object[] { original, value, i == 0 };
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<object> ShortIncrementTestCases()
+        {
+            var values = new short[] { 0, 1, -1, short.MaxValue, short.MinValue };
+            foreach (var original in values)
+            {
+                foreach (var value in values)
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        yield return new object[] { original, value, i == 0 };
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<object> IntIncrementTestCases()
+        {
+            var values = new int[] { 0, 1, -1, int.MaxValue, int.MinValue };
+            foreach (var original in values)
+            {
+                foreach (var value in values)
+                {
+                    for (var i = 0; i < 2; i++)
+                    {
+                        yield return new object[] { original, value, i == 0 };
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<object> LongIncrementTestCases()
+        {
+            var values = new long[] { 0, 1, -1, long.MaxValue, long.MinValue };
             foreach (var original in values)
             {
                 foreach (var value in values)
