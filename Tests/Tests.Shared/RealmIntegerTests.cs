@@ -18,10 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using Realms;
-using Realms.Helpers;
 
 namespace Tests.Database
 {
@@ -185,55 +183,6 @@ namespace Tests.Database
                 Assert.That((long)result, Is.EqualTo(sum));
                 Assert.That((long)counter.Int64Property, Is.EqualTo(original));
             }
-        }
-
-        [Test]
-        public void Query_Equal()
-        {
-            AddCounterObjects(out var zeros, out var ones);
-
-            var byteQuery = _realm.All<CounterObject>().Single(c => c.ByteProperty == 0);
-            var shortQuery = _realm.All<CounterObject>().Single(c => c.Int16Property == 0);
-            var intQuery = _realm.All<CounterObject>().Single(c => c.Int32Property == 0);
-            var longQuery = _realm.All<CounterObject>().Single(c => c.Int64Property == 0);
-            var nbyteQuery = _realm.All<CounterObject>().Single(c => c.NullableByteProperty == null);
-            var nshortQuery = _realm.All<CounterObject>().Single(c => c.NullableInt16Property == null);
-            var nintQuery = _realm.All<CounterObject>().Single(c => c.NullableInt32Property == null);
-            var nlongQuery = _realm.All<CounterObject>().Single(c => c.NullableInt64Property == null);
-
-            Assert.That(byteQuery, Is.EqualTo(zeros));
-            Assert.That(shortQuery, Is.EqualTo(zeros));
-            Assert.That(intQuery, Is.EqualTo(zeros));
-            Assert.That(longQuery, Is.EqualTo(zeros));
-            Assert.That(nbyteQuery, Is.EqualTo(zeros));
-            Assert.That(nshortQuery, Is.EqualTo(zeros));
-            Assert.That(nintQuery, Is.EqualTo(zeros));
-            Assert.That(nlongQuery, Is.EqualTo(zeros));
-        }
-
-        private void AddCounterObjects(out CounterObject zeros, out CounterObject ones)
-        {
-            var counter0 = new CounterObject();
-            var counter1 = new CounterObject
-            {
-                ByteProperty = 1,
-                Int16Property = 1,
-                Int32Property = 1,
-                Int64Property = 1,
-                NullableByteProperty = 1,
-                NullableInt16Property = 1,
-                NullableInt32Property = 1,
-                NullableInt64Property = 1
-            };
-
-            _realm.Write(() =>
-            {
-                _realm.Add(counter0);
-                _realm.Add(counter1);
-            });
-
-            zeros = counter0;
-            ones = counter1;
         }
 
         private static IEnumerable<object> ByteIncrementTestCases()

@@ -74,6 +74,9 @@ namespace Tests
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class CounterObject : RealmObject
     {
+        [PrimaryKey]
+        public int Id { get; set; }
+
         public RealmInteger<byte> ByteProperty { get; set; }
 
         public RealmInteger<short> Int16Property { get; set; }
@@ -89,6 +92,8 @@ namespace Tests
         public RealmInteger<int>? NullableInt32Property { get; set; }
 
         public RealmInteger<long>? NullableInt64Property { get; set; }
+
+        public override string ToString() => Id.ToString();
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
