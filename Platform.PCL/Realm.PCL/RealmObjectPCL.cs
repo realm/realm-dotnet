@@ -224,7 +224,6 @@ namespace Realms
             return null;
         }
 
-
         #endregion
 
         #region Setters

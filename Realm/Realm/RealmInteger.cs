@@ -26,8 +26,6 @@ namespace Realms
     /// correct merges during conflicts.
     /// </summary>
     /// <remarks>
-    /// Supported integer types are <see cref="byte"/>, <see cref="short"/>, <see cref="int"/>, and <see cref="long"/>.
-    /// <br/>
     /// <see cref="RealmInteger{T}"/> is implicitly convertible to and from <see cref="T"/>.
     /// <br/>
     /// Calling <see cref="Increment()"/> on a managed <see cref="RealmObject"/>'s property must be done in a write
@@ -35,6 +33,10 @@ namespace Realms
     /// the property's value in the database, so the change will be reflected the next time this property is accessed.
     /// If the object is unmanaged, its property value will not be affected.
     /// </remarks>
+    /// <typeparam name="T">
+    /// The integer type, represented by this <see cref="RealmInteger{T}"/>. Supported types are <see cref="byte"/>,
+    /// <see cref="short"/>, <see cref="int"/>, and <see cref="long"/>.
+    /// </typeparam>
     /// <seealso href="https://realm.io/docs/realm-object-server/#counters"/>
     [Preserve(AllMembers = true, Conditional = false)]
     public struct RealmInteger<T> :
