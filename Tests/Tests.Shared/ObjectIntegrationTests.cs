@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -168,7 +169,7 @@ namespace Tests.Database
             Person p = null;
             _realm.Write(() => p = _realm.Add(new Person()));
 
-            var secondaryConfig = new RealmConfiguration("AddAnObjectFromAnotherRealmShouldFail");
+            var secondaryConfig = new RealmConfiguration(Path.GetTempFileName());
             Realm.DeleteRealm(secondaryConfig);
             using (var otherRealm = Realm.GetInstance(secondaryConfig))
             {

@@ -569,6 +569,7 @@ namespace Realms
             else
             {
                 var memberExpression = node.Left as MemberExpression;
+                var rightExpression = node.Right;
 
                 // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
                 // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
@@ -576,13 +577,17 @@ namespace Realms
                 if (memberExpression == null && node.Left.NodeType == ExpressionType.Convert)
                 {
                     memberExpression = ((UnaryExpression)node.Left).Operand as MemberExpression;
+                    if (node.Right.NodeType == ExpressionType.Convert)
+                    {
+                        rightExpression = ((UnaryExpression)node.Right).Operand;
+                    }
                 }
 
                 var leftName = GetColumnName(memberExpression, node.NodeType);
 
-                if (!TryExtractConstantValue(node.Right, out object rightValue))
+                if (!TryExtractConstantValue(rightExpression, out object rightValue))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{node.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
                 }
 
                 switch (node.NodeType)
@@ -590,27 +595,21 @@ namespace Realms
                     case ExpressionType.Equal:
                         AddQueryEqual(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     case ExpressionType.NotEqual:
                         AddQueryNotEqual(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     case ExpressionType.LessThan:
                         AddQueryLessThan(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     case ExpressionType.LessThanOrEqual:
                         AddQueryLessThanOrEqual(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     case ExpressionType.GreaterThan:
                         AddQueryGreaterThan(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     case ExpressionType.GreaterThanOrEqual:
                         AddQueryGreaterThanOrEqual(CoreQueryHandle, leftName, rightValue);
                         break;
-
                     default:
                         throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
                 }
@@ -623,286 +622,237 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value == null)
+            switch (value)
             {
-                queryHandle.NullEqual(columnIndex);
-            }
-            else if (value is string)
-            {
-                queryHandle.StringEqual(columnIndex, (string)value, caseSensitive: true);
-            }
-            else if (value is bool)
-            {
-                queryHandle.BoolEqual(columnIndex, (bool)value);
-            }
-            else if (value is char)
-            {
-                queryHandle.IntEqual(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntEqual(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongEqual(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatEqual(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleEqual(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksEqual(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is byte[] buffer)
-            {
-                if (buffer.Length == 0)
-                {
-                    // see RealmObject.SetByteArrayValue
-                    queryHandle.BinaryEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
-                    return;
-                }
-
-                unsafe
-                {
-                    fixed (byte* bufferPtr = (byte[])value)
+                case null:
+                    queryHandle.NullEqual(columnIndex);
+                    break;
+                case string stringValue:
+                    queryHandle.StringEqual(columnIndex, stringValue, caseSensitive: true);
+                    break;
+                case bool boolValue:
+                    queryHandle.BoolEqual(columnIndex, boolValue);
+                    break;
+                case char charValue:
+                    queryHandle.IntEqual(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntEqual(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongEqual(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatEqual(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleEqual(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksEqual(columnIndex, date);
+                    break;
+                case byte[] buffer:
+                    if (buffer.Length == 0)
                     {
-                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                        // see RealmObject.SetByteArrayValue
+                        queryHandle.BinaryEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                        return;
                     }
-                }
-            }
-            else if (value is RealmObject)
-            {
-                queryHandle.ObjectEqual(columnIndex, ((RealmObject)value).ObjectHandle);
-            }
-            else
-            {
-                throw new NotImplementedException();
+
+                    unsafe
+                    {
+                        fixed (byte* bufferPtr = (byte[])value)
+                        {
+                            queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                        }
+                    }
+                    break;
+                case RealmObject obj:
+                    queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
         private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
-
-            if (value == null)
+            switch (value)
             {
-                queryHandle.NullNotEqual(columnIndex);
-            }
-            else if (value is string)
-            {
-                queryHandle.StringNotEqual(columnIndex, (string)value, caseSensitive: true);
-            }
-            else if (value is bool)
-            {
-                queryHandle.BoolNotEqual(columnIndex, (bool)value);
-            }
-            else if (value is char)
-            {
-                queryHandle.IntNotEqual(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntNotEqual(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongNotEqual(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatNotEqual(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleNotEqual(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is byte[] buffer)
-            {
-                if (buffer.Length == 0)
-                {
-                    // see RealmObject.SetByteArrayValue
-                    queryHandle.BinaryNotEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
-                    return;
-                }
-
-                unsafe
-                {
-                    fixed (byte* bufferPtr = (byte[])value)
+                case null:
+                    queryHandle.NullNotEqual(columnIndex);
+                    break;
+                case string stringValue:
+                    queryHandle.StringNotEqual(columnIndex, stringValue, caseSensitive: true);
+                    break;
+                case bool boolValue:
+                    queryHandle.BoolNotEqual(columnIndex, boolValue);
+                    break;
+                case char charValue:
+                    queryHandle.IntNotEqual(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntNotEqual(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongNotEqual(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatNotEqual(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleNotEqual(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksNotEqual(columnIndex, date);
+                    break;
+                case byte[] buffer:
+                    if (buffer.Length == 0)
                     {
-                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                        // see RealmObject.SetByteArrayValue
+                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                        return;
                     }
-                }
-            }
-            else if (value is RealmObject)
-            {
-                queryHandle.Not();
-                queryHandle.ObjectEqual(columnIndex, ((RealmObject)value).ObjectHandle);
-            }
-            else
-            {
-                throw new NotImplementedException();
+
+                    unsafe
+                    {
+                        fixed (byte* bufferPtr = (byte[])value)
+                        {
+                            queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                        }
+                    }
+                    break;
+                case RealmObject obj:
+                    queryHandle.Not();
+                    queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
         private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
-
-            if (value is char)
+            switch (value)
             {
-                queryHandle.IntLess(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntLess(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongLess(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatLess(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleLess(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksLess(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is string || value is bool)
-            {
-                throw new Exception($"Unsupported type {value.GetType().Name}");
-            }
-            else
-            {
-                throw new NotImplementedException();
+                case char charValue:
+                    queryHandle.IntLess(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntLess(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongLess(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatLess(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleLess(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksLess(columnIndex, date);
+                    break;
+                case string _:
+                case bool _:
+                    throw new Exception($"Unsupported type {value.GetType().Name}");
+                default:
+                    throw new NotImplementedException();
             }
         }
 
         private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
-
-            if (value is char)
+            switch (value)
             {
-                queryHandle.IntLessEqual(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntLessEqual(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongLessEqual(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatLessEqual(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleLessEqual(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksLessEqual(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is string || value is bool)
-            {
-                throw new Exception($"Unsupported type {value.GetType().Name}");
-            }
-            else
-            {
-                throw new NotImplementedException();
+                case char charValue:
+                    queryHandle.IntLessEqual(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntLessEqual(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongLessEqual(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatLessEqual(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleLessEqual(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksLessEqual(columnIndex, date);
+                    break;
+                case string _:
+                case bool _:
+                    throw new Exception($"Unsupported type {value.GetType().Name}");
+                default:
+                    throw new NotImplementedException();
             }
         }
 
         private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
-
-            if (value is char)
+            switch (value)
             {
-                queryHandle.IntGreater(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntGreater(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongGreater(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatGreater(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleGreater(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksGreater(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is string || value is bool)
-            {
-                throw new Exception($"Unsupported type {value.GetType().Name}");
-            }
-            else
-            {
-                throw new NotImplementedException();
+                case char charValue:
+                    queryHandle.IntGreater(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntGreater(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongGreater(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatGreater(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleGreater(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksGreater(columnIndex, date);
+                    break;
+                case string _:
+                case bool _:
+                    throw new Exception($"Unsupported type {value.GetType().Name}");
+                default:
+                    throw new NotImplementedException();
             }
         }
 
         private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
-
-            if (value is char)
+            switch (value)
             {
-                queryHandle.IntGreaterEqual(columnIndex, (int)value);
-            }
-            else if (value is int)
-            {
-                queryHandle.IntGreaterEqual(columnIndex, (int)value);
-            }
-            else if (value is long)
-            {
-                queryHandle.LongGreaterEqual(columnIndex, (long)value);
-            }
-            else if (value is float)
-            {
-                queryHandle.FloatGreaterEqual(columnIndex, (float)value);
-            }
-            else if (value is double)
-            {
-                queryHandle.DoubleGreaterEqual(columnIndex, (double)value);
-            }
-            else if (value is DateTimeOffset)
-            {
-                queryHandle.TimestampTicksGreaterEqual(columnIndex, (DateTimeOffset)value);
-            }
-            else if (value is string || value is bool)
-            {
-                throw new Exception($"Unsupported type {value.GetType().Name}");
-            }
-            else
-            {
-                throw new NotImplementedException();
+                case char charValue:
+                    queryHandle.IntGreaterEqual(columnIndex, charValue);
+                    break;
+                case int intValue:
+                    queryHandle.IntGreaterEqual(columnIndex, intValue);
+                    break;
+                case long longValue:
+                    queryHandle.LongGreaterEqual(columnIndex, longValue);
+                    break;
+                case float floatValue:
+                    queryHandle.FloatGreaterEqual(columnIndex, floatValue);
+                    break;
+                case double doubleValue:
+                    queryHandle.DoubleGreaterEqual(columnIndex, doubleValue);
+                    break;
+                case DateTimeOffset date:
+                    queryHandle.TimestampTicksGreaterEqual(columnIndex, date);
+                    break;
+                case string _:
+                case bool _:
+                    throw new Exception($"Unsupported type {value.GetType().Name}");
+                default:
+                    throw new NotImplementedException();
             }
         }
 
