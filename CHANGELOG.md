@@ -7,6 +7,7 @@
 
 ### Bug fixes
 - Fix an exception being thrown when comparing non-constant character value in a query. ([#1471](https://github.com/realm/realm-dotnet/pull/1471))
+- Fix an exception being thrown when comparing non-constant byte or short value in a query. ([#1472](https://github.com/realm/realm-dotnet/pull/1472))
 
 ### Breaking Changes
 
