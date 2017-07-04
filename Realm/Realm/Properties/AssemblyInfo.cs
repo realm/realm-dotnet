@@ -29,3 +29,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Tests.iOS")]
 [assembly: InternalsVisibleTo("Tests.Android")]
 [assembly: InternalsVisibleTo("Tests.UWP")]
+[assembly: InternalsVisibleTo("Tests.NetCore")]
