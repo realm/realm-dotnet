@@ -736,6 +736,7 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
         {
+            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             if (action == null)

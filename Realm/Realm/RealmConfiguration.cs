@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Native;
@@ -161,8 +162,9 @@ namespace Realms
 
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
+            // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            var scheduler = System.Threading.SynchronizationContext.Current != null ? TaskScheduler.FromCurrentSynchronizationContext() : null;
+            var scheduler = SynchronizationContext.Current != null ? TaskScheduler.FromCurrentSynchronizationContext() : null;
             if (scheduler != null)
             {
                 return Task.Run(() =>
