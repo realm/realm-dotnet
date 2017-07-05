@@ -19,12 +19,10 @@
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
-          Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so"
-          Condition="Exists('..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so')">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="Exists('..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

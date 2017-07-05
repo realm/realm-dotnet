@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -337,10 +338,19 @@ namespace Tests.Database
         [Test]
         public void PrimaryKeyFailsIfClassNotinRealm()
         {
-            var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath("Skinny");
+            var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath(Path.GetTempFileName());
             conf.ObjectClasses = new[] { typeof(Person) };
-            var skinny = Realm.GetInstance(conf);
-            Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());
+            try
+            {
+                using (var skinny = Realm.GetInstance(conf))
+                {
+                    Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(conf);
+            }
         }
     }
 }

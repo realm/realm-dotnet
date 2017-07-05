@@ -170,10 +170,16 @@ namespace Tests.Database
             _realm.Write(() => p = _realm.Add(new Person()));
 
             var secondaryConfig = new RealmConfiguration(Path.GetTempFileName());
-            Realm.DeleteRealm(secondaryConfig);
-            using (var otherRealm = Realm.GetInstance(secondaryConfig))
+            try
             {
-                Assert.That(() => otherRealm.Add(p), Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+                using (var otherRealm = Realm.GetInstance(secondaryConfig))
+                {
+                    Assert.That(() => otherRealm.Add(p), Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(secondaryConfig);
             }
         }
 
