@@ -734,8 +734,9 @@ namespace Realms
         /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public async Task WriteAsync(Action<Realm> action)
+        public Task WriteAsync(Action<Realm> action)
         {
+            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             if (action == null)
@@ -746,20 +747,20 @@ namespace Realms
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
             {
-                await Task.Run(() =>
+                var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                return Task.Run(() =>
                 {
                     using (var realm = GetInstance(Config))
                     {
                         realm.Write(() => action(realm));
                     }
-                });
-
-                Refresh();
+                }).ContinueWith(_ => Refresh(), scheduler);
             }
             else
             {
                 // If running on background thread, execute synchronously.
                 Write(() => action(this));
+                return Task.CompletedTask;
             }
         }
 
