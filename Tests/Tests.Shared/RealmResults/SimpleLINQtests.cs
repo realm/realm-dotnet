@@ -685,7 +685,7 @@ namespace Tests.Database
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETCOREAPP1_1
 
             Assert.That(() =>
             {

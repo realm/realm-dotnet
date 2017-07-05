@@ -208,3 +208,10 @@ Mono.Cecil.dll
 Realm.BuildTasks.dll
 *.nuget.targets
 *.nuget.props
+wrappers/CMakeFiles
+wrappers/src/CMakeFiles
+*.cmake
+CMakeCache.txt
+install_manifest.txt
+*.dylib
+Makefile

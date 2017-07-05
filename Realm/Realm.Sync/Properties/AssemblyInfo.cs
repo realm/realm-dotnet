@@ -24,3 +24,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Tests.XamarinIOS")]
 [assembly: InternalsVisibleTo("Tests.iOS")]
 [assembly: InternalsVisibleTo("Tests.Android")]
+[assembly: InternalsVisibleTo("Tests.NetCore")]
