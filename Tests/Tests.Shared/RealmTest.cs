@@ -63,12 +63,5 @@ namespace Tests.Database
         protected virtual void CustomTearDown()
         {
         }
-
-        protected static void ReliesOnEncryption()
-        {
-#if ENCRYPTION_DISABLED
-            Assert.Ignore("This test relies on encryption which is not enabled in this build");
-#endif
-        }
     }
 }

@@ -19,7 +19,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using NUnit.Framework;
 using Realms;
 #if __ANDROID__
 using Application = Android.App.Application;
@@ -69,6 +70,36 @@ namespace Tests
 #endif
 
             return destPath;
+        }
+
+        public static bool IsWindows
+        {
+            get
+            {
+#if WINDOWS
+                return true;
+#elif NETCOREAPP1_1
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static void IgnoreOnWindows(string message)
+        {
+            if (IsWindows)
+            {
+                Assert.Ignore(message);
+            }
+        }
+
+        public static void ReliesOnEncryption()
+        {
+            if (IsWindows)
+            {
+                Assert.Ignore("This test relies on encryption which is not enabled in this build.");
+            }
         }
     }
 }
