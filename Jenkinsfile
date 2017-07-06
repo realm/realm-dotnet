@@ -210,17 +210,6 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
-        getArchive()
-        unstash 'macos-wrappers-nosync'
-        unstash 'buildtasks-output'
-        unstash 'tools-weaver'
-
-        msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build',
-                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
-
-        stash includes: "Tests/Tests.NetCore/bin/${configuration}/netcoreapp1.1/**", name: 'netcore-macos-tests-nosync'
-      }
     },
     'Linux': {
       nodeWithCleanup('docker') {
@@ -259,12 +248,28 @@ stage('Build without sync') {
   )
 }
 
+stage('Build .NET Core') {
+  nodeWithCleanup('windows') {
+    getArchive()
+    unstash 'macos-wrappers-nosync'
+    unstash 'linux-wrappers-nosync'
+    unstash 'win32-wrappers-nosync'
+    unstash 'buildtasks-output'
+    unstash 'tools-weaver'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
+  }
+}
+
 stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
-    'macOS': NetCoreTest('xamarin-mac', 'netcore-macos-tests-nosync')
+    'macOS': NetCoreTest('osx', 'macos', 'nosync')
   )
 }
 
@@ -481,14 +486,19 @@ def AndroidTest(stashName) {
   }
 }
 
-def NetCoreTest(String node, String stashName) {
+def NetCoreTest(String nodeName, String platform, String stashSuffix) {
   return {
-    nodeWithCleanup(node) {
+    node(nodeName) {
       getArchive()
-      unstash stashName
+      unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      dir ("Tests/Tests.NetCore/bin/${configuration}/netcoreapp1.1") {
-        sh 'dotnet Tests.NetCore.dll'
+      dir ("Tests/Tests.NetCore/bin/${configuration}/${platform}publish") {
+        if (isUnix()) {
+          sh '''
+            chmod +x Tests.NetCore
+            ./Tests.NetCore --labels=After
+          '''
+        }
       }
     }
   }
