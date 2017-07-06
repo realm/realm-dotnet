@@ -31,6 +31,9 @@
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\Tests.Shared\nunit3-junit.xslt" Link="nunit3-junit.xslt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
