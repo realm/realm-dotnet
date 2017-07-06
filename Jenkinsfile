@@ -493,11 +493,15 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
       dir ("Tests/Tests.NetCore/bin/${configuration}/${platform}publish") {
-        if (isUnix()) {
-          sh '''
-            chmod +x Tests.NetCore
-            ./Tests.NetCore --labels=After
-          '''
+        try {
+          if (isUnix()) {
+            sh """
+              chmod +x Tests.NetCore
+              ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml;transform=nunit3-junit.xslt
+            """
+          }
+        } finally {
+          junit "TestResults.${platform}.xml"
         }
       }
     }
