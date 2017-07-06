@@ -261,6 +261,16 @@ stage('Build .NET Core') {
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux", RealmNoSync: true]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-nosync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32", RealmNoSync: true]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-nosync'
   }
 }
 
@@ -269,7 +279,9 @@ stage('Test without sync') {
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
-    'macOS': NetCoreTest('osx', 'macos', 'nosync')
+    'macOS': NetCoreTest('osx', 'macos', 'nosync'),
+    'Linux': NetCoreTest('docker', 'linux', 'nosync'),
+    'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync')
   )
 }
 
@@ -495,12 +507,23 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       dir ("Tests/Tests.NetCore/bin/${configuration}/${platform}publish") {
         try {
           if (isUnix()) {
-            sh """
+            def invocation = """
               chmod +x Tests.NetCore
-              ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml;transform=nunit3-junit.xslt
+              ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml
             """
+
+            if (nodeName == 'docker') {
+              insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
+                sh invocation
+              }
+            } else {
+              sh invocation
+            }
+          } else {
+            bat "Tests.NetCore.exe --labels=After --result=TestResults.${platform}.xml"
           }
         } finally {
+          transform("TestResults.${platform}.xml", "nunit3-junit.xslt")
           junit "TestResults.${platform}.xml"
         }
       }
@@ -712,5 +735,19 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
 
   image.inside() {
     steps()
+  }
+}
+
+def transform(String original, String transform) {
+  if (isUnix()) {
+    sh """
+      xsltproc ${transform} ${original} > temp.xml
+      mv temp.xml ${original}
+    """
+  } else {
+    bat """
+      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\"${transform}\");\$xslt.Transform(\$xml, \$output);
+      move /y temp.xml ${original}
+    """
   }
 }
