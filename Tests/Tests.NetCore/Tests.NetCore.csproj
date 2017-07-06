@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="TestResult.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\Tests\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

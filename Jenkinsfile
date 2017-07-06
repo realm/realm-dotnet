@@ -210,6 +210,17 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        unstash 'macos-wrappers-nosync'
+        unstash 'buildtasks-output'
+        unstash 'tools-weaver'
+
+        msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
+
+        stash includes: "Tests/Tests.NetCore/bin/${configuration}/netcoreapp1.1/**", name: 'netcore-macos-tests-nosync'
+      }
     },
     'Linux': {
       nodeWithCleanup('docker') {
@@ -252,7 +263,8 @@ stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
-    'Win32': Win32Test('win32-tests-nosync')
+    'Win32': Win32Test('win32-tests-nosync'),
+    'macOS': NetCoreTest('xamarin-mac', 'netcore-macos-tests-nosync')
   )
 }
 
@@ -464,6 +476,19 @@ def AndroidTest(stashName) {
 
       dir ("${workspace}/temp") {
         junit 'TestResults.Android.xml'
+      }
+    }
+  }
+}
+
+def NetCoreTest(String node, String stashName) {
+  return {
+    nodeWithCleanup(node) {
+      getArchive()
+      unstash stashName
+
+      dir ("Tests/Tests.NetCore/bin/${configuration}/netcoreapp1.1") {
+        sh 'dotnet Tests.NetCore.dll'
       }
     }
   }
