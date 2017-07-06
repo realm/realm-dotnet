@@ -1,5 +1,3 @@
-<!--- We LOVE to help with any issues or bugs you have! -->
-
 <!--- Questions: If you have questions about how to use Realm, please ask on -->
 <!--- StackOverflow: http://stackoverflow.com/questions/ask?tags=realm -->
 <!--- We monitor the `realm` tag. -->
