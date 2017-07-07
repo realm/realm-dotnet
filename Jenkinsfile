@@ -256,20 +256,21 @@ stage('Build .NET Core') {
     unstash 'win32-wrappers-nosync'
     unstash 'tools-weaver'
 
-    bat 'dotnet restore Tests/Tests.NetCore/Tests.NetCore.csproj'
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
 
-    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true]
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
 
-    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux", RealmNoSync: true]
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux", RealmNoSync: true ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-nosync'
 
-    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32", RealmNoSync: true]
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32", RealmNoSync: true ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-nosync'
   }
@@ -412,14 +413,15 @@ stage ('Build .NET Core with sync') {
     unstash 'linux-wrappers-sync'
     unstash 'tools-weaver'
 
-    bat 'dotnet restore Tests/Tests.NetCore/Tests.NetCore.csproj'
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
 
-    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-sync'
 
-    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-sync'
