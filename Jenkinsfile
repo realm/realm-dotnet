@@ -254,7 +254,6 @@ stage('Build .NET Core') {
     unstash 'macos-wrappers-nosync'
     unstash 'linux-wrappers-nosync'
     unstash 'win32-wrappers-nosync'
-    unstash 'buildtasks-output'
     unstash 'tools-weaver'
 
     bat 'dotnet restore Tests/Tests.NetCore/Tests.NetCore.csproj'
@@ -281,8 +280,8 @@ stage('Test without sync') {
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
+    // 'Linux': NetCoreTest('docker', 'linux', 'nosync'),
     'macOS': NetCoreTest('osx', 'macos', 'nosync'),
-    'Linux': NetCoreTest('docker', 'linux', 'nosync'),
     'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync')
   )
 }
@@ -406,10 +405,33 @@ stage('Build with sync') {
   )
 }
 
+stage ('Build .NET Core with sync') {
+  nodeWithCleanup('windows') {
+    getArchive()
+    unstash 'macos-wrappers-sync'
+    unstash 'linux-wrappers-sync'
+    unstash 'tools-weaver'
+
+    bat 'dotnet restore Tests/Tests.NetCore/Tests.NetCore.csproj'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-sync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux" ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-sync'
+  }
+}
+
 stage('Test with sync') {
   parallel(
     'iOS': iOSTest('ios-tests-sync'),
-    'Android': AndroidTest('android-tests-sync')
+    'Android': AndroidTest('android-tests-sync'),
+    // 'Linux': NetCoreTest('docker', 'linux', 'sync'),
+    'macOS': NetCoreTest('osx', 'macos', 'sync')
   )
 }
 
@@ -748,7 +770,7 @@ def transform(String original, String transform) {
     """
   } else {
     bat """
-      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\"${transform}\");\$xslt.Transform(\$xml, \$output);\"
+      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"${transform}\\\");\$xslt.Transform(\$xml, \$output);\"
       move /y temp.xml ${original}
     """
   }
