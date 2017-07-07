@@ -257,6 +257,8 @@ stage('Build .NET Core') {
     unstash 'buildtasks-output'
     unstash 'tools-weaver'
 
+    bat 'dotnet restore Tests/Tests.NetCore/Tests.NetCore.csproj'
+
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore,Build,Publish',
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true]
     
