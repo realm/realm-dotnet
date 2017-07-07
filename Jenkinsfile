@@ -515,7 +515,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             """
 
             if (nodeName == 'docker') {
-              insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
+              insideDocker('ci/realm-dotnet/wrappers:linux', "${env.WORKSPACE}/wrappers/Dockerfile.linux") {
                 sh invocation
               }
             } else {
@@ -748,7 +748,7 @@ def transform(String original, String transform) {
     """
   } else {
     bat """
-      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\"${transform}\");\$xslt.Transform(\$xml, \$output);
+      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\"${transform}\");\$xslt.Transform(\$xml, \$output);\"
       move /y temp.xml ${original}
     """
   }
