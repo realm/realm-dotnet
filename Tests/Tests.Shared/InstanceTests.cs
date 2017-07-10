@@ -631,7 +631,7 @@ namespace Tests.Database
 
                 Assert.That(ex, Is.Null);
                 Assert.That(hasCompletedMigration);
-                Assert.That(ticks, Is.GreaterThanOrEqualTo(3));
+                Assert.That(ticks, Is.GreaterThanOrEqualTo(2));
                 Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
                 realm.Dispose();
             });

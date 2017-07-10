@@ -256,6 +256,8 @@ stage('Build .NET Core') {
     unstash 'win32-wrappers-nosync'
     unstash 'tools-weaver'
 
+    archiveNetCore('nosync')
+
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
 
@@ -413,6 +415,8 @@ stage ('Build .NET Core with sync') {
     unstash 'linux-wrappers-sync'
     unstash 'tools-weaver'
 
+    archiveNetCore('sync')
+
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
             properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
 
@@ -554,6 +558,17 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
         }
       }
     }
+  }
+}
+
+def archiveNetCore(String suffix)
+{
+  dir('wrappers/build') {
+    zip([
+      'zipFile': "netcore-native-${suffix}.zip",
+      'archive': true,
+      'glob' : "*/${configuration}*/*realm-wrappers.*"
+    ])
   }
 }
 
