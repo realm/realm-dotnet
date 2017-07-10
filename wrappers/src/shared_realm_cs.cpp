@@ -269,22 +269,6 @@ inline const ObjectSchema& find_schema(const SharedRealm& realm, const Table& ta
 
 namespace realm
 {
-// specialize overload
-template <>
-size_t Table::find_first(size_t column_ndx, null) const
-{
-    return find_first_null(column_ndx);
-}
-
-// ditto
-template <class OS>
-OS& operator<<(OS& os, const null&)
-{
-    os << "(null)";
-    return os;
-}
-
-
 template <>
 size_t Table::set_unique(size_t column_ndx, size_t row_ndx, util::Optional<int64_t> value)
 {
