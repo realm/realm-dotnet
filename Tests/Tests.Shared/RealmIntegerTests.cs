@@ -110,9 +110,7 @@ namespace Tests.Database
             }
             else
             {
-                var result = counter.ByteProperty.Increment(value);
-                Assert.That((byte)result, Is.EqualTo(sum));
-                Assert.That((byte)counter.ByteProperty, Is.EqualTo(original));
+                Assert.That(() => counter.ByteProperty.Increment(value), Throws.TypeOf<NotSupportedException>());
             }
         }
 
@@ -133,9 +131,7 @@ namespace Tests.Database
             }
             else
             {
-                var result = counter.Int16Property.Increment(value);
-                Assert.That((short)result, Is.EqualTo(sum));
-                Assert.That((short)counter.Int16Property, Is.EqualTo(original));
+                Assert.That(() => counter.Int16Property.Increment(value), Throws.TypeOf<NotSupportedException>());
             }
         }
 
@@ -156,9 +152,7 @@ namespace Tests.Database
             }
             else
             {
-                var result = counter.Int32Property.Increment(value);
-                Assert.That((int)result, Is.EqualTo(sum));
-                Assert.That((int)counter.Int32Property, Is.EqualTo(original));
+                Assert.That(() => counter.Int32Property.Increment(value), Throws.TypeOf<NotSupportedException>());
             }
         }
 
@@ -179,9 +173,7 @@ namespace Tests.Database
             }
             else
             {
-                var result = counter.Int64Property.Increment(value);
-                Assert.That((long)result, Is.EqualTo(sum));
-                Assert.That((long)counter.Int64Property, Is.EqualTo(original));
+                Assert.That(() => counter.Int64Property.Increment(value), Throws.TypeOf<NotSupportedException>());
             }
         }
 

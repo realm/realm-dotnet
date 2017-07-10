@@ -50,11 +50,11 @@ namespace Tests.Database
             Assert.That(five * 5, Is.EqualTo(25));
             Assert.That(five - 3, Is.EqualTo(2));
 
-            var six = five.Increment();
-            Assert.That(five == 5);
-            Assert.That(six == 6);
-            six++;
-            Assert.That(six == 7);
+            Assert.That(() => five.Increment(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five.Decrement(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five.Increment(5), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five++, Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five--, Throws.TypeOf<NotSupportedException>());
 
             var ten = new RealmInteger<long>(10);
             Assert.That(five == ten, Is.False);

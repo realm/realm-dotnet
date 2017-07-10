@@ -110,17 +110,10 @@
     <Compile Include="Helpers\Operator.cs" />
     <Compile Include="Helpers\RealmIntegerExtensions.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
-  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Properties\realm.rd.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

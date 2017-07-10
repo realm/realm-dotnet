@@ -206,6 +206,18 @@ namespace Realms
         #region Operators
 
         /// <inheritdoc />
+        public static RealmInteger<T> operator ++(RealmInteger<T> source)
+        {
+            throw new NotSupportedException("++ is not supported, use Increment instead.");
+        }
+
+        /// <inheritdoc />
+        public static RealmInteger<T> operator --(RealmInteger<T> source)
+        {
+            throw new NotSupportedException("++ is not supported, use Decrement instead.");
+        }
+
+        /// <inheritdoc />
         public static implicit operator T(RealmInteger<T> i)
         {
             return i._value;
