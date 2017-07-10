@@ -99,7 +99,7 @@ namespace Realms
                 return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
             }
 
-            return new RealmInteger<T>(Operator.Add(value, _value));
+            throw new NotSupportedException("Increment should only be called on RealmInteger properties of managed objects.");
         }
 
         #region Equals
@@ -121,7 +121,7 @@ namespace Realms
         }
 
         /// <inheritdoc />
-		public bool Equals(T other)
+        public bool Equals(T other)
         {
             return CompareTo(other) == 0;
         }
