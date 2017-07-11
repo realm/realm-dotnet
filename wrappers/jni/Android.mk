@@ -12,9 +12,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := librealm-android
 
 ifdef NDK_DEBUG
-LOCAL_SRC_FILES := core-android/librealm-android-$(REALM_ABI)-dbg.a
+LOCAL_SRC_FILES := core-android/librealm-android-$(TARGET_ARCH_ABI)-dbg.a
 else
-LOCAL_SRC_FILES := core-android/librealm-android-$(REALM_ABI).a
+LOCAL_SRC_FILES := core-android/librealm-android-$(TARGET_ARCH_ABI).a
 endif
 
 include $(PREBUILT_STATIC_LIBRARY)
