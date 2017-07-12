@@ -18,6 +18,8 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -83,6 +85,22 @@ namespace Tests.Database
 
             Assert.That(integers.OrderBy(i => i), Is.EqualTo(new[] { five, ten, fifteen }));
             Assert.That(integers.OrderByDescending(i => i), Is.EqualTo(new[] { fifteen, ten, five }));
+        }
+
+        [Test]
+        public void TestTaskTimeout()
+        {
+            AsyncContext.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(500).Timeout(250);
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<TimeoutException>());
+                }
+            });
         }
     }
 }

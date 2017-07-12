@@ -21,27 +21,27 @@ using System.Threading.Tasks;
 
 internal static class TaskExtensions
 {
-    public static async Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout)
+    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout)
     {
-        var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
-        if (completed == task)
+        return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
         {
-            return await task;
-        }
+            if (t.Result == task)
+            {
+                return task.Result;
+            }
 
-        throw new TimeoutException("The operation has timed out.");
+            throw new TimeoutException("The operation has timed out.");
+        });
     }
 
-    public static async Task Timeout(this Task task, int millisecondTimeout)
+    public static Task Timeout(this Task task, int millisecondTimeout)
     {
-        var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
-        if (completed == task)
+        return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
         {
-            await task;
-        }
-        else
-        {
-            throw new TimeoutException("The operation has timed out.");
-        }
+            if (t.Result != task)
+            {
+                throw new TimeoutException("The operation has timed out.");
+            }
+        });
     }
 }
