@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
+using Realms;
 using Realms.Weaving;
 
 namespace RealmWeaver
@@ -88,7 +89,30 @@ namespace RealmWeaver
             }.Execute();
         }
 
+        private static string GetCoreMethodName(string type)
+        {
+            type = type.Replace("Counter", string.Empty);
+            if (_realmIntegerBackedTypes.Contains(type))
+            {
+                return (type.StartsWith("Nullable") ? "Nullable" : string.Empty) + "RealmInteger";
+            }
+
+            return type;
+        }
+
         #endregion
+
+        private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
+        {
+            "Byte",
+            "Int16",
+            "Int32",
+            "Int64",
+            "NullableByte",
+            "NullableInt16",
+            "NullableInt32",
+            "NullableInt64"
+        };
 
         public enum PropertyChangedWeaver
         {
@@ -188,7 +212,15 @@ namespace RealmWeaver
             new object[] { "NullableInt64", 100L, null },
             new object[] { "NullableSingle", 123.123f, null },
             new object[] { "NullableDouble", 123.123, null },
-            new object[] { "NullableBoolean", true, null }
+            new object[] { "NullableBoolean", true, null },
+            new object[] { "ByteCounter", (RealmInteger<byte>)100, (byte)0 },
+            new object[] { "Int16Counter", (RealmInteger<short>)100, (short)0 },
+            new object[] { "Int32Counter", (RealmInteger<int>)100, 0 },
+            new object[] { "Int64Counter", (RealmInteger<long>)100L, 0L },
+            new object[] { "NullableByteCounter", (RealmInteger<byte>)100, null },
+            new object[] { "NullableInt16Counter", (RealmInteger<short>)100, null },
+            new object[] { "NullableInt32Counter", (RealmInteger<int>)100, null },
+            new object[] { "NullableInt64Counter", (RealmInteger<long>)100L, null },
         };
 
         private static IEnumerable<object[]> RandomValues()
@@ -242,7 +274,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Get" + typeName + "Value(propertyName = \"" + propertyName + "\")"
+                $"RealmObject.Get{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\")"
             }));
         }
 
@@ -261,7 +293,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+                $"RealmObject.Set{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -290,7 +322,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+                $"RealmObject.Set{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
             Assert.That(eventRaised, Is.False);
@@ -337,7 +369,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "ValueUnique(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+                $"RealmObject.Set{GetCoreMethodName(typeName)}ValueUnique(propertyName = \"{propertyName}\", value = {propertyValue})"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -554,7 +586,7 @@ namespace RealmWeaver
             {
                 "IsManaged",
                 "IsManaged",
-                $"RealmObject.Set{propertyName}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
+                $"RealmObject.Set{GetCoreMethodName(propertyName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
             }));
         }
 
@@ -588,7 +620,7 @@ namespace RealmWeaver
                                            return new[]
                                            {
                                                "IsManaged",
-                                               $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                               $"RealmObject.SetNullable{GetCoreMethodName(p.Name)}Value(propertyName = \"{p.Name}\", value = )"
                                            };
                                        })
                                        .ToList();
@@ -610,7 +642,7 @@ namespace RealmWeaver
 
             var propertyType = objectType.GetProperty(type + "Property").PropertyType;
             var defaultValue = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
-            Assert.That(instance.LogList, Is.EqualTo(new List<string> { "IsManaged", $"RealmObject.Set{type}ValueUnique(propertyName = \"{type}Property\", value = {defaultValue})" }));
+            Assert.That(instance.LogList, Is.EqualTo(new List<string> { "IsManaged", $"RealmObject.Set{GetCoreMethodName(type)}ValueUnique(propertyName = \"{type}Property\", value = {defaultValue})" }));
         }
 
         [TestCase("RequiredObject", true)]
@@ -655,7 +687,7 @@ namespace RealmWeaver
 
             CopyToRealm(objectType, instance);
 
-            Assert.That(((IEnumerable<string>)instance.LogList).Take(2), Is.EqualTo(new[] { "IsManaged", "RealmObject.SetInt32ValueUnique(propertyName = \"Id\", value = 0)" }));
+            Assert.That(((IEnumerable<string>)instance.LogList).Take(2), Is.EqualTo(new[] { "IsManaged", "RealmObject.SetRealmIntegerValueUnique(propertyName = \"Id\", value = 0)" }));
         }
 
         [Test]

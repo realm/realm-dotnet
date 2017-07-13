@@ -24,6 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms
@@ -147,70 +148,6 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected byte GetByteValue(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (byte)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected byte? GetNullableByteValue(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (byte?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected short GetInt16Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (short)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected short? GetNullableInt16Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (short?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected int GetInt32Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (int)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected int? GetNullableInt32Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return (int?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected long GetInt64Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return _objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected long? GetNullableInt64Value(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return _objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -327,6 +264,30 @@ namespace Realms
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            var propertyIndex = _metadata.PropertyIndices[propertyName];
+            var result = Operator.Convert<long, T>(_objectHandle.GetInt64(propertyIndex));
+            return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            var propertyIndex = _metadata.PropertyIndices[propertyName];
+            var result = _objectHandle.GetNullableInt64(propertyIndex);
+
+            if (result.HasValue)
+            {
+                return new RealmInteger<T>(Operator.Convert<long, T>(result.Value), ObjectHandle, propertyIndex);
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Setters
@@ -373,134 +334,6 @@ namespace Realms
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableCharValueUnique(string propertyName, char? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetByteValue(string propertyName, byte value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetByteValueUnique(string propertyName, byte value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableByteValue(string propertyName, byte? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableByteValueUnique(string propertyName, byte? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt16Value(string propertyName, short value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt16ValueUnique(string propertyName, short value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt16Value(string propertyName, short? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt16ValueUnique(string propertyName, short? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt32Value(string propertyName, int value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt32ValueUnique(string propertyName, int value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt32Value(string propertyName, int? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt32ValueUnique(string propertyName, int? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt64Value(string propertyName, long value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetInt64ValueUnique(string propertyName, long value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt64Value(string propertyName, long? value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
@@ -599,6 +432,42 @@ namespace Realms
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value.ToLong());
+        }
+
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+        protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value.ToLong());
         }
 
         #endregion

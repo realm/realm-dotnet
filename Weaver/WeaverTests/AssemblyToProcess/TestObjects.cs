@@ -62,6 +62,22 @@ namespace AssemblyToProcess
         public bool? NullableBooleanProperty { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmInteger<byte>? NullableByteCounterProperty { get; set; }
+
+        public RealmInteger<short>? NullableInt16CounterProperty { get; set; }
+
+        public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
+
+        public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

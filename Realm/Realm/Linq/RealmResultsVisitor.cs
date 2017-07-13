@@ -514,6 +514,20 @@ namespace Realms
 
         internal static bool TryExtractConstantValue(Expression expr, out object value)
         {
+            if (expr.NodeType == ExpressionType.Convert)
+            {
+                var operand = ((UnaryExpression)expr).Operand;
+                if (TryExtractConstantValue(operand, out var innerValue))
+                {
+                    var parameter = Expression.Parameter(operand.Type, "op");
+                    value = Expression.Lambda(expr, parameter).Compile().DynamicInvoke(innerValue);
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
             if (expr is ConstantExpression constant)
             {
                 value = constant.Value;
@@ -568,24 +582,22 @@ namespace Realms
             }
             else
             {
-                var memberExpression = node.Left as MemberExpression;
+                var leftExpression = node.Left;
+                var memberExpression = leftExpression as MemberExpression;
                 var rightExpression = node.Right;
 
                 // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
                 // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
                 // from Where(p => p.CharProperty == 'A')
-                if (memberExpression == null && node.Left.NodeType == ExpressionType.Convert)
+                while (memberExpression == null && leftExpression.NodeType == ExpressionType.Convert)
                 {
-                    memberExpression = ((UnaryExpression)node.Left).Operand as MemberExpression;
-                    if (node.Right.NodeType == ExpressionType.Convert)
-                    {
-                        rightExpression = ((UnaryExpression)node.Right).Operand;
-                    }
+                    leftExpression = ((UnaryExpression)leftExpression).Operand;
+                    memberExpression = leftExpression as MemberExpression;
                 }
 
                 var leftName = GetColumnName(memberExpression, node.NodeType);
 
-                if (!TryExtractConstantValue(rightExpression, out object rightValue))
+                if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
                 }
@@ -676,6 +688,18 @@ namespace Realms
                 case RealmObject obj:
                     queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
                     break;
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntEqual(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntEqual(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntEqual(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongEqual(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -739,6 +763,18 @@ namespace Realms
                     queryHandle.Not();
                     queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
                     break;
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntNotEqual(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntNotEqual(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntNotEqual(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongNotEqual(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -776,6 +812,18 @@ namespace Realms
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntLess(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntLess(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntLess(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongLess(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -813,6 +861,18 @@ namespace Realms
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntLessEqual(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntLessEqual(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntLessEqual(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongLessEqual(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -850,6 +910,18 @@ namespace Realms
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntGreater(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntGreater(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntGreater(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongGreater(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -887,6 +959,18 @@ namespace Realms
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
+                case RealmInteger<byte> byteValue:
+                    queryHandle.IntGreaterEqual(columnIndex, byteValue);
+                    break;
+                case RealmInteger<short> shortValue:
+                    queryHandle.IntGreaterEqual(columnIndex, shortValue);
+                    break;
+                case RealmInteger<int> intValue:
+                    queryHandle.IntGreaterEqual(columnIndex, intValue);
+                    break;
+                case RealmInteger<long> longValue:
+                    queryHandle.LongGreaterEqual(columnIndex, longValue);
+                    break;
                 default:
                     throw new NotImplementedException();
             }

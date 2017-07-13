@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmIntegerQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\DisallowedPredicateParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\LINQvariableTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SimpleLINQtests.cs" />
@@ -47,5 +48,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ThreadHandoverTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StringExtensionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmObjectTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmIntegerTests.cs" />
   </ItemGroup>
 </Project>

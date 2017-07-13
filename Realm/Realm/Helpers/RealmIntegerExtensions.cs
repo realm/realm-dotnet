@@ -17,31 +17,31 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
+using Realms;
+using Realms.Helpers;
 
-internal static class TaskExtensions
+internal static class RealmIntegerExtensions
 {
-    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout)
+    public static long? ToLong<T>(this RealmInteger<T>? integer)
+        where T : struct, IComparable<T>, IFormattable
     {
-        return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
+        if (integer.HasValue)
         {
-            if (t.Result == task)
-            {
-                return task.Result;
-            }
+            return integer.Value.ToLong();
+        }
 
-            throw new TimeoutException("The operation has timed out.");
-        });
+        return null;
     }
 
-    public static Task Timeout(this Task task, int millisecondTimeout)
+    public static long ToLong<T>(this RealmInteger<T> integer)
+        where T : struct, IComparable<T>, IFormattable
     {
-        return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
-        {
-            if (t.Result != task)
-            {
-                throw new TimeoutException("The operation has timed out.");
-            }
-        });
+        return ToLong((T)integer);
+    }
+
+    public static long ToLong<T>(this T integer)
+        where T : struct, IComparable<T>, IFormattable
+    {
+        return Operator.Convert<T, long>(integer);
     }
 }

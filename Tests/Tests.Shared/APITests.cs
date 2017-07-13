@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Reflection;
+using System.Linq;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -32,6 +34,73 @@ namespace Tests.Database
         public void RealmCollectionContravariance(Type type)
         {
             Assert.That(typeof(IRealmCollection<RealmObject>).IsAssignableFrom(type));
+        }
+
+        [Test]
+        public void RealmIntegerApi()
+        {
+            var five = new RealmInteger<long>(5);
+            Assert.That(five == 5);
+            Assert.That(five != 10);
+            Assert.That(five.Equals(5));
+            Assert.That(five + 5, Is.EqualTo(10));
+            Assert.That(five > 5, Is.False);
+            Assert.That(five < 5, Is.False);
+            Assert.That(five > 3);
+            Assert.That(five < 7);
+            Assert.That(five / 5, Is.EqualTo(1));
+            Assert.That(five * 5, Is.EqualTo(25));
+            Assert.That(five - 3, Is.EqualTo(2));
+
+            Assert.That(() => five.Increment(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five.Decrement(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five.Increment(5), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five++, Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => five--, Throws.TypeOf<NotSupportedException>());
+
+            var ten = new RealmInteger<long>(10);
+            Assert.That(five == ten, Is.False);
+            Assert.That(five != ten);
+            Assert.That(five, Is.Not.EqualTo(10));
+            Assert.That(ten > five);
+            Assert.That(ten < five, Is.False);
+            Assert.That(five < ten);
+            Assert.That(five > ten, Is.False);
+            Assert.That(ten + five, Is.EqualTo(15));
+            Assert.That(ten - five, Is.EqualTo(5));
+            Assert.That(five - ten, Is.EqualTo(-5));
+            Assert.That(five * ten, Is.EqualTo(50));
+            Assert.That(ten * five, Is.EqualTo(50));
+            Assert.That(ten / five, Is.EqualTo(2));
+            Assert.That((double)five / ten, Is.EqualTo(0.5));
+
+            var fifteen = new RealmInteger<long>(15);
+
+            var integers = new[]
+            {
+                fifteen,
+                five,
+                ten
+            };
+
+            Assert.That(integers.OrderBy(i => i), Is.EqualTo(new[] { five, ten, fifteen }));
+            Assert.That(integers.OrderByDescending(i => i), Is.EqualTo(new[] { fifteen, ten, five }));
+        }
+
+        [Test]
+        public void TestTaskTimeout()
+        {
+            AsyncContext.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(500).Timeout(250);
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<TimeoutException>());
+                }
+            });
         }
     }
 }
