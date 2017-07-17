@@ -283,7 +283,7 @@ stage('Test without sync') {
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
-    // 'Linux': NetCoreTest('docker', 'linux', 'nosync'),
+    'Linux': NetCoreTest('docker', 'linux', 'nosync'),
     'macOS': NetCoreTest('osx', 'macos', 'nosync'),
     'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync')
   )
@@ -436,7 +436,7 @@ stage('Test with sync') {
   parallel(
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync'),
-    // 'Linux': NetCoreTest('docker', 'linux', 'sync'),
+    'Linux': NetCoreTest('docker', 'linux', 'sync'),
     'macOS': NetCoreTest('osx', 'macos', 'sync')
   )
 }
@@ -534,27 +534,38 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       getArchive()
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      dir ("Tests/Tests.NetCore/bin/${configuration}/${platform}publish") {
+      dir ("Tests/Tests.NetCore") {
+        def binaryFolder = "bin/${configuration}/${platform}publish"
         try {
           if (isUnix()) {
             def invocation = """
+              cd ${pwd()}/${binaryFolder}
               chmod +x Tests.NetCore
               ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml
+              xsltproc nunit3-junit.xslt TestResults.${platform}.xml > temp.xml
+              mv temp.xml TestResults.${platform}.xml
             """
 
             if (nodeName == 'docker') {
-              insideDocker('ci/realm-dotnet/wrappers:linux', "${env.WORKSPACE}/wrappers/Dockerfile.linux") {
+              insideDocker('ci/realm-dotnet/netcorerunner:linux', 'Dockerfile.linux') {
                 sh invocation
               }
             } else {
               sh invocation
             }
           } else {
-            bat "Tests.NetCore.exe --labels=After --result=TestResults.${platform}.xml"
+            dir (binaryFolder) {
+              bat """
+                Tests.NetCore.exe --labels=After --result=TestResults.${platform}.xml
+                powershell \"\$xml = Resolve-Path TestResults.${platform}.xml;\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
+                move /y temp.xml TestResults.${platform}.xml
+              """
+            }
           }
         } finally {
-          transform("TestResults.${platform}.xml", "nunit3-junit.xslt")
-          junit "TestResults.${platform}.xml"
+          dir (binaryFolder) {
+            junit "TestResults.${platform}.xml"
+          }
         }
       }
     }
@@ -776,19 +787,5 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
 
   image.inside() {
     steps()
-  }
-}
-
-def transform(String original, String transform) {
-  if (isUnix()) {
-    sh """
-      xsltproc ${transform} ${original} > temp.xml
-      mv temp.xml ${original}
-    """
-  } else {
-    bat """
-      powershell \"\$xml = Resolve-Path ${original};\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"${transform}\\\");\$xslt.Transform(\$xml, \$output);\"
-      move /y temp.xml ${original}
-    """
   }
 }
