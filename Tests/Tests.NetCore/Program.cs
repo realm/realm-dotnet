@@ -25,7 +25,9 @@ namespace Tests.NetCore
     {
         public static int Main(string[] args)
         {
-            return new AutoRun(typeof(Program).GetTypeInfo().Assembly).Execute(args);
+            var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
+            autorun.Execute(args);
+            return 0;
         }
     }
 }
