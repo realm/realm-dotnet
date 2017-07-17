@@ -642,6 +642,37 @@ namespace Tests.Database
             });
         }
 
+        [Test]
+        public void WhenSynchronizationContextExists_ShouldAutoRefresh()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var tcs = new TaskCompletionSource<ChangeSet>();
+                var query = _realm.All<Person>();
+                NotificationCallbackDelegate<Person> cb = (s, c, e) =>
+                {
+                    if (e != null)
+                    {
+                        tcs.TrySetException(e);
+                    }
+                    else if (c != null)
+                    {
+                        tcs.TrySetResult(c);
+                    }
+                };
+
+                using (query.SubscribeForNotifications(cb))
+                {
+                    _realm.Write(() => _realm.Add(new Person()));
+
+                    var changes = await tcs.Task.Timeout(2000);
+
+                    Assert.That(changes, Is.Not.Null);
+                    Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+                }
+            });
+        }
+
         public static IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
             yield return new TestCaseData(new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 }, 0);
