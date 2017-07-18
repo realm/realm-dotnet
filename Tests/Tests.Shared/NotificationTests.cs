@@ -645,12 +645,8 @@ namespace Tests.Database
         [Test]
         public void WhenSynchronizationContextExists_ShouldAutoRefresh()
         {
-#if NETCOREAPP1_1
-            if (TestHelpers.IsMacOS)
-            {
-                Assert.Ignore("Seems like there's a bug with autorefreshing on .NET Core on macOS");
-            }
-#endif
+            Assert.Ignore("Seems like there's a bug with AsyncContext on macOS");
+
             AsyncContext.Run(async () =>
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();

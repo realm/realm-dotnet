@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Linq;
+using AppKit;
 
-[assembly: AssemblyTitle("Realm.Sync")]
-[assembly: InternalsVisibleTo("Tests.iOS")]
-[assembly: InternalsVisibleTo("Tests.Android")]
-[assembly: InternalsVisibleTo("Tests.NetCore")]
-[assembly: InternalsVisibleTo("Tests.XamarinMac")]
+namespace Tests.XamarinMac
+{
+    internal static class MainClass
+    {
+        private const string HeadlessArg = "--headless";
+
+        public static string[] NUnitArgs { get; private set; }
+
+        public static bool Headless { get; private set; }
+
+        public static void Main(string[] args)
+        {
+            Headless = args.Contains(HeadlessArg);
+            NUnitArgs = args.Where(a => a != HeadlessArg).ToArray();
+            NSApplication.Init();
+            NSApplication.Main(args);
+        }
+    }
+}
