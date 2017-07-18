@@ -28,7 +28,7 @@
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
     <HttpClientHandler>NSUrlSessionHandler</HttpClientHandler>
-    <LinkMode></LinkMode>
+    <LinkMode>None</LinkMode>
     <XamMacArch></XamMacArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -44,7 +44,7 @@
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
-    <LinkMode>Full</LinkMode>
+    <LinkMode>None</LinkMode>
     <HttpClientHandler>NSUrlSessionHandler</HttpClientHandler>
     <XamMacArch></XamMacArch>
   </PropertyGroup>

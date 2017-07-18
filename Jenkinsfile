@@ -213,7 +213,6 @@ stage('Build without sync') {
       nodeWithCleanup('xamarin-mac') {
         getArchive()
         unstash 'macos-wrappers-nosync'
-        unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
         msbuild project: 'Tests/Tests.XamarinMac/Tests.XamarinMac.csproj', target: 'Restore,Build',
@@ -322,7 +321,6 @@ stage('Build with sync') {
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
 
-
         msbuild project: 'Tests/Tests.iOS/Tests.iOS.csproj', target: 'Restore,Build',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", Platform: 'iPhoneSimulator' ]
 
@@ -383,6 +381,19 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
       }
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        unstash 'macos-wrappers-sync'
+        unstash 'tools-weaver'
+
+        msbuild project: 'Tests/Tests.XamarinMac/Tests.XamarinMac.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+
+        dir("Tests/Tests.XamarinMac/bin/${configuration}") {
+          stash includes: 'Tests.XamarinMac.app/**/*', name: 'xamarinmac-tests-sync'
+        }
+      }
+
     },
     'Linux': {
       nodeWithCleanup('docker') {
@@ -451,7 +462,8 @@ stage('Test with sync') {
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync'),
     'Linux': NetCoreTest('docker', 'linux', 'sync'),
-    'macOS': NetCoreTest('osx', 'macos', 'sync')
+    'macOS': NetCoreTest('osx', 'macos', 'sync'),
+    'XamarinMac': XamarinMacTest('xamarinmac-tests-sync')
   )
 }
 
