@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -311,11 +310,18 @@ namespace Tests.Sync
                     {
                         callbacksInvoked++;
 
-                        Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+                        // .NET Core dislikes asserts in the callback so much it crashes.
+                        if (p.TransferredBytes > p.TransferableBytes)
+                        {
+                            throw new Exception("TransferredBytes must be less than or equal to TransferableBytes");
+                        }
 
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
-                            Assert.That(p.TransferableBytes, Is.EqualTo(100));
+                            if (p.TransferableBytes != 100)
+                            {
+                                throw new Exception("TransferableBytes must be equal to 100");
+                            }
                         }
                     }
                     catch (Exception e)
