@@ -210,6 +210,19 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
+      nodeWithCleanup('xamarin-mac') {
+        getArchive()
+        unstash 'macos-wrappers-nosync'
+        unstash 'buildtasks-output'
+        unstash 'tools-weaver'
+
+        msbuild project: 'Tests/Tests.XamarinMac/Tests.XamarinMac.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
+
+        dir("Tests/Tests.XamarinMac/bin/${configuration}") {
+          stash includes: 'Tests.XamarinMac.app/**/*', name: 'xamarinmac-tests-nosync'
+        }
+      }
     },
     'Linux': {
       nodeWithCleanup('docker') {
@@ -285,7 +298,8 @@ stage('Test without sync') {
     'Win32': Win32Test('win32-tests-nosync'),
     'Linux': NetCoreTest('docker', 'linux', 'nosync'),
     'macOS': NetCoreTest('osx', 'macos', 'nosync'),
-    'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync')
+    'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync'),
+    'XamarinMac': XamarinMacTest('xamarinmac-tests-nosync')
   )
 }
 
@@ -475,7 +489,7 @@ def iOSTest(stashName) {
         sh 'mkdir -p temp'
         runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/TestResults.iOS.xml")
       } finally {
-        dir ("${workspace}/temp") {
+        dir("${workspace}/temp") {
           junit 'TestResults.iOS.xml'
         }
       }
@@ -534,16 +548,15 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       getArchive()
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      dir ("Tests/Tests.NetCore") {
+      dir("Tests/Tests.NetCore") {
         def binaryFolder = "bin/${configuration}/${platform}publish"
         try {
           if (isUnix()) {
             def invocation = """
               cd ${pwd()}/${binaryFolder}
               chmod +x Tests.NetCore
-              ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml
-              xsltproc nunit3-junit.xslt TestResults.${platform}.xml > temp.xml
-              mv temp.xml TestResults.${platform}.xml
+              ./Tests.NetCore --labels=After --result=temp.xml
+              xsltproc nunit3-junit.xslt temp.xml > TestResults.${platform}.xml
             """
 
             if (nodeName == 'docker') {
@@ -554,19 +567,38 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
               sh invocation
             }
           } else {
-            dir (binaryFolder) {
+            dir(binaryFolder) {
               bat """
-                Tests.NetCore.exe --labels=After --result=TestResults.${platform}.xml
-                powershell \"\$xml = Resolve-Path TestResults.${platform}.xml;\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
-                move /y temp.xml TestResults.${platform}.xml
+                Tests.NetCore.exe --labels=After --result=temp.xml
+                powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) TestResults.${platform}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
               """
             }
           }
         } finally {
-          dir (binaryFolder) {
+          dir(binaryFolder) {
             junit "TestResults.${platform}.xml"
           }
         }
+      }
+    }
+  }
+}
+
+def XamarinMacTest(String stashName) {
+  return {
+    nodeWithCleanup('osx') {
+      unstash stashName
+
+      def workspace = pwd()
+      try {
+        dir("Tests.XamarinMac.app/Contents/") {
+          sh """
+            MacOS/Tests.XamarinMac --headless --labels=All --result=temp.xml
+            xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${workspace}/TestResults.XamarinMac.xml
+          """
+        }
+      } finally {
+        junit "TestResults.XamarinMac.xml"
       }
     }
   }
