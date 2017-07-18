@@ -86,6 +86,20 @@ namespace Tests
             }
         }
 
+        public static bool IsMacOS
+        {
+            get
+            {
+#if MACOS
+                return true;
+#elif NETCOREAPP1_1
+                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+#else
+                return false;
+#endif
+            }
+        }
+
         public static void IgnoreOnWindows(string message)
         {
             if (IsWindows)
