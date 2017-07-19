@@ -202,6 +202,27 @@ namespace Realms.Sync
             return null;
         }
 
+        /// <summary>
+        /// Looks up user's information by provider id. This is useful when you know the id of a user in a provider's system,
+        /// e.g. on Facebook and want to find the associated Realm user's Id.
+        /// </summary>
+        /// <param name="provider">The provider that the user has signed up with.</param>
+        /// <param name="providerId">The id of the user in the provider's system.</param>
+        /// <remarks>
+        /// This user needs admin privilege in order to look up other users by provider id.
+        /// <br/>
+        /// The exact names of built-in providers can be found in <see cref="Credentials.Provider"/>.
+        /// </remarks>
+        /// <returns>
+        /// A <see cref="UserLookupResponse"/>, containing information about the User's Identity in Realm's authentication system,
+        /// or <c>null</c> if a user has not been found.
+        /// </returns>
+        public Task<UserLookupResponse> LookupUserAsync(string provider, string providerId)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
         /// <inheritdoc />
         public bool Equals(User other)
         {
