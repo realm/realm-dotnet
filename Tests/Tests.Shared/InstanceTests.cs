@@ -324,11 +324,15 @@ namespace Tests.Database
         }
 
         [Test]
-#if !WINDOWS
-        [Ignore("Compact works on this platform")]
-#endif
         public void Compact_OnWindows_ThrowsRealmException()
         {
+            if (!TestHelpers.IsWindows)
+            {
+                // This is a windows only test that asserts that compact will throw (as it's unsupported)
+                // On other platforms, we simply ignore it.
+                Assert.Ignore("Compact works on this platform");
+            }
+
             Assert.That(() => Realm.Compact(RealmConfiguration.DefaultConfiguration), Throws.TypeOf<RealmException>());
         }
 
@@ -337,8 +341,11 @@ namespace Tests.Database
         {
             if (!TestHelpers.IsWindows)
             {
+                // This is a windows only test that asserts that compact will throw (as it's unsupported)
+                // On other platforms, we simply ignore it.
                 Assert.Ignore("Compact works on this platform");
             }
+
             RealmConfiguration.DefaultConfiguration.ShouldCompactOnLaunch = (_, __) => true;
 
             Assert.That(() => Realm.GetInstance(), Throws.TypeOf<RealmException>());
