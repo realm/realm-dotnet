@@ -5,8 +5,8 @@
                 {
                     "src": "../Realm/",
                     "files": [
-                        "Realm/Realm.Docs.csproj",
-                        "Realm.Sync/Realm.Sync.Docs.csproj"
+                        "Realm/Realm.csproj",
+                        "Realm.Sync/Realm.Sync.csproj"
                     ],
                     "exclude": [
                         "**/obj/**",
