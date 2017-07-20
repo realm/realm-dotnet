@@ -645,7 +645,10 @@ namespace Tests.Database
         [Test]
         public void WhenSynchronizationContextExists_ShouldAutoRefresh()
         {
-            Assert.Ignore("Seems like there's a bug with AsyncContext on macOS");
+            if (TestHelpers.IsMacOS)
+            {
+				Assert.Ignore("Seems like there's a bug with AsyncContext on macOS");
+			}
 
             AsyncContext.Run(async () =>
             {
