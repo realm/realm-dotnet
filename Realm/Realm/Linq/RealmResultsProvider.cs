@@ -15,8 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
+
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -43,6 +42,7 @@ namespace Realms
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
+            // If that line is changed, make sure to update the non-generic CreateQuery below!
             return new RealmResults<T>(_realm, this, expression, _metadata, false);
         }
 
@@ -51,7 +51,9 @@ namespace Realms
             var elementType = TypeSystem.GetElementType(expression.Type);
             try
             {
-                return (IQueryable)Activator.CreateInstance(typeof(RealmResults<>).MakeGenericType(elementType), new object[] { this, expression });
+                var resultsType = typeof(RealmResults<>).MakeGenericType(elementType);
+                var ctor = resultsType.GetTypeInfo().DeclaredConstructors.Single(c => c.GetParameters().Length == 5);
+                return (IQueryable)ctor.Invoke(new object[] { _realm, this, expression, _metadata, false });
             }
             catch (TargetInvocationException tie)
             {
@@ -61,16 +63,16 @@ namespace Realms
 
         public T Execute<T>(Expression expression)
         {
-            expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
-            var v = MakeVisitor();
-            var visitResult = v.Visit(expression);
-            var constExp = visitResult as ConstantExpression;
-            return (T)constExp?.Value;
+            return (T)Execute(expression);
         }
 
         public object Execute(Expression expression)
         {
-            throw new Exception("Non-generic Execute() called...");
+            expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
+            var v = MakeVisitor();
+            var visitResult = v.Visit(expression);
+            var constExp = visitResult as ConstantExpression;
+            return constExp?.Value;
         }
 
         private class EvaluatableExpressionFilter : EvaluatableExpressionFilterBase
