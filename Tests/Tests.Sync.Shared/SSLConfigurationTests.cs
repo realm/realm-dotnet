@@ -33,7 +33,7 @@ namespace Tests.Sync
     [NUnit.Framework.Explicit]
 #endif
     [TestFixture, Preserve(AllMembers = true)]
-    public class SSLConfigurationTests
+    public class SSLConfigurationTests : SyncTestBase
     {
 #if __IOS__
         [Ignore("On iOS TrustedCAPath is ignored.")]
@@ -53,12 +53,12 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri("~/TrustedCA_WhenFileDoesntExist_Throws"))
                 {
                     TrustedCAPath = "something.pem"
                 };
-                Assert.That(() => Realm.GetInstance(config), Throws.TypeOf<FileNotFoundException>());
+                Assert.That(() => GetRealm(config), Throws.TypeOf<FileNotFoundException>());
             });
         }
 
@@ -72,11 +72,11 @@ namespace Tests.Sync
             }, openAsync);
         }
 
-        private static void TestSSLCore(Action<SyncConfiguration> setupSecureConfig, bool openAsync)
+        private void TestSSLCore(Action<SyncConfiguration> setupSecureConfig, bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 const string path = "~/TestSSLCore";
                 var realmUri = SyncTestHelpers.RealmUri(path);
                 var config = new SyncConfiguration(user, realmUri);
@@ -85,34 +85,28 @@ namespace Tests.Sync
                 var secureConfig = new SyncConfiguration(user, secureRealmUri, config.DatabasePath + "2");
                 setupSecureConfig(secureConfig);
 
-                try
+                using (var realm = GetRealm(config))
                 {
-                    using (var realm = Realm.GetInstance(config))
+                    realm.Write(() =>
                     {
-                        realm.Write(() =>
+                        realm.Add(new IntPrimaryKeyWithValueObject
                         {
-                            realm.Add(new IntPrimaryKeyWithValueObject
-                            {
-                                Id = 1,
-                                StringValue = "some value"
-                            });
+                            Id = 1,
+                            StringValue = "some value"
                         });
+                    });
 
-                        await realm.GetSession().WaitForUploadAsync();
-                    }
-
-                    using (var newRealm = await SyncTestHelpers.GetInstanceAsync(secureConfig, openAsync))
-                    {
-                        var items = newRealm.All<IntPrimaryKeyWithValueObject>();
-
-                        Assert.That(items.Count(), Is.EqualTo(1));
-                        Assert.That(items.Single().StringValue, Is.EqualTo("some value"));
-                    }
+                    await GetSession(realm).WaitForUploadAsync();
                 }
-                finally
+
+                using (var newRealm = await SyncTestHelpers.GetInstanceAsync(secureConfig, openAsync))
                 {
-                    Realm.DeleteRealm(config);
-                    Realm.DeleteRealm(secureConfig);
+                    CleanupOnTearDown(newRealm);
+
+                    var items = newRealm.All<IntPrimaryKeyWithValueObject>();
+
+                    Assert.That(items.Count(), Is.EqualTo(1));
+                    Assert.That(items.Single().StringValue, Is.EqualTo("some value"));
                 }
             });
         }

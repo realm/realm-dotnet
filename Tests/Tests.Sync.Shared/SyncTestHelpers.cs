@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -45,24 +44,25 @@ namespace Tests.Sync
 
         public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.ServerUrl}:9443/{path.TrimStart('/')}");
 
-        public static Task<User> GetUser()
+        public static Task<User> GetUserAsync()
         {
             var credentials = CreateCredentials();
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
-        public static async Task<Realm> GetFakeRealm(bool isUserAdmin)
+        public static async Task<SyncConfiguration> GetFakeConfigAsync(bool isUserAdmin = true)
         {
-            var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isUserAdmin), new Uri("http://localhost:9080"));
+            var user = await GetFakeUserAsync(isUserAdmin);
             var serverUri = new Uri("realm://localhost:9080/foobar");
-            return Realm.GetInstance(new SyncConfiguration(user, serverUri));
+            return new SyncConfiguration(user, serverUri);
         }
 
-        public static async Task<Realm> GetIntegrationRealm(string path)
+        public static Task<User> GetFakeUserAsync(bool isUserAdmin = true, string token = "foo:bar", string scheme = "http") => User.LoginAsync(Credentials.AccessToken(token, Guid.NewGuid().ToString(), isUserAdmin), new Uri($"{scheme}://some.fake.server:9080"));
+
+        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
         {
-            var user = await GetUser();
-            var config = new SyncConfiguration(user, RealmUri($"~/{path}"));
-            return Realm.GetInstance(config);
+            var user = await GetUserAsync();
+            return new SyncConfiguration(user, RealmUri($"~/{path}"));
         }
 
         public static async Task<Realm> GetInstanceAsync(SyncConfiguration config, bool openAsync, bool waitForRemote = true)
@@ -76,13 +76,15 @@ namespace Tests.Sync
 
             if (waitForRemote)
             {
-                await realm.GetSession().WaitForDownloadAsync();
+                var session = realm.GetSession();
+                await session.WaitForDownloadAsync();
+                session.Handle.Close();
             }
 
             return realm;
         }
 
-        public static Task<Tuple<Session, T>> SimulateSessionError<T>(Session session, ErrorCode code, string message) where T : Exception
+        public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message) where T : Exception
         {
             var tcs = new TaskCompletionSource<Tuple<Session, T>>();
             EventHandler<ErrorEventArgs> handler = null;

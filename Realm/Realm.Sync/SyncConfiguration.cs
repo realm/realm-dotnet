@@ -104,6 +104,7 @@ namespace Realms.Sync
         {
             var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
             await session.WaitForDownloadAsync();
+            session.Handle.Close();
             return CreateRealm(schema);
         }
 

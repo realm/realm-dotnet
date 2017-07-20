@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -30,14 +29,8 @@ using Realms.Sync.Exceptions;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class CredentialsTests
+    public class CredentialsTests : SyncTestBase
     {
-        [SetUp]
-        public void SetUp()
-        {
-            SharedRealmHandleExtensions.ResetForTesting();
-        }
-
         [Test]
         public void BasicTests()
         {
@@ -60,7 +53,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var currentUser = User.Current;
 
                 Assert.That(currentUser, Is.EqualTo(user));
@@ -72,8 +65,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
-                await User.LoginAsync(Credentials.AccessToken("bar:foo", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                await SyncTestHelpers.GetFakeUserAsync();
+                await SyncTestHelpers.GetFakeUserAsync(token: "bar:foo");
 
                 Assert.That(() => User.Current, Throws.TypeOf<RealmException>());
             });
@@ -92,7 +85,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
 
                 var users = User.AllLoggedIn;
 
@@ -109,7 +102,7 @@ namespace Tests.Sync
                 var users = new List<User>();
                 for (var i = 0; i < 9; i++)
                 {
-                    users.Add(await User.LoginAsync(Credentials.AccessToken("foo:bar" + i, Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080")));
+                    users.Add(await SyncTestHelpers.GetFakeUserAsync(token: "foo:bar" + i));
                 }
 
                 var current = User.AllLoggedIn;
@@ -230,7 +223,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
 
                 try
                 {

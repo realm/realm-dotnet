@@ -319,12 +319,17 @@ namespace Realms.Sync
 
             if (millisecondTimeout > 0)
             {
+                var session = PermissionRealm.GetSession();
                 try
                 {
-                    await PermissionRealm.GetSession().WaitForDownloadAsync().Timeout(millisecondTimeout);
+                    await session.WaitForDownloadAsync().Timeout(millisecondTimeout);
                 }
                 catch (TimeoutException)
                 {
+                }
+                finally
+                {
+                    session?.Handle.Close();
                 }
             }
 
@@ -454,7 +459,7 @@ namespace Realms.Sync
         /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
         /// </returns>
         /// <param name="offer">The offer that should be invalidated.</param>
-        public Task InvalidateOfferAsync(PermissionOffer offer)
+        public async Task InvalidateOfferAsync(PermissionOffer offer)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -463,10 +468,15 @@ namespace Realms.Sync
                 offer.ExpiresAt = DateTimeOffset.UtcNow;
             });
 
-            var progressObservable = ManagementRealm.GetSession().GetProgressObservable(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork);
-            var observer = new Observer<SyncProgress>(onCompleted: () => tcs.TrySetResult(null), onError: ex => tcs.TrySetException(ex));
-            progressObservable.Subscribe(observer);
-            return tcs.Task;
+            var session = ManagementRealm.GetSession();
+            try
+            {
+                await session.WaitForUploadAsync();
+            }
+            finally
+            {
+                session.Handle.Close();
+            }
         }
 
         /// <summary>

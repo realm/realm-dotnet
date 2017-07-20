@@ -26,23 +26,21 @@ using Realms.Sync;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SyncConfigurationTests
+    public class SyncConfigurationTests : SyncTestBase
     {
         [Test]
         public void SyncConfiguration_WithoutPath()
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
                 var config = new SyncConfiguration(user, serverUri);
-
-                Realm.DeleteRealm(config);
 
                 var file = new FileInfo(config.DatabasePath);
                 Assert.That(file.Exists, Is.False);
 
-                using (var realm = Realm.GetInstance(config))
+                using (var realm = GetRealm(config))
                 {
                 }
 
@@ -56,16 +54,14 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
                 var config = new SyncConfiguration(user, serverUri, "myrealm.realm");
-
-                Realm.DeleteRealm(config);
 
                 var file = new FileInfo(config.DatabasePath);
                 Assert.That(file.Exists, Is.False);
 
-                using (var realm = Realm.GetInstance(config))
+                using (var realm = GetRealm(config))
                 {
                 }
 
@@ -80,18 +76,17 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
 
-                var path = Path.Combine(Path.GetTempFileName());
+                var path = Path.GetTempFileName();
                 var config = new SyncConfiguration(user, serverUri, path);
 
                 Realm.DeleteRealm(config);
-
                 var file = new FileInfo(config.DatabasePath);
                 Assert.That(file.Exists, Is.False);
 
-                using (var realm = Realm.GetInstance(config))
+                using (var realm = GetRealm(config))
                 {
                 }
 
@@ -106,7 +101,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://foobar"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var key = new byte[64];
                 for (var i = 0; i < key.Length; i++)
                 {
@@ -118,7 +113,7 @@ namespace Tests.Sync
                     EncryptionKey = key
                 };
 
-                Assert.That(() => Realm.GetInstance(config), Throws.Nothing);
+                Assert.That(() => GetRealm(config), Throws.Nothing);
             });
         }
     }
