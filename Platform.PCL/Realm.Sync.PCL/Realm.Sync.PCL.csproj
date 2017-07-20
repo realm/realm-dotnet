@@ -34,6 +34,9 @@
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Dtos\UserLookupResponse.cs">
+      <Link>Dtos\UserLookupResponse.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CredentialsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
@@ -103,12 +106,6 @@
       <Project>{261C8EB6-9508-4D6A-9BED-39A544AA2736}</Project>
       <Name>Realm.PCL</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-    <Folder Include="Permissions\" />
-    <Folder Include="ProgressNotifications\" />
-    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />

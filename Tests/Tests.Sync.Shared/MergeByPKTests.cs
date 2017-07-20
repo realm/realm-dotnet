@@ -117,8 +117,8 @@ namespace Tests.Sync
         private static async Task<Realm> GetSyncedRealm(Type objectType)
         {
             var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
-            var user = await User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
-            var configuration = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/merge_by_pk_{objectType.Name}"), Guid.NewGuid().ToString())
+            var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+            var configuration = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { objectType }
             };

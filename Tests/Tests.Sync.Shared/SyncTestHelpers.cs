@@ -29,15 +29,26 @@ namespace Tests.Sync
 {
     public static class SyncTestHelpers
     {
-        public static Task<User> GetUser()
+        public static Credentials CreateCredentials()
         {
-            var credentials = Constants.CreateCredentials();
-            return User.LoginAsync(credentials, new Uri($"http://{Constants.ServerUrl}"));
+            return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);
         }
 
-        public static string GetRealmUrl([CallerMemberName]string realmName = null, string userId = null)
+        public static Credentials AdminCredentials()
         {
-            return $"realm://{Constants.ServerUrl}/{userId ?? "~"}/{realmName}";
+            return Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, createUser: false);
+        }
+
+        public static readonly Uri AuthServerUri = new Uri($"http://{Constants.ServerUrl}:9080");
+
+        public static Uri RealmUri(string path) => new Uri($"realm://{Constants.ServerUrl}:9080/{path.TrimStart('/')}");
+
+        public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.ServerUrl}:9443/{path.TrimStart('/')}");
+
+        public static Task<User> GetUser()
+        {
+            var credentials = CreateCredentials();
+            return User.LoginAsync(credentials, AuthServerUri);
         }
 
         public static async Task<Realm> GetFakeRealm(bool isUserAdmin)
@@ -50,7 +61,7 @@ namespace Tests.Sync
         public static async Task<Realm> GetIntegrationRealm(string path)
         {
             var user = await GetUser();
-            var config = new SyncConfiguration(user, new Uri($"realm://{Constants.ServerUrl}/~/{path}"));
+            var config = new SyncConfiguration(user, RealmUri($"~/{path}"));
             return Realm.GetInstance(config);
         }
 

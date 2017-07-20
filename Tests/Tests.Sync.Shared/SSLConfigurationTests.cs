@@ -54,7 +54,7 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUser();
-                var config = new SyncConfiguration(user, new Uri(SyncTestHelpers.GetRealmUrl()))
+                var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri("~/TrustedCA_WhenFileDoesntExist_Throws"))
                 {
                     TrustedCAPath = "something.pem"
                 };
@@ -77,11 +77,12 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUser();
-                var realmUrl = SyncTestHelpers.GetRealmUrl();
-                var config = new SyncConfiguration(user, new Uri(realmUrl));
+                const string path = "~/TestSSLCore";
+                var realmUri = SyncTestHelpers.RealmUri(path);
+                var config = new SyncConfiguration(user, realmUri);
 
-                var secureRealmUrl = realmUrl.Replace("realm://", "realms://").Replace("9080", "9443");
-                var secureConfig = new SyncConfiguration(user, new Uri(secureRealmUrl), config.DatabasePath + "2");
+                var secureRealmUri = SyncTestHelpers.SecureRealmUri(path);
+                var secureConfig = new SyncConfiguration(user, secureRealmUri, config.DatabasePath + "2");
                 setupSecureConfig(secureConfig);
 
                 try

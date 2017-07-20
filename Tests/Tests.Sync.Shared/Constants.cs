@@ -24,19 +24,9 @@ namespace Tests.Sync
     public static class Constants
     {
         // The server url as visible from the testing device
-        public const string ServerUrl = "127.0.0.1:9080";
+        public const string ServerUrl = "127.0.0.1";
 
         public const string AdminUsername = "a@a";
         public const string AdminPassword = "a";
-
-        public static Credentials CreateCredentials()
-        {
-            return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);
-        }
-
-        public static Credentials AdminCredentials()
-        {
-            return Credentials.UsernamePassword(AdminUsername, AdminPassword, createUser: false);
-        }
     }
 }
