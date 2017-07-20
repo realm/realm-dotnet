@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using NUnitLite;
 
-[assembly: AssemblyTitle("Realm")]
-[assembly: InternalsVisibleTo("Realm.Sync")]
-[assembly: InternalsVisibleTo("Realm.DataBinding")]
-[assembly: InternalsVisibleTo("Realm.Sync.Docs")]
-[assembly: InternalsVisibleTo("Tests.Win32")]
-[assembly: InternalsVisibleTo("Tests.iOS")]
-[assembly: InternalsVisibleTo("Tests.Android")]
-[assembly: InternalsVisibleTo("Tests.UWP")]
-[assembly: InternalsVisibleTo("Tests.NetCore")]
+namespace Tests.NetCore
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
+            autorun.Execute(args);
+            return 0;
+        }
+    }
+}

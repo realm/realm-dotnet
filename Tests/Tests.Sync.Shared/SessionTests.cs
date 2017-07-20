@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -108,7 +107,7 @@ namespace Tests.Sync
             {
                 var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
                 var session = realm.GetSession();
-                var result = await SyncTestHelpers.SimulateSessionError<ClientResetException>(session, 
+                var result = await SyncTestHelpers.SimulateSessionError<ClientResetException>(session,
                                                                                               ErrorCode.DivergingHistories,
                                                                                               "Fake client reset is required");
 
@@ -205,10 +204,10 @@ namespace Tests.Sync
                 }
             });
         }
-    
-        #if !ROS_SETUP
+
+#if !ROS_SETUP
         [Explicit]
-        #endif
+#endif
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
@@ -231,7 +230,7 @@ namespace Tests.Sync
                         realm.Add(new HugeSyncObject(ObjectSize));
                     });
                 }
-                var token = observable.Subscribe(p => 
+                var token = observable.Subscribe(p =>
                 {
                     try
                     {
@@ -284,10 +283,14 @@ namespace Tests.Sync
             });
         }
 
-        [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
+#if NETCOREAPP1_1 && !ROS_SETUP
+        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
+#endif
         [TestCase(ProgressDirection.Upload, ProgressMode.ReportIndefinitely)]
-        [TestCase(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressDirection.Download, ProgressMode.ReportIndefinitely)]
+        [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
+        [TestCase(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork)]
+        [Category("ProgressTests")]
         public void Session_ProgressObservable_UnitTests(ProgressDirection direction, ProgressMode mode)
         {
             AsyncContext.Run(async () =>
@@ -307,11 +310,18 @@ namespace Tests.Sync
                     {
                         callbacksInvoked++;
 
-                        Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+                        // .NET Core dislikes asserts in the callback so much it crashes.
+                        if (p.TransferredBytes > p.TransferableBytes)
+                        {
+                            throw new Exception("TransferredBytes must be less than or equal to TransferableBytes");
+                        }
 
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
-                            Assert.That(p.TransferableBytes, Is.EqualTo(100));
+                            if (p.TransferableBytes != 100)
+                            {
+                                throw new Exception("TransferableBytes must be equal to 100");
+                            }
                         }
                     }
                     catch (Exception e)
@@ -330,13 +340,13 @@ namespace Tests.Sync
 
                 session.SimulateProgress(100, 200, 100, 200);
                 await Task.Delay(50);
-                
+
                 session.SimulateProgress(150, 200, 150, 200);
                 await Task.Delay(50);
 
                 session.SimulateProgress(200, 200, 200, 200);
                 await Task.Delay(50);
-                
+
                 var totalTransferred = await completionTCS.Task;
 
                 if (mode == ProgressMode.ForCurrentlyOutstandingWork)
@@ -356,7 +366,11 @@ namespace Tests.Sync
             });
         }
 
+#if NETCOREAPP1_1 && !ROS_SETUP
+        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
+#endif
         [Test]
+        [Category("ProgressTests")]
         public void Session_ProgressObservable_WhenModeIsForOutstandingWork_CallsOnCompleted()
         {
             AsyncContext.Run(async () =>
@@ -386,7 +400,11 @@ namespace Tests.Sync
             });
         }
 
+#if NETCOREAPP1_1 && !ROS_SETUP
+        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
+#endif
         [Test]
+        [Category("ProgressTests")]
         public void Session_RXCombineLatestTests()
         {
             AsyncContext.Run(async () =>
@@ -444,7 +462,11 @@ namespace Tests.Sync
             });
         }
 
+#if NETCOREAPP1_1 && !ROS_SETUP
+        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
+#endif
         [Test]
+        [Category("ProgressTests")]
         public void Session_RXThrottleTests()
         {
             AsyncContext.Run(async () =>

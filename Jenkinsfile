@@ -248,11 +248,44 @@ stage('Build without sync') {
   )
 }
 
+stage('Build .NET Core') {
+  nodeWithCleanup('windows') {
+    getArchive()
+    unstash 'macos-wrappers-nosync'
+    unstash 'linux-wrappers-nosync'
+    unstash 'win32-wrappers-nosync'
+    unstash 'tools-weaver'
+
+    archiveNetCore('nosync')
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux", RealmNoSync: true ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-nosync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32", RealmNoSync: true ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-nosync'
+  }
+}
+
 stage('Test without sync') {
   parallel(
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
-    'Win32': Win32Test('win32-tests-nosync')
+    'Win32': Win32Test('win32-tests-nosync'),
+    'Linux': NetCoreTest('docker', 'linux', 'nosync'),
+    'macOS': NetCoreTest('osx', 'macos', 'nosync'),
+    'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync')
   )
 }
 
@@ -375,10 +408,36 @@ stage('Build with sync') {
   )
 }
 
+stage ('Build .NET Core with sync') {
+  nodeWithCleanup('windows') {
+    getArchive()
+    unstash 'macos-wrappers-sync'
+    unstash 'linux-wrappers-sync'
+    unstash 'tools-weaver'
+
+    archiveNetCore('sync')
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-sync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux" ]
+    
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-sync'
+  }
+}
+
 stage('Test with sync') {
   parallel(
     'iOS': iOSTest('ios-tests-sync'),
-    'Android': AndroidTest('android-tests-sync')
+    'Android': AndroidTest('android-tests-sync'),
+    'Linux': NetCoreTest('docker', 'linux', 'sync'),
+    'macOS': NetCoreTest('osx', 'macos', 'sync')
   )
 }
 
@@ -466,6 +525,61 @@ def AndroidTest(stashName) {
         junit 'TestResults.Android.xml'
       }
     }
+  }
+}
+
+def NetCoreTest(String nodeName, String platform, String stashSuffix) {
+  return {
+    node(nodeName) {
+      getArchive()
+      unstash "netcore-${platform}-tests-${stashSuffix}"
+
+      dir ("Tests/Tests.NetCore") {
+        def binaryFolder = "bin/${configuration}/${platform}publish"
+        try {
+          if (isUnix()) {
+            def invocation = """
+              cd ${pwd()}/${binaryFolder}
+              chmod +x Tests.NetCore
+              ./Tests.NetCore --labels=After --result=TestResults.${platform}.xml
+              xsltproc nunit3-junit.xslt TestResults.${platform}.xml > temp.xml
+              mv temp.xml TestResults.${platform}.xml
+            """
+
+            if (nodeName == 'docker') {
+              insideDocker('ci/realm-dotnet/netcorerunner:linux', 'Dockerfile.linux') {
+                sh invocation
+              }
+            } else {
+              sh invocation
+            }
+          } else {
+            dir (binaryFolder) {
+              bat """
+                Tests.NetCore.exe --labels=After --result=TestResults.${platform}.xml
+                powershell \"\$xml = Resolve-Path TestResults.${platform}.xml;\$output = Join-Path (\$pwd) temp.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
+                move /y temp.xml TestResults.${platform}.xml
+              """
+            }
+          }
+        } finally {
+          dir (binaryFolder) {
+            junit "TestResults.${platform}.xml"
+          }
+        }
+      }
+    }
+  }
+}
+
+def archiveNetCore(String suffix)
+{
+  dir('wrappers/build') {
+    zip([
+      'zipFile': "netcore-native-${suffix}.zip",
+      'archive': true,
+      'glob' : "*/${configuration}*/*realm-wrappers.*"
+    ])
   }
 }
 

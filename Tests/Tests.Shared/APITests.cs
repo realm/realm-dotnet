@@ -18,6 +18,9 @@
 
 using System;
 using System.Linq;
+#if NETCOREAPP1_1
+using System.Reflection;
+#endif
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;

@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -179,14 +178,10 @@ namespace Tests.Database
         [Test]
         public void GetInstanceShouldThrowWithBadPath()
         {
-#if WINDOWS
-            const string Path = "C:\\Windows";
-#else
-            const string Path = "/";
-#endif
+            var path = TestHelpers.IsWindows ? "C:\\Windows" : "/";
 
             // Arrange
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(Path));
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(path));
         }
 
         private class LoneClass : RealmObject
@@ -246,11 +241,10 @@ namespace Tests.Database
 
         [TestCase(true)]
         [TestCase(false)]
-#if WINDOWS
-        [Ignore("Compact doesn't work on Windows")]
-#endif
         public void ShouldCompact_IsInvokedAfterOpening(bool shouldCompact)
         {
+            TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows.");
+
             var config = RealmConfiguration.DefaultConfiguration;
 
             using (var realm = Realm.GetInstance(config))
@@ -291,15 +285,17 @@ namespace Tests.Database
 
         [TestCase(false, true)]
         [TestCase(false, false)]
-#if !ENCRYPTION_DISABLED
         [TestCase(true, true)]
         [TestCase(true, false)]
-#endif
-#if WINDOWS
-        [Ignore("Compact doesn't work on Windows")]
-#endif
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
+            TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows");
+
+            if (encrypt)
+            {
+                TestHelpers.ReliesOnEncryption();
+            }
+
             var config = RealmConfiguration.DefaultConfiguration;
             if (encrypt)
             {
@@ -328,31 +324,37 @@ namespace Tests.Database
         }
 
         [Test]
-#if !WINDOWS
-        [Ignore("Compact works on this platform")]
-#endif
         public void Compact_OnWindows_ThrowsRealmException()
         {
+            if (!TestHelpers.IsWindows)
+            {
+                // This is a windows only test that asserts that compact will throw (as it's unsupported)
+                // On other platforms, we simply ignore it.
+                Assert.Ignore("Compact works on this platform");
+            }
+
             Assert.That(() => Realm.Compact(RealmConfiguration.DefaultConfiguration), Throws.TypeOf<RealmException>());
         }
 
         [Test]
-#if !WINDOWS
-        [Ignore("Compact works on this platform")]
-#endif
         public void ShouldCompactOnLaunch_OnWindows_ThrowsRealmException()
         {
+            if (!TestHelpers.IsWindows)
+            {
+                // This is a windows only test that asserts that compact will throw (as it's unsupported)
+                // On other platforms, we simply ignore it.
+                Assert.Ignore("Compact works on this platform");
+            }
+
             RealmConfiguration.DefaultConfiguration.ShouldCompactOnLaunch = (_, __) => true;
 
             Assert.That(() => Realm.GetInstance(), Throws.TypeOf<RealmException>());
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("Compact doesn't work on Windows")]
-#endif
         public void Compact_WhenInTransaction_ShouldThrow()
         {
+            TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows");
             using (var realm = Realm.GetInstance())
             {
                 Assert.That(() =>
@@ -366,11 +368,9 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("Compact doesn't work on Windows")]
-#endif
         public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
+            TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows");
             AsyncContext.Run(async () =>
             {
                 using (var realm = Realm.GetInstance())
@@ -411,11 +411,9 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("Compact doesn't work on Windows")]
-#endif
         public void Compact_WhenResultsAreOpen_ShouldReturnFalse()
         {
+            TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows");
             using (var realm = Realm.GetInstance())
             {
                 var token = realm.All<Person>().SubscribeForNotifications((sender, changes, error) =>
@@ -640,7 +638,7 @@ namespace Tests.Database
 
                 Assert.That(ex, Is.Null);
                 Assert.That(hasCompletedMigration);
-                Assert.That(ticks, Is.GreaterThanOrEqualTo(3));
+                Assert.That(ticks, Is.GreaterThanOrEqualTo(2));
                 Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
                 realm.Dispose();
             });
@@ -654,7 +652,7 @@ namespace Tests.Database
         {
             if (originalEncrypted || copyEncrypted)
             {
-                ReliesOnEncryption();
+                TestHelpers.ReliesOnEncryption();
             }
 
             var originalConfig = new RealmConfiguration(Path.GetTempFileName());

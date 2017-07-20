@@ -269,11 +269,10 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("ExtenrnalCommitHelper hangs on Windows in this test. Reenable when we have proper condvar.")]
-#endif
         public void MultipleManagedObjects()
         {
+            TestHelpers.IgnoreOnWindows("ExternalCommitHelper hangs on Windows in this test. Reenable when we have proper condvar.");
+
             var firstNotifiedPropertyNames = new List<string>();
             var secondNotifiedPropertyNames = new List<string>();
             var first = new Person();
@@ -434,11 +433,10 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("GC blocks on Windows")]
-#endif
         public void ManagedObject_WhenHandleIsReleased_ShouldNotReceiveNotifications()
         {
+            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
+
             AsyncContext.Run(async delegate
             {
                 var notifiedPropertyNames = new List<string>();

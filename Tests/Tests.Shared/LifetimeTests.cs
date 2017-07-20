@@ -34,11 +34,10 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("GC blocks on Windows")]
-#endif
         public void RealmObjectsShouldKeepRealmAlive()
         {
+            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
+
             // Arrange
             var realm = GetWeakRealm();
             Person person = null;
@@ -61,11 +60,10 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("GC blocks on Windows")]
-#endif
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
+            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
+
             // Arrange
             var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
             var realmThatWillBeFinalized = GetWeakRealm();
@@ -88,11 +86,10 @@ namespace Tests.Database
         }
 
         [Test]
-#if WINDOWS
-        [Ignore("GC blocks on Windows")]
-#endif
         public void TransactionShouldHoldStrongReferenceToRealm()
         {
+            TestHelpers.IgnoreOnWindows("GC blocks on Windows");
+
             AsyncContext.Run(async delegate
             {
                 var realm = GetWeakRealm();

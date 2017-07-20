@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -189,13 +190,19 @@ namespace Tests.Database
 
                 await Task.Run(() =>
                 {
-                    var otherRealm = Realm.GetInstance("other.realm");
-
-                    Assert.That(() => otherRealm.ResolveReference(objReference),
-                                Throws.InstanceOf<RealmException>().And.Message.Contains("different configuration"));
-
-                    otherRealm.Dispose();
-                    Realm.DeleteRealm(otherRealm.Config);
+                    var config = new RealmConfiguration(Path.GetTempFileName());
+                    try
+                    {
+                        using (var otherRealm = Realm.GetInstance(config))
+                        {
+                            Assert.That(() => otherRealm.ResolveReference(objReference),
+                                        Throws.InstanceOf<RealmException>().And.Message.Contains("different configuration"));
+                        }
+                    }
+                    finally
+                    {
+                        Realm.DeleteRealm(config);
+                    }
                 });
             });
         }
