@@ -62,11 +62,13 @@ namespace Tests
             var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
 #elif WINDOWS_UWP
             var sourceDir = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+#elif __MACOS__
+            var sourceDir = Foundation.NSBundle.MainBundle.ResourcePath;
 #else
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
 #endif
 
-            File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
+			File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
 #endif
 
             return destPath;
@@ -90,7 +92,7 @@ namespace Tests
         {
             get
             {
-#if MACOS
+#if __MACOS__
                 return true;
 #elif NETCOREAPP1_1
                 return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);

@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using AppKit;
+using Foundation;
 
-[assembly: AssemblyTitle("Realm.Sync")]
-[assembly: InternalsVisibleTo("Tests.iOS")]
-[assembly: InternalsVisibleTo("Tests.Android")]
-[assembly: InternalsVisibleTo("Tests.NetCore")]
-[assembly: InternalsVisibleTo("Tests.XamarinMac")]
+namespace Tests.XamarinMac
+{
+    [Register("AppDelegate")]
+    public class AppDelegate : NSApplicationDelegate
+    {
+    }
+}
