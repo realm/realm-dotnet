@@ -484,7 +484,7 @@ def Win32Test(stashName) {
             """
           }
         } finally {
-          junit 'TestResults.*.xml'
+          reportTests 'TestResults.*.xml'
         }
       }
     }
@@ -502,7 +502,7 @@ def iOSTest(stashName) {
         runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/TestResults.iOS.xml")
       } finally {
         dir("${workspace}/temp") {
-          junit 'TestResults.iOS.xml'
+          reportTests 'TestResults.iOS.xml'
         }
       }
     }
@@ -548,7 +548,7 @@ def AndroidTest(stashName) {
       }
 
       dir ("${workspace}/temp") {
-        junit 'TestResults.Android.xml'
+        reportTests 'TestResults.Android.xml'
       }
     }
   }
@@ -588,7 +588,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
           }
         } finally {
           dir(binaryFolder) {
-            junit "TestResults.${platform}.xml"
+            reportTests "TestResults.${platform}.xml"
           }
         }
       }
@@ -610,7 +610,7 @@ def XamarinMacTest(String stashName) {
           """
         }
       } finally {
-        junit "TestResults.XamarinMac.xml"
+        reportTests "TestResults.XamarinMac.xml"
       }
     }
   }
@@ -832,4 +832,9 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
   image.inside() {
     steps()
   }
+}
+
+def reportTests(String file) {
+  archive file
+  junit file
 }
