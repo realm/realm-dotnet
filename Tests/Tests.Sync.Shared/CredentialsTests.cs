@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+﻿﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -222,7 +222,10 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
+#if !ROS_SETUP
+		[NUnit.Framework.Explicit]
+#endif
+		[Test]
         public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
         {
             AsyncContext.Run(async () =>
