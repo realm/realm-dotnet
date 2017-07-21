@@ -329,7 +329,7 @@ namespace Realms.Sync
                 }
                 finally
                 {
-                    session?.Handle.Close();
+                    session.CloseHandle();
                 }
             }
 
@@ -475,7 +475,7 @@ namespace Realms.Sync
             }
             finally
             {
-                session.Handle.Close();
+                session.CloseHandle();
             }
         }
 

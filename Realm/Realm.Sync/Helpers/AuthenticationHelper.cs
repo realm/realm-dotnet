@@ -197,8 +197,8 @@ namespace Realms.Sync
                     {
                         RefreshAccessTokenAsync(session, reportErrors: false).ContinueWith(_ =>
                         {
-                            user.Handle.Dispose();
-                            session.Handle.Dispose();
+                            user.Handle.Close();
+                            session.CloseHandle();
                         });
                     }
                 }

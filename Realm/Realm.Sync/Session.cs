@@ -195,5 +195,14 @@ namespace Realms.Sync
         {
             return Handle.GetRawPointer().GetHashCode();
         }
+
+        internal void CloseHandle()
+        {
+            GC.SuppressFinalize(this);
+            if (!Handle.IsClosed)
+            {
+                Handle.Close();
+            }
+        }
     }
 }

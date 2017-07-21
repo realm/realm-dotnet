@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Realms;
@@ -28,8 +27,8 @@ namespace Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private List<Session> _sessions = new List<Session>();
-        private List<Realm> _realms = new List<Realm>();
+        private readonly List<Session> _sessions = new List<Session>();
+        private readonly List<Realm> _realms = new List<Realm>();
 
         private readonly UserPersistenceMode? persistence = TestHelpers.IsMacOS ? UserPersistenceMode.NotEncrypted : (UserPersistenceMode?)null;
 
@@ -58,7 +57,7 @@ namespace Tests.Sync
 
             foreach (var session in _sessions)
             {
-                session.Handle.Close();
+                session?.CloseHandle();
             }
         }
 

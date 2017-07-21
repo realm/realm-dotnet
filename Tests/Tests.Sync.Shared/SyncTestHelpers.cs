@@ -77,8 +77,14 @@ namespace Tests.Sync
             if (waitForRemote)
             {
                 var session = realm.GetSession();
-                await session.WaitForDownloadAsync();
-                session.Handle.Close();
+                try
+                {
+                    await session.WaitForDownloadAsync();
+                }
+                finally
+                {
+                    session.CloseHandle();
+                }
             }
 
             return realm;
