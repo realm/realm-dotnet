@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,16 +17,26 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Sync;
 
-namespace Tests.Sync
+namespace Realms.Helpers
 {
-    public static class Constants
+    internal static class Argument
     {
-        // The server url as visible from the testing device
-        public const string ServerUrl = "127.0.0.1";
+        public static void NotNullOrEmpty(string value, string paramName)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new ArgumentNullException(paramName);
+            }
+        }
 
-        public const string AdminUsername = "a@a";
-        public const string AdminPassword = "a";
+        public static void Ensure<T>(bool condition, string message)
+            where T : Exception
+        {
+            if (!condition)
+            {
+                throw (T)Activator.CreateInstance(typeof(T), message);
+            }
+        }
     }
 }

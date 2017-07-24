@@ -108,6 +108,7 @@
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="RealmInteger.cs" />
     <Compile Include="Helpers\Operator.cs" />
+    <Compile Include="Helpers\Argument.cs" />
     <Compile Include="Helpers\RealmIntegerExtensions.cs" />
   </ItemGroup>
   <ItemGroup />

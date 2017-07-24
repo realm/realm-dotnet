@@ -134,6 +134,30 @@ namespace Realms.Sync
             return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json);
         }
 
+        public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
+        {
+            var uri = new Uri(user.ServerUri, $"/api/providers/{provider}/accounts/{providerId}");
+            try
+            {
+                var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, setupRequest: request =>
+                {
+                    request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken);
+                });
+
+                return new UserInfo
+                {
+                    Identity = response["user"]["id"].Value<string>(),
+                    IsAdmin = response["user"]["isAdmin"].Value<bool>(),
+                    Provider = response["provider"].Value<string>(),
+                    ProviderUserIdentity = response["provider_id"].Value<string>(),
+                };
+            }
+            catch (HttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
         private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
@@ -192,14 +216,18 @@ namespace Realms.Sync
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
-        private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body)
+        private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, Action<HttpRequestMessage> setupRequest = null)
         {
-            var request = new HttpRequestMessage(method, uri)
+            var request = new HttpRequestMessage(method, uri);
+            if (body != null)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json")
-            };
+                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            }
+
             request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
             request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
+
+            setupRequest?.Invoke(request);
 
             var response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))

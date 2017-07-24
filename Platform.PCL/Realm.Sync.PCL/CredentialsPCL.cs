@@ -26,6 +26,32 @@ namespace Realms.Sync
     public class Credentials
     {
         /// <summary>
+        /// A class, containing the names for the built in providers.
+        /// </summary>
+        public static class Provider
+        {
+            /// <summary>
+            /// The Facebook provider, associated with <see cref="Credentials.Facebook"/>.
+            /// </summary>
+            public const string Facebook = "facebook";
+
+            /// <summary>
+            /// The Google provider, associated with <see cref="Credentials.Google"/>.
+            /// </summary>
+            public const string Google = "google";
+
+            /// <summary>
+            /// The Username/Password provider, associated with <see cref="Credentials.UsernamePassword"/>.
+            /// </summary>
+            public const string UsernamePassword = "password";
+
+            /// <summary>
+            /// The Azure Active Directory provider, associated with <see cref="Credentials.AzureAD"/>.
+            /// </summary>
+            public const string AzureAD = "azuread";
+        }
+
+        /// <summary>
         /// Creates an instance of <see cref="Credentials"/> with a custom provider and user identifier.
         /// </summary>
         /// <param name="identityProvider">Provider used to verify the credentials.</param>

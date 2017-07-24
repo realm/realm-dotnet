@@ -262,7 +262,7 @@ namespace Tests.Sync
                                            });
 
                 var realmPath = $"/{alice.Identity}/testPermission";
-                var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+                var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
                 await CreateChange(alice, bob.Identity, realmUrl);
@@ -307,7 +307,7 @@ namespace Tests.Sync
                 var alice = await SyncTestHelpers.GetUser();
                 var bobEmail = $"{Guid.NewGuid()}@foo.bar";
                 var bobCredentials = Credentials.UsernamePassword(bobEmail, "a", createUser: true);
-                var bob = await User.LoginAsync(bobCredentials, new Uri($"http://{Constants.ServerUrl}"));
+                var bob = await User.LoginAsync(bobCredentials, SyncTestHelpers.AuthServerUri);
 
                 await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail));
             });
@@ -325,7 +325,7 @@ namespace Tests.Sync
                 var bob = await SyncTestHelpers.GetUser();
 
                 var realmPath = $"/{alice.Identity}/testPermission";
-                var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+                var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write);
@@ -347,7 +347,7 @@ namespace Tests.Sync
             {
                 var alice = await SyncTestHelpers.GetUser();
 
-                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
                 await AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, DateTimeOffset.UtcNow.AddDays(-1)));
@@ -364,7 +364,7 @@ namespace Tests.Sync
             {
                 var alice = await SyncTestHelpers.GetUser();
 
-                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
                 await AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.None));
@@ -382,7 +382,7 @@ namespace Tests.Sync
                 var alice = await SyncTestHelpers.GetUser();
                 var bob = await SyncTestHelpers.GetUser();
 
-                var realmUrl = $"realm://{Constants.ServerUrl}/{alice.Identity}/testPermission";
+                var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, expiresAt: DateTimeOffset.UtcNow.AddSeconds(1));
@@ -432,7 +432,7 @@ namespace Tests.Sync
         private static async Task TestApplyPermissions(User alice, User bob, PermissionCondition condition)
         {
             var realmPath = $"/{alice.Identity}/testPermission";
-            var realmUrl = $"realm://{Constants.ServerUrl}{realmPath}";
+            var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
             EnsureRealmExists(alice, realmUrl);
 
             // Grant write permissions
@@ -553,7 +553,7 @@ namespace Tests.Sync
 
         private static async Task<T> CreatePermissionObject<T>(User user, Func<string, T> itemFactory, string realmUrl = null) where T : RealmObject, IPermissionObject
         {
-            realmUrl = realmUrl ?? $"realm://{Constants.ServerUrl}/{user.Identity}/offer";
+            realmUrl = realmUrl ?? SyncTestHelpers.RealmUri($"{user.Identity}/offer").AbsoluteUri;
             EnsureRealmExists(user, realmUrl);
 
             var managementRealm = user.GetManagementRealm();

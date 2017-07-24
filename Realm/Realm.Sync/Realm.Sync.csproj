@@ -24,6 +24,7 @@
     <Compile Include="SessionState.cs" />
     <Compile Include="SyncConfiguration.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="Dtos\UserInfo.cs" />
     <Compile Include="UserPersistenceMode.cs" />
     <Compile Include="UserState.cs" />
     <Compile Include="Exceptions\AuthenticationException.cs" />

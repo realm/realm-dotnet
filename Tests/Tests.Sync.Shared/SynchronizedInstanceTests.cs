@@ -86,7 +86,7 @@ namespace Tests.Sync
             {
                 var user = await SyncTestHelpers.GetUser();
 
-                var realmUri = new Uri(SyncTestHelpers.GetRealmUrl());
+                var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_ShouldDownloadRealm");
 
                 var config = new SyncConfiguration(user, realmUri);
                 var asyncConfig = new SyncConfiguration(user, realmUri, config.DatabasePath + "_async");
@@ -125,15 +125,15 @@ namespace Tests.Sync
                 var alice = await SyncTestHelpers.GetUser();
                 var bob = await SyncTestHelpers.GetUser();
 
-                var realmUrl = SyncTestHelpers.GetRealmUrl(userId: alice.Identity);
-                var aliceConfig = new SyncConfiguration(alice, new Uri(realmUrl));
+                var realmUri = SyncTestHelpers.RealmUri($"{alice.Identity}/GetInstanceAsync_OpensReadonlyRealm");
+                var aliceConfig = new SyncConfiguration(alice, realmUri);
                 var aliceRealm = Realm.GetInstance(aliceConfig);
 
-                await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read).Timeout(1000);
+                await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUri.AbsoluteUri, AccessLevel.Read).Timeout(1000);
 
                 AddDummyData(aliceRealm, singleTransaction);
 
-                var bobConfig = new SyncConfiguration(bob, new Uri(realmUrl));
+                var bobConfig = new SyncConfiguration(bob, realmUri);
                 var bobRealm = await Realm.GetInstanceAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();

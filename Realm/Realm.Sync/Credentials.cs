@@ -27,19 +27,34 @@ namespace Realms.Sync
     /// </summary>
     public class Credentials
     {
-        internal static class Providers
+        /// <summary>
+        /// A class, containing the names for the built in providers.
+        /// </summary>
+        public static class Provider
         {
             internal const string Debug = "debug";
 
-            internal const string Facebook = "facebook";
-
-            internal const string Google = "google";
-
-            internal const string Password = "password";
-
             internal const string AccessToken = "accessToken";
 
-            internal const string AzureAD = "azuread";
+            /// <summary>
+            /// The Facebook provider, associated with <see cref="Credentials.Facebook"/>.
+            /// </summary>
+            public const string Facebook = "facebook";
+
+            /// <summary>
+            /// The Google provider, associated with <see cref="Credentials.Google"/>.
+            /// </summary>
+            public const string Google = "google";
+
+            /// <summary>
+            /// The Username/Password provider, associated with <see cref="Credentials.UsernamePassword"/>.
+            /// </summary>
+            public const string UsernamePassword = "password";
+
+            /// <summary>
+            /// The Azure Active Directory provider, associated with <see cref="Credentials.AzureAD"/>.
+            /// </summary>
+            public const string AzureAD = "azuread";
         }
 
         internal static class Keys
@@ -79,7 +94,7 @@ namespace Realms.Sync
         {
             return new Credentials
             {
-                IdentityProvider = Providers.Debug
+                IdentityProvider = Provider.Debug
             };
         }
 
@@ -95,7 +110,7 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(facebookToken));
             }
 
-            return new Credentials { IdentityProvider = Providers.Facebook, Token = facebookToken };
+            return new Credentials { IdentityProvider = Provider.Facebook, Token = facebookToken };
         }
 
         /// <summary>
@@ -110,7 +125,7 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(googleToken));
             }
 
-            return new Credentials { IdentityProvider = Providers.Google, Token = googleToken };
+            return new Credentials { IdentityProvider = Provider.Google, Token = googleToken };
         }
 
         /// <summary>
@@ -124,7 +139,7 @@ namespace Realms.Sync
         {
             return new Credentials
             {
-                IdentityProvider = Providers.Password,
+                IdentityProvider = Provider.UsernamePassword,
                 Token = username,
                 UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
             };
@@ -142,14 +157,14 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(adToken));
             }
 
-            return new Credentials { IdentityProvider = Providers.AzureAD, Token = adToken };
+            return new Credentials { IdentityProvider = Provider.AzureAD, Token = adToken };
         }
 
         internal static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
         {
             return new Credentials
             {
-                IdentityProvider = Providers.AccessToken,
+                IdentityProvider = Provider.AccessToken,
                 Token = accessToken,
                 UserInfo = new Dictionary<string, object> { [Keys.Identity] = identity, [Keys.IsAdmin] = isAdmin }
             };

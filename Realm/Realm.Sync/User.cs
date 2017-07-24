@@ -20,6 +20,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -80,7 +81,7 @@ namespace Realms.Sync
         {
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
-            if (credentials.IdentityProvider == Credentials.Providers.AccessToken)
+            if (credentials.IdentityProvider == Credentials.Provider.AccessToken)
             {
                 var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
                 var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
@@ -215,15 +216,8 @@ namespace Realms.Sync
         /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
         public Task ChangePasswordAsync(string newPassword)
         {
-            if (State != UserState.Active)
-            {
-                throw new InvalidOperationException("Password may be changed only by active users.");
-            }
-
-            if (string.IsNullOrEmpty(newPassword))
-            {
-                throw new ArgumentNullException(nameof(newPassword));
-            }
+            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Password may be changed only by active users.");
+            Argument.NotNullOrEmpty(newPassword, nameof(newPassword));
 
             return AuthenticationHelper.ChangePasswordAsync(this, newPassword);
         }
@@ -242,22 +236,37 @@ namespace Realms.Sync
         /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
         public Task ChangePasswordAsync(string userId, string newPassword)
         {
-            if (State != UserState.Active)
-            {
-                throw new InvalidOperationException("Password may be changed only by active users.");
-            }
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
-            if (string.IsNullOrEmpty(newPassword))
-            {
-                throw new ArgumentNullException(nameof(newPassword));
-            }
+            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Password may be changed only by active users.");
+            Argument.Ensure<InvalidOperationException>(IsAdmin, "Other users' passwords may be changed only by admin users.");
+            Argument.NotNullOrEmpty(userId, nameof(userId));
+            Argument.NotNullOrEmpty(newPassword, nameof(newPassword));
 
             return AuthenticationHelper.ChangePasswordAsync(this, newPassword, userId);
+        }
+
+        /// <summary>
+        /// Looks up user's information by provider id. This is useful when you know the id of a user in a provider's system,
+        /// e.g. on Facebook and want to find the associated Realm user's Id.
+        /// </summary>
+        /// <param name="provider">The provider that the user has signed up with.</param>
+        /// <param name="providerUserIdentity">The id of the user in the provider's system.</param>
+        /// <remarks>
+        /// This user needs admin privilege in order to look up other users by provider id.
+        /// <br/>
+        /// The exact names of built-in providers can be found in <see cref="Credentials.Provider"/>.
+        /// </remarks>
+        /// <returns>
+        /// A <see cref="UserInfo"/>, containing information about the User's Identity in Realm's authentication system,
+        /// or <c>null</c> if a user has not been found.
+        /// </returns>
+        public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerUserIdentity)
+        {
+            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Users may be looked up only by active users.");
+            Argument.Ensure<InvalidOperationException>(IsAdmin, "Users may be looked up only by admin users.");
+            Argument.NotNullOrEmpty(provider, nameof(provider));
+            Argument.NotNullOrEmpty(providerUserIdentity, nameof(providerUserIdentity));
+
+            return AuthenticationHelper.RetrieveInfoForUserAsync(this, provider, providerUserIdentity);
         }
 
         /// <inheritdoc />

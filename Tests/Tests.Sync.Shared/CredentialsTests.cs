@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+﻿﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -130,9 +130,8 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
-                var serverUri = new Uri($"http://{Constants.ServerUrl}");
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
-                var user = await User.LoginAsync(credentials, serverUri);
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 await user.ChangePasswordAsync(NewPassword);
                 user.LogOut();
 
@@ -151,13 +150,12 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
-                var serverUri = new Uri($"http://{Constants.ServerUrl}");
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
-                var user = await User.LoginAsync(credentials, serverUri);
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 var identity = user.Identity;
                 user.LogOut();
 
-                var admin = await User.LoginAsync(Constants.AdminCredentials(), serverUri);
+                var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
                 await admin.ChangePasswordAsync(identity, NewPassword);
 
                 admin.LogOut();
@@ -168,6 +166,84 @@ namespace Tests.Sync
             });
         }
 
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void UserLookup_WhenTargetUserExists_ShouldReturnResponse()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
+
+                var aliceUsername = Guid.NewGuid().ToString();
+                var alice = await User.LoginAsync(Credentials.UsernamePassword(aliceUsername, "a", createUser: true), SyncTestHelpers.AuthServerUri);
+
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, aliceUsername);
+
+                Assert.That(lookupResponse.Identity, Is.EqualTo(alice.Identity));
+                Assert.That(lookupResponse.IsAdmin, Is.False);
+                Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
+                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(aliceUsername));
+            });
+        }
+
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void UserLookup_WhenTargetUserDoesNotExist_ShouldReturnNull()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
+
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "something");
+                Assert.That(lookupResponse, Is.Null);
+            });
+        }
+
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void UserLookup_WhenTargetUserIsSelf_ShouldReturnResponse()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
+
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, Constants.AdminUsername);
+
+                Assert.That(lookupResponse.Identity, Is.EqualTo(admin.Identity));
+                Assert.That(lookupResponse.IsAdmin, Is.True);
+                Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
+                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(Constants.AdminUsername));
+            });
+        }
+
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUser();
+
+                try
+                {
+                    await alice.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "some-id");
+                    Assert.Fail("Expected an exception to be thrown.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<InvalidOperationException>());
+                }
+            });
+        }
+
         private static async Task TestNewPassword(string userId)
         {
             // Ensure that users are logged out
@@ -175,12 +251,10 @@ namespace Tests.Sync
 
             Assert.That(User.Current, Is.Null);
 
-            var serverUri = new Uri($"http://{Constants.ServerUrl}");
-
             // Try to login with the same credentials
             try
             {
-                await User.LoginAsync(Credentials.UsernamePassword(userId, OriginalPassword, createUser: false), serverUri);
+                await User.LoginAsync(Credentials.UsernamePassword(userId, OriginalPassword, createUser: false), SyncTestHelpers.AuthServerUri);
                 Assert.Fail("Should be impossible to login with old password");
             }
             catch (Exception ex)
@@ -191,7 +265,7 @@ namespace Tests.Sync
             }
 
             var newCredentials = Credentials.UsernamePassword(userId, NewPassword, createUser: false);
-            var newUser = await User.LoginAsync(newCredentials, serverUri);
+            var newUser = await User.LoginAsync(newCredentials, SyncTestHelpers.AuthServerUri);
 
             Assert.That(newUser.State, Is.EqualTo(UserState.Active));
             Assert.That(newUser, Is.EqualTo(User.Current));
