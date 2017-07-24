@@ -160,151 +160,139 @@ namespace Tests.Database
         [Test]
         public void Results_WhenUnsubscribed_ShouldStopReceivingNotifications()
         {
-            AsyncContext.Run(async delegate
+            _realm.Write(() =>
             {
-                _realm.Write(() =>
+                _realm.Add(new OrderedObject
                 {
-                    _realm.Add(new OrderedObject
-                    {
-                        Order = 0,
-                        IsPartOfResults = true
-                    });
+                    Order = 0,
+                    IsPartOfResults = true
                 });
-
-                Exception error = null;
-                _realm.Error += (sender, e) =>
-                {
-                    error = e.Exception;
-                };
-
-                var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
-
-                // wait for the initial notification to come through
-                await Task.Yield();
-
-                var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-                var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
-
-                var propertyEventArgs = new List<string>();
-                var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
-
-                query.CollectionChanged += handler;
-                query.PropertyChanged += propertyHandler;
-
-                Assert.That(error, Is.Null);
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(new OrderedObject
-                    {
-                        Order = 1,
-                        IsPartOfResults = true
-                    });
-                });
-
-                _realm.Refresh();
-
-                Assert.That(error, Is.Null);
-                Assert.That(eventArgs.Count, Is.EqualTo(1));
-                Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
-                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(new OrderedObject
-                    {
-                        Order = 2,
-                        IsPartOfResults = true
-                    });
-                });
-
-                _realm.Refresh();
-
-                Assert.That(error, Is.Null);
-                Assert.That(eventArgs.Count, Is.EqualTo(2));
-                Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
-                Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
-                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
-
-                query.CollectionChanged -= handler;
-                query.PropertyChanged -= propertyHandler;
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(new OrderedObject
-                    {
-                        Order = 3,
-                        IsPartOfResults = true
-                    });
-                });
-
-                _realm.Refresh();
-
-                Assert.That(error, Is.Null);
-                Assert.That(eventArgs.Count, Is.EqualTo(2));
-                Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
-                Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
-                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
             });
+
+            Exception error = null;
+            _realm.Error += (sender, e) =>
+            {
+                error = e.Exception;
+            };
+
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
+
+            var propertyEventArgs = new List<string>();
+            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
+
+            query.CollectionChanged += handler;
+            query.PropertyChanged += propertyHandler;
+
+            Assert.That(error, Is.Null);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new OrderedObject
+                {
+                    Order = 1,
+                    IsPartOfResults = true
+                });
+            });
+
+            _realm.Refresh();
+
+            Assert.That(error, Is.Null);
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new OrderedObject
+                {
+                    Order = 2,
+                    IsPartOfResults = true
+                });
+            });
+
+            _realm.Refresh();
+
+            Assert.That(error, Is.Null);
+            Assert.That(eventArgs.Count, Is.EqualTo(2));
+            Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
+
+            query.CollectionChanged -= handler;
+            query.PropertyChanged -= propertyHandler;
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new OrderedObject
+                {
+                    Order = 3,
+                    IsPartOfResults = true
+                });
+            });
+
+            _realm.Refresh();
+
+            Assert.That(error, Is.Null);
+            Assert.That(eventArgs.Count, Is.EqualTo(2));
+            Assert.That(eventArgs.All(e => e.Action == NotifyCollectionChangedAction.Add));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(4));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
         }
 
         [Test]
         public void Results_WhenTransactionHasBothAddAndRemove_ShouldReset()
         {
-            AsyncContext.Run(async delegate
+            // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
+            // as that would mess up the indices a lot. That's why when we have both removed and added items,
+            // we should raise a Reset.
+            var first = new OrderedObject
             {
-                // The INotifyCollectionChanged API doesn't have a mechanism to report both added and removed items,
-                // as that would mess up the indices a lot. That's why when we have both removed and added items,
-                // we should raise a Reset.
-                var first = new OrderedObject
-                {
-                    Order = 0,
-                    IsPartOfResults = true
-                };
-                _realm.Write(() =>
-                {
-                    _realm.Add(first);
-                });
-
-                Exception error = null;
-                _realm.Error += (sender, e) =>
-                {
-                    error = e.Exception;
-                };
-
-                var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
-
-                // wait for the initial notification to come through
-                await Task.Yield();
-
-                var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-                query.CollectionChanged += (sender, e) => eventArgs.Add(e);
-
-                var propertyEventArgs = new List<string>();
-                query.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
-
-                Assert.That(error, Is.Null);
-
-                _realm.Write(() =>
-                {
-                    _realm.Add(new OrderedObject
-                    {
-                        Order = 1,
-                        IsPartOfResults = true
-                    });
-
-                    _realm.Remove(first);
-                });
-
-                _realm.Refresh();
-
-                Assert.That(error, Is.Null);
-                Assert.That(eventArgs.Count, Is.EqualTo(1));
-                Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
-                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
-                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+                Order = 0,
+                IsPartOfResults = true
+            };
+            _realm.Write(() =>
+            {
+                _realm.Add(first);
             });
+
+            Exception error = null;
+            _realm.Error += (sender, e) =>
+            {
+                error = e.Exception;
+            };
+
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            query.CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+            var propertyEventArgs = new List<string>();
+            query.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+
+            Assert.That(error, Is.Null);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new OrderedObject
+                {
+                    Order = 1,
+                    IsPartOfResults = true
+                });
+
+                _realm.Remove(first);
+            });
+
+            _realm.Refresh();
+
+            Assert.That(error, Is.Null);
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
         }
 
         [Test]
@@ -559,11 +547,38 @@ namespace Tests.Database
         [TestCaseSource(nameof(CollectionChangedTestCases))]
         public void TestCollectionChangedAdapter(int[] initial, NotifyCollectionChangedAction action, int[] change, int startIndex)
         {
-            AsyncContext.Run(async delegate
+            _realm.Write(() =>
             {
-                _realm.Write(() =>
+                foreach (var value in initial)
                 {
-                    foreach (var value in initial)
+                    _realm.Add(new OrderedObject
+                    {
+                        Order = value,
+                        IsPartOfResults = true
+                    });
+                }
+            });
+
+            Exception error = null;
+            _realm.Error += (sender, e) =>
+            {
+                error = e.Exception;
+            };
+
+            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
+            query.CollectionChanged += (o, e) => eventArgs.Add(e);
+            query.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
+
+            Assert.That(error, Is.Null);
+            _realm.Write(() =>
+            {
+                if (action == NotifyCollectionChangedAction.Add)
+                {
+                    foreach (var value in change)
                     {
                         _realm.Add(new OrderedObject
                         {
@@ -571,85 +586,47 @@ namespace Tests.Database
                             IsPartOfResults = true
                         });
                     }
-                });
-
-                Exception error = null;
-                _realm.Error += (sender, e) =>
-                {
-                    error = e.Exception;
-                };
-
-                var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order).AsRealmCollection();
-
-                // wait for the initial notification to come through
-                await Task.Yield();
-
-                var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-                var propertyEventArgs = new List<string>();
-
-                query.CollectionChanged += (o, e) => eventArgs.Add(e);
-                query.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
-
-                Assert.That(error, Is.Null);
-                _realm.Write(() =>
-                {
-                    if (action == NotifyCollectionChangedAction.Add)
-                    {
-                        foreach (var value in change)
-                        {
-                            _realm.Add(new OrderedObject
-                            {
-                                Order = value,
-                                IsPartOfResults = true
-                            });
-                        }
-                    }
-                    else if (action == NotifyCollectionChangedAction.Remove)
-                    {
-                        foreach (var value in change)
-                        {
-                            _realm.All<OrderedObject>().Single(o => o.Order == value).IsPartOfResults = false;
-                        }
-                    }
-                });
-
-                _realm.Refresh();
-                Assert.That(error, Is.Null);
-
-                Assert.That(eventArgs.Count, Is.EqualTo(1));
-                var arg = eventArgs[0];
-                if (startIndex < 0)
-                {
-                    Assert.That(arg.Action == NotifyCollectionChangedAction.Reset);
                 }
-                else
+                else if (action == NotifyCollectionChangedAction.Remove)
                 {
-                    Assert.That(arg.Action == action);
-                    if (action == NotifyCollectionChangedAction.Add)
+                    foreach (var value in change)
                     {
-                        Assert.That(arg.NewStartingIndex, Is.EqualTo(startIndex));
-                        Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
-                    }
-                    else if (action == NotifyCollectionChangedAction.Remove)
-                    {
-                        Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
-                        Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
+                        _realm.All<OrderedObject>().Single(o => o.Order == value).IsPartOfResults = false;
                     }
                 }
-
-                Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
-                Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
             });
+
+            _realm.Refresh();
+            Assert.That(error, Is.Null);
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            var arg = eventArgs[0];
+            if (startIndex < 0)
+            {
+                Assert.That(arg.Action == NotifyCollectionChangedAction.Reset);
+            }
+            else
+            {
+                Assert.That(arg.Action == action);
+                if (action == NotifyCollectionChangedAction.Add)
+                {
+                    Assert.That(arg.NewStartingIndex, Is.EqualTo(startIndex));
+                    Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
+                }
+                else if (action == NotifyCollectionChangedAction.Remove)
+                {
+                    Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
+                    Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
+                }
+            }
+
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
         }
 
         [Test]
         public void WhenSynchronizationContextExists_ShouldAutoRefresh()
         {
-            if (TestHelpers.IsMacOS)
-            {
-				Assert.Ignore("Seems like there's a bug with AsyncContext on macOS");
-			}
-
             AsyncContext.Run(async () =>
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
