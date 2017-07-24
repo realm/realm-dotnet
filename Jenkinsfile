@@ -836,6 +836,9 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
 }
 
 def reportTests(String file) {
-  archive file
-  junit file
+  stash includes: file, name: file
+  nodeWithCleanup('xamarin-mac') {
+    unstash file
+    junit file
+  }
 }
