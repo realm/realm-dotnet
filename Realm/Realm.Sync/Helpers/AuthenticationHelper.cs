@@ -134,7 +134,7 @@ namespace Realms.Sync
             return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json);
         }
 
-        public static async Task<UserLookupResponse> LookupUserAsync(User user, string provider, string providerId)
+        public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
         {
             var uri = new Uri(user.ServerUri, $"/api/providers/{provider}/accounts/{providerId}");
             try
@@ -144,12 +144,12 @@ namespace Realms.Sync
                     request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken);
                 });
 
-                return new UserLookupResponse
+                return new UserInfo
                 {
                     Identity = response["user"]["id"].Value<string>(),
                     IsAdmin = response["user"]["isAdmin"].Value<bool>(),
                     Provider = response["provider"].Value<string>(),
-                    ProviderId = response["provider_id"].Value<string>(),
+                    ProviderUserIdentity = response["provider_id"].Value<string>(),
                 };
             }
             catch (HttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)

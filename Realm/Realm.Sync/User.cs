@@ -256,17 +256,17 @@ namespace Realms.Sync
         /// The exact names of built-in providers can be found in <see cref="Credentials.Provider"/>.
         /// </remarks>
         /// <returns>
-        /// A <see cref="UserLookupResponse"/>, containing information about the User's Identity in Realm's authentication system,
+        /// A <see cref="UserInfo"/>, containing information about the User's Identity in Realm's authentication system,
         /// or <c>null</c> if a user has not been found.
         /// </returns>
-        public Task<UserLookupResponse> LookupUserAsync(string provider, string providerId)
+        public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerId)
         {
             Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Users may be looked up only by active users.");
             Argument.Ensure<InvalidOperationException>(IsAdmin, "Users may be looked up only by admin users.");
             Argument.NotNullOrEmpty(provider, nameof(provider));
             Argument.NotNullOrEmpty(providerId, nameof(providerId));
 
-            return AuthenticationHelper.LookupUserAsync(this, provider, providerId);
+            return AuthenticationHelper.RetrieveInfoForUserAsync(this, provider, providerId);
         }
 
         /// <inheritdoc />

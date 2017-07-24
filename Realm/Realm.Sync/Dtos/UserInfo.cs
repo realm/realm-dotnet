@@ -19,9 +19,9 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// The response of a user lookup operation.
+    /// An object containing information about a user's identity in Realm's authentication system.
     /// </summary>
-    public class UserLookupResponse
+    public class UserInfo
     {
         /// <summary>
         /// Gets the identity of the user in Realm's system. Equivalent to <see cref="User.Identity"/>.
@@ -39,8 +39,8 @@ namespace Realms.Sync
         public string Provider { get; internal set; }
 
         /// <summary>
-        /// Gets the user's Id in the provider's system.
+        /// Gets the user's identity in the provider's system.
         /// </summary>
-        public string ProviderId { get; internal set; }
+        public string ProviderUserIdentity { get; internal set; }
     }
 }

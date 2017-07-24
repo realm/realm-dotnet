@@ -179,12 +179,12 @@ namespace Tests.Sync
                 var aliceUsername = Guid.NewGuid().ToString();
                 var alice = await User.LoginAsync(Credentials.UsernamePassword(aliceUsername, "a", createUser: true), SyncTestHelpers.AuthServerUri);
 
-                var lookupResponse = await admin.LookupUserAsync(Credentials.Provider.UsernamePassword, aliceUsername);
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, aliceUsername);
 
                 Assert.That(lookupResponse.Identity, Is.EqualTo(alice.Identity));
                 Assert.That(lookupResponse.IsAdmin, Is.False);
                 Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
-                Assert.That(lookupResponse.ProviderId, Is.EqualTo(aliceUsername));
+                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(aliceUsername));
             });
         }
 
@@ -198,7 +198,7 @@ namespace Tests.Sync
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
 
-                var lookupResponse = await admin.LookupUserAsync(Credentials.Provider.UsernamePassword, "something");
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "something");
                 Assert.That(lookupResponse, Is.Null);
             });
         }
@@ -213,12 +213,12 @@ namespace Tests.Sync
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
 
-                var lookupResponse = await admin.LookupUserAsync(Credentials.Provider.UsernamePassword, Constants.AdminUsername);
+                var lookupResponse = await admin.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, Constants.AdminUsername);
 
                 Assert.That(lookupResponse.Identity, Is.EqualTo(admin.Identity));
                 Assert.That(lookupResponse.IsAdmin, Is.True);
                 Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
-                Assert.That(lookupResponse.ProviderId, Is.EqualTo(Constants.AdminUsername));
+                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(Constants.AdminUsername));
             });
         }
 
@@ -234,7 +234,7 @@ namespace Tests.Sync
 
                 try
                 {
-                    await alice.LookupUserAsync(Credentials.Provider.UsernamePassword, "some-id");
+                    await alice.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "some-id");
                     Assert.Fail("Expected an exception to be thrown.");
                 }
                 catch (Exception ex)
