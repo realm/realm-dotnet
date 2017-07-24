@@ -223,9 +223,9 @@ namespace Tests.Sync
         }
 
 #if !ROS_SETUP
-		[NUnit.Framework.Explicit]
+        [NUnit.Framework.Explicit]
 #endif
-		[Test]
+        [Test]
         public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
         {
             AsyncContext.Run(async () =>

@@ -4,7 +4,7 @@
 ### Enhancements
 - Exposed `Realm.WriteCopy` API to copy a Realm file and optionally encrypt it with a different key. ([#1464](https://github.com/realm/realm-dotnet/pull/1464))
 - The runtime representations of all Realm collections (`IQueryable<T>` and `IList<T>`) now implement the `IList` interface that is needed for data-binding to `ListView` in UWP applications. ([#1469](https://github.com/realm/realm-dotnet/pull/1469))
-- Exposed `User.LookupUserAsync` API to allow admin users to lookup other users' identities in the Realm Object Server. This can be used, for example, to find a user by knowing their Facebook id. ([#1486](https://github.com/realm/realm-dotnet/pull/1486))
+- Exposed `User.RetrieveInfoForUserAsync` API to allow admin users to lookup other users' identities in the Realm Object Server. This can be used, for example, to find a user by knowing their Facebook id. ([#1486](https://github.com/realm/realm-dotnet/pull/1486))
 
 ### Bug fixes
 - Fix an exception being thrown when comparing non-constant character value in a query. ([#1471](https://github.com/realm/realm-dotnet/pull/1471))

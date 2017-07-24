@@ -249,7 +249,7 @@ namespace Realms.Sync
         /// e.g. on Facebook and want to find the associated Realm user's Id.
         /// </summary>
         /// <param name="provider">The provider that the user has signed up with.</param>
-        /// <param name="providerId">The id of the user in the provider's system.</param>
+        /// <param name="providerUserIdentity">The id of the user in the provider's system.</param>
         /// <remarks>
         /// This user needs admin privilege in order to look up other users by provider id.
         /// <br/>
@@ -259,14 +259,14 @@ namespace Realms.Sync
         /// A <see cref="UserInfo"/>, containing information about the User's Identity in Realm's authentication system,
         /// or <c>null</c> if a user has not been found.
         /// </returns>
-        public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerId)
+        public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerUserIdentity)
         {
             Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Users may be looked up only by active users.");
             Argument.Ensure<InvalidOperationException>(IsAdmin, "Users may be looked up only by admin users.");
             Argument.NotNullOrEmpty(provider, nameof(provider));
-            Argument.NotNullOrEmpty(providerId, nameof(providerId));
+            Argument.NotNullOrEmpty(providerUserIdentity, nameof(providerUserIdentity));
 
-            return AuthenticationHelper.RetrieveInfoForUserAsync(this, provider, providerId);
+            return AuthenticationHelper.RetrieveInfoForUserAsync(this, provider, providerUserIdentity);
         }
 
         /// <inheritdoc />
