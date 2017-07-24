@@ -14,6 +14,9 @@ use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFI
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
+
+  # force Object Store to use the generic EventLoopSignal implementation instead of the NSRunLoop-one
+  add_definitions(-DREALM_USE_CF=0)
 endif()
 
 if(REALM_ENABLE_SYNC)
@@ -24,3 +27,9 @@ set(PEGTL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/external/pegt
 
 add_subdirectory(src/object-store/src)
 add_subdirectory(src)
+
+if(APPLE)
+  # force Object Store to use the generic EventLoopSignal implementation instead of the NSRunLoop-one
+  # path is relative to object-store/src where add_library(realm-object-store) is called
+  target_sources(realm-object-store PRIVATE util/generic/event_loop_signal.cpp)
+endif()
