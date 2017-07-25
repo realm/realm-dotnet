@@ -6,11 +6,24 @@ project(realm-wrappers)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/CMake")
 
 include(CompilerFlags)
+include(RealmCore)
 
 set(REALM_ENABLE_SYNC OFF CACHE BOOL "")
 
-include(RealmCore)
-use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_library(realm INTERFACE)
+  target_link_libraries(realm INTERFACE realm-node)
+
+  if(REALM_ENABLE_SYNC)
+    add_library(realm-sync INTERFACE)
+    target_link_libraries(realm-sync INTERFACE realm realm-sync-node)
+  endif()
+elseif(APPLE AND REALM_ENABLE_SYNC)
+  download_realm_sync(${REALM_SYNC_VERSION})
+  set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES ${CRYPTO_LIBRARIES} ${SSL_LIBRARIES})
+else()
+  use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
+endif()
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)

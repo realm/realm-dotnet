@@ -1,10 +1,31 @@
-FROM ubuntu:trusty
+FROM centos:7
 
-RUN apt-get update && \
-    apt-get install -y build-essential libssl-dev python-cheetah pkg-config xutils-dev software-properties-common \
-                       libboost-dev libasio-dev libyaml-cpp-dev && \
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get update && apt-get install -y gcc-4.9 g++-4.9 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+# Install EPEL & devtoolset
+RUN yum install -y \
+        epel-release \
+        centos-release-scl-rh \
+    && yum-config-manager --enable rhel-server-rhscl-7-rpms
+
+RUN yum install -y \
+        which \
+        curl \
+        make \
+        devtoolset-3-gcc \
+        devtoolset-3-gcc-c++ \
+        devtoolset-3-binutils \
+        procps-devel
 
 ADD https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.sh /cmake-3.7.2-Linux-x86_64.sh
-RUN sh /cmake-3.7.2-Linux-x86_64.sh --prefix=/ --skip-license
+RUN mkdir /opt/cmake && \
+    sh /cmake-3.7.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
+    rm /cmake-3.7.2-Linux-x86_64.sh
+ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
+
+ARG PACKAGECLOUD_URL
+RUN curl -s ${PACKAGECLOUD_URL}/script.rpm.sh | bash
+
+ARG REALM_SYNC_VERSION
+RUN yum install -y realm-sync-node-devel-$(echo ${REALM_SYNC_VERSION/\-/\_} | sed 's/-\([^g]\)/~\1/g')
+
+# Get rid of the core dynamic library otherwise the build will link to it instead of the static one
+RUN rm -f /usr/lib64/librealm.so

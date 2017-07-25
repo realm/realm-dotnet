@@ -28,41 +28,7 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    dir('wrappers') {
-      dependencies = readProperties file: 'dependencies.list'
-
-      dir('realm-core') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-core.git'
-          ]]
-        ])
-        stash includes: '**', name: 'core-source'
-        deleteDir()
-      }
-
-      dir('realm-sync') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-sync.git'
-          ]]
-        ])
-        stash includes: '**', name: 'sync-source'
-        deleteDir()
-      }
-    }
+    dependencies = readProperties file: 'wrappers/dependencies.list'
 
     version = readAssemblyVersion('RealmAssemblyInfo.cs')
     versionString = "${version.major}.${version.minor}.${version.patch}"
@@ -228,16 +194,10 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-
-          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            cmake 'build-linux', "${pwd()}/build", configuration, [
-              'SANITIZER_FLAGS': '-fPIC -DPIC',
-              'REALM_CORE_PREFIX': "${pwd()}/realm-core"
-            ]
+          withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+            insideDocker('ci/realm-dotnet/wrappers:linux', "-f Dockerfile.linux --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+              cmake 'build-linux', "${pwd()}/build", configuration
+            }
           }
         }
 
@@ -363,19 +323,8 @@ stage('Build with sync') {
         getArchive()
 
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-          dir('realm-sync') { 
-            unstash 'sync-source'
-            sh 'sh build.sh config'
-          }
-
           cmake 'build-osx', "${pwd()}/build", configuration, [
-            'REALM_ENABLE_SYNC': 'ON',
-            'REALM_CORE_PREFIX': "${pwd()}/realm-core",
-            'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+            'REALM_ENABLE_SYNC': 'ON'
           ]
         }
 
@@ -400,22 +349,12 @@ stage('Build with sync') {
         getArchive()
       
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-          dir('realm-sync') { 
-            unstash 'sync-source'
-            sh 'sh build.sh config'
-          }
-
-          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            cmake 'build-linux', "${pwd()}/build", configuration, [
-              'SANITIZER_FLAGS': '-fPIC -DPIC',
-              'REALM_ENABLE_SYNC': 'ON',
-              'REALM_CORE_PREFIX': "${pwd()}/realm-core",
-              'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
-            ]
+          withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+            insideDocker('ci/realm-dotnet/wrappers:linux', "-f Dockerfile.linux --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+              cmake 'build-linux', "${pwd()}/build", configuration, [
+                'REALM_ENABLE_SYNC': 'ON'
+              ]
+            }
           }
         }
 
@@ -822,13 +761,8 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
   }
 }
 
-def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
-  def image
-  if (dockerfile != null) {
-    image = docker.build(imageTag, "-f ${dockerfile} .")
-  } else {
-    image = docker.build(imageTag)
-  }
+def insideDocker(String imageTag, String args = '', Closure steps) {
+  def image = docker.build(imageTag, "${args} .")
 
   image.inside() {
     steps()
