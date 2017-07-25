@@ -8,7 +8,7 @@ Before asking questions, please familiarize yourself with our [Xamarin (.NET)](h
 
 ## Stack Overflow
 
-If you have questions about configuring or using Realm you can ask them on Stack Overflow. We continually monitor the [`realm` tag](https://stackoverflow.com/tags/realm). Please also tag your question with `dotnet`, `xamarin`, or other tags as appropriate.
+If you have questions about configuring or using Realm you can ask them on Stack Overflow. We continually monitor the [`realm` tag](https://stackoverflow.com/tags/realm). Please also tag your question with `c#`, `xamarin`, or other tags as appropriate.
 
 When asking questions on Stack Overflow, please keep in mind Stack Overflow's [question guidelines](https://stackoverflow.com/help/how-to-ask), and please use their search functionality to see if your question has been asked before.
 
