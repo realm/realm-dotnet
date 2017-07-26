@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM microsoft/dotnet:runtime
 
 RUN apt-get update && \
-    apt-get install -y libunwind8 libicu-dev xsltproc openssl libcurl3-gnutls
+    apt-get install -y xsltproc
