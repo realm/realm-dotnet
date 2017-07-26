@@ -75,8 +75,9 @@ unacceptable behavior to [info@realm.io](mailto:info@realm.io).
 
 ## License
 
-Realm is published under the Apache 2.0 license.  
-The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-dotnet/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/xamarin/latest/#faq).
+Realm Xamarin (.NET) is published under the Apache 2.0 license.  
+Realm Core is also published under the Apache 2.0 license and is available
+[here](https://github.com/realm/realm-core).
 
 **This product is not being made available to any person located in Cuba, Iran,
 North Korea, Sudan, Syria or the Crimea region, or to any other person that is
