@@ -837,7 +837,7 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
 
 def reportTests(String file) {
   stash includes: file, name: file
-  nodeWithCleanup('xamarin-mac') {
+  nodeWithCleanup('!osx') {
     unstash file
     junit file
   }
