@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmIntegerQueryTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\DisallowedPredicateParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\LINQvariableTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmResults\QueryableAPITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SimpleLINQtests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SortingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmTest.cs" />
