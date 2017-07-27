@@ -33,18 +33,21 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SessionTests
+    public class SessionTests : SyncTestBase
     {
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
-                using (var realm = Realm.GetInstance(new SyncConfiguration(user, serverUri)))
+                var config = new SyncConfiguration(user, serverUri);
+
+                using (var realm = GetRealm(config))
                 {
-                    var session = realm.GetSession();
+                    var session = GetSession(realm);
+
                     Assert.That(session.User, Is.EqualTo(user));
                     Assert.That(session.ServerUri, Is.EqualTo(serverUri));
                 }
@@ -56,7 +59,7 @@ namespace Tests.Sync
         {
             using (var realm = Realm.GetInstance())
             {
-                Assert.Throws<ArgumentException>(() => realm.GetSession());
+                Assert.Throws<ArgumentException>(() => GetSession(realm));
             }
         }
 
@@ -65,10 +68,12 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                using (var realm = GetRealm(config))
                 {
-                    var session1 = realm.GetSession();
-                    var session2 = realm.GetSession();
+                    var session1 = GetSession(realm);
+                    var session2 = GetSession(realm);
+
                     Assert.That(session1, Is.EqualTo(session2));
                     Assert.That(session1.GetHashCode(), Is.EqualTo(session2.GetHashCode()));
                 }
@@ -80,23 +85,24 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                using (var realm = GetRealm(config))
+                {
+                    var session = GetSession(realm);
 
-                var session = realm.GetSession();
-                const ErrorCode code = (ErrorCode)102;
-                const string message = "Some fake error has occurred";
+                    const ErrorCode code = (ErrorCode)102;
+                    const string message = "Some fake error has occurred";
 
-                var result = await SyncTestHelpers.SimulateSessionError<SessionException>(session, code, message);
+                    var result = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message);
+                    CleanupOnTearDown(result.Item1);
 
-                var error = result.Item2;
-                Assert.That(error.Message, Is.EqualTo(message));
-                Assert.That(error.ErrorCode, Is.EqualTo(code));
+                    var error = result.Item2;
+                    Assert.That(error.Message, Is.EqualTo(message));
+                    Assert.That(error.ErrorCode, Is.EqualTo(code));
 
-                var errorSession = result.Item1;
-                Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
-
-                realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
+                    var errorSession = result.Item1;
+                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
+                }
             });
         }
 
@@ -105,23 +111,26 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var session = realm.GetSession();
-                var result = await SyncTestHelpers.SimulateSessionError<ClientResetException>(session,
-                                                                                              ErrorCode.DivergingHistories,
-                                                                                              "Fake client reset is required");
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                using (var realm = GetRealm(config))
+                {
+                    var session = GetSession(realm);
 
-                var error = result.Item2;
-                Assert.That(error.BackupFilePath, Is.Not.Null);
-                Assert.That(error.BackupFilePath, Does.Contain("io.realm.object-server-recovered-realms/recovered_realm"));
-                Assert.That(File.Exists(error.BackupFilePath), Is.False);
+                    var result = await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session,
+                                                                                                  ErrorCode.DivergingHistories,
+                                                                                                  "Fake client reset is required");
+                    CleanupOnTearDown(result.Item1);
 
-                realm.Dispose();
+                    var error = result.Item2;
+                    Assert.That(error.BackupFilePath, Is.Not.Null);
+                    Assert.That(error.BackupFilePath, Does.Contain("io.realm.object-server-recovered-realms/recovered_realm"));
+                    Assert.That(File.Exists(error.BackupFilePath), Is.False);
 
-                var clientResetSuccess = error.InitiateClientReset();
+                    var clientResetSuccess = error.InitiateClientReset();
 
-                Assert.That(clientResetSuccess, Is.True);
-                Assert.That(File.Exists(error.BackupFilePath), Is.True);
+                    Assert.That(clientResetSuccess, Is.True);
+                    Assert.That(File.Exists(error.BackupFilePath), Is.True);
+                }
             });
         }
 
@@ -130,16 +139,22 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false);
-                var session = realm.GetSession();
-                session.SimulateError(ErrorCode.BadUserAuthentication, "some error", isFatal: true);
-
-                while (session.State != SessionState.Invalid)
+                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: false);
+                using (var realm = GetRealm(config))
                 {
-                    await Task.Delay(100);
-                }
+                    var session = GetSession(realm);
+                   
+                    session.SimulateError(ErrorCode.BadUserAuthentication, "some error", isFatal: true);
 
-                Assert.That(() => session.User, Is.Null);
+                    var counter = 0;
+                    while (session.State != SessionState.Invalid)
+                    {
+                        await Task.Delay(100);
+                        Assert.That(counter++ < 5);
+                    }
+
+                    Assert.That(() => session.User, Is.Null);
+                }
             });
         }
 
@@ -150,12 +165,14 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var errors = new List<Exception>();
-                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: false))
+                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: false);
+                using (var realm = GetRealm(config))
                 {
                     EventHandler<Realms.ErrorEventArgs> handler = null;
                     handler = new EventHandler<Realms.ErrorEventArgs>((sender, e) =>
                     {
                         errors.Add(e.Exception);
+                        CleanupOnTearDown((Session)sender);
                     });
 
                     Session.Error += handler;
@@ -181,12 +198,14 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var errors = new List<Exception>();
-                using (var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true))
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                using (var realm = GetRealm(config))
                 {
                     EventHandler<Realms.ErrorEventArgs> handler = null;
                     handler = new EventHandler<Realms.ErrorEventArgs>((sender, e) =>
                     {
                         errors.Add(e.Exception);
+                        CleanupOnTearDown((Session)sender);
                     });
 
                     Session.Error += handler;
@@ -216,11 +235,13 @@ namespace Tests.Sync
             const int ObjectsToRecord = 2;
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetIntegrationRealm("progress");
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync("progress");
+                var realm = GetRealm(config);
                 var completionTCS = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;
 
-                var session = realm.GetSession();
+                var session = GetSession(realm);
+
                 var observable = session.GetProgressObservable(ProgressDirection.Upload, mode);
 
                 for (var i = 0; i < ObjectsToRecord; i++)
@@ -255,31 +276,30 @@ namespace Tests.Sync
                     }
                 });
 
-                realm.Write(() =>
+                using (token)
                 {
-                    realm.Add(new HugeSyncObject(ObjectSize));
-                });
+                    realm.Write(() =>
+                    {
+                        realm.Add(new HugeSyncObject(ObjectSize));
+                    });
 
-                var totalTransferred = await completionTCS.Task;
+                    var totalTransferred = await completionTCS.Task;
 
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+                    if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                    {
+                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
 
-                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
-                    // so in the fixed mode, we should not get updates for it.
-                    Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                        // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
+                        // so in the fixed mode, we should not get updates for it.
+                        Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                    }
+                    else
+                    {
+                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+                    }
+
+                    Assert.That(callbacksInvoked, Is.GreaterThan(1));
                 }
-                else
-                {
-                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
-                }
-
-                Assert.That(callbacksInvoked, Is.GreaterThan(1));
-
-                token.Dispose();
-                realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
             });
         }
 
@@ -298,8 +318,9 @@ namespace Tests.Sync
                 var callbacksInvoked = 0;
                 var completionTCS = new TaskCompletionSource<ulong>();
 
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var session = realm.GetSession();
+                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: true);
+                var realm = GetRealm(config);
+                var session = GetSession(realm);
 
                 session.SimulateProgress(0, 100, 0, 100);
 
@@ -335,34 +356,33 @@ namespace Tests.Sync
                     }
                 });
 
-                session.SimulateProgress(50, 150, 50, 150);
-                await Task.Delay(50);
-
-                session.SimulateProgress(100, 200, 100, 200);
-                await Task.Delay(50);
-
-                session.SimulateProgress(150, 200, 150, 200);
-                await Task.Delay(50);
-
-                session.SimulateProgress(200, 200, 200, 200);
-                await Task.Delay(50);
-
-                var totalTransferred = await completionTCS.Task;
-
-                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                using (token)
                 {
-                    Assert.That(totalTransferred, Is.EqualTo(100));
-                    Assert.That(callbacksInvoked, Is.EqualTo(3));
-                }
-                else
-                {
-                    Assert.That(totalTransferred, Is.EqualTo(200));
-                    Assert.That(callbacksInvoked, Is.EqualTo(5));
-                }
+                    session.SimulateProgress(50, 150, 50, 150);
+                    await Task.Delay(50);
 
-                token.Dispose();
-                realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
+                    session.SimulateProgress(100, 200, 100, 200);
+                    await Task.Delay(50);
+
+                    session.SimulateProgress(150, 200, 150, 200);
+                    await Task.Delay(50);
+
+                    session.SimulateProgress(200, 200, 200, 200);
+                    await Task.Delay(50);
+
+                    var totalTransferred = await completionTCS.Task;
+
+                    if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                    {
+                        Assert.That(totalTransferred, Is.EqualTo(100));
+                        Assert.That(callbacksInvoked, Is.EqualTo(3));
+                    }
+                    else
+                    {
+                        Assert.That(totalTransferred, Is.EqualTo(200));
+                        Assert.That(callbacksInvoked, Is.EqualTo(5));
+                    }
+                }
             });
         }
 
@@ -375,8 +395,9 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var session = realm.GetSession();
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                var realm = GetRealm(config);
+                var session = GetSession(realm);
 
                 session.SimulateProgress(0, 100, 0, 0);
 
@@ -409,8 +430,9 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var session = realm.GetSession();
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                var realm = GetRealm(config);
+                var session = GetSession(realm);
 
                 var callbacksInvoked = 0;
                 var completionTCS = new TaskCompletionSource<ulong>();
@@ -436,29 +458,28 @@ namespace Tests.Sync
                                 }
                             });
 
-                await Task.Delay(50);
-                session.SimulateProgress(50, 100, 0, 100);
+                using (token)
+                {
+                    await Task.Delay(50);
+                    session.SimulateProgress(50, 100, 0, 100);
 
-                await Task.Delay(50);
-                session.SimulateProgress(100, 100, 0, 100);
+                    await Task.Delay(50);
+                    session.SimulateProgress(100, 100, 0, 100);
 
-                await Task.Delay(50);
-                session.SimulateProgress(100, 150, 0, 100);
+                    await Task.Delay(50);
+                    session.SimulateProgress(100, 150, 0, 100);
 
-                await Task.Delay(50);
-                session.SimulateProgress(100, 150, 100, 100);
+                    await Task.Delay(50);
+                    session.SimulateProgress(100, 150, 100, 100);
 
-                await Task.Delay(50);
-                session.SimulateProgress(150, 150, 100, 100);
+                    await Task.Delay(50);
+                    session.SimulateProgress(150, 150, 100, 100);
 
-                var totalTransferred = await completionTCS.Task;
+                    var totalTransferred = await completionTCS.Task;
 
-                Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(6));
-                Assert.That(totalTransferred, Is.EqualTo(250));
-
-                token.Dispose();
-                realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
+                    Assert.That(callbacksInvoked, Is.GreaterThanOrEqualTo(6));
+                    Assert.That(totalTransferred, Is.EqualTo(250));
+                }
             });
         }
 
@@ -474,8 +495,9 @@ namespace Tests.Sync
                 const int ThrottleInterval = 100; // In ms
                 const int SafeDelay = 2 * ThrottleInterval;
 
-                var realm = await SyncTestHelpers.GetFakeRealm(isUserAdmin: true);
-                var session = realm.GetSession();
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                var realm = GetRealm(config);
+                var session = GetSession(realm);
 
                 var callbacksInvoked = 0;
 
@@ -489,38 +511,37 @@ namespace Tests.Sync
                                               callbacksInvoked++;
                                           });
 
-                await Task.Delay(SafeDelay);
-                Assert.That(callbacksInvoked, Is.EqualTo(1));
-
-                for (ulong i = 0; i < 10; i++)
+                using (token)
                 {
-                    session.SimulateProgress(i, 100, 0, 0);
-                }
-
-                await Task.Delay(SafeDelay);
-                Assert.That(callbacksInvoked, Is.EqualTo(2));
-
-                for (ulong i = 10; i < 20; i++)
-                {
-                    session.SimulateProgress(i, 100, 0, 0);
-                    await Task.Delay(ThrottleInterval / 10);
-                }
-
-                Assert.That(callbacksInvoked, Is.EqualTo(2));
-                await Task.Delay(SafeDelay);
-                Assert.That(callbacksInvoked, Is.EqualTo(3));
-
-                for (ulong i = 20; i < 25; i++)
-                {
-                    session.SimulateProgress(i, 100, 0, 0);
                     await Task.Delay(SafeDelay);
+                    Assert.That(callbacksInvoked, Is.EqualTo(1));
+
+                    for (ulong i = 0; i < 10; i++)
+                    {
+                        session.SimulateProgress(i, 100, 0, 0);
+                    }
+
+                    await Task.Delay(SafeDelay);
+                    Assert.That(callbacksInvoked, Is.EqualTo(2));
+
+                    for (ulong i = 10; i < 20; i++)
+                    {
+                        session.SimulateProgress(i, 100, 0, 0);
+                        await Task.Delay(ThrottleInterval / 10);
+                    }
+
+                    Assert.That(callbacksInvoked, Is.EqualTo(2));
+                    await Task.Delay(SafeDelay);
+                    Assert.That(callbacksInvoked, Is.EqualTo(3));
+
+                    for (ulong i = 20; i < 25; i++)
+                    {
+                        session.SimulateProgress(i, 100, 0, 0);
+                        await Task.Delay(SafeDelay);
+                    }
+
+                    Assert.That(callbacksInvoked, Is.EqualTo(8));
                 }
-
-                Assert.That(callbacksInvoked, Is.EqualTo(8));
-
-                token.Dispose();
-                realm.Dispose();
-                Realm.DeleteRealm(realm.Config);
             });
         }
     }

@@ -28,22 +28,12 @@ using Realms.Sync;
 
 namespace Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true)]
-    public class MergeByPKTests
-    {
-        [SetUp]
-        public void SetUp()
-        {
-            // We simulate a clean slate first time user login
-            foreach (var u in User.AllLoggedIn)
-            {
-                u.LogOut();
-            }
-        }
-
 #if !ROS_SETUP
-        [NUnit.Framework.Explicit]
+    [NUnit.Framework.Explicit]
 #endif
+    [TestFixture, Preserve(AllMembers = true)]
+    public class MergeByPKTests : SyncTestBase
+    {
         [TestCaseSource(nameof(MergeTestCases))]
         public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
@@ -71,13 +61,13 @@ namespace Tests.Sync
                             // Sync went through too quickly (that's why we do 5 attempts)
                         }
 
-                        await realm.GetSession().WaitForUploadAsync();
+                        await GetSession(realm).WaitForUploadAsync();
                     }
                 }
 
                 using (var realm = await GetSyncedRealm(objectType))
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
                     var allObjects = realm.All(objectType.Name).ToArray();
 
                     Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
@@ -114,7 +104,7 @@ namespace Tests.Sync
             return pkObject.StringProperty == pkValue;
         }
 
-        private static async Task<Realm> GetSyncedRealm(Type objectType)
+        private async Task<Realm> GetSyncedRealm(Type objectType)
         {
             var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
             var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
@@ -125,7 +115,7 @@ namespace Tests.Sync
 
             Realm.DeleteRealm(configuration);
 
-            return Realm.GetInstance(configuration);
+            return GetRealm(configuration);
         }
     }
 }

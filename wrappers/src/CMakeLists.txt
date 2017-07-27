@@ -49,9 +49,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
     list(APPEND INCLUDE_DIRS ${REALM_CORE_INCLUDE_DIR}/win32/pthread)
 endif()
 
-if(APPLE)
-    list(APPEND SOURCES object-store/src/util/generic/event_loop_signal.cpp)
-    add_definitions(-DREALM_USE_CF=0)
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  add_compile_options(-Wno-missing-prototypes)
 endif()
 
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})

@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -103,7 +102,15 @@ namespace Realms.Sync
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
             var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
-            await session.WaitForDownloadAsync();
+            try
+            {
+                await session.WaitForDownloadAsync();
+            }
+            finally
+            {
+                session.CloseHandle();
+            }
+
             return CreateRealm(schema);
         }
 

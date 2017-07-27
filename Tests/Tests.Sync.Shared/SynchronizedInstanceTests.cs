@@ -30,7 +30,7 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class SynchronizedInstanceTests
+    public class SynchronizedInstanceTests : SyncTestBase
     {
         [Ignore("Due to #976, compact doesn't work with synced realms.")]
         [TestCase(true, true)]
@@ -41,7 +41,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: false), new Uri("http://localhost:9080"));
+                var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
 
                 var config = new SyncConfiguration(user, serverUri);
@@ -51,9 +51,7 @@ namespace Tests.Sync
                     config.EncryptionKey[0] = 5;
                 }
 
-                Realm.DeleteRealm(config);
-
-                using (var realm = Realm.GetInstance(config))
+                using (var realm = GetRealm(config))
                 {
                     if (populate)
                     {
@@ -68,7 +66,7 @@ namespace Tests.Sync
                 var finalSize = new FileInfo(config.DatabasePath).Length;
                 Assert.That(initialSize >= finalSize);
 
-                using (var realm = Realm.GetInstance(config))
+                using (var realm = GetRealm(config))
                 {
                     Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
                 }
@@ -84,31 +82,23 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
 
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_ShouldDownloadRealm");
 
                 var config = new SyncConfiguration(user, realmUri);
                 var asyncConfig = new SyncConfiguration(user, realmUri, config.DatabasePath + "_async");
 
-                try
+                using (var realm = GetRealm(config))
                 {
-                    using (var realm = Realm.GetInstance(config))
-                    {
-                        AddDummyData(realm, singleTransaction);
+                    AddDummyData(realm, singleTransaction);
 
-                        await realm.GetSession().WaitForUploadAsync();
-                    }
-
-                    using (var asyncRealm = await Realm.GetInstanceAsync(asyncConfig))
-                    {
-                        Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
-                    }
+                    await GetSession(realm).WaitForUploadAsync();
                 }
-                finally
+
+                using (var asyncRealm = await GetRealmAsync(asyncConfig))
                 {
-                    Realm.DeleteRealm(config);
-                    Realm.DeleteRealm(asyncConfig);
+                    Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
                 }
             });
         }
@@ -122,19 +112,19 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUri = SyncTestHelpers.RealmUri($"{alice.Identity}/GetInstanceAsync_OpensReadonlyRealm");
                 var aliceConfig = new SyncConfiguration(alice, realmUri);
-                var aliceRealm = Realm.GetInstance(aliceConfig);
+                var aliceRealm = GetRealm(aliceConfig);
 
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUri.AbsoluteUri, AccessLevel.Read).Timeout(1000);
 
                 AddDummyData(aliceRealm, singleTransaction);
 
                 var bobConfig = new SyncConfiguration(bob, realmUri);
-                var bobRealm = await Realm.GetInstanceAsync(bobConfig);
+                var bobRealm = await GetRealmAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
                 var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();

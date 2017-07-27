@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
-using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -31,26 +30,8 @@ using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class PermissionsTests
+    public class PermissionsTests : SyncTestBase
     {
-        [TestCase("http", "realm")]
-        [TestCase("https", "realms")]
-        public void User_GetManagementRealm(string authScheme, string syncScheme)
-        {
-            AsyncContext.Run(async () =>
-            {
-                const string UriPattern = "{0}://some.fake.server:12345";
-                var user = await User.LoginAsync(Credentials.AccessToken("foo:bar", Guid.NewGuid().ToString(), isAdmin: true), new Uri(string.Format(UriPattern, authScheme)));
-
-                using (var realm = user.GetManagementRealm())
-                {
-                    var configuration = (SyncConfiguration)realm.Config;
-                    Assert.That(configuration.User, Is.EqualTo(user));
-                    Assert.That(configuration.ServerUri.ToString(), Is.EqualTo(string.Format(UriPattern + "/~/__management", syncScheme)));
-                }
-            });
-        }
-
         [Test]
         public void PermissionChange_ShouldNotBeInDefaultSchema()
         {
@@ -83,7 +64,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var permissionChange = await CreateChange(user, "*");
                 Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
             });
@@ -97,7 +78,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var permissionOffer = await CreateOffer(user);
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
                 Assert.That(permissionOffer.Token, Is.Not.Null);
@@ -112,7 +93,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Error));
                 Assert.That(permissionOffer.Token, Is.Null);
@@ -129,7 +110,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddSeconds(2));
 
                 Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
@@ -151,7 +132,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
                 var permissionResponse = await CreateResponse(user, "Some string");
                 Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
                 Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
@@ -167,16 +148,15 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 // Opening a synced realm with just read permission fails.
                 // OS issue: https://github.com/realm/realm-object-store/issues/312
                 var realmUrl = await GrantPermissions(alice, bob);
                 var syncConfig = new SyncConfiguration(bob, new Uri(realmUrl));
 
-                Realm realm = null;
-                Assert.That(() => realm = Realm.GetInstance(syncConfig), Throws.Nothing);
+                Assert.That(() => GetRealm(syncConfig), Throws.Nothing);
                 var handler = new EventHandler<ErrorEventArgs>((sender, e) =>
                 {
                     Assert.Fail("Opening the realm should not cause an error.", e.Exception);
@@ -185,7 +165,6 @@ namespace Tests.Sync
                 Session.Error += handler;
 
                 await Task.Delay(2000);
-                realm.Dispose();
 
                 Session.Error -= handler;
             });
@@ -199,8 +178,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = await GrantPermissions(alice, bob);
 
@@ -216,9 +195,9 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
-                var charlie = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
+                var charlie = await SyncTestHelpers.GetUserAsync();
 
                 var alicesUrl = await GrantPermissions(alice, bob, mayManage: true);
 
@@ -238,8 +217,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 var permissionRealm = alice.GetPermissionRealm();
                 var tcs = new TaskCompletionSource<Permission>();
@@ -289,8 +268,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity));
             });
@@ -304,7 +283,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
                 var bobEmail = $"{Guid.NewGuid()}@foo.bar";
                 var bobCredentials = Credentials.UsernamePassword(bobEmail, "a", createUser: true);
                 var bob = await User.LoginAsync(bobCredentials, SyncTestHelpers.AuthServerUri);
@@ -321,8 +300,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmPath = $"/{alice.Identity}/testPermission";
                 var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
@@ -345,7 +324,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
@@ -362,7 +341,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
@@ -379,8 +358,8 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var alice = await SyncTestHelpers.GetUser();
-                var bob = await SyncTestHelpers.GetUser();
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
@@ -406,7 +385,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var user = await SyncTestHelpers.GetUser();
+                var user = await SyncTestHelpers.GetUserAsync();
 
                 await AssertThrows<PermissionException>(() => user.AcceptPermissionOfferAsync("some string"), ex =>
                 {
@@ -429,7 +408,7 @@ namespace Tests.Sync
             }
         }
 
-        private static async Task TestApplyPermissions(User alice, User bob, PermissionCondition condition)
+        private async Task TestApplyPermissions(User alice, User bob, PermissionCondition condition)
         {
             var realmPath = $"/{alice.Identity}/testPermission";
             var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
@@ -473,7 +452,7 @@ namespace Tests.Sync
 
         #endregion
 
-        private static async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
+        private async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
         {
             var permissionOffer = await CreateOffer(granter, mayRead, mayWrite, mayManage, realmUrl: realmUrl);
 
@@ -487,12 +466,12 @@ namespace Tests.Sync
             return permissionResponse.RealmUrl;
         }
 
-        private static async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)
+        private async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)
         {
             await Task.Delay(500);
 
-            var firstRealm = Realm.GetInstance(new SyncConfiguration(first, new Uri(realmUrl)));
-            var secondRealm = Realm.GetInstance(new SyncConfiguration(second, new Uri(realmUrl)));
+            var firstRealm = GetRealm(new SyncConfiguration(first, new Uri(realmUrl)));
+            var secondRealm = GetRealm(new SyncConfiguration(second, new Uri(realmUrl)));
 
             var firstObjects = firstRealm.All<PrimaryKeyInt64Object>();
             var secondObjects = secondRealm.All<PrimaryKeyInt64Object>();
@@ -528,17 +507,14 @@ namespace Tests.Sync
 
             Assert.That(firstObjects.Count(), Is.EqualTo(secondObjects.Count()));
             Assert.That(firstRealm.Find<PrimaryKeyInt64Object>(secondObjectId), Is.Not.Null);
-
-            firstRealm.Dispose();
-            secondRealm.Dispose();
         }
 
-        private static Task<PermissionChange> CreateChange(User user, string receiverId, string url = "*", bool mayRead = true, bool mayWrite = false, bool mayManage = false)
+        private Task<PermissionChange> CreateChange(User user, string receiverId, string url = "*", bool mayRead = true, bool mayWrite = false, bool mayManage = false)
         {
             return CreatePermissionObject(user, _ => new PermissionChange(receiverId, url, mayRead, mayWrite, mayManage));
         }
 
-        private static Task<PermissionOffer> CreateOffer(User user, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null, string realmUrl = null)
+        private Task<PermissionOffer> CreateOffer(User user, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null, string realmUrl = null)
         {
             return CreatePermissionObject(user, url =>
             {
@@ -546,12 +522,12 @@ namespace Tests.Sync
             }, realmUrl);
         }
 
-        private static Task<PermissionOfferResponse> CreateResponse(User user, string token)
+        private Task<PermissionOfferResponse> CreateResponse(User user, string token)
         {
             return CreatePermissionObject(user, _ => new PermissionOfferResponse(token));
         }
 
-        private static async Task<T> CreatePermissionObject<T>(User user, Func<string, T> itemFactory, string realmUrl = null) where T : RealmObject, IPermissionObject
+        private async Task<T> CreatePermissionObject<T>(User user, Func<string, T> itemFactory, string realmUrl = null) where T : RealmObject, IPermissionObject
         {
             realmUrl = realmUrl ?? SyncTestHelpers.RealmUri($"{user.Identity}/offer").AbsoluteUri;
             EnsureRealmExists(user, realmUrl);
@@ -574,10 +550,10 @@ namespace Tests.Sync
             return item;
         }
 
-        private static void EnsureRealmExists(User user, string realmUrl)
+        private void EnsureRealmExists(User user, string realmUrl)
         {
             var syncConfig = new SyncConfiguration(user, new Uri(realmUrl));
-            using (var temp = Realm.GetInstance(syncConfig))
+            using (var realm = GetRealm(syncConfig))
             {
                 // Make sure the realm exists
             }

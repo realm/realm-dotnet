@@ -16,7 +16,7 @@ def dataBindingVersionString
 def dependencies
 
 stage('Checkout') {
-  node('xamarin-mac') {
+  nodeWithCleanup('xamarin-mac') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -479,12 +479,13 @@ def Win32Test(stashName) {
           withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
             bat """
               mkdir "%TMP%"
-              "${nunit}" Tests.Win32.dll --result=TestResults.win32-x86.xml;transform=nunit3-junit.xslt --x86
-              "${nunit}" Tests.Win32.dll --result=TestResults.win32-x64.xml;transform=nunit3-junit.xslt
+              "${nunit}" Tests.Win32.dll --result=${stashName}-x86.xml;transform=nunit3-junit.xslt --x86
+              "${nunit}" Tests.Win32.dll --result=${stashName}-x64.xml;transform=nunit3-junit.xslt
             """
           }
         } finally {
-          junit 'TestResults.*.xml'
+          reportTests "${stashName}-x86.xml"
+          reportTests "${stashName}-x64.xml"
         }
       }
     }
@@ -499,10 +500,10 @@ def iOSTest(stashName) {
       def workspace = pwd()
       try {
         sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/TestResults.iOS.xml")
+        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/${stashName}.xml")
       } finally {
         dir("${workspace}/temp") {
-          junit 'TestResults.iOS.xml'
+          reportTests "${stashName}.xml"
         }
       }
     }
@@ -530,7 +531,7 @@ def AndroidTest(stashName) {
           def instrumentationOutput = sh script: """
             mkdir -p ${workspace}/temp
             adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-            adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${workspace}/temp/
+            adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml ${workspace}/temp/${stashName}.xml
             adb shell rm /sdcard/Realmtests/TestResults.Android.xml
           """, returnStdout: true
 
@@ -548,7 +549,7 @@ def AndroidTest(stashName) {
       }
 
       dir ("${workspace}/temp") {
-        junit 'TestResults.Android.xml'
+        reportTests "${stashName}.xml"
       }
     }
   }
@@ -556,7 +557,7 @@ def AndroidTest(stashName) {
 
 def NetCoreTest(String nodeName, String platform, String stashSuffix) {
   return {
-    node(nodeName) {
+    nodeWithCleanup(nodeName) {
       getArchive()
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
@@ -568,7 +569,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
               cd ${pwd()}/${binaryFolder}
               chmod +x Tests.NetCore
               ./Tests.NetCore --labels=After --result=temp.xml
-              xsltproc nunit3-junit.xslt temp.xml > TestResults.${platform}.xml
+              xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
             """
 
             if (nodeName == 'docker') {
@@ -582,13 +583,13 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             dir(binaryFolder) {
               bat """
                 Tests.NetCore.exe --labels=After --result=temp.xml
-                powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) TestResults.${platform}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
+                powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) NetCore-${platform}-${stashSuffix}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
               """
             }
           }
         } finally {
           dir(binaryFolder) {
-            junit "TestResults.${platform}.xml"
+            reportTests "NetCore-${platform}-${stashSuffix}.xml"
           }
         }
       }
@@ -606,11 +607,11 @@ def XamarinMacTest(String stashName) {
         dir("Tests.XamarinMac.app/Contents/") {
           sh """
             MacOS/Tests.XamarinMac --headless --labels=All --result=temp.xml
-            xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${workspace}/TestResults.XamarinMac.xml
+            xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${workspace}/${stashName}.xml
           """
         }
       } finally {
-        junit "TestResults.XamarinMac.xml"
+        reportTests "${stashName}.xml"
       }
     }
   }
@@ -831,5 +832,13 @@ def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
 
   image.inside() {
     steps()
+  }
+}
+
+def reportTests(String file) {
+  stash includes: file, name: file
+  nodeWithCleanup('!osx') {
+    unstash file
+    junit file
   }
 }
