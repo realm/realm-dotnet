@@ -5,6 +5,11 @@ project(realm-wrappers)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/CMake")
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  # set before including RealmCore.cmake which calls FindOpenSSL
+  set(OPENSSL_USE_STATIC_LIBS TRUE)
+endif()
+
 include(CompilerFlags)
 include(RealmCore)
 
@@ -18,10 +23,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   if(REALM_ENABLE_SYNC)
     add_library(realm-sync INTERFACE)
     target_link_libraries(realm-sync INTERFACE realm realm-sync-node)
+    set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES ${SSL_LIBRARIES})
   endif()
 elseif(APPLE AND REALM_ENABLE_SYNC)
   download_realm_sync(${REALM_SYNC_VERSION})
-  set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES ${SSL_LIBRARIES})
+  set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES ${CRYPTO_LIBRARIES} ${SSL_LIBRARIES})
 else()
   use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
 endif()
