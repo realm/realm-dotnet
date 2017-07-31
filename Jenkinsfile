@@ -195,7 +195,7 @@ stage('Build without sync') {
 
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-            insideDocker('ci/realm-dotnet/wrappers/linux', "-f Dockerfile.linux --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+            insideDocker('ci/realm-dotnet/wrappers/centos', "-f Dockerfile.centos --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
               cmake 'build-linux', "${pwd()}/build", configuration
             }
           }
@@ -352,7 +352,7 @@ stage('Build with sync') {
       
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-            insideDocker('ci/realm-dotnet/wrappers/linux', "-f Dockerfile.linux --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+            insideDocker('ci/realm-dotnet/wrappers/centos', "-f Dockerfile.centos --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
               cmake 'build-linux', "${pwd()}/build", configuration, [
                 'REALM_ENABLE_SYNC': 'ON'
               ]
@@ -516,7 +516,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             """
 
             if (nodeName == 'docker') {
-              insideDocker('ci/realm-dotnet/tests/netcore/linux', '-f Dockerfile.linux') {
+              insideDocker('ci/realm-dotnet/tests/netcore') {
                 sh invocation
               }
             } else {
