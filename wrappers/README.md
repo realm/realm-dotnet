@@ -60,6 +60,15 @@ You can find the CMake-generated Visual Studio project files in `cmake\$Target\$
 
 Sync is not supported on Windows right now.
 
+Building .NET Core wrappers for macOS and Linux
+-------------
+
+`build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-DREALM_ENABLE_SYNC=ON` and `-GNinja`.
+
+For Linux builds you can just build and run `Dockerfile.centos` if you don't have access to a Linux environment:
+
+1. `docker build . -f Dockerfile.centos -t realm-dotnet/wrappers --build-arg REALM_CORE_VERSION=x.y.z --build-arg REALM_SYNC_VERSION=x.y.z --build-arg PACKAGECLOUD_URL=personalized/repository/url/to/realm/sync-devel`
+1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
 
 General Notes
 -------------
