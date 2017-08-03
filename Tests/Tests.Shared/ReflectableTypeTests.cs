@@ -28,8 +28,6 @@ namespace Tests.Database
     [Ignore("ReflectableType is not respected by WPF.")]
 #elif NETCOREAPP1_1
     [Ignore("ReflectableType is not needed/supported on .NET Core")]
-#elif __MACOS__
-    [Ignore("ReflectableType is not needed/supported on Xamarin.Mac")]
 #endif
     public class ReflectableTypeTests : RealmInstanceTest
     {

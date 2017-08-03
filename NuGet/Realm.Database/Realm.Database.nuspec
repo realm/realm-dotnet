@@ -18,11 +18,11 @@
     <dependencies>
       <group targetFramework="portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac">
         <dependency id="Fody" version="2.0.6"/>
-        <dependency id="Realm.DataBinding" version="1.1.0"/>
+        <dependency id="Realm.DataBinding" version="1.2.0"/>
       </group>
       <group targetFramework="netstandard1.4">
         <dependency id="Fody" version="2.0.6"/>
-        <dependency id="Realm.DataBinding" version="1.1.0"/>
+        <dependency id="Realm.DataBinding" version="1.2.0"/>
         <dependency id="System.Runtime.CompilerServices.Unsafe" version="4.3.0"/>
         <dependency id="Remotion.Linq" version="2.1.1"/>
         <dependency id="NETStandard.Library" version="1.6.1" />
