@@ -218,6 +218,8 @@ stage('Build without sync') {
         msbuild project: 'Tests/Tests.XamarinMac/Tests.XamarinMac.csproj', target: 'Restore,Build',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
 
+        stash includes: "DataBinding/Realm.DataBinding.Mac/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-mac-databinding'
+
         dir("Tests/Tests.XamarinMac/bin/${configuration}") {
           stash includes: 'Tests.XamarinMac.app/**/*', name: 'xamarinmac-tests-nosync'
         }
@@ -696,6 +698,7 @@ stage('NuGet') {
         unstash 'nuget-pcl-databinding'
         unstash 'nuget-ios-databinding'
         unstash 'nuget-android-databinding'
+        unstash 'nuget-mac-databinding'
 
         dir('NuGet/Realm.DataBinding') {
           nuget("pack Realm.DataBinding.nuspec -version ${dataBindingVersionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
