@@ -25,5 +25,7 @@
     <file src="../../DataBinding/Realm.DataBinding.iOS/bin/$Configuration$/Realm.DataBinding.*" target="lib/Xamarin.iOS10" />
 <!-- Android files -->
     <file src="../../DataBinding/Realm.DataBinding.Android/bin/$Configuration$/Realm.DataBinding.*" target="lib/MonoAndroid44" />
+<!-- Mac file -->
+    <file src="../../DataBinding/Realm.DataBinding.Mac/bin/$Configuration$/Realm.DataBinding.*" target="lib/Xamarin.Mac20" />
   </files>
 </package>
