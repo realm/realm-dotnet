@@ -1,3 +1,6 @@
+#!groovy
+@Library('realm-ci') _
+
 wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
@@ -195,7 +198,10 @@ stage('Build without sync') {
 
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-            insideDocker('ci/realm-dotnet/wrappers/centos', "-f Dockerfile.centos --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+            String dockerBuildArgs = "-f Dockerfile.centos " +
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
+            buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
               cmake 'build-linux', "${pwd()}/build", configuration
             }
           }
@@ -352,7 +358,10 @@ stage('Build with sync') {
       
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-            insideDocker('ci/realm-dotnet/wrappers/centos', "-f Dockerfile.centos --build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel --build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}") {
+            String dockerBuildArgs = "-f Dockerfile.centos " +
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
+            buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
               cmake 'build-linux', "${pwd()}/build", configuration, [
                 'REALM_ENABLE_SYNC': 'ON'
               ]
@@ -516,7 +525,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             """
 
             if (nodeName == 'docker') {
-              insideDocker('ci/realm-dotnet/tests/netcore') {
+              buildDockerEnv("ci/realm-dotnet:netcore_tests").inside() {
                 sh invocation
               }
             } else {
@@ -762,14 +771,6 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
     } else {
       bat cmakeInvocation
     }
-  }
-}
-
-def insideDocker(String imageTag, String args = '', Closure steps) {
-  def image = docker.build(imageTag, "${args} .")
-
-  image.inside() {
-    steps()
   }
 }
 
