@@ -156,34 +156,6 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
-        [Test]
-        public void GetInstanceAsync_WhenErrorOccurs_ThrowsMeaningfulError()
-        {
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var realmUri = SyncTestHelpers.RealmUri("/~/GetInstanceAsync_WhenErrorOccurs_ThrowsMeaningfulError");
-                var config = new SyncConfiguration(user, realmUri);
-                try
-                {
-                    // When a Realm doesn't exist on the server, it can't be opened asynchronously.
-                    await GetRealmAsync(config);
-                    Assert.Fail("Expected an error to occur.");
-                }
-                catch (RealmException ex)
-                {
-                    Assert.That(ex.InnerException, Is.Not.Null);
-                    Assert.That(ex.InnerException, Is.TypeOf<SessionException>());
-                    var sessionEx = (SessionException)ex.InnerException;
-                    Assert.That(sessionEx.ErrorCode, Is.EqualTo((ErrorCode)89));
-                    Assert.That(sessionEx.Message, Contains.Substring("cancelled"));
-                }
-            });
-        }
-
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
