@@ -116,5 +116,18 @@ namespace Tests.Sync
                 Assert.That(() => GetRealm(config), Throws.Nothing);
             });
         }
+
+        [TestCase("http://localhost/~/foo")]
+        [TestCase("https://localhost/~/foo")]
+        [TestCase("foo://bar/~/foo")]
+        public void SyncConfiguration_WrongProtocolTests(string url)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetFakeUserAsync();
+
+                Assert.That(() => new SyncConfiguration(user, new Uri(url)), Throws.TypeOf<ArgumentException>());
+            });
+        }
     }
 }

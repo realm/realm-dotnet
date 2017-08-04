@@ -38,5 +38,21 @@ namespace Realms.Helpers
                 throw (T)Activator.CreateInstance(typeof(T), message);
             }
         }
+
+        public static void Ensure(bool condition, string message, string paramName)
+        {
+            if (!condition)
+            {
+                throw new ArgumentException(message, paramName);
+            }
+        }
+
+        public static void NotNull(object value, string paramName)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+        }
     }
 }
