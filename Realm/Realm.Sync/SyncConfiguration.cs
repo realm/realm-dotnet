@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -83,6 +84,10 @@ namespace Realms.Sync
         public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
             : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
         {
+            Argument.NotNull(user, nameof(user));
+            Argument.NotNull(serverUri, nameof(serverUri));
+            Argument.Ensure(serverUri.Scheme.StartsWith("realm"), "Unexpected protocol for server url. Expected realm:// or realms://.", nameof(serverUri));
+
             User = user ?? throw new ArgumentNullException(nameof(user));
             ServerUri = serverUri ?? throw new ArgumentNullException(nameof(serverUri));
         }

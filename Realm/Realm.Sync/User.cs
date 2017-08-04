@@ -79,6 +79,10 @@ namespace Realms.Sync
         /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
         public static async Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
         {
+            Argument.NotNull(credentials, nameof(credentials));
+            Argument.NotNull(serverUrl, nameof(serverUrl));
+            Argument.Ensure(serverUrl.Scheme.StartsWith("http"), "Unexpected protocol for login url. Expected http:// or https://.", nameof(serverUrl));
+
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
             if (credentials.IdentityProvider == Credentials.Provider.AccessToken)
