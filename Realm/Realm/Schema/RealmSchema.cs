@@ -102,9 +102,19 @@ namespace Realms.Schema
         internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes)
         {
             var builder = new Builder();
+            var classNames = new HashSet<string>();
             foreach (var @class in classes)
             {
-                builder.Add(ObjectSchema.FromType(@class));
+                var objectSchema = ObjectSchema.FromType(@class);
+                if (!classNames.Add(objectSchema.Name))
+                {
+                    var duplicateType = builder.Single(s => s.Name == objectSchema.Name).Type;
+                    var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
+                        $"The duplicate types are {@class.FullName} and {duplicateType.FullName}. Either rename one" +
+                        " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
+                    throw new NotSupportedException(errorMessage);
+                }
+                builder.Add(objectSchema);
             }
 
             return builder.Build();
