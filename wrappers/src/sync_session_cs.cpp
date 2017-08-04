@@ -170,7 +170,7 @@ REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void*
 {
     return handle_errors(ex, [&] {
         auto waiter = [task_completion_source](std::error_code error) {
-            s_wait_callback(task_completion_source, error.value(), error.message(), error.message().length());
+            s_wait_callback(task_completion_source, error.value(), error.message().c_str(), error.message().length());
         };
         
         if (direction == CSharpNotifierType::Upload) {
