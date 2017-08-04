@@ -261,5 +261,42 @@ namespace Tests.Database
                 }, Throws.TypeOf<RealmInvalidTransactionException>());
             }
         }
+
+        [Test]
+        public void DuplicateClassNames_ThrowsException()
+        {
+            var config = new RealmConfiguration
+            {
+                ObjectClasses = new[]
+                {
+                    typeof(Foo.DuplicateClass),
+                    typeof(Bar.DuplicateClass)
+                }
+            };
+
+            var constraint = Throws.TypeOf<NotSupportedException>().And
+                                   .Message.Contains("Foo.DuplicateClass").And
+                                   .Message.Contains("Bar.DuplicateClass");
+
+            Assert.That(() => Realm.GetInstance(config), constraint);
+        }
+    }
+}
+
+namespace Foo
+{
+    [Explicit]
+    public class DuplicateClass : RealmObject
+    {
+        public int IntValue { get; set; }
+    }
+}
+
+namespace Bar
+{
+    [Explicit]
+    public class DuplicateClass : RealmObject
+    {
+        public string StringValue { get; set; }
     }
 }
