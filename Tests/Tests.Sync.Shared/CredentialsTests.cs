@@ -111,6 +111,25 @@ namespace Tests.Sync
             });
         }
 
+        [TestCase("realm://localhost")]
+        [TestCase("realms://localhost")]
+        [TestCase("foo://bar")]
+        public void UserLogin_WrongProtocolTestCases(string url)
+        {
+            AsyncContext.Run(async () =>
+            {
+                try
+                {
+                    await User.LoginAsync(SyncTestHelpers.CreateCredentials(), new Uri(url));
+                    Assert.Fail("Expected exception to be thrown.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<ArgumentException>());
+                }
+            });
+        }
+
         private const string OriginalPassword = "a";
         private const string NewPassword = "b";
 
