@@ -29,6 +29,10 @@ namespace Realms.Exceptions
         {
         }
 
+        internal RealmException(string detailMessage, Exception innerException) : base(detailMessage, innerException)
+        {
+        }
+
         internal static Exception Create(RealmExceptionCodes exceptionCode, string message)
         {
             // these are increasing enum value order

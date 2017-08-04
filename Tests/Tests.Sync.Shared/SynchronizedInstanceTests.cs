@@ -23,8 +23,9 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
-
+using Realms.Sync.Exceptions;
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync
@@ -152,6 +153,34 @@ namespace Tests.Sync
                 var bobObject = bobRealm.Find<IntPrimaryKeyWithValueObject>(9999);
                 Assert.That(bobObject, Is.Not.Null);
                 Assert.That(bobObject.StringValue, Is.EqualTo("Some value"));
+            });
+        }
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void GetInstanceAsync_WhenErrorOccurs_ThrowsMeaningfulError()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUserAsync();
+                var realmUri = SyncTestHelpers.RealmUri("/~/GetInstanceAsync_WhenErrorOccurs_ThrowsMeaningfulError");
+                var config = new SyncConfiguration(user, realmUri);
+                try
+                {
+                    // When a Realm doesn't exist on the server, it can't be opened asynchronously.
+                    await GetRealmAsync(config);
+                    Assert.Fail("Expected an error to occur.");
+                }
+                catch (RealmException ex)
+                {
+                    Assert.That(ex.InnerException, Is.Not.Null);
+                    Assert.That(ex.InnerException, Is.TypeOf<SessionException>());
+                    var sessionEx = (SessionException)ex.InnerException;
+                    Assert.That(sessionEx.ErrorCode, Is.EqualTo((ErrorCode)89));
+                    Assert.That(sessionEx.Message, Contains.Substring("cancelled"));
+                }
             });
         }
 

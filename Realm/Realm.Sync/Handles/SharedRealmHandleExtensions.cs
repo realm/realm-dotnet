@@ -51,7 +51,7 @@ namespace Realms.Sync
 
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
-            public delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code);
+            public unsafe delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, byte* message_buf, IntPtr message_len);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth,
@@ -208,7 +208,7 @@ namespace Realms.Sync
         }
 
         [NativeCallback(typeof(NativeMethods.SessionWaitCallback))]
-        private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code)
+        private static unsafe void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<object>)handle.Target;
@@ -221,7 +221,9 @@ namespace Realms.Sync
                 }
                 else
                 {
-                    tcs.TrySetException(new RealmException($"A system error with code {error_code} occurred while waiting for completion"));
+                    var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
+                    const string outerMessage = "A system error occurred while waiting for completion. See InnerException for more details";
+                    tcs.TrySetException(new RealmException(outerMessage, inner));
                 }
             }
             finally
