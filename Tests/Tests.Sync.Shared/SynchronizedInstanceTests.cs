@@ -23,8 +23,9 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
-
+using Realms.Sync.Exceptions;
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Tests.Sync
