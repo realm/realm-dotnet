@@ -156,6 +156,32 @@ namespace Tests.Sync
             });
         }
 
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void GetInstanceAsync_CreatesNonExistentRealm()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUserAsync();
+                var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_CreatesNonExistentRealm");
+                var config = new SyncConfiguration(user, realmUri);
+
+                try
+                {
+                    await GetRealmAsync(config);
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<RealmException>().And.InnerException.TypeOf<SessionException>());
+                    var sessionException = (SessionException)ex.InnerException;
+                    Assert.That(sessionException.ErrorCode, Is.EqualTo((ErrorCode)89));
+                    Assert.That(sessionException.Message, Contains.Substring("Operation canceled"));
+                }
+            });
+        }
+
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
