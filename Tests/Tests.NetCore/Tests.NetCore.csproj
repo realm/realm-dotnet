@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RuntimeIdentifiers>win81-x64;osx.10.10-x64;ubuntu.16.04-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win81-x64;osx.10.10-x64;debian.8-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

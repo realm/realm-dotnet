@@ -56,7 +56,7 @@ endif()
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
 target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
 target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
-target_link_libraries(realm-wrappers PUBLIC realm-object-store realm ${PLATFORM_LIBRARIES})
+target_link_libraries(realm-wrappers realm-object-store)
 
 if(NOT CMAKE_GENERATOR_PLATFORM STREQUAL "")
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${CMAKE_GENERATOR_PLATFORM})

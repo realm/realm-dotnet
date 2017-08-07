@@ -1,3 +1,6 @@
+#!groovy
+@Library('realm-ci') _
+
 wrapperConfigurations = [
   Debug: 'dbg',
   Release: ''
@@ -28,41 +31,7 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    dir('wrappers') {
-      dependencies = readProperties file: 'dependencies.list'
-
-      dir('realm-core') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_CORE_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-core.git'
-          ]]
-        ])
-        stash includes: '**', name: 'core-source'
-        deleteDir()
-      }
-
-      dir('realm-sync') {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: "refs/tags/v${dependencies.REALM_SYNC_VERSION}"]],
-          extensions: [[$class: 'CloneOption', depth: 0, shallow: true]],
-          changelog: false, poll: false,
-          gitTool: 'native git', 
-          userRemoteConfigs: [[
-            credentialsId: 'realm-ci-ssh',
-            url: 'git@github.com:realm/realm-sync.git'
-          ]]
-        ])
-        stash includes: '**', name: 'sync-source'
-        deleteDir()
-      }
-    }
+    dependencies = readProperties file: 'wrappers/dependencies.list'
 
     version = readAssemblyVersion('RealmAssemblyInfo.cs')
     versionString = "${version.major}.${version.minor}.${version.patch}"
@@ -230,16 +199,13 @@ stage('Build without sync') {
         getArchive()
 
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-
-          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            cmake 'build-linux', "${pwd()}/build", configuration, [
-              'SANITIZER_FLAGS': '-fPIC -DPIC',
-              'REALM_CORE_PREFIX': "${pwd()}/realm-core"
-            ]
+          withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+            String dockerBuildArgs = "-f Dockerfile.centos " +
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
+            buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
+              cmake 'build-linux', "${pwd()}/build", configuration
+            }
           }
         }
 
@@ -272,21 +238,23 @@ stage('Build .NET Core') {
 
     archiveNetCore('nosync')
 
+    Map properties = [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
+
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
+            properties: properties
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos", RealmNoSync: true ]
+            properties: properties + [ RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux", RealmNoSync: true ]
+            properties: properties + [ RuntimeIdentifier: 'debian.8-x64', OutputPath: "bin/${configuration}/linux" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-nosync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32", RealmNoSync: true ]
+            properties: properties + [ RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-nosync'
   }
@@ -365,19 +333,8 @@ stage('Build with sync') {
         getArchive()
 
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-          dir('realm-sync') { 
-            unstash 'sync-source'
-            sh 'sh build.sh config'
-          }
-
           cmake 'build-osx', "${pwd()}/build", configuration, [
-            'REALM_ENABLE_SYNC': 'ON',
-            'REALM_CORE_PREFIX': "${pwd()}/realm-core",
-            'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
+            'REALM_ENABLE_SYNC': 'ON'
           ]
         }
 
@@ -402,22 +359,15 @@ stage('Build with sync') {
         getArchive()
       
         dir('wrappers') {
-          dir('realm-core') {
-            unstash 'core-source'
-            sh 'REALM_ENABLE_ENCRYPTION=YES REALM_ENABLE_ASSERTIONS=YES sh build.sh config'
-          }
-          dir('realm-sync') { 
-            unstash 'sync-source'
-            sh 'sh build.sh config'
-          }
-
-          insideDocker('ci/realm-dotnet/wrappers:linux', 'Dockerfile.linux') {
-            cmake 'build-linux', "${pwd()}/build", configuration, [
-              'SANITIZER_FLAGS': '-fPIC -DPIC',
-              'REALM_ENABLE_SYNC': 'ON',
-              'REALM_CORE_PREFIX': "${pwd()}/realm-core",
-              'REALM_SYNC_PREFIX': "${pwd()}/realm-sync"
-            ]
+          withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
+            String dockerBuildArgs = "-f Dockerfile.centos " +
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
+            buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
+              cmake 'build-linux', "${pwd()}/build", configuration, [
+                'REALM_ENABLE_SYNC': 'ON'
+              ]
+            }
           }
         }
 
@@ -444,16 +394,18 @@ stage ('Build .NET Core with sync') {
 
     archiveNetCore('sync')
 
+    Map properties = [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Restore',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+            properties: properties
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
+            properties: properties + [ RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-sync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
-            properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RuntimeIdentifier: 'ubuntu.16.04-x64', OutputPath: "bin/${configuration}/linux" ]
+            properties: properties + [ RuntimeIdentifier: 'debian.8-x64', OutputPath: "bin/${configuration}/linux" ]
     
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-sync'
   }
@@ -575,7 +527,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             """
 
             if (nodeName == 'docker') {
-              insideDocker('ci/realm-dotnet/netcorerunner:linux', 'Dockerfile.linux') {
+              buildDockerEnv("ci/realm-dotnet:netcore_tests").inside() {
                 sh invocation
               }
             } else {
@@ -822,19 +774,6 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
     } else {
       bat cmakeInvocation
     }
-  }
-}
-
-def insideDocker(String imageTag, String dockerfile = null, Closure steps) {
-  def image
-  if (dockerfile != null) {
-    image = docker.build(imageTag, "-f ${dockerfile} .")
-  } else {
-    image = docker.build(imageTag)
-  }
-
-  image.inside() {
-    steps()
   }
 }
 

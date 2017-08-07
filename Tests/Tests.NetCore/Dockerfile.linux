@@ -1,4 +1,0 @@
-FROM ubuntu:16.04
-
-RUN apt-get update && \
-    apt-get install -y libunwind8 libicu-dev xsltproc openssl libcurl3-gnutls

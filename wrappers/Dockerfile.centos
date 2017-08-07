@@ -1,0 +1,32 @@
+FROM centos:7
+
+# Install EPEL & devtoolset
+RUN yum install -y \
+        epel-release \
+        centos-release-scl-rh \
+    && yum-config-manager --enable rhel-server-rhscl-7-rpms
+
+RUN yum install -y \
+        which \
+        curl \
+        make \
+        devtoolset-3-gcc \
+        devtoolset-3-gcc-c++ \
+        devtoolset-3-binutils \
+        procps-devel \
+        openssl-static
+
+RUN mkdir -p /opt/cmake && \
+    curl -s https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.sh -o /cmake-3.7.2-Linux-x86_64.sh && \
+    sh /cmake-3.7.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
+    rm /cmake-3.7.2-Linux-x86_64.sh
+ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
+
+ARG PACKAGECLOUD_URL
+RUN curl -s ${PACKAGECLOUD_URL}/script.rpm.sh | bash
+
+ARG REALM_SYNC_VERSION
+RUN yum install -y realm-sync-node-devel-$(echo ${REALM_SYNC_VERSION/\-/\_} | sed 's/-\([^g]\)/~\1/g')
+
+VOLUME /source
+ENTRYPOINT ["/bin/bash", "/source/build.sh"]
