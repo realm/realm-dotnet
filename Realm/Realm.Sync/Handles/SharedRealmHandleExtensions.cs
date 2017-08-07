@@ -45,12 +45,16 @@ namespace Realms.Sync
                 byte[] encryptionKey,
                 out NativeException ex);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void RefreshAccessTokenCallbackDelegate(IntPtr session_handle_ptr);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, byte* message_buf, IntPtr message_len);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
@@ -78,7 +82,17 @@ namespace Realms.Sync
 
         static unsafe SharedRealmHandleExtensions()
         {
-            NativeMethods.install_syncsession_callbacks(RefreshAccessTokenCallback, HandleSessionError, HandleSessionProgress, HandleSessionWaitCallback);
+            NativeMethods.RefreshAccessTokenCallbackDelegate refresh = RefreshAccessTokenCallback;
+            NativeMethods.SessionErrorCallback error = HandleSessionError;
+            NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
+            NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
+
+            GCHandle.Alloc(refresh);
+            GCHandle.Alloc(error);
+            GCHandle.Alloc(progress);
+            GCHandle.Alloc(wait);
+
+            NativeMethods.install_syncsession_callbacks(refresh, error, progress, wait);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
