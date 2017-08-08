@@ -208,6 +208,19 @@ namespace Tests
         }
 
         public Person RealmObjectProperty { get; set; }
+
+        public IList<Person> RealmListProperty { get; }
+
+        public string FirstName { get; set; }
+
+        [Backlink(nameof(UnqueryableBacklinks.Parent))]
+        public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class UnqueryableBacklinks : RealmObject
+    {
+        public ClassWithUnqueryableMembers Parent { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

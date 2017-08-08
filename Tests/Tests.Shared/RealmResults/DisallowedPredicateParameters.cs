@@ -34,22 +34,36 @@ namespace Tests.Database
             using (var realm = Realm.GetInstance())
             {
                 var accessPublicField = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicField == null);
-                Assert.Throws<NotSupportedException>(() => accessPublicField.ToList());
+                Assert.That(() => accessPublicField.ToList(), Throws.TypeOf<NotSupportedException>());
 
                 var accessPublicMethod = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PublicMethod() == null);
-                Assert.Throws<NotSupportedException>(() => accessPublicMethod.ToList());
+                Assert.That(() => accessPublicMethod.ToList(), Throws.TypeOf<NotSupportedException>());
 
                 var accessIgnoredProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.IgnoredProperty == null);
-                Assert.Throws<NotSupportedException>(() => accessIgnoredProperty.ToList());
+                Assert.That(() => accessIgnoredProperty.ToList(), Throws.TypeOf<NotSupportedException>());
 
                 var accessNonAutomaticProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.NonAutomaticProperty == null);
-                Assert.Throws<NotSupportedException>(() => accessNonAutomaticProperty.ToList());
+                Assert.That(() => accessNonAutomaticProperty.ToList(), Throws.TypeOf<NotSupportedException>());
 
                 var accessPropertyWithOnlyGet = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PropertyWithOnlyGet == null);
-                Assert.Throws<NotSupportedException>(() => accessPropertyWithOnlyGet.ToList());
+                Assert.That(() => accessPropertyWithOnlyGet.ToList(), Throws.TypeOf<NotSupportedException>());
 
                 var indirectAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty.FirstName == null);
-                Assert.Throws<NotSupportedException>(() => indirectAccess.ToList());
+                Assert.That(() => indirectAccess.ToList(), Throws.TypeOf<NotSupportedException>());
+
+                var listAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmListProperty != null);
+                Assert.That(() => listAccess.ToArray(), Throws.TypeOf<NotSupportedException>());
+
+                var person = new Person();
+                var listContains = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmListProperty.Contains(person));
+                Assert.That(() => listContains.ToArray(), Throws.TypeOf<NotSupportedException>());
+
+                var backlinkAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.BacklinkProperty != null);
+                Assert.That(() => backlinkAccess.ToArray(), Throws.TypeOf<NotSupportedException>());
+
+                var backlinkItem = new UnqueryableBacklinks();
+                var backlinkContains = realm.All<ClassWithUnqueryableMembers>().Where(c => c.BacklinkProperty.Contains(backlinkItem));
+                Assert.That(() => backlinkContains.ToArray(), Throws.TypeOf<NotSupportedException>());
             }
         }
     }

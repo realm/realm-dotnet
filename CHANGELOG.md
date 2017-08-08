@@ -14,6 +14,7 @@
 - Fix an exception being thrown when comparing non-constant character value in a query. ([#1471](https://github.com/realm/realm-dotnet/pull/1471))
 - Fix an exception being thrown when comparing non-constant byte or short value in a query. ([#1472](https://github.com/realm/realm-dotnet/pull/1472))
 - Fix a bug where calling the non-generic version of `IQueryProvider.CreateQuery` on Realm's IQueryable results, an exception would be thrown. ([#1487](https://github.com/realm/realm-dotnet/pull/1487))
+- Trying to use an `IList` or `IQueryable` property in a LINQ query will now throw `NotSupportedException` rather than crash the app. ([#1505](https://github.com/realm/realm-dotnet/pull/1505))
 
 ### Breaking Changes
 
