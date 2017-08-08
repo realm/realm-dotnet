@@ -76,7 +76,7 @@ namespace Realms.Helpers
                 }
                 catch (Exception ex)
                 {
-                    string msg = ex.Message; // avoid capture of ex itself
+                    var msg = ex.Message; // avoid capture of ex itself
                     return delegate { throw new InvalidOperationException(msg); };
                 }
             }

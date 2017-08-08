@@ -68,7 +68,7 @@ namespace Tests
             var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
 #endif
 
-			File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
+            File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
 #endif
 
             return destPath;

@@ -612,22 +612,22 @@ namespace Realms
                 switch (node.NodeType)
                 {
                     case ExpressionType.Equal:
-                        AddQueryEqual(CoreQueryHandle, leftName, rightValue);
+                        AddQueryEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.NotEqual:
-                        AddQueryNotEqual(CoreQueryHandle, leftName, rightValue);
+                        AddQueryNotEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.LessThan:
-                        AddQueryLessThan(CoreQueryHandle, leftName, rightValue);
+                        AddQueryLessThan(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.LessThanOrEqual:
-                        AddQueryLessThanOrEqual(CoreQueryHandle, leftName, rightValue);
+                        AddQueryLessThanOrEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.GreaterThan:
-                        AddQueryGreaterThan(CoreQueryHandle, leftName, rightValue);
+                        AddQueryGreaterThan(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.GreaterThanOrEqual:
-                        AddQueryGreaterThanOrEqual(CoreQueryHandle, leftName, rightValue);
+                        AddQueryGreaterThanOrEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     default:
                         throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
@@ -637,7 +637,7 @@ namespace Realms
             return node;
         }
 
-        private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
@@ -652,29 +652,8 @@ namespace Realms
                 case bool boolValue:
                     queryHandle.BoolEqual(columnIndex, boolValue);
                     break;
-                case byte byteValue:
-                    queryHandle.IntEqual(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntEqual(columnIndex, shortValue);
-                    break;
-                case char charValue:
-                    queryHandle.IntEqual(columnIndex, charValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntEqual(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongEqual(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatEqual(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleEqual(columnIndex, doubleValue);
-                    break;
-                case DateTimeOffset date:
-                    queryHandle.TimestampTicksEqual(columnIndex, date);
+                case DateTimeOffset dateValue:
+                    queryHandle.TimestampTicksEqual(columnIndex, dateValue);
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
@@ -695,24 +674,14 @@ namespace Realms
                 case RealmObject obj:
                     queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
                     break;
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntEqual(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntEqual(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntEqual(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongEqual(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericEqualMethods);
+                    break;
             }
         }
 
-        private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
             switch (value)
@@ -725,27 +694,6 @@ namespace Realms
                     break;
                 case bool boolValue:
                     queryHandle.BoolNotEqual(columnIndex, boolValue);
-                    break;
-                case char charValue:
-                    queryHandle.IntNotEqual(columnIndex, charValue);
-                    break;
-                case byte byteValue:
-                    queryHandle.IntNotEqual(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntNotEqual(columnIndex, shortValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntNotEqual(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongNotEqual(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatNotEqual(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleNotEqual(columnIndex, doubleValue);
                     break;
                 case DateTimeOffset date:
                     queryHandle.TimestampTicksNotEqual(columnIndex, date);
@@ -770,216 +718,118 @@ namespace Realms
                     queryHandle.Not();
                     queryHandle.ObjectEqual(columnIndex, obj.ObjectHandle);
                     break;
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntNotEqual(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntNotEqual(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntNotEqual(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongNotEqual(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericNotEqualMethods);
+                    break;
             }
         }
 
-        private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
             switch (value)
             {
-                case char charValue:
-                    queryHandle.IntLess(columnIndex, charValue);
-                    break;
-                case byte byteValue:
-                    queryHandle.IntLess(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntLess(columnIndex, shortValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntLess(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongLess(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatLess(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleLess(columnIndex, doubleValue);
-                    break;
                 case DateTimeOffset date:
                     queryHandle.TimestampTicksLess(columnIndex, date);
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntLess(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntLess(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntLess(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongLess(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericLessMethods);
+                    break;
             }
         }
 
-        private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
             switch (value)
             {
-                case char charValue:
-                    queryHandle.IntLessEqual(columnIndex, charValue);
-                    break;
-                case byte byteValue:
-                    queryHandle.IntLessEqual(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntLessEqual(columnIndex, shortValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntLessEqual(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongLessEqual(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatLessEqual(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleLessEqual(columnIndex, doubleValue);
-                    break;
                 case DateTimeOffset date:
                     queryHandle.TimestampTicksLessEqual(columnIndex, date);
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntLessEqual(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntLessEqual(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntLessEqual(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongLessEqual(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericLessEqualMethods);
+                    break;
             }
         }
 
-        private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
             switch (value)
             {
-                case char charValue:
-                    queryHandle.IntGreater(columnIndex, charValue);
-                    break;
-                case byte byteValue:
-                    queryHandle.IntGreater(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntGreater(columnIndex, shortValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntGreater(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongGreater(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatGreater(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleGreater(columnIndex, doubleValue);
-                    break;
                 case DateTimeOffset date:
                     queryHandle.TimestampTicksGreater(columnIndex, date);
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntGreater(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntGreater(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntGreater(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongGreater(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericGreaterMethods);
+                    break;
             }
         }
 
-        private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
             switch (value)
             {
-                case char charValue:
-                    queryHandle.IntGreaterEqual(columnIndex, charValue);
-                    break;
-                case byte byteValue:
-                    queryHandle.IntGreaterEqual(columnIndex, byteValue);
-                    break;
-                case short shortValue:
-                    queryHandle.IntGreaterEqual(columnIndex, shortValue);
-                    break;
-                case int intValue:
-                    queryHandle.IntGreaterEqual(columnIndex, intValue);
-                    break;
-                case long longValue:
-                    queryHandle.LongGreaterEqual(columnIndex, longValue);
-                    break;
-                case float floatValue:
-                    queryHandle.FloatGreaterEqual(columnIndex, floatValue);
-                    break;
-                case double doubleValue:
-                    queryHandle.DoubleGreaterEqual(columnIndex, doubleValue);
-                    break;
                 case DateTimeOffset date:
                     queryHandle.TimestampTicksGreaterEqual(columnIndex, date);
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
-                case RealmInteger<byte> byteValue:
-                    queryHandle.IntGreaterEqual(columnIndex, byteValue);
-                    break;
-                case RealmInteger<short> shortValue:
-                    queryHandle.IntGreaterEqual(columnIndex, shortValue);
-                    break;
-                case RealmInteger<int> intValue:
-                    queryHandle.IntGreaterEqual(columnIndex, intValue);
-                    break;
-                case RealmInteger<long> longValue:
-                    queryHandle.LongGreaterEqual(columnIndex, longValue);
-                    break;
                 default:
-                    throw new NotImplementedException();
+                    // The other types aren't handled by the switch because of potential compiler applied conversions
+                    AddQueryForConvertibleTypes(columnIndex, value, columnType, queryHandle.NumericGreaterEqualMethods);
+                    break;
+            }
+        }
+
+        private static void AddQueryForConvertibleTypes(IntPtr columnIndex, object value, Type columnType, QueryHandle.NumericQueryMethods queryMethods)
+        {
+            if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                columnType = columnType.GetGenericArguments().Single();
+            }
+
+            if (columnType == typeof(byte) ||
+                columnType == typeof(short) ||
+                columnType == typeof(char) ||
+                columnType == typeof(int) ||
+                columnType == typeof(RealmInteger<byte>) ||
+                columnType == typeof(RealmInteger<short>) ||
+                columnType == typeof(RealmInteger<int>))
+            {
+                queryMethods.Int(columnIndex, (int)Convert.ChangeType(value, typeof(int)));
+            }
+            else if (columnType == typeof(long) ||
+                     columnType == typeof(RealmInteger<long>))
+            {
+                queryMethods.Long(columnIndex, (long)Convert.ChangeType(value, typeof(long)));
+            }
+            else if (columnType == typeof(float))
+            {
+                queryMethods.Float(columnIndex, (float)Convert.ChangeType(value, typeof(float)));
+            }
+            else if (columnType == typeof(double))
+            {
+                queryMethods.Double(columnIndex, (double)Convert.ChangeType(value, typeof(double)));
+            }
+            else
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -1056,7 +906,7 @@ namespace Realms
                 {
                     object rhs = true;  // box value
                     var leftName = GetColumnName(node, node.NodeType);
-                    AddQueryEqual(CoreQueryHandle, leftName, rhs);
+                    AddQueryEqual(CoreQueryHandle, leftName, rhs, node.Type);
                 }
 
                 return node;
