@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -59,7 +60,22 @@ namespace Realms.Schema
         /// <c>true</c> if the property type allows <c>null</c> values and the matching property in the class definition
         /// is not marked with <see cref="RequiredAttribute"/>; <c>false</c> otherwise.
         /// </value>
-        public bool IsNullable { get; set; }
+        [Obsolete("Apply the PropertyType.Nullable flag to a property's Type to control its nullability.")]
+        public bool IsNullable
+        {
+            get { return Type.HasFlag(PropertyType.Nullable); }
+            set
+            {
+                if (value)
+                {
+                    Type |= PropertyType.Nullable;
+                }
+                else
+                {
+                    Type &= ~PropertyType.Nullable;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Property"/> is primary key.

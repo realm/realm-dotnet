@@ -271,7 +271,7 @@ namespace Realms
 
             if (schema.Type != null && !Config.Dynamic)
             {
-                var wovenAtt = schema.Type.GetTypeInfo().GetCustomAttribute<WovenAttribute>();
+                var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
                 {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
@@ -787,7 +787,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var type = typeof(T);
-            if (!Metadata.TryGetValue(type.Name, out var metadata) || metadata.Schema.Type != type)
+            if (!Metadata.TryGetValue(type.Name, out var metadata) || metadata.Schema.Type.AsType() != type)
             {
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
             }

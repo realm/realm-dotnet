@@ -50,14 +50,14 @@ namespace Tests.Sync
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
-        public static async Task<SyncConfiguration> GetFakeConfigAsync(bool isUserAdmin = true)
+        public static async Task<SyncConfiguration> GetFakeConfigAsync()
         {
-            var user = await GetFakeUserAsync(isUserAdmin);
+            var user = await GetFakeUserAsync();
             var serverUri = new Uri("realm://localhost:9080/foobar");
             return new SyncConfiguration(user, serverUri);
         }
 
-        public static Task<User> GetFakeUserAsync(bool isUserAdmin = true, string token = "foo:bar", string scheme = "http") => User.LoginAsync(Credentials.AccessToken(token, Guid.NewGuid().ToString(), isUserAdmin), new Uri($"{scheme}://some.fake.server:9080"));
+        public static Task<User> GetFakeUserAsync(string token = "foo:bar", string scheme = "http") => User.LoginAsync(Credentials.AdminToken(token), new Uri($"{scheme}://some.fake.server:9080"));
 
         public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
         {

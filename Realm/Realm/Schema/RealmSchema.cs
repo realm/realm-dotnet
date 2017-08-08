@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Realms.Schema
@@ -105,7 +106,7 @@ namespace Realms.Schema
             var classNames = new HashSet<string>();
             foreach (var @class in classes)
             {
-                var objectSchema = ObjectSchema.FromType(@class);
+                var objectSchema = ObjectSchema.FromType(@class.GetTypeInfo());
                 if (!classNames.Add(objectSchema.Name))
                 {
                     var duplicateType = builder.Single(s => s.Name == objectSchema.Name).Type;
@@ -138,7 +139,6 @@ namespace Realms.Schema
                         ObjectType = nativeProperty.object_type,
                         LinkOriginPropertyName = nativeProperty.link_origin_property_name,
                         IsPrimaryKey = nativeProperty.is_primary,
-                        IsNullable = nativeProperty.is_nullable,
                         IsIndexed = nativeProperty.is_indexed
                     });
                 }

@@ -33,24 +33,31 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 extern "C" {
 
 REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, size_t identity_len,
-                                                 const uint16_t* refresh_token_buf, size_t refresh_token_len,
                                                  const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
+                                                 const uint16_t* refresh_token_buf, size_t refresh_token_len,
                                                  bool is_admin, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor identity(identity_buf, identity_len);
+        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
         Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
         
-        util::Optional<std::string> auth_server_url;
-        if (auth_server_url_buf) {
-            auth_server_url.emplace(Utf16StringAccessor(auth_server_url_buf, auth_server_url_len));
-        }
-        
-        SyncUser::TokenType token_type = is_admin ? SyncUser::TokenType::Admin : SyncUser::TokenType::Normal;
-        return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, token_type));
+        return new SharedSyncUser(SyncManager::shared().get_user({identity, auth_server_url}, refresh_token));
     });
 }
-    
+
+REALM_EXPORT SharedSyncUser* realm_get_admintoken_user(const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
+                                                       const uint16_t* token_buf, size_t token_len,
+                                                       NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
+        Utf16StringAccessor token(token_buf, token_len);
+        
+        return new SharedSyncUser(SyncManager::shared().get_admin_token_user(auth_server_url, token));
+    });
+}
+
 REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {
@@ -83,11 +90,13 @@ REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t bu
     });
 }
     
-REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_buf, size_t identity_len, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_buf, size_t identity_len, const uint16_t* auth_server_url_buf, size_t auth_server_url_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {
         Utf16StringAccessor identity(identity_buf, identity_len);
-        auto ptr = SyncManager::shared().get_existing_logged_in_user(identity);
+        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
+        
+        auto ptr = SyncManager::shared().get_existing_logged_in_user({identity, auth_server_url});
         if (ptr == nullptr) {
             return nullptr;
         }

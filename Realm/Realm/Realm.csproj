@@ -64,6 +64,8 @@
     <Compile Include="Extensions\CollectionNotificationsExtensions.cs" />
     <Compile Include="Extensions\ReadOnlyCollectionExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
+    <Compile Include="Extensions\ReflectionExtensions.cs" />
     <Compile Include="Handles\CollectionHandleBase.cs" />
     <Compile Include="Handles\ListHandle.cs" />
     <Compile Include="Handles\NotificationTokenHandle.cs" />
@@ -105,7 +107,6 @@
     <Compile Include="Handles\IThreadConfinedHandle.cs" />
     <Compile Include="Handles\NotifiableObjectHandleBase.cs" />
     <Compile Include="NotificationsHelper.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="RealmInteger.cs" />
     <Compile Include="Helpers\Operator.cs" />
     <Compile Include="Helpers\Argument.cs" />

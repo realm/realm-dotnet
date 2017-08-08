@@ -85,15 +85,13 @@ namespace Realms.Sync
 
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
-            if (credentials.IdentityProvider == Credentials.Provider.AccessToken)
+            if (credentials.IdentityProvider == Credentials.Provider.AdminToken)
             {
-                var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
-                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
-                return new User(SyncUserHandle.GetSyncUser(identity, credentials.Token, serverUrl?.AbsoluteUri, isAdmin));
+                return new User(SyncUserHandle.GetAdminTokenUser(serverUrl.AbsoluteUri, credentials.Token));
             }
 
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUrl);
-            var handle = SyncUserHandle.GetSyncUser(result.UserId, result.RefreshToken, serverUrl.AbsoluteUri, isAdmin: false);
+            var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUrl.AbsoluteUri, result.RefreshToken, result.IsAdmin);
             handle.SetIsAdmin(result.IsAdmin);
             return new User(handle);
         }
@@ -128,11 +126,12 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
         /// <param name="identity">The identity of the user.</param>
-        public static User GetLoggedInUser(string identity)
+        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
+        public static User GetLoggedInUser(string identity, Uri serverUrl)
         {
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
-            var handle = SyncUserHandle.GetLoggedInUser(identity);
+            var handle = SyncUserHandle.GetLoggedInUser(identity, serverUrl.AbsoluteUri);
             if (handle == null)
             {
                 return null;

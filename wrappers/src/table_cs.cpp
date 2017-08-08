@@ -96,8 +96,9 @@ REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm*
         auto& properties = realm->get()->schema().find(table_ptr->get_name())->persisted_properties;
         unflatten_sort_clauses(sort_clauses, clause_count, flattened_column_indices, column_indices, ascending, properties);
 
-        auto sort_descriptor = SortDescriptor(*table_ptr, column_indices, ascending);
-        return new Results(*realm, table_ptr->where(), sort_descriptor);
+        DescriptorOrdering ordering;
+        ordering.append_sort({*table_ptr, column_indices, ascending});
+        return new Results(*realm, table_ptr->where(), std::move(ordering));
     });
 }
     

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Reflection;
 using NUnit.Framework;
 using Realms;
 using Realms.Schema;
@@ -34,7 +35,7 @@ namespace Tests.Database
         [Test]
         public void Property_WhenRequired_ShouldBeNonNullable()
         {
-            var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass));
+            var schema = ObjectSchema.FromType(typeof(RequiredPropertyClass).GetTypeInfo());
 
             if (!schema.TryFindProperty(nameof(RequiredPropertyClass.FooRequired), out var prop))
             {

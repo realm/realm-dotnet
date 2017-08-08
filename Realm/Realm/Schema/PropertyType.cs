@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Schema
 {
     /// <summary>
     /// An enum, containing the possible property types.
     /// </summary>
+    [Flags]
     public enum PropertyType : byte
     {
         /// <summary>
@@ -34,16 +37,6 @@ namespace Realms.Schema
         Bool = 1,
 
         /// <summary>
-        /// 32 bit floating point property.
-        /// </summary>
-        Float = 9,
-
-        /// <summary>
-        /// 64 bit floating point property.
-        /// </summary>
-        Double = 10,
-
-        /// <summary>
         /// String property.
         /// </summary>
         String = 2,
@@ -51,31 +44,51 @@ namespace Realms.Schema
         /// <summary>
         /// Binary data (byte[]) property.
         /// </summary>
-        Data = 4,
-
-        /// <summary>
-        /// Any property type.
-        /// </summary>
-        Any = 6,
+        Data = 3,
 
         /// <summary>
         /// DateTimeOffset property.
         /// </summary>
-        Date = 8,
+        Date = 4,
+
+        /// <summary>
+        /// 32 bit floating point property.
+        /// </summary>
+        Float = 5,
+
+        /// <summary>
+        /// 64 bit floating point property.
+        /// </summary>
+        Double = 6,
 
         /// <summary>
         /// Related object property, representing a one-to-one or many-to-one relationship.
         /// </summary>
-        Object = 12,
-
-        /// <summary>
-        /// A collection of related objects property, representing one-to-many relationship.
-        /// </summary>
-        Array = 13,
+        Object = 7,
 
         /// <summary>
         /// A collection of objects linking to the model owning this property.
         /// </summary>
-        LinkingObjects = 14
+        LinkingObjects = 8,
+
+        /// <summary>
+        /// A required property. Can be combined with other values.
+        /// </summary>
+        Required = 0,
+
+        /// <summary>
+        /// A nullable (optional) property. Can be combined with other values.
+        /// </summary>
+        Nullable = 64,
+
+        /// <summary>
+        /// A collection. Can be combined with other values.
+        /// </summary>
+        Array = 128,
+
+        /// <summary>
+        /// Metadata flags.
+        /// </summary>
+        Flags = Nullable | Array
     }
 }
