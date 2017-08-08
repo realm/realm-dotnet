@@ -49,7 +49,7 @@
     <XamMacArch></XamMacArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
-    <StartArguments>--headless</StartArguments>
+    <StartArguments>--headless --labels=On</StartArguments>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

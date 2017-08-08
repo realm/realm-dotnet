@@ -38,14 +38,11 @@ namespace Realms.Schema
             return _integerTypes.Contains(type);
         }
 
-        public static PropertyType ToPropertyType(this Type type, out Type innerType)
+        public static PropertyType ToPropertyType(this Type type, out Type objectType)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            Helpers.Argument.NotNull(type, nameof(type));
 
-            innerType = null;
+            objectType = null;
             var nullabilityModifier = PropertyType.Required;
 
             var nullableType = Nullable.GetUnderlyingType(type);
@@ -57,32 +54,33 @@ namespace Realms.Schema
 
             switch (type)
             {
-                case Type integerType when integerType.IsRealmInteger():
+                case Type _ when type.IsRealmInteger():
                     return PropertyType.Int | nullabilityModifier;
 
-                case Type boolType when boolType == typeof(bool):
+                case Type _ when type == typeof(bool):
                     return PropertyType.Bool | nullabilityModifier;
 
-                case Type stringType when stringType == typeof(string):
+                case Type _ when type == typeof(string):
                     return PropertyType.String | PropertyType.Nullable;
 
-                case Type dataType when dataType == typeof(byte[]):
+                case Type _ when type == typeof(byte[]):
                     return PropertyType.Data | PropertyType.Nullable;
 
-                case Type dateType when dateType == typeof(DateTimeOffset):
+                case Type _ when type == typeof(DateTimeOffset):
                     return PropertyType.Date | nullabilityModifier;
 
-                case Type floatType when floatType == typeof(float):
+                case Type _ when type == typeof(float):
                     return PropertyType.Float | nullabilityModifier;
 
-                case Type doubleType when doubleType == typeof(double):
+                case Type _ when type == typeof(double):
                     return PropertyType.Double | nullabilityModifier;
 
-                case Type objectType when objectType.GetTypeInfo().BaseType == typeof(RealmObject):
+                case Type _ when type.GetTypeInfo().BaseType == typeof(RealmObject):
+                    objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
 
-                case Type listType when listType.IsClosedGeneric(typeof(IList<>), out var typeArguments):
-                    innerType = typeArguments.Single();
+                case Type _ when type.IsClosedGeneric(typeof(IList<>), out var typeArguments):
+                    objectType = typeArguments.Single();
                     return PropertyType.Object | PropertyType.Array;
 
                 default:

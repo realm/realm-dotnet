@@ -58,7 +58,7 @@ namespace Realms.Dynamic
             };
 
             MethodInfo getter = null;
-            switch (property.Type)
+            switch (property.Type & ~Schema.PropertyType.Flags)
             {
                 case Schema.PropertyType.Int:
                     if (property.IsNullable)
@@ -170,7 +170,7 @@ namespace Realms.Dynamic
             MethodInfo setter = null;
             Type argumentType = null;
 
-            switch (property.Type)
+            switch (property.Type & ~Schema.PropertyType.Flags)
             {
                 case Schema.PropertyType.Int:
                     argumentType = typeof(long);

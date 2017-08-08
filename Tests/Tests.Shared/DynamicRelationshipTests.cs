@@ -33,8 +33,8 @@ namespace Tests.Database
         DynamicRealmObject
     }
 
-    [TestFixture(DynamicTestObjectType.RealmObject)]
-    [TestFixture(DynamicTestObjectType.DynamicRealmObject)]
+    //[TestFixture(DynamicTestObjectType.RealmObject)]
+    //[TestFixture(DynamicTestObjectType.DynamicRealmObject)]
     [Preserve(AllMembers = true)]
     public class DynamicRelationshipTests : RealmInstanceTest
     {

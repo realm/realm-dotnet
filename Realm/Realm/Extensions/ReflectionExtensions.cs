@@ -40,5 +40,7 @@ namespace Realms
         public static bool IsStatic(this PropertyInfo property) => property.GetAccessors(true)[0].IsStatic;
 
         public static bool HasCustomAttribute<T>(this MemberInfo member) where T : Attribute => member.CustomAttributes.Any(a => a.AttributeType == typeof(T));
+
+        public static string GetMappedOrOriginalName(this MemberInfo member) => member.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member.Name;
     }
 }

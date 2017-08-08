@@ -108,7 +108,7 @@ namespace Realms.Schema
                 var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
                 var schemaProperty = new Property
                 {
-                    Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
+                    Name = property.GetMappedOrOriginalName(),
                     IsPrimaryKey = isPrimaryKey,
                     IsIndexed = isPrimaryKey || property.HasCustomAttribute<IndexedAttribute>(),
                     PropertyInfo = property
@@ -122,17 +122,17 @@ namespace Realms.Schema
 
                     schemaProperty.Type = PropertyType.LinkingObjects | PropertyType.Array;
                     schemaProperty.ObjectType = innerType.Name;
-                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetCustomAttribute<MapToAttribute>()?.Mapping ?? linkOriginProperty.Name;
+                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetMappedOrOriginalName();
                 }
                 else
                 {
-                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var innerType);
-                    schemaProperty.ObjectType = innerType?.Name;
+                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var objectType);
+                    schemaProperty.ObjectType = objectType?.GetTypeInfo()?.GetMappedOrOriginalName();
                 }
 
                 if (property.HasCustomAttribute<RequiredAttribute>())
                 {
-                    schemaProperty.Type &= PropertyType.Nullable;
+                    schemaProperty.Type &= ~PropertyType.Nullable;
                 }
 
                 builder.Add(schemaProperty);
