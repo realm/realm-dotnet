@@ -220,6 +220,18 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
+        public NumericQueryMethods NumericEqualMethods => new NumericQueryMethods(IntEqual, LongEqual, FloatEqual, DoubleEqual);
+
+        public NumericQueryMethods NumericNotEqualMethods => new NumericQueryMethods(IntNotEqual, LongNotEqual, FloatNotEqual, DoubleNotEqual);
+
+        public NumericQueryMethods NumericLessMethods => new NumericQueryMethods(IntLess, LongLess, FloatLess, DoubleLess);
+
+        public NumericQueryMethods NumericLessEqualMethods => new NumericQueryMethods(IntLessEqual, LongLessEqual, FloatLessEqual, DoubleLessEqual);
+
+        public NumericQueryMethods NumericGreaterMethods => new NumericQueryMethods(IntGreater, LongGreater, FloatGreater, DoubleGreater);
+
+        public NumericQueryMethods NumericGreaterEqualMethods => new NumericQueryMethods(IntGreaterEqual, LongGreaterEqual, FloatGreaterEqual, DoubleGreaterEqual);
+
         public void BinaryEqual(IntPtr columnIndex, IntPtr buffer, IntPtr bufferLength)
         {
             NativeMethods.binary_equal(this, columnIndex, buffer, bufferLength, out var nativeException);
@@ -566,6 +578,26 @@ namespace Realms
             var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TableHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
+        }
+
+        public struct NumericQueryMethods
+        {
+            public readonly Action<IntPtr, int> Int;
+
+            public readonly Action<IntPtr, long> Long;
+
+            public readonly Action<IntPtr, float> Float;
+
+            public readonly Action<IntPtr, double> Double;
+
+            public NumericQueryMethods(Action<IntPtr, int> intQuery, Action<IntPtr, long> longQuery,
+                Action<IntPtr, float> floatQuery, Action<IntPtr, double> doubleQuery)
+            {
+                Int = intQuery;
+                Long = longQuery;
+                Float = floatQuery;
+                Double = doubleQuery;
+            }
         }
     }
 }
