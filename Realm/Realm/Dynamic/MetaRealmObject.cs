@@ -143,7 +143,7 @@ namespace Realms.Dynamic
             var instance = Expression.Field(self, RealmObjectObjectHandleField);
             Expression expression = Expression.Call(instance, getter, arguments);
 
-            if (property.Type == Schema.PropertyType.LinkingObjects)
+            if (property.Type.UnderlyingType() == Schema.PropertyType.LinkingObjects)
             {
                 expression = Expression.Call(self, RealmObjectGetBacklinksForHandleMethod, Expression.Constant(binder.Name), expression);
             }
