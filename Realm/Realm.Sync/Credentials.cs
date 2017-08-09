@@ -36,6 +36,8 @@ namespace Realms.Sync
 
             internal const string AdminToken = "adminToken";
 
+            internal const string Test = "test";
+
             /// <summary>
             /// The Facebook provider, associated with <see cref="Credentials.Facebook"/>.
             /// </summary>
@@ -166,6 +168,19 @@ namespace Realms.Sync
             {
                 IdentityProvider = Provider.AdminToken,
                 Token = token
+            };
+        }
+
+        internal static Credentials Test(string id, bool isAdmin)
+        {
+            return new Credentials
+            {
+                IdentityProvider = Provider.Test,
+                Token = id,
+                UserInfo = new Dictionary<string, object>
+                {
+                    [Keys.IsAdmin] = isAdmin
+                }
             };
         }
 

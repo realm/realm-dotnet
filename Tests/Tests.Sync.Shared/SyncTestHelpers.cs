@@ -57,7 +57,10 @@ namespace Tests.Sync
             return new SyncConfiguration(user, serverUri);
         }
 
-        public static Task<User> GetFakeUserAsync(string token = "foo:bar", string scheme = "http") => User.LoginAsync(Credentials.AdminToken(token), new Uri($"{scheme}://some.fake.server:9080"));
+        public static Task<User> GetFakeUserAsync(string token = "foo:bar", string scheme = "http")
+        {
+            return User.LoginAsync(Credentials.Test(token, isAdmin: true), new Uri($"{scheme}://some.fake.server:9080"));
+        }
 
         public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
         {
