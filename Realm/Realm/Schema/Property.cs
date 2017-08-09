@@ -63,7 +63,10 @@ namespace Realms.Schema
         [Obsolete("Apply the PropertyType.Nullable flag to a property's Type to control its nullability.")]
         public bool IsNullable
         {
-            get { return (Type & PropertyType.Nullable) == PropertyType.Nullable; }
+            get
+            {
+                return Type.HasFlag(PropertyType.Nullable);
+            }
             set
             {
                 if (value)
