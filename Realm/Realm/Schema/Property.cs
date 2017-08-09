@@ -67,6 +67,7 @@ namespace Realms.Schema
             {
                 return Type.HasFlag(PropertyType.Nullable);
             }
+
             set
             {
                 if (value)
