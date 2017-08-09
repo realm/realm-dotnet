@@ -158,13 +158,6 @@ REALM_EXPORT bool realm_syncuser_get_is_admin(SharedSyncUser& user)
     return user->is_admin();
 }
     
-REALM_EXPORT void realm_syncuser_set_is_admin(SharedSyncUser& user, bool is_admin, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&] {
-        user->set_is_admin(is_admin);
-    });
-}
-    
 REALM_EXPORT void realm_syncuser_destroy(SharedSyncUser* user)
 {
     delete user;

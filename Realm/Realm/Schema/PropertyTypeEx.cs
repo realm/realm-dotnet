@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.Schema
 {
@@ -40,7 +41,7 @@ namespace Realms.Schema
 
         public static PropertyType ToPropertyType(this Type type, out Type objectType)
         {
-            Helpers.Argument.NotNull(type, nameof(type));
+            Argument.NotNull(type, nameof(type));
 
             objectType = null;
             var nullabilityModifier = PropertyType.Required;
