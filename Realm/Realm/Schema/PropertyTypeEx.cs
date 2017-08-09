@@ -93,5 +93,7 @@ namespace Realms.Schema
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
         public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+
+        public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }
 }
