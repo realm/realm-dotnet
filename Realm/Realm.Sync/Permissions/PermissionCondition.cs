@@ -30,11 +30,24 @@ namespace Realms.Sync
         /// Apply permissions based on the user's Id.
         /// </summary>
         /// <returns>A <see cref="PermissionCondition"/> containing information about the user's Id.</returns>
-        /// <param name="userId">The Id of the user or <c>*</c> to change the permissions for all users.</param>
+        /// <param name="userId">The Id of the user.</param>
         public static PermissionCondition UserId(string userId)
         {
             return new UserIdCondition(userId);
         }
+
+        /// <summary>
+        /// Gets a <see cref="PermissionCondition"/> that describes the default permissions for all users
+        /// who don't have explicit permissions applied. The <see cref="AccessLevel"/> granted alongside
+        /// this condition will also be used as default access level for future new users.
+        /// </summary>
+        /// <remarks>
+        /// The default permissions are not additive with more specific permissions, even if the latter
+        /// are more restrictive - for example, a user who has been granted <see cref="AccessLevel.Read"/>
+        /// access will not be write to a Realm, even if the default permissions grant <see cref="AccessLevel.Write"/>
+        /// access.
+        /// </remarks>
+        public static PermissionCondition Default => UserId("*");
 
         /// <summary>
         /// Apply permissions based on the user's Email when using the username/password login provider.
