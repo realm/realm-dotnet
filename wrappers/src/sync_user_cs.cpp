@@ -41,8 +41,10 @@ REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, s
         Utf16StringAccessor identity(identity_buf, identity_len);
         Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
         Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
-        
-        return new SharedSyncUser(SyncManager::shared().get_user({identity, auth_server_url}, refresh_token));
+
+        auto user = SyncManager::shared().get_user({identity, auth_server_url}, refresh_token);
+        user->set_is_admin(is_admin);
+        return new SharedSyncUser(user);
     });
 }
 
