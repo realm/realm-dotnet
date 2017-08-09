@@ -92,7 +92,6 @@ namespace Realms.Sync
 
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUrl);
             var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUrl.AbsoluteUri, result.RefreshToken, result.IsAdmin);
-            handle.SetIsAdmin(result.IsAdmin);
             return new User(handle);
         }
 

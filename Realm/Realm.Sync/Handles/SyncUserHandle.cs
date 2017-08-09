@@ -54,9 +54,6 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_is_admin(SyncUserHandle user);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_set_is_admin", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_is_admin(SyncUserHandle user, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_log_out", CallingConvention = CallingConvention.Cdecl)]
             public static extern void log_out(SyncUserHandle user, out NativeException ex);
 
@@ -115,12 +112,6 @@ namespace Realms.Sync
         public bool GetIsAdmin()
         {
             return NativeMethods.get_is_admin(this);
-        }
-
-        public void SetIsAdmin(bool value)
-        {
-            NativeMethods.set_is_admin(this, value, out var ex);
-            ex.ThrowIfNecessary();
         }
 
         public IntPtr GetSessionPointer(string path)
