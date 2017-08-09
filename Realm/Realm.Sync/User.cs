@@ -90,12 +90,6 @@ namespace Realms.Sync
                 return new User(SyncUserHandle.GetAdminTokenUser(serverUrl.AbsoluteUri, credentials.Token));
             }
 
-            if (credentials.IdentityProvider == Credentials.Provider.Test)
-            {
-                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
-                return new User(SyncUserHandle.GetSyncUser(credentials.Token, serverUrl.AbsoluteUri, string.Empty, isAdmin));
-            }
-
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUrl);
             var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUrl.AbsoluteUri, result.RefreshToken, result.IsAdmin);
             return new User(handle);
