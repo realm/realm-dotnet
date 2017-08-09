@@ -107,7 +107,7 @@ namespace Tests.Database
 
             _realm.Write(() =>
             {
-                RealmObject first = _realm.CreateObject(type.Name);
+                var first = _realm.CreateObject(type.Name);
                 pkProperty.SetValue(first, primaryKeyValue);
             });
 
@@ -115,7 +115,7 @@ namespace Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    RealmObject second = _realm.CreateObject(type.Name);
+                    var second = _realm.CreateObject(type.Name);
                     pkProperty.SetValue(second, primaryKeyValue);
                 });
             }, Throws.InnerException.TypeOf<RealmDuplicatePrimaryKeyValueException>());
