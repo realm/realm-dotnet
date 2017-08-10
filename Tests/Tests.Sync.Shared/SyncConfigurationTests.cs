@@ -150,7 +150,7 @@ namespace Tests.Sync
         private static IEnumerable<object> TokenTestCases()
         {
             yield return new object[] { string.Empty, false };
-            yield return new object[] { SyncTestHelpers.DeveloperFeatureToken, true };
+            yield return new object[] { SyncTestHelpers.DeveloperFeatureToken, false };
             yield return new object[] { SyncTestHelpers.ProfessionalFeatureToken, true };
             yield return new object[] { SyncTestHelpers.EnterpriseFeatureToken, true };
         }
