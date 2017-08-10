@@ -19,6 +19,7 @@
 #include <future>
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
+#include <realm/sync/feature_token.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
