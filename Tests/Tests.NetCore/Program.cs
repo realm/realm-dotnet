@@ -16,50 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
 using System.Reflection;
 using NUnitLite;
-using Realms.Sync;
-using Tests.Sync;
 
 namespace Tests.NetCore
 {
     public class Program
     {
-        // Tokens must be passed like Tests.exe --featuretokens developer-token professional-token enterprise-token
-        private const string FeatureTokensArg = "--featuretokens";
-
         public static int Main(string[] args)
         {
-            ProcessArgs(args, out var nunitArgs);
-            if (!string.IsNullOrEmpty(SyncTestHelpers.DeveloperFeatureToken))
-            {
-                SyncConfiguration.SetFeatureToken(SyncTestHelpers.DeveloperFeatureToken);
-            }
-
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            autorun.Execute(nunitArgs);
+            autorun.Execute(args);
             return 0;
-        }
-
-        private static void ProcessArgs(string[] args, out string[] nunitArgs)
-        {
-            var nunitList = new List<string>();
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (args[i] == FeatureTokensArg)
-                {
-                    SyncTestHelpers.DeveloperFeatureToken = args[++i];
-                    SyncTestHelpers.ProfessionalFeatureToken = args[++i];
-                    SyncTestHelpers.EnterpriseFeatureToken = args[++i];
-                }
-                else
-                {
-                    nunitList.Add(args[i]);
-                }
-            }
-
-            nunitArgs = nunitList.ToArray();
         }
     }
 }

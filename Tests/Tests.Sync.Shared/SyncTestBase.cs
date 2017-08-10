@@ -27,6 +27,8 @@ namespace Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
+        private static bool _isFeatureTokenSetup;
+
         private readonly List<Session> _sessions = new List<Session>();
         private readonly List<Realm> _realms = new List<Realm>();
 
@@ -35,6 +37,12 @@ namespace Tests.Sync
         protected override void CustomSetUp()
         {
             base.CustomSetUp();
+
+            if (!_isFeatureTokenSetup && !string.IsNullOrEmpty(SyncTestHelpers.DeveloperFeatureToken))
+            {
+                _isFeatureTokenSetup = true;
+                SyncConfiguration.SetFeatureToken(SyncTestHelpers.DeveloperFeatureToken);
+            }
 
             SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false);
         }

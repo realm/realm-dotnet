@@ -28,11 +28,11 @@ namespace Tests.Sync
 {
     public static class SyncTestHelpers
     {
-        public static string DeveloperFeatureToken { get; set; }
+        public static string DeveloperFeatureToken => GetFeatureToken("DEVELOPER");
 
-        public static string ProfessionalFeatureToken { get; set; }
+        public static string ProfessionalFeatureToken => GetFeatureToken("PROFESSIONAL");
 
-        public static string EnterpriseFeatureToken { get; set; }
+        public static string EnterpriseFeatureToken => GetFeatureToken("ENTERPRISE");
 
         public static Credentials CreateCredentials()
         {
@@ -125,5 +125,7 @@ namespace Tests.Sync
 
             return tcs.Task;
         }
+
+        private static string GetFeatureToken(string prefix) => Environment.GetEnvironmentVariable($"{prefix}_FEATURE_TOKEN");
     }
 }
