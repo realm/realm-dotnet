@@ -20,6 +20,7 @@
       <Value>var</Value>
       <Value>Xamarin</Value>
       <Value>deallocated</Value>
+      <Value>nullable</Value>
     </CollectionProperty>
   </GlobalSettings>
   <Analyzers>

@@ -20,95 +20,81 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.Schema
 {
     internal static class PropertyTypeEx
     {
-        public static PropertyType ToPropertyType(this Type type, out bool isNullable, out Type innerType)
+        private static readonly HashSet<Type> _integerTypes =
+            new HashSet<Type> { typeof(char), typeof(byte), typeof(short), typeof(int), typeof(long) };
+
+        public static bool IsRealmInteger(this Type type)
         {
-            if (type == null)
+            if (type.IsClosedGeneric(typeof(RealmInteger<>), out var typeArguments))
             {
-                throw new ArgumentNullException(nameof(type));
+                return IsRealmInteger(typeArguments.Single());
             }
 
-            innerType = null;
+            return _integerTypes.Contains(type);
+        }
+
+        public static PropertyType ToPropertyType(this Type type, out Type objectType)
+        {
+            Argument.NotNull(type, nameof(type));
+
+            objectType = null;
+            var nullabilityModifier = PropertyType.Required;
 
             var nullableType = Nullable.GetUnderlyingType(type);
-            isNullable = nullableType != null;
-            if (isNullable)
+            if (nullableType != null)
             {
                 type = nullableType;
+                nullabilityModifier = PropertyType.Nullable;
             }
 
-            if (type == typeof(bool))
+            switch (type)
             {
-                return PropertyType.Bool;
-            }
+                case Type _ when type.IsRealmInteger():
+                    return PropertyType.Int | nullabilityModifier;
 
-            if (type == typeof(char) ||
-                type == typeof(byte) ||
-                type == typeof(short) ||
-                type == typeof(int) ||
-                type == typeof(long) ||
-                type == typeof(RealmInteger<byte>) ||
-                type == typeof(RealmInteger<short>) ||
-                type == typeof(RealmInteger<int>) ||
-                type == typeof(RealmInteger<long>))
-            {
-                return PropertyType.Int;
-            }
+                case Type _ when type == typeof(bool):
+                    return PropertyType.Bool | nullabilityModifier;
 
-            if (type == typeof(float))
-            {
-                return PropertyType.Float;
-            }
+                case Type _ when type == typeof(string):
+                    return PropertyType.String | PropertyType.Nullable;
 
-            if (type == typeof(double))
-            {
-                return PropertyType.Double;
-            }
+                case Type _ when type == typeof(byte[]):
+                    return PropertyType.Data | PropertyType.Nullable;
 
-            if (type == typeof(string))
-            {
-                isNullable = true;
-                return PropertyType.String;
-            }
+                case Type _ when type == typeof(DateTimeOffset):
+                    return PropertyType.Date | nullabilityModifier;
 
-            if (type == typeof(DateTimeOffset))
-            {
-                return PropertyType.Date;
-            }
+                case Type _ when type == typeof(float):
+                    return PropertyType.Float | nullabilityModifier;
 
-            if (type == typeof(byte[]))
-            {
-                isNullable = true;
-                return PropertyType.Data;
-            }
+                case Type _ when type == typeof(double):
+                    return PropertyType.Double | nullabilityModifier;
 
-            if (type.GetTypeInfo().BaseType == typeof(RealmObject))
-            {
-                isNullable = true;
-                innerType = type;
-                return PropertyType.Object;
-            }
+                case Type _ when type.GetTypeInfo().BaseType == typeof(RealmObject):
+                    objectType = type;
+                    return PropertyType.Object | PropertyType.Nullable;
 
-            if (type.GetTypeInfo().IsGenericType)
-            {
-                var definition = type.GetGenericTypeDefinition();
-                if (definition == typeof(IList<>))
-                {
-                    innerType = type.GetGenericArguments().Single();
-                    return PropertyType.Array;
-                }
-            }
+                case Type _ when type.IsClosedGeneric(typeof(IList<>), out var typeArguments):
+                    objectType = typeArguments.Single();
+                    return PropertyType.Object | PropertyType.Array;
 
-            throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
+                default:
+                    throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
+            }
         }
 
-        public static bool IsComputed(this PropertyType propertyType)
-        {
-            return propertyType == PropertyType.LinkingObjects;
-        }
+        public static bool IsComputed(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.LinkingObjects);
+
+        public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
+
+        public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+
+        public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }
 }

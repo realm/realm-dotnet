@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.Schema
 {
@@ -48,7 +49,7 @@ namespace Realms.Schema
 
         internal Property? PrimaryKeyProperty { get; }
 
-        internal Type Type;
+        internal TypeInfo Type;
 
         internal IEnumerable<string> PropertyNames => _properties.Keys;
 
@@ -96,55 +97,42 @@ namespace Realms.Schema
         /// </exception>
         /// <returns>An <see cref="ObjectSchema"/> describing the specified Type.</returns>
         /// <param name="type">Type of a <see cref="RealmObject"/> descendant for which you want a schema.</param>
-        public static ObjectSchema FromType(Type type)
+        public static ObjectSchema FromType(TypeInfo type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            if (type.GetTypeInfo().BaseType != typeof(RealmObject))
-            {
-                throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
-            }
+            Argument.NotNull(type, nameof(type));
+            Argument.Ensure(type.BaseType == typeof(RealmObject), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
 
             var builder = new Builder(type.Name);
-            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
-                if (property.GetCustomAttribute<WovenPropertyAttribute>() == null)
-                {
-                    continue;
-                }
-
-                var isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
+                var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
                 var schemaProperty = new Property
                 {
-                    Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
+                    Name = property.GetMappedOrOriginalName(),
                     IsPrimaryKey = isPrimaryKey,
-                    IsIndexed = isPrimaryKey || property.GetCustomAttribute<IndexedAttribute>() != null,
+                    IsIndexed = isPrimaryKey || property.HasCustomAttribute<IndexedAttribute>(),
                     PropertyInfo = property
                 };
 
                 var backlinks = property.GetCustomAttribute<BacklinkAttribute>();
                 if (backlinks != null)
                 {
-                    var innerType = property.PropertyType.GetGenericArguments().Single();
+                    var innerType = property.PropertyType.GenericTypeArguments.Single();
                     var linkOriginProperty = innerType.GetProperty(backlinks.Property);
 
-                    schemaProperty.Type = PropertyType.LinkingObjects;
+                    schemaProperty.Type = PropertyType.LinkingObjects | PropertyType.Array;
                     schemaProperty.ObjectType = innerType.Name;
-                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetCustomAttribute<MapToAttribute>()?.Mapping ?? linkOriginProperty.Name;
+                    schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetMappedOrOriginalName();
                 }
                 else
                 {
-                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var isNullable, out var innerType);
-                    schemaProperty.ObjectType = innerType?.Name;
-                    schemaProperty.IsNullable = isNullable;
+                    schemaProperty.Type = property.PropertyType.ToPropertyType(out var objectType);
+                    schemaProperty.ObjectType = objectType?.GetTypeInfo()?.GetMappedOrOriginalName();
                 }
 
-                if (property.GetCustomAttribute<RequiredAttribute>() != null)
+                if (property.HasCustomAttribute<RequiredAttribute>())
                 {
-                    schemaProperty.IsNullable = false;
+                    schemaProperty.Type &= ~PropertyType.Nullable;
                 }
 
                 builder.Add(schemaProperty);

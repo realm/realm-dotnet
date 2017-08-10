@@ -41,6 +41,7 @@
 		8522B2BF1CD11EA900E5C1F3 /* collection_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B71CD11EA900E5C1F3 /* collection_notifier.cpp */; };
 		8522B2C11CD11EA900E5C1F3 /* list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2B91CD11EA900E5C1F3 /* list_notifier.cpp */; };
 		8522B2C31CD11EA900E5C1F3 /* results_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */; };
+		8536E3B51F3A22650094C0C8 /* uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8536E3B31F3A22650094C0C8 /* uuid.cpp */; };
 		8575A9191DC123AD001F78B7 /* libwrappers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101381B39902E004A4B2C /* libwrappers.a */; };
 		8575A92B1DC12902001F78B7 /* keychain_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8575A9281DC128FE001F78B7 /* keychain_helper.cpp */; };
 		85AF94E51E2E30A2000BF925 /* object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85AF94E31E2E30A2000BF925 /* object.cpp */; };
@@ -141,6 +142,12 @@
 		8522B2BA1CD11EA900E5C1F3 /* list_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = list_notifier.hpp; path = "src/object-store/src/impl/list_notifier.hpp"; sourceTree = "<group>"; };
 		8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_notifier.cpp; path = "src/object-store/src/impl/results_notifier.cpp"; sourceTree = "<group>"; };
 		8522B2BC1CD11EA900E5C1F3 /* results_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = results_notifier.hpp; path = "src/object-store/src/impl/results_notifier.hpp"; sourceTree = "<group>"; };
+		8536E3AF1F3A22650094C0C8 /* aligned_union.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = aligned_union.hpp; path = "src/object-store/src/util/aligned_union.hpp"; sourceTree = "<group>"; };
+		8536E3B01F3A22650094C0C8 /* any.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = any.hpp; path = "src/object-store/src/util/any.hpp"; sourceTree = "<group>"; };
+		8536E3B11F3A22650094C0C8 /* tagged_bool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tagged_bool.hpp; path = "src/object-store/src/util/tagged_bool.hpp"; sourceTree = "<group>"; };
+		8536E3B21F3A22650094C0C8 /* time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = time.hpp; path = "src/object-store/src/util/time.hpp"; sourceTree = "<group>"; };
+		8536E3B31F3A22650094C0C8 /* uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = uuid.cpp; path = "src/object-store/src/util/uuid.cpp"; sourceTree = "<group>"; };
+		8536E3B41F3A22650094C0C8 /* uuid.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = uuid.hpp; path = "src/object-store/src/util/uuid.hpp"; sourceTree = "<group>"; };
 		8575A9101DC123A6001F78B7 /* libwrappers-sync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-sync.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8575A9281DC128FE001F78B7 /* keychain_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = keychain_helper.cpp; path = "src/object-store/src/impl/apple/keychain_helper.cpp"; sourceTree = "<group>"; };
 		8575A9291DC128FE001F78B7 /* keychain_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = keychain_helper.hpp; path = "src/object-store/src/impl/apple/keychain_helper.hpp"; sourceTree = "<group>"; };
@@ -194,11 +201,17 @@
 			isa = PBXGroup;
 			children = (
 				850F7D641DF72EE70068B584 /* generic */,
+				8536E3AF1F3A22650094C0C8 /* aligned_union.hpp */,
+				8536E3B01F3A22650094C0C8 /* any.hpp */,
+				48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */,
 				8575A92C1DC12971001F78B7 /* compiler.hpp */,
 				8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */,
-				48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */,
 				48371F4B1D22952D00B52DAB /* format.cpp */,
 				48371F4C1D22952D00B52DAB /* format.hpp */,
+				8536E3B11F3A22650094C0C8 /* tagged_bool.hpp */,
+				8536E3B21F3A22650094C0C8 /* time.hpp */,
+				8536E3B31F3A22650094C0C8 /* uuid.cpp */,
+				8536E3B41F3A22650094C0C8 /* uuid.hpp */,
 			);
 			name = util;
 			sourceTree = "<group>";
@@ -468,6 +481,7 @@
 				8575A92B1DC12902001F78B7 /* keychain_helper.cpp in Sources */,
 				48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */,
 				48D347651C74861900CD0E02 /* results.cpp in Sources */,
+				8536E3B51F3A22650094C0C8 /* uuid.cpp in Sources */,
 				48D347621C74861900CD0E02 /* object_store.cpp in Sources */,
 				48EE96C61D75D60600666046 /* schema_cs.cpp in Sources */,
 				48D347671C74861900CD0E02 /* schema.cpp in Sources */,

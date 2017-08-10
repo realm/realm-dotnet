@@ -48,6 +48,9 @@
     <HttpClientHandler>NSUrlSessionHandler</HttpClientHandler>
     <XamMacArch></XamMacArch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <StartArguments>--headless --labels=On</StartArguments>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />

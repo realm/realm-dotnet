@@ -34,7 +34,7 @@ namespace Realms.Sync
         {
             internal const string Debug = "debug";
 
-            internal const string AccessToken = "accessToken";
+            internal const string AdminToken = "adminToken";
 
             /// <summary>
             /// The Facebook provider, associated with <see cref="Credentials.Facebook"/>.
@@ -160,13 +160,12 @@ namespace Realms.Sync
             return new Credentials { IdentityProvider = Provider.AzureAD, Token = adToken };
         }
 
-        internal static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
+        internal static Credentials AdminToken(string token)
         {
             return new Credentials
             {
-                IdentityProvider = Provider.AccessToken,
-                Token = accessToken,
-                UserInfo = new Dictionary<string, object> { [Keys.Identity] = identity, [Keys.IsAdmin] = isAdmin }
+                IdentityProvider = Provider.AdminToken,
+                Token = token
             };
         }
 

@@ -112,8 +112,8 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 REALM_EXPORT size_t realm_syncmanager_get_path_for_realm(SharedSyncUser& user, uint16_t* url, size_t url_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        std::string realm_url(Utf16StringAccessor(url, url_len));
-        auto path = SyncManager::shared().path_for_realm(user->identity(), realm_url);
+        Utf16StringAccessor realm_url(url, url_len);
+        auto path = SyncManager::shared().path_for_realm(*user, realm_url);
         
         return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
     });

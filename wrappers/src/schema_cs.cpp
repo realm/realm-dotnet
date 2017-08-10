@@ -45,7 +45,6 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
             p.type = property.type;
             p.object_type = property.object_type ? property.object_type : "";
             p.link_origin_property_name = property.link_origin_property_name ? property.link_origin_property_name : "";
-            p.is_nullable = property.is_nullable;
             p.is_indexed = property.is_indexed;
             
             if ((p.is_primary = property.is_primary)) {

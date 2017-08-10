@@ -66,7 +66,7 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 await SyncTestHelpers.GetFakeUserAsync();
-                await SyncTestHelpers.GetFakeUserAsync(token: "bar:foo");
+                await SyncTestHelpers.GetFakeUserAsync();
 
                 Assert.That(() => User.Current, Throws.TypeOf<RealmException>());
             });
@@ -102,7 +102,7 @@ namespace Tests.Sync
                 var users = new List<User>();
                 for (var i = 0; i < 9; i++)
                 {
-                    users.Add(await SyncTestHelpers.GetFakeUserAsync(token: "foo:bar" + i));
+                    users.Add(await SyncTestHelpers.GetFakeUserAsync());
                 }
 
                 var current = User.AllLoggedIn;

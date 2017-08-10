@@ -139,7 +139,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: false);
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
                 using (var realm = GetRealm(config))
                 {
                     var session = GetSession(realm);
@@ -165,7 +165,7 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var errors = new List<Exception>();
-                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: false);
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
                 using (var realm = GetRealm(config))
                 {
                     EventHandler<Realms.ErrorEventArgs> handler = null;
@@ -318,7 +318,7 @@ namespace Tests.Sync
                 var callbacksInvoked = 0;
                 var completionTCS = new TaskCompletionSource<ulong>();
 
-                var config = await SyncTestHelpers.GetFakeConfigAsync(isUserAdmin: true);
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
                 var realm = GetRealm(config);
                 var session = GetSession(realm);
 

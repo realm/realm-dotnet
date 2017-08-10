@@ -50,6 +50,7 @@ LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/thread_safe_reference.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/uuid.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/generic/event_loop_signal.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp

@@ -76,13 +76,13 @@ namespace Realms.Sync
                 session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
                 if (session.State != SessionState.Invalid)
                 {
-                    ScheduleTokenRefresh(user.Identity, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
+                    ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
                 }
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {
                 // 30 seconds is an arbitrarily chosen value, consider rationalizing it.
-                ScheduleTokenRefresh(user.Identity, session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
+                ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
             }
             catch (Exception ex)
             {
@@ -158,13 +158,14 @@ namespace Realms.Sync
             }
         }
 
-        private static void ScheduleTokenRefresh(string userId, string path, DateTimeOffset expireDate)
+        private static void ScheduleTokenRefresh(string userId, Uri authServerUrl, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
             var timerState = new TokenRefreshData
             {
                 RealmPath = path,
-                UserId = userId
+                UserId = userId,
+                ServerUrl = authServerUrl
             };
 
             if (dueTime < TimeSpan.Zero)
@@ -188,7 +189,7 @@ namespace Realms.Sync
 
             try
             {
-                var user = User.GetLoggedInUser(data.UserId);
+                var user = User.GetLoggedInUser(data.UserId, data.ServerUrl);
                 if (user != null)
                 {
                     var sessionPointer = user.Handle.GetSessionPointer(data.RealmPath);
@@ -254,6 +255,8 @@ namespace Realms.Sync
             public string UserId { get; set; }
 
             public string RealmPath { get; set; }
+
+            public Uri ServerUrl { get; set; }
         }
 
         public class UserLoginData

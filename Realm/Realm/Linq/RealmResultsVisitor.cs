@@ -30,12 +30,6 @@ namespace Realms
 {
     internal class RealmResultsVisitor : ExpressionVisitor
     {
-        private static readonly HashSet<PropertyType> _unqueryableProperties = new HashSet<PropertyType>
-        {
-             PropertyType.Array,
-             PropertyType.LinkingObjects
-        };
-
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
@@ -868,7 +862,7 @@ namespace Realms
                     memberExpression.Expression.NodeType != ExpressionType.Parameter ||
                     !(memberExpression.Member is PropertyInfo pi) ||
                     !_metadata.Schema.TryFindProperty(name, out var property) ||
-                    _unqueryableProperties.Contains(property.Type))
+                    property.Type.HasFlag(PropertyType.Array))
                 {
                     throw new NotSupportedException($"The left-hand side of the {parentType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{memberExpression}'.");
                 }
