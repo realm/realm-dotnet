@@ -146,6 +146,9 @@
       <Link>Schema\PropertyType.cs</Link>
     </Compile>
     <Compile Include="Thread Handover\ThreadSafeReferencePCL.cs" />
+    <Compile Include="..\..\Realm\Realm\Exceptions\RealmFeatureUnavailableException.cs">
+      <Link>Exceptions\RealmFeatureUnavailableException.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

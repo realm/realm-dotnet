@@ -102,6 +102,18 @@ namespace Tests
             }
         }
 
+        public static bool IsLinux
+        {
+            get
+            {
+#if NETCOREAPP1_1
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+#else
+                return false;
+#endif
+            }
+        }
+
         public static void IgnoreOnWindows(string message)
         {
             if (IsWindows)

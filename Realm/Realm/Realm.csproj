@@ -111,6 +111,7 @@
     <Compile Include="Helpers\Operator.cs" />
     <Compile Include="Helpers\Argument.cs" />
     <Compile Include="Helpers\RealmIntegerExtensions.cs" />
+    <Compile Include="Exceptions\RealmFeatureUnavailableException.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

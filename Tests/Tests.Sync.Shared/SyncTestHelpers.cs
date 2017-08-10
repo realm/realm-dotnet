@@ -28,6 +28,12 @@ namespace Tests.Sync
 {
     public static class SyncTestHelpers
     {
+        public static string DeveloperFeatureToken { get; set; }
+
+        public static string ProfessionalFeatureToken { get; set; }
+
+        public static string EnterpriseFeatureToken { get; set; }
+
         public static Credentials CreateCredentials()
         {
             return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);

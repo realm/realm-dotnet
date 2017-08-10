@@ -101,6 +101,9 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.ObjectManagedByAnotherRealm:
                     return new RealmObjectManagedByAnotherRealmException(message);
 
+                case RealmExceptionCodes.RealmFeatureUnavailable:
+                    return new RealmFeatureUnavailableException(message);
+
                 default:
                     return new Exception(message);
             }

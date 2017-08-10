@@ -75,6 +75,8 @@ namespace realm {
         
         ObjectManagedByAnotherRealm = 25,
         
+        RealmFeatureUnavailable = 26,
+        
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,

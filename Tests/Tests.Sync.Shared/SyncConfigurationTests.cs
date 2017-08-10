@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -128,6 +131,28 @@ namespace Tests.Sync
 
                 Assert.That(() => new SyncConfiguration(user, new Uri(url)), Throws.TypeOf<ArgumentException>());
             });
+        }
+
+        [TestCaseSource(nameof(TokenTestCases))]
+        public void SetFeatureToken_WhenDeveloper_SyncDoesntWork(string token, bool syncEnabled)
+        {
+            AsyncContext.Run(async () =>
+            {
+                SyncConfiguration.SetFeatureToken(token);
+                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var config = new SyncConfiguration(user, new Uri("realm://foobar"));
+
+                var expectation = TestHelpers.IsLinux && !syncEnabled ? Throws.TypeOf<RealmFeatureUnavailableException>() : (IResolveConstraint)Throws.Nothing;
+                Assert.That(() => GetRealm(config), expectation);
+            });
+        }
+
+        private static IEnumerable<object> TokenTestCases()
+        {
+            yield return new object[] { string.Empty, false };
+			yield return new object[] { SyncTestHelpers.DeveloperFeatureToken, true };
+            yield return new object[] { SyncTestHelpers.ProfessionalFeatureToken, true };
+            yield return new object[] { SyncTestHelpers.EnterpriseFeatureToken, true };
         }
     }
 }
