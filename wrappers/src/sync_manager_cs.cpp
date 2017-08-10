@@ -29,7 +29,6 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync_session_cs.hpp"
-#include "sync_manager_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -165,8 +164,10 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
 
 REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len)
 {
+#if defined(__linux__)
     Utf16StringAccessor token(token_buf, token_len);
     realm::sync::set_feature_token(token);
+#endif
 }
 
 }
