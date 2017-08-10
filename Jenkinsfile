@@ -228,7 +228,7 @@ stage('Build without sync') {
   )
 }
 
-stage('Build .NET Core') {
+stage('Build .NET Core without sync') {
   nodeWithCleanup('windows') {
     getArchive()
     unstash 'macos-wrappers-nosync'
@@ -385,7 +385,7 @@ stage('Build with sync') {
   )
 }
 
-stage ('Build .NET Core with sync') {
+stage ('Build .NET Core') {
   nodeWithCleanup('windows') {
     getArchive()
     unstash 'macos-wrappers-sync'
@@ -515,7 +515,9 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       getArchive()
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'), string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'), 
+                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'), 
+                       string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
         dir("Tests/Tests.NetCore") {
           def binaryFolder = "bin/${configuration}/${platform}publish"
           try {
