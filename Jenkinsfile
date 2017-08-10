@@ -782,9 +782,5 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
 }
 
 def reportTests(String file) {
-  stash includes: file, name: file
-  nodeWithCleanup('!osx') {
-    unstash file
-    junit file
-  }
+  junit file
 }

@@ -27,8 +27,6 @@ namespace Tests.Sync
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private static bool _isFeatureTokenSetup;
-
         private readonly List<Session> _sessions = new List<Session>();
         private readonly List<Realm> _realms = new List<Realm>();
 
@@ -38,9 +36,8 @@ namespace Tests.Sync
         {
             base.CustomSetUp();
 
-            if (!_isFeatureTokenSetup && !string.IsNullOrEmpty(SyncTestHelpers.ProfessionalFeatureToken))
+            if (!string.IsNullOrEmpty(SyncTestHelpers.ProfessionalFeatureToken))
             {
-                _isFeatureTokenSetup = true;
                 SyncConfiguration.SetFeatureToken(SyncTestHelpers.ProfessionalFeatureToken);
             }
 

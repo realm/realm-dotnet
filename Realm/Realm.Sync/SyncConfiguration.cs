@@ -102,6 +102,8 @@ namespace Realms.Sync
         /// </seealso>
         public static void SetFeatureToken(string token)
         {
+            Argument.NotNullOrEmpty(token, nameof(token));
+
             SharedRealmHandleExtensions.SetFeatureToken(token);
         }
 

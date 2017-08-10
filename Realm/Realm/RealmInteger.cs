@@ -26,7 +26,7 @@ namespace Realms
     /// correct merges during conflicts.
     /// </summary>
     /// <remarks>
-    /// <see cref="RealmInteger{T}"/> is implicitly convertible to and from <see cref="T"/>.
+    /// <see cref="RealmInteger{T}"/> is implicitly convertible to and from T/>.
     /// <br/>
     /// Calling <see cref="Increment()"/> on a managed <see cref="RealmObject"/>'s property must be done in a write
     /// transaction. When calling <see cref="Increment()"/> on a <see cref="RealmObject"/> property, it will increment
