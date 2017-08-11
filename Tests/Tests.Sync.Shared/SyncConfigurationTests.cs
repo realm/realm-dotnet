@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -128,6 +130,48 @@ namespace Tests.Sync
 
                 Assert.That(() => new SyncConfiguration(user, new Uri(url)), Throws.TypeOf<ArgumentException>());
             });
+        }
+
+        [TestCaseSource(nameof(TokenTestCases))]
+        public void FeatureTokens_WhenPaid_AllowSync(string token)
+        {
+            if (!TestHelpers.IsLinux)
+            {
+                Assert.Ignore("Feature tokens are not required on non-linux platforms");
+            }
+
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var config = new SyncConfiguration(user, new Uri("realm://foobar"));
+
+                SyncConfiguration.SetFeatureToken(token);
+                Assert.That(() => GetRealm(config), Throws.Nothing);
+            });
+        }
+
+        [Test]
+        public void FeatureToken_WhenDeveloper_PreventsSync()
+        {
+            if (!TestHelpers.IsLinux)
+            {
+                Assert.Ignore("Feature tokens are not required on non-linux platforms");
+            }
+
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var config = new SyncConfiguration(user, new Uri("realm://foobar"));
+
+                SyncConfiguration.SetFeatureToken(SyncTestHelpers.DeveloperFeatureToken);
+                Assert.That(() => GetRealm(config), Throws.TypeOf<RealmFeatureUnavailableException>());
+            });
+        }
+
+        private static IEnumerable<object> TokenTestCases()
+        {
+            yield return new object[] { SyncTestHelpers.ProfessionalFeatureToken };
+            yield return new object[] { SyncTestHelpers.EnterpriseFeatureToken };
         }
     }
 }

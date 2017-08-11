@@ -36,6 +36,11 @@ namespace Tests.Sync
         {
             base.CustomSetUp();
 
+            if (!string.IsNullOrEmpty(SyncTestHelpers.ProfessionalFeatureToken))
+            {
+                SyncConfiguration.SetFeatureToken(SyncTestHelpers.ProfessionalFeatureToken);
+            }
+
             SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false);
         }
 

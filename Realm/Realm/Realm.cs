@@ -342,26 +342,9 @@ namespace Realms
         public bool IsClosed => SharedRealmHandle.IsClosed;
 
         /// <inheritdoc />
-        ~Realm()
-        {
-            Dispose(false);
-        }
-
-        /// <inheritdoc />
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-            Dispose(true);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (IsClosed)
-            {
-                return;
-            }
-
-            if (disposing)
+            if (!IsClosed)
             {
                 // only mutate the state on explicit disposal
                 // otherwise we do so on the finalizer thread
@@ -369,10 +352,10 @@ namespace Realms
                 {
                     _states.Value.Remove(Config.DatabasePath);
                 }
-            }
-            _state = null;
 
-            SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
+                _state = null;
+                SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
+            }
         }
 
         private void ThrowIfDisposed()

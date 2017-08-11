@@ -19,6 +19,7 @@
 #include <future>
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
+#include <realm/sync/feature_token.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -77,6 +78,12 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+#if defined(__linux__) && REALM_HAVE_FEATURE_TOKENS
+        if (!realm::sync::is_feature_enabled("Sync")) {
+            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realm.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
+        }
+#endif
+        
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
@@ -154,6 +161,14 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
         
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
+}
+
+REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len)
+{
+#if REALM_HAVE_FEATURE_TOKENS
+    Utf16StringAccessor token(token_buf, token_len);
+    realm::sync::set_feature_token(token);
+#endif
 }
 
 }

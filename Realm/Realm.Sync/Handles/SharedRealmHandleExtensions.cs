@@ -78,6 +78,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_feature_token", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_feature_token([MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -177,6 +180,11 @@ namespace Realms.Sync
             var handle = new SessionHandle();
             handle.SetHandle(result);
             return handle;
+        }
+
+        public static void SetFeatureToken(string token)
+        {
+            NativeMethods.set_feature_token(token, (IntPtr)token.Length);
         }
 
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]

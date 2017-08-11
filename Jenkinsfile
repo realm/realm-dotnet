@@ -228,7 +228,7 @@ stage('Build without sync') {
   )
 }
 
-stage('Build .NET Core') {
+stage('Build .NET Core without sync') {
   nodeWithCleanup('windows') {
     getArchive()
     unstash 'macos-wrappers-nosync'
@@ -385,7 +385,7 @@ stage('Build with sync') {
   )
 }
 
-stage ('Build .NET Core with sync') {
+stage ('Build .NET Core') {
   nodeWithCleanup('windows') {
     getArchive()
     unstash 'macos-wrappers-sync'
@@ -515,35 +515,39 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       getArchive()
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      dir("Tests/Tests.NetCore") {
-        def binaryFolder = "bin/${configuration}/${platform}publish"
-        try {
-          if (isUnix()) {
-            def invocation = """
-              cd ${pwd()}/${binaryFolder}
-              chmod +x Tests.NetCore
-              ./Tests.NetCore --labels=After --result=temp.xml
-              xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-            """
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'), 
+                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'), 
+                       string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
+        dir("Tests/Tests.NetCore") {
+          def binaryFolder = "bin/${configuration}/${platform}publish"
+          try {
+            if (isUnix()) {
+              def invocation = """
+                cd ${pwd()}/${binaryFolder}
+                chmod +x Tests.NetCore
+                ./Tests.NetCore --labels=After --result=temp.xml
+                xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
+              """
 
-            if (nodeName == 'docker') {
-              buildDockerEnv("ci/realm-dotnet:netcore_tests").inside() {
+              if (nodeName == 'docker') {
+                buildDockerEnv("ci/realm-dotnet:netcore_tests").inside() {
+                  sh invocation
+                }
+              } else {
                 sh invocation
               }
             } else {
-              sh invocation
+              dir(binaryFolder) {
+                bat """
+                  Tests.NetCore.exe --labels=After --result=temp.xml
+                  powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) NetCore-${platform}-${stashSuffix}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
+                """
+              }
             }
-          } else {
+          } finally {
             dir(binaryFolder) {
-              bat """
-                Tests.NetCore.exe --labels=After --result=temp.xml
-                powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) NetCore-${platform}-${stashSuffix}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
-              """
+              reportTests "NetCore-${platform}-${stashSuffix}.xml"
             }
-          }
-        } finally {
-          dir(binaryFolder) {
-            reportTests "NetCore-${platform}-${stashSuffix}.xml"
           }
         }
       }
@@ -778,9 +782,5 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
 }
 
 def reportTests(String file) {
-  stash includes: file, name: file
-  nodeWithCleanup('!osx') {
-    unstash file
-    junit file
-  }
+  junit file
 }

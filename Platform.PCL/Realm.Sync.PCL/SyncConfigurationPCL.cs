@@ -94,5 +94,18 @@ namespace Realms.Sync
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
+
+        /// <summary>
+        /// Sets the feature token, associated with your edition. You only need to call it if you're using a professional
+        /// or higher edition and only on platforms where features are disabled for lower editions.
+        /// </summary>
+        /// <param name="token">The feature token provided to you by the Realm team.</param>
+        /// <seealso href="https://realm.io/docs/realm-object-server/pe-ee/#enabling-professional-and-enterprise-apis">
+        /// See more details on Enabling Professional and Enterprise APIs in the documentation.
+        /// </seealso>
+        public static void SetFeatureToken(string token)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
     }
 }
