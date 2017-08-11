@@ -344,8 +344,6 @@ namespace Realms
         /// <inheritdoc />
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-
             if (!IsClosed)
             {
                 // only mutate the state on explicit disposal
