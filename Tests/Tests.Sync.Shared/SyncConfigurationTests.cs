@@ -25,8 +25,6 @@ using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
 
-using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
@@ -148,7 +146,6 @@ namespace Tests.Sync
         }
 
         [Test]
-        [Explicit("Fails on CI for no apparent reason.")]
         public void FeatureToken_WhenDeveloper_PreventsSync()
         {
             AsyncContext.Run(async () =>
