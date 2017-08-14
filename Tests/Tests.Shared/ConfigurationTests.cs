@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using NUnit.Framework;
 using Realms;
@@ -286,6 +287,7 @@ namespace Tests.Database
 namespace Foo
 {
     [Explicit]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {
         public int IntValue { get; set; }
@@ -295,6 +297,7 @@ namespace Foo
 namespace Bar
 {
     [Explicit]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {
         public string StringValue { get; set; }

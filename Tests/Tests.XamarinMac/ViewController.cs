@@ -35,7 +35,7 @@ namespace Tests.XamarinMac
             base.ViewDidAppear();
 
             RunTests();
-		}
+        }
 
         private async Task RunTests()
         {
@@ -49,8 +49,8 @@ namespace Tests.XamarinMac
 
             if (MainClass.Headless)
             {
-				NSApplication.SharedApplication.Terminate(this);
-			}
-		}
+                NSApplication.SharedApplication.Terminate(this);
+            }
+        }
     }
 }
