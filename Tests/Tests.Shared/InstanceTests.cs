@@ -581,6 +581,8 @@ namespace Tests.Database
 
 #if DEBUG
         [Ignore("Due to a Xamarin bug, the Debug implementation of GetInstanceAsync isn't asynchronous. See RealmConfiguration.CreateRealmAsync.")]
+#elif WINDOWS_UWP
+        [Ignore("Locks on .NET Native")]
 #endif
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()

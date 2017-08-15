@@ -99,7 +99,6 @@ namespace Tests.Database
             var int16Query = _realm.All<AllTypesObject>().Where(o => o.Int16Property == LongOne).ToArray();
             Assert.That(int16Query.Length, Is.EqualTo(1));
             Assert.That(int16Query[0].Int64Property, Is.EqualTo(LongOne));
-
         }
 
         [Test]
@@ -113,7 +112,6 @@ namespace Tests.Database
         [Test]
         public void Equal_WhenUsingBroaderType_Single()
         {
-
             var singleQuery = _realm.All<AllTypesObject>().Where(o => o.SingleProperty == DoubleOne).ToArray();
             Assert.That(singleQuery.Length, Is.EqualTo(1));
             Assert.That(singleQuery[0].DoubleProperty, Is.EqualTo(DoubleOne));
@@ -130,7 +128,6 @@ namespace Tests.Database
         [Test]
         public void Equal_WhenUsingBroaderType_Int16Integer()
         {
-
             var int16IntegerQuery = _realm.All<CounterObject>().Where(o => o.Int16Property == LongOne).ToArray();
             Assert.That(int16IntegerQuery.Length, Is.EqualTo(1));
             Assert.That(int16IntegerQuery[0].Id, Is.EqualTo(1));
@@ -500,7 +497,6 @@ namespace Tests.Database
             Assert.That(intQuery.Length, Is.EqualTo(1));
             Assert.That(intQuery[0].Int32Property, Is.EqualTo(0));
         }
-
 
         [Test]
         public void LessThanOrEqual_WhenVariableIsNullable()

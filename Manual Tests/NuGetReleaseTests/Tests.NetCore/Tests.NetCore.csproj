@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RuntimeIdentifiers>win10-x64;osx.10.10-x64;debian.8-x64;ubuntu.16.04-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;NETCOREAPP1_1;ROS_SETUP</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
+    <DefineConstants>TRACE;RELEASE;NETCOREAPP1_1;ROS_SETUP</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Fody" Version="2.1.0" />
+    <PackageReference Include="Nito.AsyncEx.Context" Version="1.1.0" />
+    <PackageReference Include="System.Reactive" Version="3.1.1" />
+    <PackageReference Include="NUnitLite" Version="3.7.1" />
+    <PackageReference Include="NUnit" Version="3.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="TestResult.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Tests\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\Tests\Tests.Shared\nunit3-junit.xslt" Link="nunit3-junit.xslt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\Tests\Tests.Sync.Shared\trusted_ca.pem">
+      <Link>trusted_ca.pem</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Tests\Tests.NetCore\Program.cs">
+      <Link>Program.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <Import Project="..\..\..\Tests\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
+</Project>

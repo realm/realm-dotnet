@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using Realms.Sync;
-
 namespace Tests.Sync
 {
     public static class Constants
