@@ -69,9 +69,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_list_is_empty", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr list_is_empty(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -295,13 +292,6 @@ namespace Realms
         public IntPtr GetLinklist(IntPtr propertyIndex)
         {
             var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public bool LinklistIsEmpty(IntPtr propertyIndex)
-        {
-            var result = MarshalHelpers.IntPtrToBool(NativeMethods.list_is_empty(this, propertyIndex, out var nativeException));
             nativeException.ThrowIfNecessary();
             return result;
         }

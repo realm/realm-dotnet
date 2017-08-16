@@ -22,8 +22,10 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -41,10 +43,11 @@ namespace Realms
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
         private readonly Realm _realm;
         private readonly ListHandle _listHandle;
+        private readonly bool _isPrimitive = !typeof(RealmObject).IsAssignableFrom(typeof(T));
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
         {
@@ -80,8 +83,18 @@ namespace Realms
 
         public void Add(T item)
         {
-            AddObjectToRealmIfNeeded(item);
-            _listHandle.Add(item.ObjectHandle);
+            if (_isPrimitive)
+            {
+                throw new NotImplementedException("PRIMITIVES");
+            }
+            else
+            {
+                var obj = item as RealmObject;
+                Argument.NotNull(obj, nameof(item));
+
+                AddObjectToRealmIfNeeded(obj);
+                _listHandle.Add(obj.ObjectHandle);
+            }
         }
 
         public override int Add(object value)
@@ -127,12 +140,22 @@ namespace Realms
 
         public int IndexOf(T item)
         {
-            if (!item.IsManaged)
+            if (_isPrimitive)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(item));
+                throw new NotImplementedException("PRIMITIVES");
             }
+            else
+            {
+                var obj = item as RealmObject;
+                Argument.NotNull(obj, nameof(item));
 
-            return (int)_listHandle.Find(item.ObjectHandle);
+                if (!obj.IsManaged)
+                {
+                    throw new ArgumentException("Value does not belong to a realm", nameof(item));
+                }
+
+                return (int)_listHandle.Find(obj.ObjectHandle);
+            }
         }
 
         public override int IndexOf(object value) => IndexOf((T)value);
@@ -144,8 +167,18 @@ namespace Realms
                 throw new ArgumentOutOfRangeException();
             }
 
-            AddObjectToRealmIfNeeded(item);
-            _listHandle.Insert((IntPtr)index, item.ObjectHandle);
+            if (_isPrimitive)
+            {
+                throw new NotImplementedException("PRIMITIVES");
+            }
+            else
+            {
+                var obj = item as RealmObject;
+                Argument.NotNull(obj, nameof(item));
+
+                AddObjectToRealmIfNeeded(obj);
+                _listHandle.Insert((IntPtr)index, obj.ObjectHandle);
+            }
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -174,7 +207,7 @@ namespace Realms
             _listHandle.Erase((IntPtr)index);
         }
 
-        private void AddObjectToRealmIfNeeded(T obj)
+        private void AddObjectToRealmIfNeeded(RealmObject obj)
         {
             if (!obj.IsManaged)
             {
@@ -184,14 +217,19 @@ namespace Realms
 
         #endregion
 
-        public void Move(T item, int targetIndex)
+        public void Move(int sourceIndex, int targetIndex)
         {
             if (targetIndex < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(targetIndex));
             }
 
-            _listHandle.Move(item.ObjectHandle, (IntPtr)targetIndex);
+            if (sourceIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sourceIndex));
+            }
+
+            _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);

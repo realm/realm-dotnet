@@ -53,7 +53,7 @@ namespace Realms
             public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, NotificationCallbackDelegate callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_move", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr move(ListHandle listHandle, ObjectHandle objectHandle, IntPtr targetIndex, out NativeException ex);
+            public static extern IntPtr move(ListHandle listHandle, IntPtr sourceIndex, IntPtr targetIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -113,9 +113,9 @@ namespace Realms
             return result;
         }
 
-        public void Move(ObjectHandle objectHandle, IntPtr targetIndex)
+        public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
-            NativeMethods.move(this, objectHandle, targetIndex, out var nativeException);
+            NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

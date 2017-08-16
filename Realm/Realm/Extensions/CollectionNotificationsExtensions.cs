@@ -114,14 +114,33 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
         {
+            var from = list.IndexOf(item);
+            list.Move(from, index);
+        }
+
+        /// <summary>
+        /// Move the specified item to a new position within the list.
+        /// </summary>
+        /// <param name="list">The list where the move should occur.</param>
+        /// <param name="from">The index of the item that will be moved.</param>
+        /// <param name="to">The new position to which the item will be moved.</param>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the list.</typeparam>
+        /// <remarks>
+        /// This extension method will work for standalone lists as well by calling <see cref="ICollection{T}.Remove"/>
+        /// and then <see cref="IList{T}.Insert"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
+        public static void Move<T>(this IList<T> list, int from, int to) where T : RealmObject
+        {
             if (list is RealmList<T> realmList)
             {
-                realmList.Move(item, index);
+                realmList.Move(from, to);
             }
             else
             {
-                list.Remove(item);
-                list.Insert(index, item);
+                var item = list[from];
+                list.RemoveAt(from);
+                list.Insert(to, item);
             }
         }
     }
