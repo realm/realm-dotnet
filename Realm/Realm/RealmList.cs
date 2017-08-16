@@ -45,9 +45,10 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
+        private static readonly bool _isPrimitive = !typeof(RealmObject).IsAssignableFrom(typeof(T));
+
         private readonly Realm _realm;
         private readonly ListHandle _listHandle;
-        private readonly bool _isPrimitive = !typeof(RealmObject).IsAssignableFrom(typeof(T));
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
         {
@@ -69,7 +70,14 @@ namespace Realms
         {
             get
             {
-                return base[index];
+                if (_isPrimitive)
+                {
+                    throw new NotImplementedException("PRIMITIVES");
+                }
+                else
+                {
+                    return base[index];
+                }
             }
             set
             {
@@ -89,9 +97,7 @@ namespace Realms
             }
             else
             {
-                var obj = item as RealmObject;
-                Argument.NotNull(obj, nameof(item));
-
+                var obj = Operator.Convert<T, RealmObject>(item);
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             }
@@ -146,9 +152,7 @@ namespace Realms
             }
             else
             {
-                var obj = item as RealmObject;
-                Argument.NotNull(obj, nameof(item));
-
+                var obj = Operator.Convert<T, RealmObject>(item);
                 if (!obj.IsManaged)
                 {
                     throw new ArgumentException("Value does not belong to a realm", nameof(item));
@@ -173,9 +177,7 @@ namespace Realms
             }
             else
             {
-                var obj = item as RealmObject;
-                Argument.NotNull(obj, nameof(item));
-
+                var obj = Operator.Convert<T, RealmObject>(item);
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert((IntPtr)index, obj.ObjectHandle);
             }

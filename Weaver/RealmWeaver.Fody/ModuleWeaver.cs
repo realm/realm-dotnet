@@ -100,6 +100,10 @@ public partial class ModuleWeaver
         NullableInt16TypeName,
         NullableInt32TypeName,
         NullableInt64TypeName,
+    }.Concat(_realmIntegerTypes).ToArray();
+
+    private static readonly IEnumerable<string> _realmIntegerTypes = new[]
+    {
         $"Realms.RealmInteger`1<{ByteTypeName}>",
         $"Realms.RealmInteger`1<{Int16TypeName}>",
         $"Realms.RealmInteger`1<{Int32TypeName}>",
@@ -107,7 +111,7 @@ public partial class ModuleWeaver
         $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
         $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
         $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
-        $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>"
     };
 
     private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -414,9 +418,11 @@ public partial class ModuleWeaver
         else if (prop.IsIList())
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject) &&
+                !_realmIntegerTypes.Contains(elementType.FullName) &&
+                !_typeTable.ContainsKey(elementType.FullName))
             {
-                return WeaveResult.Warning($"SKIPPING {type.Name}.{prop.Name} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} is an IList but its generic type is {elementType.Name} which is not supported by Realm.");
             }
 
             if (prop.SetMethod != null)

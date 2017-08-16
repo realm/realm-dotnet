@@ -297,7 +297,7 @@ namespace RealmWeaver
 
             {
                 RealmObject_GetListValue = new MethodReference("GetListValue", new GenericInstanceType(IListOfT), RealmObject) { HasThis = true };
-                var T = new GenericParameter(RealmObject_GetListValue) { Constraints = { RealmObject } };
+                var T = new GenericParameter(RealmObject_GetListValue);
                 (RealmObject_GetListValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetListValue.GenericParameters.Add(T);
                 RealmObject_GetListValue.Parameters.Add(new ParameterDefinition(Types.String));

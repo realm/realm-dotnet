@@ -525,9 +525,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
+        public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var listHandle = this.TableLinkList(propertyIndex);
+            var listHandle = TableLinkList(propertyIndex);
             return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
         }
 

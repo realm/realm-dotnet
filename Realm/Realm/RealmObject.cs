@@ -212,15 +212,12 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            var relatedMeta = _realm.Metadata[property.ObjectType];
-
-            var listHandle = _objectHandle.TableLinkList(_metadata.PropertyIndices[propertyName]);
-            return new RealmList<T>(_realm, listHandle, relatedMeta);
+            return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
