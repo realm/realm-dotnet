@@ -106,15 +106,20 @@ REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(Lis
     });
 }
     
-REALM_EXPORT void list_move(List& list, const Object& object_ptr, size_t dest_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void list_move(List& list, size_t source_ndx, size_t dest_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         const size_t count = list.size();
+        
+        // Indices are >= 0 validated by .NET
         if (dest_ndx >= count) {
             throw IndexOutOfRangeException("Move within RealmList", dest_ndx, count);
         }
+        
+        if (source_ndx >= count) {
+            throw IndexOutOfRangeException("Move within RealmList", source_ndx, count);
+        }
 
-        size_t source_ndx = list.find(object_ptr.row());
         list.move(source_ndx, dest_ndx);
     });
 }
