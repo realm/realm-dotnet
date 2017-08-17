@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using EnumsNET;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -87,7 +86,7 @@ namespace Realms.Schema
                     if (result.HasFlag(PropertyType.Object))
                     {
                         // List<Object> can't contain nulls
-                        result = result.RemoveFlags(PropertyType.Nullable);
+                        result &= ~PropertyType.Nullable;
                     }
 
                     return result;
