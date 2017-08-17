@@ -86,57 +86,57 @@ namespace AssemblyToProcess
     {
         public IList<char> CharList { get; }
 
-        public IList<byte> ByteList { get; set; }
+        public IList<byte> ByteList { get; }
 
-        public IList<short> Int16List { get; set; }
+        public IList<short> Int16List { get; }
 
-        public IList<int> Int32List { get; set; }
+        public IList<int> Int32List { get; }
 
-        public IList<long> Int64List { get; set; }
+        public IList<long> Int64List { get; }
 
-        public IList<float> SingleList { get; set; }
+        public IList<float> SingleList { get; }
 
-        public IList<double> DoubleList { get; set; }
+        public IList<double> DoubleList { get; }
 
-        public IList<bool> BooleanList { get; set; }
+        public IList<bool> BooleanList { get; }
 
-        public IList<string> StringList { get; set; }
+        public IList<string> StringList { get; }
 
-        public IList<DateTimeOffset> DateTimeOffsetList { get; set; }
+        public IList<DateTimeOffset> DateTimeOffsetList { get; }
 
-        public IList<char?> NullableCharList { get; set; }
+        public IList<char?> NullableCharList { get; }
 
-        public IList<byte?> NullableByteList { get; set; }
+        public IList<byte?> NullableByteList { get; }
 
-        public IList<short?> NullableInt16List { get; set; }
+        public IList<short?> NullableInt16List { get; }
 
-        public IList<int?> NullableInt32List { get; set; }
+        public IList<int?> NullableInt32List { get; }
 
-        public IList<long?> NullableInt64List { get; set; }
+        public IList<long?> NullableInt64List { get; }
 
-        public IList<float?> NullableSingleList { get; set; }
+        public IList<float?> NullableSingleList { get; }
 
-        public IList<double?> NullableDoubleList { get; set; }
+        public IList<double?> NullableDoubleList { get; }
 
-        public IList<bool?> NullableBooleanList { get; set; }
+        public IList<bool?> NullableBooleanList { get; }
 
-        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; set; }
+        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
 
-        public IList<RealmInteger<byte>> ByteCounterList { get; set; }
+        public IList<RealmInteger<byte>> ByteCounterList { get; }
 
-        public IList<RealmInteger<short>> Int16CounterList { get; set; }
+        public IList<RealmInteger<short>> Int16CounterList { get; }
 
-        public IList<RealmInteger<int>> Int32CounterList { get; set; }
+        public IList<RealmInteger<int>> Int32CounterList { get; }
 
-        public IList<RealmInteger<long>> Int64CounterList { get; set; }
+        public IList<RealmInteger<long>> Int64CounterList { get; }
 
-        public IList<RealmInteger<byte>?> NullableByteCounterList { get; set; }
+        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
 
-        public IList<RealmInteger<short>?> NullableInt16CounterList { get; set; }
+        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
 
-        public IList<RealmInteger<int>?> NullableInt32CounterList { get; set; }
+        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
 
-        public IList<RealmInteger<long>?> NullableInt64CounterList { get; set; }
+        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
