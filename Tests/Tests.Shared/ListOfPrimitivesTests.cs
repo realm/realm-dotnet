@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Realms;
 
@@ -25,47 +27,277 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class ListOfPrimitivesTests : RealmInstanceTest
     {
-        [Test]
-        public void TestIntegers()
+        private readonly Random _random = new Random();
+
+        private ListsObject _listsObject;
+
+        protected override void CustomSetUp()
         {
-            var obj = new ListsObject();
-            _realm.Write(() => _realm.Add(obj));
-            var items = obj.NullableInt32List;
+            base.CustomSetUp();
+
             _realm.Write(() =>
             {
-                items.Add(1);
-                items.Add(null);
-                items.Insert(0, 2);
-                items.Insert(2, null);
+                _listsObject = _realm.Add(new ListsObject());
+            });
+        }
+
+        [Test]
+        public void Test_BooleanList()
+        {
+            SmokeTest(_listsObject.BooleanList);
+            SmokeTest(_listsObject.BooleanList, true);
+            SmokeTest(_listsObject.BooleanList, true, true, false);
+        }
+
+        [Test]
+        public void Test_ByteCounterList()
+        {
+            SmokeTest(_listsObject.ByteCounterList);
+            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, 0);
+            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, byte.MinValue, byte.MaxValue, 0);
+            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, 1, 2, 0);
+        }
+
+        [Test]
+        public void Test_ByteList()
+        {
+            SmokeTest(_listsObject.ByteList);
+            SmokeTest<byte>(_listsObject.ByteList, 0);
+            SmokeTest<byte>(_listsObject.ByteList, byte.MinValue, byte.MaxValue, 0);
+            SmokeTest<byte>(_listsObject.ByteList, 1, 2, 0);
+        }
+
+        [Test]
+        public void Test_CharList()
+        {
+            SmokeTest(_listsObject.CharList);
+            SmokeTest(_listsObject.CharList, 'a');
+            SmokeTest(_listsObject.CharList, char.MinValue, char.MaxValue);
+            SmokeTest(_listsObject.CharList, 'a', 'b', 'c', 'b');
+        }
+
+        [Test]
+        public void Test_DoubleList()
+        {
+            SmokeTest(_listsObject.DoubleList);
+            SmokeTest(_listsObject.DoubleList, 1.4);
+            SmokeTest(_listsObject.DoubleList, double.MinValue, double.MaxValue, 0);
+            SmokeTest(_listsObject.DoubleList, -1, 3.4, 5.3, 9);
+        }
+
+        [Test]
+        public void Test_Int16CounterList()
+        {
+            SmokeTest(_listsObject.Int16CounterList);
+            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, 1);
+            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, short.MaxValue, short.MinValue, 0);
+            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, 3, -1, 45);
+        }
+
+        [Test]
+        public void Test_Int16List()
+        {
+            SmokeTest(_listsObject.Int16List);
+            SmokeTest<short>(_listsObject.Int16List, 1);
+            SmokeTest<short>(_listsObject.Int16List, short.MaxValue, short.MinValue, 0);
+            SmokeTest<short>(_listsObject.Int16List, 3, -1, 45);
+        }
+
+        [Test]
+        public void Test_Int32CounterList()
+        {
+            SmokeTest(_listsObject.Int32CounterList);
+            SmokeTest(_listsObject.Int32CounterList, 1);
+            SmokeTest(_listsObject.Int32CounterList, int.MinValue, int.MaxValue, 0);
+            SmokeTest(_listsObject.Int32CounterList, -5, 3, 9, 350);
+        }
+
+        [Test]
+        public void Test_Int32List()
+        {
+            SmokeTest(_listsObject.Int32List);
+            SmokeTest(_listsObject.Int32List, 1);
+            SmokeTest(_listsObject.Int32List, int.MinValue, int.MaxValue, 0);
+            SmokeTest(_listsObject.Int32List, -5, 3, 9, 350);
+        }
+
+        [Test]
+        public void Test_Int64CounterList()
+        {
+            SmokeTest(_listsObject.Int64CounterList);
+            SmokeTest(_listsObject.Int64CounterList, 4);
+            SmokeTest(_listsObject.Int64CounterList, long.MinValue, long.MaxValue, 0);
+            SmokeTest(_listsObject.Int64CounterList, 4, -39, 81L, -69324);
+        }
+
+        [Test]
+        public void Test_Int64List()
+        {
+            SmokeTest(_listsObject.Int64List);
+            SmokeTest(_listsObject.Int64List, 4);
+            SmokeTest(_listsObject.Int64List, long.MinValue, long.MaxValue, 0);
+            SmokeTest(_listsObject.Int64List, 4, -39, 81L, -69324);
+        }
+
+        [Test]
+        public void Test_NullableBooleanList()
+        {
+            SmokeTest(_listsObject.NullableBooleanList);
+            SmokeTest(_listsObject.NullableBooleanList, true);
+            SmokeTest(_listsObject.NullableBooleanList, null);
+            SmokeTest(_listsObject.NullableBooleanList, true, true, null, false);
+        }
+
+        [Test]
+        public void Test_NullableByteCounterList()
+        {
+            SmokeTest(_listsObject.NullableByteCounterList);
+            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 0);
+            SmokeTest(_listsObject.NullableByteCounterList, null);
+            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, byte.MinValue, byte.MaxValue, 0);
+            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 1, 2, 0, null);
+        }
+
+        [Test]
+        public void Test_NullableByteList()
+        {
+            SmokeTest(_listsObject.NullableByteList);
+            SmokeTest<byte?>(_listsObject.NullableByteList, 0);
+            SmokeTest(_listsObject.NullableByteList, null);
+            SmokeTest<byte?>(_listsObject.NullableByteList, byte.MinValue, byte.MaxValue, 0);
+            SmokeTest<byte?>(_listsObject.NullableByteList, 1, 2, 0, null);
+        }
+
+        [Test]
+        public void Test_NullableCharList()
+        {
+            SmokeTest(_listsObject.NullableCharList);
+            SmokeTest(_listsObject.NullableCharList, 'a');
+            SmokeTest(_listsObject.NullableCharList, null);
+            SmokeTest(_listsObject.NullableCharList, char.MinValue, char.MaxValue);
+            SmokeTest(_listsObject.NullableCharList, 'a', 'b', 'c', 'b');
+        }
+
+        [Test]
+        public void Test_NullableDoubleList()
+        {
+            SmokeTest(_listsObject.NullableDoubleList);
+            SmokeTest(_listsObject.NullableDoubleList, 1.4);
+            SmokeTest(_listsObject.NullableDoubleList, null);
+            SmokeTest(_listsObject.NullableDoubleList, double.MinValue, double.MaxValue, 0);
+            SmokeTest(_listsObject.NullableDoubleList, -1, 3.4, 5.3, 9);
+        }
+
+        [Test]
+        public void Test_NullableInt16CounterList()
+        {
+            SmokeTest(_listsObject.NullableInt16CounterList);
+            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 1);
+            SmokeTest(_listsObject.NullableInt16CounterList, null);
+            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, short.MaxValue, short.MinValue, 0);
+            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 3, -1, null, 45, null);
+        }
+
+        [Test]
+        public void Test_NullableInt16List()
+        {
+            SmokeTest(_listsObject.NullableInt16List);
+            SmokeTest<short?>(_listsObject.NullableInt16List, 1);
+            SmokeTest<short?>(_listsObject.NullableInt16List, null);
+            SmokeTest<short?>(_listsObject.NullableInt16List, short.MaxValue, short.MinValue, 0);
+            SmokeTest<short?>(_listsObject.NullableInt16List, 3, -1, null, 45, null);
+        }
+
+        [Test]
+        public void Test_NullableInt32CounterList()
+        {
+            SmokeTest(_listsObject.NullableInt32CounterList);
+            SmokeTest(_listsObject.NullableInt32CounterList, 1);
+            SmokeTest(_listsObject.NullableInt32CounterList, null);
+            SmokeTest(_listsObject.NullableInt32CounterList, int.MinValue, int.MaxValue, 0);
+            SmokeTest(_listsObject.NullableInt32CounterList, -5, 3, null, 9, 350);
+        }
+
+        [Test]
+        public void Test_NullableInt32List()
+        {
+            SmokeTest(_listsObject.NullableInt32List);
+            SmokeTest(_listsObject.NullableInt32List, 1);
+            SmokeTest(_listsObject.NullableInt32List, null);
+            SmokeTest(_listsObject.NullableInt32List, int.MinValue, int.MaxValue, 0);
+            SmokeTest(_listsObject.NullableInt32List, -5, 3, null, 9, 350);
+        }
+
+        [Test]
+        public void Test_NullableInt64CounterList()
+        {
+            SmokeTest(_listsObject.NullableInt64CounterList);
+            SmokeTest(_listsObject.NullableInt64CounterList, 4);
+            SmokeTest(_listsObject.NullableInt64CounterList, null);
+            SmokeTest(_listsObject.NullableInt64CounterList, long.MinValue, long.MaxValue, 0);
+            SmokeTest(_listsObject.NullableInt64CounterList, 4, -39, 81L, null, -69324);
+        }
+
+        [Test]
+        public void Test_NullableInt64List()
+        {
+            SmokeTest(_listsObject.NullableInt64List);
+            SmokeTest(_listsObject.NullableInt64List, 4);
+            SmokeTest(_listsObject.NullableInt64List, null);
+            SmokeTest(_listsObject.NullableInt64List, long.MinValue, long.MaxValue, 0);
+            SmokeTest(_listsObject.NullableInt64List, 4, -39, 81L, null, -69324);
+        }
+
+        private void SmokeTest<T>(IList<T> items, params T[] toAdd)
+        {
+            if (toAdd == null)
+            {
+                toAdd = new T[0];
+            }
+
+            // Test add
+            _realm.Write(() =>
+            {
+                items.Clear();
+
+                foreach (var item in toAdd)
+                {
+                    items.Add(item);
+                }
             });
 
-            var test1 = items[0];
+            // Test iterating
+            var iterator = 0;
             foreach (var item in items)
             {
-                System.Console.WriteLine(item);
+                Assert.That(item, Is.EqualTo(toAdd[iterator++]));
             }
 
-            var test = items.IndexOf(2);
-            var test5 = items.IndexOf(null);
-
-            var counters = obj.NullableInt32CounterList;
-
-            _realm.Write(() =>
+            // Test access by index
+            for (var i = 0; i < items.Count; i++)
             {
-                counters.Add(1);
-                counters.Add(null);
-                counters.Insert(0, 2);
-                counters.Insert(2, null);
-            });
-
-            var test2 = counters[0];
-            foreach (var item in counters)
-            {
-                System.Console.WriteLine(item);
+                Assert.That(items[i], Is.EqualTo(toAdd[i]));
             }
 
-            var test3 = counters.IndexOf(2);
-            var test6 = counters.IndexOf(null);
+            // Test indexOf
+            foreach (var item in toAdd)
+            {
+                Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
+            }
+
+            if (toAdd.Any())
+            {
+                // Test insert
+                var toInsert = toAdd[_random.Next(0, toAdd.Length)];
+                _realm.Write(() =>
+                {
+                    items.Insert(0, toInsert);
+                    items.Insert(items.Count, toInsert);
+                });
+
+                Assert.That(items.First(), Is.EqualTo(toInsert));
+                Assert.That(items.Last(), Is.EqualTo(toInsert));
+            }
         }
     }
 }

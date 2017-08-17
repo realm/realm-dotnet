@@ -84,10 +84,22 @@ namespace Realms
             {
                 case PropertyType.Object | PropertyType.Nullable:
                     return base.GetAtIndex(index);
+                case PropertyType.Bool:
+                    return Operator.Convert<bool, T>(_listHandle.GetBoolAtIndex(index));
+                case PropertyType.Bool | PropertyType.Nullable:
+                    return Operator.Convert<bool?, T>(_listHandle.GetNullableBoolAtIndex(index));
                 case PropertyType.Int:
                     return Operator.Convert<long, T>(_listHandle.GetInt64AtIndex(index));
                 case PropertyType.Int | PropertyType.Nullable:
                     return Operator.Convert<long?, T>(_listHandle.GetNullableInt64AtIndex(index));
+                case PropertyType.Float:
+                    return Operator.Convert<float, T>(_listHandle.GetFloatAtIndex(index));
+                case PropertyType.Float | PropertyType.Nullable:
+                    return Operator.Convert<float?, T>(_listHandle.GetNullableFloatAtIndex(index));
+                case PropertyType.Double:
+                    return Operator.Convert<double, T>(_listHandle.GetDoubleAtIndex(index));
+                case PropertyType.Double | PropertyType.Nullable:
+                    return Operator.Convert<double?, T>(_listHandle.GetNullableDoubleAtIndex(index));
                 default:
                     throw new NotImplementedException("");
             }
@@ -104,6 +116,12 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
+            _listHandle.Add,
+            _listHandle.Add,
+            _listHandle.Add,
+            _listHandle.Add,
+            _listHandle.Add,
+            _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add);
         }
@@ -161,10 +179,22 @@ namespace Realms
                     }
 
                     return _listHandle.Find(obj.ObjectHandle);
+                case PropertyType.Bool:
+                    return _listHandle.Find(Operator.Convert<T, bool>(item));
+                case PropertyType.Bool | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, bool?>(item));
                 case PropertyType.Int:
                     return _listHandle.Find(Operator.Convert<T, long>(item));
                 case PropertyType.Int | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, long?>(item));
+                case PropertyType.Float:
+                    return _listHandle.Find(Operator.Convert<T, float>(item));
+                case PropertyType.Float | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, float?>(item));
+                case PropertyType.Double:
+                    return _listHandle.Find(Operator.Convert<T, double>(item));
+                case PropertyType.Double | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, double?>(item));
                 default:
                     throw new NotImplementedException("");
             }
@@ -184,6 +214,12 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value));
         }
@@ -243,19 +279,43 @@ namespace Realms
 
         private static void Execute(T item,
             Action<RealmObject> objectHandler,
+            Action<bool> boolHandler,
+            Action<bool?> nullableBoolHandler,
             Action<long> intHandler,
-            Action<long?> nullableIntHandler)
+            Action<long?> nullableIntHandler,
+            Action<float> floatHandler,
+            Action<float?> nullableFloatHandler,
+            Action<double> doubleHandler,
+            Action<double?> nullableDoubleHandler)
         {
             switch (_argumentType)
             {
                 case PropertyType.Object | PropertyType.Nullable:
                     objectHandler(Operator.Convert<T, RealmObject>(item));
                     break;
+                case PropertyType.Bool:
+                    boolHandler(Operator.Convert<T, bool>(item));
+                    break;
+                case PropertyType.Bool | PropertyType.Nullable:
+                    nullableBoolHandler(Operator.Convert<T, bool?>(item));
+                    break;
                 case PropertyType.Int:
                     intHandler(Operator.Convert<T, long>(item));
                     break;
                 case PropertyType.Int | PropertyType.Nullable:
                     nullableIntHandler(Operator.Convert<T, long?>(item));
+                    break;
+                case PropertyType.Float:
+                    floatHandler(Operator.Convert<T, float>(item));
+                    break;
+                case PropertyType.Float | PropertyType.Nullable:
+                    nullableFloatHandler(Operator.Convert<T, float?>(item));
+                    break;
+                case PropertyType.Double:
+                    doubleHandler(Operator.Convert<T, double>(item));
+                    break;
+                case PropertyType.Double | PropertyType.Nullable:
+                    nullableDoubleHandler(Operator.Convert<T, double?>(item));
                     break;
                 default:
                     throw new NotImplementedException("");
