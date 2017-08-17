@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AccessTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ListOfPrimitivesTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmInstanceTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />

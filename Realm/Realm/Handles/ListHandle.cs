@@ -28,8 +28,14 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_int64(ListHandle listHandle, Int64 value, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_int64(ListHandle listHandle, IntPtr targetIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_erase", CallingConvention = CallingConvention.Cdecl)]
             public static extern void erase(ListHandle listHandle, IntPtr rowIndex, out NativeException ex);
@@ -40,8 +46,14 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int64 get_int64(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_int64(ListHandle listHandle, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_size", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr size(ListHandle listHandle, out NativeException ex);
@@ -88,9 +100,21 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(IntPtr targetIndex, ObjectHandle objectHandle)
+        public void Add(long value)
         {
-            NativeMethods.insert(this, targetIndex, objectHandle, out var nativeException);
+            NativeMethods.add_int64(this, value, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, ObjectHandle objectHandle)
+        {
+            NativeMethods.insert(this, (IntPtr)targetIndex, objectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, long value)
+        {
+            NativeMethods.insert_int64(this, (IntPtr)targetIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -106,11 +130,18 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr Find(ObjectHandle objectHandle)
+        public int Find(ObjectHandle objectHandle)
         {
             var result = NativeMethods.find(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return (int)result;
+        }
+
+        public int Find(long value)
+        {
+            var result = NativeMethods.find_int64(this, value, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
         }
 
         public void Move(IntPtr sourceIndex, IntPtr targetIndex)
@@ -129,6 +160,13 @@ namespace Realms
         public override IntPtr GetObjectAtIndex(int index)
         {
             var result = NativeMethods.get(this, (IntPtr)index, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public long GetInt64AtIndex(int index)
+        {
+            var result = NativeMethods.get_int64(this, (IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

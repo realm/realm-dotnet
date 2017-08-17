@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using EnumsNET;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -81,8 +82,15 @@ namespace Realms.Schema
                     return PropertyType.Object | PropertyType.Nullable;
 
                 case Type _ when type.IsClosedGeneric(typeof(IList<>), out var typeArguments):
-                    objectType = typeArguments.Single();
-                    return PropertyType.Object | PropertyType.Array;
+                    var result = PropertyType.Array | typeArguments.Single().ToPropertyType(out objectType);
+
+                    if (result.HasFlag(PropertyType.Object))
+                    {
+                        // List<Object> can't contain nulls
+                        result = result.RemoveFlags(PropertyType.Nullable);
+                    }
+
+                    return result;
 
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));

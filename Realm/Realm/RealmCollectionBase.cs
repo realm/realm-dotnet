@@ -95,7 +95,7 @@ namespace Realms
             }
         }
 
-        public Schema.ObjectSchema ObjectSchema => Metadata.Schema;
+        public Schema.ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObject.Metadata IThreadConfined.Metadata => Metadata;
 
@@ -131,13 +131,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                var objectPtr = Handle.Value.GetObjectAtIndex(index);
-                if (objectPtr == IntPtr.Zero)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-
-                return (T)(object)Realm.MakeObject(Metadata, objectPtr);
+                return GetAtIndex(index);
             }
         }
 
@@ -151,6 +145,17 @@ namespace Realms
             _callbacks.Add(callback);
 
             return new NotificationToken(this, callback);
+        }
+
+        protected virtual T GetAtIndex(int index)
+        {
+            var objectPtr = Handle.Value.GetObjectAtIndex(index);
+            if (objectPtr == IntPtr.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            return (T)(object)Realm.MakeObject(Metadata, objectPtr);
         }
 
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
@@ -419,7 +424,7 @@ namespace Realms
                 _enumerating = parent;
             }
 
-            public T Current => _enumerating[_index];
+            public T Current => _enumerating.GetAtIndex(_index);
 
             object IEnumerator.Current => Current;
 

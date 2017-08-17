@@ -528,7 +528,8 @@ namespace Realms
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var listHandle = TableLinkList(propertyIndex);
-            return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
+            var metadata = objectType == null ? null : realm.Metadata[objectType];
+            return new RealmList<T>(realm, listHandle, metadata);
         }
 
         public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject

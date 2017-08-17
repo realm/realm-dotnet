@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Realms.Helpers
@@ -72,7 +73,18 @@ namespace Realms.Helpers
                 var input = Expression.Parameter(typeof(T), "input");
                 try
                 {
-                    return Expression.Lambda<Func<T, U>>(Expression.Convert(input, typeof(U)), input).Compile();
+                    Expression convertFrom = input;
+                    if (typeof(T).IsConstructedGenericType && typeof(T).GetGenericTypeDefinition() == typeof(RealmInteger<>))
+                    {
+                        convertFrom = Expression.Convert(input, typeof(T).GenericTypeArguments.Single());
+                    }
+
+                    if (typeof(U).IsConstructedGenericType && typeof(U).GetGenericTypeDefinition() == typeof(RealmInteger<>))
+                    {
+                        convertFrom = Expression.Convert(input, typeof(U).GenericTypeArguments.Single());
+                    }
+
+                    return Expression.Lambda<Func<T, U>>(Expression.Convert(convertFrom, typeof(U)), input).Compile();
                 }
                 catch (Exception ex)
                 {

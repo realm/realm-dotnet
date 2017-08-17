@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using EnumsNET;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -132,7 +133,7 @@ namespace Realms.Schema
 
                 if (property.HasCustomAttribute<RequiredAttribute>())
                 {
-                    schemaProperty.Type &= ~PropertyType.Nullable;
+                    schemaProperty.Type = schemaProperty.Type.RemoveFlags(PropertyType.Nullable);
                 }
 
                 builder.Add(schemaProperty);
