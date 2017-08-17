@@ -86,6 +86,8 @@ namespace Realms
                     return base.GetAtIndex(index);
                 case PropertyType.Int:
                     return Operator.Convert<long, T>(_listHandle.GetInt64AtIndex(index));
+                case PropertyType.Int | PropertyType.Nullable:
+                    return Operator.Convert<long?, T>(_listHandle.GetNullableInt64AtIndex(index));
                 default:
                     throw new NotImplementedException("");
             }
@@ -102,6 +104,7 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
+            _listHandle.Add,
             _listHandle.Add);
         }
 
@@ -160,6 +163,8 @@ namespace Realms
                     return _listHandle.Find(obj.ObjectHandle);
                 case PropertyType.Int:
                     return _listHandle.Find(Operator.Convert<T, long>(item));
+                case PropertyType.Int | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, long?>(item));
                 default:
                     throw new NotImplementedException("");
             }
@@ -179,7 +184,8 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
-            intValue => _listHandle.Insert(index, intValue));
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -235,7 +241,10 @@ namespace Realms
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
-        private static void Execute(T item, Action<RealmObject> objectHandler, Action<long> intHandler)
+        private static void Execute(T item,
+            Action<RealmObject> objectHandler,
+            Action<long> intHandler,
+            Action<long?> nullableIntHandler)
         {
             switch (_argumentType)
             {
@@ -244,6 +253,9 @@ namespace Realms
                     break;
                 case PropertyType.Int:
                     intHandler(Operator.Convert<T, long>(item));
+                    break;
+                case PropertyType.Int | PropertyType.Nullable:
+                    nullableIntHandler(Operator.Convert<T, long?>(item));
                     break;
                 default:
                     throw new NotImplementedException("");

@@ -29,12 +29,42 @@
 using namespace realm;
 using namespace realm::binding;
 
+template<typename T>
+inline void insert(List* list, size_t list_ndx, T value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        const size_t count = list->size();
+        if (list_ndx > count) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        }
+        
+        list->insert(list_ndx, value);
+    });
+}
+
+template<typename T>
+inline auto get(List* list, size_t ndx)
+{
+    const size_t count = list->size();
+    if (ndx >= count)
+        throw IndexOutOfRangeException("Get from RealmList", ndx, count);
+
+    return list->get<T>(ndx);
+}
+
 extern "C" {
   
 REALM_EXPORT void list_add(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         list->add(object_ptr.row().get_index());
+    });
+}
+    
+REALM_EXPORT void list_add_nullable_int64(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        list->add(has_value ? Optional<int64_t>(value) : Optional<int64_t>(none));
     });
 }
     
@@ -45,47 +75,44 @@ REALM_EXPORT void list_add_int64(List* list, int64_t value, NativeException::Mar
     });
 }
 
-REALM_EXPORT void list_insert(List* list, size_t link_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
-        const size_t count = list->size();
-        if (link_ndx > count) {
-            throw IndexOutOfRangeException("Insert into RealmList", link_ndx, count);
-        }
-        list->insert(link_ndx, object_ptr.row());
-    });
+    insert(list, list_ndx, object_ptr.row(), ex);
+}
+    
+REALM_EXPORT void list_insert_nullable_int64(List* list, size_t list_ndx, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    insert(list, list_ndx, has_value ? Optional<int64_t>(value) : Optional<int64_t>(none), ex);
 }
 
-REALM_EXPORT void list_insert_int64(List* list, size_t link_ndx, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_int64(List* list, size_t list_ndx, int64_t value, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
-        const size_t count = list->size();
-        if (link_ndx > count) {
-            throw IndexOutOfRangeException("Insert into RealmList", link_ndx, count);
-        }
-        list->insert(link_ndx, value);
-    });
+    insert(list, list_ndx, value, ex);
 }
     
 REALM_EXPORT Object* list_get(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
-        const size_t count = list->size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-        auto rowExpr = list->get(ndx);
-        return new Object(list->get_realm(), list->get_object_schema(), Row(rowExpr));
+        return new Object(list->get_realm(), list->get_object_schema(), Row(get<RowExpr>(list, ndx)));
     });
 }
     
 REALM_EXPORT int64_t list_get_int64(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> int64_t {
-        const size_t count = list->size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
+        return get<int64_t>(list, ndx);
+    });
+}
+    
+REALM_EXPORT bool list_get_nullable_int64(List* list, size_t ndx, int64_t& ret_value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Optional<int64_t> result = get<Optional<int64_t>>(list, ndx);
+        if (!result)
+            return false;
         
-        return list->get(ndx).get_int(0);
+        ret_value = result.value();
+        return true;
     });
 }
 
@@ -100,6 +127,14 @@ REALM_EXPORT size_t list_find_int64(List* list, int64_t value, NativeException::
 {
     return handle_errors(ex, [&]() {
         return list->find(value);
+    });
+}
+    
+REALM_EXPORT size_t list_find_nullable_int64(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto optional = has_value ? Optional<int64_t>(value) : Optional<int64_t>(none);
+        return list->find(optional);
     });
 }
     

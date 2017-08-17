@@ -25,11 +25,20 @@ namespace Realms
     {
         private static class NativeMethods
         {
+            #region add
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_int64(ListHandle listHandle, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_nullable_int64(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
+
+            #region insert
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
@@ -37,11 +46,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_int64(ListHandle listHandle, IntPtr targetIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_erase", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void erase(ListHandle listHandle, IntPtr rowIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_nullable_int64(ListHandle listHandle, IntPtr targetIndex, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_clear", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void clear(ListHandle listHandle, out NativeException ex);
+            #endregion
+
+            #region get
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
@@ -49,11 +59,30 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 get_int64(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_int64(ListHandle listHandle, IntPtr link_ndx, out Int64 retVal, out NativeException ex);
+
+            #endregion
+
+            #region find
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_int64(ListHandle listHandle, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_nullable_int64(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_erase", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void erase(ListHandle listHandle, IntPtr rowIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_clear", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void clear(ListHandle listHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_size", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr size(ListHandle listHandle, out NativeException ex);
@@ -94,6 +123,33 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
+        #region GetAtIndex
+
+        public override IntPtr GetObjectAtIndex(int index)
+        {
+            var result = NativeMethods.get(this, (IntPtr)index, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public long GetInt64AtIndex(int index)
+        {
+            var result = NativeMethods.get_int64(this, (IntPtr)index, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public long? GetNullableInt64AtIndex(int index)
+        {
+            var hasValue = NativeMethods.get_nullable_int64(this, (IntPtr)index, out var value, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return hasValue ? value : (long?)null;
+        }
+
+        #endregion
+
+        #region Add
+
         public void Add(ObjectHandle objectHandle)
         {
             NativeMethods.add(this, objectHandle, out var nativeException);
@@ -105,6 +161,16 @@ namespace Realms
             NativeMethods.add_int64(this, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
+
+        public void Add(long? value)
+        {
+            NativeMethods.add_nullable_int64(this, value.GetValueOrDefault(), value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        #endregion
+
+        #region Insert
 
         public void Insert(int targetIndex, ObjectHandle objectHandle)
         {
@@ -118,17 +184,15 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Erase(IntPtr rowIndex)
+        public void Insert(int targetIndex, long? value)
         {
-            NativeMethods.erase(this, rowIndex, out var nativeException);
+            NativeMethods.insert_nullable_int64(this, (IntPtr)targetIndex, value.GetValueOrDefault(), value.HasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Clear()
-        {
-            NativeMethods.clear(this, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
+        #endregion
+
+        #region Find
 
         public int Find(ObjectHandle objectHandle)
         {
@@ -144,6 +208,27 @@ namespace Realms
             return (int)result;
         }
 
+        public int Find(long? value)
+        {
+            var result = NativeMethods.find_nullable_int64(this, value.GetValueOrDefault(), value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        #endregion
+
+        public void Erase(IntPtr rowIndex)
+        {
+            NativeMethods.erase(this, rowIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Clear()
+        {
+            NativeMethods.clear(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
         public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
             NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
@@ -153,20 +238,6 @@ namespace Realms
         public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public override IntPtr GetObjectAtIndex(int index)
-        {
-            var result = NativeMethods.get(this, (IntPtr)index, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public long GetInt64AtIndex(int index)
-        {
-            var result = NativeMethods.get_int64(this, (IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

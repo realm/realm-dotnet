@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using NUnit.Framework;
 using Realms;
 
@@ -29,11 +30,13 @@ namespace Tests.Database
         {
             var obj = new ListsObject();
             _realm.Write(() => _realm.Add(obj));
-            var items = obj.Int32List;
+            var items = obj.NullableInt32List;
             _realm.Write(() =>
             {
                 items.Add(1);
+                items.Add(null);
                 items.Insert(0, 2);
+                items.Insert(2, null);
             });
 
             var test1 = items[0];
@@ -43,13 +46,16 @@ namespace Tests.Database
             }
 
             var test = items.IndexOf(2);
+            var test5 = items.IndexOf(null);
 
-            var counters = obj.Int32CounterList;
+            var counters = obj.NullableInt32CounterList;
 
             _realm.Write(() =>
             {
                 counters.Add(1);
+                counters.Add(null);
                 counters.Insert(0, 2);
+                counters.Insert(2, null);
             });
 
             var test2 = counters[0];
@@ -59,6 +65,7 @@ namespace Tests.Database
             }
 
             var test3 = counters.IndexOf(2);
+            var test6 = counters.IndexOf(null);
         }
     }
 }
