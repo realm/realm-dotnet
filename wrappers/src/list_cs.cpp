@@ -174,8 +174,13 @@ REALM_EXPORT void list_add_timestamp_ticks(List* list, int64_t value, NativeExce
     
 REALM_EXPORT void list_add_string(List* list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
-    StringData str  = has_value ? Utf16StringAccessor(value, value_len) : StringData();
-    add(list, str, ex);
+    if (has_value) {
+        Utf16StringAccessor str(value, value_len);
+        add(list, (StringData)str, ex);
+    }
+    else {
+        add(list, StringData(), ex);
+    }
 }
 
 REALM_EXPORT void list_insert(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
@@ -235,8 +240,13 @@ REALM_EXPORT void list_insert_timestamp_ticks(List* list, size_t list_ndx, int64
 
 REALM_EXPORT void list_insert_string(List* list, size_t list_ndx, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
-    StringData str  = has_value ? Utf16StringAccessor(value, value_len) : StringData();
-    insert(list, list_ndx, str, ex);
+    if (has_value) {
+        Utf16StringAccessor str(value, value_len);
+        insert(list, list_ndx, (StringData)str, ex);
+    }
+    else {
+        insert(list, list_ndx, StringData(), ex);
+    }
 }
     
 REALM_EXPORT Object* list_get(List* list, size_t ndx, NativeException::Marshallable& ex)
@@ -314,9 +324,11 @@ REALM_EXPORT bool list_get_nullable_timestamp_ticks(List* list, size_t ndx, int6
 REALM_EXPORT size_t list_get_string(List* list, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
 {
     auto result = get<StringData>(list, ndx, ex);
+    
     if ((*is_null = result.is_null()))
         return 0;
     
+    auto test = std::string(result.data(), result.size());
     return stringdata_to_csharpstringbuffer(result, value, value_len);
 }
     
@@ -379,8 +391,12 @@ REALM_EXPORT size_t list_find_nullable_timestamp_ticks(List* list, int64_t value
     
 REALM_EXPORT size_t list_find_string(List* list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
-    StringData str  = has_value ? Utf16StringAccessor(value, value_len) : StringData();
-    return find(list, str, ex);
+    if (has_value) {
+        Utf16StringAccessor str(value, value_len);
+        return find(list, (StringData)str, ex);
+    }
+    
+    return find(list, StringData(), ex);
 }
 
 REALM_EXPORT void list_erase(List* list, size_t link_ndx, NativeException::Marshallable& ex)
