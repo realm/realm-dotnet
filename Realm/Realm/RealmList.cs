@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -299,7 +300,7 @@ namespace Realms
 
         private static void Execute(T item,
             Action<RealmObject> objectHandler,
-            Action<bool> boolHandler,
+            Action<PrimitiveValue> primitiveHandler,
             Action<bool?> nullableBoolHandler,
             Action<long> intHandler,
             Action<long?> nullableIntHandler,
@@ -317,7 +318,7 @@ namespace Realms
                     objectHandler(Operator.Convert<T, RealmObject>(item));
                     break;
                 case PropertyType.Bool:
-                    boolHandler(Operator.Convert<T, bool>(item));
+                    primitiveHandler(PrimitiveValue.Create(Operator.Convert<T, bool>(item)));
                     break;
                 case PropertyType.Bool | PropertyType.Nullable:
                     nullableBoolHandler(Operator.Convert<T, bool?>(item));

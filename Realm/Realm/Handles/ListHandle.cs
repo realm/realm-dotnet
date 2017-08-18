@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -30,8 +31,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_bool(ListHandle listHandle, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_nullable_bool(ListHandle listHandle, [MarshalAs(UnmanagedType.I1)] bool value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
@@ -71,8 +72,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert_bool(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_primitive(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_nullable_bool(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.I1)] bool value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
@@ -335,9 +336,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Add(bool value)
+        public void Add(PrimitiveValue value)
         {
-            NativeMethods.add_bool(this, value, out var nativeException);
+            NativeMethods.add_primitive(this, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -411,9 +412,9 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(int targetIndex, bool value)
+        public void Insert(int targetIndex, PrimitiveValue value)
         {
-            NativeMethods.insert_bool(this, (IntPtr)targetIndex, value, out var nativeException);
+            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

@@ -111,6 +111,19 @@ inline size_t find_nullable(List* list, T value, bool has_value, NativeException
     });
 }
 
+struct PrimitiveValue
+{
+    realm::PropertyType type;
+    bool has_value;
+    
+    union {
+        bool bool_value;
+        int64_t int_value;
+        float float_value;
+        double double_value;
+    } value;
+};
+
 extern "C" {
   
 REALM_EXPORT void list_add(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
@@ -127,9 +140,20 @@ REALM_EXPORT void list_add_nullable_bool(List* list, bool value, bool has_value,
     });
 }
     
-REALM_EXPORT void list_add_bool(List* list, bool value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_primitive(List* list, PrimitiveValue value, NativeException::Marshallable& ex)
 {
-    add(list, value, ex);
+    handle_errors(ex, [&]() {
+        switch (value.type) {
+            case realm::PropertyType::Bool:
+                list->add(value.value.bool_value);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+                list->add(value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                break;
+            default:
+                break;
+        }
+    });
 }
 
 REALM_EXPORT void list_add_nullable_int64(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
@@ -188,16 +212,26 @@ REALM_EXPORT void list_insert(List* list, size_t list_ndx, const Object& object_
     insert(list, list_ndx, object_ptr.row(), ex);
 }
     
+REALM_EXPORT void list_insert_primitive(List* list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        switch (value.type) {
+            case realm::PropertyType::Bool:
+                list->insert(list_ndx, value.value.bool_value);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+                list->insert(list_ndx, value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                break;
+            default:
+                break;
+        }
+    });}
+
 REALM_EXPORT void list_insert_nullable_bool(List* list, size_t list_ndx, bool value, bool has_value, NativeException::Marshallable& ex)
 {
     insert_nullable(list, list_ndx, value, has_value, ex);
 }
 
-REALM_EXPORT void list_insert_bool(List* list, size_t list_ndx, bool value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, value, ex);
-}
-    
 REALM_EXPORT void list_insert_nullable_int64(List* list, size_t list_ndx, int64_t value, bool has_value, NativeException::Marshallable& ex)
 {
     insert_nullable(list, list_ndx, value, has_value, ex);
