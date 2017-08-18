@@ -60,6 +60,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_nullable_timestamp_ticks(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
             #endregion
 
             #region insert
@@ -96,6 +100,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_nullable_timestamp_ticks(ListHandle listHandle, IntPtr targetIndex, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
+                IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -140,6 +148,10 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_nullable_timestamp_ticks(ListHandle listHandle, IntPtr link_ndx, out Int64 retVal, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_string(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
             #endregion
 
             #region find
@@ -176,6 +188,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_nullable_timestamp_ticks(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -303,6 +319,12 @@ namespace Realms
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
 
+        public string GetStringAtIndex(int index)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
+        }
+
         #endregion
 
         #region Add
@@ -373,6 +395,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public void Add(string value)
+        {
+            NativeMethods.add_string(this, value, (IntPtr)(value?.Length ?? 0), value != null, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
         #endregion
 
         #region Insert
@@ -440,6 +468,14 @@ namespace Realms
         public void Insert(int targetIndex, DateTimeOffset? value)
         {
             NativeMethods.insert_nullable_timestamp_ticks(this, (IntPtr)targetIndex, value.GetValueOrDefault().ToUniversalTime().Ticks, value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, string value)
+        {
+            var hasValue = value != null;
+            value = value ?? string.Empty;
+            NativeMethods.insert_string(this, (IntPtr)targetIndex, value, (IntPtr)value.Length, hasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -520,6 +556,15 @@ namespace Realms
         public int Find(DateTimeOffset? value)
         {
             var result = NativeMethods.find_nullable_timestamp_ticks(this, value.GetValueOrDefault().ToUniversalTime().Ticks, value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public int Find(string value)
+        {
+            var hasValue = value != null;
+            value = value ?? string.Empty;
+            var result = NativeMethods.find_string(this, value, (IntPtr)value.Length, hasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }

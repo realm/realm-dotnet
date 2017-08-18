@@ -153,7 +153,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableBooleanList);
             SmokeTest(_listsObject.NullableBooleanList, true);
-            SmokeTest(_listsObject.NullableBooleanList, null);
+            SmokeTest(_listsObject.NullableBooleanList, (bool?)null);
             SmokeTest(_listsObject.NullableBooleanList, true, true, null, false);
         }
 
@@ -162,7 +162,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableByteCounterList);
             SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 0);
-            SmokeTest(_listsObject.NullableByteCounterList, null);
+            SmokeTest(_listsObject.NullableByteCounterList, (byte?)null);
             SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, byte.MinValue, byte.MaxValue, 0);
             SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 1, 2, 0, null);
         }
@@ -172,7 +172,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableByteList);
             SmokeTest<byte?>(_listsObject.NullableByteList, 0);
-            SmokeTest(_listsObject.NullableByteList, null);
+            SmokeTest(_listsObject.NullableByteList, (byte?)null);
             SmokeTest<byte?>(_listsObject.NullableByteList, byte.MinValue, byte.MaxValue, 0);
             SmokeTest<byte?>(_listsObject.NullableByteList, 1, 2, 0, null);
         }
@@ -182,7 +182,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableCharList);
             SmokeTest(_listsObject.NullableCharList, 'a');
-            SmokeTest(_listsObject.NullableCharList, null);
+            SmokeTest(_listsObject.NullableCharList, (char?)null);
             SmokeTest(_listsObject.NullableCharList, char.MinValue, char.MaxValue);
             SmokeTest(_listsObject.NullableCharList, 'a', 'b', 'c', 'b');
         }
@@ -192,7 +192,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableDoubleList);
             SmokeTest(_listsObject.NullableDoubleList, 1.4);
-            SmokeTest(_listsObject.NullableDoubleList, null);
+            SmokeTest(_listsObject.NullableDoubleList, (double?)null);
             SmokeTest(_listsObject.NullableDoubleList, double.MinValue, double.MaxValue, 0);
             SmokeTest(_listsObject.NullableDoubleList, -1, 3.4, 5.3, 9);
         }
@@ -202,7 +202,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt16CounterList);
             SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 1);
-            SmokeTest(_listsObject.NullableInt16CounterList, null);
+            SmokeTest(_listsObject.NullableInt16CounterList, (short?)null);
             SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, short.MaxValue, short.MinValue, 0);
             SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 3, -1, null, 45, null);
         }
@@ -212,7 +212,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt16List);
             SmokeTest<short?>(_listsObject.NullableInt16List, 1);
-            SmokeTest<short?>(_listsObject.NullableInt16List, null);
+            SmokeTest(_listsObject.NullableInt16List, (short?)null);
             SmokeTest<short?>(_listsObject.NullableInt16List, short.MaxValue, short.MinValue, 0);
             SmokeTest<short?>(_listsObject.NullableInt16List, 3, -1, null, 45, null);
         }
@@ -222,7 +222,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt32CounterList);
             SmokeTest(_listsObject.NullableInt32CounterList, 1);
-            SmokeTest(_listsObject.NullableInt32CounterList, null);
+            SmokeTest(_listsObject.NullableInt32CounterList, (int?)null);
             SmokeTest(_listsObject.NullableInt32CounterList, int.MinValue, int.MaxValue, 0);
             SmokeTest(_listsObject.NullableInt32CounterList, -5, 3, null, 9, 350);
         }
@@ -232,7 +232,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt32List);
             SmokeTest(_listsObject.NullableInt32List, 1);
-            SmokeTest(_listsObject.NullableInt32List, null);
+            SmokeTest(_listsObject.NullableInt32List, (int?)null);
             SmokeTest(_listsObject.NullableInt32List, int.MinValue, int.MaxValue, 0);
             SmokeTest(_listsObject.NullableInt32List, -5, 3, null, 9, 350);
         }
@@ -242,7 +242,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt64CounterList);
             SmokeTest(_listsObject.NullableInt64CounterList, 4);
-            SmokeTest(_listsObject.NullableInt64CounterList, null);
+            SmokeTest(_listsObject.NullableInt64CounterList, (long?)null);
             SmokeTest(_listsObject.NullableInt64CounterList, long.MinValue, long.MaxValue, 0);
             SmokeTest(_listsObject.NullableInt64CounterList, 4, -39, 81L, null, -69324);
         }
@@ -252,7 +252,7 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt64List);
             SmokeTest(_listsObject.NullableInt64List, 4);
-            SmokeTest(_listsObject.NullableInt64List, null);
+            SmokeTest(_listsObject.NullableInt64List, (long?)null);
             SmokeTest(_listsObject.NullableInt64List, long.MinValue, long.MaxValue, 0);
             SmokeTest(_listsObject.NullableInt64List, 4, -39, 81L, null, -69324);
         }
@@ -262,9 +262,20 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableDateTimeOffsetList);
             SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(-4));
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, null);
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, (DateTimeOffset?)null);
             SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow);
             SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324));
+        }
+
+        [Test]
+        public void Test_StringList()
+        {
+            SmokeTest(_listsObject.StringList);
+            SmokeTest(_listsObject.StringList, string.Empty);
+            SmokeTest(_listsObject.StringList, (string)null);
+            SmokeTest(_listsObject.StringList, " ");
+            SmokeTest(_listsObject.StringList, "abc", "cdf", "az");
+            SmokeTest(_listsObject.StringList, "a", null, "foo", "bar", null);
         }
 
         private void SmokeTest<T>(IList<T> items, params T[] toAdd)

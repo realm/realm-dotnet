@@ -104,6 +104,9 @@ namespace Realms
                     return Operator.Convert<DateTimeOffset, T>(_listHandle.GetDateTimeOffsetAtIndex(index));
                 case PropertyType.Date | PropertyType.Nullable:
                     return Operator.Convert<DateTimeOffset?, T>(_listHandle.GetNullableDateTimeOffsetAtIndex(index));
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    return Operator.Convert<string, T>(_listHandle.GetStringAtIndex(index));
                 default:
                     throw new NotImplementedException("");
             }
@@ -120,6 +123,7 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
+            _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add,
@@ -205,6 +209,9 @@ namespace Realms
                     return _listHandle.Find(Operator.Convert<T, DateTimeOffset>(item));
                 case PropertyType.Date | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, DateTimeOffset?>(item));
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, string>(item));
                 default:
                     throw new NotImplementedException("");
             }
@@ -224,6 +231,7 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
+            value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
@@ -300,7 +308,8 @@ namespace Realms
             Action<double> doubleHandler,
             Action<double?> nullableDoubleHandler,
             Action<DateTimeOffset> dateHandler,
-            Action<DateTimeOffset?> nullableDateHandler)
+            Action<DateTimeOffset?> nullableDateHandler,
+            Action<string> stringHandler)
         {
             switch (_argumentType)
             {
@@ -336,6 +345,10 @@ namespace Realms
                     break;
                 case PropertyType.Date | PropertyType.Nullable:
                     nullableDateHandler(Operator.Convert<T, DateTimeOffset?>(item));
+                    break;
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    stringHandler(Operator.Convert<T, string>(item));
                     break;
                 default:
                     throw new NotImplementedException("");
