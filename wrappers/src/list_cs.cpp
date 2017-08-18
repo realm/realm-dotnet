@@ -25,6 +25,7 @@
 #include "object_accessor.hpp"
 #include "object-store/src/thread_safe_reference.hpp"
 #include "notifications_cs.hpp"
+#include "timestamp_helpers.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -161,6 +162,16 @@ REALM_EXPORT void list_add_double(List* list, double value, NativeException::Mar
     add(list, value, ex);
 }
     
+REALM_EXPORT void list_add_nullable_timestamp_ticks(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    add(list, has_value ? from_ticks(value) : Timestamp(), ex);
+}
+
+REALM_EXPORT void list_add_timestamp_ticks(List* list, int64_t value, NativeException::Marshallable& ex)
+{
+    add(list, from_ticks(value), ex);
+}
+
 REALM_EXPORT void list_insert(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     insert(list, list_ndx, object_ptr.row(), ex);
@@ -206,6 +217,16 @@ REALM_EXPORT void list_insert_double(List* list, size_t list_ndx, double value, 
     insert(list, list_ndx, value, ex);
 }
     
+REALM_EXPORT void list_insert_nullable_timestamp_ticks(List* list, size_t list_ndx, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    insert(list, list_ndx, has_value ? from_ticks(value) : Timestamp(), ex);
+}
+
+REALM_EXPORT void list_insert_timestamp_ticks(List* list, size_t list_ndx, int64_t value, NativeException::Marshallable& ex)
+{
+    insert(list, list_ndx, from_ticks(value), ex);
+}
+
 REALM_EXPORT Object* list_get(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
@@ -257,6 +278,27 @@ REALM_EXPORT bool list_get_nullable_double(List* list, size_t ndx, double& ret_v
     return get_nullable<double>(list, ndx, ret_value, ex);
 }
     
+REALM_EXPORT int64_t list_get_timestamp_ticks(List* list, size_t ndx, NativeException::Marshallable& ex)
+{
+    return to_ticks(get<Timestamp>(list, ndx, ex));
+}
+
+REALM_EXPORT bool list_get_nullable_timestamp_ticks(List* list, size_t ndx, int64_t& ret_value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        const size_t count = list->size();
+        if (ndx >= count)
+            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
+        
+        Timestamp result = list->get<Timestamp>(ndx);
+        if (result.is_null())
+            return false;
+        
+        ret_value = to_ticks(result);
+        return true;
+    });
+}
+    
 REALM_EXPORT size_t list_find(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -303,7 +345,17 @@ REALM_EXPORT size_t list_find_nullable_double(List* list, double value, bool has
 {
     return find_nullable(list, value, has_value, ex);
 }
-    
+
+REALM_EXPORT size_t list_find_timestamp_ticks(List* list, int64_t value, NativeException::Marshallable& ex)
+{
+    return find(list, from_ticks(value), ex);
+}
+
+REALM_EXPORT size_t list_find_nullable_timestamp_ticks(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
+{
+    return find(list, has_value ? from_ticks(value) : Timestamp(), ex);
+}
+
 REALM_EXPORT void list_erase(List* list, size_t link_ndx, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

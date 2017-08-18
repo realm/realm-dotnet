@@ -140,6 +140,15 @@ namespace Tests.Database
         }
 
         [Test]
+        public void Test_DateTimeOffsetList()
+        {
+            SmokeTest(_listsObject.DateTimeOffsetList);
+            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(-4));
+            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow);
+            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324));
+        }
+
+        [Test]
         public void Test_NullableBooleanList()
         {
             SmokeTest(_listsObject.NullableBooleanList);
@@ -246,6 +255,16 @@ namespace Tests.Database
             SmokeTest(_listsObject.NullableInt64List, null);
             SmokeTest(_listsObject.NullableInt64List, long.MinValue, long.MaxValue, 0);
             SmokeTest(_listsObject.NullableInt64List, 4, -39, 81L, null, -69324);
+        }
+
+        [Test]
+        public void Test_NullableDateTimeOffsetList()
+        {
+            SmokeTest(_listsObject.NullableDateTimeOffsetList);
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(-4));
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, null);
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow);
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324));
         }
 
         private void SmokeTest<T>(IList<T> items, params T[] toAdd)

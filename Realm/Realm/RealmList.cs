@@ -100,6 +100,10 @@ namespace Realms
                     return Operator.Convert<double, T>(_listHandle.GetDoubleAtIndex(index));
                 case PropertyType.Double | PropertyType.Nullable:
                     return Operator.Convert<double?, T>(_listHandle.GetNullableDoubleAtIndex(index));
+                case PropertyType.Date:
+                    return Operator.Convert<DateTimeOffset, T>(_listHandle.GetDateTimeOffsetAtIndex(index));
+                case PropertyType.Date | PropertyType.Nullable:
+                    return Operator.Convert<DateTimeOffset?, T>(_listHandle.GetNullableDateTimeOffsetAtIndex(index));
                 default:
                     throw new NotImplementedException("");
             }
@@ -116,6 +120,8 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
+            _listHandle.Add,
+            _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add,
@@ -195,6 +201,10 @@ namespace Realms
                     return _listHandle.Find(Operator.Convert<T, double>(item));
                 case PropertyType.Double | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, double?>(item));
+                case PropertyType.Date:
+                    return _listHandle.Find(Operator.Convert<T, DateTimeOffset>(item));
+                case PropertyType.Date | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, DateTimeOffset?>(item));
                 default:
                     throw new NotImplementedException("");
             }
@@ -214,6 +224,8 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
@@ -286,7 +298,9 @@ namespace Realms
             Action<float> floatHandler,
             Action<float?> nullableFloatHandler,
             Action<double> doubleHandler,
-            Action<double?> nullableDoubleHandler)
+            Action<double?> nullableDoubleHandler,
+            Action<DateTimeOffset> dateHandler,
+            Action<DateTimeOffset?> nullableDateHandler)
         {
             switch (_argumentType)
             {
@@ -316,6 +330,12 @@ namespace Realms
                     break;
                 case PropertyType.Double | PropertyType.Nullable:
                     nullableDoubleHandler(Operator.Convert<T, double?>(item));
+                    break;
+                case PropertyType.Date:
+                    dateHandler(Operator.Convert<T, DateTimeOffset>(item));
+                    break;
+                case PropertyType.Date | PropertyType.Nullable:
+                    nullableDateHandler(Operator.Convert<T, DateTimeOffset?>(item));
                     break;
                 default:
                     throw new NotImplementedException("");

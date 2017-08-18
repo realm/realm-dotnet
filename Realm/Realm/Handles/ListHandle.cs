@@ -54,6 +54,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_nullable_double", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_nullable_double(ListHandle listHandle, double value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_timestamp_ticks(ListHandle listHandle, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_nullable_timestamp_ticks(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
             #endregion
 
             #region insert
@@ -84,6 +90,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_nullable_double", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_nullable_double(ListHandle listHandle, IntPtr targetIndex, double value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_timestamp_ticks(ListHandle listHandle, IntPtr targetIndex, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_nullable_timestamp_ticks(ListHandle listHandle, IntPtr targetIndex, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -121,6 +133,13 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_nullable_double(ListHandle listHandle, IntPtr link_ndx, out double retVal, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int64 get_timestamp_ticks(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_timestamp_ticks(ListHandle listHandle, IntPtr link_ndx, out Int64 retVal, out NativeException ex);
+
             #endregion
 
             #region find
@@ -151,6 +170,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_nullable_double", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_nullable_double(ListHandle listHandle, double value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_timestamp_ticks(ListHandle listHandle, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_nullable_timestamp_ticks(ListHandle listHandle, Int64 value, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -264,6 +289,20 @@ namespace Realms
             return hasValue ? value : (double?)null;
         }
 
+        public DateTimeOffset GetDateTimeOffsetAtIndex(int index)
+        {
+            var ticks = NativeMethods.get_timestamp_ticks(this, (IntPtr)index, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new DateTimeOffset(ticks, TimeSpan.Zero);
+        }
+
+        public DateTimeOffset? GetNullableDateTimeOffsetAtIndex(int index)
+        {
+            var hasValue = NativeMethods.get_nullable_timestamp_ticks(this, (IntPtr)index, out var ticks, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
+        }
+
         #endregion
 
         #region Add
@@ -322,6 +361,18 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public void Add(DateTimeOffset value)
+        {
+            NativeMethods.add_timestamp_ticks(this, value.ToUniversalTime().Ticks, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Add(DateTimeOffset? value)
+        {
+            NativeMethods.add_nullable_timestamp_ticks(this, value.GetValueOrDefault().ToUniversalTime().Ticks, value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
         #endregion
 
         #region Insert
@@ -377,6 +428,18 @@ namespace Realms
         public void Insert(int targetIndex, double? value)
         {
             NativeMethods.insert_nullable_double(this, (IntPtr)targetIndex, value.GetValueOrDefault(), value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, DateTimeOffset value)
+        {
+            NativeMethods.insert_timestamp_ticks(this, (IntPtr)targetIndex, value.ToUniversalTime().Ticks, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, DateTimeOffset? value)
+        {
+            NativeMethods.insert_nullable_timestamp_ticks(this, (IntPtr)targetIndex, value.GetValueOrDefault().ToUniversalTime().Ticks, value.HasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -443,6 +506,20 @@ namespace Realms
         public int Find(double? value)
         {
             var result = NativeMethods.find_nullable_double(this, value.GetValueOrDefault(), value.HasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public int Find(DateTimeOffset value)
+        {
+            var result = NativeMethods.find_timestamp_ticks(this, value.ToUniversalTime().Ticks, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public int Find(DateTimeOffset? value)
+        {
+            var result = NativeMethods.find_nullable_timestamp_ticks(this, value.GetValueOrDefault().ToUniversalTime().Ticks, value.HasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
