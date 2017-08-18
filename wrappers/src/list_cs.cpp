@@ -44,12 +44,6 @@ inline void insert(List* list, size_t list_ndx, T value, NativeException::Marsha
 }
 
 template<typename T>
-inline void insert_nullable(List* list, size_t list_ndx, T value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, has_value ? Optional<T>(value) : Optional<T>(none), ex);
-}
-
-template<typename T>
 inline T get(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -62,23 +56,6 @@ inline T get(List* list, size_t ndx, NativeException::Marshallable& ex)
 }
 
 template<typename T>
-inline bool get_nullable(List* list, size_t ndx, T& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        const size_t count = list->size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-        
-        Optional<T> result = list->get<Optional<T>>(ndx);
-        if (!result)
-            return false;
-        
-        ret_value = result.value();
-        return true;
-    });
-}
-
-template<typename T>
 inline void add(List* list, T value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -87,27 +64,10 @@ inline void add(List* list, T value, NativeException::Marshallable& ex)
 }
 
 template<typename T>
-inline void add_nullable(List* list, T value, bool has_value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        list->add(has_value ? Optional<T>(value) : Optional<T>(none));
-    });
-}
-
-template<typename T>
 inline size_t find(List* list, T value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return list->find(value);
-    });
-}
-
-template<typename T>
-inline size_t find_nullable(List* list, T value, bool has_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto optional = has_value ? Optional<T>(value) : Optional<T>(none);
-        return list->find(optional);
     });
 }
 
@@ -126,17 +86,10 @@ struct PrimitiveValue
 
 extern "C" {
   
-REALM_EXPORT void list_add(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         list->add(object_ptr.row());
-    });
-}
-    
-REALM_EXPORT void list_add_nullable_bool(List* list, bool value, bool has_value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        list->add(has_value ? Optional<bool>(value) : Optional<bool>(none));
     });
 }
     
@@ -150,50 +103,34 @@ REALM_EXPORT void list_add_primitive(List* list, PrimitiveValue value, NativeExc
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
                 list->add(value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
                 break;
-            default:
+            case realm::PropertyType::Int:
+                list->add(value.value.int_value);
                 break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable:
+                list->add(value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                break;
+            case realm::PropertyType::Float:
+                list->add(value.value.float_value);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable:
+                list->add(value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                break;
+            case realm::PropertyType::Double:
+                list->add(value.value.double_value);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable:
+                list->add(value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                break;
+            case realm::PropertyType::Date:
+                list->add(from_ticks(value.value.int_value));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable:
+                list->add(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            default:
+                REALM_UNREACHABLE();
         }
     });
-}
-
-REALM_EXPORT void list_add_nullable_int64(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    add_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT void list_add_int64(List* list, int64_t value, NativeException::Marshallable& ex)
-{
-    add(list, value, ex);
-}
-
-REALM_EXPORT void list_add_nullable_float(List* list, float value, bool has_value, NativeException::Marshallable& ex)
-{
-    add_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT void list_add_float(List* list, float value, NativeException::Marshallable& ex)
-{
-    add(list, value, ex);
-}
-
-REALM_EXPORT void list_add_nullable_double(List* list, double value, bool has_value, NativeException::Marshallable& ex)
-{
-    add_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT void list_add_double(List* list, double value, NativeException::Marshallable& ex)
-{
-    add(list, value, ex);
-}
-    
-REALM_EXPORT void list_add_nullable_timestamp_ticks(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    add(list, has_value ? from_ticks(value) : Timestamp(), ex);
-}
-
-REALM_EXPORT void list_add_timestamp_ticks(List* list, int64_t value, NativeException::Marshallable& ex)
-{
-    add(list, from_ticks(value), ex);
 }
     
 REALM_EXPORT void list_add_string(List* list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
@@ -207,7 +144,7 @@ REALM_EXPORT void list_add_string(List* list, uint16_t* value, size_t value_len,
     }
 }
 
-REALM_EXPORT void list_insert(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_object(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     insert(list, list_ndx, object_ptr.row(), ex);
 }
@@ -222,54 +159,34 @@ REALM_EXPORT void list_insert_primitive(List* list, size_t list_ndx, PrimitiveVa
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
                 list->insert(list_ndx, value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
                 break;
-            default:
+            case realm::PropertyType::Int:
+                list->insert(list_ndx, value.value.int_value);
                 break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable:
+                list->insert(list_ndx, value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                break;
+            case realm::PropertyType::Float:
+                list->insert(list_ndx, value.value.float_value);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable:
+                list->insert(list_ndx, value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                break;
+            case realm::PropertyType::Double:
+                list->insert(list_ndx, value.value.double_value);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable:
+                list->insert(list_ndx, value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                break;
+            case realm::PropertyType::Date:
+                list->insert(list_ndx, from_ticks(value.value.int_value));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable:
+                list->insert(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            default:
+                REALM_UNREACHABLE();
         }
-    });}
-
-REALM_EXPORT void list_insert_nullable_bool(List* list, size_t list_ndx, bool value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert_nullable(list, list_ndx, value, has_value, ex);
-}
-
-REALM_EXPORT void list_insert_nullable_int64(List* list, size_t list_ndx, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert_nullable(list, list_ndx, value, has_value, ex);
-}
-
-REALM_EXPORT void list_insert_int64(List* list, size_t list_ndx, int64_t value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, value, ex);
-}
-
-REALM_EXPORT void list_insert_nullable_float(List* list, size_t list_ndx, float value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert_nullable(list, list_ndx, value, has_value, ex);
-}
-
-REALM_EXPORT void list_insert_float(List* list, size_t list_ndx, float value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, value, ex);
-}
-
-REALM_EXPORT void list_insert_nullable_double(List* list, size_t list_ndx, double value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert_nullable(list, list_ndx, value, has_value, ex);
-}
-
-REALM_EXPORT void list_insert_double(List* list, size_t list_ndx, double value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, value, ex);
-}
-    
-REALM_EXPORT void list_insert_nullable_timestamp_ticks(List* list, size_t list_ndx, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, has_value ? from_ticks(value) : Timestamp(), ex);
-}
-
-REALM_EXPORT void list_insert_timestamp_ticks(List* list, size_t list_ndx, int64_t value, NativeException::Marshallable& ex)
-{
-    insert(list, list_ndx, from_ticks(value), ex);
+    });
 }
 
 REALM_EXPORT void list_insert_string(List* list, size_t list_ndx, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
@@ -283,7 +200,7 @@ REALM_EXPORT void list_insert_string(List* list, size_t list_ndx, uint16_t* valu
     }
 }
     
-REALM_EXPORT Object* list_get(List* list, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* list_get_object(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
         const size_t count = list->size();
@@ -294,64 +211,63 @@ REALM_EXPORT Object* list_get(List* list, size_t ndx, NativeException::Marshalla
     });
 }
     
-REALM_EXPORT bool list_get_bool(List* list, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void list_get_primitive(List* list, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
-    return get<bool>(list, ndx, ex);
-}
-    
-REALM_EXPORT bool list_get_nullable_bool(List* list, size_t ndx, bool& ret_value, NativeException::Marshallable& ex)
-{
-    return get_nullable<bool>(list, ndx, ret_value, ex);
-}
-
-REALM_EXPORT int64_t list_get_int64(List* list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return get<int64_t>(list, ndx, ex);
-}
-
-REALM_EXPORT bool list_get_nullable_int64(List* list, size_t ndx, int64_t& ret_value, NativeException::Marshallable& ex)
-{
-    return get_nullable<int64_t>(list, ndx, ret_value, ex);
-}
-
-REALM_EXPORT float list_get_float(List* list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return get<float>(list, ndx, ex);
-}
-
-REALM_EXPORT bool list_get_nullable_float(List* list, size_t ndx, float& ret_value, NativeException::Marshallable& ex)
-{
-    return get_nullable<float>(list, ndx, ret_value, ex);
-}
-
-REALM_EXPORT double list_get_double(List* list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return get<double>(list, ndx, ex);
-}
-
-REALM_EXPORT bool list_get_nullable_double(List* list, size_t ndx, double& ret_value, NativeException::Marshallable& ex)
-{
-    return get_nullable<double>(list, ndx, ret_value, ex);
-}
-    
-REALM_EXPORT int64_t list_get_timestamp_ticks(List* list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return to_ticks(get<Timestamp>(list, ndx, ex));
-}
-
-REALM_EXPORT bool list_get_nullable_timestamp_ticks(List* list, size_t ndx, int64_t& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
+    handle_errors(ex, [&]() {
         const size_t count = list->size();
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-        
-        Timestamp result = list->get<Timestamp>(ndx);
-        if (result.is_null())
-            return false;
-        
-        ret_value = to_ticks(result);
-        return true;
+
+        value.has_value = true;
+        switch (value.type) {
+            case realm::PropertyType::Bool:
+                value.value.bool_value = list->get<bool>(ndx);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
+                auto result = list->get<Optional<bool>>(ndx);
+                value.has_value = !!result;
+                value.value.bool_value = result.value_or(false);
+                break;
+            }
+            case realm::PropertyType::Int:
+                value.value.int_value = list->get<int64_t>(ndx);
+                break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable: {
+                auto result = list->get<Optional<int64_t>>(ndx);
+                value.has_value = !!result;
+                value.value.int_value = result.value_or(0);
+                break;
+            }
+            case realm::PropertyType::Float:
+                value.value.float_value = list->get<float>(ndx);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable: {
+                auto result = list->get<Optional<float>>(ndx);
+                value.has_value = !!result;
+                value.value.float_value = result.value_or((float)0);
+                break;
+            }
+            case realm::PropertyType::Double:
+                value.value.double_value = list->get<double>(ndx);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable: {
+                auto result = list->get<Optional<double>>(ndx);
+                value.has_value = !!result;
+                value.value.double_value = result.value_or((double)0);
+                break;
+            }
+            case realm::PropertyType::Date:
+                value.value.int_value = to_ticks(list->get<Timestamp>(ndx));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable: {
+                auto result = list->get<Timestamp>(ndx);
+                value.has_value = !result.is_null();
+                value.value.int_value = result.is_null() ? 0 : to_ticks(result);
+                break;
+            }
+            default:
+                REALM_UNREACHABLE();
+        }
     });
 }
     
@@ -366,61 +282,41 @@ REALM_EXPORT size_t list_get_string(List* list, size_t ndx, uint16_t* value, siz
     return stringdata_to_csharpstringbuffer(result, value, value_len);
 }
     
-REALM_EXPORT size_t list_find(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return list->find(object_ptr.row());
     });
 }
-
-REALM_EXPORT size_t list_find_bool(List* list, bool value, NativeException::Marshallable& ex)
-{
-    return find(list, value, ex);
-}
     
-REALM_EXPORT size_t list_find_nullable_bool(List* list, bool value, bool has_value, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_primitive(List* list, PrimitiveValue value, NativeException::Marshallable& ex)
 {
-    return find_nullable(list, value, has_value, ex);
-}
-    
-REALM_EXPORT size_t list_find_int64(List* list, int64_t value, NativeException::Marshallable& ex)
-{
-    return find(list, value, ex);
-}
-
-REALM_EXPORT size_t list_find_nullable_int64(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    return find_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT size_t list_find_float(List* list, float value, NativeException::Marshallable& ex)
-{
-    return find(list, value, ex);
-}
-
-REALM_EXPORT size_t list_find_nullable_float(List* list, float value, bool has_value, NativeException::Marshallable& ex)
-{
-    return find_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT size_t list_find_double(List* list, double value, NativeException::Marshallable& ex)
-{
-    return find(list, value, ex);
-}
-
-REALM_EXPORT size_t list_find_nullable_double(List* list, double value, bool has_value, NativeException::Marshallable& ex)
-{
-    return find_nullable(list, value, has_value, ex);
-}
-
-REALM_EXPORT size_t list_find_timestamp_ticks(List* list, int64_t value, NativeException::Marshallable& ex)
-{
-    return find(list, from_ticks(value), ex);
-}
-
-REALM_EXPORT size_t list_find_nullable_timestamp_ticks(List* list, int64_t value, bool has_value, NativeException::Marshallable& ex)
-{
-    return find(list, has_value ? from_ticks(value) : Timestamp(), ex);
+    return handle_errors(ex, [&]() {
+        switch (value.type) {
+            case realm::PropertyType::Bool:
+                return list->find(value.value.bool_value);
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+                return list->find(value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+            case realm::PropertyType::Int:
+                return list->find(value.value.int_value);
+            case realm::PropertyType::Int | realm::PropertyType::Nullable:
+                return list->find(value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+            case realm::PropertyType::Float:
+                return list->find(value.value.float_value);
+            case realm::PropertyType::Float | realm::PropertyType::Nullable:
+                return list->find(value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+            case realm::PropertyType::Double:
+                return list->find(value.value.double_value);
+            case realm::PropertyType::Double | realm::PropertyType::Nullable:
+                return list->find(value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+            case realm::PropertyType::Date:
+                return list->find(from_ticks(value.value.int_value));
+            case realm::PropertyType::Date | realm::PropertyType::Nullable:
+                return list->find(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+            default:
+                REALM_UNREACHABLE();
+        }
+    });
 }
     
 REALM_EXPORT size_t list_find_string(List* list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)

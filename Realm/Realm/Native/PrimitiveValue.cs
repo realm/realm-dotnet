@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Native
@@ -35,121 +36,103 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.I1)]
         internal bool has_value;
 
-        [FieldOffset(2)]
+        [FieldOffset(8)]
         [MarshalAs(UnmanagedType.I1)]
         internal bool bool_value;
 
-        [FieldOffset(2)]
+        [FieldOffset(8)]
         internal long int_value;
 
-        [FieldOffset(2)]
+        [FieldOffset(8)]
         internal float float_value;
 
-        [FieldOffset(2)]
+        [FieldOffset(8)]
         internal double double_value;
 
-        public static PrimitiveValue Create(bool value)
+        public static PrimitiveValue Create<T>(T value, PropertyType type)
         {
-            return new PrimitiveValue
+            var result = new PrimitiveValue
             {
-                bool_value = value,
-                has_value = true,
-                type = PropertyType.Bool
+                type = type,
+                has_value = true
             };
+
+            switch (type)
+            {
+                case PropertyType.Bool:
+                    result.bool_value = Operator.Convert<T, bool>(value);
+                    break;
+                case PropertyType.Bool | PropertyType.Nullable:
+                    var boolValue = Operator.Convert<T, bool?>(value);
+                    result.has_value = boolValue.HasValue;
+                    result.bool_value = boolValue.GetValueOrDefault();
+                    break;
+                case PropertyType.Int:
+                    result.int_value = Operator.Convert<T, long>(value);
+                    break;
+                case PropertyType.Int | PropertyType.Nullable:
+                    var longValue = Operator.Convert<T, long?>(value);
+                    result.has_value = longValue.HasValue;
+                    result.int_value = longValue.GetValueOrDefault();
+                    break;
+                case PropertyType.Float:
+                    result.float_value = Operator.Convert<T, float>(value);
+                    break;
+                case PropertyType.Float | PropertyType.Nullable:
+                    var floatValue = Operator.Convert<T, float?>(value);
+                    result.has_value = floatValue.HasValue;
+                    result.float_value = floatValue.GetValueOrDefault();
+                    break;
+                case PropertyType.Double:
+                    result.double_value = Operator.Convert<T, double>(value);
+                    break;
+                case PropertyType.Double | PropertyType.Nullable:
+                    var doubleValue = Operator.Convert<T, double?>(value);
+                    result.has_value = doubleValue.HasValue;
+                    result.double_value = doubleValue.GetValueOrDefault();
+                    break;
+                case PropertyType.Date:
+                    result.int_value = Operator.Convert<T, DateTimeOffset>(value).ToUniversalTime().Ticks;
+                    break;
+                case PropertyType.Date | PropertyType.Nullable:
+                    var dateValue = Operator.Convert<T, DateTimeOffset?>(value);
+                    result.has_value = dateValue.HasValue;
+                    result.int_value = dateValue.GetValueOrDefault().ToUniversalTime().Ticks;
+                    break;
+                default:
+                    throw new NotSupportedException($"PrimitiveType {type} is not supported.");
+            }
+
+            return result;
         }
 
-        public static PrimitiveValue Create(bool? value)
+        public T Get<T>()
         {
-            return new PrimitiveValue
+            switch (type)
             {
-                bool_value = value.GetValueOrDefault(),
-                has_value = value.HasValue,
-                type = PropertyType.Bool | PropertyType.Nullable
-            };
-        }
-
-        public static PrimitiveValue Create(long value)
-        {
-            return new PrimitiveValue
-            {
-                int_value = value,
-                has_value = true,
-                type = PropertyType.Int
-            };
-        }
-
-
-        public static PrimitiveValue Create(long? value)
-        {
-            return new PrimitiveValue
-            {
-                int_value = value.GetValueOrDefault(),
-                has_value = value.HasValue,
-                type = PropertyType.Int | PropertyType.Nullable
-            };
-        }
-
-        public static PrimitiveValue Create(float value)
-        {
-            return new PrimitiveValue
-            {
-                float_value = value,
-                has_value = true,
-                type = PropertyType.Float
-            };
-        }
-
-
-        public static PrimitiveValue Create(float? value)
-        {
-            return new PrimitiveValue
-            {
-                float_value = value.GetValueOrDefault(),
-                has_value = value.HasValue,
-                type = PropertyType.Float | PropertyType.Nullable
-            };
-        }
-
-        public static PrimitiveValue Create(double value)
-        {
-            return new PrimitiveValue
-            {
-                double_value = value,
-                has_value = true,
-                type = PropertyType.Double
-            };
-        }
-
-
-        public static PrimitiveValue Create(double? value)
-        {
-            return new PrimitiveValue
-            {
-                double_value = value.GetValueOrDefault(),
-                has_value = value.HasValue,
-                type = PropertyType.Double | PropertyType.Nullable
-            };
-        }
-
-        public static PrimitiveValue Create(DateTimeOffset value)
-        {
-            return new PrimitiveValue
-            {
-                int_value = value.ToUniversalTime().Ticks,
-                has_value = true,
-                type = PropertyType.Date
-            };
-        }
-
-
-        public static PrimitiveValue Create(DateTimeOffset? value)
-        {
-            return new PrimitiveValue
-            {
-                int_value = value.GetValueOrDefault().ToUniversalTime().Ticks,
-                has_value = value.HasValue,
-                type = PropertyType.Date | PropertyType.Nullable
-            };
+                case PropertyType.Bool:
+                    return Operator.Convert<bool, T>(bool_value);
+                case PropertyType.Bool | PropertyType.Nullable:
+                    return Operator.Convert<bool?, T>(has_value ? bool_value : (bool?)null);
+                case PropertyType.Int:
+                    return Operator.Convert<long, T>(int_value);
+                case PropertyType.Int | PropertyType.Nullable:
+                    return Operator.Convert<long?, T>(has_value ? int_value : (long?)null);
+                case PropertyType.Float:
+                    return Operator.Convert<float, T>(float_value);
+                case PropertyType.Float | PropertyType.Nullable:
+                    return Operator.Convert<float?, T>(has_value ? float_value : (float?)null);
+                case PropertyType.Double:
+                    return Operator.Convert<double, T>(double_value);
+                case PropertyType.Double | PropertyType.Nullable:
+                    return Operator.Convert<double?, T>(has_value ? double_value : (double?)null);
+                case PropertyType.Date:
+                    return Operator.Convert<DateTimeOffset, T>(new DateTimeOffset(int_value, TimeSpan.Zero));
+                case PropertyType.Date | PropertyType.Nullable:
+                    return Operator.Convert<DateTimeOffset?, T>(has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null);
+                default:
+                    throw new NotSupportedException($"PrimitiveType {type} is not supported.");
+            }
         }
     }
 }

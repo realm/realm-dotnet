@@ -85,31 +85,11 @@ namespace Realms
             {
                 case PropertyType.Object | PropertyType.Nullable:
                     return base.GetAtIndex(index);
-                case PropertyType.Bool:
-                    return Operator.Convert<bool, T>(_listHandle.GetBoolAtIndex(index));
-                case PropertyType.Bool | PropertyType.Nullable:
-                    return Operator.Convert<bool?, T>(_listHandle.GetNullableBoolAtIndex(index));
-                case PropertyType.Int:
-                    return Operator.Convert<long, T>(_listHandle.GetInt64AtIndex(index));
-                case PropertyType.Int | PropertyType.Nullable:
-                    return Operator.Convert<long?, T>(_listHandle.GetNullableInt64AtIndex(index));
-                case PropertyType.Float:
-                    return Operator.Convert<float, T>(_listHandle.GetFloatAtIndex(index));
-                case PropertyType.Float | PropertyType.Nullable:
-                    return Operator.Convert<float?, T>(_listHandle.GetNullableFloatAtIndex(index));
-                case PropertyType.Double:
-                    return Operator.Convert<double, T>(_listHandle.GetDoubleAtIndex(index));
-                case PropertyType.Double | PropertyType.Nullable:
-                    return Operator.Convert<double?, T>(_listHandle.GetNullableDoubleAtIndex(index));
-                case PropertyType.Date:
-                    return Operator.Convert<DateTimeOffset, T>(_listHandle.GetDateTimeOffsetAtIndex(index));
-                case PropertyType.Date | PropertyType.Nullable:
-                    return Operator.Convert<DateTimeOffset?, T>(_listHandle.GetNullableDateTimeOffsetAtIndex(index));
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     return Operator.Convert<string, T>(_listHandle.GetStringAtIndex(index));
                 default:
-                    throw new NotImplementedException("");
+                    return _listHandle.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
             }
         }
 
@@ -124,15 +104,6 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add);
         }
@@ -190,31 +161,11 @@ namespace Realms
                     }
 
                     return _listHandle.Find(obj.ObjectHandle);
-                case PropertyType.Bool:
-                    return _listHandle.Find(Operator.Convert<T, bool>(item));
-                case PropertyType.Bool | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, bool?>(item));
-                case PropertyType.Int:
-                    return _listHandle.Find(Operator.Convert<T, long>(item));
-                case PropertyType.Int | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, long?>(item));
-                case PropertyType.Float:
-                    return _listHandle.Find(Operator.Convert<T, float>(item));
-                case PropertyType.Float | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, float?>(item));
-                case PropertyType.Double:
-                    return _listHandle.Find(Operator.Convert<T, double>(item));
-                case PropertyType.Double | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, double?>(item));
-                case PropertyType.Date:
-                    return _listHandle.Find(Operator.Convert<T, DateTimeOffset>(item));
-                case PropertyType.Date | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, DateTimeOffset?>(item));
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, string>(item));
                 default:
-                    throw new NotImplementedException("");
+                    return _listHandle.Find(PrimitiveValue.Create(item, _argumentType));
             }
         }
 
@@ -232,15 +183,6 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value));
         }
@@ -301,15 +243,6 @@ namespace Realms
         private static void Execute(T item,
             Action<RealmObject> objectHandler,
             Action<PrimitiveValue> primitiveHandler,
-            Action<bool?> nullableBoolHandler,
-            Action<long> intHandler,
-            Action<long?> nullableIntHandler,
-            Action<float> floatHandler,
-            Action<float?> nullableFloatHandler,
-            Action<double> doubleHandler,
-            Action<double?> nullableDoubleHandler,
-            Action<DateTimeOffset> dateHandler,
-            Action<DateTimeOffset?> nullableDateHandler,
             Action<string> stringHandler)
         {
             switch (_argumentType)
@@ -317,42 +250,13 @@ namespace Realms
                 case PropertyType.Object | PropertyType.Nullable:
                     objectHandler(Operator.Convert<T, RealmObject>(item));
                     break;
-                case PropertyType.Bool:
-                    primitiveHandler(PrimitiveValue.Create(Operator.Convert<T, bool>(item)));
-                    break;
-                case PropertyType.Bool | PropertyType.Nullable:
-                    nullableBoolHandler(Operator.Convert<T, bool?>(item));
-                    break;
-                case PropertyType.Int:
-                    intHandler(Operator.Convert<T, long>(item));
-                    break;
-                case PropertyType.Int | PropertyType.Nullable:
-                    nullableIntHandler(Operator.Convert<T, long?>(item));
-                    break;
-                case PropertyType.Float:
-                    floatHandler(Operator.Convert<T, float>(item));
-                    break;
-                case PropertyType.Float | PropertyType.Nullable:
-                    nullableFloatHandler(Operator.Convert<T, float?>(item));
-                    break;
-                case PropertyType.Double:
-                    doubleHandler(Operator.Convert<T, double>(item));
-                    break;
-                case PropertyType.Double | PropertyType.Nullable:
-                    nullableDoubleHandler(Operator.Convert<T, double?>(item));
-                    break;
-                case PropertyType.Date:
-                    dateHandler(Operator.Convert<T, DateTimeOffset>(item));
-                    break;
-                case PropertyType.Date | PropertyType.Nullable:
-                    nullableDateHandler(Operator.Convert<T, DateTimeOffset?>(item));
-                    break;
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     stringHandler(Operator.Convert<T, string>(item));
                     break;
                 default:
-                    throw new NotImplementedException("");
+                    primitiveHandler(PrimitiveValue.Create(item, _argumentType));
+                    break;
             }
         }
     }
