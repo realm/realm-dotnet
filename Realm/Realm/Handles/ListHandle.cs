@@ -71,7 +71,7 @@ namespace Realms
 
             #region find
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_primitive", CallingConvention = CallingConvention.Cdecl)]
