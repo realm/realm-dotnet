@@ -9,16 +9,16 @@ REALM_ENABLE_SYNC ?= 1
 ifeq ($(REALM_ENABLE_SYNC),1)
 	APPLE_PREPROCESSOR_DEFINITIONS="REALM_ENABLE_SYNC=true"
 	WRAPPERS_XCODE_TARGET=wrappers-sync
-	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(REALM_SYNC_VERSION).tar.xz
+	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(REALM_SYNC_VERSION).tar.gz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/sync/$(APPLE_BUNDLE_NAME)"
 	ANDROID_BUNDLE_NAME=realm-sync-android-$(REALM_SYNC_VERSION).tar.gz
 	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/sync/$(ANDROID_BUNDLE_NAME)"
 else
 	APPLE_PREPROCESSOR_DEFINITIONS=""
 	WRAPPERS_XCODE_TARGET=wrappers
-	APPLE_BUNDLE_NAME=realm-core-$(REALM_CORE_VERSION).tar.xz
+	APPLE_BUNDLE_NAME=realm-core-cocoa-v$(REALM_CORE_VERSION).tar.xz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/core/$(APPLE_BUNDLE_NAME)"
-	ANDROID_BUNDLE_NAME=realm-core-android-$(REALM_CORE_VERSION).tar.gz
+	ANDROID_BUNDLE_NAME=realm-core-android-v$(REALM_CORE_VERSION).tar.gz
 	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/core/$(ANDROID_BUNDLE_NAME)"
 endif
 
