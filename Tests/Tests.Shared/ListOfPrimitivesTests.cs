@@ -469,9 +469,13 @@ namespace Tests.Database
                 });
 
                 // Test notifications
-                _realm.Refresh();
-                // TODO: verify notifications
-                notifications.Clear();
+                if (toAdd.Any())
+                {
+                    VerifyNotifications(notifications, () =>
+                    {
+                        Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, toAdd.Length)));
+                    });
+                }
 
                 // Test iterating
                 var iterator = 0;
@@ -516,10 +520,14 @@ namespace Tests.Database
                         items.Insert(items.Count, toInsert);
                     });
 
-                    // TODO: notifications
-
                     Assert.That(items.First(), Is.EqualTo(toInsert));
                     Assert.That(items.Last(), Is.EqualTo(toInsert));
+
+                    // Test notifications
+                    VerifyNotifications(notifications, () =>
+                    {
+                        Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(new[] { 0, items.Count - 1 }));
+                    });
 
                     // Test remove
                     _realm.Write(() =>
@@ -530,7 +538,11 @@ namespace Tests.Database
 
                     CollectionAssert.AreEqual(items, toAdd);
 
-                    // TODO: notifications
+                    // Test notifications
+                    VerifyNotifications(notifications, () =>
+                    {
+                        Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
+                    });
 
                     // Test move
                     var from = TestHelpers.Random.Next(0, items.Count);
@@ -543,7 +555,27 @@ namespace Tests.Database
 
                     Assert.That(items[to], Is.EqualTo(toAdd[from]));
 
-                    // TODO: notifications
+                    // Test notifications
+                    if (from != to)
+                    {
+                        VerifyNotifications(notifications, () =>
+                        {
+                            Assert.That(notifications[0].Moves.Length, Is.EqualTo(1));
+                            var move = notifications[0].Moves[0];
+
+                            // Moves may be reported with swapped from/to arguments if the elements are adjacent
+                            if (move.From == to)
+                            {
+                                Assert.That(move.From, Is.EqualTo(to));
+                                Assert.That(move.To, Is.EqualTo(from));
+                            }
+                            else
+                            {
+                                Assert.That(move.From, Is.EqualTo(from));
+                                Assert.That(move.To, Is.EqualTo(to));
+                            }
+                        });
+                    }
                 }
 
                 // Test Clear
@@ -552,10 +584,27 @@ namespace Tests.Database
                     items.Clear();
                 });
 
-                // TODO: notifications
-
                 Assert.That(items, Is.Empty);
+
+                // Test notifications
+                // TODO: _realm.Refresh() deadlocks
+                if (toAdd.Any() && false)
+                {
+                    VerifyNotifications(notifications, () =>
+                    {
+                    });
+                }
+
+                token.Dispose();
             });
+        }
+
+        private void VerifyNotifications(List<ChangeSet> notifications, Action verifier)
+        {
+            _realm.Refresh();
+            Assert.That(notifications.Count, Is.EqualTo(1));
+            verifier();
+            notifications.Clear();
         }
 
         #endregion

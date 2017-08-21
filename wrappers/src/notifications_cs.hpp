@@ -51,7 +51,9 @@ namespace realm {
     };
     
     inline size_t get_property_index(const ObjectSchema* schema, const size_t column_index) {
-        REALM_ASSERT(schema != nullptr);
+        if (!schema)
+            return 0;
+        
         auto const& props = schema->persisted_properties;
         for (size_t i = 0; i < props.size(); ++i) {
             if (props[i].table_column == column_index) {
