@@ -37,10 +37,6 @@ if(REALM_ENABLE_SYNC)
     )
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
-    list(APPEND SOURCES win32_polyfill.cpp)
-endif()
-
 set(INCLUDE_DIRS
     ${REALM_CORE_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
