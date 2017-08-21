@@ -19,6 +19,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -386,6 +388,22 @@ namespace Tests.Database
             {
                 Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
             }
+
+            var reference = ThreadSafeReference.Create(items);
+            AsyncContext.Run(() =>
+            {
+                Task.Run(() =>
+                {
+                    using (var realm = Realm.GetInstance(_realm.Config))
+                    {
+                        var backgroundList = realm.ResolveReference(reference);
+                        for (var i = 0; i < backgroundList.Count; i++)
+                        {
+                            Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
+                        }
+                    }
+                });
+            });
 
             if (toAdd.Any())
             {
