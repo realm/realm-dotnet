@@ -78,7 +78,7 @@ namespace Realms
         /// <summary>
         /// A convenience method that casts <see cref="IList{T}" /> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
-        /// <param name="results">The <see cref="IList{T}" /> to observe for changes.</param>
+        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the objects in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
@@ -86,7 +86,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IList<T> results, NotificationCallbackDelegate<T> callback)
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

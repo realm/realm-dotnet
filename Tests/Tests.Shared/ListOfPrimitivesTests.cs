@@ -443,42 +443,57 @@ namespace Tests.Database
 
         private void SmokeTest<T>(IList<T> items, T[] toAdd)
         {
-            if (toAdd == null)
-            {
-                toAdd = new T[0];
-            }
-
-            // Test add
-            _realm.Write(() =>
-            {
-                foreach (var item in toAdd)
-                {
-                    items.Add(item);
-                }
-            });
-
-            // Test iterating
-            var iterator = 0;
-            foreach (var item in items)
-            {
-                Assert.That(item, Is.EqualTo(toAdd[iterator++]));
-            }
-
-            // Test access by index
-            for (var i = 0; i < items.Count; i++)
-            {
-                Assert.That(items[i], Is.EqualTo(toAdd[i]));
-            }
-
-            // Test indexOf
-            foreach (var item in toAdd)
-            {
-                Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
-            }
-
-            var reference = ThreadSafeReference.Create(items);
             AsyncContext.Run(async () =>
             {
+                if (toAdd == null)
+                {
+                    toAdd = new T[0];
+                }
+
+                var notifications = new List<ChangeSet>();
+                var token = items.SubscribeForNotifications((sender, changes, error) =>
+                {
+                    if (changes != null)
+                    {
+                        notifications.Add(changes);
+                    }
+                });
+
+                // Test add
+                _realm.Write(() =>
+                {
+                    foreach (var item in toAdd)
+                    {
+                        items.Add(item);
+                    }
+                });
+
+                // Test notifications
+                _realm.Refresh();
+                // TODO: verify notifications
+                notifications.Clear();
+
+                // Test iterating
+                var iterator = 0;
+                foreach (var item in items)
+                {
+                    Assert.That(item, Is.EqualTo(toAdd[iterator++]));
+                }
+
+                // Test access by index
+                for (var i = 0; i < items.Count; i++)
+                {
+                    Assert.That(items[i], Is.EqualTo(toAdd[i]));
+                }
+
+                // Test indexOf
+                foreach (var item in toAdd)
+                {
+                    Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
+                }
+
+                // Test threadsafe reference
+                var reference = ThreadSafeReference.Create(items);
                 await Task.Run(() =>
                 {
                     using (var realm = Realm.GetInstance(_realm.Config))
@@ -490,49 +505,57 @@ namespace Tests.Database
                         }
                     }
                 });
+
+                if (toAdd.Any())
+                {
+                    // Test insert
+                    var toInsert = toAdd[_random.Next(0, toAdd.Length)];
+                    _realm.Write(() =>
+                    {
+                        items.Insert(0, toInsert);
+                        items.Insert(items.Count, toInsert);
+                    });
+
+                    // TODO: notifications
+
+                    Assert.That(items.First(), Is.EqualTo(toInsert));
+                    Assert.That(items.Last(), Is.EqualTo(toInsert));
+
+                    // Test remove
+                    _realm.Write(() =>
+                    {
+                        items.Remove(toInsert);
+                        items.RemoveAt(items.Count - 1);
+                    });
+
+                    CollectionAssert.AreEqual(items, toAdd);
+
+                    // TODO: notifications
+
+                    // Test move
+                    var from = TestHelpers.Random.Next(0, items.Count);
+                    var to = TestHelpers.Random.Next(0, items.Count);
+
+                    _realm.Write(() =>
+                    {
+                        items.Move(from, to);
+                    });
+
+                    Assert.That(items[to], Is.EqualTo(toAdd[from]));
+
+                    // TODO: notifications
+                }
+
+                // Test Clear
+                _realm.Write(() =>
+                {
+                    items.Clear();
+                });
+
+                // TODO: notifications
+
+                Assert.That(items, Is.Empty);
             });
-
-            if (toAdd.Any())
-            {
-                // Test insert
-                var toInsert = toAdd[_random.Next(0, toAdd.Length)];
-                _realm.Write(() =>
-                {
-                    items.Insert(0, toInsert);
-                    items.Insert(items.Count, toInsert);
-                });
-
-                Assert.That(items.First(), Is.EqualTo(toInsert));
-                Assert.That(items.Last(), Is.EqualTo(toInsert));
-
-                // Test remove
-                _realm.Write(() =>
-                {
-                    items.Remove(toInsert);
-                    items.RemoveAt(items.Count - 1);
-                });
-
-                CollectionAssert.AreEqual(items, toAdd);
-
-                // Test move
-                var from = TestHelpers.Random.Next(0, items.Count);
-                var to = TestHelpers.Random.Next(0, items.Count);
-
-                _realm.Write(() =>
-                {
-                    items.Move(from, to);
-                });
-
-                Assert.That(items[to], Is.EqualTo(toAdd[from]));
-            }
-
-            // Test Clear
-            _realm.Write(() =>
-            {
-                items.Clear();
-            });
-
-            Assert.That(items, Is.Empty);
         }
 
         #endregion
