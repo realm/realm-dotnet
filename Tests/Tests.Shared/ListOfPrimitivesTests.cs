@@ -43,26 +43,253 @@ namespace Tests.Database
             });
         }
 
-        public static object[] BooleanTestValues =
+        #region TestCaseSources
+
+        private static readonly IEnumerable<bool?[]> _booleanValues = new[]
         {
-            new object[] { null },
-            new object[] { new[] { true } },
-            new object[] { new[] { true, true, false } },
+            new bool?[] { true },
+            new bool?[] { null },
+            new bool?[] { true, true, null, false },
         };
+
+        public static IEnumerable<object> BooleanTestValues()
+        {
+            yield return new object[] { null };
+            var values = _booleanValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableBooleanTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var item in _booleanValues)
+            {
+                yield return new object[] { item };
+            }
+        }
+
+        private static readonly IEnumerable<byte?[]> _byteValues = new[]
+        {
+            new byte?[] { 0 },
+            new byte?[] { null },
+            new byte?[] { byte.MinValue, byte.MaxValue, 0 },
+            new byte?[] { 1, 2, 3, null },
+        };
+
+        public static IEnumerable<object> ByteTestValues()
+        {
+            yield return new object[] { null };
+            var values = _byteValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableByteTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _byteValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<char?[]> _charValues = new[]
+        {
+            new char?[] { 'a' },
+            new char?[] { null },
+            new char?[] { char.MinValue, char.MaxValue },
+            new char?[] { 'a', 'b', 'c', 'b', null }
+        };
+
+        public static IEnumerable<object> CharTestValues()
+        {
+            yield return new object[] { null };
+            var values = _charValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableCharTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _charValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<double?[]> _doubleValues = new[]
+        {
+            new double?[] { 1.4 },
+            new double?[] { null },
+            new double?[] { double.MinValue, double.MaxValue, 0 },
+            new double?[] { -1, 3.4, null, 5.3, 9 }
+        };
+
+        public static IEnumerable<object> DoubleTestValues()
+        {
+            yield return new object[] { null };
+            var values = _doubleValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableDoubleTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _doubleValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<short?[]> _shortValues = new[]
+        {
+            new short?[] { 1 },
+            new short?[] { null },
+            new short?[] { short.MaxValue, short.MinValue, 0 },
+            new short?[] { 3, -1, null, 45, null },
+        };
+
+        public static IEnumerable<object> Int16TestValues()
+        {
+            yield return new object[] { null };
+            var values = _shortValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableInt16TestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _shortValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<int?[]> _intValues = new[]
+        {
+            new int?[] { 1 },
+            new int?[] { null },
+            new int?[] { int.MaxValue, int.MinValue, 0 },
+            new int?[] { -5, 3, 9, null, 350 },
+        };
+
+        public static IEnumerable<object> Int32TestValues()
+        {
+            yield return new object[] { null };
+            var values = _intValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableInt32TestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _intValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<long?[]> _longValues = new[]
+        {
+            new long?[] { 1 },
+            new long?[] { null },
+            new long?[] { long.MaxValue, long.MinValue, 0 },
+            new long?[] { 4, -39, 81, null, -69324 },
+        };
+
+        public static IEnumerable<object> Int64TestValues()
+        {
+            yield return new object[] { null };
+            var values = _longValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableInt64TestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _longValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
+        {
+            new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) },
+            new DateTimeOffset?[] { null },
+            new DateTimeOffset?[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow },
+            new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) },
+        };
+
+        public static IEnumerable<object> DateTestValues()
+        {
+            yield return new object[] { null };
+            var values = _dateValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableDateTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _dateValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> StringTestValues()
+        {
+            yield return new object[] { null };
+            yield return new object[] { new string[] { string.Empty } };
+            yield return new object[] { new string[] { null } };
+            yield return new object[] { new string[] { " " } };
+            yield return new object[] { new string[] { "abc", "cdf", "az" } };
+            yield return new object[] { new string[] { "a", null, "foo", "bar", null } };
+        }
+
+        public static IEnumerable<object> ByteArrayTestValues()
+        {
+            yield return new object[] { null };
+            yield return new object[] { new byte[][] { new byte[0] } };
+            yield return new object[] { new byte[][] { null } };
+            yield return new object[] { new byte[][] { new byte[] { 0 } } };
+            yield return new object[] { new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } } };
+            yield return new object[] { new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) } };
+            yield return new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } };
+        }
+
+        #endregion
+
+        #region SmokeTests
 
         [TestCaseSource(nameof(BooleanTestValues))]
         public void Test_BooleanList(bool[] values)
         {
             SmokeTest(_listsObject.BooleanList, values);
         }
-
-        public static object[] ByteTestValues =
-        {
-            new object[] { null },
-            new object[] { new byte[] { 0 } },
-            new object[] { new byte[] { byte.MinValue, byte.MaxValue, 0 } },
-            new object[] { new byte[] { 1, 2, 3 } },
-        };
 
         [TestCaseSource(nameof(ByteTestValues))]
         public void Test_ByteCounterList(byte[] values)
@@ -76,41 +303,17 @@ namespace Tests.Database
             SmokeTest(_listsObject.ByteList, values);
         }
 
-        public static object[] CharTestValues =
-        {
-            new object[] { null },
-            new object[] { new[] { 'a' } },
-            new object[] { new[] { char.MinValue, char.MaxValue } },
-            new object[] { new[] { 'a', 'b', 'c', 'b' } }
-        };
-
         [TestCaseSource(nameof(CharTestValues))]
         public void Test_CharList(char[] values)
         {
             SmokeTest(_listsObject.CharList, values);
         }
 
-        public static object[] DoubleTestValues =
-        {
-            new object[] { null },
-            new object[] { new[] { 1.4 } },
-            new object[] { new[] { double.MinValue, double.MaxValue, 0 } },
-            new object[] { new[] { -1, 3.4, 5.3, 9 } }
-        };
-
         [TestCaseSource(nameof(DoubleTestValues))]
         public void Test_DoubleList(double[] values)
         {
             SmokeTest(_listsObject.DoubleList, values);
         }
-
-        public static object[] Int16TestValues =
-        {
-            new object[] { null },
-            new object[] { new short[] { 1 } },
-            new object[] { new short[] { short.MaxValue, short.MinValue, 0 } },
-            new object[] { new short[] { 3, -1, 45 } },
-        };
 
         [TestCaseSource(nameof(Int16TestValues))]
         public void Test_Int16CounterList(short[] values)
@@ -124,14 +327,6 @@ namespace Tests.Database
             SmokeTest(_listsObject.Int16List, values);
         }
 
-        public static object[] Int32TestValues =
-        {
-            new object[] { null },
-            new object[] { new[] { 1 } },
-            new object[] { new[] { int.MaxValue, int.MinValue, 0 } },
-            new object[] { new[] { -5, 3, 9, 350 } },
-        };
-
         [TestCaseSource(nameof(Int32TestValues))]
         public void Test_Int32CounterList(int[] values)
         {
@@ -143,14 +338,6 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.Int32List, values);
         }
-
-        public static object[] Int64TestValues =
-        {
-            new object[] { null },
-            new object[] { new[] { 1L } },
-            new object[] { new[] { long.MaxValue, long.MinValue, 0 } },
-            new object[] { new[] { 4, -39, 81L, -69324 } },
-        };
 
         [TestCaseSource(nameof(Int64TestValues))]
         public void Test_Int64CounterList(long[] values)
@@ -164,42 +351,17 @@ namespace Tests.Database
             SmokeTest(_listsObject.Int64List, values);
         }
 
-        public static object[] DateTestValues =
-        {
-            new object[] { null },
-            new object[] { new[] { DateTimeOffset.UtcNow.AddDays(-4) } },
-            new object[] { new[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow } },
-            new object[] { new[] { DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) } },
-        };
-
         [TestCaseSource(nameof(DateTestValues))]
         public void Test_DateTimeOffsetList(DateTimeOffset[] values)
         {
             SmokeTest(_listsObject.DateTimeOffsetList, values);
         }
 
-        public static object[] NullableBooleanTestValues =
-        {
-            new object[] { null },
-            new object[] { new bool?[] { true } },
-            new object[] { new bool?[] { null } },
-            new object[] { new bool?[] { true, true, null, false } },
-        };
-
         [TestCaseSource(nameof(NullableBooleanTestValues))]
         public void Test_NullableBooleanList(bool?[] values)
         {
             SmokeTest(_listsObject.NullableBooleanList, values);
         }
-
-        public static object[] NullableByteTestValues =
-        {
-            new object[] { null },
-            new object[] { new byte?[] { 0 } },
-            new object[] { new byte?[] { null } },
-            new object[] { new byte?[] { byte.MinValue, byte.MaxValue, 0 } },
-            new object[] { new byte?[] { 1, 2, 3, null } },
-        };
 
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void Test_NullableByteCounterList(byte?[] values)
@@ -213,44 +375,17 @@ namespace Tests.Database
             SmokeTest(_listsObject.NullableByteList, values);
         }
 
-        public static object[] NullableCharTestValues =
-        {
-            new object[] { null },
-            new object[] { new char?[] { 'a' } },
-            new object[] { new char?[] { null } },
-            new object[] { new char?[] { char.MinValue, char.MaxValue } },
-            new object[] { new char?[] { 'a', 'b', 'c', 'b', null } }
-        };
-
         [TestCaseSource(nameof(NullableCharTestValues))]
         public void Test_NullableCharList(char?[] values)
         {
             SmokeTest(_listsObject.NullableCharList, values);
         }
 
-        public static object[] NullableDoubleTestValues =
-        {
-            new object[] { null },
-            new object[] { new double?[] { 1.4 } },
-            new object[] { new double?[] { null } },
-            new object[] { new double?[] { double.MinValue, double.MaxValue, 0 } },
-            new object[] { new double?[] { -1, 3.4, null, 5.3, 9 } }
-        };
-
         [TestCaseSource(nameof(NullableDoubleTestValues))]
         public void Test_NullableDoubleList(double?[] values)
         {
             SmokeTest(_listsObject.NullableDoubleList, values);
         }
-
-        public static object[] NullableInt16TestValues =
-        {
-            new object[] { null },
-            new object[] { new short?[] { 1 } },
-            new object[] { new short?[] { null } },
-            new object[] { new short?[] { short.MaxValue, short.MinValue, 0 } },
-            new object[] { new short?[] { 3, -1, null, 45, null } },
-        };
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void Test_NullableInt16CounterList(short?[] values)
@@ -264,15 +399,6 @@ namespace Tests.Database
             SmokeTest(_listsObject.NullableInt16List, values);
         }
 
-        public static object[] NullableInt32TestValues =
-        {
-            new object[] { null },
-            new object[] { new int?[] { 1 } },
-            new object[] { new int?[] { null } },
-            new object[] { new int?[] { int.MaxValue, int.MinValue, 0 } },
-            new object[] { new int?[] { -5, 3, 9, null, 350 } },
-        };
-
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void Test_NullableInt32CounterList(int?[] values)
         {
@@ -284,15 +410,6 @@ namespace Tests.Database
         {
             SmokeTest(_listsObject.NullableInt32List, values);
         }
-
-        public static object[] NullableInt64TestValues =
-        {
-            new object[] { null },
-            new object[] { new long?[] { 1 } },
-            new object[] { new long?[] { null } },
-            new object[] { new long?[] { long.MaxValue, long.MinValue, 0 } },
-            new object[] { new long?[] { 4, -39, 81, null, -69324 } },
-        };
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void Test_NullableInt64CounterList(long?[] values)
@@ -306,47 +423,17 @@ namespace Tests.Database
             SmokeTest(_listsObject.NullableInt64List, values);
         }
 
-        public static object[] NullableDateTestValues =
-        {
-            new object[] { null },
-            new object[] { new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) } },
-            new object[] { new DateTimeOffset?[] { null } },
-            new object[] { new DateTimeOffset?[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow } },
-            new object[] { new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) } },
-        };
-
         [TestCaseSource(nameof(NullableDateTestValues))]
         public void Test_NullableDateTimeOffsetList(DateTimeOffset?[] values)
         {
             SmokeTest(_listsObject.NullableDateTimeOffsetList, values);
         }
 
-        public static object[] StringTestValues =
-        {
-            new object[] { null },
-            new object[] { new string[] { string.Empty } },
-            new object[] { new string[] { null } },
-            new object[] { new string[] { " " } },
-            new object[] { new string[] { "abc", "cdf", "az" } },
-            new object[] { new string[] { "a", null, "foo", "bar", null } },
-        };
-
         [TestCaseSource(nameof(StringTestValues))]
         public void Test_StringList(string[] values)
         {
             SmokeTest(_listsObject.StringList, values);
         }
-
-        public static object[] ByteArrayTestValues =
-                {
-            new object[] { null },
-            new object[] { new byte[][] { new byte[0] } },
-            new object[] { new byte[][] { null } },
-            new object[] { new byte[][] { new byte[] { 0 } } },
-            new object[] { new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } } },
-            new object[] { new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) } },
-            new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } },
-        };
 
         [TestCaseSource(nameof(ByteArrayTestValues))]
         public void Test_ByteArrayList(byte[][] values)
@@ -419,5 +506,7 @@ namespace Tests.Database
                 Assert.That(items.Last(), Is.EqualTo(toInsert));
             }
         }
+
+        #endregion
     }
 }
