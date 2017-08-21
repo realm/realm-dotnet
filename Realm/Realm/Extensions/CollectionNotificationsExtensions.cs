@@ -126,7 +126,7 @@ namespace Realms
         /// <param name="to">The new position to which the item will be moved.</param>
         /// <typeparam name="T">Type of the objects  in the list.</typeparam>
         /// <remarks>
-        /// This extension method will work for standalone lists as well by calling <see cref="ICollection{T}.RemoveAt"/>
+        /// This extension method will work for standalone lists as well by calling <see cref="IList{T}.RemoveAt"/>
         /// and then <see cref="IList{T}.Insert"/>.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>

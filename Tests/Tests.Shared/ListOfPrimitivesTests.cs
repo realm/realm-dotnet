@@ -390,9 +390,9 @@ namespace Tests.Database
             }
 
             var reference = ThreadSafeReference.Create(items);
-            AsyncContext.Run(() =>
+            AsyncContext.Run(async () =>
             {
-                Task.Run(() =>
+                await Task.Run(() =>
                 {
                     using (var realm = Realm.GetInstance(_realm.Config))
                     {

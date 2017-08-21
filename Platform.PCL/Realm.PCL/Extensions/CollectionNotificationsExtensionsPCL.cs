@@ -66,7 +66,7 @@ namespace Realms
         /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>
         /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the objetcs in the list.</typeparam>
+        /// <typeparam name="T">Type of the objects in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list)
