@@ -504,7 +504,35 @@ namespace Tests.Database
 
                 Assert.That(items.First(), Is.EqualTo(toInsert));
                 Assert.That(items.Last(), Is.EqualTo(toInsert));
+
+                // Test remove
+                _realm.Write(() =>
+                {
+                    items.Remove(toInsert);
+                    items.RemoveAt(items.Count - 1);
+                });
+
+                CollectionAssert.AreEqual(items, toAdd);
+
+                // Test move
+                var from = TestHelpers.Random.Next(0, items.Count);
+                var to = TestHelpers.Random.Next(0, items.Count);
+
+                _realm.Write(() =>
+                {
+                    items.Move(from, to);
+                });
+
+                Assert.That(items[to], Is.EqualTo(toAdd[from]));
             }
+
+            // Test Clear
+            _realm.Write(() =>
+            {
+                items.Clear();
+            });
+
+            Assert.That(items, Is.Empty);
         }
 
         #endregion
