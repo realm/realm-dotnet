@@ -928,12 +928,12 @@ namespace Realms
         /// but resolved for the current Realm for this thread.
         /// </summary>
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IList{T}"/> to resolve in this <see cref="Realm"/>.</param>
-        /// <typeparam name="T">The type of the object, contained in the collection.</typeparam>
+        /// <typeparam name="T">The type of the objects, contained in the collection.</typeparam>
         /// <returns>
         /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
         /// if the list's parent object has been deleted after the reference was created.
         /// </returns>
-        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference) where T : RealmObject
+        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
             var listPtr = SharedRealmHandle.ResolveReference(reference);
             var listHandle = new ListHandle(SharedRealmHandle);
