@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
@@ -135,6 +136,18 @@ namespace Tests
             {
                 Assert.Ignore("This test relies on encryption which is not enabled in this build.");
             }
+        }
+
+        public static RealmInteger<T>[] ToInteger<T>(this T[] values)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            return values?.Select(v => new RealmInteger<T>(v)).ToArray();
+        }
+
+        public static RealmInteger<T>?[] ToInteger<T>(this T?[] values)
+            where T : struct, IComparable<T>, IFormattable
+        {
+            return values?.Select(v => v == null ? (RealmInteger<T>?)null : new RealmInteger<T>(v.Value)).ToArray();
         }
     }
 }

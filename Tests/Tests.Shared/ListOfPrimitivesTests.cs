@@ -41,256 +41,318 @@ namespace Tests.Database
             });
         }
 
-        [Test]
-        public void Test_BooleanList()
+        public static object[] BooleanTestValues =
         {
-            SmokeTest(_listsObject.BooleanList);
-            SmokeTest(_listsObject.BooleanList, true);
-            SmokeTest(_listsObject.BooleanList, true, true, false);
+            new object[] { null },
+            new object[] { new[] { true } },
+            new object[] { new[] { true, true, false } },
+        };
+
+        [TestCaseSource(nameof(BooleanTestValues))]
+        public void Test_BooleanList(bool[] values)
+        {
+            SmokeTest(_listsObject.BooleanList, values);
         }
 
-        [Test]
-        public void Test_ByteCounterList()
+        public static object[] ByteTestValues =
         {
-            SmokeTest(_listsObject.ByteCounterList);
-            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, 0);
-            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, byte.MinValue, byte.MaxValue, 0);
-            SmokeTest<RealmInteger<byte>>(_listsObject.ByteCounterList, 1, 2, 0);
+            new object[] { null },
+            new object[] { new byte[] { 0 } },
+            new object[] { new byte[] { byte.MinValue, byte.MaxValue, 0 } },
+            new object[] { new byte[] { 1, 2, 3 } },
+        };
+
+        [TestCaseSource(nameof(ByteTestValues))]
+        public void Test_ByteCounterList(byte[] values)
+        {
+            SmokeTest(_listsObject.ByteCounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_ByteList()
+        [TestCaseSource(nameof(ByteTestValues))]
+        public void Test_ByteList(byte[] values)
         {
-            SmokeTest(_listsObject.ByteList);
-            SmokeTest<byte>(_listsObject.ByteList, 0);
-            SmokeTest<byte>(_listsObject.ByteList, byte.MinValue, byte.MaxValue, 0);
-            SmokeTest<byte>(_listsObject.ByteList, 1, 2, 0);
+            SmokeTest(_listsObject.ByteList, values);
         }
 
-        [Test]
-        public void Test_CharList()
+        public static object[] CharTestValues =
         {
-            SmokeTest(_listsObject.CharList);
-            SmokeTest(_listsObject.CharList, 'a');
-            SmokeTest(_listsObject.CharList, char.MinValue, char.MaxValue);
-            SmokeTest(_listsObject.CharList, 'a', 'b', 'c', 'b');
+            new object[] { null },
+            new object[] { new[] { 'a' } },
+            new object[] { new[] { char.MinValue, char.MaxValue } },
+            new object[] { new[] { 'a', 'b', 'c', 'b' } }
+        };
+
+        [TestCaseSource(nameof(CharTestValues))]
+        public void Test_CharList(char[] values)
+        {
+            SmokeTest(_listsObject.CharList, values);
         }
 
-        [Test]
-        public void Test_DoubleList()
+        public static object[] DoubleTestValues =
         {
-            SmokeTest(_listsObject.DoubleList);
-            SmokeTest(_listsObject.DoubleList, 1.4);
-            SmokeTest(_listsObject.DoubleList, double.MinValue, double.MaxValue, 0);
-            SmokeTest(_listsObject.DoubleList, -1, 3.4, 5.3, 9);
+            new object[] { null },
+            new object[] { new[] { 1.4 } },
+            new object[] { new[] { double.MinValue, double.MaxValue, 0 } },
+            new object[] { new[] { -1, 3.4, 5.3, 9 } }
+        };
+
+        [TestCaseSource(nameof(DoubleTestValues))]
+        public void Test_DoubleList(double[] values)
+        {
+            SmokeTest(_listsObject.DoubleList, values);
         }
 
-        [Test]
-        public void Test_Int16CounterList()
+        public static object[] Int16TestValues =
         {
-            SmokeTest(_listsObject.Int16CounterList);
-            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, 1);
-            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, short.MaxValue, short.MinValue, 0);
-            SmokeTest<RealmInteger<short>>(_listsObject.Int16CounterList, 3, -1, 45);
+            new object[] { null },
+            new object[] { new short[] { 1 } },
+            new object[] { new short[] { short.MaxValue, short.MinValue, 0 } },
+            new object[] { new short[] { 3, -1, 45 } },
+        };
+
+        [TestCaseSource(nameof(Int16TestValues))]
+        public void Test_Int16CounterList(short[] values)
+        {
+            SmokeTest(_listsObject.Int16CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_Int16List()
+        [TestCaseSource(nameof(Int16TestValues))]
+        public void Test_Int16List(short[] values)
         {
-            SmokeTest(_listsObject.Int16List);
-            SmokeTest<short>(_listsObject.Int16List, 1);
-            SmokeTest<short>(_listsObject.Int16List, short.MaxValue, short.MinValue, 0);
-            SmokeTest<short>(_listsObject.Int16List, 3, -1, 45);
+            SmokeTest(_listsObject.Int16List, values);
         }
 
-        [Test]
-        public void Test_Int32CounterList()
+        public static object[] Int32TestValues =
         {
-            SmokeTest(_listsObject.Int32CounterList);
-            SmokeTest(_listsObject.Int32CounterList, 1);
-            SmokeTest(_listsObject.Int32CounterList, int.MinValue, int.MaxValue, 0);
-            SmokeTest(_listsObject.Int32CounterList, -5, 3, 9, 350);
+            new object[] { null },
+            new object[] { new[] { 1 } },
+            new object[] { new[] { int.MaxValue, int.MinValue, 0 } },
+            new object[] { new[] { -5, 3, 9, 350 } },
+        };
+
+        [TestCaseSource(nameof(Int32TestValues))]
+        public void Test_Int32CounterList(int[] values)
+        {
+            SmokeTest(_listsObject.Int32CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_Int32List()
+        [TestCaseSource(nameof(Int32TestValues))]
+        public void Test_Int32List(int[] values)
         {
-            SmokeTest(_listsObject.Int32List);
-            SmokeTest(_listsObject.Int32List, 1);
-            SmokeTest(_listsObject.Int32List, int.MinValue, int.MaxValue, 0);
-            SmokeTest(_listsObject.Int32List, -5, 3, 9, 350);
+            SmokeTest(_listsObject.Int32List, values);
         }
 
-        [Test]
-        public void Test_Int64CounterList()
+        public static object[] Int64TestValues =
         {
-            SmokeTest(_listsObject.Int64CounterList);
-            SmokeTest(_listsObject.Int64CounterList, 4);
-            SmokeTest(_listsObject.Int64CounterList, long.MinValue, long.MaxValue, 0);
-            SmokeTest(_listsObject.Int64CounterList, 4, -39, 81L, -69324);
+            new object[] { null },
+            new object[] { new[] { 1L } },
+            new object[] { new[] { long.MaxValue, long.MinValue, 0 } },
+            new object[] { new[] { 4, -39, 81L, -69324 } },
+        };
+
+        [TestCaseSource(nameof(Int64TestValues))]
+        public void Test_Int64CounterList(long[] values)
+        {
+            SmokeTest(_listsObject.Int64CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_Int64List()
+        [TestCaseSource(nameof(Int64TestValues))]
+        public void Test_Int64List(long[] values)
         {
-            SmokeTest(_listsObject.Int64List);
-            SmokeTest(_listsObject.Int64List, 4);
-            SmokeTest(_listsObject.Int64List, long.MinValue, long.MaxValue, 0);
-            SmokeTest(_listsObject.Int64List, 4, -39, 81L, -69324);
+            SmokeTest(_listsObject.Int64List, values);
         }
 
-        [Test]
-        public void Test_DateTimeOffsetList()
+        public static object[] DateTestValues =
         {
-            SmokeTest(_listsObject.DateTimeOffsetList);
-            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(-4));
-            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow);
-            SmokeTest(_listsObject.DateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324));
+            new object[] { null },
+            new object[] { new[] { DateTimeOffset.UtcNow.AddDays(-4) } },
+            new object[] { new[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow } },
+            new object[] { new[] { DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) } },
+        };
+
+        [TestCaseSource(nameof(DateTestValues))]
+        public void Test_DateTimeOffsetList(DateTimeOffset[] values)
+        {
+            SmokeTest(_listsObject.DateTimeOffsetList, values);
         }
 
-        [Test]
-        public void Test_NullableBooleanList()
+        public static object[] NullableBooleanTestValues =
         {
-            SmokeTest(_listsObject.NullableBooleanList);
-            SmokeTest(_listsObject.NullableBooleanList, true);
-            SmokeTest(_listsObject.NullableBooleanList, (bool?)null);
-            SmokeTest(_listsObject.NullableBooleanList, true, true, null, false);
+            new object[] { null },
+            new object[] { new bool?[] { true } },
+            new object[] { new bool?[] { null } },
+            new object[] { new bool?[] { true, true, null, false } },
+        };
+
+        [TestCaseSource(nameof(NullableBooleanTestValues))]
+        public void Test_NullableBooleanList(bool?[] values)
+        {
+            SmokeTest(_listsObject.NullableBooleanList, values);
         }
 
-        [Test]
-        public void Test_NullableByteCounterList()
+        public static object[] NullableByteTestValues =
         {
-            SmokeTest(_listsObject.NullableByteCounterList);
-            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 0);
-            SmokeTest(_listsObject.NullableByteCounterList, (byte?)null);
-            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, byte.MinValue, byte.MaxValue, 0);
-            SmokeTest<RealmInteger<byte>?>(_listsObject.NullableByteCounterList, 1, 2, 0, null);
+            new object[] { null },
+            new object[] { new byte?[] { 0 } },
+            new object[] { new byte?[] { null } },
+            new object[] { new byte?[] { byte.MinValue, byte.MaxValue, 0 } },
+            new object[] { new byte?[] { 1, 2, 3, null } },
+        };
+
+        [TestCaseSource(nameof(NullableByteTestValues))]
+        public void Test_NullableByteCounterList(byte?[] values)
+        {
+            SmokeTest(_listsObject.NullableByteCounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_NullableByteList()
+        [TestCaseSource(nameof(NullableByteTestValues))]
+        public void Test_NullableByteList(byte?[] values)
         {
-            SmokeTest(_listsObject.NullableByteList);
-            SmokeTest<byte?>(_listsObject.NullableByteList, 0);
-            SmokeTest(_listsObject.NullableByteList, (byte?)null);
-            SmokeTest<byte?>(_listsObject.NullableByteList, byte.MinValue, byte.MaxValue, 0);
-            SmokeTest<byte?>(_listsObject.NullableByteList, 1, 2, 0, null);
+            SmokeTest(_listsObject.NullableByteList, values);
         }
 
-        [Test]
-        public void Test_NullableCharList()
+        public static object[] NullableCharTestValues =
         {
-            SmokeTest(_listsObject.NullableCharList);
-            SmokeTest(_listsObject.NullableCharList, 'a');
-            SmokeTest(_listsObject.NullableCharList, (char?)null);
-            SmokeTest(_listsObject.NullableCharList, char.MinValue, char.MaxValue);
-            SmokeTest(_listsObject.NullableCharList, 'a', 'b', 'c', 'b');
+            new object[] { null },
+            new object[] { new char?[] { 'a' } },
+            new object[] { new char?[] { null } },
+            new object[] { new char?[] { char.MinValue, char.MaxValue } },
+            new object[] { new char?[] { 'a', 'b', 'c', 'b', null } }
+        };
+
+        [TestCaseSource(nameof(NullableCharTestValues))]
+        public void Test_NullableCharList(char?[] values)
+        {
+            SmokeTest(_listsObject.NullableCharList, values);
         }
 
-        [Test]
-        public void Test_NullableDoubleList()
+        public static object[] NullableDoubleTestValues =
         {
-            SmokeTest(_listsObject.NullableDoubleList);
-            SmokeTest(_listsObject.NullableDoubleList, 1.4);
-            SmokeTest(_listsObject.NullableDoubleList, (double?)null);
-            SmokeTest(_listsObject.NullableDoubleList, double.MinValue, double.MaxValue, 0);
-            SmokeTest(_listsObject.NullableDoubleList, -1, 3.4, 5.3, 9);
+            new object[] { null },
+            new object[] { new double?[] { 1.4 } },
+            new object[] { new double?[] { null } },
+            new object[] { new double?[] { double.MinValue, double.MaxValue, 0 } },
+            new object[] { new double?[] { -1, 3.4, null, 5.3, 9 } }
+        };
+
+        [TestCaseSource(nameof(NullableDoubleTestValues))]
+        public void Test_NullableDoubleList(double?[] values)
+        {
+            SmokeTest(_listsObject.NullableDoubleList, values);
         }
 
-        [Test]
-        public void Test_NullableInt16CounterList()
+        public static object[] NullableInt16TestValues =
         {
-            SmokeTest(_listsObject.NullableInt16CounterList);
-            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 1);
-            SmokeTest(_listsObject.NullableInt16CounterList, (short?)null);
-            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, short.MaxValue, short.MinValue, 0);
-            SmokeTest<RealmInteger<short>?>(_listsObject.NullableInt16CounterList, 3, -1, null, 45, null);
+            new object[] { null },
+            new object[] { new short?[] { 1 } },
+            new object[] { new short?[] { null } },
+            new object[] { new short?[] { short.MaxValue, short.MinValue, 0 } },
+            new object[] { new short?[] { 3, -1, null, 45, null } },
+        };
+
+        [TestCaseSource(nameof(NullableInt16TestValues))]
+        public void Test_NullableInt16CounterList(short?[] values)
+        {
+            SmokeTest(_listsObject.NullableInt16CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_NullableInt16List()
+        [TestCaseSource(nameof(NullableInt16TestValues))]
+        public void Test_NullableInt16List(short?[] values)
         {
-            SmokeTest(_listsObject.NullableInt16List);
-            SmokeTest<short?>(_listsObject.NullableInt16List, 1);
-            SmokeTest(_listsObject.NullableInt16List, (short?)null);
-            SmokeTest<short?>(_listsObject.NullableInt16List, short.MaxValue, short.MinValue, 0);
-            SmokeTest<short?>(_listsObject.NullableInt16List, 3, -1, null, 45, null);
+            SmokeTest(_listsObject.NullableInt16List, values);
         }
 
-        [Test]
-        public void Test_NullableInt32CounterList()
+        public static object[] NullableInt32TestValues =
         {
-            SmokeTest(_listsObject.NullableInt32CounterList);
-            SmokeTest(_listsObject.NullableInt32CounterList, 1);
-            SmokeTest(_listsObject.NullableInt32CounterList, (int?)null);
-            SmokeTest(_listsObject.NullableInt32CounterList, int.MinValue, int.MaxValue, 0);
-            SmokeTest(_listsObject.NullableInt32CounterList, -5, 3, null, 9, 350);
+            new object[] { null },
+            new object[] { new int?[] { 1 } },
+            new object[] { new int?[] { null } },
+            new object[] { new int?[] { int.MaxValue, int.MinValue, 0 } },
+            new object[] { new int?[] { -5, 3, 9, null, 350 } },
+        };
+
+        [TestCaseSource(nameof(NullableInt32TestValues))]
+        public void Test_NullableInt32CounterList(int?[] values)
+        {
+            SmokeTest(_listsObject.NullableInt32CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_NullableInt32List()
+        [TestCaseSource(nameof(NullableInt32TestValues))]
+        public void Test_NullableInt32List(int?[] values)
         {
-            SmokeTest(_listsObject.NullableInt32List);
-            SmokeTest(_listsObject.NullableInt32List, 1);
-            SmokeTest(_listsObject.NullableInt32List, (int?)null);
-            SmokeTest(_listsObject.NullableInt32List, int.MinValue, int.MaxValue, 0);
-            SmokeTest(_listsObject.NullableInt32List, -5, 3, null, 9, 350);
+            SmokeTest(_listsObject.NullableInt32List, values);
         }
 
-        [Test]
-        public void Test_NullableInt64CounterList()
+        public static object[] NullableInt64TestValues =
         {
-            SmokeTest(_listsObject.NullableInt64CounterList);
-            SmokeTest(_listsObject.NullableInt64CounterList, 4);
-            SmokeTest(_listsObject.NullableInt64CounterList, (long?)null);
-            SmokeTest(_listsObject.NullableInt64CounterList, long.MinValue, long.MaxValue, 0);
-            SmokeTest(_listsObject.NullableInt64CounterList, 4, -39, 81L, null, -69324);
+            new object[] { null },
+            new object[] { new long?[] { 1 } },
+            new object[] { new long?[] { null } },
+            new object[] { new long?[] { long.MaxValue, long.MinValue, 0 } },
+            new object[] { new long?[] { 4, -39, 81, null, -69324 } },
+        };
+
+        [TestCaseSource(nameof(NullableInt64TestValues))]
+        public void Test_NullableInt64CounterList(long?[] values)
+        {
+            SmokeTest(_listsObject.NullableInt64CounterList, values.ToInteger());
         }
 
-        [Test]
-        public void Test_NullableInt64List()
+        [TestCaseSource(nameof(NullableInt64TestValues))]
+        public void Test_NullableInt64List(long?[] values)
         {
-            SmokeTest(_listsObject.NullableInt64List);
-            SmokeTest(_listsObject.NullableInt64List, 4);
-            SmokeTest(_listsObject.NullableInt64List, (long?)null);
-            SmokeTest(_listsObject.NullableInt64List, long.MinValue, long.MaxValue, 0);
-            SmokeTest(_listsObject.NullableInt64List, 4, -39, 81L, null, -69324);
+            SmokeTest(_listsObject.NullableInt64List, values);
         }
 
-        [Test]
-        public void Test_NullableDateTimeOffsetList()
+        public static object[] NullableDateTestValues =
         {
-            SmokeTest(_listsObject.NullableDateTimeOffsetList);
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(-4));
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, (DateTimeOffset?)null);
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow);
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324));
+            new object[] { null },
+            new object[] { new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) } },
+            new object[] { new DateTimeOffset?[] { null } },
+            new object[] { new DateTimeOffset?[] { DateTimeOffset.MinValue, DateTimeOffset.MaxValue, DateTimeOffset.UtcNow } },
+            new object[] { new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(5), null, DateTimeOffset.UtcNow.AddDays(-39), DateTimeOffset.UtcNow.AddDays(81), DateTimeOffset.UtcNow.AddDays(-69324) } },
+        };
+
+        [TestCaseSource(nameof(NullableDateTestValues))]
+        public void Test_NullableDateTimeOffsetList(DateTimeOffset?[] values)
+        {
+            SmokeTest(_listsObject.NullableDateTimeOffsetList, values);
         }
 
-        [Test]
-        public void Test_StringList()
+        public static object[] StringTestValues =
         {
-            SmokeTest(_listsObject.StringList);
-            SmokeTest(_listsObject.StringList, string.Empty);
-            SmokeTest(_listsObject.StringList, (string)null);
-            SmokeTest(_listsObject.StringList, " ");
-            SmokeTest(_listsObject.StringList, "abc", "cdf", "az");
-            SmokeTest(_listsObject.StringList, "a", null, "foo", "bar", null);
+            new object[] { null },
+            new object[] { new string[] { string.Empty } },
+            new object[] { new string[] { null } },
+            new object[] { new string[] { " " } },
+            new object[] { new string[] { "abc", "cdf", "az" } },
+            new object[] { new string[] { "a", null, "foo", "bar", null } },
+        };
+
+        [TestCaseSource(nameof(StringTestValues))]
+        public void Test_StringList(string[] values)
+        {
+            SmokeTest(_listsObject.StringList, values);
         }
 
-        [Test]
-        public void Test_ByteArrayList()
+        public static object[] ByteArrayTestValues =
+                {
+            new object[] { null },
+            new object[] { new byte[][] { new byte[0] } },
+            new object[] { new byte[][] { null } },
+            new object[] { new byte[][] { new byte[] { 0 } } },
+            new object[] { new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } } },
+            new object[] { new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) } },
+            new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } },
+        };
+
+        [TestCaseSource(nameof(ByteArrayTestValues))]
+        public void Test_ByteArrayList(byte[][] values)
         {
-            SmokeTest(_listsObject.ByteArrayList);
-            SmokeTest(_listsObject.ByteArrayList, new byte[0]);
-            SmokeTest(_listsObject.ByteArrayList, (byte[])null);
-            SmokeTest(_listsObject.ByteArrayList, new byte[1] { 0 });
-            SmokeTest(_listsObject.ByteArrayList, new byte[3] { 0, byte.MinValue, byte.MaxValue });
-            SmokeTest(_listsObject.ByteArrayList, TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7));
-            SmokeTest(_listsObject.ByteArrayList, TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null);
+            SmokeTest(_listsObject.ByteArrayList, values);
         }
 
-        private void SmokeTest<T>(IList<T> items, params T[] toAdd)
+        private void SmokeTest<T>(IList<T> items, T[] toAdd)
         {
             if (toAdd == null)
             {
@@ -300,8 +362,6 @@ namespace Tests.Database
             // Test add
             _realm.Write(() =>
             {
-                items.Clear();
-
                 foreach (var item in toAdd)
                 {
                     items.Add(item);
