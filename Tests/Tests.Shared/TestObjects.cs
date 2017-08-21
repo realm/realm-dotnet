@@ -92,6 +92,8 @@ namespace Tests
 
         public IList<string> StringList { get; }
 
+        public IList<byte[]> ByteArrayList { get; }
+
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
 
         public IList<char?> NullableCharList { get; }

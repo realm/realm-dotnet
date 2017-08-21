@@ -143,6 +143,16 @@ REALM_EXPORT void list_add_string(List* list, uint16_t* value, size_t value_len,
         add(list, StringData(), ex);
     }
 }
+    
+REALM_EXPORT void list_add_binary(List* list, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+{
+    if (has_value) {
+        add(list, BinaryData(value, value_len), ex);
+    }
+    else {
+        add(list, BinaryData(), ex);
+    }
+}
 
 REALM_EXPORT void list_insert_object(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
@@ -199,7 +209,17 @@ REALM_EXPORT void list_insert_string(List* list, size_t list_ndx, uint16_t* valu
         insert(list, list_ndx, StringData(), ex);
     }
 }
-    
+
+REALM_EXPORT void list_insert_binary(List* list, size_t list_ndx, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+{
+    if (has_value) {
+        insert(list, list_ndx, BinaryData(value, value_len), ex);
+    }
+    else {
+        insert(list, list_ndx, BinaryData(), ex);
+    }
+}
+
 REALM_EXPORT Object* list_get_object(List* list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
@@ -278,8 +298,21 @@ REALM_EXPORT size_t list_get_string(List* list, size_t ndx, uint16_t* value, siz
     if ((*is_null = result.is_null()))
         return 0;
     
-    auto test = std::string(result.data(), result.size());
     return stringdata_to_csharpstringbuffer(result, value, value_len);
+}
+    
+REALM_EXPORT size_t list_get_binary(List* list, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
+{
+    auto result = get<BinaryData>(list, ndx, ex);
+    
+    if ((*is_null = result.is_null()))
+        return 0;
+    
+    const size_t data_size = result.size();
+    if (data_size <= buffer_size)
+        std::copy(result.data(), result.data() + data_size, return_buffer);
+    
+    return data_size;
 }
     
 REALM_EXPORT size_t list_find_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
@@ -328,6 +361,16 @@ REALM_EXPORT size_t list_find_string(List* list, uint16_t* value, size_t value_l
     
     return find(list, StringData(), ex);
 }
+    
+REALM_EXPORT size_t list_find_binary(List* list, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+{
+    if (has_value) {
+        return find(list, BinaryData(value, value_len), ex);
+    }
+    
+    return find(list, BinaryData(), ex);
+}
+
 
 REALM_EXPORT void list_erase(List* list, size_t link_ndx, NativeException::Marshallable& ex)
 {

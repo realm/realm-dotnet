@@ -88,6 +88,9 @@ namespace Realms
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     return Operator.Convert<string, T>(_listHandle.GetStringAtIndex(index));
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    return Operator.Convert<byte[], T>(_listHandle.GetByteArrayAtIndex(index));
                 default:
                     return _listHandle.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
             }
@@ -104,6 +107,7 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Add(obj.ObjectHandle);
             },
+            _listHandle.Add,
             _listHandle.Add,
             _listHandle.Add);
         }
@@ -164,6 +168,9 @@ namespace Realms
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, string>(item));
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, byte[]>(item));
                 default:
                     return _listHandle.Find(PrimitiveValue.Create(item, _argumentType));
             }
@@ -183,6 +190,7 @@ namespace Realms
                 AddObjectToRealmIfNeeded(obj);
                 _listHandle.Insert(index, obj.ObjectHandle);
             },
+            value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value),
             value => _listHandle.Insert(index, value));
         }
@@ -243,7 +251,8 @@ namespace Realms
         private static void Execute(T item,
             Action<RealmObject> objectHandler,
             Action<PrimitiveValue> primitiveHandler,
-            Action<string> stringHandler)
+            Action<string> stringHandler,
+            Action<byte[]> binaryHandler)
         {
             switch (_argumentType)
             {
@@ -253,6 +262,10 @@ namespace Realms
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
                     stringHandler(Operator.Convert<T, string>(item));
+                    break;
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    binaryHandler(Operator.Convert<T, byte[]>(item));
                     break;
                 default:
                     primitiveHandler(PrimitiveValue.Create(item, _argumentType));

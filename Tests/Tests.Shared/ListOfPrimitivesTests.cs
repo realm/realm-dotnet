@@ -278,6 +278,18 @@ namespace Tests.Database
             SmokeTest(_listsObject.StringList, "a", null, "foo", "bar", null);
         }
 
+        [Test]
+        public void Test_ByteArrayList()
+        {
+            SmokeTest(_listsObject.ByteArrayList);
+            SmokeTest(_listsObject.ByteArrayList, new byte[0]);
+            SmokeTest(_listsObject.ByteArrayList, (byte[])null);
+            SmokeTest(_listsObject.ByteArrayList, new byte[1] { 0 });
+            SmokeTest(_listsObject.ByteArrayList, new byte[3] { 0, byte.MinValue, byte.MaxValue });
+            SmokeTest(_listsObject.ByteArrayList, TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7));
+            SmokeTest(_listsObject.ByteArrayList, TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null);
+        }
+
         private void SmokeTest<T>(IList<T> items, params T[] toAdd)
         {
             if (toAdd == null)

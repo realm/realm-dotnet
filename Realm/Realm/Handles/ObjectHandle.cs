@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -465,58 +464,24 @@ namespace Realms
 
         public unsafe void SetByteArray(IntPtr propertyIndex, byte[] value)
         {
-            NativeException nativeException;
-            if (value == null)
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
             {
-                NativeMethods.set_null(this, propertyIndex, out nativeException);
-            }
-            else if (value.Length == 0)
-            {
-                // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
-                // that's how core differentiates between empty and null buffers
-                NativeMethods.set_binary(this, propertyIndex, (IntPtr)0x1, IntPtr.Zero, out nativeException);
-            }
-            else
-            {
-                fixed (byte* buffer = value)
+                if (hasValue)
                 {
-                    NativeMethods.set_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)value.LongCount(), out nativeException);
+                    NativeMethods.set_binary(this, propertyIndex, buffer, bufferSize, out ex);
                 }
-            }
+                else
+                {
+                    NativeMethods.set_null(this, propertyIndex, out ex);
 
-            nativeException.ThrowIfNecessary();
+                }
+            });
         }
 
         public byte[] GetByteArray(IntPtr propertyIndex)
         {
-            return GetByteArrayBuffer(propertyIndex, 0);
-        }
-
-        private unsafe byte[] GetByteArrayBuffer(IntPtr propertyIndex, int size)
-        {
-            // Initially called with size = 0, we make a native call just to get the size of the buffer.
-            var bytes = new byte[size];
-            bool isNull;
-            NativeException nativeException;
-
-            int actualSize;
-            fixed (byte* buffer = bytes)
-            {
-                actualSize = (int)NativeMethods.get_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)size, out isNull, out nativeException);
-            }
-            nativeException.ThrowIfNecessary();
-
-            if (isNull)
-            {
-                return null;
-            }
-
-            if (actualSize > size)
-            {
-                return GetByteArrayBuffer(propertyIndex, actualSize);
-            }
-
-            return bytes;
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, propertyIndex, buffer, bufferLength, out isNull, out ex));
         }
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)

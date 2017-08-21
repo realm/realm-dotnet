@@ -36,7 +36,11 @@ namespace Realms
             public static extern void add_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
                 [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
@@ -53,6 +57,10 @@ namespace Realms
             public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
                 IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
             #endregion
 
             #region get
@@ -67,6 +75,10 @@ namespace Realms
             public static extern IntPtr get_string(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
                 [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_binary(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
             #endregion
 
             #region find
@@ -79,6 +91,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufsize,
                 [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
             #endregion
@@ -156,6 +172,12 @@ namespace Realms
                 NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
         }
 
+        public byte[] GetByteArrayAtIndex(int index)
+        {
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
+        }
+
         #endregion
 
         #region Add
@@ -176,6 +198,12 @@ namespace Realms
         {
             NativeMethods.add_string(this, value, (IntPtr)(value?.Length ?? 0), value != null, out var nativeException);
             nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Add(byte[] value)
+        {
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+                NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
         }
 
         #endregion
@@ -202,6 +230,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        public unsafe void Insert(int targetIndex, byte[] value)
+        {
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+                NativeMethods.insert_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
+        }
+
         #endregion
 
         #region Find
@@ -226,6 +260,17 @@ namespace Realms
             value = value ?? string.Empty;
             var result = NativeMethods.find_string(this, value, (IntPtr)value.Length, hasValue, out var nativeException);
             nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public unsafe int Find(byte[] value)
+        {
+            var result = IntPtr.Zero;
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+            {
+                result = NativeMethods.find_binary(this, buffer, bufferSize, hasValue, out ex);
+            });
+
             return (int)result;
         }
 

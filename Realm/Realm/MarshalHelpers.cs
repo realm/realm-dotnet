@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 
@@ -35,9 +36,11 @@ namespace Realms
             return (IntPtr)1 == value;
         }
 
-        public delegate IntPtr NativeStringGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
+        public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
 
-        public static string GetString(NativeStringGetter getter)
+        public delegate void NativeCollectionSetter(IntPtr buffer, IntPtr bufferLength, bool hasValue, out NativeException ex);
+
+        public static string GetString(NativeCollectionGetter getter)
         {
             // TODO: rework to use GetCollection
             var bufferSize = 128;
@@ -83,6 +86,56 @@ namespace Realms
         }
 
         public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
+
+        public unsafe static byte[] GetByteArray(NativeCollectionGetter getter, int size = 0)
+        {
+            // Initially called with size = 0, we make a native call just to get the size of the buffer.
+            var bytes = new byte[size];
+            bool isNull;
+            NativeException nativeException;
+
+            int actualSize;
+            fixed (byte* buffer = bytes)
+            {
+                actualSize = (int)getter((IntPtr)buffer, (IntPtr)size, out isNull, out nativeException);
+            }
+            nativeException.ThrowIfNecessary();
+
+            if (isNull)
+            {
+                return null;
+            }
+
+            if (actualSize > size)
+            {
+                return GetByteArray(getter, actualSize);
+            }
+
+            return bytes;
+        }
+
+        public unsafe static void SetByteArray(byte[] bytes, NativeCollectionSetter setter)
+        {
+            NativeException nativeException;
+            if (bytes == null)
+            {
+                setter(IntPtr.Zero, IntPtr.Zero, false, out nativeException);
+            }
+            else if (bytes.Length == 0)
+            {
+                // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
+                // that's how core differentiates between empty and null buffers
+                setter((IntPtr)0x1, IntPtr.Zero, true, out nativeException);
+            }
+            else
+            {
+                fixed (byte* buffer = bytes)
+                {
+                    setter((IntPtr)buffer, (IntPtr)bytes.LongCount(), true, out nativeException);
+                }
+            }
+            nativeException.ThrowIfNecessary();
+        }
 
         public static T[] GetCollection<T>(NativeCollectionGetter<T> getter, int bufferSize) where T : struct
         {

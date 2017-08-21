@@ -32,6 +32,13 @@ namespace Tests
     {
         public static readonly Random Random = new Random();
 
+        public static byte[] GetBytes(int size)
+        {
+            var result = new byte[size];
+            Random.NextBytes(result);
+            return result;
+        }
+
         public static object GetPropertyValue(object o, string propName)
         {
             return o.GetType().GetProperty(propName).GetValue(o, null);
