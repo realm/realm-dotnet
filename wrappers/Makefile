@@ -11,20 +11,15 @@ ifeq ($(REALM_ENABLE_SYNC),1)
 	WRAPPERS_XCODE_TARGET=wrappers-sync
 	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(REALM_SYNC_VERSION).tar.gz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/sync/$(APPLE_BUNDLE_NAME)"
-	ANDROID_BUNDLE_NAME=realm-sync-android-$(REALM_SYNC_VERSION).tar.gz
-	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/sync/$(ANDROID_BUNDLE_NAME)"
 else
 	APPLE_PREPROCESSOR_DEFINITIONS=""
 	WRAPPERS_XCODE_TARGET=wrappers
 	APPLE_BUNDLE_NAME=realm-core-cocoa-v$(REALM_CORE_VERSION).tar.xz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/core/$(APPLE_BUNDLE_NAME)"
-	ANDROID_BUNDLE_NAME=realm-core-android-v$(REALM_CORE_VERSION).tar.gz
-	ANDROID_BUNDLE_URL="http://static.realm.io/downloads/core/$(ANDROID_BUNDLE_NAME)"
 endif
 
 OS_SRCS=$(wildcard src/object-store/src/*.cpp) $(wildcard src/object-store/src/impl/*.cpp)
 APPLE_SRCS=$(wildcard src/object-store/src/impl/apple/*.cpp)
-ANDROID_SRCS=$(wildcard src/object-store/src/impl/android/*.cpp)
 SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 
 
@@ -33,13 +28,10 @@ help: ## Show this help.
 
 clean: ## Remove all build artefacts
 	rm -fr build
-	rm -fr libs
-	rm -fr libs-dbg
 	rm -fr core
-	rm -fr core-android
 	rm -fr obj
  
-all: ios iosdbg android androiddbg ## Make all the libs except osx broken - see issue 249
+all: ios iosdbg
 
 .PHONY: all help clean
 
@@ -82,26 +74,5 @@ build/Debug-ios-universal/librealm-wrappers.a: build/Debug-iphoneos/lib$(WRAPPER
 	lipo -create -output "build/Debug-ios-universal/librealm-wrappers.a" "build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
 .PHONY: osx ios iosdbg
-
-# }}}
-
-# Android ==================== {{{
-
-core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk
-	mkdir -p core-android
-	tar xzf $(ANDROID_BUNDLE_NAME) -C core-android/
-	touch core-android
-
-$(ANDROID_BUNDLE_NAME):
-	bash -c 'export ec=56; while [ $$ec -eq 56 ]; do curl -C - -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL); export ec=$$?; done'
-
-android: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LIBS_OUT=build/Release-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
-	
-androiddbg: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_LOG=1 NDK_DEBUG=1 NDK_LIBS_OUT=build/Debug-android REALM_ENABLE_SYNC=$(REALM_ENABLE_SYNC) -j$(shell sysctl -n hw.ncpu)
-	
-
-.PHONY: android androiddbg
 
 # }}}

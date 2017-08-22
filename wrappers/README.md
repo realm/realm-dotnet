@@ -30,21 +30,21 @@ If you downloaded a zip of the source, you need to go back to github to identify
 1. Download a zip using the GitHub download button in that tree, eg `realm-object-store-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
 1. Unpack its contents into `wrappers/src/object-store`
 
-Building iOS and Android Wrappers on macOS
+Building iOS wrappers on macOS
 ------------------------------------------
 
 These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
 
 1. `cd wrappers` 
 1. `make clean`
-1. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
+1. `make ios` or `make iosdbg` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
 
-### Individual Builds
+Building Android wrappers
+-------------
 
-To save time for testing you may want to build only some of the wrappers libraries:
+Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-DREALM_ENABLE_SYNC=ON` and `-GNinja`.
 
-* iOS builds `librealm-wrappers.a` - run `make ios` or `make iosdbg`. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
-* Android builds `librealm-wrappers.so` - run `make android` or `make androiddbg` Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
+You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK` pointing to its location.
 
 Building Windows wrappers
 -------------
@@ -74,4 +74,4 @@ General Notes
 -------------
 All builds steps download the required realm components (core and sync) automatically.
 
-**Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `wrappers.xcodeproj`, `wrappers.vcxproj`, and `jni/Android.mk` for builds to work.
+**Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `wrappers.xcodeproj` and `src/CMakeLists.txt` for builds to work.
