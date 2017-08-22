@@ -65,6 +65,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows" AND REALM_CORE_PACKAGING STREQUAL 1)
   if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     set(REALM_CORE_WINDOWS_TARBALL_SUFFIX -universal)
     set(REALM_CORE_WINDOWS_PLATFORM "uwp-${REALM_CORE_WINDOWS_PLATFORM}")
+  else()
+    foreach(flag_var
+            CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MT")
+        string(REGEX REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
+      endif()
+    endforeach()
   endif()
   
   set(REALM_CORE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/realm-core-${REALM_CORE_VERSION}")
