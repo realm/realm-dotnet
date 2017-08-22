@@ -26,6 +26,7 @@ namespace Realms.Exceptions
     {
         internal RealmMigrationNeededException(string message) : base(message)
         {
+            HelpLink = "https://realm.io/docs/xamarin/latest/#migrations";
         }
     }
 }
