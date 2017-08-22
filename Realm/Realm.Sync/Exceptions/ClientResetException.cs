@@ -41,6 +41,7 @@ namespace Realms.Sync.Exceptions
         {
             _originalFilePath = userInfo[OriginalFilePathKey];
             BackupFilePath = userInfo[BackupFilePathKey];
+            HelpLink = "https://realm.io/docs/xamarin/latest/#client-reset";
         }
 
         /// <summary>

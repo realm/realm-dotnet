@@ -1,3 +1,17 @@
+x.y.z (TBD)
+------------------
+
+### Enhancements
+- Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
+- The keychain service name used by Realm to manage the encryption keys for sync-related metadata on Apple platforms is now set to the
+bundle identifier. Keys that were previously stored within the Realm-specific keychain service will be transparently migrated to the
+per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet/pull/1522))
+
+### Bug fixes
+- `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
+
+### Breaking Changes
+
 1.6.0 (2017-08-14)
 2.0.0 (TBD)
 ------------------
