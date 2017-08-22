@@ -162,6 +162,11 @@ REALM_EXPORT void list_insert_object(List* list, size_t list_ndx, const Object& 
 REALM_EXPORT void list_insert_primitive(List* list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        const size_t count = list->size();
+        if (list_ndx > count) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        }
+
         switch (value.type) {
             case realm::PropertyType::Bool:
                 list->insert(list_ndx, value.value.bool_value);

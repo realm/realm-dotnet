@@ -31,7 +31,7 @@ namespace Tests.Database
     {
         private readonly Random _random = new Random();
 
-        private ListsObject _listsObject;
+        private ListsObject _managedListsObject;
 
         protected override void CustomSetUp()
         {
@@ -39,7 +39,7 @@ namespace Tests.Database
 
             _realm.Write(() =>
             {
-                _listsObject = _realm.Add(new ListsObject());
+                _managedListsObject = _realm.Add(new ListsObject());
             });
         }
 
@@ -283,165 +283,172 @@ namespace Tests.Database
 
         #endregion
 
-        #region SmokeTests
+        #region Managed Tests
 
         [TestCaseSource(nameof(BooleanTestValues))]
-        public void Test_BooleanList(bool[] values)
+        public void Test_ManagedBooleanList(bool[] values)
         {
-            SmokeTest(_listsObject.BooleanList, values);
+            try
+            {
+                RunManagedTests(_managedListsObject.BooleanList, values);
+            }
+            catch (Exception ex)
+            {
+                var foo = ex;
+            }
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Test_ByteCounterList(byte[] values)
+        public void Test_ManagedByteCounterList(byte[] values)
         {
-            SmokeTest(_listsObject.ByteCounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.ByteCounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
-        public void Test_ByteList(byte[] values)
+        public void Test_ManagedByteList(byte[] values)
         {
-            SmokeTest(_listsObject.ByteList, values);
+            RunManagedTests(_managedListsObject.ByteList, values);
         }
 
         [TestCaseSource(nameof(CharTestValues))]
-        public void Test_CharList(char[] values)
+        public void Test_ManagedCharList(char[] values)
         {
-            SmokeTest(_listsObject.CharList, values);
+            RunManagedTests(_managedListsObject.CharList, values);
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
-        public void Test_DoubleList(double[] values)
+        public void Test_ManagedDoubleList(double[] values)
         {
-            SmokeTest(_listsObject.DoubleList, values);
+            RunManagedTests(_managedListsObject.DoubleList, values);
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Test_Int16CounterList(short[] values)
+        public void Test_ManagedInt16CounterList(short[] values)
         {
-            SmokeTest(_listsObject.Int16CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.Int16CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
-        public void Test_Int16List(short[] values)
+        public void Test_ManagedInt16List(short[] values)
         {
-            SmokeTest(_listsObject.Int16List, values);
+            RunManagedTests(_managedListsObject.Int16List, values);
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Test_Int32CounterList(int[] values)
+        public void Test_ManagedInt32CounterList(int[] values)
         {
-            SmokeTest(_listsObject.Int32CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.Int32CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
-        public void Test_Int32List(int[] values)
+        public void Test_ManagedInt32List(int[] values)
         {
-            SmokeTest(_listsObject.Int32List, values);
+            RunManagedTests(_managedListsObject.Int32List, values);
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void Test_Int64CounterList(long[] values)
+        public void Test_ManagedInt64CounterList(long[] values)
         {
-            SmokeTest(_listsObject.Int64CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.Int64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
-        public void Test_Int64List(long[] values)
+        public void Test_ManagedInt64List(long[] values)
         {
-            SmokeTest(_listsObject.Int64List, values);
+            RunManagedTests(_managedListsObject.Int64List, values);
         }
 
         [TestCaseSource(nameof(DateTestValues))]
-        public void Test_DateTimeOffsetList(DateTimeOffset[] values)
+        public void Test_ManagedDateTimeOffsetList(DateTimeOffset[] values)
         {
-            SmokeTest(_listsObject.DateTimeOffsetList, values);
+            RunManagedTests(_managedListsObject.DateTimeOffsetList, values);
         }
 
         [TestCaseSource(nameof(NullableBooleanTestValues))]
-        public void Test_NullableBooleanList(bool?[] values)
+        public void Test_ManagedNullableBooleanList(bool?[] values)
         {
-            SmokeTest(_listsObject.NullableBooleanList, values);
+            RunManagedTests(_managedListsObject.NullableBooleanList, values);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void Test_NullableByteCounterList(byte?[] values)
+        public void Test_ManagedNullableByteCounterList(byte?[] values)
         {
-            SmokeTest(_listsObject.NullableByteCounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.NullableByteCounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
-        public void Test_NullableByteList(byte?[] values)
+        public void Test_ManagedNullableByteList(byte?[] values)
         {
-            SmokeTest(_listsObject.NullableByteList, values);
+            RunManagedTests(_managedListsObject.NullableByteList, values);
         }
 
         [TestCaseSource(nameof(NullableCharTestValues))]
-        public void Test_NullableCharList(char?[] values)
+        public void Test_ManagedNullableCharList(char?[] values)
         {
-            SmokeTest(_listsObject.NullableCharList, values);
+            RunManagedTests(_managedListsObject.NullableCharList, values);
         }
 
         [TestCaseSource(nameof(NullableDoubleTestValues))]
-        public void Test_NullableDoubleList(double?[] values)
+        public void Test_ManagedNullableDoubleList(double?[] values)
         {
-            SmokeTest(_listsObject.NullableDoubleList, values);
+            RunManagedTests(_managedListsObject.NullableDoubleList, values);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void Test_NullableInt16CounterList(short?[] values)
+        public void Test_ManagedNullableInt16CounterList(short?[] values)
         {
-            SmokeTest(_listsObject.NullableInt16CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.NullableInt16CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
-        public void Test_NullableInt16List(short?[] values)
+        public void Test_ManagedNullableInt16List(short?[] values)
         {
-            SmokeTest(_listsObject.NullableInt16List, values);
+            RunManagedTests(_managedListsObject.NullableInt16List, values);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void Test_NullableInt32CounterList(int?[] values)
+        public void Test_ManagedNullableInt32CounterList(int?[] values)
         {
-            SmokeTest(_listsObject.NullableInt32CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.NullableInt32CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
-        public void Test_NullableInt32List(int?[] values)
+        public void Test_ManagedNullableInt32List(int?[] values)
         {
-            SmokeTest(_listsObject.NullableInt32List, values);
+            RunManagedTests(_managedListsObject.NullableInt32List, values);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void Test_NullableInt64CounterList(long?[] values)
+        public void Test_ManagedNullableInt64CounterList(long?[] values)
         {
-            SmokeTest(_listsObject.NullableInt64CounterList, values.ToInteger());
+            RunManagedTests(_managedListsObject.NullableInt64CounterList, values.ToInteger());
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
-        public void Test_NullableInt64List(long?[] values)
+        public void Test_ManagedNullableInt64List(long?[] values)
         {
-            SmokeTest(_listsObject.NullableInt64List, values);
+            RunManagedTests(_managedListsObject.NullableInt64List, values);
         }
 
         [TestCaseSource(nameof(NullableDateTestValues))]
-        public void Test_NullableDateTimeOffsetList(DateTimeOffset?[] values)
+        public void Test_ManagedNullableDateTimeOffsetList(DateTimeOffset?[] values)
         {
-            SmokeTest(_listsObject.NullableDateTimeOffsetList, values);
+            RunManagedTests(_managedListsObject.NullableDateTimeOffsetList, values);
         }
 
         [TestCaseSource(nameof(StringTestValues))]
-        public void Test_StringList(string[] values)
+        public void Test_ManagedStringList(string[] values)
         {
-            SmokeTest(_listsObject.StringList, values);
+            RunManagedTests(_managedListsObject.StringList, values);
         }
 
         [TestCaseSource(nameof(ByteArrayTestValues))]
-        public void Test_ByteArrayList(byte[][] values)
+        public void Test_ManagedByteArrayList(byte[][] values)
         {
-            SmokeTest(_listsObject.ByteArrayList, values);
+            RunManagedTests(_managedListsObject.ByteArrayList, values);
         }
 
-        private void SmokeTest<T>(IList<T> items, T[] toAdd)
+        private void RunManagedTests<T>(IList<T> items, T[] toAdd)
         {
             AsyncContext.Run(async () =>
             {
@@ -490,6 +497,9 @@ namespace Tests.Database
                     Assert.That(items[i], Is.EqualTo(toAdd[i]));
                 }
 
+                Assert.That(() => items[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+                Assert.That(() => items[items.Count], Throws.TypeOf<ArgumentOutOfRangeException>());
+
                 // Test indexOf
                 foreach (var item in toAdd)
                 {
@@ -518,6 +528,9 @@ namespace Tests.Database
                     {
                         items.Insert(0, toInsert);
                         items.Insert(items.Count, toInsert);
+
+                        Assert.That(() => items.Insert(-1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items.Insert(items.Count + 1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
                     });
 
                     Assert.That(items.First(), Is.EqualTo(toInsert));
@@ -534,6 +547,9 @@ namespace Tests.Database
                     {
                         items.Remove(toInsert);
                         items.RemoveAt(items.Count - 1);
+
+                        Assert.That(() => items.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items.RemoveAt(items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
                     });
 
                     CollectionAssert.AreEqual(items, toAdd);
@@ -551,6 +567,11 @@ namespace Tests.Database
                     _realm.Write(() =>
                     {
                         items.Move(from, to);
+
+                        Assert.That(() => items.Move(-1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items.Move(from, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items.Move(items.Count + 1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items.Move(from, items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
                     });
 
                     Assert.That(items[to], Is.EqualTo(toAdd[from]));
@@ -605,6 +626,190 @@ namespace Tests.Database
             Assert.That(notifications.Count, Is.EqualTo(1));
             verifier();
             notifications.Clear();
+        }
+
+        #endregion
+
+        #region Unmanaged Tests
+
+        [TestCaseSource(nameof(BooleanTestValues))]
+        public void Test_UnmanagedBooleanList(bool[] values)
+        {
+            RunUnmanagedTests(o => o.BooleanList, values);
+        }
+
+        [TestCaseSource(nameof(ByteTestValues))]
+        public void Test_UnmanagedByteCounterList(byte[] values)
+        {
+            RunUnmanagedTests(o => o.ByteCounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(ByteTestValues))]
+        public void Test_UnmanagedByteList(byte[] values)
+        {
+            RunUnmanagedTests(o => o.ByteList, values);
+        }
+
+        [TestCaseSource(nameof(CharTestValues))]
+        public void Test_UnmanagedCharList(char[] values)
+        {
+            RunUnmanagedTests(o => o.CharList, values);
+        }
+
+        [TestCaseSource(nameof(DoubleTestValues))]
+        public void Test_UnmanagedDoubleList(double[] values)
+        {
+            RunUnmanagedTests(o => o.DoubleList, values);
+        }
+
+        [TestCaseSource(nameof(Int16TestValues))]
+        public void Test_UnmanagedInt16CounterList(short[] values)
+        {
+            RunUnmanagedTests(o => o.Int16CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(Int16TestValues))]
+        public void Test_UnmanagedInt16List(short[] values)
+        {
+            RunUnmanagedTests(o => o.Int16List, values);
+        }
+
+        [TestCaseSource(nameof(Int32TestValues))]
+        public void Test_UnmanagedInt32CounterList(int[] values)
+        {
+            RunUnmanagedTests(o => o.Int32CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(Int32TestValues))]
+        public void Test_UnmanagedInt32List(int[] values)
+        {
+            RunUnmanagedTests(o => o.Int32List, values);
+        }
+
+        [TestCaseSource(nameof(Int64TestValues))]
+        public void Test_UnmanagedInt64CounterList(long[] values)
+        {
+            RunUnmanagedTests(o => o.Int64CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(Int64TestValues))]
+        public void Test_UnmanagedInt64List(long[] values)
+        {
+            RunUnmanagedTests(o => o.Int64List, values);
+        }
+
+        [TestCaseSource(nameof(DateTestValues))]
+        public void Test_UnmanagedDateTimeOffsetList(DateTimeOffset[] values)
+        {
+            RunUnmanagedTests(o => o.DateTimeOffsetList, values);
+        }
+
+        [TestCaseSource(nameof(NullableBooleanTestValues))]
+        public void Test_UnmanagedNullableBooleanList(bool?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableBooleanList, values);
+        }
+
+        [TestCaseSource(nameof(NullableByteTestValues))]
+        public void Test_UnmanagedNullableByteCounterList(byte?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableByteCounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(NullableByteTestValues))]
+        public void Test_UnmanagedNullableByteList(byte?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableByteList, values);
+        }
+
+        [TestCaseSource(nameof(NullableCharTestValues))]
+        public void Test_UnmanagedNullableCharList(char?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableCharList, values);
+        }
+
+        [TestCaseSource(nameof(NullableDoubleTestValues))]
+        public void Test_UnmanagedNullableDoubleList(double?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableDoubleList, values);
+        }
+
+        [TestCaseSource(nameof(NullableInt16TestValues))]
+        public void Test_UnmanagedNullableInt16CounterList(short?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt16CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(NullableInt16TestValues))]
+        public void Test_UnmanagedNullableInt16List(short?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt16List, values);
+        }
+
+        [TestCaseSource(nameof(NullableInt32TestValues))]
+        public void Test_UnmanagedNullableInt32CounterList(int?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt32CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(NullableInt32TestValues))]
+        public void Test_UnmanagedNullableInt32List(int?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt32List, values);
+        }
+
+        [TestCaseSource(nameof(NullableInt64TestValues))]
+        public void Test_UnmanagedNullableInt64CounterList(long?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt64CounterList, values.ToInteger());
+        }
+
+        [TestCaseSource(nameof(NullableInt64TestValues))]
+        public void Test_UnmanagedNullableInt64List(long?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableInt64List, values);
+        }
+
+        [TestCaseSource(nameof(NullableDateTestValues))]
+        public void Test_UnmanagedNullableDateTimeOffsetList(DateTimeOffset?[] values)
+        {
+            RunUnmanagedTests(o => o.NullableDateTimeOffsetList, values);
+        }
+
+        [TestCaseSource(nameof(StringTestValues))]
+        public void Test_UnmanagedStringList(string[] values)
+        {
+            RunUnmanagedTests(o => o.StringList, values);
+        }
+
+        [TestCaseSource(nameof(ByteArrayTestValues))]
+        public void Test_UnmanagedByteArrayList(byte[][] values)
+        {
+            RunUnmanagedTests(o => o.ByteArrayList, values);
+        }
+
+        private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> accessor, T[] toAdd)
+        {
+            if (toAdd == null)
+            {
+                toAdd = new T[0];
+            }
+
+            var listsObject = new ListsObject();
+            var list = accessor(listsObject);
+
+            foreach (var item in toAdd)
+            {
+                list.Add(item);
+            }
+
+            CollectionAssert.AreEqual(list, toAdd);
+
+            _realm.Write(() => _realm.Add(listsObject));
+
+            var managedList = accessor(listsObject);
+
+            CollectionAssert.AreEqual(managedList, toAdd);
         }
 
         #endregion
