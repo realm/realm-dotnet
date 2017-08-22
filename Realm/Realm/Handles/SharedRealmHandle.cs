@@ -255,7 +255,7 @@ namespace Realms
 
         public IntPtr CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
         {
-            switch (pkProperty.Type)
+            switch (pkProperty.Type.UnderlyingType())
             {
                 case PropertyType.String:
                     if (primaryKey == null)
@@ -272,7 +272,7 @@ namespace Realms
                 case PropertyType.Int:
                     if (primaryKey == null)
                     {
-                        if (!pkProperty.IsNullable)
+                        if (!pkProperty.Type.IsNullable())
                         {
                             throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
                         }
@@ -281,7 +281,7 @@ namespace Realms
                     }
 
                     var longKey = Convert.ToInt64(primaryKey);
-                    return CreateObjectWithPrimaryKey(table, longKey, pkProperty.IsNullable, update, out isNew);
+                    return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
