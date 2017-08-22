@@ -111,7 +111,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             
         }
         
-        return new SharedRealm{Realm::get_shared_realm(config)};
+        auto realm = Realm::get_shared_realm(config);
+        realm->refresh();
+        return new SharedRealm{realm};
     });
 }
 
