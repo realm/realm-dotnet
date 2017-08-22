@@ -30,6 +30,7 @@ namespace Realms.Exceptions
     {
         internal RealmFeatureUnavailableException(string message) : base(message)
         {
+            HelpLink = "https://realm.io/docs/realm-object-server/pe-ee/#enabling-professional-and-enterprise-apis";
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Realms.Sync
         /// you trust.
         /// <br/>
         /// This property is ignored on Apple platforms - you should use the KeyChain API to install your certificate
-        /// instead. 
+        /// instead.
         /// </remarks>
         /// <seealso href="https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_load_verify_locations.html">
         /// OpenSSL documentation for SSL_CTX_load_verify_locations.

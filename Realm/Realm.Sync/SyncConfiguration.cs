@@ -62,6 +62,9 @@ namespace Realms.Sync
         /// It is recommended to include only the root CA you trust, and not the entire list of root CA as this file
         /// will be loaded at runtime. It is your responsibility to download and verify the correct PEM for the root CA
         /// you trust.
+        /// <br/>
+        /// This property is ignored on Apple platforms - you should use the KeyChain API to install your certificate
+        /// instead.
         /// </remarks>
         /// <seealso href="https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_load_verify_locations.html">
         /// OpenSSL documentation for SSL_CTX_load_verify_locations.

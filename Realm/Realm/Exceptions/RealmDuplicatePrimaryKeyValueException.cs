@@ -25,6 +25,7 @@ namespace Realms.Exceptions
     {
         internal RealmDuplicatePrimaryKeyValueException(string message) : base(message)
         {
+            HelpLink = "https://realm.io/docs/xamarin/latest/#primarykey-properties";
         }
     }
 }
