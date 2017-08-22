@@ -113,7 +113,9 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
 
         auto realm = Realm::get_shared_realm(config);
-        realm->refresh();
+        if (!configuration.read_only)
+            realm->refresh();
+        
         return new SharedRealm(realm);
     });
 }
@@ -174,3 +176,4 @@ REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf,
 }
 
 }
+

@@ -112,7 +112,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         }
         
         auto realm = Realm::get_shared_realm(config);
-        realm->refresh();
+        if (!configuration.read_only)
+            realm->refresh();
+        
         return new SharedRealm{realm};
     });
 }
