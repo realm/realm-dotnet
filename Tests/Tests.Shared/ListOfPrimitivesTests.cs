@@ -587,11 +587,11 @@ namespace Tests.Database
                 Assert.That(items, Is.Empty);
 
                 // Test notifications
-                // TODO: _realm.Refresh() deadlocks
-                if (toAdd.Any() && false)
+                if (toAdd.Any())
                 {
                     VerifyNotifications(notifications, () =>
                     {
+                        // TODO: verify notifications contains the expected Deletions collection
                     });
                 }
 
