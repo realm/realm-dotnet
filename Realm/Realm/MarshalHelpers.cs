@@ -87,7 +87,7 @@ namespace Realms
 
         public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
 
-        public unsafe static byte[] GetByteArray(NativeCollectionGetter getter, int size = 0)
+        public static unsafe byte[] GetByteArray(NativeCollectionGetter getter, int size = 0)
         {
             // Initially called with size = 0, we make a native call just to get the size of the buffer.
             var bytes = new byte[size];
@@ -114,7 +114,7 @@ namespace Realms
             return bytes;
         }
 
-        public unsafe static void SetByteArray(byte[] bytes, NativeCollectionSetter setter)
+        public static unsafe void SetByteArray(byte[] bytes, NativeCollectionSetter setter)
         {
             NativeException nativeException;
             if (bytes == null)

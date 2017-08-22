@@ -73,6 +73,7 @@ namespace Realms
             {
                 return base[index];
             }
+
             set
             {
                 throw new NotSupportedException("Setting items directly is not supported.");

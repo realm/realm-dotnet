@@ -473,7 +473,6 @@ namespace Realms
                 else
                 {
                     NativeMethods.set_null(this, propertyIndex, out ex);
-
                 }
             });
         }
