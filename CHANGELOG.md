@@ -2,6 +2,7 @@ x.y.z (TBD)
 ------------------
 
 ### Enhancements
+- Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
 
 ### Bug fixes
 
