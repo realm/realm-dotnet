@@ -13,7 +13,6 @@ per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet
 ### Breaking Changes
 
 1.6.0 (2017-08-14)
-2.0.0 (TBD)
 ------------------
 
 ### Enhancements
