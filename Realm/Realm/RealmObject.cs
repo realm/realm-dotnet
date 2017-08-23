@@ -472,6 +472,21 @@ namespace Realms
 
         #endregion
 
+        /// <summary>
+        /// Returns all the objects that link to this object in the specified relationship.
+        /// </summary>
+        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
+        {
+            Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
+            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
+
+            var resultsHandle = ObjectHandle.GetBacklinksForType(objectType, property);
+            return new RealmResults<dynamic>(Realm, resultsHandle, relatedMeta);
+        }
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
