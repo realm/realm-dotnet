@@ -24,7 +24,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Realms.Dynamic;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -263,15 +262,6 @@ namespace Realms
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
-        }
-
-        internal RealmResults<DynamicRealmObject> GetBacklinksForType(string objectType, string propertyName)
-        {
-            Argument.Ensure(_realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
-            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(propertyName), $"Type {objectType} does not contain property {propertyName}", nameof(propertyName));
-
-            var resultsHandle = _objectHandle.GetBacklinksForType(objectType, propertyName);
-            return new RealmResults<DynamicRealmObject>(_realm, resultsHandle, relatedMeta);
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]

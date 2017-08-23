@@ -19,7 +19,9 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Linq;
 using System.Linq.Expressions;
+using Realms.Helpers;
 
 namespace Realms.Dynamic
 {
@@ -30,6 +32,15 @@ namespace Realms.Dynamic
         public DynamicMetaObject GetMetaObject(Expression parameter)
         {
             return new MetaRealmObject(parameter, this);
+        }
+
+        public IQueryable<DynamicRealmObject> GetBacklinks(string objectType, string propertyName)
+        {
+            Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
+            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(propertyName), $"Type {objectType} does not contain property {propertyName}", nameof(propertyName));
+
+            var resultsHandle = ObjectHandle.GetBacklinksForType(objectType, propertyName);
+            return new RealmResults<DynamicRealmObject>(Realm, resultsHandle, relatedMeta);
         }
     }
 }

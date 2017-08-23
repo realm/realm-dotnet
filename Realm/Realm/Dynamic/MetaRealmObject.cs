@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Realms.Schema;
@@ -37,7 +36,6 @@ namespace Realms.Dynamic
         private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetField("_objectHandle", PrivateBindingFlags);
         private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
-        private static readonly MethodInfo RealmObjectGetBacklinksForTypeMethod = typeof(RealmObject).GetMethod("GetBacklinksForType", PrivateBindingFlags);
 
         private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
 
@@ -287,31 +285,6 @@ namespace Realms.Dynamic
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return _metadata.Schema.PropertyNames;
-        }
-
-        public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
-        {
-            if (binder.Name == "GetBacklink" &&
-                args.Length == 2 &&
-                args[0].LimitType == typeof(string) &&
-                args[1].LimitType == typeof(string))
-            {
-                var arguments = args.Select(a => Expression.Constant(a.Value)).ToArray();
-
-                var self = GetLimitedSelf();
-                Expression expression = Expression.Call(self, RealmObjectGetBacklinksForTypeMethod, arguments);
-
-                if (binder.ReturnType != expression.Type)
-                {
-                    expression = Expression.Convert(expression, binder.ReturnType);
-                }
-
-                var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, typeof(DynamicRealmObject));
-                var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
-                return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
-            }
-
-            return base.BindInvokeMember(binder, args);
         }
 
         private static Expression WeakConstant<T>(T value) where T : class
