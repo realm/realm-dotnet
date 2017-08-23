@@ -105,14 +105,14 @@ namespace Tests.Database
         {
             _realm.Write(() =>
             {
-                var first = _realm.CreateObject(type.Name, primaryKeyValue);
+                _realm.CreateObject(type.Name, primaryKeyValue);
             });
 
             Assert.That(() =>
             {
                 _realm.Write(() =>
                 {
-                    var second = _realm.CreateObject(type.Name, primaryKeyValue);
+                    _realm.CreateObject(type.Name, primaryKeyValue);
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }

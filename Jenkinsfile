@@ -6,6 +6,7 @@ wrapperConfigurations = [
   Release: ''
 ]
 configuration = 'Release'
+AndroidABIs = ['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']
 
 nugetCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
 def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
@@ -104,7 +105,7 @@ stage('Build without sync') {
       }
     },
     'Android': {
-      buildAndroidWrappers(['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'], 'android-wrappers-nosync')
+      buildAndroidWrappers('android-wrappers-nosync')
       nodeWithCleanup('xamarin-mac') {
         unstash 'dotnet-source'
         unstash 'android-wrappers-nosync'
@@ -287,7 +288,7 @@ stage('Build with sync') {
       }
     },
     'Android': {
-      buildAndroidWrappers(['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'], 'android-wrappers-sync', ['REALM_ENABLE_SYNC': 'ON'])
+      buildAndroidWrappers('android-wrappers-sync', ['REALM_ENABLE_SYNC': 'ON'])
       nodeWithCleanup('xamarin-mac') {
         unstash 'dotnet-source'
         unstash 'android-wrappers-sync'
@@ -395,9 +396,9 @@ stage('Test with sync') {
   )
 }
 
-def buildAndroidWrappers(abis, String stashName, Map extraCMakeArguments = [:]) {
+def buildAndroidWrappers(String stashName, Map extraCMakeArguments = [:]) {
   def wrappersBranches = [:]
-  for (def abi in abis) {
+  for (def abi in AndroidABIs) {
     def localAbi = abi
     wrappersBranches["Android ${abi} wrappers"] = {
       nodeWithCleanup('docker') {

@@ -265,10 +265,10 @@ namespace Realms
 
                     if (primaryKey is string stringKey)
                     {
-						return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
-					}
+                        return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+                    }
 
-					throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
+                    throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
                 case PropertyType.Int:
                     if (primaryKey == null)
                     {
@@ -289,24 +289,21 @@ namespace Realms
 
         private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long key, bool isNullable, bool update, out bool isNew)
         {
-            NativeException ex;
-            var result = NativeMethods.create_object_unique(this, table, key, isNullable, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, key, isNullable, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }
 
         private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
         {
-            NativeException ex;
-            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)key.Length, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)key.Length, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }
 
         private IntPtr CreateObjectWithPrimaryKey(TableHandle table, bool update, out bool isNew)
         {
-            NativeException ex;
-            var result = NativeMethods.create_object_unique(this, table, update, out isNew, out ex);
+            var result = NativeMethods.create_object_unique(this, table, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }
