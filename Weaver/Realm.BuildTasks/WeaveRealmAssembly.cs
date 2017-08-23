@@ -176,7 +176,19 @@ namespace RealmBuildTasks
 
         private string GetAssemblyPath(string name, bool isRealmAssembly = true)
         {
-            return Path.Combine(isRealmAssembly ? OutputDirectory : IntermediateDirectory, $"{name}.{(isRealmAssembly ? "dll" : "exe")}");
+            if (isRealmAssembly)
+            {
+                return Path.Combine(OutputDirectory, $"{name}.dll");
+            }
+
+            var targetPath = Path.Combine(IntermediateDirectory, $"{name}.exe");
+            if (File.Exists(targetPath))
+            {
+                return targetPath;
+            }
+
+            // Likely an iOS share extension
+            return Path.Combine(IntermediateDirectory, $"{name}.dll");
         }
 
         // Invoked when looking for Cecil
@@ -189,7 +201,7 @@ namespace RealmBuildTasks
 
             try
             {
-                return Assembly.LoadFile(Path.Combine(folder, args.Name + ".dll"));
+                return Assembly.LoadFile(Path.Combine(folder, $"{args.Name}.dll"));
             }
             catch
             {
