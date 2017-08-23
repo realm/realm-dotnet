@@ -61,7 +61,7 @@ namespace Realms.Dynamic
             MethodInfo getter = null;
             switch (property.Type.UnderlyingType())
             {
-                case Schema.PropertyType.Int:
+                case PropertyType.Int:
                     if (property.Type.IsNullable())
                     {
                         getter = GetGetMethod(dummyHandle.GetNullableInt64);
@@ -72,7 +72,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Bool:
+                case PropertyType.Bool:
                     if (property.Type.IsNullable())
                     {
                         getter = GetGetMethod(dummyHandle.GetNullableBoolean);
@@ -94,7 +94,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Double:
+                case PropertyType.Double:
                     if (property.Type.IsNullable())
                     {
                         getter = GetGetMethod(dummyHandle.GetNullableDouble);
@@ -105,13 +105,13 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.String:
+                case PropertyType.String:
                     getter = GetGetMethod(dummyHandle.GetString);
                     break;
-                case Schema.PropertyType.Data:
+                case PropertyType.Data:
                     getter = GetGetMethod(dummyHandle.GetByteArray);
                     break;
-                case Schema.PropertyType.Date:
+                case PropertyType.Date:
                     if (property.Type.IsNullable())
                     {
                         getter = GetGetMethod(dummyHandle.GetNullableDateTimeOffset);
@@ -122,7 +122,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Object:
+                case PropertyType.Object:
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     arguments.Add(Expression.Constant(property.ObjectType));
                     if (property.Type.IsArray())
@@ -134,7 +134,7 @@ namespace Realms.Dynamic
                         getter = GetGetMethod(dummyHandle.GetObject<DynamicRealmObject>);
                     }
                     break;
-                case Schema.PropertyType.LinkingObjects:
+                case PropertyType.LinkingObjects:
                     getter = GetGetMethod(dummyHandle.GetBacklinks);
                     break;
             }
@@ -143,7 +143,7 @@ namespace Realms.Dynamic
             var instance = Expression.Field(self, RealmObjectObjectHandleField);
             Expression expression = Expression.Call(instance, getter, arguments);
 
-            if (property.Type.UnderlyingType() == Schema.PropertyType.LinkingObjects)
+            if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
                 expression = Expression.Call(self, RealmObjectGetBacklinksForHandleMethod, Expression.Constant(binder.Name), expression);
             }
@@ -175,7 +175,7 @@ namespace Realms.Dynamic
 
             switch (property.Type.UnderlyingType())
             {
-                case Schema.PropertyType.Int:
+                case PropertyType.Int:
                     argumentType = typeof(long);
                     if (property.Type.IsNullable())
                     {
@@ -191,7 +191,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Bool:
+                case PropertyType.Bool:
                     argumentType = typeof(bool);
                     if (property.Type.IsNullable())
                     {
@@ -203,7 +203,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Float:
+                case PropertyType.Float:
                     argumentType = typeof(float);
                     if (property.Type.IsNullable())
                     {
@@ -215,7 +215,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Double:
+                case PropertyType.Double:
                     argumentType = typeof(double);
                     if (property.Type.IsNullable())
                     {
@@ -227,7 +227,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.String:
+                case PropertyType.String:
                     argumentType = typeof(string);
                     if (property.IsPrimaryKey)
                     {
@@ -239,11 +239,11 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Data:
+                case PropertyType.Data:
                     argumentType = typeof(byte[]);
                     setter = GetSetMethod<byte[]>(dummyHandle.SetByteArray);
                     break;
-                case Schema.PropertyType.Date:
+                case PropertyType.Date:
                     argumentType = typeof(DateTimeOffset);
                     if (property.Type.IsNullable())
                     {
@@ -255,7 +255,7 @@ namespace Realms.Dynamic
                     }
 
                     break;
-                case Schema.PropertyType.Object:
+                case PropertyType.Object:
                     argumentType = typeof(RealmObject);
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     setter = GetSetMethod<RealmObject>(dummyHandle.SetObject);

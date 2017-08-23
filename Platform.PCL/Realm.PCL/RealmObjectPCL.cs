@@ -355,6 +355,18 @@ namespace Realms
         #endregion
 
         /// <summary>
+        /// Returns all the objects that link to this object in the specified relationship.
+        /// </summary>
+        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
+        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Allows you to raise the PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">The name of the property that has changed. If not specified, we'll use the caller name.</param>
