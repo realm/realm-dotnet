@@ -9,6 +9,7 @@ per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
+- Fixed an issue that would prevent iOS Share Extension projects from working. ([#1535](https://github.com/realm/realm-dotnet/pull/1535))
 
 ### Breaking Changes
 
