@@ -39,6 +39,11 @@ stage('Checkout') {
     dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
     dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
+    if (!env.BRANCH_NAME.startsWith('release')) {
+      versionString += "-pre.{env.BUILD_NUMBER}"
+      dataBindingVersionString += "-pre.{env.BUILD_NUMBER}"
+    }
+
     nuget('restore Realm.sln')
     stash includes: '**', name: 'dotnet-source'
     deleteDir()
@@ -625,8 +630,7 @@ stage('NuGet') {
         unstash 'linux-wrappers-nosync'
 
         dir('NuGet/Realm.Database') {
-          nuget("pack Realm.Database.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
-          archive "Realm.Database.${versionString}.nupkg"
+          nugetPack('Realm.Database', versionString)
         }
       }
     },
@@ -642,8 +646,7 @@ stage('NuGet') {
         unstash 'linux-wrappers-sync'
 
         dir('NuGet/Realm') {
-          nuget("pack Realm.nuspec -version ${versionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
-          archive "Realm.${versionString}.nupkg"
+          nugetPack('Realm', versionString)
         }
       }
     },
@@ -657,8 +660,7 @@ stage('NuGet') {
         unstash 'nuget-mac-databinding'
 
         dir('NuGet/Realm.DataBinding') {
-          nuget("pack Realm.DataBinding.nuspec -version ${dataBindingVersionString} -NoDefaultExcludes -Properties Configuration=${configuration}")
-          archive "Realm.DataBinding.${dataBindingVersionString}.nupkg"
+          nugetPack('Realm.DataBinding', dataBindingVersionString)
         }
       }
     }
@@ -758,6 +760,18 @@ def msbuild(Map args = [:]) {
 def nuget(String arguments) {
   withEnv(['PATH+EXTRA=/Library/Frameworks/Mono.framework/Versions/Current/Commands']) {
     sh "${nugetCmd} ${arguments}"
+  }
+}
+
+def nugetPack(String packageId, String version) {
+  nuget("pack ${packageId}.nuspec -version ${version} -NoDefaultExcludes -Properties Configuration=${configuration}")
+  archive "${packageId}.${versionString}.nupkg"
+  
+  // TODO: comparison has to be ==
+  if (env.BRANCH_NAME != 'master') {
+    withCredentials([string(credentialsId: 'realm-myget-api-key', variable: 'MYGET_API_KEY')]) {
+      nuget("push ${packageId}.${versionString}.nupkg {env.MYGET_API_KEY} -source https://www.myget.org/F/realm-nightly/api/v2/package")
+    }
   }
 }
 
