@@ -39,9 +39,13 @@ stage('Checkout') {
     dataBindingVersion = readAssemblyVersion('DataBinding/DataBindingAssemblyInfo.cs');
     dataBindingVersionString = "${dataBindingVersion.major}.${dataBindingVersion.minor}.${dataBindingVersion.patch}"
 
-    if (!env.BRANCH_NAME.startsWith('release')) {
-      versionString += "-pre.{env.BUILD_NUMBER}"
-      dataBindingVersionString += "-pre.{env.BUILD_NUMBER}"
+    if (env.CHANGE_BRANCH == 'master') {
+      versionString += "-alpha-${env.BUILD_ID}"
+      dataBindingVersionString += "-alpha-${env.BUILD_ID}"
+    }
+    else if (!env.CHANGE_BRANCH.startsWith('release')) {
+      versionString += "-alpha-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
+      dataBindingVersionString += "-alpha-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
     }
 
     nuget('restore Realm.sln')
@@ -765,12 +769,13 @@ def nuget(String arguments) {
 
 def nugetPack(String packageId, String version) {
   nuget("pack ${packageId}.nuspec -version ${version} -NoDefaultExcludes -Properties Configuration=${configuration}")
-  archive "${packageId}.${versionString}.nupkg"
-  
+  archive "${packageId}.${version}.nupkg"
+
   // TODO: comparison has to be ==
-  if (env.BRANCH_NAME != 'master') {
+  if (env.CHANGE_BRANCH != 'master') {
     withCredentials([string(credentialsId: 'realm-myget-api-key', variable: 'MYGET_API_KEY')]) {
-      nuget("push ${packageId}.${versionString}.nupkg {env.MYGET_API_KEY} -source https://www.myget.org/F/realm-nightly/api/v2/package")
+      echo "Publishing ${packageId}.${version} to myget"
+      nuget("push ${packageId}.${version}.nupkg ${env.MYGET_API_KEY} -source https://www.myget.org/F/realm-nightly/api/v2/package")
     }
   }
 }
