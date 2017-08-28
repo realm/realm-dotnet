@@ -3,9 +3,6 @@ x.y.z (TBD)
 
 ### Enhancements
 - Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
-- The keychain service name used by Realm to manage the encryption keys for sync-related metadata on Apple platforms is now set to the
-bundle identifier. Keys that were previously stored within the Realm-specific keychain service will be transparently migrated to the
-per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet/pull/1522))
 - Added `RealmObject.GetBacklinks` API to dynamically obtain all objects referencing the current one. ([#1533](https://github.com/realm/realm-dotnet/pull/1533))
 
 ### Bug fixes
