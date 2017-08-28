@@ -19,7 +19,7 @@
 #include <future>
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
-//#include <realm/sync/feature_token.hpp>
+#include <realm/sync/feature_token.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -35,6 +35,10 @@ using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
+
+#if REALM_HAVE_FEATURE_TOKENS
+static std::unique_ptr<sync::FeatureGate> _features;
+#endif
 
 struct SyncConfiguration
 {
@@ -79,8 +83,8 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
 #if defined(__linux__) && REALM_HAVE_FEATURE_TOKENS
-        if (!realm::sync::is_feature_enabled("Sync")) {
-            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realm.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
+        if (!_features || !_features::is_feature_enabled("Sync")) {
+            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
         }
 #endif
         
@@ -167,11 +171,13 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
     });
 }
 
-REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len)
+REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
 {
 #if REALM_HAVE_FEATURE_TOKENS
-    Utf16StringAccessor token(token_buf, token_len);
-    realm::sync::set_feature_token(token);
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor token(token_buf, token_len);
+        _features.reset(new sync::FeatureGate(token));
+    });
 #endif
 }
 
