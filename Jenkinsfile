@@ -44,8 +44,8 @@ stage('Checkout') {
       dataBindingVersionString += "-alpha-${env.BUILD_ID}"
     }
     else if (!env.CHANGE_BRANCH.startsWith('release')) {
-      versionString += "-alpha-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
-      dataBindingVersionString += "-alpha-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
+      versionString += "-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
+      dataBindingVersionString += "-PR-${env.CHANGE_ID}-${env.BUILD_ID}"
     }
 
     nuget('restore Realm.sln')
@@ -771,8 +771,7 @@ def nugetPack(String packageId, String version) {
   nuget("pack ${packageId}.nuspec -version ${version} -NoDefaultExcludes -Properties Configuration=${configuration}")
   archive "${packageId}.${version}.nupkg"
 
-  // TODO: comparison has to be ==
-  if (env.CHANGE_BRANCH != 'master') {
+  if (env.CHANGE_BRANCH == 'master') {
     withCredentials([string(credentialsId: 'realm-myget-api-key', variable: 'MYGET_API_KEY')]) {
       echo "Publishing ${packageId}.${version} to myget"
       nuget("push ${packageId}.${version}.nupkg ${env.MYGET_API_KEY} -source https://www.myget.org/F/realm-nightly/api/v2/package")
