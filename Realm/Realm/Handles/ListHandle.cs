@@ -19,7 +19,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -146,33 +145,19 @@ namespace Realms
 
         #region GetAtIndex
 
-        public override IntPtr GetObjectAtIndex(int index)
-        {
-            var result = NativeMethods.get_object(this, (IntPtr)index, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
+        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
+            NativeMethods.get_object(this, index, out nativeException);
 
-        public PrimitiveValue GetPrimitiveAtIndex(int index, PropertyType type)
-        {
-            var result = new PrimitiveValue
-            {
-                type = type
-            };
+        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_primitive(this, index, ref result, out nativeException);
 
-            NativeMethods.get_primitive(this, (IntPtr)index, ref result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            return result;
-        }
-
-        public string GetStringAtIndex(int index)
+        public override string GetStringAtIndex(int index)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
                 NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
         }
 
-        public byte[] GetByteArrayAtIndex(int index)
+        public override byte[] GetByteArrayAtIndex(int index)
         {
             return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
                 NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));

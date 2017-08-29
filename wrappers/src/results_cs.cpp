@@ -24,10 +24,24 @@
 #include "object_accessor.hpp"
 #include "object-store/src/thread_safe_reference.hpp"
 #include "notifications_cs.hpp"
+#include "wrapper_exceptions.hpp"
+#include "timestamp_helpers.hpp"
+
 
 using namespace realm;
 using namespace realm::binding;
 
+template<typename T>
+inline T get(Results* results, size_t ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        const size_t count = results->size();
+        if (ndx >= count)
+            throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
+
+        return results->get<T>(ndx);
+    });
+}
 
 extern "C" {
 
@@ -45,7 +59,7 @@ REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs,
     });
 }
 
-REALM_EXPORT Object* results_get_row(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* results_get_object(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         try {
@@ -57,6 +71,21 @@ REALM_EXPORT Object* results_get_row(Results* results_ptr, size_t ndx, NativeExc
             return static_cast<Object*>(nullptr);
         }
     });
+}
+    
+REALM_EXPORT void results_get_primitive(Results* results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+{
+    collection_get_primitive(results, ndx, value, ex);
+}
+
+REALM_EXPORT size_t results_get_string(Results* results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
+{
+    return collection_get_string(results, ndx, value, value_len, is_null, ex);
+}
+
+REALM_EXPORT size_t results_get_binary(Results* results, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
+{
+    return collection_get_binary(results, ndx, return_buffer, buffer_size, is_null, ex);
 }
 
 REALM_EXPORT void results_clear(Results* results_ptr, SharedRealm& realm, NativeException::Marshallable& ex)

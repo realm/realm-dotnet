@@ -48,8 +48,6 @@ namespace Realms
     [DebuggerDisplay("Count = {Count}")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
-        private static readonly PropertyType _argumentType = PropertyTypeEx.ToPropertyType(typeof(T), out var _);
-
         private readonly Realm _realm;
         private readonly ListHandle _listHandle;
 
@@ -79,23 +77,6 @@ namespace Realms
             set
             {
                 throw new NotSupportedException("Setting items directly is not supported.");
-            }
-        }
-
-        protected override T GetAtIndex(int index)
-        {
-            switch (_argumentType)
-            {
-                case PropertyType.Object | PropertyType.Nullable:
-                    return base.GetAtIndex(index);
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
-                    return Operator.Convert<string, T>(_listHandle.GetStringAtIndex(index));
-                case PropertyType.Data:
-                case PropertyType.Data | PropertyType.Nullable:
-                    return Operator.Convert<byte[], T>(_listHandle.GetByteArrayAtIndex(index));
-                default:
-                    return _listHandle.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
             }
         }
 

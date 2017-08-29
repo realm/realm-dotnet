@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <sstream>
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -44,18 +43,6 @@ inline void insert(List* list, size_t list_ndx, T value, NativeException::Marsha
 }
 
 template<typename T>
-inline T get(List* list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        const size_t count = list->size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-
-        return list->get<T>(ndx);
-    });
-}
-
-template<typename T>
 inline void add(List* list, T value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -70,19 +57,6 @@ inline size_t find(List* list, T value, NativeException::Marshallable& ex)
         return list->find(value);
     });
 }
-
-struct PrimitiveValue
-{
-    realm::PropertyType type;
-    bool has_value;
-    
-    union {
-        bool bool_value;
-        int64_t int_value;
-        float float_value;
-        double double_value;
-    } value;
-};
 
 extern "C" {
   
@@ -238,86 +212,17 @@ REALM_EXPORT Object* list_get_object(List* list, size_t ndx, NativeException::Ma
     
 REALM_EXPORT void list_get_primitive(List* list, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
-        const size_t count = list->size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-
-        value.has_value = true;
-        switch (value.type) {
-            case realm::PropertyType::Bool:
-                value.value.bool_value = list->get<bool>(ndx);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
-                auto result = list->get<Optional<bool>>(ndx);
-                value.has_value = !!result;
-                value.value.bool_value = result.value_or(false);
-                break;
-            }
-            case realm::PropertyType::Int:
-                value.value.int_value = list->get<int64_t>(ndx);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable: {
-                auto result = list->get<Optional<int64_t>>(ndx);
-                value.has_value = !!result;
-                value.value.int_value = result.value_or(0);
-                break;
-            }
-            case realm::PropertyType::Float:
-                value.value.float_value = list->get<float>(ndx);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable: {
-                auto result = list->get<Optional<float>>(ndx);
-                value.has_value = !!result;
-                value.value.float_value = result.value_or((float)0);
-                break;
-            }
-            case realm::PropertyType::Double:
-                value.value.double_value = list->get<double>(ndx);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable: {
-                auto result = list->get<Optional<double>>(ndx);
-                value.has_value = !!result;
-                value.value.double_value = result.value_or((double)0);
-                break;
-            }
-            case realm::PropertyType::Date:
-                value.value.int_value = to_ticks(list->get<Timestamp>(ndx));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable: {
-                auto result = list->get<Timestamp>(ndx);
-                value.has_value = !result.is_null();
-                value.value.int_value = result.is_null() ? 0 : to_ticks(result);
-                break;
-            }
-            default:
-                REALM_UNREACHABLE();
-        }
-    });
+    collection_get_primitive(list, ndx, value, ex);
 }
     
 REALM_EXPORT size_t list_get_string(List* list, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
 {
-    auto result = get<StringData>(list, ndx, ex);
-    
-    if ((*is_null = result.is_null()))
-        return 0;
-    
-    return stringdata_to_csharpstringbuffer(result, value, value_len);
+    return collection_get_string(list, ndx, value, value_len, is_null, ex);
 }
     
 REALM_EXPORT size_t list_get_binary(List* list, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
 {
-    auto result = get<BinaryData>(list, ndx, ex);
-    
-    if ((*is_null = result.is_null()))
-        return 0;
-    
-    const size_t data_size = result.size();
-    if (data_size <= buffer_size)
-        std::copy(result.data(), result.data() + data_size, return_buffer);
-    
-    return data_size;
+    return collection_get_binary(list, ndx, return_buffer, buffer_size, is_null, ex);
 }
     
 REALM_EXPORT size_t list_find_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
