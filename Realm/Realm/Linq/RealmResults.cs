@@ -29,40 +29,29 @@ namespace Realms
 
     internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection
     {
-        private readonly RealmResultsProvider _provider;
-        private readonly bool _allRecords;
         private readonly ResultsHandle _handle;
 
         internal ResultsHandle ResultsHandle => (ResultsHandle)Handle.Value;
 
         public Type ElementType => typeof(T);
 
-        public Expression Expression { get; } // null if _allRecords
+        public Expression Expression { get; }
 
-        public IQueryProvider Provider => _provider;
+        public IQueryProvider Provider { get; }
 
-        internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll) : base(realm, metadata)
+        internal RealmResults(Realm realm, RealmObject.Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
         {
-            _provider = realmResultsProvider;
+            Provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
-            _allRecords = createdByAll;
         }
 
-        internal RealmResults(Realm realm, RealmObject.Metadata metadata, bool createdByAll)
-            : this(realm, new RealmResultsProvider(realm, metadata), null, metadata, createdByAll)
+        internal RealmResults(Realm realm, RealmObject.Metadata metadata, ResultsHandle handle = null)
+            : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
+            _handle = handle ?? realm.MakeResultsForTable(metadata);
         }
 
-        internal RealmResults(Realm realm, ResultsHandle handle, RealmObject.Metadata metadata)
-            : this(realm, new RealmResultsProvider(realm, metadata), null, metadata, false)
-        {
-            _handle = handle;
-        }
-
-        public QueryHandle CreateQuery()
-        {
-            return ResultsHandle.CreateQuery();
-        }
+        public QueryHandle CreateQuery() => ResultsHandle.CreateQuery();
 
         internal override CollectionHandleBase CreateHandle()
         {
@@ -71,13 +60,8 @@ namespace Realms
                 return _handle;
             }
 
-            if (_allRecords)
-            {
-                return Realm.MakeResultsForTable(Metadata);
-            }
-
             // do all the LINQ expression evaluation to build a query
-            var qv = _provider.MakeVisitor();
+            var qv = ((RealmResultsProvider)Provider).MakeVisitor();
             qv.Visit(Expression);
             var queryHandle = qv.CoreQueryHandle; // grab out the built query definition
             var sortHandle = qv.OptionalSortDescriptorBuilder;

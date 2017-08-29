@@ -775,7 +775,7 @@ namespace Realms
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
             }
 
-            return new RealmResults<T>(this, metadata, true);
+            return new RealmResults<T>(this, metadata);
         }
 
         /// <summary>
@@ -793,7 +793,7 @@ namespace Realms
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
             }
 
-            return new RealmResults<RealmObject>(this, metadata, true);
+            return new RealmResults<RealmObject>(this, metadata);
         }
 
         #region Quick Find using primary key
@@ -958,7 +958,7 @@ namespace Realms
             var resultsPtr = SharedRealmHandle.ResolveReference(reference);
             var resultsHandle = new ResultsHandle();
             resultsHandle.SetHandle(resultsPtr);
-            return new RealmResults<T>(this, resultsHandle, reference.Metadata);
+            return new RealmResults<T>(this, reference.Metadata, resultsHandle);
         }
 
         #endregion

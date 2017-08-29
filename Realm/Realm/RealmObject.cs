@@ -258,7 +258,7 @@ namespace Realms
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
-            return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
+            return new RealmResults<T>(_realm, relatedMeta, resultsHandle);
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
