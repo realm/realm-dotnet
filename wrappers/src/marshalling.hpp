@@ -115,32 +115,6 @@ inline T get(Collection* collection, size_t ndx, NativeException::Marshallable& 
         return collection->template get<T>(ndx);
     });
 }
-
-template<typename Collection>
-size_t collection_get_string(Collection* collection, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
-{
-    auto result = get<StringData>(collection, ndx, ex);
-    
-    if ((*is_null = result.is_null()))
-        return 0;
-    
-    return stringdata_to_csharpstringbuffer(result, value, value_len);
-}
-
-template<typename Collection>
-size_t collection_get_binary(Collection* collection, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
-{
-    auto result = get<BinaryData>(collection, ndx, ex);
-    
-    if ((*is_null = result.is_null()))
-        return 0;
-    
-    const size_t data_size = result.size();
-    if (data_size <= buffer_size)
-        std::copy(result.data(), result.data() + data_size, return_buffer);
-    
-    return data_size;
-}
     
 class Utf16StringAccessor {
 public:
@@ -245,6 +219,32 @@ inline SharedGroupOptions::Durability size_t_to_durability(size_t value) {
 
 size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words 
 
+template<typename Collection>
+size_t collection_get_string(Collection* collection, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
+{
+    auto result = get<StringData>(collection, ndx, ex);
+    
+    if ((*is_null = result.is_null()))
+        return 0;
+    
+    return stringdata_to_csharpstringbuffer(result, value, value_len);
+}
+
+template<typename Collection>
+size_t collection_get_binary(Collection* collection, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
+{
+    auto result = get<BinaryData>(collection, ndx, ex);
+    
+    if ((*is_null = result.is_null()))
+        return 0;
+    
+    const size_t data_size = result.size();
+    if (data_size <= buffer_size)
+        std::copy(result.data(), result.data() + data_size, return_buffer);
+    
+    return data_size;
+}
+    
 } // namespace binding
 } // namespace realm
 

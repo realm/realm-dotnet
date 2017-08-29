@@ -76,7 +76,7 @@ namespace Realms.Schema
                 case Type _ when type == typeof(double):
                     return PropertyType.Double | nullabilityModifier;
 
-                case Type _ when type.GetTypeInfo().BaseType == typeof(RealmObject):
+                case Type _ when type == typeof(RealmObject) || type.GetTypeInfo().BaseType == typeof(RealmObject):
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
 
