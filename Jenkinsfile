@@ -132,7 +132,7 @@ stage('Build without sync') {
       }
     },
     'Win32': {
-      nodeWithCleanup('windows') {
+      nodeWithCleanup('windows && !nodejs') {
         unstash 'dotnet-source'
         unstash 'dotnet-wrappers-source'
         unstash 'tools-weaver'
@@ -152,7 +152,7 @@ stage('Build without sync') {
       }
     },
     'UWP': {
-      nodeWithCleanup('windows') {
+      nodeWithCleanup('windows && !nodejs') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
@@ -225,7 +225,7 @@ stage('Build without sync') {
 }
 
 stage('Build .NET Core without sync') {
-  nodeWithCleanup('windows') {
+  nodeWithCleanup('windows && !nodejs') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-nosync'
     unstash 'linux-wrappers-nosync'
@@ -370,7 +370,7 @@ stage('Build with sync') {
 }
 
 stage ('Build .NET Core') {
-  nodeWithCleanup('windows') {
+  nodeWithCleanup('windows && !nodejs') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-sync'
     unstash 'linux-wrappers-sync'
