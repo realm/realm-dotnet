@@ -417,7 +417,7 @@ def buildAndroidWrappers(String stashName, Map extraCMakeArguments = [:]) {
   }
   parallel wrappersBranches
   nodeWithCleanup('docker') {
-    for (def abi in abis) {
+    for (def abi in AndroidABIs) {
       unstash "${stashName}-${abi}"
     }
     stash includes: "wrappers/build/Android/**/*", name: stashName
