@@ -318,5 +318,21 @@ namespace Tests.Database
             _realm.Write(() => dani.Dogs.Add(maggie));
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
         }
+
+        [Test]
+        public void DynamicBacklinks()
+        {
+            var tim = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
+            var topOwners = tim.TopDog.GetBacklinks("DynamicOwner", "TopDog");
+
+            Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
+
+            var dani = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
+            var maggie = _realm.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
+            Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.Empty);
+
+            _realm.Write(() => dani.TopDog = maggie);
+            Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.EquivalentTo(new[] { dani }));
+        }
     }
 }

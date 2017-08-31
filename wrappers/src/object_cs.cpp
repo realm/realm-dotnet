@@ -260,6 +260,27 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, uint16_t* type_buf, size_t type_len, uint16_t* property_buf, size_t property_len, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            verify_can_get(object);
+            Utf16StringAccessor type(type_buf, type_len);
+            Utf16StringAccessor property(property_buf, property_len);
+            
+            // type and property are validated by C#
+            auto target_object_schema = object.realm()->schema().find(type);
+            auto link_property = target_object_schema->property_for_name(property);
+        
+            if (link_property->object_type != object.get_object_schema().name) {
+                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", type.to_string(), property.to_string(), object.get_object_schema().name));
+            }
+        
+            auto table = ObjectStore::table_for_object_type(object.realm()->read_group(), target_object_schema->name);
+            auto tv = object.row().get_table()->get_backlink_view(object.row().get_index(), table.get(), link_property->table_column);
+            return new Results(object.realm(), std::move(tv));
+        });
+    }
+    
     REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

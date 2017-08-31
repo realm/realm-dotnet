@@ -131,6 +131,11 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern ResultsHandle get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ResultsHandle get_backlinks_for_type(ObjectHandle objectHandle,
+                [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr typeLen,
+                [MarshalAs(UnmanagedType.LPWStr)] string property, IntPtr propertyLen, out NativeException nativeException);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
 
@@ -524,7 +529,7 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
         {
-            var listHandle = this.TableLinkList(propertyIndex);
+            var listHandle = TableLinkList(propertyIndex);
             return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
         }
 
@@ -543,7 +548,7 @@ namespace Realms
         {
             if (@object == null)
             {
-                this.ClearLink(propertyIndex);
+                ClearLink(propertyIndex);
             }
             else
             {
@@ -552,13 +557,22 @@ namespace Realms
                     realm.Add(@object);
                 }
 
-                this.SetLink(propertyIndex, @object.ObjectHandle);
+                SetLink(propertyIndex, @object.ObjectHandle);
             }
         }
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)
         {
             var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return resultsHandle;
+        }
+
+        public ResultsHandle GetBacklinksForType(string objectType, string propertyName)
+        {
+            var resultsHandle = NativeMethods.get_backlinks_for_type(this, objectType, (IntPtr)objectType.Length,
+                propertyName, (IntPtr)propertyName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return resultsHandle;
