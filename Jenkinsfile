@@ -132,7 +132,7 @@ stage('Build without sync') {
       }
     },
     'Win32': {
-      nodeWithCleanup('windows && !nodejs') {
+      nodeWithCleanup('windows') {
         unstash 'dotnet-source'
         unstash 'dotnet-wrappers-source'
         unstash 'tools-weaver'
@@ -152,7 +152,7 @@ stage('Build without sync') {
       }
     },
     'UWP': {
-      nodeWithCleanup('windows && !nodejs') {
+      nodeWithCleanup('windows') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
@@ -225,7 +225,7 @@ stage('Build without sync') {
 }
 
 stage('Build .NET Core without sync') {
-  nodeWithCleanup('windows && !nodejs') {
+  nodeWithCleanup('windows') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-nosync'
     unstash 'linux-wrappers-nosync'
@@ -370,7 +370,7 @@ stage('Build with sync') {
 }
 
 stage ('Build .NET Core') {
-  nodeWithCleanup('windows && !nodejs') {
+  nodeWithCleanup('windows') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-sync'
     unstash 'linux-wrappers-sync'
@@ -406,25 +406,21 @@ stage('Test with sync') {
 }
 
 def buildAndroidWrappers(String stashName, Map extraCMakeArguments = [:]) {
-  def wrappersBranches = [:]
   for (def abi in AndroidABIs) {
-    def localAbi = abi
-    wrappersBranches["Android ${abi} wrappers"] = {
-      nodeWithCleanup('docker') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f Dockerfile.android').inside() {
-            cmake "build-${abi}", "${env.WORKSPACE}/wrappers/build", configuration, [
-              'REALM_PLATFORM': 'Android', 'ANDROID_ABI': localAbi,
-              'CMAKE_TOOLCHAIN_FILE': "${env.WORKSPACE}/wrappers/src/object-store/CMake/android.toolchain.cmake"
-            ] << extraCMakeArguments
-          }
+    nodeWithCleanup('docker') {
+      unstash 'dotnet-wrappers-source'
+      dir('wrappers') {
+        buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f Dockerfile.android').inside() {
+          cmake "build-${abi}", "${env.WORKSPACE}/wrappers/build", configuration, [
+            'REALM_PLATFORM': 'Android', 'ANDROID_ABI': abi,
+            'CMAKE_TOOLCHAIN_FILE': "${env.WORKSPACE}/wrappers/src/object-store/CMake/android.toolchain.cmake"
+          ] << extraCMakeArguments
         }
-        stash includes: "wrappers/build/Android/**/*", name: "${stashName}-${localAbi}"
       }
+      stash includes: "wrappers/build/Android/**/*", name: "${stashName}-${abi}"
     }
   }
-  parallel wrappersBranches
+
   nodeWithCleanup('docker') {
     for (def abi in AndroidABIs) {
       unstash "${stashName}-${abi}"

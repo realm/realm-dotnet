@@ -40,7 +40,7 @@ elseif(APPLE AND REALM_ENABLE_SYNC)
   set(REALM_SYNC_LIBRARY_LOCATION_DEBUG "${REALM_SYNC_DIRECTORY}/librealm-macosx-dbg.a")
   set(REALM_SYNC_LIBRARY_LOCATION "${REALM_SYNC_DIRECTORY}/librealm-macosx.a")
   set(REALM_SYNC_LIBRARIES ${REALM_SYNC_LIBRARY_LOCATION_DEBUG} ${REALM_SYNC_LIBRARY_LOCATION})
-  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.gz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
+  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.xz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
   add_custom_target(extract-realm-tarball DEPENDS ${REALM_SYNC_LIBRARIES})
 
   add_library(realm STATIC IMPORTED)

@@ -83,7 +83,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
 #if defined(__linux__) && REALM_HAVE_FEATURE_TOKENS
-        if (!_features || !_features->is_feature_enabled("Sync")) {
+        if (!_features || !_features->has_feature("Sync")) {
             throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
         }
 #endif
