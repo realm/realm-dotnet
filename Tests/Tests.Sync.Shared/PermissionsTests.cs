@@ -477,7 +477,16 @@ namespace Tests.Sync
 
                 using (var realm = GetRealm(config))
                 {
-                    await realm.GetSession().WaitForUploadAsync();
+                    realm.Write(() => realm.Add(new Person()));
+
+                    try
+                    {
+                        // Sometimes PermissionDenied will be thrown too fast moving the session to an error state
+                        await realm.GetSession().WaitForUploadAsync();
+                    }
+                    catch
+                    {
+                    }
                 }
 
                 var sessionError = await sessionErrorTask.Timeout(1000);
@@ -492,7 +501,6 @@ namespace Tests.Sync
 
                 Assert.That(result, Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
-
             });
         }
 
