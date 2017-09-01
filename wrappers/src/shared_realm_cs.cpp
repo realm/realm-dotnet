@@ -312,7 +312,6 @@ Object* create_object_unique(const SharedRealm& realm, Table& table, const KeyTy
         is_new = false;
     }
 
-
     return new Object(realm, object_schema, table.get(row_index));
 }
 
