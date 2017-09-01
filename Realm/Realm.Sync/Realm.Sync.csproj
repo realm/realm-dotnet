@@ -33,6 +33,7 @@
     <Compile Include="Exceptions\ErrorCodeHelper.cs" />
     <Compile Include="Exceptions\HttpException.cs" />
     <Compile Include="Exceptions\SessionException.cs" />
+    <Compile Include="Exceptions\PermissionDeniedException.cs" />
     <Compile Include="Extensions\RealmSyncExtensions.cs" />
     <Compile Include="Extensions\TestingExtensions.cs" />
     <Compile Include="Handles\SessionHandle.cs" />

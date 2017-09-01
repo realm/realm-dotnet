@@ -26,6 +26,7 @@ using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
+using File = System.IO.File;
 
 namespace Tests.Sync
 {
@@ -451,6 +452,49 @@ namespace Tests.Sync
         }
 
         #endregion
+
+#if !ROS_SETUP
+        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
+#endif
+        [Test]
+        public void WriteToReadOnlyRealm_ThrowsPermissionDenied()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
+
+                var realmPath = $"/{alice.Identity}/willBeReadonly";
+                var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
+                EnsureRealmExists(alice, realmUrl);
+
+                // Give Bob just read permissions
+                await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read);
+
+                var config = new SyncConfiguration(bob, new Uri(realmUrl));
+
+                var sessionErrorTask = TestHelpers.EventToTask<ErrorEventArgs>(h => Session.Error += h, h => Session.Error -= h);
+
+                using (var realm = GetRealm(config))
+                {
+                    await realm.GetSession().WaitForUploadAsync();
+                }
+
+                var sessionError = await sessionErrorTask.Timeout(1000);
+                Assert.That(sessionError.Exception, Is.TypeOf<PermissionDeniedException>());
+
+                var pde = (PermissionDeniedException)sessionError.Exception;
+
+                Assert.That(pde.ErrorCode, Is.EqualTo(ErrorCode.PermissionDenied));
+                Assert.That(File.Exists(config.DatabasePath), Is.True);
+
+                var result = pde.DeleteRealmUserInfo(deleteRealm: true);
+
+                Assert.That(result, Is.True);
+                Assert.That(File.Exists(config.DatabasePath), Is.False);
+
+            });
+        }
 
         private async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
         {

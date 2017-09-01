@@ -30,6 +30,7 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync_session_cs.hpp"
+#include "sync/impl/sync_metadata.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -138,6 +139,18 @@ REALM_EXPORT bool realm_syncmanager_immediately_run_file_actions(uint16_t* pathb
     });
 }
     
+REALM_EXPORT bool realm_syncmanager_cancel_pending_file_actions(uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
+        bool result;
+        SyncManager::shared().perform_metadata_update([&](const auto& manager) {
+            result = manager.delete_metadata_action(path);
+        });
+        return result;
+    });
+}
+
 REALM_EXPORT void realm_syncmanager_reconnect()
 {
     SyncManager::shared().reconnect();
