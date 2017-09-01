@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2017 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace Realms.Sync.Exceptions
     /// <para />
     /// The <see cref="PermissionDeniedException"/> exposes a method that
     /// can be called with a single argument: <c>true</c> to immediately delete the Realm file,
-    /// or <c>false</c> to not delete the file at all(either now or upon restart). This method
+    /// or <c>false</c> to not delete the file at all (either now or upon restart). This method
     /// should only be called with <c>true</c> if and when your app disposes of every
     /// instance of the offending Realm on all threads.
     /// </summary>
