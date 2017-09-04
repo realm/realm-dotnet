@@ -43,7 +43,7 @@ namespace Tests.Database
             dynamic allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject");
+                allTypesObject = _realm.CreateObject("AllTypesObject", null);
                 Assert.That(allTypesObject, Is.InstanceOf<Realms.Dynamic.DynamicRealmObject>());
 
                 allTypesObject.CharProperty = 'F';
@@ -64,7 +64,7 @@ namespace Tests.Database
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject");
+                allTypesObject = _realm.CreateObject("AllTypesObject", null);
 
                 CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();
@@ -81,7 +81,7 @@ namespace Tests.Database
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject");
+                allTypesObject = _realm.CreateObject("AllTypesObject", null);
 
                 CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();

@@ -6,6 +6,7 @@ wrapperConfigurations = [
   Release: ''
 ]
 configuration = 'Release'
+AndroidABIs = ['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']
 
 nugetCmd = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/nuget'
 def mono = '/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono'
@@ -49,20 +50,17 @@ stage('Checkout') {
     }
 
     nuget('restore Realm.sln')
-    stash includes: '**', name: 'dotnet-source'
+    stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source'
+    stash includes: 'wrappers/**', name: 'dotnet-wrappers-source'
     deleteDir()
   }
-}
-
-def getArchive() {
-    unstash 'dotnet-source'
 }
 
 stage('Weavers') {
   parallel(
     'RealmWeaver': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         dir('Weaver/WeaverTests/RealmWeaver.Tests') {
           msbuild target: 'Restore,Build', properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
@@ -75,7 +73,7 @@ stage('Weavers') {
     },
     'BuildTasks': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         dir('Weaver/Realm.BuildTasks') {
           msbuild properties: [ Configuration: configuration ]
@@ -90,7 +88,7 @@ stage('Build without sync') {
   parallel(
     'iOS': {
       nodeWithCleanup('osx') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           sh "make ios${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
@@ -99,7 +97,7 @@ stage('Build without sync') {
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
       }
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
         unstash 'ios-wrappers-nosync'
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
@@ -116,20 +114,9 @@ stage('Build without sync') {
       }
     },
     'Android': {
+      buildAndroidWrappers('android-wrappers-nosync')
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
-
-        dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]} REALM_ENABLE_SYNC=0"
-          }
-        }
-
-        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-nosync'
-      }
-      nodeWithCleanup('xamarin-mac') {
-        getArchive()
-
+        unstash 'dotnet-source'
         unstash 'android-wrappers-nosync'
         unstash 'tools-weaver'
 
@@ -146,8 +133,8 @@ stage('Build without sync') {
     },
     'Win32': {
       nodeWithCleanup('windows') {
-        getArchive()
-
+        unstash 'dotnet-source'
+        unstash 'dotnet-wrappers-source'
         unstash 'tools-weaver'
 
         dir('wrappers') {
@@ -166,7 +153,7 @@ stage('Build without sync') {
     },
     'UWP': {
       nodeWithCleanup('windows') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
@@ -180,7 +167,7 @@ stage('Build without sync') {
     },
     'macOS': {
       nodeWithCleanup('osx') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           cmake 'build-osx', "${pwd()}/build", configuration
@@ -189,7 +176,7 @@ stage('Build without sync') {
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
         unstash 'macos-wrappers-nosync'
         unstash 'tools-weaver'
 
@@ -205,7 +192,7 @@ stage('Build without sync') {
     },
     'Linux': {
       nodeWithCleanup('docker') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -223,7 +210,7 @@ stage('Build without sync') {
     },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         msbuild project: 'Platform.PCL/Realm.PCL/Realm.PCL.csproj',
                 properties: [ Configuration: configuration ]
@@ -239,7 +226,7 @@ stage('Build without sync') {
 
 stage('Build .NET Core without sync') {
   nodeWithCleanup('windows') {
-    getArchive()
+    unstash 'dotnet-source'
     unstash 'macos-wrappers-nosync'
     unstash 'linux-wrappers-nosync'
     unstash 'win32-wrappers-nosync'
@@ -285,7 +272,7 @@ stage('Build with sync') {
   parallel(
     'iOS': {
       nodeWithCleanup('osx') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           sh "make ios${wrapperConfigurations[configuration]}"
@@ -294,8 +281,7 @@ stage('Build with sync') {
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
       }
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
-
+        unstash 'dotnet-source'
         unstash 'ios-wrappers-sync'
         unstash 'buildtasks-output'
         unstash 'tools-weaver'
@@ -311,20 +297,9 @@ stage('Build with sync') {
       }
     },
     'Android': {
+      buildAndroidWrappers('android-wrappers-sync', ['REALM_ENABLE_SYNC': 'ON'])
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
-
-        dir('wrappers') {
-          withEnv(["NDK_ROOT=${env.HOME}/Library/Developer/Xamarin/android-ndk/android-ndk-r10e"]) {
-            sh "make android${wrapperConfigurations[configuration]}"
-          }
-        }
-
-        stash includes: "wrappers/build/${configuration}-android/**/*", name: 'android-wrappers-sync'
-      }
-      nodeWithCleanup('xamarin-mac') {
-        getArchive()
-
+        unstash 'dotnet-source'
         unstash 'android-wrappers-sync'
         unstash 'tools-weaver'
 
@@ -339,7 +314,7 @@ stage('Build with sync') {
     },
     'macOS': {
       nodeWithCleanup('osx') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
           cmake 'build-osx', "${pwd()}/build", configuration, [
@@ -350,7 +325,7 @@ stage('Build with sync') {
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
       }
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
         unstash 'macos-wrappers-sync'
         unstash 'tools-weaver'
 
@@ -365,7 +340,7 @@ stage('Build with sync') {
     },
     'Linux': {
       nodeWithCleanup('docker') {
-        getArchive()
+        unstash 'dotnet-wrappers-source'
       
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
@@ -385,7 +360,7 @@ stage('Build with sync') {
     },
     'PCL': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
         msbuild project: 'Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj',
                 properties: [ Configuration: configuration ]
         stash includes: "Platform.PCL/Realm.Sync.PCL/bin/${configuration}/Realm.Sync.*", name: 'nuget-pcl-sync'
@@ -396,7 +371,7 @@ stage('Build with sync') {
 
 stage ('Build .NET Core') {
   nodeWithCleanup('windows') {
-    getArchive()
+    unstash 'dotnet-source'
     unstash 'macos-wrappers-sync'
     unstash 'linux-wrappers-sync'
     unstash 'tools-weaver'
@@ -430,10 +405,39 @@ stage('Test with sync') {
   )
 }
 
+def buildAndroidWrappers(String stashName, Map extraCMakeArguments = [:]) {
+  def wrappersBranches = [:]
+  for (def abi in AndroidABIs) {
+    def localAbi = abi
+    wrappersBranches["Android ${localAbi} wrappers"] = {
+      nodeWithCleanup('docker') {
+        unstash 'dotnet-wrappers-source'
+        dir('wrappers') {
+          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f Dockerfile.android').inside() {
+            cmake "build-${localAbi}", "${env.WORKSPACE}/wrappers/build", configuration, [
+              'REALM_PLATFORM': 'Android', 'ANDROID_ABI': localAbi,
+              'CMAKE_TOOLCHAIN_FILE': "${env.WORKSPACE}/wrappers/src/object-store/CMake/android.toolchain.cmake"
+            ] << extraCMakeArguments
+          }
+        }
+        stash includes: "wrappers/build/Android/**/*", name: "${stashName}-${localAbi}"
+      }
+    }
+  }
+  parallel wrappersBranches
+
+  nodeWithCleanup('docker') {
+    for (def abi in AndroidABIs) {
+      unstash "${stashName}-${abi}"
+    }
+    stash includes: "wrappers/build/Android/**/*", name: stashName
+  }
+}
+
 def Win32Test(stashName) {
   return {
     nodeWithCleanup('windows') {
-      getArchive()
+      unstash 'dotnet-source'
       unstash stashName
 
       def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
@@ -521,7 +525,7 @@ def AndroidTest(stashName) {
 def NetCoreTest(String nodeName, String platform, String stashSuffix) {
   return {
     nodeWithCleanup(nodeName) {
-      getArchive()
+      unstash 'dotnet-source'
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
       withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'), 
@@ -620,7 +624,7 @@ stage('NuGet') {
   parallel(
     'Realm.Database': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         unstash 'nuget-weaver'
         unstash 'buildtasks-output'
@@ -640,7 +644,7 @@ stage('NuGet') {
     },
     'Realm': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         unstash 'nuget-pcl-sync'
         unstash 'nuget-sync'
@@ -656,7 +660,7 @@ stage('NuGet') {
     },
     'DataBinding': {
       nodeWithCleanup('xamarin-mac') {
-        getArchive()
+        unstash 'dotnet-source'
 
         unstash 'nuget-pcl-databinding'
         unstash 'nuget-ios-databinding'

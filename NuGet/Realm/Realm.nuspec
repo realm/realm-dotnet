@@ -35,10 +35,10 @@
 <!-- Targets file adds adds references to native libs -->
     <file src="Realm.targets" target="build" />
 <!-- Android files -->
-    <file src="../../wrappers/build/$Configuration$-android/armeabi-v7a/librealm-wrappers.so" target="native/android/armeabi-v7a" />
-    <file src="../../wrappers/build/$Configuration$-android/arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
-    <file src="../../wrappers/build/$Configuration$-android/x86/librealm-wrappers.so" target="native/android/x86" />
-    <file src="../../wrappers/build/$Configuration$-android/x86_64/librealm-wrappers.so" target="native/android/x86_64" />
+    <file src="../../wrappers/build/Android/$Configuration$-armeabi-v7a/librealm-wrappers.so" target="native/android/armeabi-v7a" />
+    <file src="../../wrappers/build/Android/$Configuration$-arm64-v8a/librealm-wrappers.so" target="native/android/arm64-v8a" />
+    <file src="../../wrappers/build/Android/$Configuration$-x86/librealm-wrappers.so" target="native/android/x86" />
+    <file src="../../wrappers/build/Android/$Configuration$-x86_64/librealm-wrappers.so" target="native/android/x86_64" />
 <!-- .NET Core files -->
     <file src="../../wrappers/build/Darwin/$Configuration$/librealm-wrappers.dylib" target="runtimes/osx.10.10-x64/native" />
     <file src="../../wrappers/build/Linux/$Configuration$/librealm-wrappers.so" target="runtimes/linux-x64/native" />

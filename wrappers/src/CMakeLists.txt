@@ -37,10 +37,6 @@ if(REALM_ENABLE_SYNC)
     )
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
-    list(APPEND SOURCES win32_polyfill.cpp)
-endif()
-
 set(INCLUDE_DIRS
     ${REALM_CORE_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
@@ -49,7 +45,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
     list(APPEND INCLUDE_DIRS ${REALM_CORE_INCLUDE_DIR}/win32/pthread)
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   add_compile_options(-Wno-missing-prototypes)
 endif()
 
@@ -58,8 +54,10 @@ target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
 target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(realm-wrappers realm-object-store)
 
-if(NOT CMAKE_GENERATOR_PLATFORM STREQUAL "")
+if(CMAKE_GENERATOR_PLATFORM)
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${CMAKE_GENERATOR_PLATFORM})
+elseif(ANDROID_ABI)
+    set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${ANDROID_ABI})
 else()
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>)
 endif()

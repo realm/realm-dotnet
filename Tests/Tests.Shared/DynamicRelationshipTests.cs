@@ -78,25 +78,25 @@ namespace Tests.Database
 
             _realm.Write(() =>
             {
-                var o1 = _realm.CreateObject("DynamicOwner");
+                var o1 = _realm.CreateObject("DynamicOwner", null);
                 o1.Name = "Tim";
 
-                var d1 = _realm.CreateObject("DynamicDog");
+                var d1 = _realm.CreateObject("DynamicDog", null);
                 d1.Name = "Bilbo Fleabaggins";
                 d1.Color = "Black";
                 o1.TopDog = d1;  // set a one-one relationship
                 o1.Dogs.Add(d1);
 
-                var d2 = _realm.CreateObject("DynamicDog");
+                var d2 = _realm.CreateObject("DynamicDog", null);
                 d2.Name = "Earl Yippington III";
                 d2.Color = "White";
                 o1.Dogs.Add(d2);
 
                 // lonely people and dogs
-                var o2 = _realm.CreateObject("DynamicOwner");
+                var o2 = _realm.CreateObject("DynamicOwner", null);
                 o2.Name = "Dani";  // the dog-less
 
-                var d3 = _realm.CreateObject("DynamicDog");  // will remain unassigned
+                var d3 = _realm.CreateObject("DynamicDog", null);  // will remain unassigned
                 d3.Name = "Maggie Mongrel";
                 d3.Color = "Grey";
             });
