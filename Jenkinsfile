@@ -406,20 +406,25 @@ stage('Test with sync') {
 }
 
 def buildAndroidWrappers(String stashName, Map extraCMakeArguments = [:]) {
+  def wrappersBranches = [:]
   for (def abi in AndroidABIs) {
-    nodeWithCleanup('docker') {
-      unstash 'dotnet-wrappers-source'
-      dir('wrappers') {
-        buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f Dockerfile.android').inside() {
-          cmake "build-${abi}", "${env.WORKSPACE}/wrappers/build", configuration, [
-            'REALM_PLATFORM': 'Android', 'ANDROID_ABI': abi,
-            'CMAKE_TOOLCHAIN_FILE': "${env.WORKSPACE}/wrappers/src/object-store/CMake/android.toolchain.cmake"
-          ] << extraCMakeArguments
+    def localAbi = abi
+    wrappersBranches["Android ${localAbi} wrappers"] = {
+      nodeWithCleanup('docker') {
+        unstash 'dotnet-wrappers-source'
+        dir('wrappers') {
+          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f Dockerfile.android').inside() {
+            cmake "build-${localAbi}", "${env.WORKSPACE}/wrappers/build", configuration, [
+              'REALM_PLATFORM': 'Android', 'ANDROID_ABI': localAbi,
+              'CMAKE_TOOLCHAIN_FILE': "${env.WORKSPACE}/wrappers/src/object-store/CMake/android.toolchain.cmake"
+            ] << extraCMakeArguments
+          }
         }
+        stash includes: "wrappers/build/Android/**/*", name: "${stashName}-${localAbi}"
       }
-      stash includes: "wrappers/build/Android/**/*", name: "${stashName}-${abi}"
     }
   }
+  parallel wrappersBranches
 
   nodeWithCleanup('docker') {
     for (def abi in AndroidABIs) {

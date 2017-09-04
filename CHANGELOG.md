@@ -10,18 +10,9 @@ x.y.z (TBD)
 - Fixed an issue that would prevent iOS Share Extension projects from working. ([#1535](https://github.com/realm/realm-dotnet/pull/1535))
 
 ### Breaking Changes
-
-1.6.0 (2017-08-14)
-------------------
-
-### Enhancements
-
-### Bug fixes
-
-### Breaking Changes
 - `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. ([#1381](https://github.com/realm/realm-dotnet/pull/1381))
 
-1.6.0 (TBD)
+1.6.0 (2017-08-14)
 ------------------
 
 ### Enhancements
