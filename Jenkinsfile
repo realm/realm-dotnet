@@ -20,7 +20,7 @@ def dataBindingVersionString
 def dependencies
 
 stage('Checkout') {
-  nodeWithCleanup('xamarin-mac') {
+  nodeWithCleanup('macos && dotnet') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -59,7 +59,7 @@ stage('Checkout') {
 stage('Weavers') {
   parallel(
     'RealmWeaver': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && dotnet') {
         unstash 'dotnet-source'
 
         dir('Weaver/WeaverTests/RealmWeaver.Tests') {
@@ -72,7 +72,7 @@ stage('Weavers') {
       }
     },
     'BuildTasks': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('dotnet') {
         unstash 'dotnet-source'
 
         dir('Weaver/Realm.BuildTasks') {
@@ -87,7 +87,7 @@ stage('Weavers') {
 stage('Build without sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('osx || macos') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
@@ -96,7 +96,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.ios') {
         unstash 'dotnet-source'
         unstash 'ios-wrappers-nosync'
         unstash 'buildtasks-output'
@@ -115,7 +115,7 @@ stage('Build without sync') {
     },
     'Android': {
       buildAndroidWrappers('android-wrappers-nosync')
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.android') {
         unstash 'dotnet-source'
         unstash 'android-wrappers-nosync'
         unstash 'tools-weaver'
@@ -175,7 +175,7 @@ stage('Build without sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-nosync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.mac') {
         unstash 'dotnet-source'
         unstash 'macos-wrappers-nosync'
         unstash 'tools-weaver'
@@ -209,7 +209,7 @@ stage('Build without sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('dotnet') {
         unstash 'dotnet-source'
 
         msbuild project: 'Platform.PCL/Realm.PCL/Realm.PCL.csproj',
@@ -225,7 +225,7 @@ stage('Build without sync') {
 }
 
 stage('Build .NET Core without sync') {
-  nodeWithCleanup('windows') {
+  nodeWithCleanup('dotnet') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-nosync'
     unstash 'linux-wrappers-nosync'
@@ -271,7 +271,7 @@ stage('Test without sync') {
 stage('Build with sync') {
   parallel(
     'iOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('osx || macos') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
@@ -280,7 +280,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/${configuration}-ios-universal/*", name: 'ios-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.ios') {
         unstash 'dotnet-source'
         unstash 'ios-wrappers-sync'
         unstash 'buildtasks-output'
@@ -298,7 +298,7 @@ stage('Build with sync') {
     },
     'Android': {
       buildAndroidWrappers('android-wrappers-sync', ['REALM_ENABLE_SYNC': 'ON'])
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.android') {
         unstash 'dotnet-source'
         unstash 'android-wrappers-sync'
         unstash 'tools-weaver'
@@ -324,7 +324,7 @@ stage('Build with sync') {
 
         stash includes: "wrappers/build/Darwin/${configuration}/**/*", name: 'macos-wrappers-sync'
       }
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('xamarin.mac') {
         unstash 'dotnet-source'
         unstash 'macos-wrappers-sync'
         unstash 'tools-weaver'
@@ -359,7 +359,7 @@ stage('Build with sync') {
       }
     },
     'PCL': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('dotnet') {
         unstash 'dotnet-source'
         msbuild project: 'Platform.PCL/Realm.Sync.PCL/Realm.Sync.PCL.csproj',
                 properties: [ Configuration: configuration ]
@@ -370,7 +370,7 @@ stage('Build with sync') {
 }
 
 stage ('Build .NET Core') {
-  nodeWithCleanup('windows') {
+  nodeWithCleanup('dotnet') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-sync'
     unstash 'linux-wrappers-sync'
@@ -461,7 +461,7 @@ def Win32Test(stashName) {
 
 def iOSTest(stashName) {
   return {
-    nodeWithCleanup('osx') {
+    nodeWithCleanup('osx || macos') {
       unstash stashName
 
       def workspace = pwd()
@@ -570,7 +570,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
 
 def XamarinMacTest(String stashName) {
   return {
-    nodeWithCleanup('osx') {
+    nodeWithCleanup('osx || macos') {
       unstash stashName
 
       def workspace = pwd()
@@ -623,7 +623,7 @@ def stopLogCatCollector(String backgroundPid, boolean archiveLog, String archive
 stage('NuGet') {
   parallel(
     'Realm.Database': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && dotnet') {
         unstash 'dotnet-source'
 
         unstash 'nuget-weaver'
@@ -643,7 +643,7 @@ stage('NuGet') {
       }
     },
     'Realm': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && dotnet') {
         unstash 'dotnet-source'
 
         unstash 'nuget-pcl-sync'
@@ -659,7 +659,7 @@ stage('NuGet') {
       }
     },
     'DataBinding': {
-      nodeWithCleanup('xamarin-mac') {
+      nodeWithCleanup('macos && dotnet') {
         unstash 'dotnet-source'
 
         unstash 'nuget-pcl-databinding'
