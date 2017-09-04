@@ -25,6 +25,9 @@ namespace Realms.Sync.Exceptions
     /// </summary>
     public class SessionException : Exception
     {
+        internal const string OriginalFilePathKey = "ORIGINAL_FILE_PATH";
+        internal const string BackupFilePathKey = "RECOVERY_FILE_PATH";
+
         /// <summary>
         /// Gets the error code that describes the session error this exception represents.
         /// </summary>

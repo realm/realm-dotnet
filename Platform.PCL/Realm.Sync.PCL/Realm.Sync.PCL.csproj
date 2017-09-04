@@ -37,6 +37,7 @@
     <Compile Include="..\..\Realm\Realm.Sync\Dtos\UserInfo.cs">
       <Link>Dtos\UserInfo.cs</Link>
     </Compile>
+    <Compile Include="Exceptions\PermissionDeniedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CredentialsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
