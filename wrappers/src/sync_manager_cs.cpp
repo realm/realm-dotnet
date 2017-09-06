@@ -30,11 +30,16 @@
 #include "sync/sync_config.hpp"
 #include "sync/sync_session.hpp"
 #include "sync_session_cs.hpp"
+#include "sync/impl/sync_metadata.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
+
+#if REALM_HAVE_FEATURE_TOKENS
+static std::unique_ptr<sync::FeatureGate> _features;
+#endif
 
 struct SyncConfiguration
 {
@@ -79,8 +84,8 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
 #if defined(__linux__) && REALM_HAVE_FEATURE_TOKENS
-        if (!realm::sync::is_feature_enabled("Sync")) {
-            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realm.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
+        if (!_features || !_features->has_feature("Sync")) {
+            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
         }
 #endif
         
@@ -112,7 +117,11 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         
         config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
 
-        return new SharedRealm(Realm::get_shared_realm(config));
+        auto realm = Realm::get_shared_realm(config);
+        if (!configuration.read_only)
+            realm->refresh();
+        
+        return new SharedRealm(realm);
     });
 }
     
@@ -134,6 +143,18 @@ REALM_EXPORT bool realm_syncmanager_immediately_run_file_actions(uint16_t* pathb
     });
 }
     
+REALM_EXPORT bool realm_syncmanager_cancel_pending_file_actions(uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
+        bool result;
+        SyncManager::shared().perform_metadata_update([&](const auto& manager) {
+            result = manager.delete_metadata_action(path);
+        });
+        return result;
+    });
+}
+
 REALM_EXPORT void realm_syncmanager_reconnect()
 {
     SyncManager::shared().reconnect();
@@ -163,11 +184,13 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
     });
 }
 
-REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len)
+REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
 {
 #if REALM_HAVE_FEATURE_TOKENS
-    Utf16StringAccessor token(token_buf, token_len);
-    realm::sync::set_feature_token(token);
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor token(token_buf, token_len);
+        _features.reset(new sync::FeatureGate(token));
+    });
 #endif
 }
 

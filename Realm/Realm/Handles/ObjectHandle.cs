@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -51,10 +51,6 @@ namespace Realms
             public static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
                 [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_string_unique(ObjectHandle handle, IntPtr propertyIndex,
-                [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_string(ObjectHandle handle, IntPtr propertyIndex,
                 IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
@@ -74,9 +70,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_null_unique(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_bool", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_bool(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
 
@@ -88,9 +81,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_int64_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_int64_unique(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
@@ -136,6 +126,11 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern ResultsHandle get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ResultsHandle get_backlinks_for_type(ObjectHandle objectHandle,
+                [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr typeLen,
+                [MarshalAs(UnmanagedType.LPWStr)] string property, IntPtr propertyLen, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
@@ -260,8 +255,10 @@ namespace Realms
                 throw new ArgumentNullException(nameof(value), "Object identifiers cannot be null");
             }
 
-            NativeMethods.set_string_unique(this, propertyIndex, value, (IntPtr)value.Length, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            if (GetString(propertyIndex) != value)
+            {
+                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
+            }
         }
 
         public string GetString(IntPtr propertyIndex)
@@ -359,23 +356,18 @@ namespace Realms
 
         public void SetInt64Unique(IntPtr propertyIndex, long value)
         {
-            NativeMethods.set_int64_unique(this, propertyIndex, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            if (GetInt64(propertyIndex) != value)
+            {
+                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
+            }
         }
 
         public void SetNullableInt64Unique(IntPtr propertyIndex, long? value)
         {
-            NativeException nativeException;
-            if (value.HasValue)
+            if (GetNullableInt64(propertyIndex) != value)
             {
-                NativeMethods.set_int64_unique(this, propertyIndex, value.Value, out nativeException);
+                throw new InvalidOperationException("Once set, primary key properties may not be modified.");   
             }
-            else
-            {
-                NativeMethods.set_null_unique(this, propertyIndex, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
         }
 
         public long GetInt64(IntPtr propertyIndex)
@@ -511,7 +503,7 @@ namespace Realms
         {
             if (@object == null)
             {
-                this.ClearLink(propertyIndex);
+                ClearLink(propertyIndex);
             }
             else
             {
@@ -520,13 +512,22 @@ namespace Realms
                     realm.Add(@object);
                 }
 
-                this.SetLink(propertyIndex, @object.ObjectHandle);
+                SetLink(propertyIndex, @object.ObjectHandle);
             }
         }
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)
         {
             var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return resultsHandle;
+        }
+
+        public ResultsHandle GetBacklinksForType(string objectType, string propertyName)
+        {
+            var resultsHandle = NativeMethods.get_backlinks_for_type(this, objectType, (IntPtr)objectType.Length,
+                propertyName, (IntPtr)propertyName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return resultsHandle;

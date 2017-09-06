@@ -6,7 +6,7 @@
   <Target
     Name="WeaveRealmAssemblyTarget" 
     BeforeTargets="_CompileToNative"
-    Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS' AND '$(OutputType)' == 'Exe'">
+    Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">
     <ItemGroup>
       <FilteredReferences Include="@(ReferencePath)" Condition="('%(Filename)%(Extension)' == 'Realm.dll') Or ('%(Filename)%(Extension)' == 'Realm.Sync.dll')" />
       <ReferencePath Include="$(OutputPath)Realm.dll" Condition="Exists('$(OutputPath)Realm.dll')"/>

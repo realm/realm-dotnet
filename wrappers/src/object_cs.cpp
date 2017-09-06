@@ -249,6 +249,27 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, uint16_t* type_buf, size_t type_len, uint16_t* property_buf, size_t property_len, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            verify_can_get(object);
+            Utf16StringAccessor type(type_buf, type_len);
+            Utf16StringAccessor property(property_buf, property_len);
+            
+            // type and property are validated by C#
+            auto target_object_schema = object.realm()->schema().find(type);
+            auto link_property = target_object_schema->property_for_name(property);
+        
+            if (link_property->object_type != object.get_object_schema().name) {
+                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", type.to_string(), property.to_string(), object.get_object_schema().name));
+            }
+        
+            auto table = ObjectStore::table_for_object_type(object.realm()->read_group(), target_object_schema->name);
+            auto tv = object.row().get_table()->get_backlink_view(object.row().get_index(), table.get(), link_property->table_column);
+            return new Results(object.realm(), std::move(tv));
+        });
+    }
+    
     REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -281,30 +302,7 @@ extern "C" {
             object.row().set_null(column_ndx);
         });
     }
-
-    REALM_EXPORT void object_set_null_unique(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (!object.row().get_table()->is_nullable(column_ndx))
-                throw std::invalid_argument("Column is not nullable");
-
-            auto existing = object.row().get_table()->find_first_null(column_ndx);
-            if (existing != object.row().get_index()) {
-                if (existing != not_found) {
-                    throw SetDuplicatePrimaryKeyValueException(
-                        object.row().get_table()->get_name(),
-                        object.row().get_table()->get_column_name(column_ndx),
-                        "null");
-                }
-            }
-
-            object.row().set_null_unique(column_ndx);
-        });
-    }
-
+    
     REALM_EXPORT void object_set_bool(Object& object, size_t property_ndx, size_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -323,28 +321,7 @@ extern "C" {
             object.row().set_int(column_ndx, value);
         });
     }
-
-    REALM_EXPORT void object_set_int64_unique(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            auto existing = object.row().get_table()->find_first_int(column_ndx, value);
-            if (existing != object.row().get_index()) {
-                if (existing != not_found) {
-                    throw SetDuplicatePrimaryKeyValueException(
-                        object.row().get_table()->get_name(),
-                        object.row().get_table()->get_column_name(column_ndx),
-                        util::format("%1", value)
-                    );
-                }
-            }
-
-            object.row().set_int_unique(column_ndx, value);
-        });
-    }
-
+    
     REALM_EXPORT void object_set_float(Object& object, size_t property_ndx, float value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -374,29 +351,7 @@ extern "C" {
             object.row().set_string(column_ndx, str);
         });
     }
-
-    REALM_EXPORT void object_set_string_unique(Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            Utf16StringAccessor str(value, value_len);
-            auto existing = object.row().get_table()->find_first_string(column_ndx, str);
-            if (existing != object.row().get_index()) {
-                if (object.row().get_table()->find_first_string(column_ndx, str) != not_found) {
-                    throw SetDuplicatePrimaryKeyValueException(
-                        object.row().get_table()->get_name(),
-                        object.row().get_table()->get_column_name(column_ndx),
-                        str.to_string()
-                    );
-                }
-            }
-
-            object.row().set_string_unique(column_ndx, str);
-        });
-    }
-
+    
     REALM_EXPORT void object_set_binary(Object& object, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

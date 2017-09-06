@@ -18,7 +18,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <AndroidSupportedAbis>armeabi,armeabi-v7a,x86</AndroidSupportedAbis>
+    <AndroidSupportedAbis>armeabi-v7a,arm64-v8a,x86,x86_64</AndroidSupportedAbis>
     <AndroidStoreUncompressedFileExtensions />
     <MandroidI18n />
     <JavaMaximumHeapSize>
@@ -188,16 +188,16 @@
     </AndroidAsset>
   </ItemGroup>
   <ItemGroup>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\armeabi-v7a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
       <Link>wrappers\armeabi-v7a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Android\$(Configuration)-x86\librealm-wrappers.so">
       <Link>wrappers\x86\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\arm64-v8a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
       <Link>wrappers\arm64-v8a\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\build\$(Configuration)-android\x86_64\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Android\$(Configuration)-x86_64\librealm-wrappers.so">
       <Link>wrappers\x86_64\librealm-wrappers.so</Link>
     </AndroidNativeLibrary>
   </ItemGroup>

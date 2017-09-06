@@ -35,6 +35,7 @@ namespace Realms.Sync.Exceptions
             : base(message)
         {
             ErrorCode = errorCode;
+            HelpLink = "https://realm.io/docs/xamarin/latest/#access-control";
         }
     }
 }

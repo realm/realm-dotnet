@@ -78,25 +78,25 @@ namespace Tests.Database
 
             _realm.Write(() =>
             {
-                var o1 = _realm.CreateObject("DynamicOwner");
+                var o1 = _realm.CreateObject("DynamicOwner", null);
                 o1.Name = "Tim";
 
-                var d1 = _realm.CreateObject("DynamicDog");
+                var d1 = _realm.CreateObject("DynamicDog", null);
                 d1.Name = "Bilbo Fleabaggins";
                 d1.Color = "Black";
                 o1.TopDog = d1;  // set a one-one relationship
                 o1.Dogs.Add(d1);
 
-                var d2 = _realm.CreateObject("DynamicDog");
+                var d2 = _realm.CreateObject("DynamicDog", null);
                 d2.Name = "Earl Yippington III";
                 d2.Color = "White";
                 o1.Dogs.Add(d2);
 
                 // lonely people and dogs
-                var o2 = _realm.CreateObject("DynamicOwner");
+                var o2 = _realm.CreateObject("DynamicOwner", null);
                 o2.Name = "Dani";  // the dog-less
 
-                var d3 = _realm.CreateObject("DynamicDog");  // will remain unassigned
+                var d3 = _realm.CreateObject("DynamicDog", null);  // will remain unassigned
                 d3.Name = "Maggie Mongrel";
                 d3.Color = "Grey";
             });
@@ -317,6 +317,22 @@ namespace Tests.Database
 
             _realm.Write(() => dani.Dogs.Add(maggie));
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
+        }
+
+        [Test]
+        public void DynamicBacklinks()
+        {
+            var tim = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
+            var topOwners = tim.TopDog.GetBacklinks("DynamicOwner", "TopDog");
+
+            Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
+
+            var dani = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
+            var maggie = _realm.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
+            Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.Empty);
+
+            _realm.Write(() => dani.TopDog = maggie);
+            Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.EquivalentTo(new[] { dani }));
         }
     }
 }

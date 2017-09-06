@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -944,14 +944,11 @@ public partial class ModuleWeaver
                     castInstance.Realm.Add(castInstance.field, update);
                     castInstance.Field = castInstance.field;
                 *else if* property is PK
-                    if (setPrimaryKey)
-                    {
-                        castInstance.Property = castInstance.Field;
-                    }
+                    *do nothing*
                 *else if* property is [Required] or nullable
                     castInstance.Property = castInstance.Field;
                 *else*
-                    if (!setPrimaryKey || castInstance.field != default(fieldType))
+                    if (!skipDefaults || castInstance.field != default(fieldType))
                     {
                         castInstance.Property = castInstance.Field;
                     }
@@ -959,7 +956,7 @@ public partial class ModuleWeaver
                 *foreach* list woven property in castInstance's schema
                 var list = castInstance.field;
                 castInstance.field = null;
-                if (!setPrimaryKey)
+                if (!skipDefaults)
                 {
                     castInstance.Property.Clear();
                 }
@@ -979,8 +976,8 @@ public partial class ModuleWeaver
             var updateParameter = new ParameterDefinition("update", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
             copyToRealm.Parameters.Add(updateParameter);
 
-            var setPrimaryKeyParameter = new ParameterDefinition("setPrimaryKey", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
-            copyToRealm.Parameters.Add(setPrimaryKeyParameter);
+            var skipDefaultsParameter = new ParameterDefinition("skipDefaults", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
+            copyToRealm.Parameters.Add(skipDefaultsParameter);
 
             copyToRealm.Body.Variables.Add(new VariableDefinition(realmObjectType));
 
@@ -1002,7 +999,7 @@ public partial class ModuleWeaver
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties.OrderByDescending(p => p.Property.IsPrimaryKey()))
+            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey()))
             {
                 var property = prop.Property;
                 var field = prop.Field;
@@ -1021,22 +1018,20 @@ public partial class ModuleWeaver
 
                     // We can skip setting properties that have their default values unless:
                     var shouldSetAlways = property.IsNullable() ||     // The property is nullable - those should be set explicitly to null
-                                          property.IsPrimaryKey() ||   // setPrimaryKey should always be called as the first instruction
                                           property.IsRequired() ||     // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
                                           property.PropertyType.IsRealmInteger(out var _, out var __); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
 
                     // If the property is non-nullable, we want the following code to execute:
-                    // if (!setPrimaryKey || castInstance.field != default(fieldType))
+                    // if (!skipDefaults || castInstance.field != default(fieldType))
                     // {
                     //     castInstance.Property = castInstance.field
                     // }
                     //
-                    // This ensures that if we're updating, we'll be copy each value to realm, even if it's the default value for the property,
-                    // because we have no idea what the previous value was. If it's an add, we're certain that the row will contain the default value, so no need to set it.
-                    // *updatePlaceholder* will be the Brtrue instruction that will skip the default check and move to the property setting logic.
-                    // The default check branching instruction is inserted above the *setStartPoint* instruction later on.
-                    Instruction setPrimaryKeyPlaceholder = null;
+                    // *updatePlaceholder* will be the Brtrue instruction that will skip the default check and move to the
+                    // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
+                    // instruction later on.
+                    Instruction skipDefaultsPlaceholder = null;
                     if (property.IsDescendantOf(_references.RealmObject))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1056,8 +1051,8 @@ public partial class ModuleWeaver
                     else if (!shouldSetAlways)
                     {
                         il.Append(il.Create(OpCodes.Ldarg_3));
-                        setPrimaryKeyPlaceholder = il.Create(OpCodes.Nop);
-                        il.Append(setPrimaryKeyPlaceholder);
+                        skipDefaultsPlaceholder = il.Create(OpCodes.Nop);
+                        il.Append(skipDefaultsPlaceholder);
 
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -1100,16 +1095,10 @@ public partial class ModuleWeaver
                             il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, setEndPoint));
                         }
 
-                        if (setPrimaryKeyPlaceholder != null)
+                        if (skipDefaultsPlaceholder != null)
                         {
-                            il.Replace(setPrimaryKeyPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
+                            il.Replace(skipDefaultsPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
-                    }
-                    else if (property.IsPrimaryKey())
-                    {
-                        // If setPrimaryKey is false, we skip setting the property
-                        il.InsertBefore(setStartPoint, il.Create(OpCodes.Ldarg_3));
-                        il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, setEndPoint));
                     }
                 }
                 else if (property.IsIList())
@@ -1119,9 +1108,9 @@ public partial class ModuleWeaver
 
                     var iteratorStLoc = (byte)(currentStloc + 1);
 
-                    // if (!setPrimaryKey ||
-                    var isPrimaryKeyCheck = il.Create(OpCodes.Ldarg_3);
-                    il.Append(isPrimaryKeyCheck);
+                    // if (!skipDefaults ||
+                    var skipDefaultsCheck = il.Create(OpCodes.Ldarg_3);
+                    il.Append(skipDefaultsCheck);
 
                     // castInstance.field != null)
                     il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1138,7 +1127,7 @@ public partial class ModuleWeaver
                     il.Append(il.Create(OpCodes.Ldnull));
                     il.Append(il.Create(OpCodes.Stfld, field));
 
-                    // if (!setPrimaryKey)
+                    // if (!skipDefaults)
                     var clearSkipPlaceholder = il.Create(OpCodes.Ldarg_3);
                     il.Append(clearSkipPlaceholder);
 
@@ -1151,7 +1140,7 @@ public partial class ModuleWeaver
                     var localListVarNullCheck = il.Create(OpCodes.Ldloc_S, currentStloc);
                     il.Append(localListVarNullCheck);
 
-                    // if (setPrimaryKey), skip List.Clear and jump to checking the list == null
+                    // if (skipDefaults), skip List.Clear and jump to checking the list == null
                     il.InsertAfter(clearSkipPlaceholder, il.Create(OpCodes.Brtrue_S, localListVarNullCheck));
 
                     il.Append(il.Create(OpCodes.Ldc_I4_0));
@@ -1200,7 +1189,7 @@ public partial class ModuleWeaver
                     il.Append(setterEnd);
                     il.InsertAfter(fieldNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
                     il.InsertAfter(localListVarNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
-                    il.InsertAfter(isPrimaryKeyCheck, il.Create(OpCodes.Brfalse_S, setterStart));
+                    il.InsertAfter(skipDefaultsCheck, il.Create(OpCodes.Brfalse_S, setterStart));
 
                     currentStloc += 2;
                 }

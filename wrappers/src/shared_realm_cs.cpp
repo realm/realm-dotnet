@@ -29,6 +29,7 @@
 #include "object-store/src/binding_context.hpp"
 #include <unordered_set>
 #include "object-store/src/thread_safe_reference.hpp"
+#include <sstream>
 
 using namespace realm;
 using namespace realm::binding;
@@ -45,7 +46,6 @@ namespace binding {
         notify_realm_changed(m_managed_state_handle);
     }
 }
-    
 }
 
 extern "C" {
@@ -111,7 +111,11 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             
         }
         
-        return new SharedRealm{Realm::get_shared_realm(config)};
+        auto realm = Realm::get_shared_realm(config);
+        if (!configuration.read_only)
+            realm->refresh();
+        
+        return new SharedRealm{realm};
     });
 }
 
@@ -258,4 +262,104 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
     });
 }
     
+}
+#pragma mark - Creating objects
+
+inline const ObjectSchema& find_schema(const SharedRealm& realm, const Table& table)
+{
+    const StringData object_name(ObjectStore::object_type_for_table_name(table.get_name()));
+    return *realm->schema().find(object_name);
+}
+
+namespace realm
+{
+template <>
+size_t Table::set_unique(size_t column_ndx, size_t row_ndx, util::Optional<int64_t> value)
+{
+    if (value) {
+        return set_unique(column_ndx, row_ndx, *value);
+    } else {
+        return set_unique(column_ndx, row_ndx, null());
+    }
+}
+
+template<class KeyType>
+Object* create_object_unique(const SharedRealm& realm, Table& table, const KeyType& key, bool try_update, bool& is_new)
+{
+    realm->verify_in_write();
+    const ObjectSchema& object_schema(find_schema(realm, table));
+
+    const Property& primary_key_property = *object_schema.primary_key_property();
+    size_t column_index = primary_key_property.table_column;
+
+    size_t row_index = table.find_first(column_index, key);
+
+    if (row_index == realm::not_found) {
+        is_new = true;
+#if REALM_ENABLE_SYNC
+        row_index = sync::create_object_with_primary_key(realm->read_group(), table, key);
+#else
+        row_index = table.add_empty_row();
+        table.set_unique(column_index, row_index, key);
+#endif
+    } else if (!try_update) {
+        std::ostringstream string_builder;
+        string_builder << key;
+        throw SetDuplicatePrimaryKeyValueException(object_schema.name,
+                                                   primary_key_property.name,
+                                                   string_builder.str());
+    } else {
+        is_new = false;
+    }
+
+    return new Object(realm, object_schema, table.get(row_index));
+}
+
+extern "C" {
+
+REALM_EXPORT Object* shared_realm_create_object(SharedRealm* realm, Table* table, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        (*realm)->verify_in_write();
+        
+#if REALM_ENABLE_SYNC
+        size_t row_index = sync::create_object((*realm)->read_group(), *table);
+#else
+        size_t row_index = table->add_empty_row();
+#endif // REALM_ENABLE_SYNC
+
+        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        
+        return new Object(*realm, object_schema, table->get(row_index));
+    });
+}
+
+REALM_EXPORT Object* shared_realm_create_object_int_unique(const SharedRealm& realm, Table& table, int64_t key, bool is_nullable, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        if (is_nullable) {
+            return create_object_unique(realm, table, util::some<int64_t>(key), try_update, is_new);
+        } else {
+            return create_object_unique(realm, table, key, try_update, is_new);
+        }
+    });
+}
+
+REALM_EXPORT Object* shared_realm_create_object_string_unique(const SharedRealm& realm, Table& table, uint16_t* key_buf, size_t key_len, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor key(key_buf, key_len);
+        return create_object_unique(realm, table, StringData(key), try_update, is_new);
+    });
+}
+
+REALM_EXPORT Object* shared_realm_create_object_null_unique(const SharedRealm& realm, Table& table, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return create_object_unique<util::Optional<int64_t>>(realm, table, null(), try_update, is_new);
+    });
+}
+
+}
 }

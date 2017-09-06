@@ -25,9 +25,6 @@ namespace Realms.Sync.Exceptions
     /// </summary>
     public class ClientResetException : SessionException
     {
-        private const string OriginalFilePathKey = "ORIGINAL_FILE_PATH";
-        private const string BackupFilePathKey = "RECOVERY_FILE_PATH";
-
         private readonly string _originalFilePath;
 
         /// <summary>
@@ -41,6 +38,7 @@ namespace Realms.Sync.Exceptions
         {
             _originalFilePath = userInfo[OriginalFilePathKey];
             BackupFilePath = userInfo[BackupFilePathKey];
+            HelpLink = "https://realm.io/docs/xamarin/latest/#client-reset";
         }
 
         /// <summary>

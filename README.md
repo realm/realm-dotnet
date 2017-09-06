@@ -27,6 +27,12 @@ The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm
 - **Have a feature request?** [Open an issue](https://github.com/realm/realm-dotnet/issues/new). Tell us what the feature should do, and why you want the feature.
 - Sign up for our [**Community Newsletter**](https://realm.io/realm-news-subscribe) to get regular tips, learn about other use-cases and get alerted of blogposts and tutorials about Realm.
 
+## Nightly builds
+
+If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use the preview releases published after every
+commit to the [realm-nightly](https://www.myget.org/feed/Packages/realm-nightly) MyGet feed. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) 
+for instructions on adding custom sources to the NuGet Package Manager. The source URL you need to specify is `https://www.myget.org/F/realm-nightly/api/v3/index.json`.
+
 ## Building Realm
 
 We highly recommend [using our pre-built binaries via NuGet](https://realm.io/docs/xamarin/latest/#installation) but you can also build from source.
@@ -85,7 +91,7 @@ not eligible to receive the product under U.S. law.**
 
 ## Feedback
 
-**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm) to share your thoughts!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 

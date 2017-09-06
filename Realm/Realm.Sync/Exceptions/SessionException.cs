@@ -25,6 +25,9 @@ namespace Realms.Sync.Exceptions
     /// </summary>
     public class SessionException : Exception
     {
+        internal const string OriginalFilePathKey = "ORIGINAL_FILE_PATH";
+        internal const string BackupFilePathKey = "RECOVERY_FILE_PATH";
+
         /// <summary>
         /// Gets the error code that describes the session error this exception represents.
         /// </summary>
@@ -34,6 +37,7 @@ namespace Realms.Sync.Exceptions
         internal SessionException(string message, ErrorCode errorCode, Exception innerException = null) : base(message, innerException)
         {
             ErrorCode = errorCode;
+            HelpLink = "https://realm.io/docs/realm-object-server/#session-specific-errors";
         }
     }
 }

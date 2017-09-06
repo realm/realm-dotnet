@@ -21,8 +21,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
+using Realms.Helpers;
 #if __ANDROID__
 using Application = Android.App.Application;
 #endif
@@ -148,6 +150,23 @@ namespace Tests
             where T : struct, IComparable<T>, IFormattable
         {
             return values?.Select(v => v == null ? (RealmInteger<T>?)null : new RealmInteger<T>(v.Value)).ToArray();
+        }
+
+        public static Task<TEventArgs> EventToTask<TEventArgs>(Action<EventHandler<TEventArgs>> subscribe, Action<EventHandler<TEventArgs>> unsubscribe)
+        {
+            Argument.NotNull(subscribe, nameof(subscribe));
+            Argument.NotNull(unsubscribe, nameof(unsubscribe));
+
+            var tcs = new TaskCompletionSource<TEventArgs>();
+            EventHandler<TEventArgs> handler = null;
+            handler = (sender, args) =>
+            {
+                unsubscribe(handler);
+                tcs.TrySetResult(args);
+            };
+            subscribe(handler);
+
+            return tcs.Task;
         }
     }
 }

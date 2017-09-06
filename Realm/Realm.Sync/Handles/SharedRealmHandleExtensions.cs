@@ -73,6 +73,10 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_cancel_pending_file_actions", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool cancel_pending_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect();
 
@@ -80,7 +84,7 @@ namespace Realms.Sync
             public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_feature_token", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_feature_token([MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len);
+            public static extern void set_feature_token([MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -165,6 +169,14 @@ namespace Realms.Sync
             return result;
         }
 
+        public static bool CancelPendingFileActions(string path)
+        {
+            var result = NativeMethods.cancel_pending_file_actions(path, (IntPtr)path.Length, out var ex);
+            ex.ThrowIfNecessary();
+
+            return result;
+        }
+
         public static void ReconnectSessions()
         {
             NativeMethods.reconnect();
@@ -184,7 +196,8 @@ namespace Realms.Sync
 
         public static void SetFeatureToken(string token)
         {
-            NativeMethods.set_feature_token(token, (IntPtr)token.Length);
+            NativeMethods.set_feature_token(token, (IntPtr)token.Length, out var ex);
+            ex.ThrowIfNecessary();
         }
 
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
@@ -206,6 +219,11 @@ namespace Realms.Sync
             {
                 var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
                 exception = new ClientResetException(message, userInfo);
+            }
+            else if (errorCode == ErrorCode.PermissionDenied)
+            {
+                var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
+                exception = new PermissionDeniedException(message, userInfo);
             }
             else
             {

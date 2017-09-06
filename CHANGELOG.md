@@ -10,6 +10,18 @@ type supported by Realm, except for another `IList`. As a result, a lot of metho
 ### Bug fixes
 
 ### Breaking Changes
+- Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
+- Added `RealmObject.GetBacklinks` API to dynamically obtain all objects referencing the current one. ([#1533](https://github.com/realm/realm-dotnet/pull/1533))
+- Added a new exception type, `PermissionDeniedException`, to denote permission denied errors when working with synchronized Realms that
+exposes a method - `DeleteRealmUserInfo` - to inform the binding that the offending Realm's files should be kept or deleted immediately.
+This allows recovering from permission denied errors in a more robust manner. ([#1543](https://github.com/realm/realm-dotnet/pull/1543))
+
+### Bug fixes
+- `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
+- Fixed an issue that would prevent iOS Share Extension projects from working. ([#1535](https://github.com/realm/realm-dotnet/pull/1535))
+
+### Breaking Changes
+- `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. ([#1381](https://github.com/realm/realm-dotnet/pull/1381))
 
 1.6.0 (2017-08-14)
 ------------------
