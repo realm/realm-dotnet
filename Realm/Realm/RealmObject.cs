@@ -481,7 +481,7 @@ namespace Realms
             Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
             var resultsHandle = ObjectHandle.GetBacklinksForType(objectType, property);
-            return new RealmResults<dynamic>(Realm, relatedMeta, resultsHandle);
+            return new RealmResults<RealmObject>(Realm, relatedMeta, resultsHandle);
         }
 
         /// <inheritdoc/>

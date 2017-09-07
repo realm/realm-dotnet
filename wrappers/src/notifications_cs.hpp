@@ -64,7 +64,7 @@ namespace realm {
         return -1;
     }
     
-    inline std::vector<size_t> get_indexes_vector(IndexSet indexSet)
+    inline std::vector<size_t> get_indexes_vector(const IndexSet& indexSet)
     {
         if (indexSet.count() < (size_t)-1) {
             return std::vector<size_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
