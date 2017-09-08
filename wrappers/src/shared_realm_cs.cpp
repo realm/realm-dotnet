@@ -263,7 +263,6 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
 }
     
 }
-#pragma mark - Creating objects
 
 inline const ObjectSchema& find_schema(const SharedRealm& realm, const Table& table)
 {

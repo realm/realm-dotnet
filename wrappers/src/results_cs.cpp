@@ -67,7 +67,7 @@ REALM_EXPORT Object* results_get_object(Results* results_ptr, size_t ndx, Native
             
             return new Object(results_ptr->get_realm(), results_ptr->get_object_schema(), results_ptr->get(ndx));
         }
-        catch (std::out_of_range &exp) {
+        catch (std::out_of_range) {
             return static_cast<Object*>(nullptr);
         }
     });
