@@ -75,20 +75,9 @@ extern "C" {
             verify_can_get(object);
 
             const size_t column_ndx = get_column_index(object, property_ndx);
-            return new List(object.realm(), object.row().get_linklist(column_ndx));
+            return new List(object.realm(), *object.row().get_table(), column_ndx, object.row().get_index());
         });
     }
-
-    REALM_EXPORT size_t object_list_is_empty(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return bool_to_size_t(object.row().linklist_is_empty(column_ndx));
-        });
-    }
-
 
     REALM_EXPORT size_t object_get_bool(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {

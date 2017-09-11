@@ -181,7 +181,7 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

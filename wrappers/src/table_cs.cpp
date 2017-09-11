@@ -102,8 +102,6 @@ REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm*
     });
 }
     
-#pragma mark  PrimaryKey Searches
-    
 Object* object_for_primarykey(Table* table_ptr, SharedRealm* realm, std::function<size_t(size_t, Table*)> finder, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object*{

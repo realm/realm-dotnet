@@ -25,6 +25,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -39,7 +41,10 @@ namespace Realms
           ISchemaSource,
           IThreadConfined
     {
+        protected static readonly PropertyType _argumentType = PropertyTypeEx.ToPropertyType(typeof(T), out _);
+
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+
         internal readonly RealmObject.Metadata Metadata;
 
         private NotificationTokenHandle _notificationToken;
@@ -95,7 +100,7 @@ namespace Realms
             }
         }
 
-        public Schema.ObjectSchema ObjectSchema => Metadata.Schema;
+        public Schema.ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObject.Metadata IThreadConfined.Metadata => Metadata;
 
@@ -131,13 +136,25 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                var objectPtr = Handle.Value.GetObjectAtIndex(index);
-                if (objectPtr == IntPtr.Zero)
+                switch (_argumentType)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
+                    case PropertyType.Object | PropertyType.Nullable:
+                        var objectPtr = Handle.Value.GetObjectAtIndex(index);
+                        if (objectPtr == IntPtr.Zero)
+                        {
+                            throw new ArgumentOutOfRangeException(nameof(index));
+                        }
 
-                return (T)(object)Realm.MakeObject(Metadata, objectPtr);
+                        return Operator.Convert<RealmObject, T>(Realm.MakeObject(Metadata, objectPtr));
+                    case PropertyType.String:
+                    case PropertyType.String | PropertyType.Nullable:
+                        return Operator.Convert<string, T>(Handle.Value.GetStringAtIndex(index));
+                    case PropertyType.Data:
+                    case PropertyType.Data | PropertyType.Nullable:
+                        return Operator.Convert<byte[], T>(Handle.Value.GetByteArrayAtIndex(index));
+                    default:
+                        return Handle.Value.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
+                }
             }
         }
 

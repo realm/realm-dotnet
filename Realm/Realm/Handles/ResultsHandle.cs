@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -32,8 +33,23 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr resultsHandle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_row", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_row(ResultsHandle results, IntPtr index, out NativeException ex);
+            #region get
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object(ResultsHandle results, IntPtr index, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_primitive(ResultsHandle results, IntPtr link_ndx, ref PrimitiveValue value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_string(ResultsHandle results, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_binary(ResultsHandle results, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
+            #endregion
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr count(ResultsHandle results, out NativeException ex);
@@ -77,12 +93,27 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public override IntPtr GetObjectAtIndex(int index)
+        #region GetAtIndex
+
+        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
+            NativeMethods.get_object(this, index, out nativeException);
+
+        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_primitive(this, index, ref result, out nativeException);
+
+        public override string GetStringAtIndex(int index)
         {
-            var result = NativeMethods.get_row(this, (IntPtr)index, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
         }
+
+        public override byte[] GetByteArrayAtIndex(int index)
+        {
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
+        }
+
+        #endregion
 
         public override int Count()
         {

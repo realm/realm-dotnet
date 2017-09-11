@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Realms;
 
@@ -78,6 +79,64 @@ namespace AssemblyToProcess
         public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
 
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class ListsObject : RealmObject
+    {
+        public IList<char> CharList { get; }
+
+        public IList<byte> ByteList { get; }
+
+        public IList<short> Int16List { get; }
+
+        public IList<int> Int32List { get; }
+
+        public IList<long> Int64List { get; }
+
+        public IList<float> SingleList { get; }
+
+        public IList<double> DoubleList { get; }
+
+        public IList<bool> BooleanList { get; }
+
+        public IList<string> StringList { get; }
+
+        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+
+        public IList<char?> NullableCharList { get; }
+
+        public IList<byte?> NullableByteList { get; }
+
+        public IList<short?> NullableInt16List { get; }
+
+        public IList<int?> NullableInt32List { get; }
+
+        public IList<long?> NullableInt64List { get; }
+
+        public IList<float?> NullableSingleList { get; }
+
+        public IList<double?> NullableDoubleList { get; }
+
+        public IList<bool?> NullableBooleanList { get; }
+
+        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+
+        public IList<RealmInteger<byte>> ByteCounterList { get; }
+
+        public IList<RealmInteger<short>> Int16CounterList { get; }
+
+        public IList<RealmInteger<int>> Int32CounterList { get; }
+
+        public IList<RealmInteger<long>> Int64CounterList { get; }
+
+        public IList<RealmInteger<byte>?> NullableByteCounterList { get; }
+
+        public IList<RealmInteger<short>?> NullableInt16CounterList { get; }
+
+        public IList<RealmInteger<int>?> NullableInt32CounterList { get; }
+
+        public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

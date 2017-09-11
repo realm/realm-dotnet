@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -25,23 +26,89 @@ namespace Realms
     {
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
+            #region add
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_object(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
+
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
+
+            #region insert
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_object(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
+
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_primitive(ListHandle listHandle, IntPtr targetIndex, IntPtr value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
+                IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
+
+            #region get
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_primitive(ListHandle listHandle, IntPtr link_ndx, ref PrimitiveValue value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_string(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_binary(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
+            #endregion
+
+            #region find
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_object(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
+
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_erase", CallingConvention = CallingConvention.Cdecl)]
             public static extern void erase(ListHandle listHandle, IntPtr rowIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_clear", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear(ListHandle listHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_size", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr size(ListHandle listHandle, out NativeException ex);
@@ -53,7 +120,7 @@ namespace Realms
             public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, NotificationCallbackDelegate callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_move", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr move(ListHandle listHandle, ObjectHandle objectHandle, IntPtr targetIndex, out NativeException ex);
+            public static extern IntPtr move(ListHandle listHandle, IntPtr sourceIndex, IntPtr targetIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -82,17 +149,126 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
+        #region GetAtIndex
+
+        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
+            NativeMethods.get_object(this, index, out nativeException);
+
+        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_primitive(this, index, ref result, out nativeException);
+
+        public override string GetStringAtIndex(int index)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
+        }
+
+        public override byte[] GetByteArrayAtIndex(int index)
+        {
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
+        }
+
+        #endregion
+
+        #region Add
+
         public void Add(ObjectHandle objectHandle)
         {
-            NativeMethods.add(this, objectHandle, out var nativeException);
+            NativeMethods.add_object(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(IntPtr targetIndex, ObjectHandle objectHandle)
+        public unsafe void Add(PrimitiveValue value)
         {
-            NativeMethods.insert(this, targetIndex, objectHandle, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.add_primitive(this, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
+
+        public void Add(string value)
+        {
+            NativeMethods.add_string(this, value, (IntPtr)(value?.Length ?? 0), value != null, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Add(byte[] value)
+        {
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+                NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
+        }
+
+        #endregion
+
+        #region Insert
+
+        public void Insert(int targetIndex, ObjectHandle objectHandle)
+        {
+            NativeMethods.insert_object(this, (IntPtr)targetIndex, objectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Insert(int targetIndex, PrimitiveValue value)
+        {
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, new IntPtr(valuePtr), out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Insert(int targetIndex, string value)
+        {
+            var hasValue = value != null;
+            value = value ?? string.Empty;
+            NativeMethods.insert_string(this, (IntPtr)targetIndex, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Insert(int targetIndex, byte[] value)
+        {
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+                NativeMethods.insert_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
+        }
+
+        #endregion
+
+        #region Find
+
+        public int Find(ObjectHandle objectHandle)
+        {
+            var result = NativeMethods.find_object(this, objectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public unsafe int Find(PrimitiveValue value)
+        {
+            PrimitiveValue* valuePtr = &value;
+            var result = NativeMethods.find_primitive(this, new IntPtr(valuePtr), out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public int Find(string value)
+        {
+            var hasValue = value != null;
+            value = value ?? string.Empty;
+            var result = NativeMethods.find_string(this, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public unsafe int Find(byte[] value)
+        {
+            var result = IntPtr.Zero;
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+            {
+                result = NativeMethods.find_binary(this, buffer, bufferSize, hasValue, out ex);
+            });
+
+            return (int)result;
+        }
+
+        #endregion
 
         public void Erase(IntPtr rowIndex)
         {
@@ -106,29 +282,15 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr Find(ObjectHandle objectHandle)
+        public void Move(IntPtr sourceIndex, IntPtr targetIndex)
         {
-            var result = NativeMethods.find(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public void Move(ObjectHandle objectHandle, IntPtr targetIndex)
-        {
-            NativeMethods.move(this, objectHandle, targetIndex, out var nativeException);
+            NativeMethods.move(this, sourceIndex, targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public override IntPtr GetObjectAtIndex(int index)
-        {
-            var result = NativeMethods.get(this, (IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

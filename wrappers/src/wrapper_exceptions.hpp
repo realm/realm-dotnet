@@ -19,6 +19,8 @@
 #ifndef WRAPPER_EXCEPTIONS_HPP
 #define WRAPPER_EXCEPTIONS_HPP
 
+#include <sstream>
+
 namespace realm {
   
     class IndexOutOfRangeException : public std::runtime_error

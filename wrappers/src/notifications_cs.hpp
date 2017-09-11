@@ -51,7 +51,9 @@ namespace realm {
     };
     
     inline size_t get_property_index(const ObjectSchema* schema, const size_t column_index) {
-        REALM_ASSERT(schema != nullptr);
+        if (!schema)
+            return 0;
+        
         auto const& props = schema->persisted_properties;
         for (size_t i = 0; i < props.size(); ++i) {
             if (props[i].table_column == column_index) {
@@ -60,6 +62,15 @@ namespace realm {
         }
         
         return -1;
+    }
+    
+    inline std::vector<size_t> get_indexes_vector(const IndexSet& indexSet)
+    {
+        if (indexSet.count() < (size_t)-1) {
+            return std::vector<size_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
+        }
+        
+        return std::vector<size_t>();
     }
     
     static void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
@@ -74,9 +85,9 @@ namespace realm {
         } else if (changes.empty()) {
             context->callback(context->managed_object, nullptr, nullptr);
         } else {
-            std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
-            std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
-            std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
+            auto deletions = get_indexes_vector(changes.deletions);
+            auto insertions = get_indexes_vector(changes.insertions);
+            auto modifications = get_indexes_vector(changes.modifications);
             
             std::vector<size_t> properties;
             

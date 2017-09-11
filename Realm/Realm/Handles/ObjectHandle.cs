@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -64,9 +63,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_list_is_empty", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr list_is_empty(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -296,13 +292,6 @@ namespace Realms
             return result;
         }
 
-        public bool LinklistIsEmpty(IntPtr propertyIndex)
-        {
-            var result = MarshalHelpers.IntPtrToBool(NativeMethods.list_is_empty(this, propertyIndex, out var nativeException));
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
         public void SetBoolean(IntPtr propertyIndex, bool value)
         {
             NativeMethods.set_bool(this, propertyIndex, MarshalHelpers.BoolToIntPtr(value), out var nativeException);
@@ -467,58 +456,23 @@ namespace Realms
 
         public unsafe void SetByteArray(IntPtr propertyIndex, byte[] value)
         {
-            NativeException nativeException;
-            if (value == null)
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
             {
-                NativeMethods.set_null(this, propertyIndex, out nativeException);
-            }
-            else if (value.Length == 0)
-            {
-                // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
-                // that's how core differentiates between empty and null buffers
-                NativeMethods.set_binary(this, propertyIndex, (IntPtr)0x1, IntPtr.Zero, out nativeException);
-            }
-            else
-            {
-                fixed (byte* buffer = value)
+                if (hasValue)
                 {
-                    NativeMethods.set_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)value.LongCount(), out nativeException);
+                    NativeMethods.set_binary(this, propertyIndex, buffer, bufferSize, out ex);
                 }
-            }
-
-            nativeException.ThrowIfNecessary();
+                else
+                {
+                    NativeMethods.set_null(this, propertyIndex, out ex);
+                }
+            });
         }
 
         public byte[] GetByteArray(IntPtr propertyIndex)
         {
-            return GetByteArrayBuffer(propertyIndex, 0);
-        }
-
-        private unsafe byte[] GetByteArrayBuffer(IntPtr propertyIndex, int size)
-        {
-            // Initially called with size = 0, we make a native call just to get the size of the buffer.
-            var bytes = new byte[size];
-            bool isNull;
-            NativeException nativeException;
-
-            int actualSize;
-            fixed (byte* buffer = bytes)
-            {
-                actualSize = (int)NativeMethods.get_binary(this, propertyIndex, (IntPtr)buffer, (IntPtr)size, out isNull, out nativeException);
-            }
-            nativeException.ThrowIfNecessary();
-
-            if (isNull)
-            {
-                return null;
-            }
-
-            if (actualSize > size)
-            {
-                return GetByteArrayBuffer(propertyIndex, actualSize);
-            }
-
-            return bytes;
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, propertyIndex, buffer, bufferLength, out isNull, out ex));
         }
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
@@ -527,10 +481,11 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
+        public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var listHandle = TableLinkList(propertyIndex);
-            return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
+            var metadata = objectType == null ? null : realm.Metadata[objectType];
+            return new RealmList<T>(realm, listHandle, metadata);
         }
 
         public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject

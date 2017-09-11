@@ -76,13 +76,20 @@ namespace Realms.Schema
                 case Type _ when type == typeof(double):
                     return PropertyType.Double | nullabilityModifier;
 
-                case Type _ when type.GetTypeInfo().BaseType == typeof(RealmObject):
+                case Type _ when type == typeof(RealmObject) || type.GetTypeInfo().BaseType == typeof(RealmObject):
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
 
                 case Type _ when type.IsClosedGeneric(typeof(IList<>), out var typeArguments):
-                    objectType = typeArguments.Single();
-                    return PropertyType.Object | PropertyType.Array;
+                    var result = PropertyType.Array | typeArguments.Single().ToPropertyType(out objectType);
+
+                    if (result.HasFlag(PropertyType.Object))
+                    {
+                        // List<Object> can't contain nulls
+                        result &= ~PropertyType.Nullable;
+                    }
+
+                    return result;
 
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));

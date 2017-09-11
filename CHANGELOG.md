@@ -2,6 +2,14 @@ x.y.z (TBD)
 ------------------
 
 ### Enhancements
+- Added support for collections of primitive values. You can now define properties as `IList<T>` where `T` can be any
+type supported by Realm, except for another `IList`. As a result, a lot of methods that previously had constraints on
+`RealmObject` now accept any type and may throw a runtime exception if used with an unsupported type argument.
+([#1517](https://github.com/realm/realm-dotnet/pull/1517))  
+
+### Bug fixes
+
+### Breaking Changes
 - Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
 - Added `RealmObject.GetBacklinks` API to dynamically obtain all objects referencing the current one. ([#1533](https://github.com/realm/realm-dotnet/pull/1533))
 - Added a new exception type, `PermissionDeniedException`, to denote permission denied errors when working with synchronized Realms that

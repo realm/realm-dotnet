@@ -70,10 +70,10 @@ namespace Realms
         /// <see cref="INotifyCollectionChanged"/>.
         /// </summary>
         /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the list.</typeparam>
+        /// <typeparam name="T">Type of the objects in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list) where T : RealmObject
+        public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list)
         {
             var collection = list as IRealmCollection<T>;
             if (collection == null)
@@ -87,17 +87,17 @@ namespace Realms
         /// <summary>
         /// A convenience method that casts <see cref="IList{T}" /> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
-        /// <param name="results">The <see cref="IList{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
+        /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>
+        /// <typeparam name="T">Type of the objects in the list.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IList<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback)
         {
-            return results.AsRealmCollection().SubscribeForNotifications(callback);
+            return list.AsRealmCollection().SubscribeForNotifications(callback);
         }
 
         /// <summary>
@@ -106,22 +106,41 @@ namespace Realms
         /// <param name="list">The list where the move should occur.</param>
         /// <param name="item">The item that will be moved.</param>
         /// <param name="index">The new position to which the item will be moved.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the list.</typeparam>
+        /// <typeparam name="T">Type of the objects in the list.</typeparam>
         /// <remarks>
         /// This extension method will work for standalone lists as well by calling <see cref="ICollection{T}.Remove"/>
         /// and then <see cref="IList{T}.Insert"/>.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
-        public static void Move<T>(this IList<T> list, T item, int index) where T : RealmObject
+        public static void Move<T>(this IList<T> list, T item, int index)
+        {
+            var from = list.IndexOf(item);
+            list.Move(from, index);
+        }
+
+        /// <summary>
+        /// Move the specified item to a new position within the list.
+        /// </summary>
+        /// <param name="list">The list where the move should occur.</param>
+        /// <param name="from">The index of the item that will be moved.</param>
+        /// <param name="to">The new position to which the item will be moved.</param>
+        /// <typeparam name="T">Type of the objects  in the list.</typeparam>
+        /// <remarks>
+        /// This extension method will work for standalone lists as well by calling <see cref="IList{T}.RemoveAt"/>
+        /// and then <see cref="IList{T}.Insert"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
+        public static void Move<T>(this IList<T> list, int from, int to)
         {
             if (list is RealmList<T> realmList)
             {
-                realmList.Move(item, index);
+                realmList.Move(from, to);
             }
             else
             {
-                list.Remove(item);
-                list.Insert(index, item);
+                var item = list[from];
+                list.RemoveAt(from);
+                list.Insert(to, item);
             }
         }
     }

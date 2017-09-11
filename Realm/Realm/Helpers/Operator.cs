@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Realms.Helpers
@@ -72,7 +73,46 @@ namespace Realms.Helpers
                 var input = Expression.Parameter(typeof(T), "input");
                 try
                 {
-                    return Expression.Lambda<Func<T, U>>(Expression.Convert(input, typeof(U)), input).Compile();
+                    Expression convertFrom = input;
+                    var typeOfT = typeof(T);
+                    var isTNullable = false;
+                    if (ReflectionExtensions.IsClosedGeneric(typeOfT, typeof(Nullable<>), out var arguments))
+                    {
+                        typeOfT = arguments.Single();
+                        isTNullable = true;
+                    }
+
+                    if (ReflectionExtensions.IsClosedGeneric(typeOfT, typeof(RealmInteger<>), out arguments))
+                    {
+                        var intermediateType = arguments.Single();
+                        if (isTNullable)
+                        {
+                            intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
+                        }
+
+                        convertFrom = Expression.Convert(input, intermediateType);
+                    }
+
+                    var typeOfU = typeof(U);
+                    var isUNullable = false;
+                    if (typeOfU.IsConstructedGenericType && typeOfU.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        typeOfU = typeOfU.GenericTypeArguments.Single();
+                        isUNullable = true;
+                    }
+
+                    if (typeOfU.IsConstructedGenericType && typeOfU.GetGenericTypeDefinition() == typeof(RealmInteger<>))
+                    {
+                        var intermediateType = typeOfU.GenericTypeArguments.Single();
+                        if (isUNullable)
+                        {
+                            intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
+                        }
+
+                        convertFrom = Expression.Convert(input, intermediateType);
+                    }
+
+                    return Expression.Lambda<Func<T, U>>(Expression.Convert(convertFrom, typeof(U)), input).Compile();
                 }
                 catch (Exception ex)
                 {

@@ -75,9 +75,9 @@ namespace Realms
         /// The thread-confined <see cref="IList{T}"/> to create a thread-safe reference to. It must be a collection
         /// representing to-many relationship as a property of a <see cref="RealmObject"/>
         /// </param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
+        /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to<c>Realm.ResolveReference(ThreadSafeReference.List)</c> on a different thread.</returns>
-        public static List<T> Create<T>(IList<T> value) where T : RealmObject
+        public static List<T> Create<T>(IList<T> value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -148,8 +148,8 @@ namespace Realms
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
         /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the list.</typeparam>
-        public class List<T> : ThreadSafeReference where T : RealmObject
+        /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
+        public class List<T> : ThreadSafeReference
         {
             private List()
             {

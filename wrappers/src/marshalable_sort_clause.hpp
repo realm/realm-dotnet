@@ -37,7 +37,7 @@ inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t c
     column_indices.reserve(clause_count);
 
     std::vector<size_t> current_indices;
-    for(auto i = 0; i < clause_count; ++i) {
+    for(size_t i = 0; i < clause_count; ++i) {
         ascending.push_back(sort_clauses[i].ascending);
         
         current_indices.clear();

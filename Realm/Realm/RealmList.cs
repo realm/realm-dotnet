@@ -19,11 +19,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
+using Realms.Helpers;
+using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -41,7 +45,8 @@ namespace Realms
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider where T : RealmObject
+    [DebuggerDisplay("Count = {Count}")]
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
         private readonly Realm _realm;
         private readonly ListHandle _listHandle;
@@ -68,6 +73,7 @@ namespace Realms
             {
                 return base[index];
             }
+
             set
             {
                 throw new NotSupportedException("Setting items directly is not supported.");
@@ -80,8 +86,14 @@ namespace Realms
 
         public void Add(T item)
         {
-            AddObjectToRealmIfNeeded(item);
-            _listHandle.Add(item.ObjectHandle);
+            Execute(item, obj =>
+            {
+                AddObjectToRealmIfNeeded(obj);
+                _listHandle.Add(obj.ObjectHandle);
+            },
+            _listHandle.Add,
+            _listHandle.Add,
+            _listHandle.Add);
         }
 
         public override int Add(object value)
@@ -127,12 +139,25 @@ namespace Realms
 
         public int IndexOf(T item)
         {
-            if (!item.IsManaged)
+            switch (_argumentType)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(item));
-            }
+                case PropertyType.Object | PropertyType.Nullable:
+                    var obj = Operator.Convert<T, RealmObject>(item);
+                    if (!obj.IsManaged)
+                    {
+                        throw new ArgumentException("Value does not belong to a realm", nameof(item));
+                    }
 
-            return (int)_listHandle.Find(item.ObjectHandle);
+                    return _listHandle.Find(obj.ObjectHandle);
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, string>(item));
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    return _listHandle.Find(Operator.Convert<T, byte[]>(item));
+                default:
+                    return _listHandle.Find(PrimitiveValue.Create(item, _argumentType));
+            }
         }
 
         public override int IndexOf(object value) => IndexOf((T)value);
@@ -144,8 +169,14 @@ namespace Realms
                 throw new ArgumentOutOfRangeException();
             }
 
-            AddObjectToRealmIfNeeded(item);
-            _listHandle.Insert((IntPtr)index, item.ObjectHandle);
+            Execute(item, obj =>
+            {
+                AddObjectToRealmIfNeeded(obj);
+                _listHandle.Insert(index, obj.ObjectHandle);
+            },
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value),
+            value => _listHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -174,7 +205,7 @@ namespace Realms
             _listHandle.Erase((IntPtr)index);
         }
 
-        private void AddObjectToRealmIfNeeded(T obj)
+        private void AddObjectToRealmIfNeeded(RealmObject obj)
         {
             if (!obj.IsManaged)
             {
@@ -184,16 +215,46 @@ namespace Realms
 
         #endregion
 
-        public void Move(T item, int targetIndex)
+        public void Move(int sourceIndex, int targetIndex)
         {
             if (targetIndex < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(targetIndex));
             }
 
-            _listHandle.Move(item.ObjectHandle, (IntPtr)targetIndex);
+            if (sourceIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sourceIndex));
+            }
+
+            _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
+
+        private static void Execute(T item,
+            Action<RealmObject> objectHandler,
+            Action<PrimitiveValue> primitiveHandler,
+            Action<string> stringHandler,
+            Action<byte[]> binaryHandler)
+        {
+            switch (_argumentType)
+            {
+                case PropertyType.Object | PropertyType.Nullable:
+                    objectHandler(Operator.Convert<T, RealmObject>(item));
+                    break;
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    stringHandler(Operator.Convert<T, string>(item));
+                    break;
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    binaryHandler(Operator.Convert<T, byte[]>(item));
+                    break;
+                default:
+                    primitiveHandler(PrimitiveValue.Create(item, _argumentType));
+                    break;
+            }
+        }
     }
 }

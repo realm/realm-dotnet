@@ -86,6 +86,7 @@
     <Compile Include="Native\NativeCallbackAttribute.cs" />
     <Compile Include="Native\NativeCommon.cs" />
     <Compile Include="Native\NativeException.cs" />
+    <Compile Include="Native\PrimitiveValue.cs" />
     <Compile Include="Native\PtrTo.cs" />
     <Compile Include="Native\Schema.cs" />
     <Compile Include="Native\SchemaObject.cs" />

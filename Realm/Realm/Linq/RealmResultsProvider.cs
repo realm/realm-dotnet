@@ -43,7 +43,7 @@ namespace Realms
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
             // If that line is changed, make sure to update the non-generic CreateQuery below!
-            return new RealmResults<T>(_realm, this, expression, _metadata, false);
+            return new RealmResults<T>(_realm, _metadata, this, expression);
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -52,8 +52,8 @@ namespace Realms
             try
             {
                 var resultsType = typeof(RealmResults<>).MakeGenericType(elementType);
-                var ctor = resultsType.GetTypeInfo().DeclaredConstructors.Single(c => c.GetParameters().Length == 5);
-                return (IQueryable)ctor.Invoke(new object[] { _realm, this, expression, _metadata, false });
+                var ctor = resultsType.GetTypeInfo().DeclaredConstructors.Single(c => c.GetParameters().Length == 4);
+                return (IQueryable)ctor.Invoke(new object[] { _realm, _metadata, this, expression });
             }
             catch (TargetInvocationException tie)
             {

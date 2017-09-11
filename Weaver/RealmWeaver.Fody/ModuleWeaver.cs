@@ -107,7 +107,7 @@ public partial class ModuleWeaver
         $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
         $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
         $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
-        $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
+        $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>"
     };
 
     private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -414,9 +414,11 @@ public partial class ModuleWeaver
         else if (prop.IsIList())
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject) &&
+                !_realmIntegerBackedTypes.Contains(elementType.FullName) &&
+                !_typeTable.ContainsKey(elementType.FullName))
             {
-                return WeaveResult.Warning($"SKIPPING {type.Name}.{prop.Name} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} is an IList but its generic type is {elementType.Name} which is not supported by Realm.");
             }
 
             if (prop.SetMethod != null)
@@ -1147,19 +1149,23 @@ public partial class ModuleWeaver
                     var cyclePlaceholder = il.Create(OpCodes.Nop);
                     il.Append(cyclePlaceholder);
 
-                    // castInstance.Realm.Add(list[i], update)
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
-                    il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
-                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
-                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
-                    il.Append(il.Create(OpCodes.Ldarg_2));
-                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_Add) { GenericArguments = { elementType } }));
-                    il.Append(il.Create(OpCodes.Pop));
+
+                    if (elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+                    {
+                        // castInstance.Realm.Add(list[i], update)
+                        il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
+                        il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                        il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                        il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
+                        il.Append(il.Create(OpCodes.Ldarg_2));
+                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_Add) { GenericArguments = { elementType } }));
+                        il.Append(il.Create(OpCodes.Pop));
+                        il.Append(il.Create(OpCodes.Ldloc_0));
+                    }
 
                     // castInstance.Property.Add(list[i]);
-                    il.Append(il.Create(OpCodes.Ldloc_0));
                     il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
                     il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
                     il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
