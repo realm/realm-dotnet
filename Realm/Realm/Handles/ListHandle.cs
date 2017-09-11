@@ -31,8 +31,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_object(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
+            public static extern void add_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength,
@@ -49,8 +51,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_object(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
 
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert_primitive(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
+            public static extern void insert_primitive(ListHandle listHandle, IntPtr targetIndex, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
@@ -85,8 +89,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ListHandle listHandle, ObjectHandle objectHandle, out NativeException ex);
 
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
+            public static extern IntPtr find_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
@@ -173,9 +179,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Add(PrimitiveValue value)
+        public unsafe void Add(PrimitiveValue value)
         {
-            NativeMethods.add_primitive(this, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.add_primitive(this, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -201,9 +208,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(int targetIndex, PrimitiveValue value)
+        public unsafe void Insert(int targetIndex, PrimitiveValue value)
         {
-            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -232,9 +240,10 @@ namespace Realms
             return (int)result;
         }
 
-        public int Find(PrimitiveValue value)
+        public unsafe int Find(PrimitiveValue value)
         {
-            var result = NativeMethods.find_primitive(this, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            var result = NativeMethods.find_primitive(this, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
