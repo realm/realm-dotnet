@@ -26,6 +26,7 @@
         <dependency id="System.Runtime.CompilerServices.Unsafe" version="4.3.0"/>
         <dependency id="Remotion.Linq" version="2.1.1"/>
         <dependency id="NETStandard.Library" version="1.6.1" />
+        <dependency id="System.Reflection.TypeExtensions" version="4.3.0" />
       </group>
     </dependencies>
   </metadata>
