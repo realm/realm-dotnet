@@ -30,7 +30,10 @@ namespace Realms.Exceptions
 
         internal static void AddOverrider(RealmExceptionCodes code, Func<string, string, Exception> handler)
         {
-            _overriders.Add(code, handler);
+            if (!_overriders.ContainsKey(code))
+            {
+                _overriders.Add(code, handler);
+            }
         }
 
         internal RealmException(string detailMessage) : base(detailMessage)

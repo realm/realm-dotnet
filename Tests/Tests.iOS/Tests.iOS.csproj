@@ -89,6 +89,10 @@
       <Link>Resources\trusted_ca.pem</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </BundleResource>
+    <BundleResource Include="..\Tests.Shared\sync-1.x.realm">
+      <Link>Resources\sync-1.x.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
