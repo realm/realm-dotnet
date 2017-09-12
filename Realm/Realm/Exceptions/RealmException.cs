@@ -33,7 +33,7 @@ namespace Realms.Exceptions
         {
         }
 
-        internal static Exception Create(RealmExceptionCodes exceptionCode, string message)
+        internal static Exception Create(RealmExceptionCodes exceptionCode, string message, string detail)
         {
             // these are increasing enum value order
             switch (exceptionCode)
