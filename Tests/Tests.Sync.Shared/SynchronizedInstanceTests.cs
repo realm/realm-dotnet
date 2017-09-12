@@ -182,6 +182,49 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void Realm_WhenCreatedWithSync1_ThrowsIncompatibleSyncedFileException()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments("sync-1.x.realm");
+                var config = await SyncTestHelpers.GetFakeConfigAsync("a@a", legacyRealmPath);
+                try
+                {
+                    using (GetRealm(config))
+                    {
+                    }
+
+                    Assert.Fail("Expected IncompatibleSyncedFileException");
+                }
+                catch (IncompatibleSyncedFileException ex)
+                {
+                    var backupConfig = ex.GetBackupRealmConfig();
+                    using (var backupRealm = Realm.GetInstance(ex.GetBackupRealmConfig()))
+                    using (var newRealm = GetRealm(config))
+                    {
+                        Assert.That(newRealm.All<Person>(), Is.Empty);
+
+                        var backupPeopleQuery = backupRealm.All(nameof(Person));
+                        Assert.That(backupPeopleQuery, Is.Not.Empty);
+
+                        var backupPerson = backupPeopleQuery.Single();
+                        Assert.That(backupPerson.FirstName, Is.EqualTo("John"));
+                        Assert.That(backupPerson.LastName, Is.EqualTo("Smith"));
+
+                        newRealm.Write(() =>
+                        {
+                            newRealm.Add(new Person
+                            {
+                                FirstName = backupPerson.FirstName,
+                                LastName = backupPerson.LastName
+                            });
+                        });
+                    }
+                }
+            });
+        }
+
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
@@ -229,5 +272,23 @@ namespace Tests.Sync
                 currentTransaction.Commit();
             }
         }
+
+        //private static async Task<string> GenerateLegacyRealm()
+        //{
+        //    var config = await SyncTestHelpers.GetFakeConfigAsync("a@a");
+        //    using (var realm = Realm.GetInstance(config))
+        //    {
+        //        realm.Write(() =>
+        //        {
+        //            realm.Add(new Person
+        //            {
+        //                FirstName = "John",
+        //                LastName = "Smith"
+        //            });
+        //        });
+        //    }
+        //
+        //    return config.DatabasePath;
+        //}
     }
 }
