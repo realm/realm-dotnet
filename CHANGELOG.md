@@ -5,16 +5,15 @@ x.y.z (TBD)
 - Added support for collections of primitive values. You can now define properties as `IList<T>` where `T` can be any
 type supported by Realm, except for another `IList`. As a result, a lot of methods that previously had constraints on
 `RealmObject` now accept any type and may throw a runtime exception if used with an unsupported type argument.
-([#1517](https://github.com/realm/realm-dotnet/pull/1517))  
-
-### Bug fixes
-
-### Breaking Changes
+([#1517](https://github.com/realm/realm-dotnet/pull/1517))
 - Added `HelpLink` pointing to the relevant section of the documentation to most Realm exceptions. ([#1521](https://github.com/realm/realm-dotnet/pull/1521))
 - Added `RealmObject.GetBacklinks` API to dynamically obtain all objects referencing the current one. ([#1533](https://github.com/realm/realm-dotnet/pull/1533))
 - Added a new exception type, `PermissionDeniedException`, to denote permission denied errors when working with synchronized Realms that
 exposes a method - `DeleteRealmUserInfo` - to inform the binding that the offending Realm's files should be kept or deleted immediately.
 This allows recovering from permission denied errors in a more robust manner. ([#1543](https://github.com/realm/realm-dotnet/pull/1543))
+- The keychain service name used by Realm to manage the encryption keys for sync-related metadata on Apple platforms is now set to the
+bundle identifier. Keys that were previously stored within the Realm-specific keychain service will be transparently migrated to the
+per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet/pull/1522))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
