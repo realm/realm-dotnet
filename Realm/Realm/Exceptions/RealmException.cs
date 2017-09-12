@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 
 namespace Realms.Exceptions
 {
@@ -25,6 +26,13 @@ namespace Realms.Exceptions
     /// </summary>
     public class RealmException : Exception
     {
+        private static readonly IDictionary<RealmExceptionCodes, Func<string, string, Exception>> _overriders = new Dictionary<RealmExceptionCodes, Func<string, string, Exception>>();
+
+        internal static void AddOverrider(RealmExceptionCodes code, Func<string, string, Exception> handler)
+        {
+            _overriders.Add(code, handler);
+        }
+
         internal RealmException(string detailMessage) : base(detailMessage)
         {
         }
@@ -35,6 +43,11 @@ namespace Realms.Exceptions
 
         internal static Exception Create(RealmExceptionCodes exceptionCode, string message, string detail)
         {
+            if (_overriders.TryGetValue(exceptionCode, out var handler))
+            {
+                return handler(message, detail);
+            }
+
             // these are increasing enum value order
             switch (exceptionCode)
             {
@@ -90,8 +103,6 @@ namespace Realms.Exceptions
                     return new RealmClosedException(message);
 
                 case RealmExceptionCodes.StdArgumentOutOfRange:
-                    return new ArgumentOutOfRangeException(message);
-
                 case RealmExceptionCodes.StdIndexOutOfRange:
                     return new ArgumentOutOfRangeException(message);
 

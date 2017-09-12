@@ -106,6 +106,10 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <Content Include="..\Tests.Shared\sync-1.x.realm">
+      <Link>sync-1.x.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Tests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
