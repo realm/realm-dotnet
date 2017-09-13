@@ -159,7 +159,7 @@ namespace Realms
             srHandle.SetHandle(srPtr);
             if (ReadSchemaFromDisk)
             {
-                schema = RealmSchema.CreateFromObjectStoreSchema(srHandle.GetSchema());
+                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
             }
 
             return new Realm(srHandle, this, schema);

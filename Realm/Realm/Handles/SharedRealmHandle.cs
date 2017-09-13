@@ -111,7 +111,7 @@ namespace Realms
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Native.Schema get_schema(SharedRealmHandle sharedRealm, out NativeException ex);
+            public static extern void get_schema(SharedRealmHandle sharedRealm, IntPtr callback, out NativeException ex);
         }
 
         [Preserve]
@@ -248,11 +248,11 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public Native.Schema GetSchema()
+        public void GetSchema(Action<Native.Schema> callback)
         {
-            var result = NativeMethods.get_schema(this, out var nativeException);
+            var handle = GCHandle.Alloc(callback);
+            NativeMethods.get_schema(this, GCHandle.ToIntPtr(handle), out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
         }
 
         public IntPtr CreateObject(TableHandle table)

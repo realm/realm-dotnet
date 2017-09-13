@@ -33,6 +33,9 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotifyRealmCallback(IntPtr stateHandle);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
+
 #if DEBUG
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
@@ -49,7 +52,7 @@ namespace Realms
 #endif  // DEBUG
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_changed", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void register_notify_realm_changed(NotifyRealmCallback callback);
+        public static extern void register_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
