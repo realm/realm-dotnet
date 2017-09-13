@@ -45,6 +45,8 @@ namespace Realms
 
         internal bool Dynamic;
 
+        internal bool ReadSchemaFromDisk;
+
         /// <summary>
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>

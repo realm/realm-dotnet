@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
 
@@ -128,7 +129,12 @@ namespace Realms
                 throw new ArgumentNullException(nameof(config));
             }
 
-            if (schema == null)
+            if (config.ReadSchemaFromDisk)
+            {
+                Argument.Ensure(schema == null, "Schema will be read from disk, so the argument must be null.", nameof(schema));
+                schema = RealmSchema.CreateSchemaForClasses(Enumerable.Empty<Type>());
+            }
+            else if (schema == null)
             {
                 if (config.ObjectClasses != null)
                 {

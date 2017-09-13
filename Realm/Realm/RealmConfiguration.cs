@@ -123,7 +123,7 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = new Native.Configuration
+            var configuration = new Configuration
             {
                 Path = DatabasePath,
                 read_only = IsReadOnly,
@@ -157,6 +157,11 @@ namespace Realms
 
             var srHandle = new SharedRealmHandle();
             srHandle.SetHandle(srPtr);
+            if (ReadSchemaFromDisk)
+            {
+                schema = RealmSchema.CreateFromObjectStoreSchema(srHandle.GetSchema());
+            }
+
             return new Realm(srHandle, this, schema);
         }
 
