@@ -71,8 +71,7 @@ namespace Realms.Sync.Exceptions
             {
                 IsReadOnly = true,
                 EncryptionKey = encryptionKey,
-                Dynamic = true,
-                ReadSchemaFromDisk = true
+                Dynamic = true
             };
         }
 

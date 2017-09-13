@@ -26,7 +26,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
-using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
 
@@ -65,6 +64,7 @@ namespace Realms
             SynchronizationContextEventLoopSignal.Install();
         }
 
+        [NativeCallback(typeof(NativeCommon.GetNativeSchemaCallback))]
         private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
@@ -140,12 +140,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(config));
             }
 
-            if (config.ReadSchemaFromDisk)
-            {
-                Argument.Ensure(schema == null, "Schema will be read from disk, so the argument must be null.", nameof(schema));
-                schema = RealmSchema.Empty;
-            }
-            else if (schema == null)
+            if (schema == null)
             {
                 if (config.ObjectClasses != null)
                 {
@@ -153,7 +148,7 @@ namespace Realms
                 }
                 else
                 {
-                    schema = RealmSchema.Default;
+                    schema = config.Dynamic ? RealmSchema.Empty : RealmSchema.Default;
                 }
             }
 

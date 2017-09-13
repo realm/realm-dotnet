@@ -29,7 +29,6 @@ namespace Realms
     public class RealmConfigurationBase
     {
         internal bool Dynamic;
-        internal bool ReadSchemaFromDisk;
 
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
