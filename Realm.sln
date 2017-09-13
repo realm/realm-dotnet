@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
@@ -31,9 +31,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.BuildTasks", "Weaver\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Realm", "Realm", "{50F058DF-2B41-403C-BB73-8B4180D1CF39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm", "Realm\Realm\Realm.csproj", "{C0DB0E07-4FBC-44D1-8E84-A074497385C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm", "Realm\Realm\Realm.csproj", "{C0DB0E07-4FBC-44D1-8E84-A074497385C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Sync", "Realm\Realm.Sync\Realm.Sync.csproj", "{2015403A-59D2-47F2-8E18-7DF85BB98467}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm.Sync", "Realm\Realm.Sync\Realm.Sync.csproj", "{2015403A-59D2-47F2-8E18-7DF85BB98467}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}"
 EndProject
@@ -61,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Android", "Tests\Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.UWP", "Tests\Tests.UWP\Tests.UWP.csproj", "{159A55AF-9531-4107-8444-CA9C96107EF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.NetCore", "Tests\Tests.NetCore\Tests.NetCore.csproj", "{CBD2FBA5-8AAF-4B95-A011-8EFFC4F51B22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.NetCore", "Tests\Tests.NetCore\Tests.NetCore.csproj", "{CBD2FBA5-8AAF-4B95-A011-8EFFC4F51B22}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C3578A7B-09A6-4444-9383-0DEAFA4958BD} = {C3578A7B-09A6-4444-9383-0DEAFA4958BD}
 	EndProjectSection
@@ -74,6 +74,8 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{0a266cac-ef4a-4bb0-a3d9-f2084f1b1012}*SharedItemsImports = 4
+		Tests\Tests.Shared\Tests.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{336ed3ca-5344-4f04-966c-ca170afc3348}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{3a6cc342-40d0-4487-9964-ddaeba628199}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{3a6cc342-40d0-4487-9964-ddaeba628199}*SharedItemsImports = 4
@@ -689,5 +691,8 @@ Global
 		{CBD2FBA5-8AAF-4B95-A011-8EFFC4F51B22} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 		{3A6CC342-40D0-4487-9964-DDAEBA628199} = {D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}
 		{AF2979C9-8CC6-4D0E-BA15-10D616EC35C3} = {A24C8BAE-3B43-472C-9609-8AB97180CB4F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {837742FE-957B-47C9-B28C-826132539733}
 	EndGlobalSection
 EndGlobal
