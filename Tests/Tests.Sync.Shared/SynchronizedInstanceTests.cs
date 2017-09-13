@@ -200,7 +200,7 @@ namespace Tests.Sync
                 catch (IncompatibleSyncedFileException ex)
                 {
                     var backupConfig = ex.GetBackupRealmConfig();
-                    using (var backupRealm = Realm.GetInstance(ex.GetBackupRealmConfig()))
+                    using (var backupRealm = Realm.GetInstance(backupConfig))
                     using (var newRealm = GetRealm(config))
                     {
                         Assert.That(newRealm.All<Person>(), Is.Empty);

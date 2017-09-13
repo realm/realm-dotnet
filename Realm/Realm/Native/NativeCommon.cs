@@ -51,7 +51,7 @@ namespace Realms
         public static extern void set_debug_logger(DebugLoggerCallback callback);
 #endif  // DEBUG
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_changed", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_callbacks", CallingConvention = CallingConvention.Cdecl)]
         public static extern void register_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
