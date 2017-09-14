@@ -14,6 +14,9 @@ This allows recovering from permission denied errors in a more robust manner. ([
 - The keychain service name used by Realm to manage the encryption keys for sync-related metadata on Apple platforms is now set to the
 bundle identifier. Keys that were previously stored within the Realm-specific keychain service will be transparently migrated to the
 per-application keychain service. ([#1522](https://github.com/realm/realm-dotnet/pull/1522))
+- Added a new exception type -  `IncompatibleSyncedFileException` - that allows you to handle and perform data migration from a legacy (1.x) Realm file
+to the new 2.x format. It can be thrown when using `Realm.GetInstance` or `Realm.GetInstanceAsync` and exposes a `GetBackupRealmConfig` method
+that allows you to open the old Realm file in a dynamic mode and migrate any required data. ([#1552](https://github.com/realm/realm-dotnet/pull/1552))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))

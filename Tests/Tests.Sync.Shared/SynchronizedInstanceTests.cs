@@ -182,24 +182,39 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void Realm_WhenCreatedWithSync1_ThrowsIncompatibleSyncedFileException()
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void Realm_WhenCreatedWithSync1_ThrowsIncompatibleSyncedFileException(bool async, bool encrypt)
         {
             AsyncContext.Run(async () =>
             {
-                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments("sync-1.x.realm");
+                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments("sync-1.x.realm", Guid.NewGuid().ToString());
                 var config = await SyncTestHelpers.GetFakeConfigAsync("a@a", legacyRealmPath);
+                byte[] encryptionKey = null;
+                if (encrypt)
+                {
+                    encryptionKey = new byte[64];
+                    encryptionKey[0] = 42;
+                    config.EncryptionKey = encryptionKey;
+                }
                 try
                 {
-                    using (GetRealm(config))
+                    if (async)
                     {
+                        await GetRealmAsync(config);
+                    }
+                    else
+                    {
+                        GetRealm(config);
                     }
 
                     Assert.Fail("Expected IncompatibleSyncedFileException");
                 }
                 catch (IncompatibleSyncedFileException ex)
                 {
-                    var backupConfig = ex.GetBackupRealmConfig();
+                    var backupConfig = ex.GetBackupRealmConfig(encryptionKey);
                     using (var backupRealm = Realm.GetInstance(backupConfig))
                     using (var newRealm = GetRealm(config))
                     {
