@@ -195,7 +195,7 @@ namespace Tests.Database
 
             var config2 = new RealmConfiguration(_configuration.DatabasePath)
             {
-                EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                EncryptionKey = TestHelpers.GetEncryptionKey(42)
             };
 
             // Assert

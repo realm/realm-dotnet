@@ -223,7 +223,7 @@ namespace Tests.Sync
                         var backupPeopleQuery = backupRealm.All(nameof(Person));
                         Assert.That(backupPeopleQuery, Is.Not.Empty);
 
-                        var backupPerson = backupPeopleQuery.Single();
+                        var backupPerson = backupPeopleQuery.First();
                         Assert.That(backupPerson.FirstName, Is.EqualTo("John"));
                         Assert.That(backupPerson.LastName, Is.EqualTo("Smith"));
 

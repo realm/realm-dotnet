@@ -189,6 +189,9 @@
     <AndroidAsset Include="..\Tests.Shared\sync-1.x.realm">
       <Link>Assets\sync-1.x.realm</Link>
     </AndroidAsset>
+    <AndroidAsset Include="..\Tests.Shared\sync-1.x-encrypted.realm">
+      <Link>Assets\sync-1.x-encrypted.realm</Link>
+    </AndroidAsset>
   </ItemGroup>
   <ItemGroup>
     <AndroidNativeLibrary Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
