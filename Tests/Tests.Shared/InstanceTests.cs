@@ -299,8 +299,7 @@ namespace Tests.Database
             var config = RealmConfiguration.DefaultConfiguration;
             if (encrypt)
             {
-                config.EncryptionKey = new byte[64];
-                config.EncryptionKey[0] = 5;
+                config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
             }
 
             using (var realm = Realm.GetInstance(config))
@@ -660,15 +659,13 @@ namespace Tests.Database
             var originalConfig = new RealmConfiguration(Path.GetTempFileName());
             if (originalEncrypted)
             {
-                originalConfig.EncryptionKey = new byte[64];
-                originalConfig.EncryptionKey[0] = 42;
+                originalConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
             }
 
             var copyConfig = new RealmConfiguration(Path.GetTempFileName());
             if (copyEncrypted)
             {
-                copyConfig.EncryptionKey = new byte[64];
-                copyConfig.EncryptionKey[0] = 14;
+                copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(14);
             }
 
             File.Delete(copyConfig.DatabasePath);

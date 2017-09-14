@@ -33,6 +33,8 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests : SyncTestBase
     {
+        private static readonly byte[] _sync1xEncryptionKey = TestHelpers.GetEncryptionKey(42);
+
         [Ignore("Due to #976, compact doesn't work with synced realms.")]
         [TestCase(true, true)]
         [TestCase(true, false)]
@@ -48,8 +50,7 @@ namespace Tests.Sync
                 var config = new SyncConfiguration(user, serverUri);
                 if (encrypt)
                 {
-                    config.EncryptionKey = new byte[64];
-                    config.EncryptionKey[0] = 5;
+                    config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
                 }
 
                 using (var realm = GetRealm(config))
@@ -190,15 +191,14 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments("sync-1.x.realm", Guid.NewGuid().ToString());
+                var legacyRealmName = $"sync-1.x{(encrypt ? "-encrypted" : string.Empty)}.realm";
+                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments(legacyRealmName, Guid.NewGuid().ToString());
                 var config = await SyncTestHelpers.GetFakeConfigAsync("a@a", legacyRealmPath);
-                byte[] encryptionKey = null;
                 if (encrypt)
                 {
-                    encryptionKey = new byte[64];
-                    encryptionKey[0] = 42;
-                    config.EncryptionKey = encryptionKey;
+                    config.EncryptionKey = _sync1xEncryptionKey;
                 }
+
                 try
                 {
                     if (async)
@@ -214,7 +214,7 @@ namespace Tests.Sync
                 }
                 catch (IncompatibleSyncedFileException ex)
                 {
-                    var backupConfig = ex.GetBackupRealmConfig(encryptionKey);
+                    var backupConfig = ex.GetBackupRealmConfig(encrypt ? _sync1xEncryptionKey : null);
                     using (var backupRealm = Realm.GetInstance(backupConfig))
                     using (var newRealm = GetRealm(config))
                     {
@@ -288,22 +288,29 @@ namespace Tests.Sync
             }
         }
 
-        //private static async Task<string> GenerateLegacyRealm()
-        //{
-        //    var config = await SyncTestHelpers.GetFakeConfigAsync("a@a");
-        //    using (var realm = Realm.GetInstance(config))
-        //    {
-        //        realm.Write(() =>
-        //        {
-        //            realm.Add(new Person
-        //            {
-        //                FirstName = "John",
-        //                LastName = "Smith"
-        //            });
-        //        });
-        //    }
-        //
-        //    return config.DatabasePath;
-        //}
+        /* Code to generate the legacy Realm
+        private static async Task<string> GenerateLegacyRealm(bool encrypt)
+        {
+            var config = await SyncTestHelpers.GetFakeConfigAsync("a@a");
+            if (encrypt)
+            {
+                config.EncryptionKey = new byte[64];
+                config.EncryptionKey[0] = 42;
+            }
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new Person
+                    {
+                        FirstName = "John",
+                        LastName = "Smith"
+                    });
+                });
+            }
+
+            return config.DatabasePath;
+        }*/
     }
 }

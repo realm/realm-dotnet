@@ -34,6 +34,9 @@
     <None Include="..\Tests.Shared\nunit3-junit.xslt" Link="nunit3-junit.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\Tests.Shared\sync-1.x-encrypted.realm" Link="sync-1.x-encrypted.realm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\Tests.Shared\sync-1.x.realm" Link="sync-1.x.realm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

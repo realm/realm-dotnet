@@ -110,6 +110,10 @@
       <Link>sync-1.x.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Tests.Shared\sync-1.x-encrypted.realm">
+      <Link>sync-1.x-encrypted.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Tests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

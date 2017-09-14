@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
@@ -112,7 +113,7 @@ namespace Tests.Sync
 
                 var config = new SyncConfiguration(user, new Uri("realm://foobar"))
                 {
-                    EncryptionKey = key
+                    EncryptionKey = TestHelpers.GetEncryptionKey(Enumerable.Range(0, 63).Cast<byte>().ToArray())
                 };
 
                 Assert.That(() => GetRealm(config), Throws.Nothing);
