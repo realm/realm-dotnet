@@ -64,6 +64,8 @@ namespace realm {
                 return { RealmErrorType::RealmIncompatibleLockFile, e.what() };
             case RealmFileException::Kind::FormatUpgradeRequired:
                 return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
+            case RealmFileException::Kind::IncompatibleSyncedRealm:
+                return { RealmErrorType::RealmIncompatibleSyncedFile, e.what(), e.path() };
             default:
                 return { RealmErrorType::RealmError, e.what() };
             }

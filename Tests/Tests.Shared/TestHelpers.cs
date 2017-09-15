@@ -42,6 +42,17 @@ namespace Tests
             return result;
         }
 
+        public static byte[] GetEncryptionKey(params byte[] bytes)
+        {
+            var result = new byte[64];
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                result[i] = bytes[i];
+            }
+
+            return result;
+        }
+
         public static object GetPropertyValue(object o, string propName)
         {
             return o.GetType().GetProperty(propName).GetValue(o, null);

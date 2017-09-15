@@ -77,6 +77,8 @@ namespace realm {
         
         RealmFeatureUnavailable = 26,
         
+        RealmIncompatibleSyncedFile = 27,
+        
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,

@@ -28,21 +28,29 @@ namespace realm {
 struct NativeException {
     RealmErrorType type;
     std::string message;
+    std::string detail;
     
     struct Marshallable {
         RealmErrorType type;
         void* messagesBytes;
         size_t messageLength;
+        void* detailBytes;
+        size_t detailLength;
     };
     
     Marshallable for_marshalling() const {
         auto messageCopy = ::operator new (message.size());
         message.copy(reinterpret_cast<char*>(messageCopy), message.length());
 
+        auto detailCopy = ::operator new (detail.size());
+        detail.copy(reinterpret_cast<char*>(detailCopy), detail.length());
+        
         return {
             type,
             messageCopy,
-            message.size()
+            message.size(),
+            detailCopy,
+            detail.size(),
         };
     }
 };

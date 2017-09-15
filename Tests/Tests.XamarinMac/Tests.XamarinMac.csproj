@@ -155,6 +155,14 @@
       <Link>Resources\nunit3-junit.xslt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </BundleResource>
+    <BundleResource Include="..\Tests.Shared\sync-1.x.realm">
+      <Link>Resources\sync-1.x.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
+    <BundleResource Include="..\Tests.Shared\sync-1.x-encrypted.realm">
+      <Link>Resources\sync-1.x-encrypted.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </BundleResource>
   </ItemGroup>
   <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />

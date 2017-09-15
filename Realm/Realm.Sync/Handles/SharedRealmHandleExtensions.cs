@@ -141,6 +141,8 @@ namespace Realms.Sync
             // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
             Interlocked.Exchange(ref _fileSystemConfigured, 1);
 
+            RealmException.AddOverrider(RealmExceptionCodes.RealmIncompatibleSyncedFile, (message, path) => new IncompatibleSyncedFileException(message, path));
+
             var basePath = InteropConfig.DefaultStorageFolder;
 
             UserPersistenceMode mode;

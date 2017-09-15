@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,7 +124,7 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = new Native.Configuration
+            var configuration = new Configuration
             {
                 Path = DatabasePath,
                 read_only = IsReadOnly,
@@ -157,6 +158,11 @@ namespace Realms
 
             var srHandle = new SharedRealmHandle();
             srHandle.SetHandle(srPtr);
+            if (Dynamic && !schema.Any())
+            {
+                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+            }
+
             return new Realm(srHandle, this, schema);
         }
 

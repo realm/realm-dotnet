@@ -28,6 +28,8 @@ namespace Realms
     /// </remarks>
     public class RealmConfigurationBase
     {
+        internal bool Dynamic;
+
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
@@ -35,7 +37,7 @@ namespace Realms
         public static string DefaultRealmName { get; }
 
         /// <summary>
-        /// Gets the full path of the Realms opened with this Configuration. May be overriden by passing in a separate name.
+        /// Gets the full path of the Realms opened with this Configuration. May be overridden by passing in a separate name.
         /// </summary>
         /// <value>The absolute path to the Realm.</value>
         public string DatabasePath { get; }
