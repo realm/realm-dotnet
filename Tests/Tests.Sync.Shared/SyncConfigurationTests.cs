@@ -105,15 +105,11 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var key = new byte[64];
-                for (var i = 0; i < key.Length; i++)
-                {
-                    key[i] = (byte)i;
-                }
+                var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
                 var config = new SyncConfiguration(user, new Uri("realm://foobar"))
                 {
-                    EncryptionKey = TestHelpers.GetEncryptionKey(Enumerable.Range(0, 63).Cast<byte>().ToArray())
+                    EncryptionKey = TestHelpers.GetEncryptionKey(key)
                 };
 
                 Assert.That(() => GetRealm(config), Throws.Nothing);
