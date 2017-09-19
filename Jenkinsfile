@@ -106,7 +106,7 @@ stage('Build without sync') {
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true, Platform: 'iPhoneSimulator' ]
 
         stash includes: "Realm/Realm/bin/${configuration}/netstandard1.4/Realm.*", name: 'nuget-database'
-        stash includes: "DataBinding/Realm.DataBinding.iOS/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-ios-databinding'
+        stash includes: "DataBinding/Realm.DataBinding/bin/${configuration}/netstandard2.0/Realm.DataBinding.*", name: 'nuget-netstandard-databinding'
 
         dir("Tests/Tests.iOS/bin/iPhoneSimulator/${configuration}") {
           stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests-nosync'
@@ -123,8 +123,6 @@ stage('Build without sync') {
         msbuild project: 'Tests/Tests.Android/Tests.Android.csproj', target: 'Restore,SignAndroidPackage',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true,
                               AndroidUseSharedRuntime: true, AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
-
-        stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
 
         dir("Tests/Tests.Android/bin/${configuration}") {
           stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-nosync'
@@ -182,8 +180,6 @@ stage('Build without sync') {
 
         msbuild project: 'Tests/Tests.XamarinMac/Tests.XamarinMac.csproj', target: 'Restore,Build',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
-
-        stash includes: "DataBinding/Realm.DataBinding.Mac/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-mac-databinding'
 
         dir("Tests/Tests.XamarinMac/bin/${configuration}") {
           stash includes: 'Tests.XamarinMac.app/**/*', name: 'xamarinmac-tests-nosync'
@@ -663,9 +659,7 @@ stage('NuGet') {
         unstash 'dotnet-source'
 
         unstash 'nuget-pcl-databinding'
-        unstash 'nuget-ios-databinding'
-        unstash 'nuget-android-databinding'
-        unstash 'nuget-mac-databinding'
+        unstash 'nuget-netstandard-databinding'
 
         dir('NuGet/Realm.DataBinding') {
           nugetPack('Realm.DataBinding', dataBindingVersionString)

@@ -176,9 +176,9 @@
       <Project>{2015403A-59D2-47F2-8E18-7DF85BB98467}</Project>
       <Name>Realm.Sync</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DataBinding\Realm.DataBinding.iOS\Realm.DataBinding.iOS.csproj">
-      <Project>{0A266CAC-EF4A-4BB0-A3D9-F2084F1B1012}</Project>
-      <Name>Realm.DataBinding.iOS</Name>
+    <ProjectReference Include="..\..\DataBinding\Realm.DataBinding\Realm.DataBinding.csproj">
+      <Project>{FA198FC2-0C67-435C-95A7-5C3BE9F1A854}</Project>
+      <Name>Realm.DataBinding</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

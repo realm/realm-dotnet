@@ -216,9 +216,9 @@
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\DataBinding\Realm.DataBinding.Android\Realm.DataBinding.Android.csproj">
-      <Project>{336ED3CA-5344-4F04-966C-CA170AFC3348}</Project>
-      <Name>Realm.DataBinding.Android</Name>
+    <ProjectReference Include="..\..\DataBinding\Realm.DataBinding\Realm.DataBinding.csproj">
+      <Project>{FA198FC2-0C67-435C-95A7-5C3BE9F1A854}</Project>
+      <Name>Realm.DataBinding</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
