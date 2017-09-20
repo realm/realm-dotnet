@@ -33,6 +33,8 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests : SyncTestBase
     {
+        private static readonly byte[] _sync1xEncryptionKey = TestHelpers.GetEncryptionKey(42);
+
         [Ignore("Due to #976, compact doesn't work with synced realms.")]
         [TestCase(true, true)]
         [TestCase(true, false)]
@@ -48,8 +50,7 @@ namespace Tests.Sync
                 var config = new SyncConfiguration(user, serverUri);
                 if (encrypt)
                 {
-                    config.EncryptionKey = new byte[64];
-                    config.EncryptionKey[0] = 5;
+                    config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
                 }
 
                 using (var realm = GetRealm(config))
@@ -182,6 +183,63 @@ namespace Tests.Sync
             });
         }
 
+        [TestCase(true, true)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(false, false)]
+        public void Realm_WhenCreatedWithSync1_ThrowsIncompatibleSyncedFileException(bool async, bool encrypt)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var legacyRealmName = $"sync-1.x{(encrypt ? "-encrypted" : string.Empty)}.realm";
+                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments(legacyRealmName, Guid.NewGuid().ToString());
+                var config = await SyncTestHelpers.GetFakeConfigAsync("a@a", legacyRealmPath);
+                if (encrypt)
+                {
+                    config.EncryptionKey = _sync1xEncryptionKey;
+                }
+
+                try
+                {
+                    if (async)
+                    {
+                        await GetRealmAsync(config);
+                    }
+                    else
+                    {
+                        GetRealm(config);
+                    }
+
+                    Assert.Fail("Expected IncompatibleSyncedFileException");
+                }
+                catch (IncompatibleSyncedFileException ex)
+                {
+                    var backupConfig = ex.GetBackupRealmConfig(encrypt ? _sync1xEncryptionKey : null);
+                    using (var backupRealm = Realm.GetInstance(backupConfig))
+                    using (var newRealm = GetRealm(config))
+                    {
+                        Assert.That(newRealm.All<Person>(), Is.Empty);
+
+                        var backupPeopleQuery = backupRealm.All(nameof(Person));
+                        Assert.That(backupPeopleQuery, Is.Not.Empty);
+
+                        var backupPerson = backupPeopleQuery.First();
+                        Assert.That(backupPerson.FirstName, Is.EqualTo("John"));
+                        Assert.That(backupPerson.LastName, Is.EqualTo("Smith"));
+
+                        newRealm.Write(() =>
+                        {
+                            newRealm.Add(new Person
+                            {
+                                FirstName = backupPerson.FirstName,
+                                LastName = backupPerson.LastName
+                            });
+                        });
+                    }
+                }
+            });
+        }
+
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
@@ -229,5 +287,30 @@ namespace Tests.Sync
                 currentTransaction.Commit();
             }
         }
+
+        /* Code to generate the legacy Realm
+        private static async Task<string> GenerateLegacyRealm(bool encrypt)
+        {
+            var config = await SyncTestHelpers.GetFakeConfigAsync("a@a");
+            if (encrypt)
+            {
+                config.EncryptionKey = new byte[64];
+                config.EncryptionKey[0] = 42;
+            }
+
+            using (var realm = Realm.GetInstance(config))
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(new Person
+                    {
+                        FirstName = "John",
+                        LastName = "Smith"
+                    });
+                });
+            }
+
+            return config.DatabasePath;
+        }*/
     }
 }

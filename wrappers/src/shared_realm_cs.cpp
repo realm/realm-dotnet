@@ -35,7 +35,9 @@ using namespace realm;
 using namespace realm::binding;
 
 using NotifyRealmChangedDelegate = void(void* managed_state_handle);
+using GetNativeSchemaDelegate = void(SchemaForMarshaling schema, void* managed_callback);
 NotifyRealmChangedDelegate* notify_realm_changed = nullptr;
+GetNativeSchemaDelegate* get_native_schema = nullptr;
 
 namespace realm {
 namespace binding {
@@ -51,9 +53,10 @@ namespace binding {
 extern "C" {
     
     
-REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedDelegate notifier)
+REALM_EXPORT void register_callbacks(NotifyRealmChangedDelegate realm_changed, GetNativeSchemaDelegate get_schema)
 {
-    notify_realm_changed = notifier;
+    notify_realm_changed = realm_changed;
+    get_native_schema = get_schema;
 }
     
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -75,7 +78,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.schema_mode = SchemaMode::ResetFile;
         }
         
-        config.schema = create_schema(objects, objects_length, properties);
+        if (objects_length > 0) {
+            config.schema = create_schema(objects, objects_length, properties);
+        }
+        
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
@@ -357,6 +363,24 @@ REALM_EXPORT Object* shared_realm_create_object_null_unique(const SharedRealm& r
 {
     return handle_errors(ex, [&]() {
         return create_object_unique<util::Optional<int64_t>>(realm, table, null(), try_update, is_new);
+    });
+}
+    
+REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        std::vector<SchemaObject> schema_objects;
+        std::vector<SchemaProperty> schema_properties;
+        
+        for (auto& object : realm->schema()) {
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
+        }
+        
+        get_native_schema(SchemaForMarshaling {
+            schema_objects.data(),
+            static_cast<int>(schema_objects.size()),
+            schema_properties.data()
+        }, managed_callback);
     });
 }
 

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="2.1.0" />
+    <PackageReference Include="Fody" Version="2.1.2" />
     <PackageReference Include="Nito.AsyncEx.Context" Version="1.1.0" />
     <PackageReference Include="System.Reactive" Version="3.1.1" />
     <PackageReference Include="NUnitLite" Version="3.7.1" />
@@ -32,6 +32,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\Tests.Shared\nunit3-junit.xslt" Link="nunit3-junit.xslt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Tests.Shared\sync-1.x-encrypted.realm" Link="sync-1.x-encrypted.realm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Tests.Shared\sync-1.x.realm" Link="sync-1.x.realm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

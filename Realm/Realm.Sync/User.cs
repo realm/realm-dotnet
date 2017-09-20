@@ -139,7 +139,7 @@ namespace Realms.Sync
             return new User(handle);
         }
 
-        #endregion
+        #endregion static
 
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
@@ -305,7 +305,7 @@ namespace Realms.Sync
         /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
-        /// <param name="recipient">The optional recepient of the permission.</param>
+        /// <param name="recipient">The optional recipient of the permission.</param>
         /// <param name="millisecondTimeout">
         /// The timeout in milliseconds for downloading server changes. If the download times out, no error will be thrown
         /// and instead the latest local state will be returned. If set to 0, the latest state will be returned immediately.
@@ -345,6 +345,7 @@ namespace Realms.Sync
                 case Recipient.CurrentUser:
                     result = result.Where(p => p.UserId == id);
                     break;
+
                 case Recipient.OtherUser:
                     result = result.Where(p => p.UserId != id);
                     break;
@@ -560,6 +561,6 @@ namespace Realms.Sync
             return permissionObject.WaitForProcessingAsync();
         }
 
-        #endregion
+        #endregion Permissions
     }
 }

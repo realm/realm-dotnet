@@ -31,15 +31,20 @@ namespace Realms
         public RealmExceptionCodes type;
         public byte* messageBytes;
         public IntPtr messageLength;
+        public byte* detailBytes;
+        public IntPtr detailLength;
 
         internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             var message = (messageLength != IntPtr.Zero) ?
-                Encoding.UTF8.GetString(messageBytes, (int)messageLength)
-                : "No further information available";
+                            Encoding.UTF8.GetString(messageBytes, (int)messageLength)
+                            : "No further information available";
             NativeCommon.delete_pointer(messageBytes);
 
-            return overrider?.Invoke(type) ?? RealmException.Create(type, message);
+            var detail = (detailLength != IntPtr.Zero) ? Encoding.UTF8.GetString(detailBytes, (int)detailLength) : null;
+            NativeCommon.delete_pointer(detailBytes);
+
+            return overrider?.Invoke(type) ?? RealmException.Create(type, message, detail);
         }
 
         internal void ThrowIfNecessary(Func<RealmExceptionCodes, Exception> overrider = null)

@@ -67,6 +67,8 @@ namespace Realms.Schema
 
         internal static RealmSchema Default => _default.Value;
 
+        internal static RealmSchema Empty => new RealmSchema(Enumerable.Empty<ObjectSchema>());
+
         private RealmSchema(IEnumerable<ObjectSchema> objects)
         {
             _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));

@@ -56,11 +56,11 @@ namespace Tests.Sync
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
-        public static async Task<SyncConfiguration> GetFakeConfigAsync()
+        public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
-            var user = await GetFakeUserAsync();
+            var user = await GetFakeUserAsync(userId);
             var serverUri = new Uri("realm://localhost:9080/foobar");
-            return new SyncConfiguration(user, serverUri);
+            return new SyncConfiguration(user, serverUri, optionalPath);
         }
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")

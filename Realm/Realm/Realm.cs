@@ -56,9 +56,21 @@ namespace Realms
             NativeCommon.NotifyRealmCallback notifyRealm = RealmState.NotifyRealmChanged;
             GCHandle.Alloc(notifyRealm);
 
-            NativeCommon.register_notify_realm_changed(notifyRealm);
+            NativeCommon.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
+            GCHandle.Alloc(getNativeSchema);
+
+            NativeCommon.register_callbacks(notifyRealm, getNativeSchema);
 
             SynchronizationContextEventLoopSignal.Install();
+        }
+
+        [NativeCallback(typeof(NativeCommon.GetNativeSchemaCallback))]
+        private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
+        {
+            var handle = GCHandle.FromIntPtr(managedCallbackPtr);
+            var callback = (Action<Native.Schema>)handle.Target;
+            callback(schema);
+            handle.Free();
         }
 
         /// <summary>
@@ -136,7 +148,7 @@ namespace Realms
                 }
                 else
                 {
-                    schema = RealmSchema.Default;
+                    schema = config.Dynamic ? RealmSchema.Empty : RealmSchema.Default;
                 }
             }
 

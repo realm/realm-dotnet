@@ -42,6 +42,7 @@ namespace Realms.Exceptions
         RealmClosed = 24,
         ObjectManagedByAnotherRealm = 25,
         RealmFeatureUnavailable = 26,
+        RealmIncompatibleSyncedFile = 27,
 
         RealmDotNetExceptionDuringMigration = 30,
 

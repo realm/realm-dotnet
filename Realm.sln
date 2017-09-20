@@ -2,6 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
@@ -694,5 +695,6 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {837742FE-957B-47C9-B28C-826132539733}
+		SolutionGuid = {BE5E0028-B74D-4BE1-B1DA-5FFCC8469C41}
 	EndGlobalSection
 EndGlobal

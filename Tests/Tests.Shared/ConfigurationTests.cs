@@ -124,10 +124,9 @@ namespace Tests.Database
 
             // Arrange
             var config = new RealmConfiguration();
-            var goldilocksKey = new byte[64];
 
             // Assert
-            Assert.That(() => config.EncryptionKey = goldilocksKey, Throws.Nothing);
+            Assert.That(() => config.EncryptionKey = TestHelpers.GetEncryptionKey(), Throws.Nothing);
             Assert.That(() => config.EncryptionKey = null, Throws.Nothing);
         }
 
@@ -137,7 +136,7 @@ namespace Tests.Database
             TestHelpers.ReliesOnEncryption();
 
             // Arrange
-            _configuration.EncryptionKey = new byte[64];
+            _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
             using (Realm.GetInstance(_configuration))
             {
             }
@@ -158,7 +157,7 @@ namespace Tests.Database
             {
             }
 
-            _configuration.EncryptionKey = new byte[64];
+            _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
             // Assert
             Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
@@ -170,7 +169,7 @@ namespace Tests.Database
             TestHelpers.ReliesOnEncryption();
 
             // Arrange
-            _configuration.EncryptionKey = new byte[64];
+            _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
             using (Realm.GetInstance(_configuration))
             {
@@ -188,9 +187,7 @@ namespace Tests.Database
             TestHelpers.ReliesOnEncryption();
 
             // Arrange
-            var answerKey = new byte[64];
-            _configuration.EncryptionKey = new byte[64];
-            _configuration.EncryptionKey[0] = 42;
+            _configuration.EncryptionKey = TestHelpers.GetEncryptionKey(42);
 
             using (Realm.GetInstance(_configuration))
             {
@@ -198,10 +195,8 @@ namespace Tests.Database
 
             var config2 = new RealmConfiguration(_configuration.DatabasePath)
             {
-                EncryptionKey = new byte[64]
+                EncryptionKey = TestHelpers.GetEncryptionKey(42)
             };
-
-            config2.EncryptionKey[0] = 42;
 
             // Assert
             Assert.That(() =>
