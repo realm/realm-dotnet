@@ -143,11 +143,6 @@ namespace Tests
             }
         }
 
-        public static void ReliesOnEncryption()
-        {
-            
-        }
-
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
             where T : struct, IComparable<T>, IFormattable
         {
