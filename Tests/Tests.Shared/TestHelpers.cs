@@ -145,10 +145,7 @@ namespace Tests
 
         public static void ReliesOnEncryption()
         {
-            if (IsWindows)
-            {
-                Assert.Ignore("This test relies on encryption which is not enabled in this build.");
-            }
+            
         }
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
