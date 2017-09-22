@@ -105,8 +105,6 @@ namespace Tests.Database
         [Test]
         public void EncryptionKeyMustBe64Bytes()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             var config = new RealmConfiguration();
             var smallKey = new byte[] { 1, 2, 3 };
@@ -120,8 +118,6 @@ namespace Tests.Database
         [Test]
         public void ValidEncryptionKeyAccepted()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             var config = new RealmConfiguration();
 
@@ -133,8 +129,6 @@ namespace Tests.Database
         [Test]
         public void UnableToOpenWithNoKey()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
             using (Realm.GetInstance(_configuration))
@@ -150,8 +144,6 @@ namespace Tests.Database
         [Test]
         public void UnableToOpenWithKeyIfNotEncrypted()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             using (Realm.GetInstance(_configuration))
             {
@@ -166,8 +158,6 @@ namespace Tests.Database
         [Test]
         public void UnableToOpenWithDifferentKey()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
@@ -184,8 +174,6 @@ namespace Tests.Database
         [Test]
         public void AbleToReopenEncryptedWithSameKey()
         {
-            TestHelpers.ReliesOnEncryption();
-
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey(42);
 

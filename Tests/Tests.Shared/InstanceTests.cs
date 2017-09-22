@@ -291,11 +291,6 @@ namespace Tests.Database
         {
             TestHelpers.IgnoreOnWindows("Compact doesn't work on Windows");
 
-            if (encrypt)
-            {
-                TestHelpers.ReliesOnEncryption();
-            }
-
             var config = RealmConfiguration.DefaultConfiguration;
             if (encrypt)
             {
@@ -651,11 +646,6 @@ namespace Tests.Database
         [TestCase(false, false)]
         public void WriteEncryptedCopy_WhenEncryptionKeyProvided_WritesACopy(bool originalEncrypted, bool copyEncrypted)
         {
-            if (originalEncrypted || copyEncrypted)
-            {
-                TestHelpers.ReliesOnEncryption();
-            }
-
             var originalConfig = new RealmConfiguration(Path.GetTempFileName());
             if (originalEncrypted)
             {
