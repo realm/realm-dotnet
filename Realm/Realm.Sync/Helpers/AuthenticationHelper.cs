@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -139,18 +140,29 @@ namespace Realms.Sync
 
         public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
         {
-            var uri = new Uri(user.ServerUri, $"/api/providers/{provider}/accounts/{providerId}");
+            var uri = new Uri(user.ServerUri, $"/auth/users/{provider}/{providerId}");
             try
             {
                 var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, setupRequest: request =>
                         request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
 
+                var accounts = response["accounts"].Children<JObject>()
+                                                   .Select(j => new AccountInfo
+                                                   {
+                                                       Provider = j["provider"].Value<string>(),
+                                                       ProviderUserIdentity = j["provider_id"].Value<string>()
+                                                   })
+                                                   .ToArray();
+
+                var metadata = response["metadata"].Children<JObject>()
+                                                   .ToDictionary(j => j["key"].Value<string>(), j => j["value"].Value<string>());
+
                 return new UserInfo
                 {
-                    Identity = response["user"]["id"].Value<string>(),
-                    IsAdmin = response["user"]["isAdmin"].Value<bool>(),
-                    Provider = response["provider"].Value<string>(),
-                    ProviderUserIdentity = response["provider_id"].Value<string>(),
+                    Identity = response["user_id"].Value<string>(),
+                    IsAdmin = response["is_admin"].Value<bool>(),
+                    Accounts = accounts,
+                    Metadata = metadata
                 };
             }
             catch (HttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
