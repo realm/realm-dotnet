@@ -19,6 +19,8 @@ to the new 2.x format. It can be thrown when using `Realm.GetInstance` or `Realm
 that allows you to open the old Realm file in a dynamic mode and migrate any required data. ([#1552](https://github.com/realm/realm-dotnet/pull/1552))
 - Enable encryption on Windows. ([#1570](https://github.com/realm/realm-dotnet/pull/1570))
 - Enable Realm compaction on Windows. ([#1571](https://github.com/realm/realm-dotnet/pull/1571))
+- `UserInfo` has been significantly enhanced. It now contains metadata about a user stored on the Realm Object Server, as well as a list of all user
+account data associated with that user. ([#1573](https://github.com/realm/realm-dotnet/pull/1573))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
