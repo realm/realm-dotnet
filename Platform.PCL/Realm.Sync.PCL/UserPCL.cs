@@ -170,6 +170,16 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
+        /// </summary>
+        [Obsolete("Use LogOutAsync instead")]
+        public Task LogOutAsync()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+
+        /// <summary>
         /// Changes the user's password.
         /// </summary>
         /// <param name="newPassword">The user's new password.</param>

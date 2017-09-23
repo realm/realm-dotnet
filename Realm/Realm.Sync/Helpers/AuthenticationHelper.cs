@@ -171,6 +171,18 @@ namespace Realms.Sync
             }
         }
 
+        public static Task LogOutAsync(User user)
+        {
+            var uri = new Uri(user.ServerUri, "/auth/revoke");
+            var body = new Dictionary<string, object>
+            {
+                ["token"] = user.RefreshToken
+            };
+
+            return MakeAuthRequestAsync(HttpMethod.Post, uri, body, request =>
+                    request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
+        }
+
         private static void ScheduleTokenRefresh(string userId, Uri authServerUrl, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
@@ -230,7 +242,7 @@ namespace Realms.Sync
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
-        private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, Action<HttpRequestMessage> setupRequest = null)
+        public static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, Action<HttpRequestMessage> setupRequest = null)
         {
             var request = new HttpRequestMessage(method, uri);
             if (body != null)

@@ -21,6 +21,7 @@ that allows you to open the old Realm file in a dynamic mode and migrate any req
 - Enable Realm compaction on Windows. ([#1571](https://github.com/realm/realm-dotnet/pull/1571))
 - `UserInfo` has been significantly enhanced. It now contains metadata about a user stored on the Realm Object Server, as well as a list of all user
 account data associated with that user. ([#1573](https://github.com/realm/realm-dotnet/pull/1573))
+- Introduced a new method - `User.LogOutAsync` to replace the now-deprecated synchronous call. ([#1574](https://github.com/realm/realm-dotnet/pull/1574))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
