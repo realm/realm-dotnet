@@ -37,6 +37,9 @@
     <Compile Include="..\..\Realm\Realm.Sync\Dtos\UserInfo.cs">
       <Link>Dtos\UserInfo.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\Dtos\AccountInfo.cs">
+      <Link>Dtos\AccountInfo.cs</Link>
+    </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\Exceptions\IncompatibleSyncedFileException.cs">
       <Link>Exceptions\IncompatibleSyncedFileException.cs</Link>
     </Compile>
