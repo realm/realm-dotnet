@@ -16,33 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object containing information about a user's identity in Realm's authentication system.
+    /// An object containing information about an account associated with a user.
     /// </summary>
-    public class UserInfo
+    public class AccountInfo
     {
         /// <summary>
-        /// Gets the identity of the user in Realm's system. Equivalent to <see cref="User.Identity"/>.
+        /// Gets the provider that manages this user account.
         /// </summary>
-        public string Identity { get; internal set; }
+        public string Provider { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating whether the user is a Realm Object Server administrator user. Equivalent to <see cref="User.IsAdmin"/>.
+        /// Gets the user account's identity in the provider's system.
         /// </summary>
-        public bool IsAdmin { get; internal set; }
-
-        /// <summary>
-        /// Gets a collection of all the user accounts associated with the user.
-        /// </summary>
-        public IEnumerable<AccountInfo> Accounts { get; internal set; }
-
-        /// <summary>
-        /// Gets the metadata about this user stored on the Realm Object Server.
-        /// </summary>
-        public IDictionary<string, string> Metadata { get; internal set; }
+        public string ProviderUserIdentity { get; internal set; }
     }
 }
