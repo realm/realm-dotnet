@@ -138,14 +138,15 @@ stage('Build without sync') {
         unstash 'tools-weaver'
 
         dir('wrappers') {
-          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32' ]
-          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64' ]
+          Map cmakeArgs = [ 'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake' ]
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-windows-static' ] << cmakeArgs
+          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-windows-static' ] << cmakeArgs
         }
 
         archive 'wrappers/build/**/*.pdb'
 
         msbuild project: 'Tests/Tests.Win32/Tests.Win32.csproj', target: 'Restore,Build',
-                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true ]
 
         stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-nosync'
         stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-nosync'
@@ -156,9 +157,13 @@ stage('Build without sync') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
-          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
-          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
-          cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0' ]
+          Map cmakeArgs = [ 
+            'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
+            'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
+          ]
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-uwp-static' ] << cmakeArgs
+          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-uwp-static' ] << cmakeArgs
+          cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'VCPKG_TARGET_TRIPLET': 'arm-uwp-static' ] << cmakeArgs
         }
 
         archive 'wrappers/build/**/*.pdb'
@@ -312,6 +317,46 @@ stage('Build with sync') {
         }
       }
     },
+    'Win32': {
+      nodeWithCleanup('windows') {
+        unstash 'dotnet-source'
+        unstash 'dotnet-wrappers-source'
+        unstash 'tools-weaver'
+
+        dir('wrappers') {
+          Map cmakeArgs = [ 'REALM_ENABLE_SYNC': 'ON', 'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake' ]
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-windows-static' ] << cmakeArgs
+          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-windows-static' ] << cmakeArgs
+        }
+
+        archive 'wrappers/build/**/*.pdb'
+
+        msbuild project: 'Tests/Tests.Win32/Tests.Win32.csproj', target: 'Restore,Build',
+                properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
+
+        stash includes: 'wrappers/build/**/*.dll', name: 'win32-wrappers-sync'
+        stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-sync'
+      }
+    },
+    'UWP': {
+      nodeWithCleanup('windows') {
+        unstash 'dotnet-wrappers-source'
+
+        dir('wrappers') {
+          Map cmakeArgs = [ 
+            'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
+            'REALM_ENABLE_SYNC': 'ON',
+            'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
+          ]
+          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-uwp-static' ] << cmakeArgs
+          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-uwp-static' ] << cmakeArgs
+          cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'VCPKG_TARGET_TRIPLET': 'arm-uwp-static' ] << cmakeArgs
+        }
+
+        archive 'wrappers/build/**/*.pdb'
+        stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-sync'
+      }
+    },
     'macOS': {
       nodeWithCleanup('osx') {
         unstash 'dotnet-wrappers-source'
@@ -374,6 +419,7 @@ stage ('Build .NET Core') {
     unstash 'dotnet-source'
     unstash 'macos-wrappers-sync'
     unstash 'linux-wrappers-sync'
+    unstash 'win32-wrappers-sync'
     unstash 'tools-weaver'
 
     archiveNetCore('sync')
@@ -385,13 +431,18 @@ stage ('Build .NET Core') {
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: properties + [ RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
-    
+
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-sync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: properties + [ RuntimeIdentifier: 'debian.8-x64', OutputPath: "bin/${configuration}/linux" ]
-    
+
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-sync'
+
+    msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
+            properties: properties + [ RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32" ]
+
+    stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-sync'
   }
 }
 
@@ -399,8 +450,10 @@ stage('Test with sync') {
   parallel(
     'iOS': iOSTest('ios-tests-sync'),
     'Android': AndroidTest('android-tests-sync'),
+    'Win32': Win32Test('win32-tests-sync'),
     'Linux': NetCoreTest('docker', 'linux', 'sync'),
     'macOS': NetCoreTest('osx', 'macos', 'sync'),
+    'Win32-NetCore': NetCoreTest('windows', 'win32', 'sync'),
     'XamarinMac': XamarinMacTest('xamarinmac-tests-sync')
   )
 }
