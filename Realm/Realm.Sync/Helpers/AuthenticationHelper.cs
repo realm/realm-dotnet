@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -122,8 +123,10 @@ namespace Realms.Sync
         {
             var json = new Dictionary<string, object>
             {
-                ["token"] = user.RefreshToken,
-                ["password"] = password
+                ["data"] = new Dictionary<string, object>
+                {
+                    ["new_password"] = password
+                }
             };
 
             if (otherUserId != null)
@@ -131,25 +134,35 @@ namespace Realms.Sync
                 json["user_id"] = otherUserId;
             }
 
-            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json);
+            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json, request =>
+                    request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
         }
 
         public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
         {
-            var uri = new Uri(user.ServerUri, $"/api/providers/{provider}/accounts/{providerId}");
+            var uri = new Uri(user.ServerUri, $"/auth/users/{provider}/{providerId}");
             try
             {
                 var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, setupRequest: request =>
-                {
-                    request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken);
-                });
+                        request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
+
+                var accounts = response["accounts"].Children<JObject>()
+                                                   .Select(j => new AccountInfo
+                                                   {
+                                                       Provider = j["provider"].Value<string>(),
+                                                       ProviderUserIdentity = j["provider_id"].Value<string>()
+                                                   })
+                                                   .ToArray();
+
+                var metadata = response["metadata"].Children<JObject>()
+                                                   .ToDictionary(j => j["key"].Value<string>(), j => j["value"].Value<string>());
 
                 return new UserInfo
                 {
-                    Identity = response["user"]["id"].Value<string>(),
-                    IsAdmin = response["user"]["isAdmin"].Value<bool>(),
-                    Provider = response["provider"].Value<string>(),
-                    ProviderUserIdentity = response["provider_id"].Value<string>(),
+                    Identity = response["user_id"].Value<string>(),
+                    IsAdmin = response["is_admin"].Value<bool>(),
+                    Accounts = accounts,
+                    Metadata = metadata
                 };
             }
             catch (HttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -238,16 +251,25 @@ namespace Realms.Sync
             }
 
             var errorJson = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
-            if (response.Content.Headers.ContentType.Equals(_applicationProblemJsonUtf8MediaType))
+
+            Exception ex;
+            try
             {
                 var problem = JObject.Parse(errorJson);
 
                 var code = ErrorCodeHelper.GetErrorCode(problem["code"].Value<int>()) ?? ErrorCode.Unknown;
 
-                throw new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem["title"].Value<string>());
+                ex = new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem["title"].Value<string>())
+                {
+                    HelpLink = problem["type"].Value<string>()
+                };
+            }
+            catch
+            {
+                ex = new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
             }
 
-            throw new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
+            throw ex;
         }
 
         private class TokenRefreshData

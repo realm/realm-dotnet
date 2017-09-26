@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -195,8 +196,12 @@ namespace Tests.Sync
 
                 Assert.That(lookupResponse.Identity, Is.EqualTo(alice.Identity));
                 Assert.That(lookupResponse.IsAdmin, Is.False);
-                Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
-                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(aliceUsername));
+
+                Assert.That(lookupResponse.Accounts, Is.Not.Empty);
+                var passwordAccount = lookupResponse.Accounts.SingleOrDefault(a => a.Provider == Credentials.Provider.UsernamePassword);
+
+                Assert.That(passwordAccount, Is.Not.Null);
+                Assert.That(passwordAccount.ProviderUserIdentity, Is.EqualTo(aliceUsername));
             });
         }
 
@@ -229,8 +234,11 @@ namespace Tests.Sync
 
                 Assert.That(lookupResponse.Identity, Is.EqualTo(admin.Identity));
                 Assert.That(lookupResponse.IsAdmin, Is.True);
-                Assert.That(lookupResponse.Provider, Is.EqualTo(Credentials.Provider.UsernamePassword));
-                Assert.That(lookupResponse.ProviderUserIdentity, Is.EqualTo(Constants.AdminUsername));
+                Assert.That(lookupResponse.Accounts, Is.Not.Empty);
+                var passwordAccount = lookupResponse.Accounts.SingleOrDefault(a => a.Provider == Credentials.Provider.UsernamePassword);
+
+                Assert.That(passwordAccount, Is.Not.Null);
+                Assert.That(passwordAccount.ProviderUserIdentity, Is.EqualTo(Constants.AdminUsername));
             });
         }
 
