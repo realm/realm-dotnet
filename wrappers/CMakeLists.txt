@@ -91,7 +91,7 @@ elseif(ANDROID AND REALM_ENABLE_SYNC)
 
   download_android_openssl()
 else()
-  use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
+  use_realm_core(${REALM_ENABLE_SYNC} "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
 endif()
 
 if(APPLE)
