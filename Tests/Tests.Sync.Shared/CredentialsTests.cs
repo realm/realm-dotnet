@@ -207,8 +207,7 @@ namespace Tests.Sync
 
                 try
                 {
-                    await AuthenticationHelper.MakeAuthRequestAsync(HttpMethod.Put, new Uri(SyncTestHelpers.AuthServerUri, "auth/password"), json, request =>
-                            request.Headers.TryAddWithoutValidation("Authorization", token));
+                    await AuthenticationHelper.MakeAuthRequestAsync(HttpMethod.Put, new Uri(SyncTestHelpers.AuthServerUri, "auth/password"), json, token);
 
                     Assert.Fail("Expected an error");
                 }

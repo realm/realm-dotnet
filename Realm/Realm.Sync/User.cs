@@ -213,8 +213,18 @@ namespace Realms.Sync
         /// </summary>
         public async Task LogOutAsync()
         {
-            await AuthenticationHelper.LogOutAsync(this);
+            var uri = ServerUri;
+            var refreshToken = RefreshToken;
             Handle.LogOut();
+
+            try
+            {
+                await AuthenticationHelper.LogOutAsync(uri, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessages.OutputError($"An error has occurred while logging the user out: {ex.Message}. The user is still logged out locally, but their refresh token may not have been revoked yet.");
+            }
         }
 
         /// <summary>

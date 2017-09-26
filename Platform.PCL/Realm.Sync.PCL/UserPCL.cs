@@ -164,6 +164,7 @@ namespace Realms.Sync
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
+        [Obsolete("Use LogOutAsync instead")]
         public void LogOut()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -172,10 +173,10 @@ namespace Realms.Sync
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
-        [Obsolete("Use LogOutAsync instead")]
         public Task LogOutAsync()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
 
