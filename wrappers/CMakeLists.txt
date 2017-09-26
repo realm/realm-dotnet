@@ -14,6 +14,7 @@ include(CompilerFlags)
 include(RealmCore)
 
 set(REALM_ENABLE_SYNC OFF CACHE BOOL "")
+set(REALM_PLATFORM DotNet)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_library(REALM_CORE_LIBRARY_LOCATION librealm.a)
