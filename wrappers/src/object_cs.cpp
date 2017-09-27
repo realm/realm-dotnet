@@ -428,4 +428,11 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT size_t object_get_backlink_count(Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return object.row().get_backlink_count();
+        });
+    }
+    
 }   // extern "C"

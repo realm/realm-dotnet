@@ -137,6 +137,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, NotificationCallbackDelegate callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
         }
 
         public bool IsValid
@@ -366,7 +369,7 @@ namespace Realms
         {
             if (GetNullableInt64(propertyIndex) != value)
             {
-                throw new InvalidOperationException("Once set, primary key properties may not be modified.");   
+                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
         }
 
@@ -531,6 +534,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return resultsHandle;
+        }
+
+        public int GetBacklinkCount()
+        {
+            var result = NativeMethods.get_backlink_count(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
