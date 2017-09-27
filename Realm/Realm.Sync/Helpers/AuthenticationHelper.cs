@@ -70,7 +70,8 @@ namespace Realms.Sync
                     ["app_id"] = AppId
                 };
 
-                var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(user.ServerUri, "auth"), json).ConfigureAwait(continueOnCapturedContext: false);
+                var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(user.ServerUri, "auth"), json)
+                                        .ConfigureAwait(continueOnCapturedContext: false);
 
                 var accessToken = result["access_token"];
 
@@ -109,7 +110,8 @@ namespace Realms.Sync
         {
             var body = credentials.ToDictionary();
             body["app_id"] = AppId;
-            var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(serverUrl, "auth"), body).ConfigureAwait(continueOnCapturedContext: false);
+            var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(serverUrl, "auth"), body)
+                                    .ConfigureAwait(continueOnCapturedContext: false);
             var refreshToken = result["refresh_token"];
             return new UserLoginData
             {
@@ -134,8 +136,7 @@ namespace Realms.Sync
                 json["user_id"] = otherUserId;
             }
 
-            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json, request =>
-                    request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
+            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json, user.RefreshToken);
         }
 
         public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
@@ -143,8 +144,8 @@ namespace Realms.Sync
             var uri = new Uri(user.ServerUri, $"/auth/users/{provider}/{providerId}");
             try
             {
-                var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, setupRequest: request =>
-                        request.Headers.TryAddWithoutValidation("Authorization", user.RefreshToken));
+                var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, authHeader: user.RefreshToken)
+                                        .ConfigureAwait(continueOnCapturedContext: false);
 
                 var accounts = response["accounts"].Children<JObject>()
                                                    .Select(j => new AccountInfo
@@ -171,6 +172,17 @@ namespace Realms.Sync
             }
         }
 
+        public static async Task LogOutAsync(Uri serverUri, string refreshToken)
+        {
+            var uri = new Uri(serverUri, "/auth/revoke");
+            var body = new Dictionary<string, object>
+            {
+                ["token"] = refreshToken
+            };
+
+            await MakeAuthRequestAsync(HttpMethod.Post, uri, body, refreshToken).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
         private static void ScheduleTokenRefresh(string userId, Uri authServerUrl, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
@@ -186,14 +198,14 @@ namespace Realms.Sync
                 OnTimerCallback(timerState);
             }
 
-            _tokenRefreshTimers.AddOrUpdate(path, p =>
-            {
-                return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
-            }, (p, old) =>
-            {
-                old.Dispose();
-                return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
-            });
+            _tokenRefreshTimers.AddOrUpdate(
+                path,
+                p => new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1)),
+                (p, old) =>
+                {
+                    old.Dispose();
+                    return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
+                });
         }
 
         private static void OnTimerCallback(object state)
@@ -230,7 +242,7 @@ namespace Realms.Sync
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
-        private static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, Action<HttpRequestMessage> setupRequest = null)
+        public static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, string authHeader = null)
         {
             var request = new HttpRequestMessage(method, uri);
             if (body != null)
@@ -241,7 +253,10 @@ namespace Realms.Sync
             request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
             request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
 
-            setupRequest?.Invoke(request);
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                request.Headers.TryAddWithoutValidation("Authorization", authHeader);
+            }
 
             var response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))

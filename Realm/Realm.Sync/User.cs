@@ -202,9 +202,30 @@ namespace Realms.Sync
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
+        [Obsolete("Use LogOutAsync instead")]
         public void LogOut()
         {
+            LogOutAsync();
+        }
+
+        /// <summary>
+        /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
+        /// </summary>
+        /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
+        public async Task LogOutAsync()
+        {
+            var uri = ServerUri;
+            var refreshToken = RefreshToken;
             Handle.LogOut();
+
+            try
+            {
+                await AuthenticationHelper.LogOutAsync(uri, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessages.OutputError($"An error has occurred while logging the user out: {ex.Message}. The user is still logged out locally, but their refresh token may not have been revoked yet.");
+            }
         }
 
         /// <summary>
