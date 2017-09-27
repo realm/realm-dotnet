@@ -663,31 +663,47 @@ namespace Tests.Database
         }
 
         [Test]
-        public void AddOrUpdate_WhenPKIsNull_ShouldUpdate()
+        public void AddOrUpdate_WhenPKIsIntAndNull_ShouldUpdate()
         {
             var first = new NullablePrimaryKeyObject
             {
                 StringValue = "first"
             };
 
-            _realm.Write(() =>
-            {
-                _realm.Add(first, update: true);
-            });
+            _realm.Write(() => _realm.Add(first, update: true));
 
             var second = new NullablePrimaryKeyObject
             {
                 StringValue = "second"
             };
 
-            _realm.Write(() =>
-            {
-                _realm.Add(second, update: true);
-            });
+            _realm.Write(() => _realm.Add(second, update: true));
 
             Assert.That(first.StringValue, Is.EqualTo("second"));
             Assert.That(second.StringValue, Is.EqualTo("second"));
             Assert.That(_realm.All<NullablePrimaryKeyObject>().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenPKIsStringAndNull_ShouldUpdate()
+        {
+            var first = new PrimaryKeyStringObject
+            {
+                Value = "first"
+            };
+
+            _realm.Write(() => _realm.Add(first, update: true));
+
+            var second = new PrimaryKeyStringObject
+            {
+                Value = "second"
+            };
+
+            _realm.Write(() => _realm.Add(second, update: true));
+
+            Assert.That(first.Value, Is.EqualTo("second"));
+            Assert.That(second.Value, Is.EqualTo("second"));
+            Assert.That(_realm.All<PrimaryKeyStringObject>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -786,6 +802,7 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt16Object))]
         [TestCase(typeof(PrimaryKeyNullableInt32Object))]
         [TestCase(typeof(PrimaryKeyNullableInt64Object))]
+        [TestCase(typeof(PrimaryKeyStringObject))]
         public void Add_WhenPKIsDefaultAndDuplicate_ShouldThrow(Type type)
         {
             Assert.That(() =>
@@ -796,18 +813,6 @@ namespace Tests.Database
                     _realm.Add((RealmObject)Activator.CreateInstance(type));
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
-        }
-
-        [Test]
-        public void Add_WhenPKIsStringAndNull_ShouldThrow()
-        {
-            Assert.That(() =>
-            {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new PrimaryKeyStringObject());
-                });
-            }, Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]

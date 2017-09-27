@@ -49,6 +49,7 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
@@ -79,6 +80,7 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
         public void FailToFindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
@@ -101,19 +103,14 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
+        [TestCase(typeof(PrimaryKeyStringObject), null)]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            _realm.Write(() =>
-            {
-                _realm.CreateObject(type.Name, primaryKeyValue);
-            });
+            _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
 
             Assert.That(() =>
             {
-                _realm.Write(() =>
-                {
-                    _realm.CreateObject(type.Name, primaryKeyValue);
-                });
+                _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -133,25 +130,20 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
+        [TestCase(typeof(PrimaryKeyStringObject), null)]
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             var first = (RealmObject)Activator.CreateInstance(type);
             pkProperty.SetValue(first, primaryKeyValue);
 
-            _realm.Write(() =>
-            {
-                _realm.Add(first);
-            });
+            _realm.Write(() => _realm.Add(first));
 
             Assert.That(() =>
             {
                 var second = (RealmObject)Activator.CreateInstance(type);
                 pkProperty.SetValue(second, primaryKeyValue);
-                _realm.Write(() =>
-                {
-                    _realm.Add(second);
-                });
+                _realm.Write(() => _realm.Add(second));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -191,6 +183,7 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
         public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
@@ -221,6 +214,7 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
         public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
@@ -308,18 +302,6 @@ namespace Tests.Database
         }
 
         [Test]
-        public void NullPrimaryKeyStringObjectThrows()
-        {
-            Assert.That(() =>
-            {
-                _realm.Write(() =>
-                {
-                    _realm.Add(new PrimaryKeyStringObject { StringProperty = null });
-                });
-            }, Throws.TypeOf<ArgumentNullException>());
-        }
-
-        [Test]
         public void NullAndNotNullIntPKsWorkTogether()
         {
             _realm.Write(() =>
@@ -329,10 +311,18 @@ namespace Tests.Database
             });
 
             Assert.That(_realm.All<PrimaryKeyNullableInt64Object>().Count, Is.EqualTo(2));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new PrimaryKeyStringObject { StringProperty = "123" });
+                _realm.Add(new PrimaryKeyStringObject { StringProperty = null });
+            });
+
+            Assert.That(_realm.All<PrimaryKeyStringObject>().Count, Is.EqualTo(2));
         }
 
         [Test]
-        public void PrimaryKeyFailsIfClassNotinRealm()
+        public void PrimaryKeyFailsIfClassNotInRealm()
         {
             var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath(Path.GetTempFileName());
             conf.ObjectClasses = new[] { typeof(Person) };

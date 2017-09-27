@@ -205,6 +205,8 @@ namespace Tests
     {
         [PrimaryKey]
         public string StringProperty { get; set; }
+
+        public string Value { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
