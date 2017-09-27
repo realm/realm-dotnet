@@ -306,6 +306,18 @@ namespace Tests
         public IList<Dog> Dogs { get; }
     }
 
+    // A copy of Owner that verifies that different objects referring to the same type (Dog)
+    // results in the correct backlink count being calculated
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Walker : RealmObject
+    {
+        public string Name { get; set; }
+
+        public Dog TopDog { get; set; }
+
+        public IList<Dog> Dogs { get; }
+    }
+
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RequiredStringObject : RealmObject
     {

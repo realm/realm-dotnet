@@ -99,6 +99,14 @@ namespace Realms
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
+        /// <summary>
+        /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
+        /// </summary>
+        /// <remarks>
+        /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
+        /// </remarks>
+        public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
         Metadata IThreadConfined.Metadata => ObjectMetadata;
 
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;

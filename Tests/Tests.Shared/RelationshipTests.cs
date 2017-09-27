@@ -525,6 +525,190 @@ namespace Tests.Database
             Assert.That(orderedChildren.ElementAt(1), Is.EqualTo(child2));
         }
 
+        [Test]
+        public void GetBacklinkCount_WhenUnmanaged_ReturnsZero()
+        {
+            var owner = new Owner
+            {
+                TopDog = new Dog(),
+            };
+
+            owner.Dogs.Add(new Dog());
+            Assert.That(owner.BacklinksCount, Is.EqualTo(0));
+            Assert.That(owner.TopDog.BacklinksCount, Is.EqualTo(0));
+            Assert.That(owner.Dogs[0].BacklinksCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetBacklinkCount_WhenReferredByList()
+        {
+            var doggo = new Dog();
+            _realm.Write(() => _realm.Add(doggo));
+
+            // Nobody refers to doggo yet
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+
+            var firstOwner = new Owner();
+            firstOwner.Dogs.Add(doggo);
+            _realm.Write(() => _realm.Add(firstOwner));
+
+            // Just firstOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            var secondOwner = new Owner();
+            secondOwner.Dogs.Add(doggo);
+            _realm.Write(() => _realm.Add(secondOwner));
+
+            // firstOwner and secondOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            _realm.Write(() => _realm.Remove(secondOwner));
+
+            // Just firstOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            _realm.Write(() => firstOwner.Dogs.Remove(doggo));
+
+            // Nobody refers to doggo anymore
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetBacklinkCount_WhenReferredByObject()
+        {
+            var doggo = new Dog();
+            _realm.Write(() => _realm.Add(doggo));
+
+            // Nobody refers to doggo yet
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+
+            var firstOwner = new Owner
+            {
+                TopDog = doggo
+            };
+            _realm.Write(() => _realm.Add(firstOwner));
+
+            // Just firstOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            var secondOwner = new Owner
+            {
+                TopDog = doggo
+            };
+            _realm.Write(() => _realm.Add(secondOwner));
+
+            // firstOwner and secondOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            _realm.Write(() => _realm.Remove(secondOwner));
+
+            // Just firstOwner
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            _realm.Write(() => firstOwner.TopDog = null);
+
+            // Nobody refers to doggo anymore
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetBacklinkCount_WhenReferredByObjectAndList()
+        {
+            var doggo = new Dog();
+            _realm.Write(() => _realm.Add(doggo));
+
+            // Nobody refers to doggo yet
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+
+            var firstOwner = new Owner
+            {
+                TopDog = doggo
+            };
+            firstOwner.Dogs.Add(doggo);
+
+            _realm.Write(() => _realm.Add(firstOwner));
+
+            // FirstOwner via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            var secondOwner = new Owner
+            {
+                TopDog = doggo
+            };
+            _realm.Write(() => _realm.Add(secondOwner));
+
+            // firstOwner via TopDog and Dogs and secondOwner via TopDog
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(3));
+
+            _realm.Write(() => secondOwner.Dogs.Add(doggo));
+            // firstOwner via TopDog and Dogs and secondOwner via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(4));
+
+            _realm.Write(() => _realm.Remove(firstOwner));
+
+            // secondOwner via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            _realm.Write(() => secondOwner.TopDog = null);
+
+            // secondOwner via Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            _realm.Write(() => secondOwner.Dogs.Clear());
+
+            // Nobody refers to doggo anymore
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetBacklinkCount_WhenReferredByDifferentObjectTypes()
+        {
+            var doggo = new Dog();
+            _realm.Write(() => _realm.Add(doggo));
+
+            // Nobody refers to doggo yet
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+
+            var owner = new Owner
+            {
+                TopDog = doggo
+            };
+            owner.Dogs.Add(doggo);
+
+            _realm.Write(() => _realm.Add(owner));
+
+            // owner via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            var walker = new Walker
+            {
+                TopDog = doggo
+            };
+            _realm.Write(() => _realm.Add(walker));
+
+            // owner via TopDog and Dogs and walker via TopDog
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(3));
+
+            _realm.Write(() => walker.Dogs.Add(doggo));
+            // owner via TopDog and Dogs and walker via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(4));
+
+            _realm.Write(() => _realm.Remove(owner));
+
+            // walker via TopDog and Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(2));
+
+            _realm.Write(() => walker.TopDog = null);
+
+            // walker via Dogs
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(1));
+
+            _realm.Write(() => walker.Dogs.Clear());
+
+            // Nobody refers to doggo anymore
+            Assert.That(doggo.BacklinksCount, Is.EqualTo(0));
+        }
+
         #region DeleteRelated
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
