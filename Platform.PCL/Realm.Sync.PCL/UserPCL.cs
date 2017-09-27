@@ -173,12 +173,12 @@ namespace Realms.Sync
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
+        /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
         public Task LogOutAsync()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
-
 
         /// <summary>
         /// Changes the user's password.
