@@ -18,6 +18,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -36,17 +39,29 @@ namespace Realms.Sync
         /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfiguration"/> object.</exception>
         public static Session GetSession(this Realm realm)
         {
-            if (realm == null)
-            {
-                throw new ArgumentNullException(nameof(realm));
-            }
-
-            if (!(realm.Config is SyncConfiguration))
-            {
-                throw new ArgumentException("Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
-            }
+            Argument.NotNull(realm, nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             return Session.Create(realm.Config.DatabasePath);
+        }
+
+        public static async Task<IQueryable<T>> SubscribeForObjects<T>(this Realm realm, string query)
+        {
+            Argument.NotNull(realm, nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+
+            var type = typeof(T);
+            if (!realm.Metadata.TryGetValue(type.Name, out var metadata) || metadata.Schema.Type.AsType() != type)
+            {
+                throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
+            }
+
+            var tcs = new TaskCompletionSource<ResultsHandle>();
+
+            SharedRealmHandleExtensions.SubscribeForObjects(realm.SharedRealmHandle, type, query, tcs);
+
+            var resultsHandle = await tcs.Task;
+            return new RealmResults<T>(realm, metadata, resultsHandle);
         }
     }
 }

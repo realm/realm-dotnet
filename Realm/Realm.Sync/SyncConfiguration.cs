@@ -75,6 +75,16 @@ namespace Realms.Sync
         public string TrustedCAPath { get; set; }
 
         /// <summary>
+        /// Gets or sets IsPartial. TODO
+        /// </summary>
+        public bool IsPartial { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PartialSyncIdentifier. TODO
+        /// </summary>
+        public string PartialSyncIdentifier { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="user">A valid <see cref="User"/>.</param>
@@ -149,8 +159,10 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString(),
-                client_validate_ssl = EnableSSLValidation,
-                TrustedCAPath = TrustedCAPath
+                EnableSSLValidation = EnableSSLValidation,
+                TrustedCAPath = TrustedCAPath,
+                IsPartial = IsPartial,
+                PartialSyncIdentifier = PartialSyncIdentifier
             };
         }
     }

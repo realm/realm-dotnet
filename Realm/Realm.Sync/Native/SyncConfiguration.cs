@@ -50,7 +50,7 @@ namespace Realms.Sync.Native
         }
 
         [MarshalAs(UnmanagedType.I1)]
-        internal bool client_validate_ssl;
+        internal bool EnableSSLValidation;
 
         [MarshalAs(UnmanagedType.LPWStr)]
         private string trusted_ca_path;
@@ -62,6 +62,22 @@ namespace Realms.Sync.Native
             {
                 trusted_ca_path = value;
                 trusted_ca_path_len = (IntPtr)(value?.Length ?? 0);
+            }
+        }
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool IsPartial;
+
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string partial_sync_identifier;
+        private IntPtr partial_sync_identifier_len;
+
+        internal string PartialSyncIdentifier
+        {
+            set
+            {
+                partial_sync_identifier = value;
+                partial_sync_identifier_len = (IntPtr)(value?.Length ?? 0);
             }
         }
     }
