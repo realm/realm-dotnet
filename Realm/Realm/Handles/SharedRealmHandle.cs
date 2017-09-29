@@ -101,8 +101,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_string_unique", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
-                                                             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value,
-                                                             [MarshalAs(UnmanagedType.I1)] bool is_nullable,
+                                                             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
                                                              [MarshalAs(UnmanagedType.I1)] bool update,
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
@@ -269,7 +268,7 @@ namespace Realms
             {
                 case PropertyType.String:
                     var stringKey = (string)primaryKey;
-                    return CreateObjectWithPrimaryKey(table, stringKey, pkProperty.Type.IsNullable(), update, out isNew);
+                    return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
                 case PropertyType.Int:
                     var longKey = primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey);
                     return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
@@ -285,10 +284,9 @@ namespace Realms
             return result;
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool isNullable, bool update, out bool isNew)
+        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
         {
-            var value = key ?? string.Empty;
-            var result = NativeMethods.create_object_unique(this, table, value, (IntPtr)value.Length, key != null, isNullable, update, out isNew, out var ex);
+            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)(key?.Length ?? 0), update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return result;
         }

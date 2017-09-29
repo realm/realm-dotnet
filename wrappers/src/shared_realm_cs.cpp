@@ -343,25 +343,18 @@ REALM_EXPORT Object* shared_realm_create_object_int_unique(const SharedRealm& re
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_string_unique(const SharedRealm& realm, Table& table, uint16_t* key_buf, size_t key_len, bool has_value, bool is_nullable, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_string_unique(const SharedRealm& realm, Table& table, uint16_t* key_buf, size_t key_len, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Utf16StringAccessor key(key_buf, key_len);
-        if (is_nullable) {
-            return create_object_unique(realm, table, has_value ? StringData(key) : StringData(), try_update, is_new);
-        } else {
-            return create_object_unique(realm, table, StringData(key), try_update, is_new);
+        if (key_buf == nullptr) {
+            return create_object_unique(realm, table, StringData(), try_update, is_new);
         }
+        
+        Utf16StringAccessor key(key_buf, key_len);
+        return create_object_unique(realm, table, StringData(key), try_update, is_new);
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_null_unique(const SharedRealm& realm, Table& table, bool try_update, bool& is_new, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return create_object_unique<util::Optional<int64_t>>(realm, table, null(), try_update, is_new);
-    });
-}
-    
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
