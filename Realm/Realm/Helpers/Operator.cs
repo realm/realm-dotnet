@@ -76,13 +76,13 @@ namespace Realms.Helpers
                     Expression convertFrom = input;
                     var typeOfT = typeof(T);
                     var isTNullable = false;
-                    if (ReflectionExtensions.IsClosedGeneric(typeOfT, typeof(Nullable<>), out var arguments))
+                    if (typeOfT.IsClosedGeneric(typeof(Nullable<>), out var arguments))
                     {
                         typeOfT = arguments.Single();
                         isTNullable = true;
                     }
 
-                    if (ReflectionExtensions.IsClosedGeneric(typeOfT, typeof(RealmInteger<>), out arguments))
+                    if (typeOfT.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
                     {
                         var intermediateType = arguments.Single();
                         if (isTNullable)
@@ -95,15 +95,15 @@ namespace Realms.Helpers
 
                     var typeOfU = typeof(U);
                     var isUNullable = false;
-                    if (typeOfU.IsConstructedGenericType && typeOfU.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    if (typeOfU.IsClosedGeneric(typeof(Nullable<>), out arguments))
                     {
-                        typeOfU = typeOfU.GenericTypeArguments.Single();
+                        typeOfU = arguments.Single();
                         isUNullable = true;
                     }
 
-                    if (typeOfU.IsConstructedGenericType && typeOfU.GetGenericTypeDefinition() == typeof(RealmInteger<>))
+                    if (typeOfU.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
                     {
-                        var intermediateType = typeOfU.GenericTypeArguments.Single();
+                        var intermediateType = arguments.Single();
                         if (isUNullable)
                         {
                             intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);

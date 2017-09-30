@@ -108,12 +108,17 @@ namespace Realms
 
         public IntPtr Find(SharedRealmHandle realmHandle, string id)
         {
+            NativeException nativeException;
+            IntPtr result;
             if (id == null)
             {
-                throw new ArgumentNullException(nameof(id));
+                result = NativeMethods.object_for_null_primarykey(this, realmHandle, out nativeException);
+            }
+            else
+            {
+                result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
             }
 
-            var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
