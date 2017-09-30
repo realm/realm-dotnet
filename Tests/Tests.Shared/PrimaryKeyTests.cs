@@ -50,6 +50,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
         [TestCase(typeof(PrimaryKeyStringObject), null, false)]
+        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
@@ -81,6 +84,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
         [TestCase(typeof(PrimaryKeyStringObject), null, false)]
+        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
         public void FailToFindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
@@ -104,6 +110,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         [TestCase(typeof(PrimaryKeyStringObject), null)]
+        [TestCase(typeof(PrimaryKeyStringObject), "")]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key")]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
             _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
@@ -131,6 +140,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
         [TestCase(typeof(PrimaryKeyStringObject), "key")]
         [TestCase(typeof(PrimaryKeyStringObject), null)]
+        [TestCase(typeof(PrimaryKeyStringObject), "")]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key")]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
@@ -184,6 +196,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
         [TestCase(typeof(PrimaryKeyStringObject), null, false)]
+        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
         public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
@@ -215,6 +230,9 @@ namespace Tests.Database
         [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
         [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
         [TestCase(typeof(PrimaryKeyStringObject), null, false)]
+        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
+        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
         public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
@@ -337,6 +355,12 @@ namespace Tests.Database
             {
                 Realm.DeleteRealm(conf);
             }
+        }
+
+        [Test]
+        public void StringPrimaryKey_WhenRequiredDoesntAllowNull()
+        {
+            Assert.That(() => _realm.Write(() => _realm.Add(new RequiredPrimaryKeyStringObject())), Throws.TypeOf<ArgumentException>());
         }
     }
 }
