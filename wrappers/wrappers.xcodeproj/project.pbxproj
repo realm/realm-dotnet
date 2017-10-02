@@ -33,6 +33,8 @@
 		515F02B81EB773220025B764 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B41EB773220025B764 /* network_reachability_observer.cpp */; };
 		515F02B91EB773220025B764 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B61EB773220025B764 /* system_configuration.cpp */; };
 		51A51F261DAEB5660057BAE6 /* object_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51A51F251DAEB5660057BAE6 /* object_cs.cpp */; };
+		51D3BF171F82394000D73244 /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51D3BF141F82394000D73244 /* partial_sync.cpp */; };
+		51D3BF181F82394000D73244 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51D3BF161F82394000D73244 /* sync_config.cpp */; };
 		51E456F11F44745E008A7B79 /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51E456EF1F44745E008A7B79 /* primitive_list_notifier.cpp */; };
 		51E456F21F44745E008A7B79 /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51E456EF1F44745E008A7B79 /* primitive_list_notifier.cpp */; };
 		85040BC01E808FEC0049189D /* binding_callback_thread_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */; };
@@ -128,6 +130,9 @@
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
 		51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_session_cs.hpp; path = src/sync_session_cs.hpp; sourceTree = "<group>"; };
+		51D3BF141F82394000D73244 /* partial_sync.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = partial_sync.cpp; path = "src/object-store/src/sync/partial_sync.cpp"; sourceTree = "<group>"; };
+		51D3BF151F82394000D73244 /* partial_sync.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = partial_sync.hpp; path = "src/object-store/src/sync/partial_sync.hpp"; sourceTree = "<group>"; };
+		51D3BF161F82394000D73244 /* sync_config.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = sync_config.cpp; path = "src/object-store/src/sync/sync_config.cpp"; sourceTree = "<group>"; };
 		51E456EF1F44745E008A7B79 /* primitive_list_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = primitive_list_notifier.cpp; path = "src/object-store/src/impl/primitive_list_notifier.cpp"; sourceTree = "<group>"; };
 		51E456F01F44745E008A7B79 /* primitive_list_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = primitive_list_notifier.hpp; path = "src/object-store/src/impl/primitive_list_notifier.hpp"; sourceTree = "<group>"; };
 		85040BBE1E808FEC0049189D /* binding_callback_thread_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = binding_callback_thread_observer.cpp; path = "src/object-store/src/binding_callback_thread_observer.cpp"; sourceTree = "<group>"; };
@@ -364,6 +369,9 @@
 			isa = PBXGroup;
 			children = (
 				85C041241DCCE97300CBF37B /* impl */,
+				51D3BF141F82394000D73244 /* partial_sync.cpp */,
+				51D3BF151F82394000D73244 /* partial_sync.hpp */,
+				51D3BF161F82394000D73244 /* sync_config.cpp */,
 				85C041171DCCE95F00CBF37B /* sync_config.hpp */,
 				85C041181DCCE95F00CBF37B /* sync_manager.cpp */,
 				85C041191DCCE95F00CBF37B /* sync_manager.hpp */,
@@ -511,12 +519,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				51D3BF181F82394000D73244 /* sync_config.cpp in Sources */,
 				85C041301DCCEA3700CBF37B /* sync_manager_cs.cpp in Sources */,
 				515F02B91EB773220025B764 /* system_configuration.cpp in Sources */,
 				85C041341DD4953300CBF37B /* sync_session_cs.cpp in Sources */,
 				85C041221DCCE96C00CBF37B /* sync_session.cpp in Sources */,
 				85C0412D1DCCE98E00CBF37B /* sync_metadata.cpp in Sources */,
 				51E456F21F44745E008A7B79 /* primitive_list_notifier.cpp in Sources */,
+				51D3BF171F82394000D73244 /* partial_sync.cpp in Sources */,
 				85C041231DCCE97000CBF37B /* sync_user.cpp in Sources */,
 				85C041321DD229C100CBF37B /* sync_user_cs.cpp in Sources */,
 				85C041211DCCE96600CBF37B /* sync_manager.cpp in Sources */,
