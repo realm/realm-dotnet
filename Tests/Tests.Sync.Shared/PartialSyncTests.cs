@@ -169,8 +169,8 @@ namespace Tests.Sync
                             {
                                 StringValue = "B #" + i,
                                 BoolValue = i % 2 == 0,
-							}
-						});
+                            }
+                        });
                     }
                 });
 
@@ -182,8 +182,8 @@ namespace Tests.Sync
             config = new SyncConfiguration(config.User, config.ServerUri, config.DatabasePath + "_partial")
             {
                 ObjectClasses = config.ObjectClasses,
-				IsPartial = true
-			};
+                IsPartial = true
+            };
 
             return GetRealm(config);
         }

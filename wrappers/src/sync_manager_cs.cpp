@@ -220,7 +220,7 @@ REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRea
         partial_sync::register_query(sharedRealm, class_name, query, [=](Results results, std::exception_ptr err) {
             if (err) {
                 try {
-                    throw err;
+                    std::rethrow_exception(err);
                 }
                 catch (...) {
                     NativeException::Marshallable nex = convert_exception().for_marshalling();

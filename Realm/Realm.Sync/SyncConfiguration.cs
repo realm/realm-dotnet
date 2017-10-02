@@ -162,9 +162,9 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString(),
-                EnableSSLValidation = EnableSSLValidation,
+                client_validate_ssl = EnableSSLValidation,
                 TrustedCAPath = TrustedCAPath,
-                IsPartial = IsPartial,
+                is_partial = IsPartial,
                 PartialSyncIdentifier = PartialSyncIdentifier
             };
         }
