@@ -222,7 +222,6 @@ namespace Tests.Sync
             });
         }
 
-
 #if !ROS_SETUP
         [NUnit.Framework.Explicit]
 #endif
