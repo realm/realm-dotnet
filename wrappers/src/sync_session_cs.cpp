@@ -61,7 +61,7 @@ REALM_EXPORT void realm_syncsession_refresh_access_token(SharedSyncSession& sess
         Utf16StringAccessor token(token_buf, token_len);
         Utf16StringAccessor server_path(server_path_buf, server_path_len);
 
-        realm::util::Uri server_url(session->config().realm_url);
+        realm::util::Uri server_url(session->config().realm_url());
         server_url.set_path(server_path);
 
         session->refresh_access_token(token, server_url.recompose());
@@ -111,7 +111,7 @@ REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSess
 REALM_EXPORT size_t realm_syncsession_get_uri(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        std::string uri(session->full_realm_url().value_or(session->config().realm_url));
+        std::string uri(session->full_realm_url().value_or(session->config().realm_url()));
         return stringdata_to_csharpstringbuffer(uri, buffer, buffer_length);
     });
 }
