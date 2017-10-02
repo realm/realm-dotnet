@@ -246,7 +246,7 @@ namespace Tests.Sync
                 EnsureRealmExists(alice, realmUrl);
 
                 await CreateChange(alice, bob.Identity, realmUrl);
-                var permission = await tcs.Task;
+                var permission = await tcs.Task.Timeout(2000);
 
                 Assert.That(permission.UserId, Is.EqualTo(bob.Identity));
                 Assert.That(permission.Path, Is.EqualTo(realmPath));
@@ -272,7 +272,7 @@ namespace Tests.Sync
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
 
-                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity));
+                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity)).Timeout(10000);
             });
         }
 
@@ -289,7 +289,7 @@ namespace Tests.Sync
                 var bobCredentials = Credentials.UsernamePassword(bobEmail, "a", createUser: true);
                 var bob = await User.LoginAsync(bobCredentials, SyncTestHelpers.AuthServerUri);
 
-                await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail));
+                await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail)).Timeout(10000);
             });
         }
 
@@ -308,12 +308,12 @@ namespace Tests.Sync
                 var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
                 EnsureRealmExists(alice, realmUrl);
 
-                var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write);
-                var alicesUrl = await bob.AcceptPermissionOfferAsync(token);
+                var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write).Timeout(2000);
+                var alicesUrl = await bob.AcceptPermissionOfferAsync(token).Timeout(2000);
 
                 Assert.That(alicesUrl, Is.EqualTo(realmUrl));
 
-                await AssertPermissions(alice, bob, realmPath, AccessLevel.Write);
+                await AssertPermissions(alice, bob, realmPath, AccessLevel.Write).Timeout(10000);
             });
         }
 
@@ -400,7 +400,7 @@ namespace Tests.Sync
         {
             try
             {
-                await function();
+                await function().Timeout(5000);
                 Assert.Fail($"Exception of type {typeof(T)} expected.");
             }
             catch (T ex)

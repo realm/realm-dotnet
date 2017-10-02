@@ -42,6 +42,11 @@ internal static class TaskExtensions
             {
                 throw new TimeoutException("The operation has timed out.");
             }
+
+            if (t.Result.IsFaulted)
+            {
+                throw t.Result.Exception.InnerException;
+            }
         });
     }
 }
