@@ -45,7 +45,17 @@ namespace Realms.Sync
             return Session.Create(realm.Config.DatabasePath);
         }
 
-        public static async Task<IQueryable<T>> SubscribeForObjects<T>(this Realm realm, string query)
+        /// <summary>
+        /// If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+        /// of a given object type that match the given query (in string format).
+        /// </summary>
+        /// <typeparam name="T">The type of the objects making up the query.</typeparam>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
+        /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
+        /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
+        /// <remarks>Partial synchronization is a tech preview. Its APIs are subject to change.</remarks>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
         {
             Argument.NotNull(realm, nameof(realm));
             Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));

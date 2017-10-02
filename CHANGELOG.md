@@ -24,6 +24,11 @@ account data associated with that user. ([#1573](https://github.com/realm/realm-
 - Introduced a new method - `User.LogOutAsync` to replace the now-deprecated synchronous call. ([#1574](https://github.com/realm/realm-dotnet/pull/1574))
 - Exposed `BacklinksCount` property on `RealmObject` that returns the number of objects that refer to the current object via a to-one or a to-many relationship. ([#1578](https://github.com/realm/realm-dotnet/pull/1578))
 - String primary keys now support `null` as a value. ([#1579](https://github.com/realm/realm-dotnet/pull/1579))
+- Add preview support for partial synchronization. Partial synchronization allows a synchronized Realm to be opened in such a way 
+that only objects requested by the user are synchronized to the device. You can use it by setting the `IsPartial` property on a 
+`SyncConfiguration`, opening the Realm, and then calling `Realm.SubscribeToObjectsAsync` with the type of object you're interested in,
+a string containing a query determining which objects you want to subscribe to, and a callback which will report the results. You may
+add as many subscriptions to a synced Realm as necessary. ([#1580](https://github.com/realm/realm-dotnet/pull/1580))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))

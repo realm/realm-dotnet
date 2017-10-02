@@ -45,7 +45,7 @@ namespace Tests.Sync
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
 
-                    var objectAs = await realm.SubscribeForObjects<ObjectA>("IntValue < 5").Timeout(2000);
+                    var objectAs = await realm.SubscribeToObjectsAsync<ObjectA>("IntValue < 5").Timeout(2000);
 
                     Assert.That(objectAs.Count(), Is.EqualTo(5));
 
@@ -71,7 +71,7 @@ namespace Tests.Sync
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    await realm.SubscribeForObjects<ObjectA>("IntValue < 5").Timeout(2000);
+                    await realm.SubscribeToObjectsAsync<ObjectA>("IntValue < 5").Timeout(2000);
 
                     var queriedObjectAs = realm.All<ObjectA>().Where(o => o.IntValue < 5);
 
@@ -99,8 +99,8 @@ namespace Tests.Sync
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    var youngerThan3 = await realm.SubscribeForObjects<ObjectA>("IntValue < 3").Timeout(2000);
-                    var range1to6 = await realm.SubscribeForObjects<ObjectA>("IntValue > 1 AND IntValue < 6").Timeout(2000);
+                    var youngerThan3 = await realm.SubscribeToObjectsAsync<ObjectA>("IntValue < 3").Timeout(2000);
+                    var range1to6 = await realm.SubscribeToObjectsAsync<ObjectA>("IntValue > 1 AND IntValue < 6").Timeout(2000);
 
                     Assert.That(youngerThan3.Count(), Is.EqualTo(3));
                     Assert.That(range1to6.Count(), Is.EqualTo(4));
@@ -128,8 +128,8 @@ namespace Tests.Sync
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    var youngerThan3 = await realm.SubscribeForObjects<ObjectA>("IntValue < 3").Timeout(2000);
-                    var olderThan6 = await realm.SubscribeForObjects<ObjectA>("IntValue > 6").Timeout(2000);
+                    var youngerThan3 = await realm.SubscribeToObjectsAsync<ObjectA>("IntValue < 3").Timeout(2000);
+                    var olderThan6 = await realm.SubscribeToObjectsAsync<ObjectA>("IntValue > 6").Timeout(2000);
 
                     Assert.That(youngerThan3.Count(), Is.EqualTo(3));
                     Assert.That(olderThan6.Count(), Is.EqualTo(3));

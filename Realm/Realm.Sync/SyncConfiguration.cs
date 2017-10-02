@@ -75,14 +75,17 @@ namespace Realms.Sync
         public string TrustedCAPath { get; set; }
 
         /// <summary>
-        /// Gets or sets IsPartial. TODO
+        /// Gets or sets a value indicating whether this Realm should be opened in 'partial synchronization' mode.
+        /// Partial synchronization mode means that no objects are synchronized from the remote Realm
+        /// except those matching queries that the user explicitly specifies.
         /// </summary>
+        /// <remarks>
+        /// Partial synchronization is a tech preview.Its APIs are subject to change.
+        /// </remarks>
         public bool IsPartial { get; set; }
 
-        /// <summary>
-        /// Gets or sets the PartialSyncIdentifier. TODO
-        /// </summary>
-        public string PartialSyncIdentifier { get; set; }
+        // TODO: expose and document this.
+        internal string PartialSyncIdentifier { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
