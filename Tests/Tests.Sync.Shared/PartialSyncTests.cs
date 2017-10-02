@@ -42,18 +42,18 @@ namespace Tests.Sync
                 {
                     await realm.GetSession().WaitForDownloadAsync();
 
-                    Assert.That(realm.All<Dog>().Count(), Is.EqualTo(0));
-                    Assert.That(realm.All<Owner>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
 
-                    var owners = await realm.SubscribeForObjects<Owner>("Age < 5");
+                    var objectAs = await realm.SubscribeForObjects<ObjectA>("IntValue < 5").Timeout(2000);
 
-                    Assert.That(owners.Count(), Is.EqualTo(5));
+                    Assert.That(objectAs.Count(), Is.EqualTo(5));
 
-                    foreach (var owner in owners)
+                    foreach (var a in objectAs)
                     {
-                        Assert.That(owner.Age < 5);
-                        Assert.That(owner.TopDog, Is.Not.Null);
-                        Assert.That(owner.TopDog.Vaccinated, Is.EqualTo(owner.Age % 2 == 0));
+                        Assert.That(a.IntValue < 5);
+                        Assert.That(a.B, Is.Not.Null);
+                        Assert.That(a.B.BoolValue, Is.EqualTo(a.IntValue % 2 == 0));
                     }
                 }
             });
@@ -68,20 +68,20 @@ namespace Tests.Sync
                 {
                     await realm.GetSession().WaitForDownloadAsync();
 
-                    Assert.That(realm.All<Dog>().Count(), Is.EqualTo(0));
-                    Assert.That(realm.All<Owner>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    await realm.SubscribeForObjects<Owner>("Age < 5");
+                    await realm.SubscribeForObjects<ObjectA>("IntValue < 5").Timeout(2000);
 
-                    var queriedOwners = realm.All<Owner>().Where(o => o.Age < 5);
+                    var queriedObjectAs = realm.All<ObjectA>().Where(o => o.IntValue < 5);
 
-                    Assert.That(queriedOwners.Count(), Is.EqualTo(5));
+                    Assert.That(queriedObjectAs.Count(), Is.EqualTo(5));
 
-                    foreach (var owner in queriedOwners)
+                    foreach (var a in queriedObjectAs)
                     {
-                        Assert.That(owner.Age < 5);
-                        Assert.That(owner.TopDog, Is.Not.Null);
-                        Assert.That(owner.TopDog.Vaccinated, Is.EqualTo(owner.Age % 2 == 0));
+                        Assert.That(a.IntValue < 5);
+                        Assert.That(a.B, Is.Not.Null);
+                        Assert.That(a.B.BoolValue, Is.EqualTo(a.IntValue % 2 == 0));
                     }
                 }
             });
@@ -96,22 +96,22 @@ namespace Tests.Sync
                 {
                     await realm.GetSession().WaitForDownloadAsync();
 
-                    Assert.That(realm.All<Dog>().Count(), Is.EqualTo(0));
-                    Assert.That(realm.All<Owner>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    var youngerThan3 = await realm.SubscribeForObjects<Owner>("Age < 3");
-                    var range1to6 = await realm.SubscribeForObjects<Owner>("Age > 1 AND Age < 6");
+                    var youngerThan3 = await realm.SubscribeForObjects<ObjectA>("IntValue < 3").Timeout(2000);
+                    var range1to6 = await realm.SubscribeForObjects<ObjectA>("IntValue > 1 AND IntValue < 6").Timeout(2000);
 
                     Assert.That(youngerThan3.Count(), Is.EqualTo(3));
                     Assert.That(range1to6.Count(), Is.EqualTo(4));
 
-                    Assert.That(youngerThan3.All(o => o.Age < 3));
-                    Assert.That(range1to6.All(o => o.Age > 1 && o.Age < 6));
+                    Assert.That(youngerThan3.ToArray().All(o => o.IntValue < 3));
+                    Assert.That(range1to6.ToArray().All(o => o.IntValue > 1 && o.IntValue < 6));
 
-                    var allInRealm = realm.All<Owner>();
+                    var allInRealm = realm.All<ObjectA>();
 
                     Assert.That(allInRealm.Count(), Is.EqualTo(6));
-                    Assert.That(allInRealm.All(o => o.Age < 5));
+                    Assert.That(allInRealm.ToArray().All(o => o.IntValue < 6));
                 }
             });
         }
@@ -125,22 +125,22 @@ namespace Tests.Sync
                 {
                     await realm.GetSession().WaitForDownloadAsync();
 
-                    Assert.That(realm.All<Dog>().Count(), Is.EqualTo(0));
-                    Assert.That(realm.All<Owner>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
 
-                    var youngerThan3 = await realm.SubscribeForObjects<Owner>("Age < 3");
-                    var olderThan6 = await realm.SubscribeForObjects<Owner>("Age > 6");
+                    var youngerThan3 = await realm.SubscribeForObjects<ObjectA>("IntValue < 3").Timeout(2000);
+                    var olderThan6 = await realm.SubscribeForObjects<ObjectA>("IntValue > 6").Timeout(2000);
 
                     Assert.That(youngerThan3.Count(), Is.EqualTo(3));
                     Assert.That(olderThan6.Count(), Is.EqualTo(3));
 
-                    Assert.That(youngerThan3.All(o => o.Age < 3));
-                    Assert.That(olderThan6.All(o => o.Age > 6));
+                    Assert.That(youngerThan3.ToArray().All(o => o.IntValue < 3));
+                    Assert.That(olderThan6.ToArray().All(o => o.IntValue > 6));
 
-                    var allInRealm = realm.All<Owner>();
+                    var allInRealm = realm.All<ObjectA>();
 
                     Assert.That(allInRealm.Count(), Is.EqualTo(6));
-                    Assert.That(allInRealm.All(o => o.Age < 3 || o.Age > 6));
+                    Assert.That(allInRealm.ToArray().All(o => o.IntValue < 3 || o.IntValue > 6));
                 }
             });
         }
@@ -148,7 +148,10 @@ namespace Tests.Sync
         private async Task<Realm> GetPartialRealm(Action<SyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
         {
             var user = await SyncTestHelpers.GetUserAsync();
-            var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri(realmPath));
+            var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/{realmPath}"))
+            {
+                ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) }
+            };
 
             setupConfig?.Invoke(config);
 
@@ -158,25 +161,47 @@ namespace Tests.Sync
                 {
                     for (var i = 0; i < 10; i++)
                     {
-                        original.Add(new Owner
+                        original.Add(new ObjectA
                         {
-                            Name = "Owner #" + i,
-                            Age = i,
-                            TopDog = new Dog
+                            StringValue = "A #" + i,
+                            IntValue = i,
+                            B = new ObjectB
                             {
-                                Name = "Dog #" + i,
-                                Vaccinated = i % 2 == 0,
-                                Color = $"#{i}{i}AAAAAA"
-                            }
-                        });
+                                StringValue = "B #" + i,
+                                BoolValue = i % 2 == 0,
+							}
+						});
                     }
                 });
 
                 await original.GetSession().WaitForUploadAsync();
             }
 
-            config.IsPartial = true;
+            Realm.DeleteRealm(config);
+
+            config = new SyncConfiguration(config.User, config.ServerUri, config.DatabasePath + "_partial")
+            {
+                ObjectClasses = config.ObjectClasses,
+				IsPartial = true
+			};
+
             return GetRealm(config);
+        }
+
+        public class ObjectA : RealmObject
+        {
+            public string StringValue { get; set; }
+
+            public int IntValue { get; set; }
+
+            public ObjectB B { get; set; }
+        }
+
+        public class ObjectB : RealmObject
+        {
+            public string StringValue { get; set; }
+
+            public bool BoolValue { get; set; }
         }
     }
 }

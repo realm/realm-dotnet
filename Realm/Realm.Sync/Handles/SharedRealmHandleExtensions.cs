@@ -58,7 +58,7 @@ namespace Realms.Sync
             public unsafe delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, byte* message_buf, IntPtr message_len);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void SubscribeForObjectsCallback(ResultsHandle results, IntPtr task_completion_source, NativeException ex);
+            public unsafe delegate void SubscribeForObjectsCallback(IntPtr results, IntPtr task_completion_source, NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth,
@@ -300,7 +300,7 @@ namespace Realms.Sync
         }
 
         [NativeCallback(typeof(NativeMethods.SubscribeForObjectsCallback))]
-        private static unsafe void HandleSubscribeForObjectsCallback(ResultsHandle results, IntPtr taskCompletionSource, NativeException ex)
+        private static unsafe void HandleSubscribeForObjectsCallback(IntPtr results, IntPtr taskCompletionSource, NativeException ex)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ResultsHandle>)handle.Target;
@@ -309,7 +309,9 @@ namespace Realms.Sync
             {
                 if (ex.type == RealmExceptionCodes.NoError)
                 {
-                    tcs.TrySetResult(results);
+                    var resultsHandle = new ResultsHandle();
+                    resultsHandle.SetHandle(results);
+                    tcs.TrySetResult(resultsHandle);
                 }
                 else
                 {

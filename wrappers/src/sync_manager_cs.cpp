@@ -227,7 +227,7 @@ REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRea
                     s_subscribe_for_objects_callback(nullptr, task_completion_source, nex);
                 }
             } else {
-                s_subscribe_for_objects_callback(new Results(results), task_completion_source, nullptr, 0);
+                s_subscribe_for_objects_callback(new Results(results), task_completion_source, NativeException::Marshallable{RealmErrorType::NoError});
             }
         });
     });
