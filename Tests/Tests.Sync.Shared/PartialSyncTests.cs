@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -141,6 +142,28 @@ namespace Tests.Sync
 
                     Assert.That(allInRealm.Count(), Is.EqualTo(6));
                     Assert.That(allInRealm.ToArray().All(o => o.IntValue < 3 || o.IntValue > 6));
+                }
+            });
+        }
+
+        [Test]
+        public void SubscribeForObjects_WhenQueryIsInvalid_Throws()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetPartialRealm())
+                {
+                    await realm.GetSession().WaitForDownloadAsync();
+
+                    try
+                    {
+                        var objectAs = await realm.SubscribeToObjectsAsync<ObjectA>("foo = bar").Timeout(2000);
+                        Assert.Fail("Expected an exception to be thrown.");
+                    }
+                    catch (RealmException ex)
+                    {
+                        Assert.That(ex.Message, Contains.Substring("QueryParser"));
+                    }
                 }
             });
         }
