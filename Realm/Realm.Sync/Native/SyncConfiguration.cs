@@ -64,5 +64,21 @@ namespace Realms.Sync.Native
                 trusted_ca_path_len = (IntPtr)(value?.Length ?? 0);
             }
         }
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_partial;
+
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string partial_sync_identifier;
+        private IntPtr partial_sync_identifier_len;
+
+        internal string PartialSyncIdentifier
+        {
+            set
+            {
+                partial_sync_identifier = value;
+                partial_sync_identifier_len = (IntPtr)(value?.Length ?? 0);
+            }
+        }
     }
 }

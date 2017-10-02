@@ -18,6 +18,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -35,6 +37,22 @@ namespace Realms.Sync
         /// <exception cref="ArgumentNullException">Thrown if <c>realm</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if <c>realm</c> was not created with a <see cref="SyncConfiguration"/> object.</exception>
         public static Session GetSession(this Realm realm)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+        /// of a given object type that match the given query (in string format).
+        /// </summary>
+        /// <typeparam name="T">The type of the objects making up the query.</typeparam>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
+        /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
+        /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
+        /// <remarks>Partial synchronization is a tech preview. Its APIs are subject to change.</remarks>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
