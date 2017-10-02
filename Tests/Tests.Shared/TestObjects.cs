@@ -313,8 +313,6 @@ namespace Tests
     {
         public string Name { get; set; }
 
-        public int Age { get; set; }
-
         public Dog TopDog { get; set; }
 
         public IList<Dog> Dogs { get; }
