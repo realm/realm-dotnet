@@ -22,7 +22,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("Realm")]
 [assembly: InternalsVisibleTo("Realm.Sync")]
 [assembly: InternalsVisibleTo("Realm.DataBinding")]
-[assembly: InternalsVisibleTo("Realm.Sync.Docs")]
 [assembly: InternalsVisibleTo("Tests.Win32")]
 [assembly: InternalsVisibleTo("Tests.iOS")]
 [assembly: InternalsVisibleTo("Tests.Android")]

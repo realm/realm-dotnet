@@ -20,7 +20,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm.Sync")]
+[assembly: InternalsVisibleTo("Tests.Win32")]
 [assembly: InternalsVisibleTo("Tests.iOS")]
 [assembly: InternalsVisibleTo("Tests.Android")]
+[assembly: InternalsVisibleTo("Tests.UWP")]
 [assembly: InternalsVisibleTo("Tests.NetCore")]
 [assembly: InternalsVisibleTo("Tests.XamarinMac")]
