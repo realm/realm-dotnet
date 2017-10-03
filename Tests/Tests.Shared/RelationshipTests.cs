@@ -641,6 +641,7 @@ namespace Tests.Database
             Assert.That(doggo.BacklinksCount, Is.EqualTo(3));
 
             _realm.Write(() => secondOwner.Dogs.Add(doggo));
+
             // firstOwner via TopDog and Dogs and secondOwner via TopDog and Dogs
             Assert.That(doggo.BacklinksCount, Is.EqualTo(4));
 
@@ -690,6 +691,7 @@ namespace Tests.Database
             Assert.That(doggo.BacklinksCount, Is.EqualTo(3));
 
             _realm.Write(() => walker.Dogs.Add(doggo));
+
             // owner via TopDog and Dogs and walker via TopDog and Dogs
             Assert.That(doggo.BacklinksCount, Is.EqualTo(4));
 

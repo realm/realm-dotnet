@@ -54,6 +54,7 @@ namespace Tests.Database
             if (_isSetup)
             {
                 CustomTearDown();
+
                 NativeCommon.reset_for_testing();
                 _isSetup = false;
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
