@@ -182,7 +182,23 @@ namespace RealmWeaver
                                                          .ToString()
                                                          .Split(',');
 
-                    name = value.First();
+                    // Legacy reporting used ios, osx, and android
+                    switch (value[0])
+                    {
+                        case "Xamarin.iOS":
+                            name = "ios";
+                            break;
+                        case "Xamarin.Mac":
+                            name = "osx";
+                            break;
+                        case "MonoAndroid":
+                        case "Mono.Android":
+                            name = "android";
+                            break;
+                        default:
+                            name = value[0];
+                            break;
+                    }
 
                     if (value.Length > 1)
                     {
