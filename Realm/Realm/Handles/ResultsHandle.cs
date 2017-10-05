@@ -69,6 +69,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_snapshot", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr snapshot(ResultsHandle results, out NativeException ex);
         }
 
         public override bool IsValid
@@ -84,7 +87,7 @@ namespace Realms
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
-        public ResultsHandle() : base(null)
+        public ResultsHandle(RealmHandle root = null) : base(root)
         {
         }
 
@@ -171,6 +174,16 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
+            return result;
+        }
+
+        public override ResultsHandle Snapshot()
+        {
+            var ptr = NativeMethods.snapshot(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            var result = new ResultsHandle(this.Root ?? this);
+            result.SetHandle(ptr);
             return result;
         }
     }

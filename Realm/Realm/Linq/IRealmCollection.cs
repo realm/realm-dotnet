@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -122,9 +121,9 @@ namespace Realms
         /// <remarks>
         /// <para>
         /// The callback will be asynchronously invoked with the initial <see cref="IRealmCollection{T}" />, and then
-        /// called again after each write transaction which changes either any of the objects in the collection, or 
+        /// called again after each write transaction which changes either any of the objects in the collection, or
         /// which objects are in the collection. The <c>changes</c> parameter will
-        /// be <c>null</c> the first time the callback is invoked with the initial results. For each call after that, 
+        /// be <c>null</c> the first time the callback is invoked with the initial results. For each call after that,
         /// it will contain information about which rows in the results were added, removed or modified.
         /// </para>
         /// <para>
@@ -133,7 +132,7 @@ namespace Realms
         /// Currently the only errors that can occur are when opening the <see cref="Realms.Realm" /> on the background worker thread.
         /// </para>
         /// <para>
-        /// At the time when the block is called, the <see cref="IRealmCollection{T}" /> object will be fully evaluated 
+        /// At the time when the block is called, the <see cref="IRealmCollection{T}" /> object will be fully evaluated
         /// and up-to-date, and as long as you do not perform a write transaction on the same thread
         /// or explicitly call <see cref="Realm.Refresh" />, accessing it will never perform blocking work.
         /// </para>

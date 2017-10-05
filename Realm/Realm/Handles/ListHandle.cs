@@ -128,6 +128,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ListHandle listHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
         }
 
         public override bool IsValid
@@ -307,6 +310,16 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
+            return result;
+        }
+
+        public override ResultsHandle Snapshot()
+        {
+            var ptr = NativeMethods.snapshot(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            var result = new ResultsHandle(this.Root ?? this);
+            result.SetHandle(ptr);
             return result;
         }
     }
