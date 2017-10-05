@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using System.Management;
-using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.Versioning;
 using System.Text;
@@ -148,13 +147,14 @@ namespace RealmWeaver
             var payload = JsonPayload;
             // uncomment next two lines to inspect the payload under Windows VS build
             // Debugger.Launch();
-
+#if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
             var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
             request.GetResponse();
+#endif
 
             return payload;
         }
