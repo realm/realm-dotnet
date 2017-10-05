@@ -149,7 +149,7 @@ namespace RealmWeaver
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-            var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
+            var request = System.Net.HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
