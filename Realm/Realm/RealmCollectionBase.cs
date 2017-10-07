@@ -36,8 +36,6 @@ namespace Realms
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
           IList,
-          INotifyCollectionChanged,
-          INotifyPropertyChanged,
           ISchemaSource,
           IThreadConfined
     {
@@ -100,7 +98,7 @@ namespace Realms
             }
         }
 
-        public Schema.ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema ObjectSchema => Metadata?.Schema;
 
         RealmObject.Metadata IThreadConfined.Metadata => Metadata;
 
@@ -156,6 +154,12 @@ namespace Realms
                         return Handle.Value.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
                 }
             }
+        }
+
+        public RealmCollectionBase<T> Snapshot()
+        {
+            var handle = Handle.Value.Snapshot();
+            return new RealmResults<T>(Realm, Metadata, handle);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
@@ -424,7 +428,6 @@ namespace Realms
             }
         }
 
-        // TODO: can this be private?
         public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
@@ -433,7 +436,7 @@ namespace Realms
             internal Enumerator(RealmCollectionBase<T> parent)
             {
                 _index = -1;
-                _enumerating = parent;
+                _enumerating = parent.Snapshot();
             }
 
             public T Current => _enumerating[_index];
@@ -459,6 +462,7 @@ namespace Realms
 
             public void Dispose()
             {
+                _enumerating.Handle.Value.Close();
             }
         }
     }

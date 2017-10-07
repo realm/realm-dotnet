@@ -59,5 +59,7 @@ namespace Realms
         public abstract byte[] GetByteArrayAtIndex(int index);
 
         public abstract int Count();
+
+        public abstract ResultsHandle Snapshot();
     }
 }

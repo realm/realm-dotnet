@@ -353,4 +353,11 @@ REALM_EXPORT ThreadSafeReference<List>* list_get_thread_safe_reference(const Lis
     });
 }
 
+REALM_EXPORT Results* list_snapshot(const List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(list.snapshot());
+    });
+}
+
 }   // extern "C"

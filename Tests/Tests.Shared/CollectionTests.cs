@@ -217,6 +217,84 @@ namespace Tests.Database
             Assert.That(items.AsRealmCollection().IsValid, Is.False);
         }
 
+        [Test]
+        public void Results_WhenEnumerating_ShouldBeStable()
+        {
+            TestStableIteration(
+                i => _realm.Add(new IntPropertyObject { Int = i }),
+                _realm.All<IntPropertyObject>,
+                item => item.Int += 2);
+
+            var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
+            Assert.That(items, Is.EqualTo(Enumerable.Range(2, 10)));
+        }
+
+        [Test]
+        public void ObjectList_WhenEnumeratingAndRemovingFromList_ShouldBeStable()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            TestStableIteration(
+                i => container.Items.Add(new IntPropertyObject { Int = i }),
+                () => container.Items,
+                item => container.Items.Remove(item));
+
+            Assert.That(container.Items, Is.Empty);
+
+            var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
+            Assert.That(items, Is.EqualTo(Enumerable.Range(0, 10)));
+        }
+
+        [Test]
+        public void ObjectList_WhenEnumeratingAndRemovingFromRealm_ShouldBeStable()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            TestStableIteration(
+                i => container.Items.Add(new IntPropertyObject { Int = i }),
+                () => container.Items,
+                _realm.Remove);
+
+            Assert.That(container.Items, Is.Empty);
+            Assert.That(_realm.All<IntPropertyObject>(), Is.Empty);
+        }
+
+        [Test]
+        public void PrimitiveList_WhenEnumerating_ShouldBeStable()
+        {
+            var container = new ListsObject();
+            _realm.Write(() => _realm.Add(container));
+
+            TestStableIteration(
+                container.Int32List.Add,
+                () => container.Int32List,
+                i => container.Int32List.Remove(i));
+
+            Assert.That(container.Int32List, Is.Empty);
+        }
+
+        private void TestStableIteration<T>(Action<int> addItem, Func<IEnumerable<T>> getItems, Action<T> modifyItem)
+        {
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    addItem(i);
+                }
+            });
+
+            var count = 0;
+            foreach (var item in getItems())
+            {
+                _realm.Write(() => modifyItem(item));
+                count++;
+            }
+
+            Assert.That(count, Is.EqualTo(10));
+        }
+
         private ContainerObject GetPopulatedManagedContainerObject()
         {
             var container = new ContainerObject();

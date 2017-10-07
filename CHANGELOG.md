@@ -1,3 +1,13 @@
+X.Y.Z (TBD)
+------------------
+
+### Enhancements
+- Ensure that Realm collections (`IList<T>`, `IQueryable<T>`) will not change when iterating in a `foreach` loop. ([#1589](https://github.com/realm/realm-dotnet/pull/1589))
+
+### Bug fixes
+
+### Breaking Changes
+
 2.0.0-rc1 (2017-10-03)
 ------------------
 
