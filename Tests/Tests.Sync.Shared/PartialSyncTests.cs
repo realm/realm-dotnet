@@ -41,7 +41,7 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
 
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
@@ -67,7 +67,7 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
 
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
@@ -95,7 +95,7 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
 
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
@@ -124,7 +124,7 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
 
                     Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(0));
                     Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(0));
@@ -153,7 +153,7 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    await realm.GetSession().WaitForDownloadAsync();
+                    await GetSession(realm).WaitForDownloadAsync();
 
                     try
                     {
@@ -197,7 +197,7 @@ namespace Tests.Sync
                     }
                 });
 
-                await original.GetSession().WaitForUploadAsync();
+                await GetSession(original).WaitForUploadAsync();
             }
 
             Realm.DeleteRealm(config);

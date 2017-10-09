@@ -129,9 +129,7 @@ namespace Realms.Sync
             var result = NativeMethods.open_with_sync(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var handle = new SharedRealmHandle();
-            handle.SetHandle(result);
-            return handle;
+            return new SharedRealmHandle(result);
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
@@ -209,9 +207,7 @@ namespace Realms.Sync
             var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var handle = new SessionHandle();
-            handle.SetHandle(result);
-            return handle;
+            return new SessionHandle(result);
         }
 
         public static void SetFeatureToken(string token)
@@ -230,14 +226,16 @@ namespace Realms.Sync
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         private static unsafe void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
-            var session = Session.Create(sessionHandlePtr);
+            var handle = new SessionHandle(sessionHandlePtr);
+            var session = new Session(handle);
             AuthenticationHelper.RefreshAccessTokenAsync(session).ContinueWith(_ => session.CloseHandle());
         }
 
         [NativeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
-            var session = Session.Create(sessionHandlePtr);
+            var handle = new SessionHandle(sessionHandlePtr);
+            var session = new Session(handle);
             var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
 
             SessionException exception;
@@ -309,8 +307,7 @@ namespace Realms.Sync
             {
                 if (ex.type == RealmExceptionCodes.NoError)
                 {
-                    var resultsHandle = new ResultsHandle();
-                    resultsHandle.SetHandle(results);
+                    var resultsHandle = new ResultsHandle(null, results);
                     tcs.TrySetResult(resultsHandle);
                 }
                 else

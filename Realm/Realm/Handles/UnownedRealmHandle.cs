@@ -16,12 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms
 {
     // this class represents a Realm that isn't owned by .net - like the realms
     // in the object store migration callback
     internal class UnownedRealmHandle : SharedRealmHandle
     {
+        public UnownedRealmHandle(IntPtr handle) : base(handle)
+        {
+        }
+
         protected override void Unbind()
         {
             // do nothing - we don't own this, so we don't need to clean up

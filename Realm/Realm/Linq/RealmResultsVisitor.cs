@@ -213,29 +213,29 @@ namespace Realms
                 if (node.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    var foundAny = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle) != IntPtr.Zero;
+                    var foundAny = CoreQueryHandle.TryFindDirect(_realm.SharedRealmHandle, out _);
                     return Expression.Constant(foundAny);
                 }
 
                 if (node.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    var firstObjectPtr = IntPtr.Zero;
+                    ObjectHandle firstObject;
                     if (OptionalSortDescriptorBuilder == null)
                     {
-                        firstObjectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle);
+                        CoreQueryHandle.TryFindDirect(_realm.SharedRealmHandle, out firstObject);
                     }
                     else
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            firstObjectPtr = rh.GetObjectAtIndex(0);
+                            rh.TryGetObjectAtIndex(0, out firstObject);
                         }
                     }
 
-                    if (firstObjectPtr != IntPtr.Zero)
+                    if (firstObject != null)
                     {
-                        return Expression.Constant(_realm.MakeObject(_metadata, firstObjectPtr));
+                        return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
                     }
 
                     if (node.Method.Name == nameof(Queryable.First))
@@ -267,8 +267,7 @@ namespace Realms
                 if (node.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(node);
-                    var firstObjectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle);
-                    if (firstObjectPtr == IntPtr.Zero)
+                    if (!CoreQueryHandle.TryFindDirect(_realm.SharedRealmHandle, out var firstObject))
                     {
                         if (node.Method.Name == nameof(Queryable.Single))
                         {
@@ -279,9 +278,7 @@ namespace Realms
                         return Expression.Constant(null);
                     }
 
-                    var firstObject = Realm.CreateObjectHandle(firstObjectPtr, _realm.SharedRealmHandle);
-                    var nextObjectPtr = CoreQueryHandle.FindNext(firstObject);
-                    if (nextObjectPtr != IntPtr.Zero)
+                    if (CoreQueryHandle.TryFindNext(firstObject, _realm.SharedRealmHandle, out _))
                     {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     }
@@ -293,19 +290,19 @@ namespace Realms
                 {
                     RecurseToWhereOrRunLambda(node);
 
-                    var lastObjectPtr = IntPtr.Zero;
+                    ObjectHandle lastObject = null;
                     using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
                         {
-                            lastObjectPtr = rh.GetObjectAtIndex(lastIndex);
+                            rh.TryGetObjectAtIndex(lastIndex, out lastObject);
                         }
                     }
 
-                    if (lastObjectPtr != IntPtr.Zero)
+                    if (lastObject != null)
                     {
-                        return Expression.Constant(_realm.MakeObject(_metadata, lastObjectPtr));
+                        return Expression.Constant(_realm.MakeObject(_metadata, lastObject));
                     }
 
                     if (node.Method.Name == nameof(Queryable.Last))
@@ -325,23 +322,22 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single integer constant argument or closure variable");
                     }
 
-                    IntPtr objectPtr;
+                    ObjectHandle objectHandle;
                     var index = (int)argument;
                     if (OptionalSortDescriptorBuilder == null)
                     {
-                        objectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle, (IntPtr)index);
+                        CoreQueryHandle.TryFindDirect(_realm.SharedRealmHandle, out objectHandle, (IntPtr)index);
                     }
                     else
                     {
                         using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            objectPtr = rh.GetObjectAtIndex(index);
+                            rh.TryGetObjectAtIndex(index, out objectHandle);
                         }
                     }
 
-                    if (objectPtr != IntPtr.Zero)
+                    if (objectHandle != null)
                     {
-                        var objectHandle = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
                         return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
                     }
 

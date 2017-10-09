@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -26,7 +27,7 @@ namespace Realms
     {
         private readonly NotifiableObjectHandleBase _notifiableHandle;
 
-        public NotificationTokenHandle(NotifiableObjectHandleBase root) : base(root.Root ?? root)
+        public NotificationTokenHandle(NotifiableObjectHandleBase root, IntPtr handle) : base(root, handle)
         {
             // We save this because RealmHandle doesn't support a parent chain like
             // NotificationToken -> List -> Realm

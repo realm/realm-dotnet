@@ -68,11 +68,16 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_logged_in_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_logged_in_user([MarshalAs(UnmanagedType.LPWStr)] string identity, IntPtr identity_len,
-                                                           [MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len, 
+                                                           [MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len,
                                                            out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
+        }
+
+        [Preserve]
+        public SyncUserHandle(IntPtr handle) : base(null, handle)
+        {
         }
 
         public string GetIdentity()
@@ -114,12 +119,19 @@ namespace Realms.Sync
             return NativeMethods.get_is_admin(this);
         }
 
-        public IntPtr GetSessionPointer(string path)
+        public bool TryGetSession(string path, out SessionHandle handle)
         {
             var result = NativeMethods.get_session(this, path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
 
-            return result;
+            if (result == IntPtr.Zero)
+            {
+                handle = null;
+                return false;
+            }
+
+            handle = new SessionHandle(result);
+            return true;
         }
 
         public void LogOut()
@@ -136,7 +148,7 @@ namespace Realms.Sync
                                                       isAdmin, out var ex);
             ex.ThrowIfNecessary();
 
-            return GetHandle(userPtr);
+            return new SyncUserHandle(userPtr);
         }
 
         public static SyncUserHandle GetAdminTokenUser(string authServerUrl, string token)
@@ -146,48 +158,50 @@ namespace Realms.Sync
                                                             out var ex);
             ex.ThrowIfNecessary();
 
-            return GetHandle(userPtr);
+            return new SyncUserHandle(userPtr);
         }
 
-        public static SyncUserHandle GetCurrentUser()
+        public static bool TryGetCurrentUser(out SyncUserHandle handle)
         {
             var userPtr = NativeMethods.get_current_user(out var ex);
             ex.ThrowIfNecessary();
 
-            return GetHandle(userPtr);
+            if (userPtr == IntPtr.Zero)
+            {
+                handle = null;
+                return false;
+            }
+
+            handle = new SyncUserHandle(userPtr);
+            return true;
         }
 
         public static IEnumerable<SyncUserHandle> GetAllLoggedInUsers()
         {
             return MarshalHelpers.GetCollection<IntPtr>(NativeMethods.get_logged_in_users, bufferSize: 8)
-                                 .Select(GetHandle);
+                                 .Select(h => new SyncUserHandle(h));
         }
 
-        public static SyncUserHandle GetLoggedInUser(string identity, string authServerUrl)
+        public static bool TryGetLoggedInUser(string identity, string authServerUrl, out SyncUserHandle handle)
         {
             var userPtr = NativeMethods.get_logged_in_user(identity, (IntPtr)identity.Length,
                                                            authServerUrl, (IntPtr)authServerUrl.Length,
                                                            out var ex);
             ex.ThrowIfNecessary();
 
-            return GetHandle(userPtr);
+            if (userPtr == IntPtr.Zero)
+            {
+                handle = null;
+                return false;
+            }
+
+            handle = new SyncUserHandle(userPtr);
+            return true;
         }
 
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
-        }
-
-        private static SyncUserHandle GetHandle(IntPtr ptr)
-        {
-            if (ptr == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            var handle = new SyncUserHandle();
-            handle.SetHandle(ptr);
-            return handle;
         }
     }
 }

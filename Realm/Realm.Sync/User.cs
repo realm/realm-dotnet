@@ -45,13 +45,12 @@ namespace Realms.Sync
             {
                 SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
-                var handle = SyncUserHandle.GetCurrentUser();
-                if (handle == null)
+                if (SyncUserHandle.TryGetCurrentUser(out var userHandle))
                 {
-                    return null;
+                    return new User(userHandle);
                 }
 
-                return new User(handle);
+                return null;
             }
         }
 
@@ -130,13 +129,12 @@ namespace Realms.Sync
         {
             SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
 
-            var handle = SyncUserHandle.GetLoggedInUser(identity, serverUrl.AbsoluteUri);
-            if (handle == null)
+            if (SyncUserHandle.TryGetLoggedInUser(identity, serverUrl.AbsoluteUri, out var userHandle))
             {
-                return null;
+                return new User(userHandle);
             }
 
-            return new User(handle);
+            return null;
         }
 
         #endregion static
@@ -194,8 +192,7 @@ namespace Realms.Sync
 
         internal static User Create(IntPtr userPtr)
         {
-            var userHandle = new SyncUserHandle();
-            userHandle.SetHandle(userPtr);
+            var userHandle = new SyncUserHandle(userPtr);
             return new User(userHandle);
         }
 
