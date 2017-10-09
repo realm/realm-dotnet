@@ -32,6 +32,7 @@ namespace Tests.Sync
 #if !ROS_SETUP
     [NUnit.Framework.Explicit]
 #endif
+    [Ignore("Reenable when ROS fixes SSL support.")]
     [TestFixture, Preserve(AllMembers = true)]
     public class SSLConfigurationTests : SyncTestBase
     {
