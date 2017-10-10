@@ -48,7 +48,7 @@ namespace Realms.Sync
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
-        public User User => Handle.GetUser();
+        public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
 
         /// <summary>
         /// Gets the on-disk path of the Realm file backing the <see cref="Realm"/> this Session represents.
@@ -143,6 +143,10 @@ namespace Realms.Sync
             Handle = handle;
         }
 
+        internal Session(string path) : this(SessionHandle.GetSessionForPath(path))
+        {
+        }
+
         /// <summary>
         /// Attempts to reconnect all sessions.
         /// </summary>
@@ -155,24 +159,6 @@ namespace Realms.Sync
         public static void Reconnect()
         {
             SharedRealmHandleExtensions.ReconnectSessions();
-        }
-
-        internal static Session Create(IntPtr sessionPtr)
-        {
-            if (sessionPtr == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            var handle = new SessionHandle();
-            handle.SetHandle(sessionPtr);
-
-            return new Session(handle);
-        }
-
-        internal static Session Create(string path)
-        {
-            return Create(SessionHandle.SessionForPath(path));
         }
 
         internal static void RaiseError(Session session, Exception error)

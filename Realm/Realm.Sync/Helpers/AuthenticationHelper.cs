@@ -215,18 +215,15 @@ namespace Realms.Sync
             try
             {
                 var user = User.GetLoggedInUser(data.UserId, data.ServerUrl);
-                if (user != null)
+                if (user != null &&
+                    user.Handle.TryGetSession(data.RealmPath, out var sessionHandle))
                 {
-                    var sessionPointer = user.Handle.GetSessionPointer(data.RealmPath);
-                    var session = Session.Create(sessionPointer);
-                    if (session != null)
+                    var session = new Session(sessionHandle);
+                    RefreshAccessTokenAsync(session, reportErrors: false).ContinueWith(_ =>
                     {
-                        RefreshAccessTokenAsync(session, reportErrors: false).ContinueWith(_ =>
-                        {
-                            user.Handle.Close();
-                            session.CloseHandle();
-                        });
-                    }
+                        user.Handle.Close();
+                        session.CloseHandle();
+                    });
                 }
             }
             catch

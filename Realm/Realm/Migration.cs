@@ -89,16 +89,12 @@ namespace Realms
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
 
-            // the realms here are owned by Object Store so we should do nothing to clean them up
-            var oldRealmHandle = new UnownedRealmHandle();
-            var newRealmHandle = new UnownedRealmHandle();
 
-            oldRealmHandle.SetHandle(oldRealmPtr);
-            newRealmHandle.SetHandle(newRealmPtr);
-
+            var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, IsReadOnly = true };
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
+            var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
             var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);
 
             var result = migration.Execute(oldRealm, newRealm);

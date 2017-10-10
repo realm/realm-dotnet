@@ -83,11 +83,6 @@ namespace Realms
         // we are calling an overridden virtual method after all (but so is private Criticalhandle cleanup ))
         // criticalhandle source here :  http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
 
-        // We cannot use CriticalHandleZeroOrMinusOneIsInvalid because it's Win32-specific. Thus, we implement it here -- it's only this one property.
-        // public override bool IsInvalid {
-        //     get { return handle == IntPtr.Zero || handle == new IntPtr(-1); }
-        // }
-
         /// <summary>
         /// Override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
         /// when this is called, it has already been verified that it is safe to call core - so just put in code that does the job.
@@ -125,8 +120,12 @@ namespace Realms
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        protected RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
+        protected RealmHandle(RealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
         {
+            SetHandle(handle);
+
+            // We can only have a single root
+            root = root?.Root ?? root;
             if (root == null) // if we are a root object, we need a list for our children and Root is already null
             {
                 _unbindList = GetUnbindList();
@@ -206,12 +205,6 @@ namespace Realms
             return new List<RealmHandle>(); // todo:experiment with what might be a decent initial list size
         }
 
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        protected RealmHandle() : base(IntPtr.Zero, true)
-        {
-            _unbindList = GetUnbindList(); // we are a root object, we need a list for our children
-        }
-
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
         // see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
         // and http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx
@@ -270,15 +263,6 @@ namespace Realms
 
                 _unbindList.Clear();
             }
-        }
-
-        // used in the case we need to set the handle as part of a larger setup operation
-        // the original SetHandle method is not callable from other classes, and we need that feature
-        // so we overwrite the original one to be able to call it
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        public new void SetHandle(IntPtr someHandle)
-        {
-            base.SetHandle(someHandle);
         }
 
         public override string ToString()

@@ -482,7 +482,7 @@ namespace Tests.Sync
                     try
                     {
                         // Sometimes PermissionDenied will be thrown too fast moving the session to an error state
-                        await realm.GetSession().WaitForUploadAsync();
+                        await GetSession(realm).WaitForUploadAsync();
                     }
                     catch
                     {

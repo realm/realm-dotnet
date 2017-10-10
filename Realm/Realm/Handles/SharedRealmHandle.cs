@@ -110,7 +110,7 @@ namespace Realms
         }
 
         [Preserve]
-        public SharedRealmHandle()
+        public SharedRealmHandle(IntPtr handle) : base(null, handle)
         {
         }
 
@@ -179,11 +179,11 @@ namespace Realms
             return MarshalHelpers.IntPtrToBool(result);
         }
 
-        public IntPtr GetTable(string tableName)
+        public TableHandle GetTable(string tableName)
         {
             var result = NativeMethods.get_table(this, tableName, (IntPtr)tableName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new TableHandle(this, result);
         }
 
         public bool IsSameInstance(SharedRealmHandle other)
@@ -250,14 +250,14 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr CreateObject(TableHandle table)
+        public ObjectHandle CreateObject(TableHandle table)
         {
             var result = NativeMethods.create_object(this, table, out NativeException ex);
             ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
-        public IntPtr CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
+        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
         {
             if (primaryKey == null && !pkProperty.Type.IsNullable())
             {
@@ -277,18 +277,18 @@ namespace Realms
             }
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
+        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
         {
             var result = NativeMethods.create_object_unique(this, table, key ?? 0, key.HasValue, isNullable, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
+        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
         {
             var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)(key?.Length ?? 0), update, out isNew, out var ex);
             ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
         public class SchemaMarshaler

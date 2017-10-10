@@ -48,7 +48,7 @@ namespace Realms
         internal RealmResults(Realm realm, RealmObject.Metadata metadata, ResultsHandle handle = null)
             : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
-            _handle = handle ?? realm.MakeResultsForTable(metadata);
+            _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
         }
 
         public QueryHandle CreateQuery() => ResultsHandle.CreateQuery();

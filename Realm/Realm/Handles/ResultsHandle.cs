@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -68,7 +67,7 @@ namespace Realms
             public static extern bool get_is_valid(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ResultsHandle results, out NativeException ex);
+            public static extern IntPtr get_thread_safe_reference(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_snapshot", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr snapshot(ResultsHandle results, out NativeException ex);
@@ -87,12 +86,12 @@ namespace Realms
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
-        public ResultsHandle() : this(null)
+        public ResultsHandle() : this(null, IntPtr.Zero)
         {
         }
 
         [Preserve]
-        public ResultsHandle(RealmHandle root) : base(root)
+        public ResultsHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -136,23 +135,19 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        // acquire a QueryHandle from table_where And set root in an atomic fashion 
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public QueryHandle CreateQuery()
         {
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var queryHandle = new QueryHandle(Root ?? this);
-            queryHandle.SetHandle(result);
-            return queryHandle;
+            return new QueryHandle(Root ?? this, result);
         }
 
-        public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new NotificationTokenHandle(this, result);
         }
 
         public override bool Equals(object obj)
@@ -179,7 +174,7 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return new ThreadSafeReferenceHandle(result);
         }
 
         public override ResultsHandle Snapshot()
@@ -187,9 +182,7 @@ namespace Realms
             var ptr = NativeMethods.snapshot(this, out var ex);
             ex.ThrowIfNecessary();
 
-            var result = new ResultsHandle(this.Root ?? this);
-            result.SetHandle(ptr);
-            return result;
+            return new ResultsHandle(this, ptr);
         }
     }
 }

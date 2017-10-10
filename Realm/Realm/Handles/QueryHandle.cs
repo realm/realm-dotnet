@@ -211,7 +211,7 @@ namespace Realms
                 out NativeException ex);
         }
 
-        public QueryHandle(RealmHandle root) : base(root)
+        public QueryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -513,18 +513,33 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr FindNext(ObjectHandle afterObject)
+        public bool TryFindNext(ObjectHandle afterObject, SharedRealmHandle sharedRealm, out ObjectHandle objectHandle)
         {
             var result = NativeMethods.findNext(this, afterObject, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(sharedRealm, result);
+            return true;
         }
 
-        public IntPtr FindDirect(SharedRealmHandle sharedRealm, IntPtr? beginAtIndex = null)
+        public bool TryFindDirect(SharedRealmHandle sharedRealm, out ObjectHandle handle, IntPtr? beginAtIndex = null)
         {
             var result = NativeMethods.findDirect(this, beginAtIndex ?? IntPtr.Zero, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            if (result == IntPtr.Zero)
+            {
+                handle = null;
+                return false;
+            }
+
+            handle = new ObjectHandle(sharedRealm, result);
+            return true;
         }
 
         public IntPtr GetColumnIndex(string columnName)
@@ -565,19 +580,19 @@ namespace Realms
             return (int)result;
         }
 
-        public IntPtr CreateResults(SharedRealmHandle sharedRealm)
+        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm)
         {
             var result = NativeMethods.create_results(this, sharedRealm, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new ResultsHandle(sharedRealm, result);
         }
 
-        public IntPtr CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
+        public ResultsHandle CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
         {
             var marshaledValues = sortDescriptorBuilder.Flatten();
             var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TableHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new ResultsHandle(sharedRealm, result);
         }
 
         public struct NumericQueryMethods

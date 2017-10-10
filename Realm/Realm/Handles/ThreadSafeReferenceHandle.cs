@@ -30,7 +30,7 @@ namespace Realms
         }
 
         [Preserve]
-        public ThreadSafeReferenceHandle()
+        public ThreadSafeReferenceHandle(IntPtr handle) : base(null, handle)
         {
         }
 

@@ -37,7 +37,7 @@ namespace Realms.Dynamic
         private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
-        private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
+        private static readonly ObjectHandle dummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
         public MetaRealmObject(Expression expression, DynamicRealmObject value)
             : base(expression, BindingRestrictions.Empty, value)

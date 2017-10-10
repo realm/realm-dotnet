@@ -74,17 +74,22 @@ namespace Realms.Sync
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
 
-        public User GetUser()
+        [Preserve]
+        public SessionHandle(IntPtr handle) : base(null, handle)
+        {
+        }
+
+        public bool TryGetUser(out SyncUserHandle handle)
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                return null;
+                handle = null;
+                return false;
             }
 
-            var handle = new SyncUserHandle();
-            handle.SetHandle(ptr);
-            return new User(handle);
+            handle = new SyncUserHandle(ptr);
+            return true;
         }
 
         public string GetServerUri()
@@ -155,11 +160,11 @@ namespace Realms.Sync
             NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal);
         }
 
-        public static IntPtr SessionForPath(string path)
+        public static SessionHandle GetSessionForPath(string path)
         {
             var ptr = NativeMethods.get_from_path(path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
-            return ptr;
+            return new SessionHandle(ptr);
         }
 
         protected override void Unbind()

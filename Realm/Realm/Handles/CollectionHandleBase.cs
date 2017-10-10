@@ -26,15 +26,22 @@ namespace Realms
     {
         public abstract bool IsValid { get; }
 
-        protected CollectionHandleBase(RealmHandle root) : base(root)
+        protected CollectionHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
-        public IntPtr GetObjectAtIndex(int index)
+        public bool TryGetObjectAtIndex(int index, out ObjectHandle objectHandle)
         {
             var result = GetObjectAtIndexCore((IntPtr)index, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(Root, result);
+            return true;
         }
 
         protected abstract IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException);

@@ -59,14 +59,8 @@ namespace Realms
             public static extern IntPtr object_for_null_primarykey(TableHandle handle, SharedRealmHandle realmHandle, out NativeException ex);
         }
 
-        private TableHandle(RealmHandle root) : base(root)
-        {
-        }
-
-        // keep this one even though warned that it is not used. It is in fact used by marshalling
-        // used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
-        public TableHandle()
+        public TableHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -91,11 +85,11 @@ namespace Realms
             return result;
         }
 
-        public IntPtr CreateResults(SharedRealmHandle sharedRealmHandle)
+        public ResultsHandle CreateResults(SharedRealmHandle sharedRealmHandle)
         {
             var result = NativeMethods.create_results(this, sharedRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new ResultsHandle(sharedRealmHandle, result);
         }
 
         public IntPtr CreateSortedResults(SharedRealmHandle sharedRealmHandle, SortDescriptorBuilder sortDescriptorBuilder)
@@ -106,7 +100,7 @@ namespace Realms
             return result;
         }
 
-        public IntPtr Find(SharedRealmHandle realmHandle, string id)
+        public bool TryFind(SharedRealmHandle realmHandle, string id, out ObjectHandle objectHandle)
         {
             NativeException nativeException;
             IntPtr result;
@@ -120,10 +114,17 @@ namespace Realms
             }
 
             nativeException.ThrowIfNecessary();
-            return result;
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(realmHandle, result);
+            return true;
         }
 
-        public IntPtr Find(SharedRealmHandle realmHandle, long? id)
+        public bool TryFind(SharedRealmHandle realmHandle, long? id, out ObjectHandle objectHandle)
         {
             NativeException nativeException;
             IntPtr result;
@@ -137,7 +138,14 @@ namespace Realms
             }
 
             nativeException.ThrowIfNecessary();
-            return result;
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(realmHandle, result);
+            return true;
         }
     }
 }

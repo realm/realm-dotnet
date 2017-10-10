@@ -42,7 +42,7 @@ namespace Realms.Sync
             Argument.NotNull(realm, nameof(realm));
             Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
-            return Session.Create(realm.Config.DatabasePath);
+            return new Session(realm.Config.DatabasePath);
         }
 
         /// <summary>
