@@ -7,6 +7,7 @@ X.Y.Z (TBD)
 ### Bug fixes
 
 ### Breaking Changes
+- `AcceptPermissionOfferAsync` now returns the relative rather than the absolute url of the Realm the user has been granted permissions to. ([#1595](https://github.com/realm/realm-dotnet/pull/1595))
 
 2.0.0-rc1 (2017-10-03)
 ------------------

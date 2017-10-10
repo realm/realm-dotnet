@@ -311,7 +311,7 @@ namespace Tests.Sync
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write).Timeout(2000);
                 var alicesUrl = await bob.AcceptPermissionOfferAsync(token).Timeout(2000);
 
-                Assert.That(alicesUrl, Is.EqualTo(realmUrl));
+                Assert.That($"realm://{Constants.ServerUrl}:9080/{alicesUrl}", Is.EqualTo(realmUrl));
 
                 await AssertPermissions(alice, bob, realmPath, AccessLevel.Write).Timeout(10000);
             });
@@ -515,7 +515,7 @@ namespace Tests.Sync
             Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
 
-            return permissionResponse.RealmUrl;
+            return $"realm://{Constants.ServerUrl}:9080/{permissionResponse.RealmUrl}";
         }
 
         private async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)
