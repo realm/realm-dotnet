@@ -96,6 +96,7 @@ endif()
 # force Object Store to use the generic EventLoopSignal implementation
 add_definitions(-DREALM_USE_CF=0)
 add_definitions(-DREALM_USE_ALOOPER=0)
+add_definitions(-DREALM_USE_UV=0)
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
