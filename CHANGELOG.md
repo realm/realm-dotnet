@@ -1,4 +1,15 @@
-x.y.z (TBD)
+X.Y.Z (TBD)
+------------------
+
+### Enhancements
+- Ensure that Realm collections (`IList<T>`, `IQueryable<T>`) will not change when iterating in a `foreach` loop. ([#1589](https://github.com/realm/realm-dotnet/pull/1589))
+
+### Bug fixes
+
+### Breaking Changes
+- `AcceptPermissionOfferAsync` now returns the relative rather than the absolute url of the Realm the user has been granted permissions to. ([#1595](https://github.com/realm/realm-dotnet/pull/1595))
+
+2.0.0-rc1 (2017-10-03)
 ------------------
 
 ### Enhancements
@@ -21,6 +32,14 @@ that allows you to open the old Realm file in a dynamic mode and migrate any req
 - Enable Realm compaction on Windows. ([#1571](https://github.com/realm/realm-dotnet/pull/1571))
 - `UserInfo` has been significantly enhanced. It now contains metadata about a user stored on the Realm Object Server, as well as a list of all user
 account data associated with that user. ([#1573](https://github.com/realm/realm-dotnet/pull/1573))
+- Introduced a new method - `User.LogOutAsync` to replace the now-deprecated synchronous call. ([#1574](https://github.com/realm/realm-dotnet/pull/1574))
+- Exposed `BacklinksCount` property on `RealmObject` that returns the number of objects that refer to the current object via a to-one or a to-many relationship. ([#1578](https://github.com/realm/realm-dotnet/pull/1578))
+- String primary keys now support `null` as a value. ([#1579](https://github.com/realm/realm-dotnet/pull/1579))
+- Add preview support for partial synchronization. Partial synchronization allows a synchronized Realm to be opened in such a way 
+that only objects requested by the user are synchronized to the device. You can use it by setting the `IsPartial` property on a 
+`SyncConfiguration`, opening the Realm, and then calling `Realm.SubscribeToObjectsAsync` with the type of object you're interested in,
+a string containing a query determining which objects you want to subscribe to, and a callback which will report the results. You may
+add as many subscriptions to a synced Realm as necessary. ([#1580](https://github.com/realm/realm-dotnet/pull/1580))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))

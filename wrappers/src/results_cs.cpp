@@ -139,5 +139,12 @@ REALM_EXPORT ThreadSafeReference<Results>* results_get_thread_safe_reference(con
         return new ThreadSafeReference<Results>{results.get_realm()->obtain_thread_safe_reference(results)};
     });
 }
+    
+REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(results.snapshot());
+    });
+}
 
 }   // extern "C"

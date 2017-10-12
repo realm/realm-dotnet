@@ -267,7 +267,7 @@ stage('Test without sync') {
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
     'Linux': NetCoreTest('docker', 'linux', 'nosync'),
-    'macOS': NetCoreTest('osx', 'macos', 'nosync'),
+    'macOS': NetCoreTest('osx || macos', 'macos', 'nosync'),
     'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync'),
     'XamarinMac': XamarinMacTest('xamarinmac-tests-nosync')
   )
@@ -452,7 +452,7 @@ stage('Test with sync') {
     'Android': AndroidTest('android-tests-sync'),
     'Win32': Win32Test('win32-tests-sync'),
     'Linux': NetCoreTest('docker', 'linux', 'sync'),
-    'macOS': NetCoreTest('osx', 'macos', 'sync'),
+    'macOS': NetCoreTest('osx || macos', 'macos', 'sync'),
     'Win32-NetCore': NetCoreTest('windows', 'win32', 'sync'),
     'XamarinMac': XamarinMacTest('xamarinmac-tests-sync')
   )

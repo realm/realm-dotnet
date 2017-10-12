@@ -19,6 +19,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -146,7 +148,7 @@ namespace Tests.Sync
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 await user.ChangePasswordAsync(NewPassword);
-                user.LogOut();
+                await user.LogOutAsync();
 
                 Assert.That(async () => await user.ChangePasswordAsync("c"), Throws.TypeOf<InvalidOperationException>());
 
@@ -166,16 +168,57 @@ namespace Tests.Sync
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 var identity = user.Identity;
-                user.LogOut();
+                await user.LogOutAsync();
 
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
                 await admin.ChangePasswordAsync(identity, NewPassword);
 
-                admin.LogOut();
+                await admin.LogOutAsync();
 
                 Assert.That(async () => await admin.ChangePasswordAsync(identity, "c"), Throws.TypeOf<InvalidOperationException>());
 
                 await TestNewPassword(userId);
+            });
+        }
+
+#if !ROS_SETUP
+        [NUnit.Framework.Explicit]
+#endif
+        [Test]
+        public void UserLogout_RevokesRefreshToken()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var userId = Guid.NewGuid().ToString();
+                var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+
+                var token = user.RefreshToken;
+                await user.LogOutAsync();
+
+                // Changing user's password uses the RefreshToken as authorization
+                var json = new Dictionary<string, object>
+                {
+                    ["data"] = new Dictionary<string, object>
+                    {
+                        ["new_password"] = "b"
+                    }
+                };
+
+                try
+                {
+                    await AuthenticationHelper.MakeAuthRequestAsync(HttpMethod.Put, new Uri(SyncTestHelpers.AuthServerUri, "auth/password"), json, token);
+
+                    Assert.Fail("Expected an error");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.TypeOf<AuthenticationException>());
+                    var aex = (AuthenticationException)ex;
+
+                    Assert.That(aex.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                    Assert.That(aex.ErrorCode, Is.EqualTo(ErrorCode.AccessDenied));
+                }
             });
         }
 
@@ -289,7 +332,7 @@ namespace Tests.Sync
 
             Assert.That(newUser.State, Is.EqualTo(UserState.Active));
             Assert.That(newUser, Is.EqualTo(User.Current));
-            newUser.LogOut();
+            await newUser.LogOutAsync();
             Assert.That(User.Current, Is.Null);
         }
     }

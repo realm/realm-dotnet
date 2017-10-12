@@ -205,6 +205,18 @@ namespace Tests
     {
         [PrimaryKey]
         public string StringProperty { get; set; }
+
+        public string Value { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class RequiredPrimaryKeyStringObject : RealmObject
+    {
+        [PrimaryKey]
+        [Required]
+        public string StringProperty { get; set; }
+
+        public string Value { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -298,6 +310,18 @@ namespace Tests
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Owner : RealmObject
+    {
+        public string Name { get; set; }
+
+        public Dog TopDog { get; set; }
+
+        public IList<Dog> Dogs { get; }
+    }
+
+    // A copy of Owner that verifies that different objects referring to the same type (Dog)
+    // results in the correct backlink count being calculated
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Walker : RealmObject
     {
         public string Name { get; set; }
 

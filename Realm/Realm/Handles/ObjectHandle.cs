@@ -125,18 +125,21 @@ namespace Realms
             public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ResultsHandle get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
+            public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ResultsHandle get_backlinks_for_type(ObjectHandle objectHandle,
+            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle,
                 [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr typeLen,
                 [MarshalAs(UnmanagedType.LPWStr)] string property, IntPtr propertyLen, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
+            public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, NotificationCallbackDelegate callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
         }
 
         public bool IsValid
@@ -149,10 +152,8 @@ namespace Realms
             }
         }
 
-        // keep this one even though warned that it is not used. It is in fact used by marshalling
-        // used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
-        public ObjectHandle(SharedRealmHandle sharedRealmHandle) : base(sharedRealmHandle)
+        public ObjectHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -185,15 +186,6 @@ namespace Realms
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
-        }
-
-        // acquire a ListHandle from object_get_list And set root in an atomic fashion
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal ListHandle TableLinkList(IntPtr propertyIndex)
-        {
-            var listHandle = new ListHandle(Root ?? this);
-            listHandle.SetHandle(GetLinklist(propertyIndex));
-            return listHandle;
         }
 
         public void SetDateTimeOffset(IntPtr propertyIndex, DateTimeOffset value)
@@ -278,11 +270,19 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr GetLink(IntPtr propertyIndex)
+        public bool TryGetLink(IntPtr propertyIndex, out ObjectHandle objectHandle)
         {
             var result = NativeMethods.get_link(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+
+            if (result == IntPtr.Zero)
+            {
+                objectHandle = null;
+                return false;
+            }
+
+            objectHandle = new ObjectHandle(Root, result);
+            return true;
         }
 
         public IntPtr GetLinklist(IntPtr propertyIndex)
@@ -366,7 +366,7 @@ namespace Realms
         {
             if (GetNullableInt64(propertyIndex) != value)
             {
-                throw new InvalidOperationException("Once set, primary key properties may not be modified.");   
+                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
         }
 
@@ -483,20 +483,19 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var listHandle = TableLinkList(propertyIndex);
+            var listHandle = new ListHandle(Root ?? this, GetLinklist(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
         public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
         {
-            var linkedObjectPtr = GetLink(propertyIndex);
-            if (linkedObjectPtr == IntPtr.Zero)
+            if (TryGetLink(propertyIndex, out var objectHandle))
             {
-                return null;
+                return (T)realm.MakeObject(realm.Metadata[objectType], objectHandle);
             }
 
-            return (T)realm.MakeObject(objectType, linkedObjectPtr);
+            return null;
         }
 
         public void SetObject(Realm realm, IntPtr propertyIndex, RealmObject @object)
@@ -518,19 +517,26 @@ namespace Realms
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)
         {
-            var resultsHandle = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
+            var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return resultsHandle;
+            return new ResultsHandle(this, resultsPtr);
         }
 
         public ResultsHandle GetBacklinksForType(string objectType, string propertyName)
         {
-            var resultsHandle = NativeMethods.get_backlinks_for_type(this, objectType, (IntPtr)objectType.Length,
+            var resultsPtr = NativeMethods.get_backlinks_for_type(this, objectType, (IntPtr)objectType.Length,
                 propertyName, (IntPtr)propertyName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return resultsHandle;
+            return new ResultsHandle(this, resultsPtr);
+        }
+
+        public int GetBacklinkCount()
+        {
+            var result = NativeMethods.get_backlink_count(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
@@ -538,14 +544,14 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return new ThreadSafeReferenceHandle(result);
         }
 
-        public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new NotificationTokenHandle(this, result);
         }
     }
 }

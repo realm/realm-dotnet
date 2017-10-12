@@ -257,12 +257,18 @@ namespace Tests.Sync
                     {
                         callbacksInvoked++;
 
-                        Assert.That(p.TransferredBytes, Is.LessThanOrEqualTo(p.TransferableBytes));
+                        if (p.TransferredBytes > p.TransferableBytes)
+                        {
+                            throw new Exception($"Expected: {p.TransferredBytes} <= {p.TransferableBytes}");
+                        }
 
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
-                            Assert.That(p.TransferableBytes, Is.GreaterThan(ObjectSize));
-                            Assert.That(p.TransferableBytes, Is.LessThan((ObjectsToRecord + 1) * ObjectSize));
+                            if (p.TransferableBytes <= ObjectSize ||
+                                p.TransferableBytes >= (ObjectsToRecord + 1) * ObjectSize)
+                            {
+                                throw new Exception($"Expected: {p.TransferredBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
+                            }
                         }
                     }
                     catch (Exception e)

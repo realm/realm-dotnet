@@ -62,11 +62,11 @@
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <None Include="$(_RealmNugetNativePath)win32\x86\realm-wrappers.dll">
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win81-x86\native\realm-wrappers.dll">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="$(_RealmNugetNativePath)win32\x64\realm-wrappers.dll">
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win81-x64\native\realm-wrappers.dll">
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

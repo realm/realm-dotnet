@@ -161,7 +161,14 @@ public partial class ModuleWeaver
             var analytics = new RealmWeaver.Analytics(ModuleDefinition);
             try
             {
-                analytics.SubmitAnalytics();
+                var payload = analytics.SubmitAnalytics();
+#if DEBUG
+                LogDebug($@"
+----------------------------------
+Analytics payload
+{payload}
+----------------------------------");
+#endif
             }
             catch (Exception e)
             {

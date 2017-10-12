@@ -156,8 +156,7 @@ namespace Realms
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
-            var srHandle = new SharedRealmHandle();
-            srHandle.SetHandle(srPtr);
+            var srHandle = new SharedRealmHandle(srPtr);
             if (Dynamic && !schema.Any())
             {
                 srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));

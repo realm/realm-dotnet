@@ -194,20 +194,6 @@ namespace Realms
             File.Delete(fullpath + ".note");
         }
 
-        internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
-        {
-            var resultsHandle = new ResultsHandle();
-            resultsHandle.SetHandle(resultsPtr);
-            return resultsHandle;
-        }
-
-        internal static ObjectHandle CreateObjectHandle(IntPtr objectPtr, SharedRealmHandle sharedRealmHandle)
-        {
-            var objectHandle = new ObjectHandle(sharedRealmHandle);
-            objectHandle.SetHandle(objectPtr);
-            return objectHandle;
-        }
-
         private static bool IsRealmOpen(string path)
         {
             return _states.Value.TryGetValue(path, out var reference) &&
@@ -278,7 +264,7 @@ namespace Realms
 
         private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var table = GetTable(schema);
+            var table = SharedRealmHandle.GetTable(schema.Name);
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.Dynamic)
@@ -419,17 +405,6 @@ namespace Realms
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
         }
 
-        private TableHandle GetTable(ObjectSchema schema)
-        {
-            var result = new TableHandle();
-            var tableName = schema.Name;
-
-            var tablePtr = SharedRealmHandle.GetTable(tableName);
-            result.SetHandle(tablePtr);
-
-            return result;
-        }
-
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
         /// </summary>
@@ -476,36 +451,20 @@ namespace Realms
 
             var result = metadata.Helper.CreateInstance();
 
-            IntPtr objectPtr;
+            ObjectHandle objectHandle;
             var pkProperty = metadata.Schema.PrimaryKeyProperty;
             if (pkProperty.HasValue)
             {
-                objectPtr = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
+                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
             }
             else
             {
-                objectPtr = SharedRealmHandle.CreateObject(metadata.Table);
+                objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
             }
 
-            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
             result._SetOwner(this, objectHandle, metadata);
             result.OnManaged();
             return result;
-        }
-
-        internal RealmObject MakeObject(RealmObject.Metadata metadata, IntPtr objectPtr)
-        {
-            return MakeObject(metadata, CreateObjectHandle(objectPtr, SharedRealmHandle));
-        }
-
-        internal RealmObject MakeObject(string className, IntPtr objectPtr)
-        {
-            return MakeObject(Metadata[className], CreateObjectHandle(objectPtr, SharedRealmHandle));
-        }
-
-        internal RealmObject MakeObject(string className, ObjectHandle objectHandle)
-        {
-            return MakeObject(Metadata[className], objectHandle);
         }
 
         internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
@@ -516,25 +475,15 @@ namespace Realms
             return ret;
         }
 
-        internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
-        {
-            var resultsPtr = metadata.Table.CreateResults(SharedRealmHandle);
-            return CreateResultsHandle(resultsPtr);
-        }
-
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
             var resultsPtr = IntPtr.Zero;
             if (optionalSortDescriptorBuilder == null)
             {
-                resultsPtr = builtQuery.CreateResults(SharedRealmHandle);
-            }
-            else
-            {
-                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
+                return builtQuery.CreateResults(SharedRealmHandle);
             }
 
-            return CreateResultsHandle(resultsPtr);
+            return builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
         }
 
         /// <summary>
@@ -623,20 +572,18 @@ namespace Realms
                 throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
             }
 
-            var objectPtr = IntPtr.Zero;
+            ObjectHandle objectHandle;
             bool isNew;
             if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
                 var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
-                objectPtr = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.Table, objectType.Name, update, out isNew);
+                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.Table, objectType.Name, update, out isNew);
             }
             else
             {
                 isNew = true; // Objects without PK are always new
-                objectPtr = SharedRealmHandle.CreateObject(metadata.Table);
+                objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
             }
-
-            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._SetOwner(this, objectHandle, metadata);
 
@@ -836,13 +783,12 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
-            if (objectPtr == IntPtr.Zero)
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return null;
+                return (T)MakeObject(metadata, objectHandle);
             }
 
-            return (T)MakeObject(metadata, objectPtr);
+            return null;
         }
 
         /// <summary>
@@ -859,13 +805,12 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
-            if (objectPtr == IntPtr.Zero)
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return null;
+                return (T)MakeObject(metadata, objectHandle);
             }
 
-            return (T)MakeObject(metadata, objectPtr);
+            return null;
         }
 
         /// <summary>
@@ -885,13 +830,12 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
-            if (objectPtr == IntPtr.Zero)
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return null;
+                return MakeObject(metadata, objectHandle);
             }
 
-            return MakeObject(metadata, objectPtr);
+            return null;
         }
 
         /// <summary>
@@ -908,13 +852,12 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
-            if (objectPtr == IntPtr.Zero)
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return null;
+                return MakeObject(metadata, objectHandle);
             }
 
-            return MakeObject(metadata, objectPtr);
+            return null;
         }
 
         #endregion Quick Find using primary key
@@ -934,7 +877,7 @@ namespace Realms
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference) where T : RealmObject
         {
             var objectPtr = SharedRealmHandle.ResolveReference(reference);
-            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
+            var objectHandle = new ObjectHandle(SharedRealmHandle, objectPtr);
 
             if (!objectHandle.IsValid)
             {
@@ -957,8 +900,7 @@ namespace Realms
         public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
             var listPtr = SharedRealmHandle.ResolveReference(reference);
-            var listHandle = new ListHandle(SharedRealmHandle);
-            listHandle.SetHandle(listPtr);
+            var listHandle = new ListHandle(SharedRealmHandle, listPtr);
             if (!listHandle.IsValid)
             {
                 return null;
@@ -977,8 +919,7 @@ namespace Realms
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference) where T : RealmObject
         {
             var resultsPtr = SharedRealmHandle.ResolveReference(reference);
-            var resultsHandle = new ResultsHandle();
-            resultsHandle.SetHandle(resultsPtr);
+            var resultsHandle = new ResultsHandle(SharedRealmHandle, resultsPtr);
             return new RealmResults<T>(this, reference.Metadata, resultsHandle);
         }
 
@@ -1087,8 +1028,9 @@ namespace Realms
 
             foreach (var metadata in Metadata.Values)
             {
-                var resultsHandle = MakeResultsForTable(metadata);
+                var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle);
                 resultsHandle.Clear(SharedRealmHandle);
+                resultsHandle.Close();
             }
         }
 

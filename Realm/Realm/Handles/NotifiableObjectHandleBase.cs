@@ -50,7 +50,7 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotificationCallbackDelegate(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
 
-        protected NotifiableObjectHandleBase(RealmHandle root) : base(root)
+        protected NotifiableObjectHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -61,7 +61,7 @@ namespace Realms
             return result;
         }
 
-        public abstract IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback);
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
     }

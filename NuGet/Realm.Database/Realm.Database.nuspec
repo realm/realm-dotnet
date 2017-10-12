@@ -51,12 +51,12 @@
     <file src="../../wrappers/build/Android/$Configuration$-x86/librealm-wrappers.so" target="native/android/x86" />
     <file src="../../wrappers/build/Android/$Configuration$-x86_64/librealm-wrappers.so" target="native/android/x86_64" />
 <!-- Win32 files -->
-    <file src="../../wrappers/build/Windows/$Configuration$-Win32/*.dll" target="native/win32/x86" />
-    <file src="../../wrappers/build/Windows/$Configuration$-x64/*.dll" target="native/win32/x64" />
+    <file src="../../wrappers/build/Windows/$Configuration$-Win32/*.dll" target="runtimes/win81-x86/native" />
+    <file src="../../wrappers/build/Windows/$Configuration$-x64/*.dll" target="runtimes/win81-x64/native" />
 <!-- UWP files -->
-    <file src="../../wrappers/build/WindowsStore/$Configuration$-Win32/*.dll" target="runtimes/win10-x86/native" />
-    <file src="../../wrappers/build/WindowsStore/$Configuration$-x64/*.dll" target="runtimes/win10-x64/native" />
-    <file src="../../wrappers/build/WindowsStore/$Configuration$-ARM/*.dll" target="runtimes/win10-arm/native" />
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-Win32/*.dll" target="runtimes/win10-x86/nativeassets/uap10.0" />
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-x64/*.dll" target="runtimes/win10-x64/nativeassets/uap10.0" />
+    <file src="../../wrappers/build/WindowsStore/$Configuration$-ARM/*.dll" target="runtimes/win10-arm/nativeassets/uap10.0" />
 <!-- .NET Core files -->
     <file src="../../wrappers/build/Darwin/$Configuration$/librealm-wrappers.dylib" target="runtimes/osx.10.10-x64/native" />
     <file src="../../wrappers/build/Linux/$Configuration$/librealm-wrappers.so" target="runtimes/linux-x64/native" />

@@ -127,7 +127,10 @@ namespace Realms
             public static extern bool get_is_valid(ListHandle listHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ThreadSafeReferenceHandle get_thread_safe_reference(ListHandle listHandle, out NativeException ex);
+            public static extern IntPtr get_thread_safe_reference(ListHandle listHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
         }
 
         public override bool IsValid
@@ -140,7 +143,7 @@ namespace Realms
             }
         }
 
-        public ListHandle(RealmHandle root) : base(root)
+        public ListHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -288,11 +291,11 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override IntPtr AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
         {
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new NotificationTokenHandle(this, result);
         }
 
         public override int Count()
@@ -307,7 +310,15 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return new ThreadSafeReferenceHandle(result);
+        }
+
+        public override ResultsHandle Snapshot()
+        {
+            var ptr = NativeMethods.snapshot(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(Root ?? this, ptr);
         }
     }
 }

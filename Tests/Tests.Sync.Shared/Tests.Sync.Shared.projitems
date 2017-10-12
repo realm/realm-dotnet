@@ -22,5 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SSLConfigurationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialSyncTests.cs" />
   </ItemGroup>
 </Project>

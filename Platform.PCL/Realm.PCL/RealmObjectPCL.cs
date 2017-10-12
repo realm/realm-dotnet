@@ -101,6 +101,21 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
+        /// </summary>
+        /// <remarks>
+        /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
+        /// </remarks>
+        public int BacklinksCount
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return 0;
+            }
+        }
+
         #region Getters
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]

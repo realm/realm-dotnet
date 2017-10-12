@@ -99,6 +99,14 @@ namespace Realms
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         public ObjectSchema ObjectSchema => _metadata?.Schema;
 
+        /// <summary>
+        /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
+        /// </summary>
+        /// <remarks>
+        /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
+        /// </remarks>
+        public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
         Metadata IThreadConfined.Metadata => ObjectMetadata;
 
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
@@ -225,15 +233,13 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var linkedObjectPtr = _objectHandle.GetLink(_metadata.PropertyIndices[propertyName]);
-            if (linkedObjectPtr == IntPtr.Zero)
+            if (_objectHandle.TryGetLink(_metadata.PropertyIndices[propertyName], out var objectHandle))
             {
-                return null;
+                _metadata.Schema.TryFindProperty(propertyName, out var property);
+                return (T)_realm.MakeObject(_realm.Metadata[property.ObjectType], objectHandle);
             }
 
-            _metadata.Schema.TryFindProperty(propertyName, out var property);
-            var objectType = property.ObjectType;
-            return (T)_realm.MakeObject(objectType, linkedObjectPtr);
+            return null;
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
@@ -579,12 +585,7 @@ namespace Realms
                 if (ObjectHandle.IsValid)
                 {
                     var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    var token = new NotificationTokenHandle(ObjectHandle);
-                    var tokenHandle = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
-
-                    token.SetHandle(tokenHandle);
-
-                    _notificationToken = token;
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), NotificationsHelper.NotificationCallback);
                 }
             });
         }

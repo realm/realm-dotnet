@@ -31,6 +31,7 @@
 #include "sync/sync_session.hpp"
 #include "sync_session_cs.hpp"
 #include "sync/impl/sync_metadata.hpp"
+#include "sync/partial_sync.hpp"
 
 #if REALM_WINDOWS
 #include <VersionHelpers.h>
@@ -55,7 +56,13 @@ inline bool should_gate_sync()
 #endif
 }
 #endif
+namespace realm {
+namespace binding {
 
+void (*s_subscribe_for_objects_callback)(Results* results, void* task_completion_source, NativeException::Marshallable nativeException);
+    
+}
+}
 struct SyncConfiguration
 {
     std::shared_ptr<SyncUser>* user;
@@ -67,6 +74,10 @@ struct SyncConfiguration
     
     uint16_t* trusted_ca_path;
     size_t trusted_ca_path_len;
+    
+    bool is_partial;
+    uint16_t* partial_sync_identifier;
+    size_t partial_sync_identifier_len;
 };
 
 extern "C" {
@@ -131,7 +142,13 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 #endif
         
         config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
-
+        config.sync_config->is_partial = sync_configuration.is_partial;
+        
+        if (sync_configuration.partial_sync_identifier) {
+            Utf16StringAccessor partial_sync_identifier(sync_configuration.partial_sync_identifier, sync_configuration.partial_sync_identifier_len);
+            config.sync_config->custom_partial_sync_identifier = partial_sync_identifier.to_string();
+        }
+        
         auto realm = Realm::get_shared_realm(config);
         if (!configuration.read_only)
             realm->refresh();
@@ -207,6 +224,33 @@ REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf,
         _features.reset(new sync::FeatureGate(token));
     });
 #endif
+}
+    
+REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, uint16_t* query_buf, size_t query_len, void* task_completion_source, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor class_name(class_buf, class_len);
+        Utf16StringAccessor query(query_buf, query_len);
+
+        partial_sync::register_query(sharedRealm, class_name, query, [=](Results results, std::exception_ptr err) {
+            if (err) {
+                try {
+                    std::rethrow_exception(err);
+                }
+                catch (...) {
+                    NativeException::Marshallable nex = convert_exception().for_marshalling();
+                    s_subscribe_for_objects_callback(nullptr, task_completion_source, nex);
+                }
+            } else {
+                s_subscribe_for_objects_callback(new Results(results), task_completion_source, NativeException::Marshallable{RealmErrorType::NoError});
+            }
+        });
+    });
+}
+    
+REALM_EXPORT void realm_syncmanager_install_callbacks(decltype(s_subscribe_for_objects_callback) subscribe_callback)
+{
+    s_subscribe_for_objects_callback = subscribe_callback;
 }
 
 }

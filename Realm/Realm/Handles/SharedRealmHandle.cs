@@ -94,7 +94,7 @@ namespace Realms
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_int_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, long key,
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, long key, [MarshalAs(UnmanagedType.I1)] bool has_value,
                                                              [MarshalAs(UnmanagedType.I1)] bool is_nullable,
                                                              [MarshalAs(UnmanagedType.I1)] bool update,
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
@@ -105,17 +105,12 @@ namespace Realms
                                                              [MarshalAs(UnmanagedType.I1)] bool update,
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_null_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
-                                                             [MarshalAs(UnmanagedType.I1)] bool update,
-                                                             [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_schema(SharedRealmHandle sharedRealm, IntPtr callback, out NativeException ex);
         }
 
         [Preserve]
-        public SharedRealmHandle()
+        public SharedRealmHandle(IntPtr handle) : base(null, handle)
         {
         }
 
@@ -184,11 +179,11 @@ namespace Realms
             return MarshalHelpers.IntPtrToBool(result);
         }
 
-        public IntPtr GetTable(string tableName)
+        public TableHandle GetTable(string tableName)
         {
             var result = NativeMethods.get_table(this, tableName, (IntPtr)tableName.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result;
+            return new TableHandle(this, result);
         }
 
         public bool IsSameInstance(SharedRealmHandle other)
@@ -255,66 +250,45 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr CreateObject(TableHandle table)
+        public ObjectHandle CreateObject(TableHandle table)
         {
             var result = NativeMethods.create_object(this, table, out NativeException ex);
             ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
-        public IntPtr CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
+        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
         {
+            if (primaryKey == null && !pkProperty.Type.IsNullable())
+            {
+                throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
+            }
+
             switch (pkProperty.Type.UnderlyingType())
             {
                 case PropertyType.String:
-                    if (primaryKey == null)
-                    {
-                        throw new ArgumentNullException(nameof(primaryKey), "Object identifiers cannot be null");
-                    }
-
-                    if (primaryKey is string stringKey)
-                    {
-                        return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
-                    }
-
-                    throw new ArgumentException($"{parentType}'s primary key is defined as string, but the value passed is {primaryKey.GetType().Name}");
+                    var stringKey = (string)primaryKey;
+                    return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
                 case PropertyType.Int:
-                    if (primaryKey == null)
-                    {
-                        if (!pkProperty.Type.IsNullable())
-                        {
-                            throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
-                        }
-
-                        return CreateObjectWithPrimaryKey(table, update, out isNew);
-                    }
-
-                    var longKey = Convert.ToInt64(primaryKey);
+                    var longKey = primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey);
                     return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, long key, bool isNullable, bool update, out bool isNew)
+        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
         {
-            var result = NativeMethods.create_object_unique(this, table, key, isNullable, update, out isNew, out var ex);
+            var result = NativeMethods.create_object_unique(this, table, key ?? 0, key.HasValue, isNullable, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
+        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
         {
-            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)key.Length, update, out isNew, out var ex);
+            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)(key?.Length ?? 0), update, out isNew, out var ex);
             ex.ThrowIfNecessary();
-            return result;
-        }
-
-        private IntPtr CreateObjectWithPrimaryKey(TableHandle table, bool update, out bool isNew)
-        {
-            var result = NativeMethods.create_object_unique(this, table, update, out isNew, out var ex);
-            ex.ThrowIfNecessary();
-            return result;
+            return new ObjectHandle(this, result);
         }
 
         public class SchemaMarshaler
