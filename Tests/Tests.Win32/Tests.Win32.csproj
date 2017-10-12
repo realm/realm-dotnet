@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Tests.Shared\Tests.Shared.projitems')" />
+  <Import Project="..\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" Condition="'$(RealmNoSync)' != 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -150,6 +151,10 @@
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj">
       <Project>{c0db0e07-4fbc-44d1-8e84-a074497385c6}</Project>
       <Name>Realm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Realm\Realm.Sync\Realm.Sync.csproj" Condition="'$(RealmNoSync)' != 'true'">
+      <Project>{2015403a-59d2-47f2-8e18-7df85bb98467}</Project>
+      <Name>Realm.Sync</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
