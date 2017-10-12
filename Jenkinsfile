@@ -324,9 +324,11 @@ stage('Build with sync') {
         unstash 'tools-weaver'
 
         dir('wrappers') {
-          Map cmakeArgs = [ 'REALM_ENABLE_SYNC': 'ON', 'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake' ]
-          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-windows-static' ] << cmakeArgs
-          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-windows-static' ] << cmakeArgs
+          sshagent(['realm-ci-ssh']) {
+            Map cmakeArgs = [ 'REALM_ENABLE_SYNC': 'ON', 'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake' ]
+            cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-windows-static' ] << cmakeArgs
+            cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-windows-static' ] << cmakeArgs
+          }
         }
 
         archive 'wrappers/build/**/*.pdb'
@@ -343,14 +345,16 @@ stage('Build with sync') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
-          Map cmakeArgs = [ 
-            'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
-            'REALM_ENABLE_SYNC': 'ON',
-            'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
-          ]
-          cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-uwp-static' ] << cmakeArgs
-          cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-uwp-static' ] << cmakeArgs
-          cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'VCPKG_TARGET_TRIPLET': 'arm-uwp-static' ] << cmakeArgs
+          sshagent(['realm-ci-ssh']) {
+            Map cmakeArgs = [ 
+              'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
+              'REALM_ENABLE_SYNC': 'ON',
+              'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
+            ]
+            cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-uwp-static' ] << cmakeArgs
+            cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-uwp-static' ] << cmakeArgs
+            cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'VCPKG_TARGET_TRIPLET': 'arm-uwp-static' ] << cmakeArgs
+          }
         }
 
         archive 'wrappers/build/**/*.pdb'
