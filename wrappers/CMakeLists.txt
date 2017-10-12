@@ -93,14 +93,12 @@ else()
   use_realm_core(${REALM_ENABLE_SYNC} "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
 endif()
 
+# force Object Store to use the generic EventLoopSignal implementation
+add_definitions(-DREALM_USE_CF=0)
+add_definitions(-DREALM_USE_ALOOPER=0)
+
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
-
-  # force Object Store to use the generic EventLoopSignal implementation instead of the NSRunLoop-one
-  add_definitions(-DREALM_USE_CF=0)
-elseif(ANDROID)
-  # force Object Store to use the generic EventLoopSignal implementation instead of the ALooper-one
-  add_definitions(-DREALM_USE_ALOOPER=0)
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   if(WINDOWS_STORE)
