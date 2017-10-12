@@ -1,7 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
@@ -85,6 +84,7 @@ Global
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ad7b78b0-ae51-4fb7-9b11-4e22a2b538ca}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{af2979c9-8cc6-4d0e-ba15-10d616ec35c3}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Tests\Tests.Shared\Tests.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
@@ -694,7 +694,6 @@ Global
 		{AF2979C9-8CC6-4D0E-BA15-10D616EC35C3} = {A24C8BAE-3B43-472C-9609-8AB97180CB4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {837742FE-957B-47C9-B28C-826132539733}
 		SolutionGuid = {BE5E0028-B74D-4BE1-B1DA-5FFCC8469C41}
 	EndGlobalSection
 EndGlobal
