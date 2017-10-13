@@ -43,7 +43,6 @@ namespace Tests.Sync
             }
 
             var defaultFolder = InteropConfig.DefaultStorageFolder;
-            defaultFolder = @"C:\jenkins\workspace\realm_realm-dotnet_PR-1577-VIMG5PFHG4NG3HDLD2JKJYRABXETM5M2CUTDDJGG57UBG7TWAH6Q@2\Tests\Tests.NetCore\bin\Release\win32publish\Documents";
             if (TestHelpers.IsWindows)
             {
                 // We do this to reduce the length of the folders in Windows
