@@ -98,6 +98,10 @@ add_definitions(-DREALM_USE_CF=0)
 add_definitions(-DREALM_USE_ALOOPER=0)
 add_definitions(-DREALM_USE_UV=0)
 
+if(NOT REALM_PLATFORM)
+  set(REALM_PLATFORM DotNet) 
+endif()
+
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")

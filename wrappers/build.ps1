@@ -18,6 +18,8 @@ param(
     [ValidateSet('Win32', 'x64', 'ARM')]
     [string[]]$Platforms = ('Win32'),
 
+    [switch]$EnableSync,
+
     [ValidateSet('Windows', 'WindowsStore')]
     [Parameter(Position=0)]
     [string]$Target = 'Windows'
@@ -35,6 +37,10 @@ $cmakeArgs = "-DCMAKE_BUILD_TYPE=$Configuration",  "-DCMAKE_SYSTEM_NAME=$Target"
 
 if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
+}
+
+if ($EnableSync) {
+    $cmakeArgs += "-DREALM_ENABLE_SYNC=ON"
 }
 
 function triplet([string]$target, [string]$platform) {
