@@ -125,9 +125,6 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            // ObjectStore may fail to create the directory if the file name is very long.
-            Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath));
-
             var configuration = new Realms.Native.Configuration
             {
                 Path = DatabasePath,

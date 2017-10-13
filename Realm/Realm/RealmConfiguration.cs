@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -125,9 +124,6 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            // ObjectStore may fail to create the directory if the file name is very long.
-            Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath));
-
             var configuration = new Configuration
             {
                 Path = DatabasePath,

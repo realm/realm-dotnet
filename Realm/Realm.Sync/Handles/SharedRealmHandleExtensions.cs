@@ -151,7 +151,7 @@ namespace Realms.Sync
             }
         }
 
-        public static unsafe void ConfigureFileSystem(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError)
+        public static unsafe void ConfigureFileSystem(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)
         {
             // mark the file system as configured in case this is called directly
             // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
@@ -159,7 +159,10 @@ namespace Realms.Sync
 
             RealmException.AddOverrider(RealmExceptionCodes.RealmIncompatibleSyncedFile, (message, path) => new IncompatibleSyncedFileException(message, path));
 
-            var basePath = InteropConfig.DefaultStorageFolder;
+            if (basePath == null)
+            {
+                basePath = InteropConfig.DefaultStorageFolder;
+            }
 
             UserPersistenceMode mode;
             UserPersistenceMode* modePtr = null;

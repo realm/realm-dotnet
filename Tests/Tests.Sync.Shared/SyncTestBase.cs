@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Realms;
 using Realms.Sync;
@@ -41,7 +42,22 @@ namespace Tests.Sync
                 SyncConfiguration.SetFeatureToken(SyncTestHelpers.ProfessionalFeatureToken);
             }
 
-            SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false);
+            var defaultFolder = InteropConfig.DefaultStorageFolder;
+            defaultFolder = @"C:\jenkins\workspace\realm_realm-dotnet_PR-1577-VIMG5PFHG4NG3HDLD2JKJYRABXETM5M2CUTDDJGG57UBG7TWAH6Q@2\Tests\Tests.NetCore\bin\Release\win32publish\Documents";
+            if (TestHelpers.IsWindows)
+            {
+                // We do this to reduce the length of the folders in Windows
+                var testsIndex = defaultFolder.IndexOf("\\Tests\\");
+                var docsIndex = defaultFolder.IndexOf("\\Documents") + 1;
+
+                if (testsIndex > -1 && docsIndex > testsIndex)
+                {
+                    defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
+                                        .Replace("\\Documents", "\\D");
+                }
+            }
+
+            SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false, defaultFolder);
         }
 
         protected override void CustomTearDown()
