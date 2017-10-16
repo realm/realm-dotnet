@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -53,6 +54,9 @@ namespace Tests.Sync
                 {
                     defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
                                         .Replace("\\Documents", "\\D");
+
+                    Console.WriteLine($"Creating {defaultFolder}...");
+                    Directory.CreateDirectory(defaultFolder);
                 }
             }
 
