@@ -3,30 +3,4 @@
   <PropertyGroup>
     <_RealmNugetNativePath>$(MSBuildThisFileDirectory)..\native\</_RealmNugetNativePath>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <None Include="$(_RealmNugetNativePath)win32\x86\zlib.dll">
-      <Link>lib\win32\x86\zlib.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(_RealmNugetNativePath)win32\x86\libeay32.dll">
-      <Link>lib\win32\x86\libeay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(_RealmNugetNativePath)win32\x86\ssleay32.dll">
-      <Link>lib\win32\x86\ssleay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(_RealmNugetNativePath)win32\x64\zlib.dll">
-      <Link>lib\win32\x64\zlib.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(_RealmNugetNativePath)win32\x64\libeay32.dll">
-      <Link>lib\win32\x64\libeay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(_RealmNugetNativePath)win32\x64\ssleay32.dll">
-      <Link>lib\win32\x64\ssleay32.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>
