@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Realms;
 using Realms.Sync;
@@ -41,7 +43,24 @@ namespace Tests.Sync
                 SyncConfiguration.SetFeatureToken(SyncTestHelpers.ProfessionalFeatureToken);
             }
 
-            SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false);
+            var defaultFolder = InteropConfig.DefaultStorageFolder;
+            if (TestHelpers.IsWindows)
+            {
+                // We do this to reduce the length of the folders in Windows
+                var testsIndex = defaultFolder.IndexOf("\\Tests\\");
+                var docsIndex = defaultFolder.IndexOf("\\Documents") + 1;
+
+                if (testsIndex > -1 && docsIndex > testsIndex)
+                {
+                    defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
+                                        .Replace("\\Documents", "\\D");
+
+                    Console.WriteLine($"Creating {defaultFolder}...");
+                    Directory.CreateDirectory(defaultFolder);
+                }
+            }
+
+            SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false, defaultFolder);
         }
 
         protected override void CustomTearDown()

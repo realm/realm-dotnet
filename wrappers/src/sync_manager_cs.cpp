@@ -33,6 +33,10 @@
 #include "sync/impl/sync_metadata.hpp"
 #include "sync/partial_sync.hpp"
 
+#if REALM_WINDOWS
+#include <VersionHelpers.h>
+#endif
+
 using namespace realm;
 using namespace realm::binding;
 
@@ -40,6 +44,17 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 #if REALM_HAVE_FEATURE_TOKENS
 static std::unique_ptr<sync::FeatureGate> _features;
+
+inline bool should_gate_sync()
+{
+#if defined(__linux__)
+	return true;
+#elif REALM_WINDOWS
+	return IsWindowsServer();
+#else
+	return false;
+#endif
+}
 #endif
 namespace realm {
 namespace binding {
@@ -94,9 +109,9 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-#if defined(__linux__) && REALM_HAVE_FEATURE_TOKENS
-        if (!_features || !_features->has_feature("Sync")) {
-            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
+#if REALM_HAVE_FEATURE_TOKENS
+        if (should_gate_sync() && (!_features || !_features->has_feature("Sync"))) {
+            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux or Windows Server. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
         }
 #endif
         

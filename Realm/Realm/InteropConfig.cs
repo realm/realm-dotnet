@@ -28,23 +28,6 @@ namespace Realms
         {
             try
             {
-                var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
-                if (specialFolderType != null)
-                {
-                    var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
-                    if (getFolderPath != null)
-                    {
-                        var personalField = specialFolderType.GetField("Personal");
-                        return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
-                    }
-                }
-            }
-            catch
-            {
-            }
-
-            try
-            {
                 // On UWP, the sandbox folder is obtained by:
                 // ApplicationData.Current.LocalFolder.Path
                 var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
@@ -57,6 +40,23 @@ namespace Realms
                     var currentApplicationData = currentProperty.GetValue(null);
                     var localFolder = localFolderProperty.GetValue(currentApplicationData);
                     return (string)pathProperty.GetValue(localFolder);
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
+                if (specialFolderType != null)
+                {
+                    var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
+                    if (getFolderPath != null)
+                    {
+                        var personalField = specialFolderType.GetField("Personal");
+                        return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
+                    }
                 }
             }
             catch

@@ -40,7 +40,7 @@ elseif(APPLE AND REALM_ENABLE_SYNC)
   set(REALM_SYNC_LIBRARY_LOCATION_DEBUG "${REALM_SYNC_DIRECTORY}/librealm-macosx-dbg.a")
   set(REALM_SYNC_LIBRARY_LOCATION "${REALM_SYNC_DIRECTORY}/librealm-macosx.a")
   set(REALM_SYNC_LIBRARIES ${REALM_SYNC_LIBRARY_LOCATION_DEBUG} ${REALM_SYNC_LIBRARY_LOCATION})
-  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.xz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
+  download_and_extract_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.xz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
   add_custom_target(extract-realm-tarball DEPENDS ${REALM_SYNC_LIBRARIES})
 
   add_library(realm STATIC IMPORTED)
@@ -69,7 +69,7 @@ elseif(ANDROID AND REALM_ENABLE_SYNC)
   set(REALM_SYNC_LIBRARY_LOCATION_DEBUG "${REALM_SYNC_DIRECTORY}/librealm-sync-${REALM_SYNC_ANDROID_PLATFORM}-dbg.a")
   set(REALM_SYNC_LIBRARY_LOCATION "${REALM_SYNC_DIRECTORY}/librealm-sync-${REALM_SYNC_ANDROID_PLATFORM}.a")
   set(REALM_SYNC_LIBRARIES ${REALM_CORE_LIBRARY_LOCATION_DEBUG} ${REALM_CORE_LIBRARY_LOCATION} ${REALM_SYNC_LIBRARY_LOCATION_DEBUG} ${REALM_SYNC_LIBRARY_LOCATION})
-  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-android-${REALM_SYNC_VERSION}.tar.gz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
+  download_and_extract_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-android-${REALM_SYNC_VERSION}.tar.gz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
   add_custom_target(extract-realm-tarball DEPENDS ${REALM_SYNC_LIBRARIES})
 
   add_library(realm STATIC IMPORTED)
@@ -90,17 +90,26 @@ elseif(ANDROID AND REALM_ENABLE_SYNC)
 
   download_android_openssl()
 else()
-  use_realm_core("${REALM_ENABLE_SYNC}" "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
+  use_realm_core(${REALM_ENABLE_SYNC} "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
+endif()
+
+# force Object Store to use the generic EventLoopSignal implementation
+add_definitions(-DREALM_USE_CF=0)
+add_definitions(-DREALM_USE_ALOOPER=0)
+add_definitions(-DREALM_USE_UV=0)
+
+if(NOT REALM_PLATFORM)
+  set(REALM_PLATFORM DotNet) 
 endif()
 
 if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
-
-  # force Object Store to use the generic EventLoopSignal implementation instead of the NSRunLoop-one
-  add_definitions(-DREALM_USE_CF=0)
-elseif(ANDROID)
-  # force Object Store to use the generic EventLoopSignal implementation instead of the ALooper-one
-  add_definitions(-DREALM_USE_ALOOPER=0)
+elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
+  add_definitions(-DWIN32_LEAN_AND_MEAN)
+  if(WINDOWS_STORE)
+	set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib")
+	set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib")
+  endif()
 endif()
 
 if(REALM_ENABLE_SYNC)

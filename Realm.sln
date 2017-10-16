@@ -75,6 +75,7 @@ Global
 		Tests\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{0a266cac-ef4a-4bb0-a3d9-f2084f1b1012}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{159a55af-9531-4107-8444-ca9c96107ef5}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{336ed3ca-5344-4f04-966c-ca170afc3348}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{3a6cc342-40d0-4487-9964-ddaeba628199}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{3a6cc342-40d0-4487-9964-ddaeba628199}*SharedItemsImports = 4
@@ -83,6 +84,7 @@ Global
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{ad7b78b0-ae51-4fb7-9b11-4e22a2b538ca}*SharedItemsImports = 4
 		DataBinding\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems*{af2979c9-8cc6-4d0e-ba15-10d616ec35c3}*SharedItemsImports = 4
 		Tests\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
+		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{c81983e0-58a0-4d67-b0d0-ae91aba71a2c}*SharedItemsImports = 13
 		Tests\Tests.Shared\Tests.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4
 		Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems*{d2ced8f0-7a76-454d-b5f7-9e8b9fe6a58e}*SharedItemsImports = 4

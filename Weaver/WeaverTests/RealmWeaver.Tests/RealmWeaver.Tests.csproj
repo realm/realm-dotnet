@@ -35,7 +35,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Custom Command' ">
     <StartAction>Program</StartAction>
-    <StartProgram>%24{SolutionDir}\packages\NUnit.ConsoleRunner.3.2.1\tools\nunit3-console.exe</StartProgram>
+    <StartProgram>%24{SolutionDir}\packages\NUnit.ConsoleRunner.3.7.0\tools\nunit3-console.exe</StartProgram>
     <StartArguments>${ProjectFile} --config=${Configuration} --inprocess</StartArguments>
     <StartWorkingDirectory>%24{SolutionDir}</StartWorkingDirectory>
     <ConsolePause>false</ConsolePause>
