@@ -171,7 +171,7 @@ stage('Build without sync') {
       }
     },
     'macOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('osx || macos') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
@@ -362,7 +362,7 @@ stage('Build with sync') {
       }
     },
     'macOS': {
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('osx || macos') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
