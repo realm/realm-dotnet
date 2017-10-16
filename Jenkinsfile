@@ -711,6 +711,8 @@ stage('NuGet') {
         unstash 'android-wrappers-sync'
         unstash 'macos-wrappers-sync'
         unstash 'linux-wrappers-sync'
+        unstash 'win32-wrappers-sync'
+        unstash 'uwp-wrappers-sync'
 
         dir('NuGet/Realm') {
           nugetPack('Realm', versionString)
