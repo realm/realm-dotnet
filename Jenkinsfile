@@ -64,7 +64,7 @@ stage('Weavers') {
 
         dir('Weaver/WeaverTests/RealmWeaver.Tests') {
           msbuild target: 'Restore,Build', properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/" ]
-          sh "${mono} \"${env.WORKSPACE}\"/packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
+          sh "${mono} \"${env.WORKSPACE}\"/packages/NUnit.ConsoleRunner.3.7.0/tools/nunit3-console.exe RealmWeaver.Tests.csproj --result=TestResult.xml\\;format=nunit2 --config=${configuration} --inprocess"
           publishTests 'TestResult.xml'
         }
         stash includes: "Weaver/RealmWeaver.Fody/bin/${configuration}/RealmWeaver.Fody.dll", name: 'nuget-weaver'
@@ -499,14 +499,14 @@ def Win32Test(stashName) {
       unstash 'dotnet-source'
       unstash stashName
 
-      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.2.1\\tools\\nunit3-console.exe"
+      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.7.0\\tools\\nunit3-console.exe"
       dir("Tests/Tests.Win32/bin/${configuration}") {
         try {
           withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
             bat """
               mkdir "%TMP%"
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x86.xml;transform=nunit3-junit.xslt --x86
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x64.xml;transform=nunit3-junit.xslt
+              "${nunit}" Tests.Win32.dll --result=${stashName}-x86.xml;transform=nunit3-junit.xslt --x86 --labels=After
+              "${nunit}" Tests.Win32.dll --result=${stashName}-x64.xml;transform=nunit3-junit.xslt --labels=After
             """
           }
         } finally {
