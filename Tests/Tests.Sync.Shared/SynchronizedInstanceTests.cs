@@ -118,14 +118,14 @@ namespace Tests.Sync
                 var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUri = SyncTestHelpers.RealmUri($"{alice.Identity}/GetInstanceAsync_OpensReadonlyRealm");
-                var aliceConfig = new SyncConfiguration(alice, realmUri);
+                var aliceConfig = new SyncConfiguration(alice, realmUri, Guid.NewGuid().ToString());
                 var aliceRealm = GetRealm(aliceConfig);
 
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUri.AbsoluteUri, AccessLevel.Read).Timeout(1000);
 
                 AddDummyData(aliceRealm, singleTransaction);
 
-                var bobConfig = new SyncConfiguration(bob, realmUri);
+                var bobConfig = new SyncConfiguration(bob, realmUri, Guid.NewGuid().ToString());
                 var bobRealm = await GetRealmAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
@@ -167,7 +167,7 @@ namespace Tests.Sync
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_CreatesNonExistentRealm");
-                var config = new SyncConfiguration(user, realmUri);
+                var config = new SyncConfiguration(user, realmUri, Guid.NewGuid().ToString());
 
                 try
                 {

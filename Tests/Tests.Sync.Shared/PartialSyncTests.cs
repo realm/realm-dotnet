@@ -171,7 +171,7 @@ namespace Tests.Sync
         private async Task<Realm> GetPartialRealm(Action<SyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
         {
             var user = await SyncTestHelpers.GetUserAsync();
-            var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/{realmPath}"))
+            var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/{realmPath}"), Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) }
             };
@@ -200,7 +200,13 @@ namespace Tests.Sync
                 await GetSession(original).WaitForUploadAsync();
             }
 
-            Realm.DeleteRealm(config);
+            try
+            {
+                Realm.DeleteRealm(config);
+            }
+            catch
+            {
+            }
 
             config = new SyncConfiguration(config.User, config.ServerUri, config.DatabasePath + "_partial")
             {
