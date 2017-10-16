@@ -88,7 +88,7 @@ namespace Tests.Sync
 
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_ShouldDownloadRealm");
 
-                var config = new SyncConfiguration(user, realmUri);
+                var config = new SyncConfiguration(user, realmUri, Guid.NewGuid().ToString());
                 var asyncConfig = new SyncConfiguration(user, realmUri, config.DatabasePath + "_async");
 
                 using (var realm = GetRealm(config))
