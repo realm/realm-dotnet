@@ -1,15 +1,4 @@
-X.Y.Z (TBD)
-------------------
-
-### Enhancements
-- Ensure that Realm collections (`IList<T>`, `IQueryable<T>`) will not change when iterating in a `foreach` loop. ([#1589](https://github.com/realm/realm-dotnet/pull/1589))
-
-### Bug fixes
-
-### Breaking Changes
-- `AcceptPermissionOfferAsync` now returns the relative rather than the absolute url of the Realm the user has been granted permissions to. ([#1595](https://github.com/realm/realm-dotnet/pull/1595))
-
-2.0.0-rc1 (2017-10-03)
+2.0.0 (2017-10-17)
 ------------------
 
 ### Enhancements
@@ -40,6 +29,7 @@ that only objects requested by the user are synchronized to the device. You can 
 `SyncConfiguration`, opening the Realm, and then calling `Realm.SubscribeToObjectsAsync` with the type of object you're interested in,
 a string containing a query determining which objects you want to subscribe to, and a callback which will report the results. You may
 add as many subscriptions to a synced Realm as necessary. ([#1580](https://github.com/realm/realm-dotnet/pull/1580))
+- Ensure that Realm collections (`IList<T>`, `IQueryable<T>`) will not change when iterating in a `foreach` loop. ([#1589](https://github.com/realm/realm-dotnet/pull/1589))
 
 ### Bug fixes
 - `Realm.GetInstance` will now advance the Realm to the latest version, so you no longer have to call `Refresh` manually after that. ([#1523](https://github.com/realm/realm-dotnet/pull/1523))
@@ -47,6 +37,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 
 ### Breaking Changes
 - `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. ([#1381](https://github.com/realm/realm-dotnet/pull/1381))
+- `AcceptPermissionOfferAsync` now returns the relative rather than the absolute url of the Realm the user has been granted permissions to. ([#1595](https://github.com/realm/realm-dotnet/pull/1595))
 
 1.6.0 (2017-08-14)
 ------------------

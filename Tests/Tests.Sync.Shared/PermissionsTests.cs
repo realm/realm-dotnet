@@ -155,7 +155,7 @@ namespace Tests.Sync
                 // Opening a synced realm with just read permission fails.
                 // OS issue: https://github.com/realm/realm-object-store/issues/312
                 var realmUrl = await GrantPermissions(alice, bob);
-                var syncConfig = new SyncConfiguration(bob, new Uri(realmUrl));
+                var syncConfig = new SyncConfiguration(bob, new Uri(realmUrl), Guid.NewGuid().ToString());
 
                 Assert.That(() => GetRealm(syncConfig), Throws.Nothing);
                 var handler = new EventHandler<ErrorEventArgs>((sender, e) =>
@@ -311,7 +311,7 @@ namespace Tests.Sync
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write).Timeout(2000);
                 var alicesUrl = await bob.AcceptPermissionOfferAsync(token).Timeout(2000);
 
-                Assert.That($"realm://{Constants.ServerUrl}:9080/{alicesUrl}", Is.EqualTo(realmUrl));
+                Assert.That($"realm://{Constants.ServerUrl}:9080{alicesUrl}", Is.EqualTo(realmUrl));
 
                 await AssertPermissions(alice, bob, realmPath, AccessLevel.Write).Timeout(10000);
             });
@@ -471,7 +471,7 @@ namespace Tests.Sync
                 // Give Bob just read permissions
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read);
 
-                var config = new SyncConfiguration(bob, new Uri(realmUrl));
+                var config = new SyncConfiguration(bob, new Uri(realmUrl), Guid.NewGuid().ToString());
 
                 var sessionErrorTask = TestHelpers.EventToTask<ErrorEventArgs>(h => Session.Error += h, h => Session.Error -= h);
 
@@ -515,15 +515,15 @@ namespace Tests.Sync
             Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
 
-            return $"realm://{Constants.ServerUrl}:9080/{permissionResponse.RealmUrl}";
+            return $"realm://{Constants.ServerUrl}:9080{permissionResponse.RealmUrl}";
         }
 
         private async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)
         {
             await Task.Delay(500);
 
-            var firstRealm = GetRealm(new SyncConfiguration(first, new Uri(realmUrl)));
-            var secondRealm = GetRealm(new SyncConfiguration(second, new Uri(realmUrl)));
+            var firstRealm = GetRealm(new SyncConfiguration(first, new Uri(realmUrl), Guid.NewGuid().ToString()));
+            var secondRealm = GetRealm(new SyncConfiguration(second, new Uri(realmUrl), Guid.NewGuid().ToString()));
 
             var firstObjects = firstRealm.All<PrimaryKeyInt64Object>();
             var secondObjects = secondRealm.All<PrimaryKeyInt64Object>();
@@ -604,7 +604,7 @@ namespace Tests.Sync
 
         private void EnsureRealmExists(User user, string realmUrl)
         {
-            var syncConfig = new SyncConfiguration(user, new Uri(realmUrl));
+            var syncConfig = new SyncConfiguration(user, new Uri(realmUrl), Guid.NewGuid().ToString());
             using (var realm = GetRealm(syncConfig))
             {
                 // Make sure the realm exists

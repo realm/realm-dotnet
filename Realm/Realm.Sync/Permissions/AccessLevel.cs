@@ -19,7 +19,7 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// Access levels which can be granted to Realm Mobile Platform users for specific synchronized Realms, using the permissions APIs.
+    /// Access levels which can be granted to Realm Platform users for specific synchronized Realms, using the permissions APIs.
     /// <br/>
     /// Note that each access level guarantees all allowed actions provided by less permissive access levels.
     /// Specifically, users with write access to a Realm can always read from that Realm, and users with administrative

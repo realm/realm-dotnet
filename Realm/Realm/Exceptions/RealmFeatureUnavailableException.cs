@@ -20,7 +20,7 @@ namespace Realms.Exceptions
 {
     /// <summary>
     /// An exception thrown when attempting to use a feature that is not available at your edition level.
-    /// If you're using a paid edition of the Realm Mobile Platform, make sure you call
+    /// If you're using a paid edition of the Realm Platform, make sure you call
     /// <c>SyncConfiguration.SetFeatureToken</c> before any calls to <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
     /// </summary>
     /// <seealso href="https://realm.io/docs/realm-object-server/pe-ee/#enabling-professional-and-enterprise-apis">
