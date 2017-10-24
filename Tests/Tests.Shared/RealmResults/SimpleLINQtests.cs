@@ -1093,6 +1093,42 @@ namespace Tests.Database
 
         #endregion
 
+        [Test]
+        public void ObjectComparison_WhenUsingNull_ShouldWork()
+        {
+            var ivar = new Owner
+            {
+                Name = "Ivar the Dogless"
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(ivar);
+                _realm.Add(new Owner
+                {
+                    Name = "John the Dogful",
+                    TopDog = new Dog
+                    {
+                        Name = "Little Johny"
+                    }
+                });
+            });
+
+            var nullTopDogs = _realm.All<Owner>()
+                                    .Where(x => x.TopDog == null)
+                                    .ToArray();
+
+            Assert.That(nullTopDogs.Length, Is.EqualTo(1));
+            Assert.That(nullTopDogs.Single(), Is.EqualTo(ivar));
+
+            var notNullTopDogs = _realm.All<Owner>()
+                                       .Where(x => x.TopDog != null)
+                                       .ToArray();
+
+            Assert.That(notNullTopDogs.Length, Is.EqualTo(1));
+            Assert.That(notNullTopDogs.Single(), Is.Not.EqualTo(ivar));
+        }
+
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()
         {
             _realm.Write(() =>
