@@ -230,6 +230,12 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
+        internal RealmResults<T> ToResults()
+        {
+            var resultsHandle = _listHandle.ToResults();
+            return new RealmResults<T>(Realm, Metadata, resultsHandle);
+        }
+
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
         private static void Execute(T item,

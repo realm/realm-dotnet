@@ -304,6 +304,8 @@ namespace Tests
 
         public bool Vaccinated { get; set; }
 
+        public int Age { get; set; }
+
         [Backlink(nameof(Owner.Dogs))]
         public IQueryable<Owner> Owners { get; }
     }

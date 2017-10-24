@@ -76,6 +76,39 @@ namespace Realms
         }
 
         /// <summary>
+        /// Converts a Realm-backed <see cref="IList{T}"/> to a Realm-backed <see cref="IQueryable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
+        /// <param name="list">The list of objects as obtained from a to-many relationship property.</param>
+        /// <returns>A queryable collection that represents the objects contained in the list.</returns>
+        /// <remarks>
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it actually creates
+        /// an underlying Realm query to represent the list. This means that all LINQ methods will be executed
+        /// by the database and also that you can subscribe for notifications even after applying LINQ filters
+        /// or ordering.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dogs = owner.Dogs;
+        /// var query = dogs.AsRealmQueryable()
+        ///                 .Where(d => d.Age > 3)
+        ///                 .OrderBy(d => d.Name);
+        ///
+        /// var token = query.SubscribeForNotifications((sender, changes, error) =>
+        /// {
+        ///     // You'll be notified only when dogs older than 3 have been added/removed/updated
+        ///     // and the sender collection will be ordered by Name
+        /// });
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentException">Thrown if the list is not managed by Realm.</exception>
+        public static IQueryable<T> AsRealmQueryable<T>(this IList<T> list)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// A convenience method that casts <see cref="IList{T}" /> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="list">The <see cref="IList{T}" /> to observe for changes.</param>

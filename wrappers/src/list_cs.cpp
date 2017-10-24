@@ -359,5 +359,12 @@ REALM_EXPORT Results* list_snapshot(const List& list, NativeException::Marshalla
         return new Results(list.snapshot());
     });
 }
+    
+REALM_EXPORT Results* list_to_results(const List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(list.as_results());
+    });
+}
 
 }   // extern "C"

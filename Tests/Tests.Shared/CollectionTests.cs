@@ -275,6 +275,47 @@ namespace Tests.Database
             Assert.That(container.Int32List, Is.Empty);
         }
 
+        [Test]
+        public void AsRealmQueryable_WhenListIsOfObjects_RaisesNotifications()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.Dogs.AsRealmQueryable().Where(d => d.Age > 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.Dogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i > 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 5));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    var foo = oldDogs.ToArray();
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
         private void TestStableIteration<T>(Action<int> addItem, Func<IEnumerable<T>> getItems, Action<T> modifyItem)
         {
             _realm.Write(() =>
