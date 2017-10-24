@@ -38,7 +38,6 @@ namespace Realms.Sync
     /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
     /// <see cref="ErrorCode"/> will be updated accordingly.
     /// </remarks>
-    [Explicit]
     public class PermissionChange : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />
