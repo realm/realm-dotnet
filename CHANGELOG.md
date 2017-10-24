@@ -1,3 +1,13 @@
+x.y.z (TBD)
+------------------
+
+### Enhancements
+
+### Bug fixes
+- Fixed a bug that would prevent writing queries that check if a related object is null, e.g. `realm.All<Dog>().Where(d => d.Owner == null)`. ([#1601](https://github.com/realm/realm-dotnet/pull/1601))
+
+### Breaking Changes
+
 2.0.0 (2017-10-17)
 ------------------
 
