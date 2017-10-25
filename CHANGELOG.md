@@ -2,6 +2,7 @@ x.y.z (TBD)
 ------------------
 
 ### Enhancements
+- Added an `[Explicit]` attribute that can be applied to classes or assemblies. If a class is decorated with it, then it will not be included in the default schema for the Realm (i.e. you have to explicitly set `RealmConfiguration.ObjectClasses` to an array that contains that class). Similarly, if it is applied to an assembly, all classes in that assembly will be considered explicit. This is useful when developing a 3rd party library that depends on Realm to avoid your internal classes leaking into the user's schema. ([#1602](https://github.com/realm/realm-dotnet/pull/1602))
 
 ### Bug fixes
 - Fixed a bug that would prevent writing queries that check if a related object is null, e.g. `realm.All<Dog>().Where(d => d.Owner == null)`. ([#1601](https://github.com/realm/realm-dotnet/pull/1601))
