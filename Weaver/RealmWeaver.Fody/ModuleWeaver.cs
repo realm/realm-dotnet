@@ -908,7 +908,6 @@ Analytics payload
                 il.InsertBefore(callSetter, il.Create(OpCodes.Call, getValueOrDefault));
                 il.InsertBefore(callSetter, il.Create(OpCodes.Call, convert));
 
-
                 var nullableRealmIntegerCtor = _references.System_NullableOfT_Ctor.MakeHostInstanceGeneric(realmIntegerType);
                 il.InsertBefore(callSetter, il.Create(OpCodes.Newobj, nullableRealmIntegerCtor));
             }

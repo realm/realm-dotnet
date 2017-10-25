@@ -247,19 +247,19 @@ namespace RealmWeaver
                 };
                 var T = GetRealmIntegerGenericParameter(RealmIntegerOfT);
                 RealmIntegerOfT.GenericParameters.Add(T);
+                var instance = new GenericInstanceType(RealmIntegerOfT) { GenericArguments = { T } };
 
                 RealmIntegerOfT_ConvertToT = new MethodReference("op_Implicit", T, RealmIntegerOfT)
                 {
-                    Parameters = { new ParameterDefinition(new GenericInstanceType(RealmIntegerOfT) { GenericArguments = { T } }) },
+                    Parameters = { new ParameterDefinition(instance) },
                     HasThis = false
                 };
 
-                RealmIntegerOfT_ConvertFromT = new MethodReference("op_Implicit", new GenericInstanceType(RealmIntegerOfT) { GenericArguments = { T } }, RealmIntegerOfT)
+                RealmIntegerOfT_ConvertFromT = new MethodReference("op_Implicit", instance, RealmIntegerOfT)
                 {
                     Parameters = { new ParameterDefinition(T) },
                     HasThis = false
                 };
-
             }
 
             {
