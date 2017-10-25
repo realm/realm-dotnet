@@ -37,14 +37,17 @@ namespace Realms.Helpers
 
         private static class GenericOperator<T, U>
         {
-            public static Func<T, U, T> Add { get; }
+            private static readonly Lazy<Func<T, U, T>> _add;
+            private static readonly Lazy<Func<T, U>> _convert;
 
-            public static Func<T, U> Convert { get; }
+            public static Func<T, U, T> Add => _add.Value;
+
+            public static Func<T, U> Convert => _convert.Value;
 
             static GenericOperator()
             {
-                Add = CreateAdd();
-                Convert = CreateConvert();
+                _add = new Lazy<Func<T, U, T>>(CreateAdd);
+                _convert = new Lazy<Func<T, U>>(CreateConvert);
             }
 
             private static Func<T, U, T> CreateAdd()
