@@ -145,7 +145,8 @@ namespace RealmWeaver
         internal string SubmitAnalytics()
         {
             var payload = JsonPayload;
-            // uncomment next two lines to inspect the payload under Windows VS build
+
+            // uncomment next line to inspect the payload under Windows VS build
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
