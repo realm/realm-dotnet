@@ -757,10 +757,19 @@ step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresh
 
 def nodeWithCleanup(String label, Closure steps) {
   node(label) {
-    try {
-      steps()
-    } finally {
-      deleteDir()
+    // compute a shorter workspace name by removing the UUID at the end
+    def terminus = env.WORKSPACE.lastIndexOf('-')
+    def at = env.WORKSPACE.lastIndexOf('@')
+    def workspace = env.WORKSPACE.substring(0, terminus)
+    if (at > 0)
+      workspace += env.WORKSPACE.drop(at)
+
+    ws(workspace) {
+      try {
+        steps()
+      } finally {
+        deleteDir()
+      }
     }
   }
 }
