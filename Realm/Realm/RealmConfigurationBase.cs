@@ -118,12 +118,13 @@ namespace Realms
             }
         }
 
-        internal RealmConfigurationBase(string optionalPath = null, bool calculatePath = true)
+        internal RealmConfigurationBase()
         {
-            if (calculatePath)
-            {
-                DatabasePath = GetPathToRealm(optionalPath);
-            }
+        }
+
+        internal RealmConfigurationBase(string optionalPath)
+        {
+            DatabasePath = GetPathToRealm(optionalPath);
         }
 
         internal abstract Realm CreateRealm(RealmSchema schema);
