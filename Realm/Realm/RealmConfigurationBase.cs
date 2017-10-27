@@ -118,6 +118,10 @@ namespace Realms
             }
         }
 
+        internal RealmConfigurationBase()
+        {
+        }
+
         internal RealmConfigurationBase(string optionalPath)
         {
             DatabasePath = GetPathToRealm(optionalPath);
