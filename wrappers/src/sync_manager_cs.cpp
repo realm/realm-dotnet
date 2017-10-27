@@ -20,6 +20,7 @@
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
 #include <realm/sync/feature_token.hpp>
+#include "sync_manager_cs.hpp"
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -63,22 +64,6 @@ void (*s_subscribe_for_objects_callback)(Results* results, void* task_completion
     
 }
 }
-struct SyncConfiguration
-{
-    std::shared_ptr<SyncUser>* user;
-
-    uint16_t* url;
-    size_t url_len;
-    
-    bool client_validate_ssl;
-    
-    uint16_t* trusted_ca_path;
-    size_t trusted_ca_path_len;
-    
-    bool is_partial;
-    uint16_t* partial_sync_identifier;
-    size_t partial_sync_identifier_len;
-};
 
 extern "C" {
 REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_path_buf, size_t base_path_len,

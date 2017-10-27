@@ -16,16 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef SYNC_SESSION_CS_HPP
-#define SYNC_SESSION_CS_HPP
-
-#include "sync/sync_config.hpp"
+#pragma once
 
 namespace realm {
-namespace binding {
-    void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session);
-    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
-}
-}
+    class SyncUser;
 
-#endif /* defined(SYNC_SESSION_CS_HPP) */
+    struct SyncConfiguration
+    {
+        std::shared_ptr<SyncUser>* user;
+
+        uint16_t* url;
+        size_t url_len;
+
+        bool client_validate_ssl;
+
+        uint16_t* trusted_ca_path;
+        size_t trusted_ca_path_len;
+
+        bool is_partial;
+        uint16_t* partial_sync_identifier;
+        size_t partial_sync_identifier_len;
+    };
+}
