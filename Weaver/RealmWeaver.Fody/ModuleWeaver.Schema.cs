@@ -32,30 +32,34 @@ public partial class ModuleWeaver
             return;
         }
 
-        var allTypes = GetReferencedTypes().Where(t => t != null)
-                                           .Where(t => t.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"))
-                                           .Concat(types)
-                                           .Where(t => !t.CustomAttributes.Any(a => a.AttributeType.Name == "ExplicitAttribute"))
-                                           .Select(ModuleDefinition.ImportReference)
-                                           .Distinct()
-                                           .ToArray();
+        var referencedTypes = GetReferencedTypes().Where(t => t?.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAttribute)) == true);
 
-        if (allTypes.Any())
+        if (ShouldInclude(ModuleDefinition.Assembly))
+        {
+            referencedTypes = referencedTypes.Concat(types);
+        }
+
+        var realmTypes = referencedTypes.Where(ShouldInclude)
+                                        .Select(ModuleDefinition.ImportReference)
+                                        .Distinct()
+                                        .ToArray();
+
+        if (realmTypes.Any())
         {
             // TODO: test with more convoluted scenario
-            LogDebug($"Default schema woven with the following classes:{string.Join(", ", allTypes.Select(t => t.Name))}");
+            LogDebug($"Default schema woven with the following classes:{string.Join(", ", realmTypes.Select(t => t.Name))}");
 
             var entryPoint = ModuleDefinition.EntryPoint ?? GetModuleInitializer();
             var start = entryPoint.Body.Instructions.First();
             var il = entryPoint.Body.GetILProcessor();
-            il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, allTypes.Length));
+            il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, realmTypes.Length));
             il.InsertBefore(start, Instruction.Create(OpCodes.Newarr, _references.System_Type));
 
-            for (var i = 0; i < allTypes.Length; i++)
+            for (var i = 0; i < realmTypes.Length; i++)
             {
                 il.InsertBefore(start, Instruction.Create(OpCodes.Dup));
                 il.InsertBefore(start, Instruction.Create(OpCodes.Ldc_I4, i));
-                il.InsertBefore(start, Instruction.Create(OpCodes.Ldtoken, allTypes[i]));
+                il.InsertBefore(start, Instruction.Create(OpCodes.Ldtoken, realmTypes[i]));
                 il.InsertBefore(start, Instruction.Create(OpCodes.Call, _references.System_Type_GetTypeFromHandle));
                 il.InsertBefore(start, Instruction.Create(OpCodes.Stelem_Ref));
             }
@@ -71,27 +75,31 @@ public partial class ModuleWeaver
     private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition module = null, HashSet<string> processedAssemblies = null)
     {
         module = module ?? ModuleDefinition;
-        processedAssemblies = processedAssemblies ?? new HashSet<string>();
 
-        if (module.AssemblyReferences.Any(a => a.Name == "Realm"))
+        // If module has been marked [Explicit], ignore all types
+        if (ShouldInclude(module.Assembly))
         {
-            foreach (var type in module.GetTypes())
+            processedAssemblies = processedAssemblies ?? new HashSet<string>();
+
+            if (module.AssemblyReferences.Any(a => a.Name == "Realm" || a.Name == "Realm.Database"))
             {
-                yield return type;
+                foreach (var type in module.GetTypes())
+                {
+                    yield return type;
+                }
             }
-        }
 
-        var referencedModules = module.AssemblyReferences
-                                      .Select(ModuleDefinition.AssemblyResolver.Resolve)
-                                      .Where(a => a != null)
-                                      .Where(a => processedAssemblies.Add(a.FullName))
-                                      .Select(a => a.MainModule);
+            var referencedModules = module.AssemblyReferences
+                                          .Select(ModuleDefinition.AssemblyResolver.Resolve)
+                                          .Where(a => a != null && processedAssemblies.Add(a.FullName))
+                                          .Select(a => a.MainModule);
 
-        foreach (var referencedModule in referencedModules)
-        {
-            foreach (var type in GetReferencedTypes(referencedModule, processedAssemblies))
+            foreach (var referencedModule in referencedModules)
             {
-                yield return type;
+                foreach (var type in GetReferencedTypes(referencedModule, processedAssemblies))
+                {
+                    yield return type;
+                }
             }
         }
     }
@@ -150,5 +158,10 @@ public partial class ModuleWeaver
         }
 
         return cctor;
+    }
+
+    private bool ShouldInclude(ICustomAttributeProvider provider)
+    {
+        return provider.CustomAttributes.All(a => !a.AttributeType.IsSameAs(_references.ExplicitAttribute));
     }
 }

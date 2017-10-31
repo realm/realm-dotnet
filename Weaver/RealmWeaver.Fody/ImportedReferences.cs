@@ -125,6 +125,8 @@ namespace RealmWeaver
 
         public MethodReference WovenAttribute_Constructor { get; private set; }
 
+        public TypeReference ExplicitAttribute { get; private set; }
+
         public TypeReference WovenPropertyAttribute { get; private set; }
 
         public MethodReference WovenPropertyAttribute_Constructor { get; private set; }
@@ -330,6 +332,8 @@ namespace RealmWeaver
 
             WovenPropertyAttribute = new TypeReference("Realms", "WovenPropertyAttribute", Module, realmAssembly);
             WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenPropertyAttribute) { HasThis = true };
+
+            ExplicitAttribute = new TypeReference("Realms", "ExplicitAttribute", Module, realmAssembly);
 
             var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
             RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.Void, realmSchema) { HasThis = false };

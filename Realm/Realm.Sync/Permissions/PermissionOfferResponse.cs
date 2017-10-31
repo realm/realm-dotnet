@@ -38,7 +38,6 @@ namespace Realms.Sync
     /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
     /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>
-    [Explicit]
     public class PermissionOfferResponse : RealmObject, IPermissionObject, IStatusObject
     {
         /// <inheritdoc />

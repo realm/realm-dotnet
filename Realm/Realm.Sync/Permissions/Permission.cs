@@ -25,7 +25,6 @@ namespace Realms.Sync
     /// It should be used in conjunction with a <see cref="User"/>'s Permission Realm.
     /// </summary>
     /// <see cref="UserPermissionsExtensions.GetPermissionRealm"/>
-    [Explicit]
     public class Permission : RealmObject
     {
         /// <summary>

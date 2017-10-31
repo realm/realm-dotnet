@@ -27,3 +27,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Tests.UWP")]
 [assembly: InternalsVisibleTo("Tests.NetCore")]
 [assembly: InternalsVisibleTo("Tests.XamarinMac")]
+[assembly: Realms.Explicit]

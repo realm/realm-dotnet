@@ -269,7 +269,7 @@ namespace Tests.Database
 
 namespace Foo
 {
-    [Explicit]
+    [Realms.Explicit]
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {
@@ -279,7 +279,7 @@ namespace Foo
 
 namespace Bar
 {
-    [Explicit]
+    [Realms.Explicit]
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {

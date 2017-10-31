@@ -50,11 +50,24 @@ namespace Realms
     }
 
     /// <summary>
-    /// Do not implicitly add the type decorated by this attribute to a Realm's schema unless it has been explicitly set.
+    /// An attribute that prevents the decorated class from being included in Realm's default schema.
     /// </summary>
+    /// <remarks>
+    /// If applied at the assembly level, then all classes in that assembly will be considered explicit and will not be added to
+    /// the default schema. To include explicit classes in a Realm's schema, you should include them in the
+    /// <see cref="RealmConfigurationBase.ObjectClasses"/> array:
+    /// <code>
+    /// var config = new RealmConfiguration
+    /// {
+    ///     ObjectClasses = new[] { typeof(MyExplicitClass) }
+    /// };
+    ///
+    /// var realm = Realm.GetInstance(config);
+    /// </code>
+    /// </remarks>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    internal class ExplicitAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = false)]
+    public class ExplicitAttribute : Attribute
     {
     }
 }
