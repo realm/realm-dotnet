@@ -129,7 +129,8 @@ namespace Realms
                 Path = DatabasePath,
                 read_only = IsReadOnly,
                 delete_if_migration_needed = ShouldDeleteIfMigrationNeeded,
-                schema_version = SchemaVersion
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache
             };
 
             Migration migration = null;

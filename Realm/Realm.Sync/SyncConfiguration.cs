@@ -128,7 +128,8 @@ namespace Realms.Sync
             var configuration = new Realms.Native.Configuration
             {
                 Path = DatabasePath,
-                schema_version = SchemaVersion
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache
             };
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);

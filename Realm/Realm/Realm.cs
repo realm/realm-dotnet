@@ -240,17 +240,24 @@ namespace Realms
 
             RealmState state = null;
 
-            var statePtr = sharedRealmHandle.GetManagedStateHandle();
-            if (statePtr != IntPtr.Zero)
+            if (config.EnableCache)
             {
-                state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
+                var statePtr = sharedRealmHandle.GetManagedStateHandle();
+                if (statePtr != IntPtr.Zero)
+                {
+                    state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
+                }
             }
 
             if (state == null)
             {
                 state = new RealmState();
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
-                _states.Value[config.DatabasePath] = new WeakReference<RealmState>(state);
+
+                if (config.EnableCache)
+                {
+                    _states.Value[config.DatabasePath] = new WeakReference<RealmState>(state);
+                }
             }
 
             state.AddRealm(this);
@@ -346,7 +353,7 @@ namespace Realms
             {
                 // only mutate the state on explicit disposal
                 // otherwise we do so on the finalizer thread
-                if (_state.RemoveRealm(this))
+                if (Config.EnableCache && _state.RemoveRealm(this))
                 {
                     _states.Value.Remove(Config.DatabasePath);
                 }

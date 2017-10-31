@@ -62,5 +62,7 @@ namespace Realms.Native
 
         internal ShouldCompactCallback should_compact_callback;
         internal IntPtr managed_should_compact_delegate;
+
+        internal bool enable_cache;
     }
 }

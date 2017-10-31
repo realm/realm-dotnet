@@ -67,6 +67,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         Realm::Config config;
         config.path = pathStr.to_string();
         config.in_memory = configuration.in_memory;
+        config.cache = configuration.enable_cache;
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
         if (encryption_key )
