@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -663,6 +664,31 @@ namespace Tests.Database
             {
                 Realm.DeleteRealm(originalConfig);
                 Realm.DeleteRealm(copyConfig);
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void GetInstance_WhenCacheEnabled_ReturnsSameStates(bool enableCache)
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName());
+
+            Assert.That(config.EnableCache, Is.True);
+
+            config.EnableCache = enableCache;
+
+            try
+            {
+                var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+                using (var first = Realm.GetInstance(config))
+                using (var second = Realm.GetInstance(config))
+                {
+                    Assert.That(enableCache == ReferenceEquals(stateAccessor.GetValue(first), stateAccessor.GetValue(second)));
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
             }
         }
 

@@ -45,7 +45,7 @@ namespace Realms
 
         internal bool Dynamic;
 
-        internal virtual bool EnableCache => true;
+        internal bool EnableCache = true;
 
         /// <summary>
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
