@@ -150,7 +150,7 @@ namespace Realms.Sync
             return CreateRealm(schema);
         }
 
-        private Native.SyncConfiguration ToNative()
+        internal Native.SyncConfiguration ToNative()
         {
             if (!string.IsNullOrEmpty(TrustedCAPath) &&
                 !File.Exists(TrustedCAPath))
