@@ -121,11 +121,11 @@ namespace RealmWeaver
 
         public MethodReference PreserveAttribute_ConstructorWithParams { get; private set; }
 
-        public TypeDefinition WovenAttribute { get; private set; }
+        public TypeReference WovenAttribute { get; private set; }
 
         public MethodReference WovenAttribute_Constructor { get; private set; }
 
-        public TypeDefinition ExplicitAttribute { get; private set; }
+        public TypeReference ExplicitAttribute { get; private set; }
 
         public TypeReference WovenPropertyAttribute { get; private set; }
 
@@ -323,19 +323,17 @@ namespace RealmWeaver
                 Parameters = { new ParameterDefinition(Types.Boolean), new ParameterDefinition(Types.Boolean) }
             };
 
-            var wovenAttributeReference = new TypeReference("Realms", "WovenAttribute", Module, realmAssembly);
-            WovenAttribute_Constructor = new MethodReference(".ctor", Types.Void, wovenAttributeReference)
+            WovenAttribute = new TypeReference("Realms", "WovenAttribute", Module, realmAssembly);
+            WovenAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenAttribute)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(System_Type) }
             };
 
-            WovenAttribute = wovenAttributeReference.Resolve();
-
             WovenPropertyAttribute = new TypeReference("Realms", "WovenPropertyAttribute", Module, realmAssembly);
             WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenPropertyAttribute) { HasThis = true };
 
-            ExplicitAttribute = new TypeReference("Realms", "ExplicitAttribute", Module, realmAssembly).Resolve();
+            ExplicitAttribute = new TypeReference("Realms", "ExplicitAttribute", Module, realmAssembly);
 
             var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
             RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.Void, realmSchema) { HasThis = false };

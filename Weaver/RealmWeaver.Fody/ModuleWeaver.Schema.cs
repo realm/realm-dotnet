@@ -32,7 +32,7 @@ public partial class ModuleWeaver
             return;
         }
 
-        var referencedTypes = GetReferencedTypes().Where(t => t?.CustomAttributes.Any(a => a.AttributeType.Resolve() == _references.WovenAttribute) == true);
+        var referencedTypes = GetReferencedTypes().Where(t => t?.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAttribute)) == true);
 
         if (ShouldInclude(ModuleDefinition.Assembly))
         {
@@ -162,6 +162,6 @@ public partial class ModuleWeaver
 
     private bool ShouldInclude(ICustomAttributeProvider provider)
     {
-        return provider.CustomAttributes.All(a => a.AttributeType.Resolve() != _references.ExplicitAttribute);
+        return provider.CustomAttributes.All(a => !a.AttributeType.IsSameAs(_references.ExplicitAttribute));
     }
 }
