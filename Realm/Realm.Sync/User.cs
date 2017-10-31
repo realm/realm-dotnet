@@ -196,6 +196,18 @@ namespace Realms.Sync
             return new User(userHandle);
         }
 
+        internal Uri GetUriForRealm(string path)
+        {
+            var uriBuilder = new UriBuilder(ServerUri)
+            {
+                Path = path
+            };
+
+            uriBuilder.Scheme = uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ? "realms" : "realm";
+
+            return uriBuilder.Uri;
+        }
+
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
@@ -484,10 +496,7 @@ namespace Realms.Sync
         {
             var tcs = new TaskCompletionSource<object>();
 
-            ManagementRealm.Write(() =>
-            {
-                offer.ExpiresAt = DateTimeOffset.UtcNow;
-            });
+            ManagementRealm.Write(() => offer.ExpiresAt = DateTimeOffset.UtcNow);
 
             var session = ManagementRealm.GetSession();
             try
@@ -553,19 +562,7 @@ namespace Realms.Sync
 
         private Realm GetSpecialPurposeRealm(string path, params Type[] objectClasses)
         {
-            var uriBuilder = new UriBuilder(ServerUri);
-            if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
-            {
-                uriBuilder.Scheme = "realm";
-            }
-            else if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
-            {
-                uriBuilder.Scheme = "realms";
-            }
-
-            uriBuilder.Path = $"/~/{path}";
-
-            var configuration = new SyncConfiguration(this, uriBuilder.Uri)
+            var configuration = new SyncConfiguration(this, GetUriForRealm($"/~/{path}"))
             {
                 ObjectClasses = objectClasses
             };
