@@ -56,9 +56,7 @@ namespace Realms
         internal static unsafe void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
-            {
-                SynchronizationContextEventLoopSignal.Install();
-                
+            {   
                 try
                 {
                     var osVersionPI = typeof(Environment).GetProperty("OSVersion");
@@ -88,6 +86,8 @@ namespace Realms
                 GCHandle.Alloc(logger);
                 set_debug_logger(logger);
 #endif
+
+                SynchronizationContextEventLoopSignal.Install();
             }
         }
     }
