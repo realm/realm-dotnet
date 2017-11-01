@@ -93,11 +93,6 @@ else()
   use_realm_core(${REALM_ENABLE_SYNC} "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
 endif()
 
-# force Object Store to use the generic EventLoopSignal implementation
-add_definitions(-DREALM_USE_CF=0)
-add_definitions(-DREALM_USE_ALOOPER=0)
-add_definitions(-DREALM_USE_UV=0)
-
 if(NOT REALM_PLATFORM)
   set(REALM_PLATFORM DotNet) 
 endif()
@@ -120,6 +115,13 @@ set(PEGTL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/external/pegt
 
 add_subdirectory(src/object-store/src)
 add_subdirectory(src)
+
+# force Object Store to use the generic EventLoopSignal implementation
+target_compile_definitions(realm-object-store PUBLIC
+  REALM_USE_CF=0
+  REALM_USE_ALOOPER=0
+  REALM_USE_UV=0
+)
 
 if(APPLE OR ANDROID)
   # force Object Store to use the generic EventLoopSignal implementation instead of the system one
