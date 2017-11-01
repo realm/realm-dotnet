@@ -52,47 +52,42 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
 
-        private static unsafe void InitializeOnce()
-        {
-            SynchronizationContextEventLoopSignal.Install();
-            
-            try
-            {
-                var osVersionPI = typeof(Environment).GetProperty("OSVersion");
-                var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
-                var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-                if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
-                {
-                    var osVersion = osVersionPI.GetValue(null);
-                    var platform = platformPI.GetValue(osVersion);
-
-                    if (platform.ToString() == "Win32NT")
-                    {
-                        var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
-                        var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
-                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                        Environment.SetEnvironmentVariable("PATH", path);
-                    }
-                }
-            }
-            catch
-            {
-                // Try to put wrappers in PATH on Windows Desktop, but be silent if anything fails.
-            }
-
-#if DEBUG
-            DebugLoggerCallback logger = DebugLogger;
-            GCHandle.Alloc(logger);
-            set_debug_logger(logger);
-#endif
-        }
-
         private static int _isInitialized;
-        public static void Initialize()
+        internal static unsafe void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
-                InitializeOnce();
+                SynchronizationContextEventLoopSignal.Install();
+                
+                try
+                {
+                    var osVersionPI = typeof(Environment).GetProperty("OSVersion");
+                    var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
+                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
+                    if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
+                    {
+                        var osVersion = osVersionPI.GetValue(null);
+                        var platform = platformPI.GetValue(osVersion);
+
+                        if (platform.ToString() == "Win32NT")
+                        {
+                            var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
+                            var architecture = InteropConfig.Is64BitProcess ? "x64" : "x86";
+                            var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                            Environment.SetEnvironmentVariable("PATH", path);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Try to put wrappers in PATH on Windows Desktop, but be silent if anything fails.
+                }
+
+#if DEBUG
+                DebugLoggerCallback logger = DebugLogger;
+                GCHandle.Alloc(logger);
+                set_debug_logger(logger);
+#endif
             }
         }
     }
