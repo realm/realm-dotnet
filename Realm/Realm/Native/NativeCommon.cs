@@ -23,6 +23,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Realms.Native;
 
 namespace Realms
@@ -30,12 +31,6 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
     internal static class NativeCommon
     {
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void NotifyRealmCallback(IntPtr stateHandle);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
-
 #if DEBUG
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
@@ -51,17 +46,16 @@ namespace Realms
         public static extern void set_debug_logger(DebugLoggerCallback callback);
 #endif  // DEBUG
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_callbacks", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void register_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
 
-        public static unsafe void Initialize()
+        private static unsafe void InitializeOnce()
         {
+            SynchronizationContextEventLoopSignal.Install();
+            
             try
             {
                 var osVersionPI = typeof(Environment).GetProperty("OSVersion");
@@ -91,6 +85,15 @@ namespace Realms
             GCHandle.Alloc(logger);
             set_debug_logger(logger);
 #endif
+        }
+
+        private static int _isInitialized;
+        public static void Initialize()
+        {
+            if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
+            {
+                InitializeOnce();
+            }
         }
     }
 }

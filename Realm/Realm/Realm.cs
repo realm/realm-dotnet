@@ -44,34 +44,10 @@ namespace Realms
 
         // This is imperfect solution because having a realm open on a different thread wouldn't prevent deleting the file.
         // Theoretically we could use trackAllValues: true, but that would create locking issues.
-        private static readonly ThreadLocal<IDictionary<string, WeakReference<RealmState>>> _states = new ThreadLocal<IDictionary<string, WeakReference<RealmState>>>(DictionaryConstructor<string, WeakReference<RealmState>>);
+        private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
 
         // TODO: due to a Mono bug, this needs to be a function rather than a lambda
         private static IDictionary<T, U> DictionaryConstructor<T, U>() => new Dictionary<T, U>();
-
-        static Realm()
-        {
-            NativeCommon.Initialize();
-
-            NativeCommon.NotifyRealmCallback notifyRealm = RealmState.NotifyRealmChanged;
-            GCHandle.Alloc(notifyRealm);
-
-            NativeCommon.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
-            GCHandle.Alloc(getNativeSchema);
-
-            NativeCommon.register_callbacks(notifyRealm, getNativeSchema);
-
-            SynchronizationContextEventLoopSignal.Install();
-        }
-
-        [NativeCallback(typeof(NativeCommon.GetNativeSchemaCallback))]
-        private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
-        {
-            var handle = GCHandle.FromIntPtr(managedCallbackPtr);
-            var callback = (Action<Native.Schema>)handle.Target;
-            callback(schema);
-            handle.Free();
-        }
 
         /// <summary>
         /// Factory for obtaining a <see cref="Realm"/> instance for this thread.
@@ -203,7 +179,7 @@ namespace Realms
 
         #endregion
 
-        private RealmState _state;
+        private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
@@ -238,25 +214,25 @@ namespace Realms
         {
             Config = config;
 
-            RealmState state = null;
+            State state = null;
 
             if (config.EnableCache)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
                 {
-                    state = GCHandle.FromIntPtr(statePtr).Target as RealmState;
+                    state = GCHandle.FromIntPtr(statePtr).Target as State;
                 }
             }
 
             if (state == null)
             {
-                state = new RealmState();
+                state = new State();
                 sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
 
                 if (config.EnableCache)
                 {
-                    _states.Value[config.DatabasePath] = new WeakReference<RealmState>(state);
+                    _states.Value[config.DatabasePath] = new WeakReference<State>(state);
                 }
             }
 
@@ -1083,31 +1059,20 @@ namespace Realms
 
         #endregion
 
-        private class RealmState
+        internal class State
         {
-            #region static
-
-            [NativeCallback(typeof(NativeCommon.NotifyRealmCallback))]
-            public static void NotifyRealmChanged(IntPtr stateHandle)
-            {
-                var gch = GCHandle.FromIntPtr(stateHandle);
-                ((RealmState)gch.Target).NotifyChanged(EventArgs.Empty);
-            }
-
-            #endregion
-
             private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
 
             public readonly GCHandle GCHandle;
             public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
 
-            public RealmState()
+            public State()
             {
                 // this is freed in a native callback when the CSharpBindingContext is destroyed
                 GCHandle = GCHandle.Alloc(this);
             }
 
-            private void NotifyChanged(EventArgs e)
+            internal void NotifyChanged(EventArgs e)
             {
                 foreach (var realm in GetLiveRealms())
                 {
