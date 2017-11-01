@@ -1,4 +1,5 @@
 #!groovy
+
 @Library('realm-ci') _
 
 wrapperConfigurations = [
@@ -157,7 +158,7 @@ stage('Build without sync') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
-          Map cmakeArgs = [ 
+          Map cmakeArgs = [
             'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
             'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
           ]
@@ -246,17 +247,17 @@ stage('Build .NET Core without sync') {
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: properties + [ RuntimeIdentifier: 'osx.10.10-x64', OutputPath: "bin/${configuration}/macos" ]
-    
+
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/macospublish/**", name: 'netcore-macos-tests-nosync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: properties + [ RuntimeIdentifier: 'debian.8-x64', OutputPath: "bin/${configuration}/linux" ]
-    
+
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/linuxpublish/**", name: 'netcore-linux-tests-nosync'
 
     msbuild project: 'Tests/Tests.NetCore/Tests.NetCore.csproj', target: 'Publish',
             properties: properties + [ RuntimeIdentifier: 'win81-x64', OutputPath: "bin/${configuration}/win32" ]
-    
+
     stash includes: "Tests/Tests.NetCore/bin/${configuration}/win32publish/**", name: 'netcore-win32-tests-nosync'
   }
 }
@@ -346,7 +347,7 @@ stage('Build with sync') {
 
         dir('wrappers') {
           sshagent(['realm-ci-ssh']) {
-            Map cmakeArgs = [ 
+            Map cmakeArgs = [
               'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
               'REALM_ENABLE_SYNC': 'ON',
               'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
@@ -390,7 +391,7 @@ stage('Build with sync') {
     'Linux': {
       nodeWithCleanup('docker') {
         unstash 'dotnet-wrappers-source'
-      
+
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
             String dockerBuildArgs = "-f Dockerfile.centos " +
@@ -820,14 +821,14 @@ def msbuild(Map args = [:]) {
     invocation += " /t:${args.target}"
   }
   if ('properties' in args) {
-    for (property in args.properties) {
-      invocation += " /p:${property.key}=\"${property.value}\""
+    for (property in mapToList(args.properties)) {
+      invocation += " /p:${property[0]}=\"${property[1]}\""
     }
   }
   if ('extraArguments' in args) {
     invocation += " ${args.extraArguments}"
   }
-  
+
   if (isUnix()) {
     sh invocation
   } else {
@@ -855,8 +856,8 @@ def nugetPack(String packageId, String version) {
 
 def cmake(String binaryDir, String installPrefix, String configuration, Map arguments = [:]) {
   def command = ''
-  for (arg in arguments) {
-    command += "-D${arg.key}=\"${arg.value}\" "
+  for (arg in mapToList(arguments)) {
+    command += "-D${arg[0]}=\"${arg[1]}\" "
   }
 
   def cmakeInvocation = """
@@ -875,4 +876,12 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
 
 def reportTests(String file) {
   junit file
+}
+
+// Required due to JENKINS-27421
+@NonCPS
+List<List<?>> mapToList(Map map) {
+  return map.collect { it ->
+    [it.key, it.value]
+  }
 }
