@@ -53,7 +53,7 @@ namespace binding {
 extern "C" {
     
     
-REALM_EXPORT void register_callbacks(NotifyRealmChangedDelegate realm_changed, GetNativeSchemaDelegate get_schema)
+REALM_EXPORT void shared_realm_install_callbacks(NotifyRealmChangedDelegate realm_changed, GetNativeSchemaDelegate get_schema)
 {
     notify_realm_changed = realm_changed;
     get_native_schema = get_schema;

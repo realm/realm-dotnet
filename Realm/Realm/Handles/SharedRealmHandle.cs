@@ -22,6 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -31,6 +32,12 @@ namespace Realms
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void NotifyRealmCallback(IntPtr stateHandle);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Native.Configuration configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaObject[] objects, int objects_length,
@@ -107,6 +114,22 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_schema(SharedRealmHandle sharedRealm, IntPtr callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
+        }
+
+        static SharedRealmHandle()
+        {
+            NativeCommon.Initialize();
+
+            NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
+            NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
+
+            GCHandle.Alloc(notifyRealm);
+            GCHandle.Alloc(getNativeSchema);
+
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema);
         }
 
         [Preserve]
@@ -289,6 +312,22 @@ namespace Realms
             var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)(key?.Length ?? 0), update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
+        }
+
+        [NativeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
+        private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
+        {
+            var handle = GCHandle.FromIntPtr(managedCallbackPtr);
+            var callback = (Action<Native.Schema>)handle.Target;
+            callback(schema);
+            handle.Free();
+        }
+
+        [NativeCallback(typeof(NativeMethods.NotifyRealmCallback))]
+        public static void NotifyRealmChanged(IntPtr stateHandle)
+        {
+            var gch = GCHandle.FromIntPtr(stateHandle);
+            ((Realm.State)gch.Target).NotifyChanged(EventArgs.Empty);
         }
 
         public class SchemaMarshaler

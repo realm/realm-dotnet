@@ -74,6 +74,11 @@ namespace Realms.Sync
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
 
+        static SessionHandle()
+        {
+            NativeCommon.Initialize();
+        }
+
         [Preserve]
         public SessionHandle(IntPtr handle) : base(null, handle)
         {
