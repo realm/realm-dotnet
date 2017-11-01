@@ -101,6 +101,8 @@ namespace Realms.Sync
 
         static unsafe SharedRealmHandleExtensions()
         {
+            NativeCommon.Initialize();
+
             NativeMethods.RefreshAccessTokenCallbackDelegate refresh = RefreshAccessTokenCallback;
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;

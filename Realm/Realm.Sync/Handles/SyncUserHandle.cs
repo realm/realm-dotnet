@@ -75,6 +75,11 @@ namespace Realms.Sync
             public static extern IntPtr get_session(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
         }
 
+        static SyncUserHandle()
+        {
+            NativeCommon.Initialize();
+        }
+
         [Preserve]
         public SyncUserHandle(IntPtr handle) : base(null, handle)
         {
