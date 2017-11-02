@@ -37,4 +37,8 @@ namespace realm {
         uint16_t* partial_sync_identifier;
         size_t partial_sync_identifier_len;
     };
+    
+    namespace binding {
+        bool has_feature(StringData feature);
+    }
 }

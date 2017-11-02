@@ -56,6 +56,11 @@ inline bool should_gate_sync()
 	return false;
 #endif
 }
+
+bool realm::binding::has_feature(StringData feature) {
+    return _features && _features->has_feature(feature);
+}
+
 #endif
 namespace realm {
 namespace binding {
@@ -95,7 +100,7 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 {
     return handle_errors(ex, [&]() {
 #if REALM_HAVE_FEATURE_TOKENS
-        if (should_gate_sync() && (!_features || !_features->has_feature("Sync"))) {
+        if (should_gate_sync() && !realm::binding::has_feature("Sync")) {
             throw RealmFeatureUnavailableException("The Sync feature is not available on Linux or Windows Server. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
         }
 #endif
