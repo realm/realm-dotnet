@@ -168,6 +168,8 @@ namespace Realms
             File.Delete(fullpath + ".log");
             File.Delete(fullpath + ".lock");
             File.Delete(fullpath + ".note");
+
+            Directory.Delete(fullpath + ".management", recursive: true);
         }
 
         private static bool IsRealmOpen(string path)
