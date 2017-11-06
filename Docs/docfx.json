@@ -3,10 +3,11 @@
         {
             "src": [
                 {
-                    "src": "../Realm/",
+                    "src": "../../",
                     "files": [
-                        "Realm/Realm.csproj",
-                        "Realm.Sync/Realm.Sync.csproj"
+                        "public/Realm/Realm/Realm.csproj",
+                        "public/Realm/Realm.Sync/Realm.Sync.csproj",
+                        "Realm.Server/Realm.Server.csproj"
                     ],
                     "exclude": [
                         "**/obj/**",
