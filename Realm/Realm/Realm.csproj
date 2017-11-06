@@ -12,8 +12,8 @@
   <ItemGroup>
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.3.0" />
-    <PackageReference Include="Remotion.Linq" Version="2.1.1" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
+    <PackageReference Include="Remotion.Linq" Version="2.1.2" />
     <PackageReference Include="StyleCop.MSBuild" Version="4.7.55" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>

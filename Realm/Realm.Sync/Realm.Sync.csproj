@@ -10,8 +10,8 @@
     <OutputPath>bin\$(Configuration)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-      <PackageReference Include="Fody" Version="2.0.7" PrivateAssets="All" />
+      <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+      <PackageReference Include="Fody" Version="2.2.0" PrivateAssets="All" />
       <PackageReference Include="StyleCop.MSBuild" Version="4.7.55" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
