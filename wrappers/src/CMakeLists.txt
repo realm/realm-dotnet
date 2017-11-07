@@ -41,12 +41,14 @@ set(INCLUDE_DIRS
     ${REALM_CORE_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
-    list(APPEND INCLUDE_DIRS ${REALM_CORE_INCLUDE_DIR}/win32/pthread)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND REALM_ENABLE_SYNC)
+    list(APPEND SOURCES
+        win32/realm-wrappers-${CMAKE_GENERATOR_PLATFORM}.def
+    )
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  add_compile_options(-Wno-missing-prototypes)
+    add_compile_options(-Wno-missing-prototypes)
 endif()
 
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
