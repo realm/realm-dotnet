@@ -19,12 +19,13 @@
 #ifndef SYNC_SESSION_CS_HPP
 #define SYNC_SESSION_CS_HPP
 
+#include "realm_export_decls.hpp"
 #include "sync/sync_config.hpp"
 
 namespace realm {
 namespace binding {
-    void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session);
-    void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
+    REALM_EXPORT void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session);
+    REALM_EXPORT void handle_session_error(std::shared_ptr<SyncSession> session, SyncError error);
 }
 }
 

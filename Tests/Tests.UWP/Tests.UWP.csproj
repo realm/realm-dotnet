@@ -123,7 +123,7 @@
     <Content Include="Assets\StoreLogo.scale-100.png" />
     <Content Include="FodyWeavers.xml" />
     <Content Include="Properties\Default.rd.xml" />
-    <Content Include="C:\Program Files %28x86%29\Windows Kits\10\bin\$(Platform)\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'">
+    <Content Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\$(Platform)\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'">
       <Link>ucrtbased.dll</Link>
     </Content>
     <Content Include="$(SolutionDir)wrappers\build\WindowsStore\$(Configuration)-$(RealmWrappersPlatform)\realm-wrappers.dll">

@@ -23,6 +23,7 @@
 #include <new>
 #include <realm.hpp>
 #include "realm_error_type.hpp"
+#include "realm_export_decls.hpp"
 
 namespace realm {
 struct NativeException {
@@ -81,7 +82,7 @@ public:
 };
 
 
-NativeException convert_exception();
+REALM_EXPORT NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);
     

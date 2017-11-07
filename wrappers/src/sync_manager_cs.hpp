@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "realm_export_decls.hpp"
+
 namespace realm {
     class SyncUser;
 
@@ -39,6 +41,6 @@ namespace realm {
     };
     
     namespace binding {
-        bool has_feature(StringData feature);
+        REALM_EXPORT bool has_feature(StringData feature);
     }
 }
