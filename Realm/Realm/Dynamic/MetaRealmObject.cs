@@ -129,6 +129,12 @@ namespace Realms.Dynamic
                     case PropertyType.Object:
                         getter = GetGetMethod(dummyHandle.GetList<DynamicRealmObject>);
                         break;
+                    case PropertyType.LinkingObjects:
+                        // ObjectHandle.GetBacklinks has only one argument.
+                        arguments.Clear();
+                        arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                        getter = GetGetMethod(dummyHandle.GetBacklinks);
+                        break;
                 }
             }
             else
@@ -200,9 +206,6 @@ namespace Realms.Dynamic
                         arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                         arguments.Add(Expression.Constant(property.ObjectType));
                         getter = GetGetMethod(dummyHandle.GetObject<DynamicRealmObject>);
-                        break;
-                    case PropertyType.LinkingObjects:
-                        getter = GetGetMethod(dummyHandle.GetBacklinks);
                         break;
                 }
             }
