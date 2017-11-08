@@ -97,19 +97,18 @@ REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_b
     return handle_errors(ex, [&]() -> SharedSyncUser* {
         Utf16StringAccessor identity(identity_buf, identity_len);
         Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
-        
-        auto ptr = SyncManager::shared().get_existing_logged_in_user({identity, auth_server_url});
-        if (ptr == nullptr) {
-            return nullptr;
+
+        if (auto user = SyncManager::shared().get_existing_logged_in_user({identity, auth_server_url})) {
+            new SharedSyncUser(std::move(user));
         }
         
-        return new SharedSyncUser(std::move(ptr));
+        return nullptr;
     });
 }
     
 REALM_EXPORT SharedSyncSession* realm_syncuser_get_session(SharedSyncUser& user, const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&] {
+    return handle_errors(ex, [&]() -> SharedSyncSession* {
         Utf16StringAccessor path(path_buf, path_len);
         if (auto session = user->session_for_on_disk_path(path)) {
             return new SharedSyncSession(std::move(session));
