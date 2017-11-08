@@ -59,84 +59,152 @@ namespace Realms.Dynamic
             };
 
             MethodInfo getter = null;
-            switch (property.Type.UnderlyingType())
+            if (property.Type.IsArray())
             {
-                case PropertyType.Int:
-                    if (property.Type.IsNullable())
-                    {
-                        getter = GetGetMethod(dummyHandle.GetNullableInt64);
-                    }
-                    else
-                    {
-                        getter = GetGetMethod(dummyHandle.GetInt64);
-                    }
-
-                    break;
-                case PropertyType.Bool:
-                    if (property.Type.IsNullable())
-                    {
-                        getter = GetGetMethod(dummyHandle.GetNullableBoolean);
-                    }
-                    else
-                    {
-                        getter = GetGetMethod(dummyHandle.GetBoolean);
-                    }
-
-                    break;
-                case Schema.PropertyType.Float:
-                    if (property.Type.IsNullable())
-                    {
-                        getter = GetGetMethod(dummyHandle.GetNullableSingle);
-                    }
-                    else
-                    {
-                        getter = GetGetMethod(dummyHandle.GetSingle);
-                    }
-
-                    break;
-                case PropertyType.Double:
-                    if (property.Type.IsNullable())
-                    {
-                        getter = GetGetMethod(dummyHandle.GetNullableDouble);
-                    }
-                    else
-                    {
-                        getter = GetGetMethod(dummyHandle.GetDouble);
-                    }
-
-                    break;
-                case PropertyType.String:
-                    getter = GetGetMethod(dummyHandle.GetString);
-                    break;
-                case PropertyType.Data:
-                    getter = GetGetMethod(dummyHandle.GetByteArray);
-                    break;
-                case PropertyType.Date:
-                    if (property.Type.IsNullable())
-                    {
-                        getter = GetGetMethod(dummyHandle.GetNullableDateTimeOffset);
-                    }
-                    else
-                    {
-                        getter = GetGetMethod(dummyHandle.GetDateTimeOffset);
-                    }
-
-                    break;
-                case PropertyType.Object:
-                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
-                    arguments.Add(Expression.Constant(property.ObjectType));
-                    if (property.Type.IsArray())
-                    {
+                arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
+                switch (property.Type.UnderlyingType())
+                {
+                    case PropertyType.Int:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<long?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<long>);
+                        }
+                
+                        break;
+                    case PropertyType.Bool:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<bool?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<bool>);
+                        }
+                
+                        break;
+                    case Schema.PropertyType.Float:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<float?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<float>);
+                        }
+                
+                        break;
+                    case PropertyType.Double:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<double?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<double>);
+                        }
+                
+                        break;
+                    case PropertyType.String:
+                        getter = GetGetMethod(dummyHandle.GetList<string>);
+                        break;
+                    case PropertyType.Data:
+                        getter = GetGetMethod(dummyHandle.GetList<byte[]>);
+                        break;
+                    case PropertyType.Date:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<DateTimeOffset?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetList<DateTimeOffset>);
+                        }
+                
+                        break;
+                    case PropertyType.Object:
                         getter = GetGetMethod(dummyHandle.GetList<DynamicRealmObject>);
-                    }
-                    else
-                    {
+                        break;
+                }
+            }
+            else
+            {
+                switch (property.Type.UnderlyingType())
+                {
+                    case PropertyType.Int:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetNullableInt64);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetInt64);
+                        }
+                
+                        break;
+                    case PropertyType.Bool:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetNullableBoolean);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetBoolean);
+                        }
+                
+                        break;
+                    case Schema.PropertyType.Float:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetNullableSingle);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetSingle);
+                        }
+                
+                        break;
+                    case PropertyType.Double:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetNullableDouble);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetDouble);
+                        }
+                
+                        break;
+                    case PropertyType.String:
+                        getter = GetGetMethod(dummyHandle.GetString);
+                        break;
+                    case PropertyType.Data:
+                        getter = GetGetMethod(dummyHandle.GetByteArray);
+                        break;
+                    case PropertyType.Date:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(dummyHandle.GetNullableDateTimeOffset);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(dummyHandle.GetDateTimeOffset);
+                        }
+                
+                        break;
+                    case PropertyType.Object:
+                        arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                        arguments.Add(Expression.Constant(property.ObjectType));
                         getter = GetGetMethod(dummyHandle.GetObject<DynamicRealmObject>);
-                    }
-                    break;
-                case PropertyType.LinkingObjects:
-                    getter = GetGetMethod(dummyHandle.GetBacklinks);
-                    break;
+                        break;
+                    case PropertyType.LinkingObjects:
+                        getter = GetGetMethod(dummyHandle.GetBacklinks);
+                        break;
+                }
             }
 
             var self = GetLimitedSelf();
@@ -160,7 +228,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
         {
-            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property))
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsArray())
             {
                 return base.BindSetMember(binder, value);
             }

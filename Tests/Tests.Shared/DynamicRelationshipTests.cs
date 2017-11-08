@@ -344,13 +344,13 @@ namespace Tests.Database
 
             Assert.That(tim.Tags.Count, Is.EqualTo(0));
 
-            tim.Tags.Add("First");
+            _realm.Write(() => tim.Tags.Add("First"));
 
             Assert.That(tim.Tags.Count, Is.EqualTo(1));
             Assert.That(tim.Tags[0], Is.EqualTo("First"));
             Assert.That(((IEnumerable<dynamic>)tim.Tags).First(), Is.EqualTo("First"));
 
-            tim.Tags.Clear();
+            _realm.Write(() => tim.Tags.Clear());
 
             Assert.That(tim.Tags, Is.Empty);
         }
