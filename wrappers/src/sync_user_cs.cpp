@@ -111,7 +111,10 @@ REALM_EXPORT SharedSyncSession* realm_syncuser_get_session(SharedSyncUser& user,
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor path(path_buf, path_len);
-        return new SharedSyncSession(user->session_for_on_disk_path(path));
+        if (auto session = user->session_for_on_disk_path(path)) {
+            return new SharedSyncSession(std::move(session));
+        }
+        return nullptr;
     });
 }
 
