@@ -57,6 +57,8 @@ namespace Tests.Database
             public DynamicDog TopDog { get; set; }
 
             public IList<DynamicDog> Dogs { get; }
+
+            public IList<string> Tags { get; }
         }
 
         private readonly DynamicTestObjectType _mode;
@@ -333,6 +335,24 @@ namespace Tests.Database
 
             _realm.Write(() => dani.TopDog = maggie);
             Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.EquivalentTo(new[] { dani }));
+        }
+
+        [Test]
+        public void PrimitiveList()
+        {
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+
+            Assert.That(tim.Tags.Count, Is.EqualTo(0));
+
+            _realm.Write(() => tim.Tags.Add("First"));
+
+            Assert.That(tim.Tags.Count, Is.EqualTo(1));
+            Assert.That(tim.Tags[0], Is.EqualTo("First"));
+            Assert.That(((IEnumerable<dynamic>)tim.Tags).First(), Is.EqualTo("First"));
+
+            _realm.Write(() => tim.Tags.Clear());
+
+            Assert.That(tim.Tags, Is.Empty);
         }
     }
 }
