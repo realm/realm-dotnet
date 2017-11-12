@@ -1,4 +1,4 @@
-x.y.z (TBD)
+2.1.0 (2017-11-13)
 ------------------
 
 ### Enhancements
@@ -9,8 +9,6 @@ x.y.z (TBD)
 - Addressed an issue that would cause the debugger to report an unobserved exception being thrown when "Just My Code" is disabled. ([#1603](https://github.com/realm/realm-dotnet/pull/1603))
 - Calling `Realm.DeleteRealm` on a synchronized Realm will now properly delete the `realm.management` folder. ([#1621](https://github.com/realm/realm-dotnet/pull/1621))
 - Fixed a crash when accessing primitive list properties on objects in realms opened with a dynamic schema (e.g. in migrations). ([#1629](https://github.com/realm/realm-dotnet/pull/1629))
-
-### Breaking Changes
 
 2.0.0 (2017-10-17)
 ------------------
