@@ -53,14 +53,14 @@
     <Reference Include="nunit.framework, Version=3.8.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.8.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Realm, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Realm.Database.2.0.0\lib\netstandard1.4\Realm.dll</HintPath>
+    <Reference Include="Realm, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Realm.Database.2.1.0\lib\netstandard1.4\Realm.dll</HintPath>
     </Reference>
     <Reference Include="Realm.DataBinding, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Realm.DataBinding.1.2.0\lib\netstandard1.0\Realm.DataBinding.dll</HintPath>
     </Reference>
-    <Reference Include="Realm.Sync, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Realm.2.0.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
+    <Reference Include="Realm.Sync, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Realm.2.1.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
     </Reference>
     <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\Remotion.Linq.2.1.2\lib\net45\Remotion.Linq.dll</HintPath>
@@ -108,8 +108,8 @@
     <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.3.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
@@ -142,6 +142,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\Tests\Tests.Shared\sync-1.x-encrypted.realm">
+      <Link>sync-1.x-encrypted.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\Tests\Tests.Shared\sync-1.x.realm">
+      <Link>sync-1.x.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="FodyWeavers.xml" />
     <None Include="..\..\..\Tests\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
@@ -167,13 +175,13 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets'))" />
-    <Error Condition="!Exists('..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets'))" />
-    <Error Condition="!Exists('..\packages\Realm.Database.2.0.0\build\Realm.Database.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Realm.Database.2.0.0\build\Realm.Database.targets'))" />
-    <Error Condition="!Exists('..\packages\Realm.2.0.0\build\Realm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Realm.2.0.0\build\Realm.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.2.2.0\build\net452\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.2.0\build\net452\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Realm.Database.2.1.0\build\Realm.Database.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Realm.Database.2.1.0\build\Realm.Database.targets'))" />
+    <Error Condition="!Exists('..\packages\Realm.2.1.0\build\Realm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Realm.2.1.0\build\Realm.targets'))" />
   </Target>
-  <Import Project="..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets" Condition="Exists('..\packages\Fody.2.1.2\build\netstandard1.0\Fody.targets')" />
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="..\packages\Realm.Database.2.0.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.2.0.0\build\Realm.Database.targets')" />
-  <Import Project="..\packages\Realm.2.0.0\build\Realm.targets" Condition="Exists('..\packages\Realm.2.0.0\build\Realm.targets')" />
+  <Import Project="..\packages\Fody.2.2.0\build\net452\Fody.targets" Condition="Exists('..\packages\Fody.2.2.0\build\net452\Fody.targets')" />
+  <Import Project="..\packages\Realm.Database.2.1.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.2.1.0\build\Realm.Database.targets')" />
+  <Import Project="..\packages\Realm.2.1.0\build\Realm.targets" Condition="Exists('..\packages\Realm.2.1.0\build\Realm.targets')" />
 </Project>
