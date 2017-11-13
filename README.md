@@ -2,7 +2,7 @@
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 
-This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platfomrs and their versions, check out the [Prerequisites](https://realm.io/docs/dotnet/latest/#prerequisites) section in the documentation.
+This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Prerequisites](https://realm.io/docs/dotnet/latest/#prerequisites) section in the documentation.
 
 ## Features
 
@@ -53,7 +53,7 @@ We support the current Xamarin _Stable_ update channel, at the time of release t
 1. Download and build the native libraries using the instructions in `wrappers/README.md`
 1. Open the `Realm.sln` in `Visual Studio`
 1. Build `RealmWeaver.Fody` and `Realm.BuildTasks`
-1. Build the `Realm` and `Realm.Sync`
+1. Build `Realm` and `Realm.Sync`
 1. Buld and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
