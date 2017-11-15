@@ -134,7 +134,7 @@ namespace Realms.Sync
             };
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
-            if (Dynamic && !schema.Any())
+            if (IsDynamic && !schema.Any())
             {
                 srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
             }

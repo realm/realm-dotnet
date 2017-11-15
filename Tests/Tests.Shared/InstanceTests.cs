@@ -694,8 +694,7 @@ namespace Tests.Database
         [Test]
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
-            var path = Path.GetTempFileName();
-            var config = new RealmConfiguration(path)
+            var config = new RealmConfiguration(Path.GetTempFileName())
             {
                 ObjectClasses = new[] { typeof(AllTypesObject) }
             };
@@ -712,7 +711,7 @@ namespace Tests.Database
                     }));
                 }
 
-                config.Dynamic = true;
+                config.IsDynamic = true;
 
                 using (var dynamicRealm = Realm.GetInstance(config))
                 {
@@ -727,6 +726,27 @@ namespace Tests.Database
 
                     var ato = dynamicRealm.All(nameof(AllTypesObject)).Single();
                     Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
+        }
+
+        [Test]
+        public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName())
+            {
+                IsDynamic = true
+            };
+
+            try
+            {
+                using (var realm = Realm.GetInstance(config))
+                {
+                    Assert.That(realm.Schema, Is.Empty);
                 }
             }
             finally

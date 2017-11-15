@@ -45,10 +45,10 @@ namespace Realms
 
         /// <summary>
         /// Gets or sets a value indicating whether the Realm will be open in dynamic mode. If opened in dynamic mode,
-        /// the schema will be read from the file on disk. If the file doesn't already exist, an exception will be thrown.
+        /// the schema will be read from the file on disk.
         /// </summary>
         /// <value><c>true</c> if the Realm will be opened in dynamic mode; <c>false</c> otherwise.</value>
-        public bool Dynamic { get; set; }
+        public bool IsDynamic { get; set; }
 
         internal bool EnableCache = true;
 

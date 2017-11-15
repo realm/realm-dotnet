@@ -32,7 +32,7 @@ namespace Tests.Database
             _configuration = new RealmConfiguration(_configuration.DatabasePath)
             {
                 ObjectClasses = new[] { typeof(AllTypesObject) },
-                Dynamic = true
+                IsDynamic = true
             };
             base.CustomSetUp();
         }

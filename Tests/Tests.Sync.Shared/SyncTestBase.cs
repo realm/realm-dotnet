@@ -55,7 +55,6 @@ namespace Tests.Sync
                     defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
                                         .Replace("\\Documents", "\\D");
 
-                    Console.WriteLine($"Creating {defaultFolder}...");
                     Directory.CreateDirectory(defaultFolder);
                 }
             }

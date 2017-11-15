@@ -259,7 +259,7 @@ namespace Tests.Sync
                     }));
                 }
 
-                config.Dynamic = true;
+                config.IsDynamic = true;
 
                 using (var dynamicRealm = GetRealm(config))
                 {
@@ -278,6 +278,20 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                config.IsDynamic = true;
+
+                using (var realm = GetRealm(config))
+                {
+                    Assert.That(realm.Schema, Is.Empty);
+                }
+            });
+        }
 
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
