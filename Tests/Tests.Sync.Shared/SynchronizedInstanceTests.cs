@@ -24,6 +24,7 @@ using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
@@ -236,6 +237,58 @@ namespace Tests.Sync
                             });
                         });
                     }
+                }
+            });
+        }
+
+        [Test]
+        public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                config.ObjectClasses = new[] { typeof(AllTypesObject) };
+
+                // Create the realm and add some objects
+                using (var realm = GetRealm(config))
+                {
+                    realm.Write(() => realm.Add(new AllTypesObject
+                    {
+                        Int32Property = 42,
+                        RequiredStringProperty = "This is required!"
+                    }));
+                }
+
+                config.IsDynamic = true;
+
+                using (var dynamicRealm = GetRealm(config))
+                {
+                    Assert.That(dynamicRealm.Schema.Count == 1);
+
+                    var objectSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+                    Assert.That(objectSchema, Is.Not.Null);
+
+                    var hasExpectedProp = objectSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
+                    Assert.That(hasExpectedProp);
+                    Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
+
+                    var ato = dynamicRealm.All(nameof(AllTypesObject)).Single();
+                    Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+                }
+            });
+        }
+
+        [Test]
+        public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var config = await SyncTestHelpers.GetFakeConfigAsync();
+                config.IsDynamic = true;
+
+                using (var realm = GetRealm(config))
+                {
+                    Assert.That(realm.Schema, Is.Empty);
                 }
             });
         }

@@ -105,7 +105,20 @@ namespace Realms
                 throw new ArgumentNullException(nameof(config));
             }
 
-            var schema = config.ObjectClasses != null ? RealmSchema.CreateSchemaForClasses(config.ObjectClasses) : RealmSchema.Default;
+            RealmSchema schema;
+            if (config.ObjectClasses != null)
+            {
+                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
+            }
+            else if (config.IsDynamic)
+            {
+                schema = RealmSchema.Empty;
+            }
+            else
+            {
+                schema = RealmSchema.Default;
+            }
+
             return config.CreateRealmAsync(schema);
         }
 
@@ -124,7 +137,7 @@ namespace Realms
                 }
                 else
                 {
-                    schema = config.Dynamic ? RealmSchema.Empty : RealmSchema.Default;
+                    schema = config.IsDynamic ? RealmSchema.Empty : RealmSchema.Default;
                 }
             }
 
@@ -255,7 +268,7 @@ namespace Realms
             var table = SharedRealmHandle.GetTable(schema.Name);
             Weaving.IRealmObjectHelper helper;
 
-            if (schema.Type != null && !Config.Dynamic)
+            if (schema.Type != null && !Config.IsDynamic)
             {
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)

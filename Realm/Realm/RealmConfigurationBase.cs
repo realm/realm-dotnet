@@ -43,7 +43,12 @@ namespace Realms
         /// <value>The absolute path to the Realm.</value>
         public string DatabasePath { get; protected set; }
 
-        internal bool Dynamic;
+        /// <summary>
+        /// Gets or sets a value indicating whether the Realm will be open in dynamic mode. If opened in dynamic mode,
+        /// the schema will be read from the file on disk.
+        /// </summary>
+        /// <value><c>true</c> if the Realm will be opened in dynamic mode; <c>false</c> otherwise.</value>
+        public bool IsDynamic { get; set; }
 
         internal bool EnableCache = true;
 

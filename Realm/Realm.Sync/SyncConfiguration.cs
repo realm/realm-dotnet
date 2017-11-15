@@ -18,6 +18,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Realms.Helpers;
 using Realms.Schema;
@@ -133,6 +134,11 @@ namespace Realms.Sync
             };
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
+            if (IsDynamic && !schema.Any())
+            {
+                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+            }
+
             return new Realm(srHandle, this, schema);
         }
 

@@ -25,6 +25,7 @@ using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using Realms.Schema;
 
 namespace Tests.Database
 {
@@ -539,9 +540,7 @@ namespace Tests.Database
             });
         }
 
-#if DEBUG
-        [Ignore("Due to a Xamarin bug, the Debug implementation of GetInstanceAsync isn't asynchronous. See RealmConfiguration.CreateRealmAsync.")]
-#elif WINDOWS_UWP
+#if WINDOWS_UWP
         [Ignore("Locks on .NET Native")]
 #endif
         [Test]
@@ -684,6 +683,70 @@ namespace Tests.Database
                 using (var second = Realm.GetInstance(config))
                 {
                     Assert.That(enableCache == ReferenceEquals(stateAccessor.GetValue(first), stateAccessor.GetValue(second)));
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
+        }
+
+        [Test]
+        public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName())
+            {
+                ObjectClasses = new[] { typeof(AllTypesObject) }
+            };
+
+            try
+            {
+                // Create the realm and add some objects
+                using (var realm = Realm.GetInstance(config))
+                {
+                    realm.Write(() => realm.Add(new AllTypesObject
+                    {
+                        Int32Property = 42,
+                        RequiredStringProperty = "This is required!"
+                    }));
+                }
+
+                config.IsDynamic = true;
+
+                using (var dynamicRealm = Realm.GetInstance(config))
+                {
+                    Assert.That(dynamicRealm.Schema.Count == 1);
+
+                    var objectSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+                    Assert.That(objectSchema, Is.Not.Null);
+
+                    var hasExpectedProp = objectSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
+                    Assert.That(hasExpectedProp);
+                    Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
+
+                    var ato = dynamicRealm.All(nameof(AllTypesObject)).Single();
+                    Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
+        }
+
+        [Test]
+        public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName())
+            {
+                IsDynamic = true
+            };
+
+            try
+            {
+                using (var realm = Realm.GetInstance(config))
+                {
+                    Assert.That(realm.Schema, Is.Empty);
                 }
             }
             finally

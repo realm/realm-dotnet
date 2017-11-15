@@ -73,7 +73,7 @@ namespace Tests.Database
             _configuration = new RealmConfiguration(_configuration.DatabasePath)
             {
                 ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
-                Dynamic = _mode == DynamicTestObjectType.DynamicRealmObject
+                IsDynamic = _mode == DynamicTestObjectType.DynamicRealmObject
             };
 
             base.CustomSetUp();
