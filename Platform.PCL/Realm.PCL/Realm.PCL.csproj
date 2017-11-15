@@ -34,6 +34,7 @@
     <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="InMemoryConfigurationPCL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealmIntegerPCL.cs" />
     <Compile Include="RealmPCLHelpers.cs" />
