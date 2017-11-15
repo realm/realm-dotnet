@@ -105,7 +105,20 @@ namespace Realms
                 throw new ArgumentNullException(nameof(config));
             }
 
-            var schema = config.ObjectClasses != null ? RealmSchema.CreateSchemaForClasses(config.ObjectClasses) : RealmSchema.Default;
+            RealmSchema schema;
+            if (config.ObjectClasses != null)
+            {
+                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
+            }
+            else if (config.Dynamic)
+            {
+                schema = RealmSchema.Empty;
+            }
+            else
+            {
+                schema = RealmSchema.Default;
+            }
+
             return config.CreateRealmAsync(schema);
         }
 
