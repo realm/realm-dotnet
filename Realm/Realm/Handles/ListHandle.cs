@@ -46,6 +46,26 @@ namespace Realms
 
             #endregion
 
+            #region set
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_object(ListHandle listHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
+
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_primitive(ListHandle listHandle, IntPtr targetIndex, IntPtr value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
+                IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
+                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            #endregion
+
             #region insert
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_object", CallingConvention = CallingConvention.Cdecl)]
@@ -199,6 +219,37 @@ namespace Realms
         {
             MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
                 NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
+        }
+
+        #endregion
+
+        #region Set
+
+        public void Set(int targetIndex, ObjectHandle objectHandle)
+        {
+            NativeMethods.set_object(this, (IntPtr)targetIndex, objectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Set(int targetIndex, PrimitiveValue value)
+        {
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.set_primitive(this, (IntPtr)targetIndex, new IntPtr(valuePtr), out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Set(int targetIndex, string value)
+        {
+            var hasValue = value != null;
+            value = value ?? string.Empty;
+            NativeMethods.set_string(this, (IntPtr)targetIndex, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public unsafe void Set(int targetIndex, byte[] value)
+        {
+            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
+                NativeMethods.set_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
         }
 
         #endregion

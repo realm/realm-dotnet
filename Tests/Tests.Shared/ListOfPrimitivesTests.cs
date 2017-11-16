@@ -288,14 +288,7 @@ namespace Tests.Database
         [TestCaseSource(nameof(BooleanTestValues))]
         public void Test_ManagedBooleanList(bool[] values)
         {
-            try
-            {
-                RunManagedTests(_managedListsObject.BooleanList, values);
-            }
-            catch (Exception ex)
-            {
-                var foo = ex;
-            }
+            RunManagedTests(_managedListsObject.BooleanList, values);
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -558,6 +551,30 @@ namespace Tests.Database
                     VerifyNotifications(notifications, () =>
                     {
                         Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
+                    });
+
+                    // Test set
+                    var indexToSet = TestHelpers.Random.Next(0, items.Count);
+                    var previousValue = items[indexToSet];
+                    var valueToSet = toAdd[TestHelpers.Random.Next(0, toAdd.Length)];
+                    _realm.Write(() =>
+                    {
+                        items[indexToSet] = valueToSet;
+
+                        Assert.That(() => items[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                        Assert.That(() => items[items.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                    });
+
+                    VerifyNotifications(notifications, () =>
+                    {
+                        Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
+                    });
+
+                    _realm.Write(() => items[indexToSet] = previousValue);
+
+                    VerifyNotifications(notifications, () =>
+                    {
+                        Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
                     });
 
                     // Test move

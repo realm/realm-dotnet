@@ -43,6 +43,19 @@ inline void insert(List* list, size_t list_ndx, T value, NativeException::Marsha
 }
 
 template<typename T>
+inline void set(List* list, size_t list_ndx, T value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        const size_t count = list->size();
+        if (list_ndx >= count) {
+            throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
+        }
+        
+        list->set(list_ndx, value);
+    });
+}
+
+template<typename T>
 inline void add(List* list, T value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -127,7 +140,78 @@ REALM_EXPORT void list_add_binary(List* list, char* value, size_t value_len, boo
         add(list, BinaryData(), ex);
     }
 }
+    
+REALM_EXPORT void list_set_object(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
+{
+    set(list, list_ndx, object_ptr.row(), ex);
+}
 
+REALM_EXPORT void list_set_primitive(List* list, size_t list_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        const size_t count = list->size();
+        if (list_ndx >= count) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        }
+        
+        switch (value.type) {
+            case realm::PropertyType::Bool:
+                list->set(list_ndx, value.value.bool_value);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+                list->set(list_ndx, value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                break;
+            case realm::PropertyType::Int:
+                list->set(list_ndx, value.value.int_value);
+                break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable:
+                list->set(list_ndx, value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                break;
+            case realm::PropertyType::Float:
+                list->set(list_ndx, value.value.float_value);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable:
+                list->set(list_ndx, value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                break;
+            case realm::PropertyType::Double:
+                list->set(list_ndx, value.value.double_value);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable:
+                list->set(list_ndx, value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                break;
+            case realm::PropertyType::Date:
+                list->set(list_ndx, from_ticks(value.value.int_value));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable:
+                list->set(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            default:
+                REALM_UNREACHABLE();
+        }
+    });
+}
+
+REALM_EXPORT void list_set_string(List* list, size_t list_ndx, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+{
+    if (has_value) {
+        Utf16StringAccessor str(value, value_len);
+        set(list, list_ndx, (StringData)str, ex);
+    }
+    else {
+        set(list, list_ndx, StringData(), ex);
+    }
+}
+
+REALM_EXPORT void list_set_binary(List* list, size_t list_ndx, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+{
+    if (has_value) {
+        set(list, list_ndx, BinaryData(value, value_len), ex);
+    }
+    else {
+        set(list, list_ndx, BinaryData(), ex);
+    }
+}
+    
 REALM_EXPORT void list_insert_object(List* list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     insert(list, list_ndx, object_ptr.row(), ex);
