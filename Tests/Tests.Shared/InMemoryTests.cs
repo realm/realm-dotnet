@@ -159,6 +159,10 @@ namespace Tests.Database
                 }
 
                 Assert.That(realmReference.IsAlive, Is.False);
+
+                // Sometimes it takes a little while for the file to be deleted
+                await Task.Delay(200);
+
                 Assert.That(File.Exists(_config.DatabasePath), Is.False);
 
                 using (var realm = Realm.GetInstance(_config))
