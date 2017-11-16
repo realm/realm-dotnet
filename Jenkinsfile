@@ -264,10 +264,11 @@ stage('Build .NET Core without sync') {
 
 stage('Test without sync') {
   parallel(
+    // We're not testing non-sync Linux anymore.
+    // TODO: stop testing macOS and Win32
     'iOS': iOSTest('ios-tests-nosync'),
     'Android': AndroidTest('android-tests-nosync'),
     'Win32': Win32Test('win32-tests-nosync'),
-    'Linux': NetCoreTest('docker', 'linux', 'nosync'),
     'macOS': NetCoreTest('osx || macos', 'macos', 'nosync'),
     'Win32-NetCore': NetCoreTest('windows', 'win32', 'nosync'),
     'XamarinMac': XamarinMacTest('xamarinmac-tests-nosync')
@@ -595,19 +596,26 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
           def binaryFolder = "bin/${configuration}/${platform}publish"
           try {
             if (isUnix()) {
-              def invocation = """
-                cd ${pwd()}/${binaryFolder}
-                chmod +x Tests.NetCore
-                ./Tests.NetCore --labels=After --result=temp.xml
-                xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-              """
-
               if (nodeName == 'docker') {
-                buildDockerEnv("ci/realm-dotnet:netcore_tests").inside() {
-                  sh invocation
+                def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
+                test_runner_image.pull();
+                withRos("2.0.15") { ros ->
+                  test_runner_image.inside("--link ${ros.id}:ros") {
+                    sh """
+                      cd ${pwd()}/${binaryFolder}
+                      chmod +x Tests.NetCore
+                      ./Tests.NetCore --labels=After --result=temp.xml --ros \"\$ROS_PORT_9080_TCP_ADDR\" --rosport \"\$ROS_PORT_9080_TCP_PORT\"
+                      xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
+                    """
+                  }
                 }
               } else {
-                sh invocation
+                sh """
+                  cd ${pwd()}/${binaryFolder}
+                  chmod +x Tests.NetCore
+                  ./Tests.NetCore --labels=After --result=temp.xml
+                  xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
+                """
               }
             } else {
               dir(binaryFolder) {

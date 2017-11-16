@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +53,32 @@ namespace Tests.Sync
             {
                 Assert.Ignore("ROS is not setup.");
             }
+        }
+
+        public static string[] ExtractRosSettings(string[] args)
+        {
+            var result = new List<string>();
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--ros":
+                        Constants.RosUrl = args[++i];
+                        break;
+                    case "--rosport":
+                        Constants.RosPort = args[++i];
+                        break;
+                    case "--rossecureport":
+                        Constants.RosSecurePort = args[++i];
+                        break;
+                    default:
+                        result.Add(args[i]);
+                        break;
+                }
+            }
+
+            return result.ToArray();
         }
 
         public static readonly Uri AuthServerUri = new Uri($"http://{Constants.RosUrl}:{Constants.RosPort}");

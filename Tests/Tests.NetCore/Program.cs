@@ -18,6 +18,7 @@
 
 using System.Reflection;
 using NUnitLite;
+using Tests.Sync;
 
 namespace Tests.NetCore
 {
@@ -26,7 +27,9 @@ namespace Tests.NetCore
         public static int Main(string[] args)
         {
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            autorun.Execute(args);
+
+            var arguments = SyncTestHelpers.ExtractRosSettings(args);
+            autorun.Execute(arguments);
             return 0;
         }
     }
