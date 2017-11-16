@@ -136,12 +136,11 @@ namespace Tests.Sync
         private const string OriginalPassword = "a";
         private const string NewPassword = "b";
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserChangePasswordTest()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
@@ -156,12 +155,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void AdminChangePasswordTest()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
@@ -181,12 +179,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLogout_RevokesRefreshToken()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();

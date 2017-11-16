@@ -17,21 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
-using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
 {
-#if !ROS_SETUP
-    [NUnit.Framework.Explicit]
-#endif
     [Ignore("Reenable when ROS fixes SSL support.")]
     [TestFixture, Preserve(AllMembers = true)]
     public class SSLConfigurationTests : SyncTestBase
@@ -43,6 +37,8 @@ namespace Tests.Sync
         [TestCase(false)]
         public void TrustedCA_WhenProvided_ValidatesCorrectly(bool openAsync)
         {
+            SyncTestHelpers.RequiresRos();
+
             TestSSLCore(config =>
             {
                 config.TrustedCAPath = TestHelpers.CopyBundledDatabaseToDocuments("trusted_ca.pem", "trusted_ca.pem");
@@ -52,6 +48,8 @@ namespace Tests.Sync
         [Test]
         public void TrustedCA_WhenFileDoesntExist_Throws()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -67,6 +65,8 @@ namespace Tests.Sync
         [TestCase(false)]
         public void EnableSSLValidation_WhenFalse_ValidatesCorrectly(bool openAsync)
         {
+            SyncTestHelpers.RequiresRos();
+
             TestSSLCore(config =>
             {
                 config.EnableSSLValidation = false;
