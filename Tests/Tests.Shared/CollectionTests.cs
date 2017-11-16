@@ -275,6 +275,125 @@ namespace Tests.Database
             Assert.That(container.Int32List, Is.Empty);
         }
 
+        [Test]
+        public void Set_WhenIndexIsNegative_ShouldThrow()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items[-1] = new IntPropertyObject());
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Set_WhenIndexIsMoreThanCount_ShouldThrow()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items[1] = new IntPropertyObject());
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            _realm.Write(() => container.Items.Add(new IntPropertyObject()));
+            Assert.That(() =>
+            {
+                _realm.Write(() => container.Items[2] = new IntPropertyObject());
+            }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void Set_WhenObjectIsManaged_ShouldWork()
+        {
+            var container = new ContainerObject();
+            var objectToSet = new IntPropertyObject
+            {
+                Int = 42
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(container);
+                container.Items.Add(new IntPropertyObject
+                {
+                    Int = -1
+                });
+
+                _realm.Add(objectToSet);
+            });
+
+            _realm.Write(() => container.Items[0] = objectToSet);
+
+            Assert.That(container.Items.Count, Is.EqualTo(1));
+            Assert.That(container.Items[0], Is.EqualTo(objectToSet));
+            Assert.That(container.Items[0].Int, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void Set_WhenObjectIsUnmanaged_ShouldAddToRealm()
+        {
+            var container = new ContainerObject();
+            var objectToSet = new IntPropertyObject
+            {
+                Int = 42
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(container);
+                container.Items.Add(new IntPropertyObject
+                {
+                    Int = -1
+                });
+            });
+
+            _realm.Write(() => container.Items[0] = objectToSet);
+
+            Assert.That(objectToSet.IsManaged);
+            Assert.That(container.Items.Count, Is.EqualTo(1));
+            Assert.That(container.Items[0], Is.EqualTo(objectToSet));
+            Assert.That(container.Items[0].Int, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void Set_EmitsModifiedNotifications()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() =>
+            {
+                _realm.Add(container);
+                for (var i = 0; i < 5; i++)
+                {
+                    container.Items.Add(new IntPropertyObject { Int = i });
+                }
+            });
+
+            var notifications = new List<ChangeSet>();
+            var token = container.Items.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    notifications.Add(changes);
+                }
+            });
+
+            using (token)
+            {
+                for (var i = 0; i < 5; i++)
+                {
+                    _realm.Write(() => container.Items[i] = new IntPropertyObject { Int = i + 5 });
+                    _realm.Refresh();
+
+                    Assert.That(notifications.Count, Is.EqualTo(i + 1));
+                    Assert.That(notifications[i].ModifiedIndices, Is.EquivalentTo(new[] { i }));
+                    Assert.That(container.Items[i].Int, Is.EqualTo(i + 5));
+                }
+            }
+        }
+
         private void TestStableIteration<T>(Action<int> addItem, Func<IEnumerable<T>> getItems, Action<T> modifyItem)
         {
             _realm.Write(() =>
