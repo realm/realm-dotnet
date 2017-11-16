@@ -45,6 +45,10 @@ namespace Realms.Sync.Exceptions
         /// Initiates the client reset process.
         /// </summary>
         /// <returns><c>true</c> if actions were run successfully, <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// On Windows, all Realm instances for that path must be disposed before this method is called or an
+        /// Exception will be thrown.
+        /// </remarks>
         public bool InitiateClientReset()
         {
             return SharedRealmHandleExtensions.ImmediatelyRunFileActions(_originalFilePath);
