@@ -219,12 +219,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserExists_ShouldReturnResponse()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -245,12 +244,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserDoesNotExist_ShouldReturnNull()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -260,12 +258,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserIsSelf_ShouldReturnResponse()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -282,12 +279,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();

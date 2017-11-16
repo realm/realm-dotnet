@@ -28,15 +28,14 @@ using Realms.Sync;
 
 namespace Tests.Sync
 {
-#if !ROS_SETUP
-    [NUnit.Framework.Explicit]
-#endif
     [TestFixture, Preserve(AllMembers = true)]
     public class MergeByPKTests : SyncTestBase
     {
         [TestCaseSource(nameof(MergeTestCases))]
         public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 User.ConfigurePersistence(UserPersistenceMode.NotEncrypted);
