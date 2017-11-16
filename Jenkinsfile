@@ -597,7 +597,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
           try {
             if (isUnix()) {
               if (nodeName == 'docker') {
-                def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
+                def test_runner_image = docker.image('microsoft/dotnet:2-runtime-deps-jessie');
                 test_runner_image.pull();
                 withRos("2.0.15") { ros ->
                   test_runner_image.inside("--link ${ros.id}:ros") {
