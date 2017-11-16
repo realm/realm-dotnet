@@ -26,6 +26,7 @@
     <Compile Include="Realm.cs" />
     <Compile Include="RealmCollectionBase.cs" />
     <Compile Include="RealmConfiguration.cs" />
+    <Compile Include="InMemoryConfiguration.cs" />
     <Compile Include="RealmConfigurationBase.cs" />
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
@@ -114,7 +115,6 @@
     <Compile Include="Helpers\RealmIntegerExtensions.cs" />
     <Compile Include="Exceptions\RealmFeatureUnavailableException.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Properties\realm.rd.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
