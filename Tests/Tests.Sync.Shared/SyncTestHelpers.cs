@@ -81,7 +81,7 @@ namespace Tests.Sync
             return result.ToArray();
         }
 
-        public static readonly Uri AuthServerUri = new Uri($"http://{Constants.RosUrl}:{Constants.RosPort}");
+        public static Uri AuthServerUri => new Uri($"http://{Constants.RosUrl}:{Constants.RosPort}");
 
         public static Uri RealmUri(string path) => new Uri($"realm://{Constants.RosUrl}:{Constants.RosPort}/{path.TrimStart('/')}");
 
