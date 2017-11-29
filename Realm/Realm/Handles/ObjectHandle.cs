@@ -183,6 +183,11 @@ namespace Realms
             return result;
         }
 
+        public override int GetHashCode()
+        {
+            return handle.GetHashCode();
+        }
+
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
