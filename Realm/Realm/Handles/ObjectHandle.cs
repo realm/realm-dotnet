@@ -185,7 +185,10 @@ namespace Realms
 
         public override int GetHashCode()
         {
-            return handle.GetHashCode();
+            var rowPtr = NativeMethods.get_row_index(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return rowPtr.GetHashCode();
         }
 
         protected override void Unbind()
