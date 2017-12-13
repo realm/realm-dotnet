@@ -26,7 +26,13 @@ namespace Tests.NetCore
         public static int Main(string[] args)
         {
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            autorun.Execute(args);
+#if REALM_NO_SYNC
+            var arguments = args;
+#else
+            var arguments = Sync.SyncTestHelpers.ExtractRosSettings(args);
+#endif
+
+            autorun.Execute(arguments);
             return 0;
         }
     }

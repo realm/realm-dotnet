@@ -28,15 +28,14 @@ using Realms.Sync;
 
 namespace Tests.Sync
 {
-#if !ROS_SETUP
-    [NUnit.Framework.Explicit]
-#endif
     [TestFixture, Preserve(AllMembers = true)]
     public class PartialSyncTests : SyncTestBase
     {
         [Test]
         public void SubscribeForObjects_ReturnsExpectedQuery()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 using (var realm = await GetPartialRealm())
@@ -63,6 +62,8 @@ namespace Tests.Sync
         [Test]
         public void SubscribeForObjects_SynchronizesOnlyMatchingObjects()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 using (var realm = await GetPartialRealm())
@@ -91,6 +92,8 @@ namespace Tests.Sync
         [Test]
         public void SubscribeForObjects_WhenTwoQueriesOverlap_SynchronizesTheUnion()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 using (var realm = await GetPartialRealm())
@@ -120,6 +123,8 @@ namespace Tests.Sync
         [Test]
         public void SubscribeForObjects_WhenTwoQueriesDontOverlap_SynchronizesTheUnion()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 using (var realm = await GetPartialRealm())
@@ -149,6 +154,8 @@ namespace Tests.Sync
         [Test]
         public void SubscribeForObjects_WhenQueryIsInvalid_Throws()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 using (var realm = await GetPartialRealm())

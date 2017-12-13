@@ -25,7 +25,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 using File = System.IO.File;
 
 namespace Tests.Sync
@@ -57,12 +56,11 @@ namespace Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionChange_IsProcessedByServer()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -71,12 +69,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionOffer_WhenValid_TokenIsSet()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -86,12 +83,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionOffer_WhenExpired_ShouldGetError()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -103,12 +99,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionResponse_WhenOfferExpired_ShouldGetError()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -125,12 +120,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionResponse_WhenTokenIsInvalid_ShouldGetError()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -141,12 +135,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionResponse_WhenOfferIsValid_ShouldSetRealmUrl()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -171,12 +164,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void Permission_ValidateWrite()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -188,12 +180,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void Permission_ValidateManage()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -210,12 +201,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void PermissionChange_UpdatesPermissionRealm()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -261,27 +251,27 @@ namespace Tests.Sync
 
         #region User API
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
+        [Ignore("Regression in ROS")]
         [Test]
         public void User_ApplyPermissions_WithUserId_GrantsAndRevokesPermissions()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
 
-                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity)).Timeout(10000);
+                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity)).Timeout(1000000);
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
+        [Ignore("Regression in ROS")]
         [Test]
         public void User_ApplyPermissions_WithEmail_GrantsAndRevokesPermissions()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -293,12 +283,12 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
+        [Ignore("Regression in ROS")]
         public void User_OfferPermissions_GrantsPermissions()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -311,18 +301,17 @@ namespace Tests.Sync
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write).Timeout(2000);
                 var alicesUrl = await bob.AcceptPermissionOfferAsync(token).Timeout(2000);
 
-                Assert.That($"realm://{Constants.ServerUrl}:9080{alicesUrl}", Is.EqualTo(realmUrl));
+                Assert.That(alicesUrl, Is.EqualTo(realmPath));
 
                 await AssertPermissions(alice, bob, realmPath, AccessLevel.Write).Timeout(10000);
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void User_OfferPermissions_WhenExpired_ShouldThrow()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -334,12 +323,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void User_OfferPermissions_WhenNoAccess_ShouldThrow()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -351,12 +339,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void User_AcceptPermissionOffer_WhenOfferExpired_ShouldGetError()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -378,12 +365,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void User_AcceptPermissionOffer_WhenTokenIsInvalid_ShouldGetError()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -453,12 +439,11 @@ namespace Tests.Sync
 
         #endregion
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void WriteToReadOnlyRealm_ThrowsPermissionDenied()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -515,7 +500,7 @@ namespace Tests.Sync
             Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
             Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
 
-            return $"realm://{Constants.ServerUrl}:9080{permissionResponse.RealmUrl}";
+            return SyncTestHelpers.RealmUri(permissionResponse.RealmUrl).AbsoluteUri;
         }
 
         private async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)

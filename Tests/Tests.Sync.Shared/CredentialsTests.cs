@@ -136,12 +136,11 @@ namespace Tests.Sync
         private const string OriginalPassword = "a";
         private const string NewPassword = "b";
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserChangePasswordTest()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
@@ -156,12 +155,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void AdminChangePasswordTest()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
@@ -181,12 +179,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLogout_RevokesRefreshToken()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
@@ -222,12 +219,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserExists_ShouldReturnResponse()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -248,12 +244,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserDoesNotExist_ShouldReturnNull()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -263,12 +258,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenTargetUserIsSelf_ShouldReturnResponse()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
@@ -285,12 +279,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [NUnit.Framework.Explicit]
-#endif
         [Test]
         public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();

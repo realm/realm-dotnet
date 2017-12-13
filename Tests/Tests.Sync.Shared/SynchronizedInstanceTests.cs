@@ -76,13 +76,12 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [TestCase(true)]
         [TestCase(false)]
         public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -106,13 +105,12 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [TestCase(true)]
         [TestCase(false)]
         public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
@@ -158,12 +156,11 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit("Update Constants.ServerUrl with values that work on your setup.")]
-#endif
         [Test]
         public void GetInstanceAsync_CreatesNonExistentRealm()
         {
+            SyncTestHelpers.RequiresRos();
+
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();

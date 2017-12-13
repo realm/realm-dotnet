@@ -226,13 +226,12 @@ namespace Tests.Sync
             });
         }
 
-#if !ROS_SETUP
-        [Explicit]
-#endif
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
+            SyncTestHelpers.RequiresRos();
+
             const int ObjectSize = 1000000;
             const int ObjectsToRecord = 2;
             AsyncContext.Run(async () =>
@@ -311,9 +310,6 @@ namespace Tests.Sync
             });
         }
 
-#if NETCOREAPP1_1 && !ROS_SETUP
-        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
-#endif
         [TestCase(ProgressDirection.Upload, ProgressMode.ReportIndefinitely)]
         [TestCase(ProgressDirection.Download, ProgressMode.ReportIndefinitely)]
         [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
@@ -394,9 +390,6 @@ namespace Tests.Sync
             });
         }
 
-#if NETCOREAPP1_1 && !ROS_SETUP
-        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
-#endif
         [Test]
         [Category("ProgressTests")]
         public void Session_ProgressObservable_WhenModeIsForOutstandingWork_CallsOnCompleted()
@@ -429,9 +422,6 @@ namespace Tests.Sync
             });
         }
 
-#if NETCOREAPP1_1 && !ROS_SETUP
-        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
-#endif
         [Test]
         [Category("ProgressTests")]
         public void Session_RXCombineLatestTests()
@@ -491,9 +481,6 @@ namespace Tests.Sync
             });
         }
 
-#if NETCOREAPP1_1 && !ROS_SETUP
-        [Explicit("Seems like there's a .NET Core bug with SessionHandle.NativeMethods.register_progress_notifier")]
-#endif
         [Test]
         [Category("ProgressTests")]
         public void Session_RXThrottleTests()

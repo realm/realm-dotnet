@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
@@ -44,11 +47,69 @@ namespace Tests.Sync
             return Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, createUser: false);
         }
 
-        public static readonly Uri AuthServerUri = new Uri($"http://{Constants.ServerUrl}:9080");
+        public static void RequiresRos()
+        {
+            if (Constants.RosUrl == null)
+            {
+                Assert.Ignore("ROS is not setup.");
+            }
+        }
 
-        public static Uri RealmUri(string path) => new Uri($"realm://{Constants.ServerUrl}:9080/{path.TrimStart('/')}");
+        public static string[] ExtractRosSettings(string[] args)
+        {
+            var result = new List<string>();
 
-        public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.ServerUrl}:9443/{path.TrimStart('/')}");
+            for (var i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--ros":
+                        Constants.RosUrl = args[++i];
+                        break;
+                    case "--rosport":
+                        Constants.RosPort = args[++i];
+                        break;
+                    case "--rossecureport":
+                        Constants.RosSecurePort = args[++i];
+                        break;
+                    default:
+                        result.Add(args[i]);
+                        break;
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        public static Uri AuthServerUri => new Uri($"http://{Constants.RosUrl}:{Constants.RosPort}");
+
+        public static Uri RealmUri(string path) => new Uri($"realm://{Constants.RosUrl}:{Constants.RosPort}/{path.TrimStart('/')}");
+
+        public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.RosUrl}:{Constants.RosSecurePort}/{path.TrimStart('/')}");
+
+        public static async Task<Exception> VerifyRosRunningAsync(CancellationToken cancellationToken)
+        {
+            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
+            {
+                var success = false;
+                Exception result = null;
+                while (!success && !cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var response = await client.GetAsync($"http://{Constants.RosUrl}:{Constants.RosPort}/health");
+                        success = response.IsSuccessStatusCode;
+                    }
+                    catch (Exception ex)
+                    {
+                        result = ex;
+                        await Task.Delay(1000);
+                    }
+                }
+
+                return success ? null : result;
+            }
+        }
 
         public static Task<User> GetUserAsync()
         {
