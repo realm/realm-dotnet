@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -55,6 +55,11 @@ namespace Realms.Sync
             /// The Azure Active Directory provider, associated with <see cref="Credentials.AzureAD"/>.
             /// </summary>
             public const string AzureAD = "azuread";
+
+            /// <summary>
+            /// The Json Web Token provider, associated with <see cref="Credentials.JWT"/>.
+            /// </summary>
+            public const string JWT = "jwt";
         }
 
         internal static class Keys
@@ -105,12 +110,13 @@ namespace Realms.Sync
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Facebook(string facebookToken)
         {
-            if (facebookToken == null)
-            {
-                throw new ArgumentNullException(nameof(facebookToken));
-            }
+            Argument.NotNull(facebookToken, nameof(facebookToken));
 
-            return new Credentials { IdentityProvider = Provider.Facebook, Token = facebookToken };
+            return new Credentials
+            {
+                IdentityProvider = Provider.Facebook,
+                Token = facebookToken
+            };
         }
 
         /// <summary>
@@ -120,12 +126,13 @@ namespace Realms.Sync
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials Google(string googleToken)
         {
-            if (googleToken == null)
-            {
-                throw new ArgumentNullException(nameof(googleToken));
-            }
+            Argument.NotNull(googleToken, nameof(googleToken));
 
-            return new Credentials { IdentityProvider = Provider.Google, Token = googleToken };
+            return new Credentials
+            {
+                IdentityProvider = Provider.Google,
+                Token = googleToken
+            };
         }
 
         /// <summary>
@@ -152,12 +159,29 @@ namespace Realms.Sync
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials AzureAD(string adToken)
         {
-            if (adToken == null)
-            {
-                throw new ArgumentNullException(nameof(adToken));
-            }
+            Argument.NotNull(adToken, nameof(adToken));
 
-            return new Credentials { IdentityProvider = Provider.AzureAD, Token = adToken };
+            return new Credentials
+            {
+                IdentityProvider = Provider.AzureAD,
+                Token = adToken
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// </summary>
+        /// <param name="token">A Json Web Token, obtained by logging into Facebook.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        public static Credentials JWT(string token)
+        {
+            Argument.NotNull(token, nameof(token));
+
+            return new Credentials
+            {
+                IdentityProvider = Provider.JWT,
+                Token = token
+            };
         }
 
         internal static Credentials AdminToken(string token)

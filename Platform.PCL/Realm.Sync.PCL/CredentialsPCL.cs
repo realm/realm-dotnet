@@ -49,6 +49,11 @@ namespace Realms.Sync
             /// The Azure Active Directory provider, associated with <see cref="Credentials.AzureAD"/>.
             /// </summary>
             public const string AzureAD = "azuread";
+
+            /// <summary>
+            /// The Json Web Token provider, associated with <see cref="Credentials.JWT"/>.
+            /// </summary>
+            public const string JWT = "jwt";
         }
 
         /// <summary>
@@ -115,6 +120,17 @@ namespace Realms.Sync
         /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
         public static Credentials AzureAD(string adToken)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// </summary>
+        /// <param name="token">A Json Web Token, obtained by logging into Facebook.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        public static Credentials JWT(string token)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
