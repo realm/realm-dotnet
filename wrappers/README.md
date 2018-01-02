@@ -3,9 +3,9 @@ About Wrappers
 
 Wrappers contains all our native code and its interfaces to C#.
 
-It usually involves a download phase which pulls prebuilt [Core ](https://github.com/realm/realm-core) libraries from a server. 
+It usually involves a download phase which pulls prebuilt [Core ](https://github.com/realm/realm-core) libraries from a server.
 
-We have a second C++ layer called [ObjectStore](https://github.com/realm/realm-object-store/) 
+We have a second C++ layer called [ObjectStore](https://github.com/realm/realm-object-store/)
 which contains many of our cross-platform abstractions and is pulled into Wrappers as a **git submodule**.
 
 Wrappers also contains a small amount of C++ code which provides the mapping from C# to the ObjectStore and Core logic.
@@ -15,7 +15,7 @@ Downloading ObjectStore
 
 ### Cloning
 
-If you cloned your `realm-dotnet` repository, you can use a git commmand to get the submodule:
+If you cloned your `realm-dotnet` repository, you can use a git command to get the submodule:
 
 1. Open a terminal window in the `realm-dotnet` source directory
 1. Enter the command `git submodule update --recursive`
@@ -35,7 +35,7 @@ Building iOS wrappers on macOS
 
 These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
 
-1. `cd wrappers` 
+1. `cd wrappers`
 1. `make clean`
 1. `make ios` or `make iosdbg` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
 
