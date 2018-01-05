@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
-		48371F4E1D22952D00B52DAB /* format.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48371F4B1D22952D00B52DAB /* format.cpp */; };
 		484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
 		48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios.a */; };
@@ -76,8 +75,6 @@
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
 		48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = atomic_shared_ptr.hpp; path = "src/object-store/src/util/atomic_shared_ptr.hpp"; sourceTree = "<group>"; };
-		48371F4B1D22952D00B52DAB /* format.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format.cpp; path = "src/object-store/src/util/format.cpp"; sourceTree = "<group>"; };
-		48371F4C1D22952D00B52DAB /* format.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = format.hpp; path = "src/object-store/src/util/format.hpp"; sourceTree = "<group>"; };
 		484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = weak_realm_notifier.cpp; path = "src/object-store/src/impl/weak_realm_notifier.cpp"; sourceTree = "<group>"; };
 		488FF1F31C997EC600172055 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug.cpp; path = src/debug.cpp; sourceTree = "<group>"; };
 		488FF1F41C997EC600172055 /* debug.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = debug.hpp; path = src/debug.hpp; sourceTree = "<group>"; };
@@ -153,7 +150,6 @@
 		8522B2BB1CD11EA900E5C1F3 /* results_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_notifier.cpp; path = "src/object-store/src/impl/results_notifier.cpp"; sourceTree = "<group>"; };
 		8522B2BC1CD11EA900E5C1F3 /* results_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = results_notifier.hpp; path = "src/object-store/src/impl/results_notifier.hpp"; sourceTree = "<group>"; };
 		8536E3AF1F3A22650094C0C8 /* aligned_union.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = aligned_union.hpp; path = "src/object-store/src/util/aligned_union.hpp"; sourceTree = "<group>"; };
-		8536E3B01F3A22650094C0C8 /* any.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = any.hpp; path = "src/object-store/src/util/any.hpp"; sourceTree = "<group>"; };
 		8536E3B11F3A22650094C0C8 /* tagged_bool.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = tagged_bool.hpp; path = "src/object-store/src/util/tagged_bool.hpp"; sourceTree = "<group>"; };
 		8536E3B21F3A22650094C0C8 /* time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = time.hpp; path = "src/object-store/src/util/time.hpp"; sourceTree = "<group>"; };
 		8536E3B31F3A22650094C0C8 /* uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = uuid.cpp; path = "src/object-store/src/util/uuid.cpp"; sourceTree = "<group>"; };
@@ -161,7 +157,6 @@
 		8575A9101DC123A6001F78B7 /* libwrappers-sync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-sync.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8575A9281DC128FE001F78B7 /* keychain_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = keychain_helper.cpp; path = "src/object-store/src/impl/apple/keychain_helper.cpp"; sourceTree = "<group>"; };
 		8575A9291DC128FE001F78B7 /* keychain_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = keychain_helper.hpp; path = "src/object-store/src/impl/apple/keychain_helper.hpp"; sourceTree = "<group>"; };
-		8575A92C1DC12971001F78B7 /* compiler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = compiler.hpp; path = "src/object-store/src/util/compiler.hpp"; sourceTree = "<group>"; };
 		8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = event_loop_signal.hpp; path = "src/object-store/src/util/event_loop_signal.hpp"; sourceTree = "<group>"; };
 		85AF94E31E2E30A2000BF925 /* object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object.cpp; path = "src/object-store/src/object.cpp"; sourceTree = "<group>"; };
 		85AF94E41E2E30A2000BF925 /* object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object.hpp; path = "src/object-store/src/object.hpp"; sourceTree = "<group>"; };
@@ -212,12 +207,8 @@
 			children = (
 				850F7D641DF72EE70068B584 /* generic */,
 				8536E3AF1F3A22650094C0C8 /* aligned_union.hpp */,
-				8536E3B01F3A22650094C0C8 /* any.hpp */,
 				48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */,
-				8575A92C1DC12971001F78B7 /* compiler.hpp */,
 				8575A92D1DC12971001F78B7 /* event_loop_signal.hpp */,
-				48371F4B1D22952D00B52DAB /* format.cpp */,
-				48371F4C1D22952D00B52DAB /* format.hpp */,
 				8536E3B11F3A22650094C0C8 /* tagged_bool.hpp */,
 				8536E3B21F3A22650094C0C8 /* time.hpp */,
 				8536E3B31F3A22650094C0C8 /* uuid.cpp */,
@@ -510,7 +501,6 @@
 				85040BC01E808FEC0049189D /* binding_callback_thread_observer.cpp in Sources */,
 				8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* list_cs.cpp in Sources */,
-				48371F4E1D22952D00B52DAB /* format.cpp in Sources */,
 				850F7D691DF735290068B584 /* event_loop_signal_cs.cpp in Sources */,
 				51E456F11F44745E008A7B79 /* primitive_list_notifier.cpp in Sources */,
 				48ED7C681C16F9C200AF23A4 /* marshalling.cpp in Sources */,

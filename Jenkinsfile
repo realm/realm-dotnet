@@ -123,7 +123,7 @@ stage('Build without sync') {
 
         msbuild project: 'Tests/Tests.Android/Tests.Android.csproj', target: 'Restore,SignAndroidPackage',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/", RealmNoSync: true,
-                              AndroidUseSharedRuntime: true, AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
+                              AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
 
         stash includes: "DataBinding/Realm.DataBinding.Android/bin/${configuration}/Realm.DataBinding.*", name: 'nuget-android-databinding'
 
@@ -312,7 +312,7 @@ stage('Build with sync') {
 
         msbuild project: 'Tests/Tests.Android/Tests.Android.csproj', target: 'Restore,SignAndroidPackage',
                 properties: [ Configuration: configuration, SolutionDir: "${env.WORKSPACE}/",
-                              AndroidUseSharedRuntime: true, AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
+                              AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
 
         dir("Tests/Tests.Android/bin/${configuration}") {
           stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests-sync'
