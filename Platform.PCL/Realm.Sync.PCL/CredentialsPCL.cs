@@ -133,7 +133,9 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <remarks>
         /// This is using the <see cref="UsernamePassword"/> credentials by providing value as username and empty string as password.
+        /// </remarks>
         public static Credentials Nickname(string value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
