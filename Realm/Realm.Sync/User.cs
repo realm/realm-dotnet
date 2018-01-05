@@ -89,6 +89,16 @@ namespace Realms.Sync
                 return new User(SyncUserHandle.GetAdminTokenUser(serverUrl.AbsoluteUri, credentials.Token));
             }
 
+            if (credentials.UserInfo.TryGetValue(Credentials.Keys.IsAnonymous, out var isAnonymous) &&
+                (bool)isAnonymous)
+            {
+                var existing = AllLoggedIn.FirstOrDefault(u => u.ServerUri == serverUrl && u.Identity.StartsWith("anonymous_"));
+                if (existing != null)
+                {
+                    return existing;
+                }
+            }
+
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUrl);
             var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUrl.AbsoluteUri, result.RefreshToken, result.IsAdmin);
             return new User(handle);

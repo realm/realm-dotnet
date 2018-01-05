@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Realms.Helpers;
@@ -71,6 +72,8 @@ namespace Realms.Sync
             internal const string Identity = "identity";
 
             internal const string IsAdmin = "isAdmin";
+
+            internal const string IsAnonymous = "is_anonymous";
         }
 
         /// <summary>
@@ -149,6 +152,50 @@ namespace Realms.Sync
                 IdentityProvider = Provider.UsernamePassword,
                 Token = username,
                 UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> for an anonymous user.
+        /// </summary>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <remarks>
+        /// This is using the <see cref="UsernamePassword"/> credentials by providing random username and password.
+        /// </remarks>
+        public static Credentials Anonymous()
+        {
+            return new Credentials
+            {
+                IdentityProvider = Provider.UsernamePassword,
+                Token = $"Anonymous_{Guid.NewGuid()}",
+                UserInfo = new Dictionary<string, object>
+                {
+                    [Keys.CreateUser] = true,
+                    [Keys.Password] = Guid.NewGuid().ToString(),
+                    [Keys.IsAnonymous] = true
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a login with a nickname. If multiple users try to login
+        /// with the same nickname, they'll get the same underlying sync user.
+        /// </summary>
+        /// <param name="value">The nickname of the user.</param>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <remarks>
+        /// This is using the <see cref="UsernamePassword"/> credentials by providing value as username and empty string as password.
+        /// </remarks>
+        public static Credentials Nickname(string value)
+        {
+            return new Credentials
+            {
+                IdentityProvider = Provider.UsernamePassword,
+                Token = $"Nickname_{value}",
+                UserInfo = new Dictionary<string, object>
+                {
+                    [Keys.Password] = string.Empty
+                }
             };
         }
 
