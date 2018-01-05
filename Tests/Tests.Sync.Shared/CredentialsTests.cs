@@ -300,6 +300,149 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void UserLogin_WhenAnonymous_LogsUserIn()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var credentials = Credentials.Anonymous();
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Identity, Is.Not.Null);
+                Assert.That(user.Identity, Does.StartWith("anonymous_"));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenAnonymousAndSameCredentials_ShouldLoginTheSameUser()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var credentials = Credentials.Anonymous();
+                var first = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+                var second = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+
+                Assert.That(first.Identity, Is.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenAnonymousAndDifferentCredentials_ShouldLoginTheSameUser()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+                var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+
+                Assert.That(first.Identity, Is.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenAnonymousAndOtherUsersLoggedIn_ShouldLoginTheSameUser()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                // Login a regular user
+                await SyncTestHelpers.GetUserAsync();
+
+                // Login an anonymous user
+                var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+
+                // Login another regular user
+                await SyncTestHelpers.GetUserAsync();
+
+                // Login a second anonymous user
+                var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+
+                // Expect that the anonymous users are identical
+                Assert.That(first.Identity, Is.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(3));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenAnonymous_AfterLogoutShouldLoginDifferentUser()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                // Login an anonymous user
+                var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+                await first.LogOutAsync();
+
+                // Login a second anonymous user
+                var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
+
+                // Expect that the anonymous users to be different
+                Assert.That(first.Identity, Is.Not.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(1));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenNickname_LogsUserIn()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var credentials = Credentials.Nickname(Guid.NewGuid().ToString());
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Identity, Is.Not.Null);
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenNickname_LogsSameUserIn()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var nickname = Guid.NewGuid().ToString();
+                var first = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);
+
+                Assert.That(first, Is.Not.Null);
+                Assert.That(first.Identity, Is.Not.Null);
+
+                var second = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);
+
+                Assert.That(first.Identity, Is.EqualTo(second.Identity));
+            });
+        }
+
+        [Test]
+        public void UserLogin_WhenNicknameAfterLogout_LogsSameUserIn()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var nickname = Guid.NewGuid().ToString();
+                var first = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);
+                await first.LogOutAsync();
+
+                var second = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);
+
+                Assert.That(first.Identity, Is.EqualTo(second.Identity));
+            });
+        }
+
         private static async Task TestNewPassword(string userId)
         {
             // Ensure that users are logged out
