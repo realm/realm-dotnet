@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Realms.Helpers;
@@ -61,6 +60,17 @@ namespace Realms.Sync
             /// The Json Web Token provider, associated with <see cref="Credentials.JWT"/>.
             /// </summary>
             public const string JWT = "jwt";
+
+            /// <summary>
+            /// The Anonymous provider, associated with <see cref="Credentials.Anonymous"/>.
+            /// </summary>
+            public const string Anonymous = "anonymous";
+
+            /// <summary>
+            /// The Nickname provider, associated with <see cref="Credentials.Nickname"/>.
+            /// </summary>
+            public const string Nickname = "nickname";
+
         }
 
         internal static class Keys
@@ -156,24 +166,18 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates <see cref="Credentials"/> for an anonymous user.
+        /// Creates <see cref="Credentials"/> for an anonymous user. These can only be used once - using them a second
+        /// time will result in a different user being logged in. If you need to get a user that has already logged
+        /// in with the Anonymous credentials, use <see cref="User.Current"/> or <see cref="User.AllLoggedIn"/>.
         /// </summary>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        /// <remarks>
-        /// This is using the <see cref="UsernamePassword"/> credentials by providing random username and password.
-        /// </remarks>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
         public static Credentials Anonymous()
         {
             return new Credentials
             {
-                IdentityProvider = Provider.UsernamePassword,
-                Token = $"Anonymous_{Guid.NewGuid()}",
-                UserInfo = new Dictionary<string, object>
-                {
-                    [Keys.CreateUser] = true,
-                    [Keys.Password] = Guid.NewGuid().ToString(),
-                    [Keys.IsAnonymous] = true
-                }
+                IdentityProvider = Provider.Anonymous
             };
         }
 
@@ -182,20 +186,15 @@ namespace Realms.Sync
         /// with the same nickname, they'll get the same underlying sync user.
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        /// <remarks>
-        /// This is using the <see cref="UsernamePassword"/> credentials by providing value as username and empty string as password.
-        /// </remarks>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
         public static Credentials Nickname(string value)
         {
             return new Credentials
             {
-                IdentityProvider = Provider.UsernamePassword,
-                Token = $"Nickname_{value}",
-                UserInfo = new Dictionary<string, object>
-                {
-                    [Keys.Password] = string.Empty
-                }
+                IdentityProvider = Provider.Nickname,
+                Token = value
             };
         }
 

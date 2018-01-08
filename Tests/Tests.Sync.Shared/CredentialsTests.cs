@@ -312,12 +312,11 @@ namespace Tests.Sync
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.Identity, Is.Not.Null);
-                Assert.That(user.Identity, Does.StartWith("anonymous_"));
             });
         }
 
         [Test]
-        public void UserLogin_WhenAnonymousAndSameCredentials_ShouldLoginTheSameUser()
+        public void UserLogin_WhenAnonymousAndSameCredentials_ShouldLoginDifferentUser()
         {
             SyncTestHelpers.RequiresRos();
 
@@ -327,13 +326,13 @@ namespace Tests.Sync
                 var first = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 var second = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
 
-                Assert.That(first.Identity, Is.EqualTo(second.Identity));
-                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(1));
+                Assert.That(first.Identity, Is.Not.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(2));
             });
         }
 
         [Test]
-        public void UserLogin_WhenAnonymousAndDifferentCredentials_ShouldLoginTheSameUser()
+        public void UserLogin_WhenAnonymousAndDifferentCredentials_ShouldLoginDifferentUser()
         {
             SyncTestHelpers.RequiresRos();
 
@@ -342,13 +341,13 @@ namespace Tests.Sync
                 var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
                 var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
 
-                Assert.That(first.Identity, Is.EqualTo(second.Identity));
-                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(1));
+                Assert.That(first.Identity, Is.Not.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(2));
             });
         }
 
         [Test]
-        public void UserLogin_WhenAnonymousAndOtherUsersLoggedIn_ShouldLoginTheSameUser()
+        public void UserLogin_WhenAnonymousAndOtherUsersLoggedIn_ShouldLoginDifferentUser()
         {
             SyncTestHelpers.RequiresRos();
 
@@ -366,9 +365,9 @@ namespace Tests.Sync
                 // Login a second anonymous user
                 var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
 
-                // Expect that the anonymous users are identical
-                Assert.That(first.Identity, Is.EqualTo(second.Identity));
-                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(3));
+                // Expect that the anonymous users to be different
+                Assert.That(first.Identity, Is.Not.EqualTo(second.Identity));
+                Assert.That(User.AllLoggedIn.Length, Is.EqualTo(4));
             });
         }
 
