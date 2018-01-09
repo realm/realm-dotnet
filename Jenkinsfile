@@ -51,7 +51,7 @@ stage('Checkout') {
     }
 
     nuget('restore Realm.sln')
-    stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source'
+    stash includes: '**', excludes: 'wrappers/**,**/obj/*.csproj.nuget.g.*,**/obj/project.assets.json', name: 'dotnet-source'
     stash includes: 'wrappers/**', name: 'dotnet-wrappers-source'
     deleteDir()
   }
