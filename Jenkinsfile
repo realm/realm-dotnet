@@ -203,7 +203,7 @@ stage('Build without sync') {
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
             String dockerBuildArgs = "-f Dockerfile.centos " +
-                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " +
                                      "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
             buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
               cmake 'build-linux', "${pwd()}/build", configuration
@@ -396,7 +396,7 @@ stage('Build with sync') {
         dir('wrappers') {
           withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
             String dockerBuildArgs = "-f Dockerfile.centos " +
-                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " + 
+                                     "--build-arg PACKAGECLOUD_URL=https://${env.PACKAGECLOUD_MASTER_TOKEN}:@packagecloud.io/install/repositories/realm/sync-devel " +
                                      "--build-arg REALM_CORE_VERSION=${dependencies.REALM_CORE_VERSION} --build-arg REALM_SYNC_VERSION=${dependencies.REALM_SYNC_VERSION}"
             buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: dockerBuildArgs).inside() {
               cmake 'build-linux', "${pwd()}/build", configuration, [
@@ -589,8 +589,8 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
       unstash 'dotnet-source'
       unstash "netcore-${platform}-tests-${stashSuffix}"
 
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'), 
-                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'), 
+      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'),
+                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'),
                        string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
         dir("Tests/Tests.NetCore") {
           def binaryFolder = "bin/${configuration}/${platform}publish"
@@ -778,43 +778,6 @@ def nodeWithCleanup(String label, Closure steps) {
       } finally {
         deleteDir()
       }
-    }
-  }
-}
-
-def runSimulator(String appPath, String bundleId, String arguments) {
-  def id = UUID.randomUUID().toString().replace('-', '')
-  try {
-    def runtimes = sh returnStdout: true, script: 'xcrun simctl list devicetypes runtimes'
-
-    def runtimeId;
-
-    def runtimeMatcher = (runtimes =~ /iOS.*\((?<runtimeId>com.apple.CoreSimulator.SimRuntime.iOS[^\)]*)\)/)
-    if (runtimeMatcher) {
-      runtimeId = runtimeMatcher[0][1]
-    } else {
-      error('Failed to find iOS runtime.')
-    }
-
-    runtimeMatcher = null
-
-    sh """
-      xcrun simctl create ${id} com.apple.CoreSimulator.SimDeviceType.iPhone-7 ${runtimeId}
-      xcrun simctl boot ${id}
-      xcrun simctl install ${id} ${appPath}
-      xcrun simctl launch --console ${id} ${bundleId} ${arguments}
-    """
-  } catch (e) {
-    echo e.toString()
-    throw e
-  } finally {
-    try
-    {
-      sh """
-        xcrun simctl shutdown ${id}
-        xcrun simctl delete ${id}
-      """
-    } catch (error) {
     }
   }
 }
