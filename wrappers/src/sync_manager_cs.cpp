@@ -113,7 +113,9 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
 
         std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
         
-        config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error});
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
+        config.sync_config->bind_session_handler = bind_session;
+        config.sync_config->error_handler = handle_session_error;
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
@@ -188,7 +190,9 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
         std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
         std::string url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
         
-        SyncConfig config { *sync_configuration.user, url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error };
+        SyncConfig config(*sync_configuration.user, url);
+        config.bind_session_handler = bind_session;
+        config.error_handler = handle_session_error;
         if (encryption_key) {
             config.realm_encryption_key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
         }

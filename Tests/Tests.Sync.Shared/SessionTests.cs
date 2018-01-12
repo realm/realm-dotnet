@@ -136,30 +136,6 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_GetUser_WhenInvalidSession_ShouldNotThrow()
-        {
-            AsyncContext.Run(async () =>
-            {
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                using (var realm = GetRealm(config))
-                {
-                    var session = GetSession(realm);
-
-                    session.SimulateError(ErrorCode.BadUserAuthentication, "some error", isFatal: true);
-
-                    var counter = 0;
-                    while (session.State != SessionState.Invalid)
-                    {
-                        await Task.Delay(100);
-                        Assert.That(counter++ < 5);
-                    }
-
-                    Assert.That(() => session.User, Is.Null);
-                }
-            });
-        }
-
         [Explicit("Fails with obscure error.")]
         [Test]
         public void Session_Error_WhenInvalidRefreshToken()
