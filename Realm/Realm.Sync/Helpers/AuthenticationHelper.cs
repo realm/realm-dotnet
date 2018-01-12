@@ -55,7 +55,7 @@ namespace Realms.Sync
         public static async Task RefreshAccessTokenAsync(Session session, bool reportErrors = true)
         {
             var user = session.User;
-            if (user == null || session.State == SessionState.Invalid)
+            if (user == null)
             {
                 return;
             }
@@ -76,10 +76,7 @@ namespace Realms.Sync
                 var accessToken = result["access_token"];
 
                 session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
-                if (session.State != SessionState.Invalid)
-                {
-                    ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
-                }
+                ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
             {

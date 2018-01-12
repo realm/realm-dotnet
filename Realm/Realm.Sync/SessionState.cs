@@ -31,11 +31,6 @@ namespace Realms.Sync
         /// <summary>
         /// The session is not currently communicating with the Realm Object Server.
         /// </summary>
-        Inactive,
-
-        /// <summary>
-        /// A non-recoverable error has occurred, and this session is semantically invalid. A new session should be created.
-        /// </summary>
-        Invalid
+        Inactive
     }
 }

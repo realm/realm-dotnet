@@ -87,21 +87,15 @@ REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedS
 
 enum class CSharpSessionState : uint8_t {
     Active = 0,
-    Inactive,
-    Invalid
+    Inactive
 };
 
 REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        if (!session) {
-            return CSharpSessionState::Invalid;
-        }
         switch (session->state()) {
         case SyncSession::PublicState::Inactive:
             return CSharpSessionState::Inactive;
-        case SyncSession::PublicState::Error:
-            return CSharpSessionState::Invalid;
         default:
             return CSharpSessionState::Active;
         }
