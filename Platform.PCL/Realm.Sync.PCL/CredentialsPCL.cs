@@ -133,10 +133,11 @@ namespace Realms.Sync
         /// with the same nickname, they'll get the same underlying sync user.
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
+        /// <param name="isAdmin">An optional parameter controlling whether the user is admin.</param>
         /// <returns>
         /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
         /// </returns>
-        public static Credentials Nickname(string value)
+        public static Credentials Nickname(string value, bool isAdmin)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

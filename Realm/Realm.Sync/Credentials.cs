@@ -81,9 +81,7 @@ namespace Realms.Sync
 
             internal const string Identity = "identity";
 
-            internal const string IsAdmin = "isAdmin";
-
-            internal const string IsAnonymous = "is_anonymous";
+            internal const string IsAdmin = "is_admin";
         }
 
         /// <summary>
@@ -186,15 +184,17 @@ namespace Realms.Sync
         /// with the same nickname, they'll get the same underlying sync user.
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
+        /// <param name="isAdmin">An optional parameter controlling whether the user is admin.</param>
         /// <returns>
         /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
         /// </returns>
-        public static Credentials Nickname(string value)
+        public static Credentials Nickname(string value, bool isAdmin = false)
         {
             return new Credentials
             {
                 IdentityProvider = Provider.Nickname,
-                Token = value
+                Token = value,
+                UserInfo = new Dictionary<string, object> { [Keys.IsAdmin] = isAdmin }
             };
         }
 
