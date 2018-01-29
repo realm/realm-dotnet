@@ -115,6 +115,35 @@ namespace Realms.Sync
         }
 
         /// <summary>
+        /// Creates <see cref="Credentials"/> for an anonymous user. These can only be used once - using them a second
+        /// time will result in a different user being logged in. If you need to get a user that has already logged
+        /// in with the Anonymous credentials, use <see cref="User.Current"/> or <see cref="User.AllLoggedIn"/>.
+        /// </summary>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
+        public static Credentials Anonymous()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a login with a nickname. If multiple users try to login
+        /// with the same nickname, they'll get the same underlying sync user.
+        /// </summary>
+        /// <param name="value">The nickname of the user.</param>
+        /// <param name="isAdmin">An optional parameter controlling whether the user is admin.</param>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
+        public static Credentials Nickname(string value, bool isAdmin)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Creates <see cref="Credentials"/> based on an Active Directory login.
         /// </summary>
         /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>

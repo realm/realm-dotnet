@@ -60,6 +60,17 @@ namespace Realms.Sync
             /// The Json Web Token provider, associated with <see cref="Credentials.JWT"/>.
             /// </summary>
             public const string JWT = "jwt";
+
+            /// <summary>
+            /// The Anonymous provider, associated with <see cref="Credentials.Anonymous"/>.
+            /// </summary>
+            public const string Anonymous = "anonymous";
+
+            /// <summary>
+            /// The Nickname provider, associated with <see cref="Credentials.Nickname"/>.
+            /// </summary>
+            public const string Nickname = "nickname";
+
         }
 
         internal static class Keys
@@ -70,7 +81,7 @@ namespace Realms.Sync
 
             internal const string Identity = "identity";
 
-            internal const string IsAdmin = "isAdmin";
+            internal const string IsAdmin = "is_admin";
         }
 
         /// <summary>
@@ -149,6 +160,41 @@ namespace Realms.Sync
                 IdentityProvider = Provider.UsernamePassword,
                 Token = username,
                 UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> for an anonymous user. These can only be used once - using them a second
+        /// time will result in a different user being logged in. If you need to get a user that has already logged
+        /// in with the Anonymous credentials, use <see cref="User.Current"/> or <see cref="User.AllLoggedIn"/>.
+        /// </summary>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
+        public static Credentials Anonymous()
+        {
+            return new Credentials
+            {
+                IdentityProvider = Provider.Anonymous
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="Credentials"/> based on a login with a nickname. If multiple users try to login
+        /// with the same nickname, they'll get the same underlying sync user.
+        /// </summary>
+        /// <param name="value">The nickname of the user.</param>
+        /// <param name="isAdmin">An optional parameter controlling whether the user is admin.</param>
+        /// <returns>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// </returns>
+        public static Credentials Nickname(string value, bool isAdmin = false)
+        {
+            return new Credentials
+            {
+                IdentityProvider = Provider.Nickname,
+                Token = value,
+                UserInfo = new Dictionary<string, object> { [Keys.IsAdmin] = isAdmin }
             };
         }
 

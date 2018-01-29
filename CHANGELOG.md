@@ -6,6 +6,7 @@ x.y.z (TBD)
 - Added a new `InMemoryConfiguration` class that allows you to create an in-memory Realm instance. ([#1638](https://github.com/realm/realm-dotnet/pull/1638))
 - Allow setting elements of a list directly - e.g. `foo.Bars[2] = new Bar()` or `foo.Integers[3] = 5`. ([#1641](https://github.com/realm/realm-dotnet/pull/1641))
 - Added Json Web Token (JWT) credentials provider. ([#1655](https://github.com/realm/realm-dotnet/pull/1655))
+- Added Anonymous and Nickname credentials providers. ([#1671](https://github.com/realm/realm-dotnet/pull/1671))
 
 ### Bug fixes
 
