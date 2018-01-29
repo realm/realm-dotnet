@@ -464,6 +464,36 @@ namespace RealmWeaver
             }
         }
 
+        private sealed class NetStandard2 : ImportedReferences
+        {
+            public override TypeReference System_Reflection_IReflectableType { get; }
+
+            public override TypeReference System_Reflection_TypeInfo { get; }
+
+            public override TypeReference IQueryableOfT { get; }
+
+            public override TypeReference System_Collections_Generic_ListOfT { get; }
+
+            public override TypeReference System_Linq_Enumerable { get; }
+
+            public override TypeReference System_Linq_Queryable { get; }
+
+            public NetStandard2(ModuleDefinition module) : base(module)
+            {
+                IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Types.CoreLibrary);
+                IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Types.CoreLibrary);
+                System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
+
+                System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, Types.CoreLibrary);
+                System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, Types.CoreLibrary);
+
+                System_Reflection_IReflectableType = new TypeReference("System.Reflection", "IReflectableType", Module, Types.CoreLibrary);
+                System_Reflection_TypeInfo = new TypeReference("System.Reflection", "TypeInfo", Module, Types.CoreLibrary);
+            }
+        }
+
         public static ImportedReferences Create(ModuleDefinition module)
         {
             var targetFramework = module.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
@@ -471,7 +501,6 @@ namespace RealmWeaver
             ImportedReferences references;
 
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
-
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
@@ -481,6 +510,15 @@ namespace RealmWeaver
                     references = new NETFramework(module);
                     break;
                 case ".NETStandard":
+                    if (frameworkName.Version >= new Version(2, 0))
+                    {
+                        references = new NetStandard2(module);
+                    }
+                    else
+                    {
+                        references = new NETPortable(module);
+                    }
+                    break;
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
