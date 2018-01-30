@@ -117,6 +117,27 @@ namespace Tests.Database
         }
 
         [Test]
+        public void RealmObject_GetHashCode()
+        {
+            var added = new OnManagedTestClass
+            {
+                Id = 1
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(added);
+            });
+
+            var found = _realm.Find<OnManagedTestClass>(1);
+
+            Assume.That(ReferenceEquals(added, found), Is.False);
+            Assume.That(added.Equals(found), Is.True);
+
+            Assert.That(added.GetHashCode(), Is.EqualTo(found.GetHashCode()));
+        }
+
+        [Test]
         public void Realm_Find_InvokesOnManaged()
         {
             _realm.Write(() =>
@@ -160,6 +181,8 @@ namespace Tests.Database
 
             Assert.That(first.OnManagedCalled, Is.EqualTo(1));
         }
+
+
 
         private class OnManagedTestClass : RealmObject
         {

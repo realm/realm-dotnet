@@ -524,6 +524,15 @@ namespace Realms
         }
 
         /// <summary>
+        /// Calculate a hash-code consistent with Equals.
+        /// </summary>
+        /// <returns>A hash-code.</returns>
+        public override int GetHashCode()
+        {
+            return ObjectHandle.GetHashCode();
+        }
+
+        /// <summary>
         /// Allows you to raise the PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">The name of the property that has changed. If not specified, we'll use the caller name.</param>

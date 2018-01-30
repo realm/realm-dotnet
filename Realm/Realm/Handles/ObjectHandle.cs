@@ -183,6 +183,14 @@ namespace Realms
             return result;
         }
 
+        public override int GetHashCode()
+        {
+            var rowPtr = NativeMethods.get_row_index(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return rowPtr.GetHashCode();
+        }
+
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
