@@ -25,6 +25,8 @@
     <Compile Include="LogLevel.cs" />
     <Compile Include="SyncConfiguration.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="Subscription.cs" />
+    <Compile Include="SubscriptionState.cs" />
     <Compile Include="Dtos\AccountInfo.cs" />
     <Compile Include="Dtos\UserInfo.cs" />
     <Compile Include="UserPersistenceMode.cs" />
@@ -39,10 +41,13 @@
     <Compile Include="Exceptions\PermissionDeniedException.cs" />
     <Compile Include="Extensions\RealmSyncExtensions.cs" />
     <Compile Include="Extensions\TestingExtensions.cs" />
+    <Compile Include="Extensions\CollectionPartialSyncExtensions.cs" />
     <Compile Include="Handles\SessionHandle.cs" />
+    <Compile Include="Handles\SubscriptionHandle.cs" />
     <Compile Include="Handles\SharedRealmHandleExtensions.cs" />
     <Compile Include="Handles\SyncUserHandle.cs" />
     <Compile Include="Helpers\AuthenticationHelper.cs" />
+    <Compile Include="Handles\SubscriptionTokenHandle.cs" />
     <Compile Include="Native\StringStringPair.cs" />
     <Compile Include="Native\SyncConfiguration.cs" />
     <Compile Include="Permissions\IPermissionObject.cs" />

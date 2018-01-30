@@ -56,6 +56,7 @@ namespace Realms.Sync
         /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
         /// <remarks>Partial synchronization is a tech preview. Its APIs are subject to change.</remarks>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        [Obsolete("Use the SubscribeToObjects overload that accepts an IQueryable")]
         public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
         {
             Argument.NotNull(realm, nameof(realm));
@@ -73,6 +74,31 @@ namespace Realms.Sync
 
             var resultsHandle = await tcs.Task;
             return new RealmResults<T>(realm, metadata, resultsHandle);
+        }
+
+        public static async Task<Subscription<T>> SubscribeToObjectsAsync<T>(this Realm realm, IQueryable<T> query, string name = null)
+        {
+            Argument.NotNull(realm, nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+
+            var results = query as RealmResults<T>;
+            Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
+
+            var tcs = new TaskCompletionSource<object>();
+            var handle = SubscriptionHandle.Create(results.ResultsHandle, name, tcs);
+            await tcs.Task;
+
+            return new Subscription<T>(handle, results);
+        }
+
+        public static Task UnsubscribeFromObjectsAsync<T>(this Realm realm, IQueryable<T> query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Task UnsubscribeFromObjectsAsync(this Realm realm, string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }
