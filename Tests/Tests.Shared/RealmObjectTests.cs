@@ -161,6 +161,25 @@ namespace Tests.Database
             Assert.That(first.OnManagedCalled, Is.EqualTo(1));
         }
 
+        [Test]
+        public void RealmObjectEqualsCheck_WhenDeleted_ReturnsFalse()
+        {
+            var george = new Person { FirstName = "George" };
+            var peter = new Person { FirstName = "Peter" };
+            _realm.Write(() =>
+            {
+                _realm.Add(george);
+                _realm.Add(peter);
+            });
+
+            Assert.That(george, Is.Not.EqualTo(peter));
+
+            _realm.Write(() => _realm.Remove(george));
+
+            Assert.That(george, Is.Not.EqualTo(peter));
+            Assert.That(peter, Is.Not.EqualTo(george));
+        }
+
         private class OnManagedTestClass : RealmObject
         {
             [PrimaryKey]

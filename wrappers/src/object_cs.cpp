@@ -389,7 +389,9 @@ extern "C" {
     REALM_EXPORT bool object_equals_object(const Object& object, const Object& other_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return object.row().get_index() == other_object.row().get_index();
+            return object.is_valid() &&
+                other_object.is_valid() &&
+                object.row().get_index() == other_object.row().get_index();
         });
     }
 
