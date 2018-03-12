@@ -655,6 +655,51 @@ namespace Tests.Database
             });
         }
 
+        // A test to verify https://github.com/realm/realm-dotnet/issues/1689 is fixed.
+        [Test]
+        public void SubscribeForNotifications_InvokedWithInitialCallback()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var initCalls = 0;
+                var updateCalls = 0;
+                void helper(IRealmCollection<Person> _, ChangeSet changes, Exception __)
+                {
+                    if (changes == null)
+                    {
+                        ++initCalls;
+                    }
+                    else
+                    {
+                        ++updateCalls;
+                    }
+                }
+
+                var d = new Person();
+                _realm.Write(() => _realm.Add(d));
+
+                using (d.Friends.SubscribeForNotifications(helper))
+                using (d.Friends.SubscribeForNotifications(helper))
+                {
+                    await Task.Delay(100);
+                    Assert.That(initCalls, Is.EqualTo(2));
+
+                    using (d.Friends.SubscribeForNotifications(helper))
+                    {
+                        await Task.Delay(100);
+                        Assert.That(initCalls, Is.EqualTo(3));
+
+                        _realm.Write(() =>
+                        {
+                            d.Friends.Add(d); // trigger the subscriptions..
+                        });
+                        await Task.Delay(100);
+                        Assert.That(updateCalls, Is.EqualTo(3));
+                    }
+                }
+            });
+        }
+
         public static IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
             yield return new TestCaseData(new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 }, 0);

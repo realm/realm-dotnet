@@ -46,6 +46,7 @@ namespace Realms
         internal readonly RealmObject.Metadata Metadata;
 
         private NotificationTokenHandle _notificationToken;
+        private bool _deliveredInitialNotification;
 
         private event NotifyCollectionChangedEventHandler _collectionChanged;
 
@@ -167,6 +168,10 @@ namespace Realms
             {
                 SubscribeForNotifications();
             }
+            else if (_deliveredInitialNotification)
+            {
+                callback(this, null, null);
+            }
 
             _callbacks.Add(callback);
 
@@ -197,6 +202,7 @@ namespace Realms
         {
             _notificationToken?.Dispose();
             _notificationToken = null;
+            _deliveredInitialNotification = false;
         }
 
         #region INotifyCollectionChanged
@@ -338,6 +344,10 @@ namespace Realms
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
                     deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray(),
                     moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray());
+            }
+            else
+            {
+                _deliveredInitialNotification = true;
             }
 
             foreach (var callback in _callbacks.ToArray())
