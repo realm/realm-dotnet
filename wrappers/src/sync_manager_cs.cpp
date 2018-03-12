@@ -19,7 +19,6 @@
 #include <future>
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
-#include <realm/sync/feature_token.hpp>
 #include "sync_manager_cs.hpp"
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -43,25 +42,6 @@ using namespace realm::binding;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
-#if REALM_HAVE_FEATURE_TOKENS
-static std::unique_ptr<sync::FeatureGate> _features;
-
-inline bool should_gate_sync()
-{
-#if defined(__linux__)
-	return true;
-#elif REALM_WINDOWS
-	return IsWindowsServer();
-#else
-	return false;
-#endif
-}
-
-bool realm::binding::has_feature(StringData feature) {
-    return _features && _features->has_feature(feature);
-}
-
-#endif
 namespace realm {
 namespace binding {
 
@@ -98,13 +78,7 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
     
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-#if REALM_HAVE_FEATURE_TOKENS
-        if (should_gate_sync() && !realm::binding::has_feature("Sync")) {
-            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux or Windows Server. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
-        }
-#endif
-        
+    return handle_errors(ex, [&]() {        
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
@@ -208,16 +182,6 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
         
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
-}
-
-REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
-{
-#if REALM_HAVE_FEATURE_TOKENS
-    handle_errors(ex, [&]() {
-        Utf16StringAccessor token(token_buf, token_len);
-        _features.reset(new sync::FeatureGate(token));
-    });
-#endif
 }
     
 REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, uint16_t* query_buf, size_t query_len, void* task_completion_source, NativeException::Marshallable& ex)

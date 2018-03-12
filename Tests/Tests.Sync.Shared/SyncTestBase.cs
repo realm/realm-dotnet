@@ -38,11 +38,6 @@ namespace Tests.Sync
         {
             base.CustomSetUp();
 
-            if (!string.IsNullOrEmpty(SyncTestHelpers.ProfessionalFeatureToken))
-            {
-                SyncConfiguration.SetFeatureToken(SyncTestHelpers.ProfessionalFeatureToken);
-            }
-
             var defaultFolder = InteropConfig.DefaultStorageFolder;
             if (TestHelpers.IsWindows)
             {
