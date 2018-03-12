@@ -10,6 +10,7 @@ x.y.z (TBD)
 
 ### Bug fixes
 - Fixed an issue where initial collection change notification is not delivered to all subscribers. ([#1696](https://github.com/realm/realm-dotnet/pull/1696))
+- Fixed a corner case where `RealmObject.Equals` would return `true` for objects that are no longer managed by Realm. ([#1698](https://github.com/realm/realm-dotnet/pull/1698))
 
 ### Breaking Changes
 
