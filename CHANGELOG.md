@@ -9,6 +9,7 @@ x.y.z (TBD)
 - Added Anonymous and Nickname credentials providers. ([#1671](https://github.com/realm/realm-dotnet/pull/1671))
 
 ### Bug fixes
+- Fixed an issue where initial collection change notification is not delivered to all subscribers. ([#1696](https://github.com/realm/realm-dotnet/pull/1696))
 
 ### Breaking Changes
 
