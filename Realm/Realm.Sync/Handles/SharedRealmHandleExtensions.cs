@@ -89,9 +89,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_feature_token", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_feature_token([MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_subscribe_for_objects", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr subscribe_for_objects(SharedRealmHandle handle,
                                                               [MarshalAs(UnmanagedType.LPWStr)] string class_name, IntPtr class_name_len,
@@ -213,12 +210,6 @@ namespace Realms.Sync
             nativeException.ThrowIfNecessary();
 
             return new SessionHandle(result);
-        }
-
-        public static void SetFeatureToken(string token)
-        {
-            NativeMethods.set_feature_token(token, (IntPtr)token.Length, out var ex);
-            ex.ThrowIfNecessary();
         }
 
         public static void SubscribeForObjects(SharedRealmHandle handle, Type objectType, string query, TaskCompletionSource<ResultsHandle> tcs)

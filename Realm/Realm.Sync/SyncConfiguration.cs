@@ -117,11 +117,9 @@ namespace Realms.Sync
         /// <seealso href="https://realm.io/docs/realm-object-server/pe-ee/#enabling-professional-and-enterprise-apis">
         /// See more details on Enabling Professional and Enterprise APIs in the documentation.
         /// </seealso>
+        [Obsolete("Feature tokens are no longer necessary to access Professional or Enterprise API.")]
         public static void SetFeatureToken(string token)
         {
-            Argument.NotNullOrEmpty(token, nameof(token));
-
-            SharedRealmHandleExtensions.SetFeatureToken(token);
         }
 
         internal override Realm CreateRealm(RealmSchema schema)

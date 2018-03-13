@@ -13,6 +13,7 @@ x.y.z (TBD)
 - Fixed a corner case where `RealmObject.Equals` would return `true` for objects that are no longer managed by Realm. ([#1698](https://github.com/realm/realm-dotnet/pull/1698))
 
 ### Breaking Changes
+- `SyncConfiguration.SetFeatureToken` is deprecated and no longer necessary in order to use Sync on Linux or server-side features. ([#1703](https://github.com/realm/realm-dotnet/pull/1703))
 
 2.1.0 (2017-11-13)
 ------------------
