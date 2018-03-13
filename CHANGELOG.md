@@ -11,6 +11,7 @@ x.y.z (TBD)
 ### Bug fixes
 
 ### Breaking Changes
+- `SyncConfiguration.SetFeatureToken` is deprecated and no longer necessary in order to use Sync on Linux or server-side features. ([#1703](https://github.com/realm/realm-dotnet/pull/1703))
 
 2.1.0 (2017-11-13)
 ------------------
