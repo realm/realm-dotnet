@@ -195,7 +195,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets'))" />
-    <Error Condition="!Exists('..\..\packages\Fody.2.2.0\build\net452\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.2.2.0\build\net452\Fody.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Fody.2.4.6\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Fody.2.4.6\build\Fody.targets'))" />
   </Target>
-  <Import Project="..\..\packages\Fody.2.2.0\build\net452\Fody.targets" Condition="Exists('..\..\packages\Fody.2.2.0\build\net452\Fody.targets')" />
+  <Import Project="..\..\packages\Fody.2.4.6\build\Fody.targets" Condition="Exists('..\..\packages\Fody.2.4.6\build\Fody.targets')" />
 </Project>

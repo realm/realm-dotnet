@@ -11,7 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-      <PackageReference Include="Fody" Version="2.2.0" PrivateAssets="All" />
+      <PackageReference Include="Fody" Version="2.4.6" PrivateAssets="All" />
       <PackageReference Include="StyleCop.MSBuild" Version="4.7.55" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
