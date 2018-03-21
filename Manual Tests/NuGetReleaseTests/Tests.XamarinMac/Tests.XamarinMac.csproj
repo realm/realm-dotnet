@@ -101,10 +101,10 @@
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="Realm">
-      <HintPath>..\packages\Realm.Database.2.1.0\lib\netstandard1.4\Realm.dll</HintPath>
+      <HintPath>..\packages\Realm.Database.2.2.0\lib\netstandard1.4\Realm.dll</HintPath>
     </Reference>
     <Reference Include="Realm.Sync">
-      <HintPath>..\packages\Realm.2.1.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
+      <HintPath>..\packages\Realm.2.2.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -166,7 +166,7 @@
   <Import Project="..\..\..\Tests\Tests.Sync.Shared\Tests.Sync.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="..\packages\Fody.2.2.0\build\netstandard1.2\Fody.targets" Condition="Exists('..\packages\Fody.2.2.0\build\netstandard1.2\Fody.targets')" />
-  <Import Project="..\packages\Realm.Database.2.1.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.2.1.0\build\Realm.Database.targets')" />
-  <Import Project="..\packages\Realm.2.1.0\build\Realm.targets" Condition="Exists('..\packages\Realm.2.1.0\build\Realm.targets')" />
+  <Import Project="..\packages\Fody.2.4.6\build\Fody.targets" Condition="Exists('..\packages\Fody.2.4.6\build\Fody.targets')" />
+  <Import Project="..\packages\Realm.Database.2.2.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.2.2.0\build\Realm.Database.targets')" />
+  <Import Project="..\packages\Realm.2.2.0\build\Realm.targets" Condition="Exists('..\packages\Realm.2.2.0\build\Realm.targets')" />
 </Project>
