@@ -38,6 +38,7 @@ namespace Realms.Sync
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
                 return default(LogLevel);
             }
+
             set
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
