@@ -94,6 +94,12 @@ namespace Realms.Sync
                                                               [MarshalAs(UnmanagedType.LPWStr)] string class_name, IntPtr class_name_len,
                                                               [MarshalAs(UnmanagedType.LPWStr)] string query, IntPtr query_len,
                                                               IntPtr task_completion_source, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
+            public static  extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_log_level", CallingConvention = CallingConvention.Cdecl)]
+            public static extern LogLevel get_log_level();
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -173,6 +179,19 @@ namespace Realms.Sync
 
             NativeMethods.configure_file_system(basePath, (IntPtr)basePath.Length, modePtr, encryptionKey, resetMetadataOnError, out var ex);
             ex.ThrowIfNecessary();
+        }
+
+        public static unsafe void SetLogLevel(LogLevel level)
+        {
+            var levelPtr = &level;
+
+            NativeMethods.set_log_level(levelPtr, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public static LogLevel GetLogLevel()
+        {
+            return NativeMethods.get_log_level();
         }
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)

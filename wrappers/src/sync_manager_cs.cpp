@@ -76,6 +76,18 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
     });
 }
     
+REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level level, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        SyncManager::shared().set_log_level(level);
+    });
+}
+
+REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
+{
+    return SyncManager::shared().log_level();
+}
+
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {        

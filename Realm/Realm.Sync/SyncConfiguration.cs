@@ -122,6 +122,21 @@ namespace Realms.Sync
         {
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating how detailed the sync client's logs will be.
+        /// </summary>
+        public static LogLevel LogLevel
+        {
+            get
+            {
+                return SharedRealmHandleExtensions.GetLogLevel();
+            }
+            set
+            {
+                SharedRealmHandleExtensions.SetLogLevel(value);
+            }
+        }
+
         internal override Realm CreateRealm(RealmSchema schema)
         {
             var configuration = new Realms.Native.Configuration

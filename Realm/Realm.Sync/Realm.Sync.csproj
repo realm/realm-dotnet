@@ -22,6 +22,7 @@
     <Compile Include="Credentials.cs" />
     <Compile Include="Session.cs" />
     <Compile Include="SessionState.cs" />
+    <Compile Include="LogLevel.cs" />
     <Compile Include="SyncConfiguration.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Dtos\AccountInfo.cs" />

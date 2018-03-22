@@ -29,6 +29,22 @@ namespace Realms.Sync
     public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
+        /// Gets or sets a value indicating how detailed the sync client's logs will be.
+        /// </summary>
+        public static LogLevel LogLevel
+        {
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+                return default(LogLevel);
+            }
+            set
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
         /// <value>The <see cref="Uri"/> where the Realm Object Server is hosted.</value>
