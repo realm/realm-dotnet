@@ -45,7 +45,7 @@ namespace Realms.Sync
             public static extern IntPtr get_status(SubscriptionHandle subscription, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_error", CallingConvention = CallingConvention.Cdecl)]
-            public static extern NativeException get_error(SubscriptionHandle subscription, out NativeException ex);
+            public static extern NativeException get_error(SubscriptionHandle subscription);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(SubscriptionHandle subscription, IntPtr managedSubscriptionHandle, SubscriptionCallbackDelegate callback, out NativeException ex);
@@ -79,8 +79,7 @@ namespace Realms.Sync
 
         public Exception GetError()
         {
-            var result = NativeMethods.get_error(this, out var ex);
-            ex.ThrowIfNecessary();
+            var result = NativeMethods.get_error(this);
             if (result.type != RealmExceptionCodes.NoError)
             {
                 return result.Convert();

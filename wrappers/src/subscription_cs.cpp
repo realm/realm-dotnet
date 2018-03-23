@@ -18,8 +18,6 @@ using namespace realm;
 using namespace realm::binding;
 using namespace realm::partial_sync;
 
-using SharedSubscription = std::shared_ptr<Subscription>;
-
 typedef void (*ManagedSubscriptionCallback)(void* managed_subscription);
 
 struct SubscriptionNotificationTokenContext {
@@ -30,7 +28,7 @@ struct SubscriptionNotificationTokenContext {
 
 extern "C" {
 
-REALM_EXPORT SharedSubscription* realm_subscription_create(Results& results, uint16_t* name_buf, size_t name_len, bool has_name, NativeException::Marshallable& ex)
+REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t* name_buf, size_t name_len, bool has_name, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         util::Optional<std::string> name;
@@ -42,25 +40,25 @@ REALM_EXPORT SharedSubscription* realm_subscription_create(Results& results, uin
         }
         
         auto result = realm::partial_sync::subscribe(results, name);
-        return new SharedSubscription(&result);
+        return new Subscription(std::move(result));
     });
 }
 
-REALM_EXPORT Results* realm_subscription_get_results(SharedSubscription& subscription, NativeException::Marshallable& ex)
+REALM_EXPORT Results* realm_subscription_get_results(Subscription* subscription, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(subscription->results());
+        return new Results(std::move(subscription->results()));
     });
 }
 
-REALM_EXPORT SubscriptionState realm_subscription_get_state(SharedSubscription& subscription, NativeException::Marshallable& ex)
+REALM_EXPORT SubscriptionState realm_subscription_get_state(Subscription* subscription, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return subscription->state();
     });
 }
 
-REALM_EXPORT NativeException::Marshallable realm_subscription_get_error(SharedSubscription& subscription)
+REALM_EXPORT NativeException::Marshallable realm_subscription_get_error(Subscription* subscription)
 {
     if (subscription->error()) {
         try {
@@ -76,7 +74,7 @@ REALM_EXPORT NativeException::Marshallable realm_subscription_get_error(SharedSu
     }    
 }
 
-REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notification_callback(SharedSubscription& subscription, void* managed_subscription, ManagedSubscriptionCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notification_callback(Subscription* subscription, void* managed_subscription, ManagedSubscriptionCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
         auto context = new SubscriptionNotificationTokenContext();

@@ -76,7 +76,7 @@ namespace Realms.Sync
             return new RealmResults<T>(realm, metadata, resultsHandle);
         }
 
-        public static async Task<Subscription<T>> SubscribeToObjectsAsync<T>(this Realm realm, IQueryable<T> query, string name = null)
+        public static Subscription<T> SubscribeToObjects<T>(this Realm realm, IQueryable<T> query, string name = null)
         {
             Argument.NotNull(realm, nameof(realm));
             Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));

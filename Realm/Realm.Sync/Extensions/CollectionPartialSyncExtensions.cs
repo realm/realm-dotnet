@@ -29,14 +29,14 @@ namespace Realms.Sync
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class CollectionPartialSyncExtensions
     {
-        public static Task<Subscription<T>> SubscribeToObjectsAsync<T>(this IQueryable<T> query, string name = null)
+        public static Subscription<T> SubscribeToObjects<T>(this IQueryable<T> query, string name = null)
         {
             Argument.NotNull(query, nameof(query));
 
             var results = query as RealmResults<T>;
             Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
 
-            return results.Realm.SubscribeToObjectsAsync(query, name);
+            return results.Realm.SubscribeToObjects(query, name);
         }
 
         public static Task UnsubscribeFromObjectsAsync<T>(this IQueryable<T> query)

@@ -35,6 +35,71 @@ namespace Tests.Sync
     public class CredentialsTests : SyncTestBase
     {
         [Test]
+        public void AAAAAAA()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var serverUrl = "unbranded-fresh-chips.us1a.cloud.realm.io";
+                var credentials = Credentials.Nickname("admin", true);
+                var user = await User.LoginAsync(credentials, new Uri($"https://{serverUrl}"));
+                var config = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial3"), "referencerealm")
+                {
+                    IsPartial = true
+                };
+
+                //using (var realm = GetRealm(config))
+                //{
+                //    realm.Write(() =>
+                //    {
+                //        for (var i = 0; i < 100; i++)
+                //        {
+                //            realm.Add(new IntPrimaryKeyWithValueObject
+                //            {
+                //                Id = i,
+                //                StringValue = i + "asdf"
+                //            });
+                //        }
+                //    });
+
+                //    await GetSession(realm).WaitForUploadAsync();
+                //}
+
+                Session.Error += (s, e) =>
+                {
+                    Console.WriteLine(e);
+                };
+
+                var config2 = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial3"), "partialrealm")
+                {
+                    IsPartial = true
+                };
+
+                using (var realm = GetRealm(config2))
+                {
+                    await GetSession(realm).WaitForDownloadAsync();
+
+                    //Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+
+                    var query = realm.All<IntPrimaryKeyWithValueObject>().Where(i => i.StringValue.StartsWith("1"));
+
+                    //Assert.That(query.Count(), Is.EqualTo(0));
+
+                    var subscription = query.SubscribeToObjects();
+
+                    //Assert.That(subscription.Results.Count(), Is.EqualTo(0));
+                    //Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Pending));
+
+                    await subscription.WaitForSynchronizationAsync();
+
+                    Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Complete));
+                    Console.WriteLine(subscription.Results.Count());
+
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(query.Count()));
+                }
+            });
+        }
+
+        [Test]
         public void BasicTests()
         {
             // Arrange and Act
