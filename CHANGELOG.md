@@ -1,4 +1,4 @@
-x.y.z (TBD)
+2.2.0 (2017-03-22)
 ------------------
 
 ### Enhancements
@@ -53,8 +53,8 @@ account data associated with that user. ([#1573](https://github.com/realm/realm-
 - Introduced a new method - `User.LogOutAsync` to replace the now-deprecated synchronous call. ([#1574](https://github.com/realm/realm-dotnet/pull/1574))
 - Exposed `BacklinksCount` property on `RealmObject` that returns the number of objects that refer to the current object via a to-one or a to-many relationship. ([#1578](https://github.com/realm/realm-dotnet/pull/1578))
 - String primary keys now support `null` as a value. ([#1579](https://github.com/realm/realm-dotnet/pull/1579))
-- Add preview support for partial synchronization. Partial synchronization allows a synchronized Realm to be opened in such a way 
-that only objects requested by the user are synchronized to the device. You can use it by setting the `IsPartial` property on a 
+- Add preview support for partial synchronization. Partial synchronization allows a synchronized Realm to be opened in such a way
+that only objects requested by the user are synchronized to the device. You can use it by setting the `IsPartial` property on a
 `SyncConfiguration`, opening the Realm, and then calling `Realm.SubscribeToObjectsAsync` with the type of object you're interested in,
 a string containing a query determining which objects you want to subscribe to, and a callback which will report the results. You may
 add as many subscriptions to a synced Realm as necessary. ([#1580](https://github.com/realm/realm-dotnet/pull/1580))
@@ -136,7 +136,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 1.3.0 (2017-05-16)
 ------------------
 
-### Universal Windows Platform 
+### Universal Windows Platform
 Introducing Realm Mobile Database for Universal Windows Platform (UWP). With UWP support, you can now build mobile apps using Realm’s object database for the millions of mobile, PC, and Xbox devices powered by Windows 10. The addition of UWP support allows .NET developers to build apps for virtually any modern Windows Platform with Windows Desktop (Win32) or UWP as well as for iOS and Android via Xamarin. Note that sync support is not yet available for UWP, though we are working on it and you can expect it soon.
 
 ### Enhancements
@@ -233,7 +233,7 @@ You can read about this in the [documentation](https://realm.io/docs/xamarin/lat
 Realm Xamarin is no longer iOS and Android only. You can now use it to write .NET programs for Windows Desktop. Add the NuGet package to your regular .NET project and start using Realm. Some features are not supported on Windows yet. Most notably, sync does not yet work for Windows, but also encryption and notifications across processes are missing. We are working on it and you can expect support soon.
 
 ### Breaking Changes
- - `IRealmCollection<T>.ObjectSchema` is deprecated and replaced with `ISchemaSource.ObjectSchema`. (#1216) 
+ - `IRealmCollection<T>.ObjectSchema` is deprecated and replaced with `ISchemaSource.ObjectSchema`. (#1216)
 
 ### Bug fixes
  - `[MapTo]` attribute is now respected in queries. (#1219)
@@ -310,7 +310,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
 * iOS Linking all should work - we now add a [Preserve] attribue to all woven members of your `RealmObject` subclasses so you do not need to manually add `[Preserve(allMembers=true)]`  (#822)
 * `Realm.Manage` calls are now much faster. You should prefer that to `Realm.CreateObject` unless you are setting only a few properties, while leaving the rest with default values. (#857)
 * Added `bool update` argument to `Realm.Manage`. When `update: true` is passed, Realm will try to find and update a persisted object with the same PrimaryKey. If an object with the same PrimaryKey is not found, the umnamaged object is added. If the passed in object does not have a PrimaryKey, it will be added. Any related objects will be added or updated depending on whether they have PrimaryKeys. (#871)
-    
+
     **NOTE**: cyclic relationships, where object references are not identical, will not be reconciled. E.g. this will work as expected:
     ```csharp
     var person = new Person { Name = "Peter", Id = 1 };
@@ -481,7 +481,7 @@ Uses core 1.1.2
 
 ### Minor Changes
 * The two `Realm` and `RealmWeaver` NuGet packages have been combined into a single `Realm` package.
-* The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.  
+* The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.
 * `RealmResults<T>` now implements `INotifyCollectionChanged` by raising the `CollectionChanged` event with `NotifyCollectionChangedAction.Reset` when its underlying table or query result is changed by a write transaction.
 
 0.74.0 Private Beta (2016-04-02)
@@ -495,17 +495,17 @@ Uses core 1.1.2
 * LINQ improvements:
   * Simple bool searches work without having to use `== true` (issue #362)
   * ! operator works to negate either simple bool properties or complex expressions (issue #77)
-  * Count, Single and First can now be used after a Where expression,  (#369) eg <br /> 
+  * Count, Single and First can now be used after a Where expression,  (#369) eg <br />
     `realm.All<Owner>().Where(p => p.Name == "Dani").First();` as well as with a lambda expression <br />
-    `realm.All<Owner>().Single( p => p.Name == "Tim");` 
+    `realm.All<Owner>().Single( p => p.Name == "Tim");`
   * Sorting is now provided using the `OrderBy`, `OrderByDescending`, `ThenBy` and `ThenByDescending` clauses. Sorts can be applied to results of a query from a `Where` clause or sorting the entire class by applying after `All<>`.
-  * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods can now be used in Where clauses.  
+  * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods can now be used in Where clauses.
   * DateTimeOffset properties can be compared in queries.
-* Support for `armeabi` builds on old ARM V5 and V6 devices has been removed.  
+* Support for `armeabi` builds on old ARM V5 and V6 devices has been removed.
 
 ### Minor Changes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
-* NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
+* NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.
 * `Realm.RealmChanged` event notifies you of changes made to the realm
 * `Realm.Refresh()` makes sure the realm is updated with changes from other threads.
 
@@ -521,7 +521,7 @@ Uses core 1.1.2
 * Update to Core v0.96.2 and matching ObjectStore (issue #393)
 
 
-0.72.1 Private Beta (2016-02-15) 
+0.72.1 Private Beta (2016-02-15)
 -------------------
 No functional changes. Just added library builds for Android 64bit targets `x86_64` and `arm64-v8a`.
 
@@ -541,8 +541,8 @@ Uses Realm core 0.96.0
 
 Building IOS apps targeting the simulator sometimes got an error like:
 
-    Error MT5209: Native linking error...building for iOS simulator, 
-    but linking in object file built for OSX, for architecture i386 (MT5209) 
+    Error MT5209: Native linking error...building for iOS simulator,
+    but linking in object file built for OSX, for architecture i386 (MT5209)
 
 This was fixed by removing a redundant simulator library included in NuGet
 
@@ -570,7 +570,7 @@ Now supporting:
 * Optimised `Realm.All<userclass>().Count()` to get rapid count of all objects of given class.
 * Related lists are now supported in standalone objects.
 
-#### LINQ 
+#### LINQ
 * `Count()` on `Where()` implemented.
 * `Any()` on `Where()` implemented.
 * `First( lambda )` and `Single( lambda )` implemented.
