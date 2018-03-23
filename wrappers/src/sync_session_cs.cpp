@@ -174,12 +174,6 @@ REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void*
         }
     });
 }
-
-REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSyncSession& session, uint64_t downloaded, uint64_t downloadable,
-                                                                    uint64_t uploaded, uint64_t uploadable)
-{
-    SyncSession::OnlyForTesting::handle_progress_update(*session, downloaded, downloadable, uploaded, uploadable);
-}
     
 REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* message_buf, size_t message_len, bool is_fatal)
 {

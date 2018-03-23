@@ -67,9 +67,6 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_progress_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_progress_for_testing(SessionHandle session, ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
         }
@@ -153,11 +150,6 @@ namespace Realms.Sync
         public IntPtr GetRawPointer()
         {
             return NativeMethods.get_raw_pointer(this);
-        }
-
-        public void ReportProgressForTesting(ulong downloaded, ulong downloadable, ulong uploaded, ulong uploadable)
-        {
-            NativeMethods.report_progress_for_testing(this, downloaded, downloadable, uploaded, uploadable);
         }
 
         public void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal)
