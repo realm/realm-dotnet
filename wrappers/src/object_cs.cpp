@@ -405,9 +405,9 @@ extern "C" {
     REALM_EXPORT void* object_destroy_notificationtoken(ManagedNotificationTokenContext* token_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            void* managed_collection = token_ptr->managed_object;
+            void* managed_object = token_ptr->managed_object;
             delete token_ptr;
-            return managed_collection;
+            return managed_object;
         });
     }
 

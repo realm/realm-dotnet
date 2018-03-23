@@ -32,6 +32,7 @@
 		515F02B81EB773220025B764 /* network_reachability_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B41EB773220025B764 /* network_reachability_observer.cpp */; };
 		515F02B91EB773220025B764 /* system_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 515F02B61EB773220025B764 /* system_configuration.cpp */; };
 		51A51F261DAEB5660057BAE6 /* object_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51A51F251DAEB5660057BAE6 /* object_cs.cpp */; };
+		51CCDE1220651055002179FA /* subscription_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51CCDE1020651055002179FA /* subscription_cs.cpp */; };
 		51D3BF171F82394000D73244 /* partial_sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51D3BF141F82394000D73244 /* partial_sync.cpp */; };
 		51D3BF181F82394000D73244 /* sync_config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51D3BF161F82394000D73244 /* sync_config.cpp */; };
 		51E456F11F44745E008A7B79 /* primitive_list_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51E456EF1F44745E008A7B79 /* primitive_list_notifier.cpp */; };
@@ -127,6 +128,7 @@
 		519B58381DB0F8E7000CB2BB /* object_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = object_cs.hpp; path = src/object_cs.hpp; sourceTree = "<group>"; };
 		51A51F251DAEB5660057BAE6 /* object_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = object_cs.cpp; path = src/object_cs.cpp; sourceTree = "<group>"; };
 		51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marshalable_sort_clause.hpp; path = src/marshalable_sort_clause.hpp; sourceTree = "<group>"; };
+		51CCDE1020651055002179FA /* subscription_cs.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = subscription_cs.cpp; path = src/subscription_cs.cpp; sourceTree = "<group>"; };
 		51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_session_cs.hpp; path = src/sync_session_cs.hpp; sourceTree = "<group>"; };
 		51D3BF141F82394000D73244 /* partial_sync.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = partial_sync.cpp; path = "src/object-store/src/sync/partial_sync.cpp"; sourceTree = "<group>"; };
 		51D3BF151F82394000D73244 /* partial_sync.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = partial_sync.hpp; path = "src/object-store/src/sync/partial_sync.hpp"; sourceTree = "<group>"; };
@@ -221,33 +223,34 @@
 			isa = PBXGroup;
 			children = (
 				8522B2AE1CD11D5400E5C1F3 /* object-store */,
-				42F739D01C8EFBD00033F0B7 /* results_cs.cpp */,
 				488FF1F31C997EC600172055 /* debug.cpp */,
 				488FF1F41C997EC600172055 /* debug.hpp */,
 				48ED7C561C16F9C200AF23A4 /* error_handling.cpp */,
 				48ED7C571C16F9C200AF23A4 /* error_handling.hpp */,
+				850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */,
 				48ED7C581C16F9C200AF23A4 /* list_cs.cpp */,
 				51A51F271DAFADF50057BAE6 /* marshalable_sort_clause.hpp */,
 				48ED7C591C16F9C200AF23A4 /* marshalling.cpp */,
 				48ED7C5A1C16F9C200AF23A4 /* marshalling.hpp */,
+				48ED7C621C16F9C200AF23A4 /* notifications_cs.hpp */,
+				51A51F251DAEB5660057BAE6 /* object_cs.cpp */,
+				519B58381DB0F8E7000CB2BB /* object_cs.hpp */,
 				48ED7C5C1C16F9C200AF23A4 /* query_cs.cpp */,
 				48ED7C5D1C16F9C200AF23A4 /* realm_error_type.hpp */,
 				48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */,
 				48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */,
+				42F739D01C8EFBD00033F0B7 /* results_cs.cpp */,
 				48EE96C51D75D60600666046 /* schema_cs.cpp */,
 				48EE96C71D75D60F00666046 /* schema_cs.hpp */,
-				51A51F251DAEB5660057BAE6 /* object_cs.cpp */,
-				519B58381DB0F8E7000CB2BB /* object_cs.hpp */,
-				48ED7C621C16F9C200AF23A4 /* notifications_cs.hpp */,
 				8510C5001D3D1194000CAD87 /* shared_realm_cs.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
-				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
+				51CCDE1020651055002179FA /* subscription_cs.cpp */,
 				85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */,
 				510550FB1FABB0C10067A257 /* sync_manager_cs.hpp */,
 				85C041311DD229C100CBF37B /* sync_user_cs.cpp */,
 				85C041331DD4953200CBF37B /* sync_session_cs.cpp */,
 				51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */,
-				850F7D681DF735290068B584 /* event_loop_signal_cs.cpp */,
+				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
 				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,
 				48D101391B39902E004A4B2C /* Products */,
@@ -513,6 +516,7 @@
 			files = (
 				51D3BF181F82394000D73244 /* sync_config.cpp in Sources */,
 				85C041301DCCEA3700CBF37B /* sync_manager_cs.cpp in Sources */,
+				51CCDE1220651055002179FA /* subscription_cs.cpp in Sources */,
 				515F02B91EB773220025B764 /* system_configuration.cpp in Sources */,
 				85C041341DD4953300CBF37B /* sync_session_cs.cpp in Sources */,
 				85C041221DCCE96C00CBF37B /* sync_session.cpp in Sources */,
