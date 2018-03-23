@@ -31,6 +31,8 @@ namespace Realms.Sync
         private static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
 
         private readonly SubscriptionHandle _handle;
+        private readonly Realm _realm;
+        private readonly RealmObject.Metadata _metadata;
 
         private event PropertyChangedEventHandler _propertyChanged;
         private SubscriptionTokenHandle _subscriptionToken;
@@ -63,49 +65,52 @@ namespace Realms.Sync
 
         public Exception Error => _handle.GetError();
 
-        public IQueryable<T> Query { get; }
+        public IQueryable<T> Results
+        {
+            get
+            {
+                var handle = _handle.GetResults(_realm.SharedRealmHandle);
+                return new RealmResults<T>(_realm, _metadata, handle);
+            }
+        }
 
         internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
         {
             _handle = handle;
-            Query = query;
+            _realm = query.Realm;
+            _metadata = query.Metadata;
         }
 
         public Task WaitForSynchronizationAsync()
         {
             var tcs = new TaskCompletionSource<object>();
 
-            Action resolveTcs = () =>
+            bool resolveTcs()
             {
                 switch (State)
                 {
-                    case SubscriptionState.Initialized:
+                    case SubscriptionState.Complete:
                         tcs.TrySetResult(null);
-                        break;
+                        return true;
                     case SubscriptionState.Error:
                         tcs.TrySetException(Error);
-                        break;
+                        return true;
                     default:
-                        throw new Exception("Unexpected State value.");
+                        return false;
                 }
-            };
+            }
 
-            if (State == SubscriptionState.Uninitialized)
+            if (!resolveTcs())
             {
                 PropertyChangedEventHandler handler = null;
                 handler = new PropertyChangedEventHandler((sender, args) =>
                 {
-                    if (args.PropertyName == nameof(State) && State != SubscriptionState.Uninitialized)
+                    if (args.PropertyName == nameof(State) && resolveTcs())
                     {
                         PropertyChanged -= handler;
-                        resolveTcs();
                     }
                 });
                 PropertyChanged += handler;
-            }
-            else
-            {
-                resolveTcs();
             }
 
             return tcs.Task;

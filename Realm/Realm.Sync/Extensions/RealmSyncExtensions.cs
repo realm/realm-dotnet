@@ -85,9 +85,7 @@ namespace Realms.Sync
             Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
 
             var tcs = new TaskCompletionSource<object>();
-            var handle = SubscriptionHandle.Create(results.ResultsHandle, name, tcs);
-            await tcs.Task;
-
+            var handle = SubscriptionHandle.Create(results.ResultsHandle, name);
             return new Subscription<T>(handle, results);
         }
 

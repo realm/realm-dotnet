@@ -20,8 +20,10 @@ namespace Realms.Sync
 {
     public enum SubscriptionState
     {
-        Error = -1,
-        Uninitialized = 0,
-        Initialized = 1
+        Error = -1,      // An error occurred while creating or processing the partial sync subscription.
+        Creating = 2,    // The subscription is being created.
+        Pending = 0,     // The subscription was created, but has not yet been processed by the sync server.
+        Complete = 1,    // The subscription has been processed by the sync server and data is being synced to the device.
+        Invalidated = 3, // The subscription has been removed.
     }
 }
