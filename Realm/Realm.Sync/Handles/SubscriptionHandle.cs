@@ -30,8 +30,8 @@ namespace Realms.Sync
 
         private static class NativeMethods
         {
-            //[DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy", CallingConvention = CallingConvention.Cdecl)]
-            //public static extern void destroy(IntPtr handle);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr subscribe(
@@ -111,7 +111,7 @@ namespace Realms.Sync
 
         protected override void Unbind()
         {
-            //NativeMethods.destroy(handle);
+            NativeMethods.destroy(handle);
         }
     }
 }

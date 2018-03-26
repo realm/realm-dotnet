@@ -18,7 +18,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -31,8 +30,7 @@ namespace Realms.Sync
         private static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
 
         private readonly SubscriptionHandle _handle;
-        private readonly Realm _realm;
-        private readonly RealmObject.Metadata _metadata;
+        private readonly TaskCompletionSource<object> _syncTcs = new TaskCompletionSource<object>();
 
         private SubscriptionTokenHandle _subscriptionToken;
 
@@ -44,76 +42,63 @@ namespace Realms.Sync
         public Exception Error { get; private set; }
 
         public IQueryable<T> Results { get; private set; }
-        {
-            get
-            {
-                var handle = _handle.GetResults(_realm.SharedRealmHandle);
-                return new RealmResults<T>(_realm, _metadata, handle);
-            }
-        }
 
         internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
         {
+            State = SubscriptionState.Pending;
+            Results = query;
+
             _handle = handle;
-            _realm = query.Realm;
-            _metadata = query.Metadata;
-        }
-
-        public void Dispose()
-        {
-            if (_subscriptionToken != null)
-            {
-                
-            }
-        }
-
-        public Task WaitForSynchronizationAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-
-            bool resolveTcs()
-            {
-                switch (State)
-                {
-                    case SubscriptionState.Complete:
-                        tcs.TrySetResult(null);
-                        return true;
-                    case SubscriptionState.Error:
-                        tcs.TrySetException(Error);
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-
-            if (!resolveTcs())
-            {
-                PropertyChangedEventHandler handler = null;
-                handler = new PropertyChangedEventHandler((sender, args) =>
-                {
-                    if (args.PropertyName == nameof(State) && resolveTcs())
-                    {
-                        PropertyChanged -= handler;
-                    }
-                });
-                PropertyChanged += handler;
-            }
-
-            return tcs.Task;
-        }
-
-        private void SubscribeForNotifications()
-        {
-            Debug.Assert(_subscriptionToken == null, "_subscriptionToken must be null before subscribing.");
 
             var managedSubscriptionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
             _subscriptionToken = _handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), SubscriptionCallback);
         }
 
-        private void UnsubscribeFromNotifications()
+        /// <inheritdoc />
+        public void Dispose()
         {
             _subscriptionToken?.Dispose();
             _subscriptionToken = null;
+            _handle.Dispose();
+        }
+
+        public Task WaitForSynchronizationAsync()
+        {
+            return _syncTcs.Task;
+        }
+
+        private void ReloadState()
+        {
+            if (_handle.IsClosed)
+            {
+                return;
+            }
+
+            var newState = _handle.GetState();
+            if (newState != State)
+            {
+                string propToNotify = null;
+                State = newState;
+                switch (State)
+                {
+                    case SubscriptionState.Error:
+                        Error = _handle.GetError();
+                        propToNotify = nameof(Error);
+                        _syncTcs.TrySetException(Error);
+                        break;
+                    case SubscriptionState.Complete:
+                        var oldResults = (RealmResults<T>)Results;
+                        var realm = oldResults.Realm;
+                        var resultsHandle = _handle.GetResults(realm.SharedRealmHandle);
+                        Results = new RealmResults<T>(realm, oldResults.Metadata, resultsHandle);
+                        propToNotify = nameof(Results);
+                        _syncTcs.TrySetResult(null);
+                        break;
+                }
+
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propToNotify));
+            }
         }
 
         [NativeCallback(typeof(SubscriptionHandle.SubscriptionCallbackDelegate))]
@@ -121,11 +106,7 @@ namespace Realms.Sync
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is Subscription<T> subscription)
             {
-                subscription._propertyChanged?.Invoke(subscription, new PropertyChangedEventArgs(nameof(State)));
-                if (subscription.State == SubscriptionState.Error)
-                {
-                    subscription._propertyChanged?.Invoke(subscription, new PropertyChangedEventArgs(nameof(Error)));
-                }
+                subscription.ReloadState();
             }
         }
     }

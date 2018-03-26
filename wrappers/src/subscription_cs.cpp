@@ -88,11 +88,18 @@ REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notifi
     });
 }
 
-REALM_EXPORT void realm_subscription_destroy_notification_token(SubscriptionNotificationTokenContext* token_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void* realm_subscription_destroy_notification_token(SubscriptionNotificationTokenContext* context, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
-        delete token_ptr;
+    return handle_errors(ex, [&]() {
+        auto managed_subscription = context->managed_subscription;
+        delete context;
+        return managed_subscription;
     });
+}
+
+REALM_EXPORT void realm_subscription_destroy(Subscription* subscription)
+{
+    delete subscription;
 }
 
 }

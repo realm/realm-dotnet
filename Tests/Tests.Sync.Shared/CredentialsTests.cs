@@ -89,7 +89,7 @@ namespace Tests.Sync
                     var subscription = query.SubscribeToObjects();
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
-                    //Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Pending));
+                    Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Pending));
 
                     await subscription.WaitForSynchronizationAsync();
 
