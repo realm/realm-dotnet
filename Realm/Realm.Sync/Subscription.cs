@@ -26,7 +26,7 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
-    public class Subscription<T> : INotifyPropertyChanged
+    public class Subscription<T> : INotifyPropertyChanged, IDisposable
     {
         private static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
 
@@ -34,38 +34,16 @@ namespace Realms.Sync
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
-        private event PropertyChangedEventHandler _propertyChanged;
         private SubscriptionTokenHandle _subscriptionToken;
 
         /// <inheritdoc />
-        public event PropertyChangedEventHandler PropertyChanged
-        {
-            add
-            {
-                if (_propertyChanged == null)
-                {
-                    SubscribeForNotifications();
-                }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-                _propertyChanged += value;
-            }
+        public SubscriptionState State { get; private set; }
 
-            remove
-            {
-                _propertyChanged -= value;
+        public Exception Error { get; private set; }
 
-                if (_propertyChanged == null)
-                {
-                    UnsubscribeFromNotifications();
-                }
-            }
-        }
-
-        public SubscriptionState State => _handle.GetState();
-
-        public Exception Error => _handle.GetError();
-
-        public IQueryable<T> Results
+        public IQueryable<T> Results { get; private set; }
         {
             get
             {
@@ -79,6 +57,14 @@ namespace Realms.Sync
             _handle = handle;
             _realm = query.Realm;
             _metadata = query.Metadata;
+        }
+
+        public void Dispose()
+        {
+            if (_subscriptionToken != null)
+            {
+                
+            }
         }
 
         public Task WaitForSynchronizationAsync()

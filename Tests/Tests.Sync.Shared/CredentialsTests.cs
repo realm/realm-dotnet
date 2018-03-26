@@ -39,37 +39,39 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
+                var rand = new Random();
+                var number = rand.Next(10000000);
                 var serverUrl = "unbranded-fresh-chips.us1a.cloud.realm.io";
                 var credentials = Credentials.Nickname("admin", true);
                 var user = await User.LoginAsync(credentials, new Uri($"https://{serverUrl}"));
-                var config = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial3"), "referencerealm")
+                var config = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial{number}"), "referencerealm" + number)
                 {
                     IsPartial = true
                 };
 
-                //using (var realm = GetRealm(config))
-                //{
-                //    realm.Write(() =>
-                //    {
-                //        for (var i = 0; i < 100; i++)
-                //        {
-                //            realm.Add(new IntPrimaryKeyWithValueObject
-                //            {
-                //                Id = i,
-                //                StringValue = i + "asdf"
-                //            });
-                //        }
-                //    });
+                using (var realm = GetRealm(config))
+                {
+                    realm.Write(() =>
+                    {
+                        for (var i = 0; i < 100; i++)
+                        {
+                            realm.Add(new IntPrimaryKeyWithValueObject
+                            {
+                                Id = i,
+                                StringValue = i + "asdf"
+                            });
+                        }
+                    });
 
-                //    await GetSession(realm).WaitForUploadAsync();
-                //}
+                    await GetSession(realm).WaitForUploadAsync();
+                }
 
                 Session.Error += (s, e) =>
                 {
                     Console.WriteLine(e);
                 };
 
-                var config2 = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial3"), "partialrealm")
+                var config2 = new SyncConfiguration(user, new Uri($"realms://{serverUrl}/partial{number}"), "partialrealm" + number)
                 {
                     IsPartial = true
                 };
@@ -78,15 +80,15 @@ namespace Tests.Sync
                 {
                     await GetSession(realm).WaitForDownloadAsync();
 
-                    //Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
 
                     var query = realm.All<IntPrimaryKeyWithValueObject>().Where(i => i.StringValue.StartsWith("1"));
 
-                    //Assert.That(query.Count(), Is.EqualTo(0));
+                    Assert.That(query.Count(), Is.EqualTo(0));
 
                     var subscription = query.SubscribeToObjects();
 
-                    //Assert.That(subscription.Results.Count(), Is.EqualTo(0));
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                     //Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Pending));
 
                     await subscription.WaitForSynchronizationAsync();
