@@ -44,13 +44,6 @@ REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t*
     });
 }
 
-REALM_EXPORT Results* realm_subscription_get_results(Subscription* subscription, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Results(std::move(subscription->results()));
-    });
-}
-
 REALM_EXPORT SubscriptionState realm_subscription_get_state(Subscription* subscription, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

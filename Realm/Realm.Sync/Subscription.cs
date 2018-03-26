@@ -41,7 +41,7 @@ namespace Realms.Sync
 
         public Exception Error { get; private set; }
 
-        public IQueryable<T> Results { get; private set; }
+        public IQueryable<T> Results { get; }
 
         internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
         {
@@ -69,8 +69,6 @@ namespace Realms.Sync
             var newState = _handle.GetState();
             if (newState != State)
             {
-                string propToNotify = null;
-
                 try
                 {
                     State = newState;
@@ -78,15 +76,10 @@ namespace Realms.Sync
                     {
                         case SubscriptionState.Error:
                             Error = _handle.GetError();
-                            propToNotify = nameof(Error);
                             _syncTcs.TrySetException(Error);
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Error)));
                             break;
                         case SubscriptionState.Complete:
-                            var oldResults = (RealmResults<T>)Results;
-                            var realm = oldResults.Realm;
-                            var resultsHandle = _handle.GetResults(realm.SharedRealmHandle);
-                            Results = new RealmResults<T>(realm, oldResults.Metadata, resultsHandle);
-                            propToNotify = nameof(Results);
                             _syncTcs.TrySetResult(null);
                             break;
                     }
@@ -97,10 +90,6 @@ namespace Realms.Sync
                 }
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
-                if (propToNotify != null)
-                {
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propToNotify));
-                }
             }
         }
 

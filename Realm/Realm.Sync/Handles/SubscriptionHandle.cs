@@ -52,9 +52,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy_notification_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_results(SubscriptionHandle subscription, out NativeException ex);
         }
 
         [Preserve]
@@ -86,13 +83,6 @@ namespace Realms.Sync
             }
 
             return null;
-        }
-
-        public ResultsHandle GetResults(SharedRealmHandle realmHandle)
-        {
-            var result = NativeMethods.get_results(this, out var ex);
-            ex.ThrowIfNecessary();
-            return new ResultsHandle(realmHandle, result);
         }
 
         public SubscriptionTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, SubscriptionCallbackDelegate callback)
