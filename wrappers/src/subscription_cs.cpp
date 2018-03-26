@@ -21,7 +21,7 @@ using namespace realm::partial_sync;
 typedef void (*ManagedSubscriptionCallback)(void* managed_subscription);
 
 struct SubscriptionNotificationTokenContext {
-    NotificationToken token;
+    SubscriptionNotificationToken token;
     void* managed_subscription;
     ManagedSubscriptionCallback callback;
 };
@@ -76,13 +76,13 @@ REALM_EXPORT NativeException::Marshallable realm_subscription_get_error(Subscrip
 
 REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notification_callback(Subscription* subscription, void* managed_subscription, ManagedSubscriptionCallback callback, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [=]() {
+    return handle_errors(ex, [&]() {
         auto context = new SubscriptionNotificationTokenContext();
         context->managed_subscription = managed_subscription;
         context->callback = callback;
         context->token = subscription->add_notification_callback([context]() {
             context->callback(context->managed_subscription);
-        }).registration_token;
+        });
         
         return context;
     });

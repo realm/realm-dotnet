@@ -25,7 +25,7 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
-    public class Subscription<T> : INotifyPropertyChanged, IDisposable
+    public class Subscription<T> : INotifyPropertyChanged
     {
         private static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
 
@@ -54,14 +54,6 @@ namespace Realms.Sync
             _subscriptionToken = _handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), SubscriptionCallback);
         }
 
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            _subscriptionToken?.Dispose();
-            _subscriptionToken = null;
-            _handle.Dispose();
-        }
-
         public Task WaitForSynchronizationAsync()
         {
             return _syncTcs.Task;
@@ -78,26 +70,37 @@ namespace Realms.Sync
             if (newState != State)
             {
                 string propToNotify = null;
-                State = newState;
-                switch (State)
+
+                try
                 {
-                    case SubscriptionState.Error:
-                        Error = _handle.GetError();
-                        propToNotify = nameof(Error);
-                        _syncTcs.TrySetException(Error);
-                        break;
-                    case SubscriptionState.Complete:
-                        var oldResults = (RealmResults<T>)Results;
-                        var realm = oldResults.Realm;
-                        var resultsHandle = _handle.GetResults(realm.SharedRealmHandle);
-                        Results = new RealmResults<T>(realm, oldResults.Metadata, resultsHandle);
-                        propToNotify = nameof(Results);
-                        _syncTcs.TrySetResult(null);
-                        break;
+                    State = newState;
+                    switch (State)
+                    {
+                        case SubscriptionState.Error:
+                            Error = _handle.GetError();
+                            propToNotify = nameof(Error);
+                            _syncTcs.TrySetException(Error);
+                            break;
+                        case SubscriptionState.Complete:
+                            var oldResults = (RealmResults<T>)Results;
+                            var realm = oldResults.Realm;
+                            var resultsHandle = _handle.GetResults(realm.SharedRealmHandle);
+                            Results = new RealmResults<T>(realm, oldResults.Metadata, resultsHandle);
+                            propToNotify = nameof(Results);
+                            _syncTcs.TrySetResult(null);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _syncTcs.TrySetException(ex);
                 }
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propToNotify));
+                if (propToNotify != null)
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propToNotify));
+                }
             }
         }
 
