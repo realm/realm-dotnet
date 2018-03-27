@@ -18,12 +18,35 @@
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// An enumeration, representing the possible state of a sync subscription.
+    /// </summary>
     public enum SubscriptionState
     {
-        Error = -1,      // An error occurred while creating or processing the partial sync subscription.
-        Creating = 2,    // The subscription is being created.
-        Pending = 0,     // The subscription was created, but has not yet been processed by the sync server.
-        Complete = 1,    // The subscription has been processed by the sync server and data is being synced to the device.
-        Invalidated = 3, // The subscription has been removed.
+        /// <summary>
+        /// An error occurred while creating the subscription or while the server was processing it.
+        /// </summary>
+        Error = -1,
+
+        /// <summary>
+        /// The subscription has been created, and is waiting to be processed by the server.
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// The subscription has been processed by the server, and objects matching the subscription
+        /// are now being synchronized to this client.
+        /// </summary>
+        Complete = 1,
+
+        /// <summary>
+        /// The subscription is being created, but has not yet been written to the synced Realm.
+        /// </summary>
+        Creating = 2,
+
+        /// <summary>
+        /// This subscription has been removed.
+        /// </summary>
+        Invalidated = 3
     }
 }

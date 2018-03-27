@@ -54,9 +54,9 @@ namespace Realms.Sync
         /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
         /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
         /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
-        /// <remarks>Partial synchronization is a tech preview. Its APIs are subject to change.</remarks>
+        /// <remarks>Partial synchronization is in beta. Its APIs are subject to change.</remarks>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        [Obsolete("Use the SubscribeToObjects overload that accepts an IQueryable")]
+        [Obsolete("Use the IQueryable.SubscribeToObjects extension method")]
         public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
         {
             Argument.NotNull(realm, nameof(realm));

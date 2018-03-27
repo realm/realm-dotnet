@@ -26,6 +26,18 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
+    /// <summary>
+    /// A class that represents a subscription to a set of objects in a synced Realm.
+    /// <para/>
+    /// When partial sync is enabled for a synced Realm, the only objects that the server synchronizes to the
+    /// client are those that match a sync subscription registered by that client. A subscription consists of
+    /// of a query (represented by an <c>IQueryable{T}</c>) and an optional name.
+    /// <para/>
+    /// The state of the subscription can be observed by subscribing to the <see cref="PropertyChanged"/> event handler.
+    /// <para/>
+    /// Subscriptions are created by calling <see cref="CollectionPartialSyncExtensions.SubscribeToObjects"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
     public class Subscription<T> : INotifyPropertyChanged
     {
         private static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
@@ -38,10 +50,28 @@ namespace Realms.Sync
         /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Gets a value indicating the state of this subscription.
+        /// </summary>
+        /// <value>The state of the subscription.</value>
         public SubscriptionState State { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating what error (if any) has occurred while processing the subscription.
+        /// If the <see cref="State"/> is not <see cref="SubscriptionState.Error"/>, this will be <c>null</c>.
+        /// </summary>
+        /// <value>An instance of <see cref="Exception"/> if an error has occurred; <c>null</c> otherwise.</value>
         public Exception Error { get; private set; }
 
+        /// <summary>
+        /// Gets the query that this subscription is associated with. Regardless of the state of the subscription,
+        /// this value will reflect the results in the local Realm. This allows you to databind to this property
+        /// immediately and show the last synchronized data. If the <see cref="State"/> is <see cref="SubscriptionState.Invalidated"/>,
+        /// the values returned will not be an adequate representation of the state of the remote Realm.
+        /// </summary>
+        /// <value>
+        /// A queryable collection that can be further filtered, ordered, or observed for changes.
+        /// </value>
         public IQueryable<T> Results { get; }
 
         internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
@@ -55,6 +85,14 @@ namespace Realms.Sync
             _subscriptionToken = _handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), SubscriptionCallback);
         }
 
+        /// <summary>
+        /// Waits for the subscription to complete synchronizing (equivalent to transitioning to the
+        /// <see cref="SubscriptionState.Complete"/> state.
+        /// </summary>
+        /// <returns>
+        /// An awaitable task, that, upon completion, indicates that the objects matching the specified query
+        /// have been synchronized to the local Realm.
+        /// </returns>
         public Task WaitForSynchronizationAsync()
         {
             return _syncTcs.Task;
@@ -62,6 +100,7 @@ namespace Realms.Sync
 
         public async Task UnsubscribeAsync()
         {
+            // TODO decide if this should live here.
             _handle.Unsubscribe();
 
             var tcs = new TaskCompletionSource<object>();
