@@ -171,5 +171,20 @@ namespace Tests
 
             return tcs.Task;
         }
+
+        public static async Task WaitForConditionAsync(Func<bool> testFunc, int retryPeriod = 100, int timeout = 10000)
+        {
+            for (var i = 0; i < timeout / retryPeriod; i++)
+            {
+                if (testFunc())
+                {
+                    return;
+                }
+
+                await Task.Delay(retryPeriod);
+            }
+
+            throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+        }
     }
 }

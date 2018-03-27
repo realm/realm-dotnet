@@ -89,6 +89,13 @@ REALM_EXPORT void* realm_subscription_destroy_notification_token(SubscriptionNot
         return managed_subscription;
     });
 }
+    
+REALM_EXPORT void realm_subscription_unsubscribe(Subscription* subscription, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        partial_sync::unsubscribe(*subscription);
+    });
+}
 
 REALM_EXPORT void realm_subscription_destroy(Subscription* subscription)
 {

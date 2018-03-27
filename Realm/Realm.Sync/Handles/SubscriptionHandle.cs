@@ -52,6 +52,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy_notification_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_unsubscribe", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unsubscribe(SubscriptionHandle subscription, out NativeException ex);
         }
 
         [Preserve]
@@ -87,16 +90,22 @@ namespace Realms.Sync
 
         public SubscriptionTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, SubscriptionCallbackDelegate callback)
         {
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
-            nativeException.ThrowIfNecessary();
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var ex);
+            ex.ThrowIfNecessary();
             return new SubscriptionTokenHandle(this, result);
         }
 
         public IntPtr DestroyNotificationToken(IntPtr token)
         {
-            var result = NativeMethods.destroy_notificationtoken(token, out NativeException nativeException);
-            nativeException.ThrowIfNecessary();
+            var result = NativeMethods.destroy_notificationtoken(token, out var ex);
+            ex.ThrowIfNecessary();
             return result;
+        }
+
+        public void Unsubscribe()
+        {
+            NativeMethods.unsubscribe(this, out var ex);
+            ex.ThrowIfNecessary();
         }
 
         protected override void Unbind()

@@ -36,17 +36,8 @@ namespace Realms.Sync
             var results = query as RealmResults<T>;
             Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
 
-            return results.Realm.SubscribeToObjects(query, name);
-        }
-
-        public static Task UnsubscribeFromObjectsAsync<T>(this IQueryable<T> query)
-        {
-            Argument.NotNull(query, nameof(query));
-
-            var results = query as RealmResults<T>;
-            Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
-
-            return results.Realm.UnsubscribeFromObjectsAsync(query);
+            var handle = SubscriptionHandle.Create(results.ResultsHandle, name);
+            return new Subscription<T>(handle, results);
         }
     }
 }

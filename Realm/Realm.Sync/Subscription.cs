@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -45,10 +46,10 @@ namespace Realms.Sync
 
         internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
         {
-            State = SubscriptionState.Pending;
             Results = query;
 
             _handle = handle;
+            State = _handle.GetState();
 
             var managedSubscriptionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
             _subscriptionToken = _handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), SubscriptionCallback);
@@ -57,6 +58,31 @@ namespace Realms.Sync
         public Task WaitForSynchronizationAsync()
         {
             return _syncTcs.Task;
+        }
+
+        public async Task UnsubscribeAsync()
+        {
+            _handle.Unsubscribe();
+
+            var tcs = new TaskCompletionSource<object>();
+            PropertyChangedEventHandler handler = null;
+            handler = new PropertyChangedEventHandler((s, e) =>
+            {
+                switch (State)
+                {
+                    case SubscriptionState.Invalidated:
+                        tcs.TrySetResult(null);
+                        break;
+                    case SubscriptionState.Error:
+                        tcs.TrySetException(Error);
+                        break;
+                }
+            });
+
+            PropertyChanged += handler;
+            await tcs.Task;
+            PropertyChanged -= handler;
+            _subscriptionToken.Dispose();
         }
 
         private void ReloadState()
@@ -71,11 +97,17 @@ namespace Realms.Sync
             {
                 try
                 {
+                    // If we encounter an unexpected value, assume it's an error.
+                    if (!Enum.IsDefined(typeof(SubscriptionState), newState))
+                    {
+                        newState = SubscriptionState.Error;
+                    }
+
                     State = newState;
                     switch (State)
                     {
                         case SubscriptionState.Error:
-                            Error = _handle.GetError();
+                            Error = _handle.GetError() ?? new RealmException($"An unknown error has occurred. State: {_handle.GetState()}");
                             _syncTcs.TrySetException(Error);
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Error)));
                             break;
