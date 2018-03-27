@@ -98,9 +98,8 @@ namespace Realms.Sync
             return _syncTcs.Task;
         }
 
-        public async Task UnsubscribeAsync()
+        internal async Task UnsubscribeAsync()
         {
-            // TODO decide if this should live here.
             _handle.Unsubscribe();
 
             var tcs = new TaskCompletionSource<object>();

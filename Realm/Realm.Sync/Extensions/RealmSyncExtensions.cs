@@ -77,7 +77,7 @@ namespace Realms.Sync
             return new RealmResults<T>(realm, metadata, resultsHandle);
         }
 
-        public static Task<bool> UnsubscribeFromObjectsAsync(this Realm realm, string subscriptionName)
+        public static Task UnsubscribeFromObjectsAsync(this Realm realm, string subscriptionName)
         {
             var config = realm.Config.Clone();
             config.IsDynamic = true;
@@ -92,22 +92,30 @@ namespace Realms.Sync
                                                     .AsEnumerable()
                                                     .Where(s => s.name == subscriptionName)
                                                     .ToArray();
-                    if (resultSets.Any())
+                    if (!resultSets.Any())
                     {
-                        backgroundRealm.Write(() =>
-                        {
-                            foreach (var item in resultSets)
-                            {
-                                backgroundRealm.Remove(item);
-                            }
-                        });
-
-                        return true;
+                        throw new RealmException($"A subscription with the name {subscriptionName} doesn't exist.");
                     }
 
-                    return false;
+                    backgroundRealm.Write(() =>
+                    {
+                        foreach (var item in resultSets)
+                        {
+                            backgroundRealm.Remove(item);
+                        }
+                    });
                 }
             });
+        }
+
+        public static Task UnsubscribeFromObjectsAsync<T>(this Realm realm, Subscription<T> subscription)
+        {
+            return subscription.UnsubscribeAsync();
+        }
+
+        public static Task UnsubscribeFromObjectsAsync<T>(this Realm realm, IQueryable<T> query)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -282,10 +282,29 @@ namespace Tests.Sync
 
                     await realm.UnsubscribeFromObjectsAsync("query");
 
-                    Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
+                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(0));
+                }
+            });
+        }
+
+        [Test]
+        public void UnnamedSubscription_CanUnsubscribeByQuery()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetPartialRealm())
+                {
+                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
+                    var subscription = query.SubscribeToObjects();
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(5));
+
+                    await realm.UnsubscribeFromObjectsAsync(query);
 
                     await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
-                    Assert.That(query.Count(), Is.EqualTo(0));
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
             });
