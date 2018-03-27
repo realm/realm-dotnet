@@ -134,6 +134,11 @@ namespace Realms
             DatabasePath = GetPathToRealm(optionalPath);
         }
 
+        internal RealmConfigurationBase Clone()
+        {
+            return (RealmConfigurationBase)MemberwiseClone();
+        }
+
         internal abstract Realm CreateRealm(RealmSchema schema);
 
         internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema);

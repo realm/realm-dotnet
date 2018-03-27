@@ -217,6 +217,31 @@ namespace Tests.Sync
         }
 
         [Test]
+        public void UnnamedSubscription_CanUnsubscribe()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetPartialRealm())
+                {
+                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
+                    var subscription = query.SubscribeToObjects();
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(5));
+
+                    await subscription.UnsubscribeAsync();
+
+                    Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
+
+                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    Assert.That(query.Count(), Is.EqualTo(0));
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(0));
+                }
+            });
+        }
+
+        [Test]
         public void NamedSubscription_CanUnsubscribe()
         {
             AsyncContext.Run(async () =>
@@ -231,6 +256,31 @@ namespace Tests.Sync
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
                     await subscription.UnsubscribeAsync();
+
+                    Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
+
+                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    Assert.That(query.Count(), Is.EqualTo(0));
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(0));
+                }
+            });
+        }
+
+        [Test]
+        public void NamedSubscription_CanUnsubscribeByName()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetPartialRealm())
+                {
+                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
+                    var subscription = query.SubscribeToObjects(name: "query");
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(5));
+
+                    await realm.UnsubscribeFromObjectsAsync("query");
 
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
 

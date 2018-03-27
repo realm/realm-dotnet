@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -74,6 +75,39 @@ namespace Realms.Sync
 
             var resultsHandle = await tcs.Task;
             return new RealmResults<T>(realm, metadata, resultsHandle);
+        }
+
+        public static Task<bool> UnsubscribeFromObjectsAsync(this Realm realm, string subscriptionName)
+        {
+            var config = realm.Config.Clone();
+            config.IsDynamic = true;
+            config.ObjectClasses = null;
+            
+            return Task.Run(() =>
+            {
+                using (var backgroundRealm = Realm.GetInstance(config))
+                {
+                    // We can't query with dynamic :/
+                    var resultSets = backgroundRealm.All("__ResultSets")
+                                                    .AsEnumerable()
+                                                    .Where(s => s.name == subscriptionName)
+                                                    .ToArray();
+                    if (resultSets.Any())
+                    {
+                        backgroundRealm.Write(() =>
+                        {
+                            foreach (var item in resultSets)
+                            {
+                                backgroundRealm.Remove(item);
+                            }
+                        });
+
+                        return true;
+                    }
+
+                    return false;
+                }
+            });
         }
     }
 }
