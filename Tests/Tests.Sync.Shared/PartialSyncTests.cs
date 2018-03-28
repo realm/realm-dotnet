@@ -39,7 +39,7 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects();
+                    var subscription = query.Subscribe();
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Creating));
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
@@ -65,7 +65,7 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects();
+                    var subscription = query.Subscribe();
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     var queriedObjectAs = realm.All<ObjectA>().Where(o => o.IntValue < 5);
@@ -89,8 +89,8 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).SubscribeToObjects();
-                    var range1to6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 1 && o.IntValue < 6).SubscribeToObjects();
+                    var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
+                    var range1to6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 1 && o.IntValue < 6).Subscribe();
 
                     await youngerThan3Subscription.WaitForSynchronizationAsync().Timeout(2000);
                     await range1to6Subscription.WaitForSynchronizationAsync().Timeout(2000);
@@ -119,8 +119,8 @@ namespace Tests.Sync
             {
                 using (var realm = await GetPartialRealm())
                 {
-                    var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).SubscribeToObjects();
-                    var olderThan6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 6).SubscribeToObjects();
+                    var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
+                    var olderThan6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 6).Subscribe();
 
                     await youngerThan3Subscription.WaitForSynchronizationAsync().Timeout(2000);
                     await olderThan6Subscription.WaitForSynchronizationAsync().Timeout(2000);
@@ -170,13 +170,13 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects(name: "less than 5");
+                    var subscription = query.Subscribe(name: "less than 5");
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
-                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue < 5).SubscribeToObjects(name: "less than 5");
+                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue < 5).Subscribe(name: "less than 5");
                     await subscription2.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
@@ -193,13 +193,13 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects(name: "foo");
+                    var subscription = query.Subscribe(name: "foo");
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
-                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue > 5).SubscribeToObjects(name: "foo");
+                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue > 5).Subscribe(name: "foo");
                     try
                     {
                         await subscription2.WaitForSynchronizationAsync().Timeout(5000);
@@ -224,7 +224,7 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects();
+                    var subscription = query.Subscribe();
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
@@ -249,7 +249,7 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects(name: "query");
+                    var subscription = query.Subscribe(name: "query");
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
@@ -274,35 +274,13 @@ namespace Tests.Sync
                 using (var realm = await GetPartialRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects(name: "query");
+                    var subscription = query.Subscribe(name: "query");
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
-                    await realm.UnsubscribeFromObjectsAsync("query");
-
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
-                    Assert.That(subscription.Results.Count(), Is.EqualTo(0));
-                }
-            });
-        }
-
-        [Test]
-        public void UnnamedSubscription_CanUnsubscribeByQuery()
-        {
-            AsyncContext.Run(async () =>
-            {
-                using (var realm = await GetPartialRealm())
-                {
-                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.SubscribeToObjects();
-
-                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
-
-                    Assert.That(subscription.Results.Count(), Is.EqualTo(5));
-
-                    await realm.UnsubscribeFromObjectsAsync(query);
+                    await realm.UnsubscribeAsync("query");
 
                     await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));

@@ -76,46 +76,5 @@ namespace Realms.Sync
             var resultsHandle = await tcs.Task;
             return new RealmResults<T>(realm, metadata, resultsHandle);
         }
-
-        public static Task UnsubscribeFromObjectsAsync(this Realm realm, string subscriptionName)
-        {
-            var config = realm.Config.Clone();
-            config.IsDynamic = true;
-            config.ObjectClasses = null;
-            
-            return Task.Run(() =>
-            {
-                using (var backgroundRealm = Realm.GetInstance(config))
-                {
-                    // We can't query with dynamic :/
-                    var resultSets = backgroundRealm.All("__ResultSets")
-                                                    .AsEnumerable()
-                                                    .Where(s => s.name == subscriptionName)
-                                                    .ToArray();
-                    if (!resultSets.Any())
-                    {
-                        throw new RealmException($"A subscription with the name {subscriptionName} doesn't exist.");
-                    }
-
-                    backgroundRealm.Write(() =>
-                    {
-                        foreach (var item in resultSets)
-                        {
-                            backgroundRealm.Remove(item);
-                        }
-                    });
-                }
-            });
-        }
-
-        public static Task UnsubscribeFromObjectsAsync<T>(this Realm realm, Subscription<T> subscription)
-        {
-            return subscription.UnsubscribeAsync();
-        }
-
-        public static Task UnsubscribeFromObjectsAsync<T>(this Realm realm, IQueryable<T> query)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

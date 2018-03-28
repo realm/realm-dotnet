@@ -41,7 +41,6 @@
     <Compile Include="Exceptions\PermissionDeniedException.cs" />
     <Compile Include="Extensions\RealmSyncExtensions.cs" />
     <Compile Include="Extensions\TestingExtensions.cs" />
-    <Compile Include="Extensions\CollectionPartialSyncExtensions.cs" />
     <Compile Include="Handles\SessionHandle.cs" />
     <Compile Include="Handles\SubscriptionHandle.cs" />
     <Compile Include="Handles\SharedRealmHandleExtensions.cs" />

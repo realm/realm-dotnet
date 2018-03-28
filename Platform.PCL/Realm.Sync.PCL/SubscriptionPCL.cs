@@ -23,25 +23,15 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
-using Realms.Helpers;
-using Realms.Native;
 
 namespace Realms.Sync
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    internal interface ISubscription
-    {
-        void ReloadState();
-    }
-
     /// <summary>
     /// A set of helper methods exposing partial-sync related functionality over collections.
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public static class Subscription
-    {
-        internal static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
-
+    {        
         /// <summary>
         /// For partially synchronized Realms, fetches and synchronizes the objects that match the query. 
         /// </summary>
@@ -58,16 +48,8 @@ namespace Realms.Sync
         /// <exception cref="ArgumentException">Thrown if the <c>query</c> was not obtained from a partially synchronized Realm.</exception>
         public static Subscription<T> Subscribe<T>(this IQueryable<T> query, string name = null)
         {
-            Argument.NotNull(query, nameof(query));
-
-            var results = query as RealmResults<T>;
-            Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
-
-            var syncConfig = results.Realm.Config as SyncConfiguration;
-            Argument.Ensure(syncConfig?.IsPartial == true, $"{nameof(query)} must be obtained from a partial synchronized Realm.", nameof(query));
-
-            var handle = SubscriptionHandle.Create(results.ResultsHandle, name);
-            return new Subscription<T>(handle, results);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -83,37 +65,8 @@ namespace Realms.Sync
         /// <returns>An awaitable task, that indicates that the subscription has been removed locally.</returns>
         public static Task UnsubscribeAsync(this Realm realm, string subscriptionName)
         {
-            Argument.NotNull(realm, nameof(realm));
-            var syncConfig = realm.Config as SyncConfiguration;
-            Argument.Ensure(syncConfig?.IsPartial == true, $"{nameof(realm)} must be a partial synchronized Realm.", nameof(realm));
-
-            var config = realm.Config.Clone();
-            config.IsDynamic = true;
-            config.ObjectClasses = null;
-
-            return Task.Run(() =>
-            {
-                using (var backgroundRealm = Realm.GetInstance(config))
-                {
-                    // We can't query with dynamic :/
-                    var resultSets = backgroundRealm.All("__ResultSets")
-                                                    .AsEnumerable()
-                                                    .Where(s => s.name == subscriptionName)
-                                                    .ToArray();
-                    if (!resultSets.Any())
-                    {
-                        throw new RealmException($"A subscription with the name {subscriptionName} doesn't exist.");
-                    }
-
-                    backgroundRealm.Write(() =>
-                    {
-                        foreach (var item in resultSets)
-                        {
-                            backgroundRealm.Remove(item);
-                        }
-                    });
-                }
-            });
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -127,50 +80,10 @@ namespace Realms.Sync
         /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
         /// <param name="subscription">The subscription to cancel.</param>
         /// <returns>An awaitable task, that indicates that the subscription has been removed locally.</returns>
-        public static async Task UnsubscribeAsync<T>(this Subscription<T> subscription)
+        public static Task UnsubscribeAsync<T>(this Subscription<T> subscription)
         {
-            Argument.NotNull(subscription, nameof(subscription));
-            if (subscription.State == SubscriptionState.Invalidated)
-            {
-                return;
-            }
-
-            subscription.Handle.Unsubscribe();
-
-            var tcs = new TaskCompletionSource<object>();
-            PropertyChangedEventHandler handler = null;
-            handler = new PropertyChangedEventHandler((s, e) =>
-            {
-                switch (subscription.State)
-                {
-                    case SubscriptionState.Invalidated:
-                        tcs.TrySetResult(null);
-                        break;
-                    case SubscriptionState.Error:
-                        tcs.TrySetException(subscription.Error);
-                        break;
-                }
-            });
-
-            subscription.PropertyChanged += handler;
-            try
-            {
-                await tcs.Task;
-            }
-            finally
-            {
-                subscription.PropertyChanged -= handler;
-                subscription.SubscriptionToken.Dispose();
-            }
-        }
-
-        [NativeCallback(typeof(SubscriptionHandle.SubscriptionCallbackDelegate))]
-        private static void SubscriptionCallbackImpl(IntPtr managedHandle)
-        {
-            if (GCHandle.FromIntPtr(managedHandle).Target is ISubscription subscription)
-            {
-                subscription.ReloadState();
-            }
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
     }
 
@@ -187,13 +100,8 @@ namespace Realms.Sync
     /// </summary>
     /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    public class Subscription<T> : INotifyPropertyChanged, ISubscription
+    public class Subscription<T> : INotifyPropertyChanged
     {
-        internal readonly SubscriptionHandle Handle;
-        internal readonly SubscriptionTokenHandle SubscriptionToken;
-
-        private readonly TaskCompletionSource<object> _syncTcs = new TaskCompletionSource<object>();
-
         /// <inheritdoc />
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -221,15 +129,8 @@ namespace Realms.Sync
         /// </value>
         public IQueryable<T> Results { get; }
 
-        internal Subscription(SubscriptionHandle handle, RealmResults<T> query)
+        private Subscription()
         {
-            Results = query;
-
-            Handle = handle;
-            State = Handle.GetState();
-
-            var managedSubscriptionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            SubscriptionToken = Handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), Subscription.SubscriptionCallback);
         }
 
         /// <summary>
@@ -242,47 +143,8 @@ namespace Realms.Sync
         /// </returns>
         public Task WaitForSynchronizationAsync()
         {
-            return _syncTcs.Task;
-        }
-
-        void ISubscription.ReloadState()
-        {
-            if (Handle.IsClosed)
-            {
-                return;
-            }
-
-            var newState = Handle.GetState();
-            if (newState != State)
-            {
-                try
-                {
-                    // If we encounter an unexpected value, assume it's an error.
-                    if (!Enum.IsDefined(typeof(SubscriptionState), newState))
-                    {
-                        newState = SubscriptionState.Error;
-                    }
-
-                    State = newState;
-                    switch (State)
-                    {
-                        case SubscriptionState.Error:
-                            Error = Handle.GetError() ?? new RealmException($"An unknown error has occurred. State: {Handle.GetState()}");
-                            _syncTcs.TrySetException(Error);
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Error)));
-                            break;
-                        case SubscriptionState.Complete:
-                            _syncTcs.TrySetResult(null);
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _syncTcs.TrySetException(ex);
-                }
-
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
-            }
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
     }
 }
