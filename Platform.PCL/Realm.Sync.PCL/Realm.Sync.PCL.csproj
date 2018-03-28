@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\LogLevel.cs">
       <Link>LogLevel.cs</Link>
+    </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\SubscriptionState.cs">
       <Link>SubscriptionState.cs</Link>
     </Compile>
