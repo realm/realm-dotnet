@@ -443,22 +443,7 @@ namespace Tests.Database
 
         private void RunManagedTests<T>(IList<T> items, T[] toAdd)
         {
-            AsyncContext.Run(async () =>
-            {
-                try
-                {
-                    await RunManagedTestsAsync(items, toAdd).Timeout(5000);
-                }
-                catch (TimeoutException)
-                {
-                    // Ignore a timeout on Windows as it's sporadic.
-                    // TODO: investigate further
-                    if (!TestHelpers.IsWindows)
-                    {
-                        throw;
-                    }
-                }
-            });
+            AsyncContext.Run(() => RunManagedTestsAsync(items, toAdd).Timeout(5000));
         }
 
         private async Task RunManagedTestsAsync<T>(IList<T> items, T[] toAdd)
