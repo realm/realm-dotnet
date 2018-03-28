@@ -42,7 +42,7 @@ namespace Realms.Sync
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_state", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_status(SubscriptionHandle subscription, out NativeException ex);
+            public static extern int get_status(SubscriptionHandle subscription, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_error", CallingConvention = CallingConvention.Cdecl)]
             public static extern NativeException get_error(SubscriptionHandle subscription);
