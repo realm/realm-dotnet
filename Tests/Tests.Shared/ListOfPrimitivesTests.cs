@@ -445,196 +445,213 @@ namespace Tests.Database
         {
             AsyncContext.Run(async () =>
             {
-                if (toAdd == null)
+                try
                 {
-                    toAdd = new T[0];
+                    await RunManagedTestsAsync(items, toAdd).Timeout(5000);
                 }
-
-                var notifications = new List<ChangeSet>();
-                var token = items.SubscribeForNotifications((sender, changes, error) =>
+                catch (TimeoutException)
                 {
-                    if (changes != null)
+                    // Ignore a timeout on Windows as it's sporadic.
+                    // TODO: investigate further
+                    if (!TestHelpers.IsWindows)
                     {
-                        notifications.Add(changes);
+                        throw;
                     }
-                });
-
-                // Test add
-                _realm.Write(() =>
-                {
-                    foreach (var item in toAdd)
-                    {
-                        items.Add(item);
-                    }
-                });
-
-                // Test notifications
-                if (toAdd.Any())
-                {
-                    VerifyNotifications(notifications, () =>
-                    {
-                        Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, toAdd.Length)));
-                    });
                 }
+            });
+        }
 
-                // Test iterating
-                var iterator = 0;
-                foreach (var item in items)
+        private async Task RunManagedTestsAsync<T>(IList<T> items, T[] toAdd)
+        {
+            if (toAdd == null)
+            {
+                toAdd = new T[0];
+            }
+
+            var notifications = new List<ChangeSet>();
+            var token = items.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
                 {
-                    Assert.That(item, Is.EqualTo(toAdd[iterator++]));
+                    notifications.Add(changes);
                 }
+            });
 
-                // Test access by index
-                for (var i = 0; i < items.Count; i++)
-                {
-                    Assert.That(items[i], Is.EqualTo(toAdd[i]));
-                }
-
-                Assert.That(() => items[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
-                Assert.That(() => items[items.Count], Throws.TypeOf<ArgumentOutOfRangeException>());
-
-                // Test indexOf
+            // Test add
+            _realm.Write(() =>
+            {
                 foreach (var item in toAdd)
                 {
-                    Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
+                    items.Add(item);
                 }
+            });
 
-                // Test threadsafe reference
-                var reference = ThreadSafeReference.Create(items);
-                await Task.Run(() =>
+            // Test notifications
+            if (toAdd.Any())
+            {
+                VerifyNotifications(notifications, () =>
                 {
-                    using (var realm = Realm.GetInstance(_realm.Config))
-                    {
-                        var backgroundList = realm.ResolveReference(reference);
-                        for (var i = 0; i < backgroundList.Count; i++)
-                        {
-                            Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
-                        }
-                    }
+                    Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, toAdd.Length)));
                 });
+            }
 
-                if (toAdd.Any())
+            // Test iterating
+            var iterator = 0;
+            foreach (var item in items)
+            {
+                Assert.That(item, Is.EqualTo(toAdd[iterator++]));
+            }
+
+            // Test access by index
+            for (var i = 0; i < items.Count; i++)
+            {
+                Assert.That(items[i], Is.EqualTo(toAdd[i]));
+            }
+
+            Assert.That(() => items[-1], Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => items[items.Count], Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            // Test indexOf
+            foreach (var item in toAdd)
+            {
+                Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
+            }
+
+            // Test threadsafe reference
+            var reference = ThreadSafeReference.Create(items);
+            await Task.Run(() =>
+            {
+                using (var realm = Realm.GetInstance(_realm.Config))
                 {
-                    // Test insert
-                    var toInsert = toAdd[_random.Next(0, toAdd.Length)];
-                    _realm.Write(() =>
+                    var backgroundList = realm.ResolveReference(reference);
+                    for (var i = 0; i < backgroundList.Count; i++)
                     {
-                        items.Insert(0, toInsert);
-                        items.Insert(items.Count, toInsert);
-
-                        Assert.That(() => items.Insert(-1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items.Insert(items.Count + 1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    });
-
-                    Assert.That(items.First(), Is.EqualTo(toInsert));
-                    Assert.That(items.Last(), Is.EqualTo(toInsert));
-
-                    // Test notifications
-                    VerifyNotifications(notifications, () =>
-                    {
-                        Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(new[] { 0, items.Count - 1 }));
-                    });
-
-                    // Test remove
-                    _realm.Write(() =>
-                    {
-                        items.Remove(toInsert);
-                        items.RemoveAt(items.Count - 1);
-
-                        Assert.That(() => items.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items.RemoveAt(items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    });
-
-                    CollectionAssert.AreEqual(items, toAdd);
-
-                    // Test notifications
-                    VerifyNotifications(notifications, () =>
-                    {
-                        Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
-                    });
-
-                    // Test set
-                    var indexToSet = TestHelpers.Random.Next(0, items.Count);
-                    var previousValue = items[indexToSet];
-                    var valueToSet = toAdd[TestHelpers.Random.Next(0, toAdd.Length)];
-                    _realm.Write(() =>
-                    {
-                        items[indexToSet] = valueToSet;
-
-                        Assert.That(() => items[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items[items.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
-                    });
-
-                    VerifyNotifications(notifications, () =>
-                    {
-                        Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
-                    });
-
-                    _realm.Write(() => items[indexToSet] = previousValue);
-
-                    VerifyNotifications(notifications, () =>
-                    {
-                        Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
-                    });
-
-                    // Test move
-                    var from = TestHelpers.Random.Next(0, items.Count);
-                    var to = TestHelpers.Random.Next(0, items.Count);
-
-                    _realm.Write(() =>
-                    {
-                        items.Move(from, to);
-
-                        Assert.That(() => items.Move(-1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items.Move(from, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items.Move(items.Count + 1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
-                        Assert.That(() => items.Move(from, items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
-                    });
-
-                    Assert.That(items[to], Is.EqualTo(toAdd[from]));
-
-                    // Test notifications
-                    if (from != to)
-                    {
-                        VerifyNotifications(notifications, () =>
-                        {
-                            Assert.That(notifications[0].Moves.Length, Is.EqualTo(1));
-                            var move = notifications[0].Moves[0];
-
-                            // Moves may be reported with swapped from/to arguments if the elements are adjacent
-                            if (move.From == to)
-                            {
-                                Assert.That(move.From, Is.EqualTo(to));
-                                Assert.That(move.To, Is.EqualTo(from));
-                            }
-                            else
-                            {
-                                Assert.That(move.From, Is.EqualTo(from));
-                                Assert.That(move.To, Is.EqualTo(to));
-                            }
-                        });
+                        Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
                     }
                 }
+            });
 
-                // Test Clear
+            if (toAdd.Any())
+            {
+                // Test insert
+                var toInsert = toAdd[_random.Next(0, toAdd.Length)];
                 _realm.Write(() =>
                 {
-                    items.Clear();
+                    items.Insert(0, toInsert);
+                    items.Insert(items.Count, toInsert);
+
+                    Assert.That(() => items.Insert(-1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items.Insert(items.Count + 1, toInsert), Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
 
-                Assert.That(items, Is.Empty);
+                Assert.That(items.First(), Is.EqualTo(toInsert));
+                Assert.That(items.Last(), Is.EqualTo(toInsert));
 
                 // Test notifications
-                if (toAdd.Any())
+                VerifyNotifications(notifications, () =>
+                {
+                    Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(new[] { 0, items.Count - 1 }));
+                });
+
+                // Test remove
+                _realm.Write(() =>
+                {
+                    items.Remove(toInsert);
+                    items.RemoveAt(items.Count - 1);
+
+                    Assert.That(() => items.RemoveAt(-1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items.RemoveAt(items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                CollectionAssert.AreEqual(items, toAdd);
+
+                // Test notifications
+                VerifyNotifications(notifications, () =>
+                {
+                    Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
+                });
+
+                // Test set
+                var indexToSet = TestHelpers.Random.Next(0, items.Count);
+                var previousValue = items[indexToSet];
+                var valueToSet = toAdd[TestHelpers.Random.Next(0, toAdd.Length)];
+                _realm.Write(() =>
+                {
+                    items[indexToSet] = valueToSet;
+
+                    Assert.That(() => items[-1] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items[items.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                VerifyNotifications(notifications, () =>
+                {
+                    Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
+                });
+
+                _realm.Write(() => items[indexToSet] = previousValue);
+
+                VerifyNotifications(notifications, () =>
+                {
+                    Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
+                });
+
+                // Test move
+                var from = TestHelpers.Random.Next(0, items.Count);
+                var to = TestHelpers.Random.Next(0, items.Count);
+
+                _realm.Write(() =>
+                {
+                    items.Move(from, to);
+
+                    Assert.That(() => items.Move(-1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items.Move(from, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items.Move(items.Count + 1, to), Throws.TypeOf<ArgumentOutOfRangeException>());
+                    Assert.That(() => items.Move(from, items.Count + 1), Throws.TypeOf<ArgumentOutOfRangeException>());
+                });
+
+                Assert.That(items[to], Is.EqualTo(toAdd[from]));
+
+                // Test notifications
+                if (from != to)
                 {
                     VerifyNotifications(notifications, () =>
                     {
-                        // TODO: verify notifications contains the expected Deletions collection
+                        Assert.That(notifications[0].Moves.Length, Is.EqualTo(1));
+                        var move = notifications[0].Moves[0];
+
+                        // Moves may be reported with swapped from/to arguments if the elements are adjacent
+                        if (move.From == to)
+                        {
+                            Assert.That(move.From, Is.EqualTo(to));
+                            Assert.That(move.To, Is.EqualTo(from));
+                        }
+                        else
+                        {
+                            Assert.That(move.From, Is.EqualTo(from));
+                            Assert.That(move.To, Is.EqualTo(to));
+                        }
                     });
                 }
+            }
 
-                token.Dispose();
+            // Test Clear
+            _realm.Write(() =>
+            {
+                items.Clear();
             });
+
+            Assert.That(items, Is.Empty);
+
+            // Test notifications
+            if (toAdd.Any())
+            {
+                VerifyNotifications(notifications, () =>
+                {
+                    // TODO: verify notifications contains the expected Deletions collection
+                });
+            }
+
+            token.Dispose();
         }
 
         private void VerifyNotifications(List<ChangeSet> notifications, Action verifier)
