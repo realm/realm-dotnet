@@ -120,7 +120,7 @@ namespace Realms.Sync
 
         /// <summary>
         /// Gets the query that this subscription is associated with. Regardless of the state of the subscription,
-        /// this value will reflect the results in the local Realm. This allows you to databind to this property
+        /// this value will reflect the results in the local Realm. This allows you to data-bind to this property
         /// immediately and show the last synchronized data. If the <see cref="State"/> is <see cref="SubscriptionState.Invalidated"/>,
         /// the values returned will not be an adequate representation of the state of the remote Realm.
         /// </summary>
