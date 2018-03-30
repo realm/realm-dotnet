@@ -29,7 +29,7 @@ namespace Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class ListOfPrimitivesTests : RealmInstanceTest
     {
-        private readonly Random _random = new Random();
+        private static readonly Random _random = new Random();
 
         private ListsObject _managedListsObject;
 
@@ -443,11 +443,24 @@ namespace Tests.Database
 
         private void RunManagedTests<T>(IList<T> items, T[] toAdd)
         {
-            AsyncContext.Run(() => RunManagedTestsAsync(items, toAdd).Timeout(5000));
+            var reference = ThreadSafeReference.Create(items);
+            AsyncContext.Run(async () =>
+            {
+                await Task.Run(() =>
+                {
+                    using (var realm = Realm.GetInstance(_realm.Config))
+                    {
+                        var backgroundList = realm.ResolveReference(reference);
+                        RunManagedTestsCore(backgroundList, toAdd);
+                    }
+                }).Timeout(5000);
+            });
         }
 
-        private async Task RunManagedTestsAsync<T>(IList<T> items, T[] toAdd)
+        private static void RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
         {
+            var realm = (items as RealmList<T>).Realm;
+
             if (toAdd == null)
             {
                 toAdd = new T[0];
@@ -463,7 +476,7 @@ namespace Tests.Database
             });
 
             // Test add
-            _realm.Write(() =>
+            realm.Write(() =>
             {
                 foreach (var item in toAdd)
                 {
@@ -474,7 +487,7 @@ namespace Tests.Database
             // Test notifications
             if (toAdd.Any())
             {
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(Enumerable.Range(0, toAdd.Length)));
                 });
@@ -502,25 +515,11 @@ namespace Tests.Database
                 Assert.That(items.IndexOf(item), Is.EqualTo(Array.IndexOf(toAdd, item)));
             }
 
-            // Test threadsafe reference
-            var reference = ThreadSafeReference.Create(items);
-            await Task.Run(() =>
-            {
-                using (var realm = Realm.GetInstance(_realm.Config))
-                {
-                    var backgroundList = realm.ResolveReference(reference);
-                    for (var i = 0; i < backgroundList.Count; i++)
-                    {
-                        Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
-                    }
-                }
-            });
-
             if (toAdd.Any())
             {
                 // Test insert
                 var toInsert = toAdd[_random.Next(0, toAdd.Length)];
-                _realm.Write(() =>
+                realm.Write(() =>
                 {
                     items.Insert(0, toInsert);
                     items.Insert(items.Count, toInsert);
@@ -533,13 +532,13 @@ namespace Tests.Database
                 Assert.That(items.Last(), Is.EqualTo(toInsert));
 
                 // Test notifications
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     Assert.That(notifications[0].InsertedIndices, Is.EquivalentTo(new[] { 0, items.Count - 1 }));
                 });
 
                 // Test remove
-                _realm.Write(() =>
+                realm.Write(() =>
                 {
                     items.Remove(toInsert);
                     items.RemoveAt(items.Count - 1);
@@ -551,7 +550,7 @@ namespace Tests.Database
                 CollectionAssert.AreEqual(items, toAdd);
 
                 // Test notifications
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     Assert.That(notifications[0].DeletedIndices, Is.EquivalentTo(new[] { 0, items.Count + 1 }));
                 });
@@ -560,7 +559,7 @@ namespace Tests.Database
                 var indexToSet = TestHelpers.Random.Next(0, items.Count);
                 var previousValue = items[indexToSet];
                 var valueToSet = toAdd[TestHelpers.Random.Next(0, toAdd.Length)];
-                _realm.Write(() =>
+                realm.Write(() =>
                 {
                     items[indexToSet] = valueToSet;
 
@@ -568,14 +567,14 @@ namespace Tests.Database
                     Assert.That(() => items[items.Count] = valueToSet, Throws.TypeOf<ArgumentOutOfRangeException>());
                 });
 
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
                 });
 
-                _realm.Write(() => items[indexToSet] = previousValue);
+                realm.Write(() => items[indexToSet] = previousValue);
 
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     Assert.That(notifications[0].ModifiedIndices, Is.EquivalentTo(new[] { indexToSet }));
                 });
@@ -584,7 +583,7 @@ namespace Tests.Database
                 var from = TestHelpers.Random.Next(0, items.Count);
                 var to = TestHelpers.Random.Next(0, items.Count);
 
-                _realm.Write(() =>
+                realm.Write(() =>
                 {
                     items.Move(from, to);
 
@@ -599,7 +598,7 @@ namespace Tests.Database
                 // Test notifications
                 if (from != to)
                 {
-                    VerifyNotifications(notifications, () =>
+                    VerifyNotifications(realm, notifications, () =>
                     {
                         Assert.That(notifications[0].Moves.Length, Is.EqualTo(1));
                         var move = notifications[0].Moves[0];
@@ -620,7 +619,7 @@ namespace Tests.Database
             }
 
             // Test Clear
-            _realm.Write(() =>
+            realm.Write(() =>
             {
                 items.Clear();
             });
@@ -630,7 +629,7 @@ namespace Tests.Database
             // Test notifications
             if (toAdd.Any())
             {
-                VerifyNotifications(notifications, () =>
+                VerifyNotifications(realm, notifications, () =>
                 {
                     // TODO: verify notifications contains the expected Deletions collection
                 });
@@ -639,9 +638,9 @@ namespace Tests.Database
             token.Dispose();
         }
 
-        private void VerifyNotifications(List<ChangeSet> notifications, Action verifier)
+        private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
         {
-            _realm.Refresh();
+            realm.Refresh();
             Assert.That(notifications.Count, Is.EqualTo(1));
             verifier();
             notifications.Clear();
