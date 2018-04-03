@@ -332,12 +332,12 @@ namespace Realms
 
         public class SchemaMarshaler
         {
-            public readonly SchemaObject[] Objects;
-            public readonly SchemaProperty[] Properties;
+            public readonly Native.SchemaObject[] Objects;
+            public readonly Native.SchemaProperty[] Properties;
 
             public SchemaMarshaler(RealmSchema schema)
             {
-                var properties = new List<SchemaProperty>();
+                var properties = new List<Native.SchemaProperty>();
 
                 Objects = schema.Select(@object =>
                 {
@@ -345,7 +345,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    return new SchemaObject
+                    return new Native.SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -355,9 +355,9 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            public static SchemaProperty ForMarshalling(Property property)
+            public static Native.SchemaProperty ForMarshalling(Property property)
             {
-                return new SchemaProperty
+                return new Native.SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,

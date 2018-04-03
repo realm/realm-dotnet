@@ -2,6 +2,7 @@
 ------------------
 
 ### Enhancements
+- Allow `[MapTo]` to be applied on classes to change the name of the table corresponding to that class. ([#1712](https://github.com/realm/realm-dotnet/pull/1712))
 
 ### Bug fixes
 
