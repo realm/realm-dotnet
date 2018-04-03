@@ -247,7 +247,7 @@ namespace Realms.Sync
         /// Asynchronously retrieve all permissions associated with the user calling this method.
         /// </summary>
         /// <returns>
-        /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
+        /// A queryable collection of <see cref="PathPermission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
         /// <param name="recipient">The optional recipient of the permission.</param>
@@ -260,7 +260,7 @@ namespace Realms.Sync
         /// features and limitations apply - you can query and subscribe for notifications, but you cannot pass it between
         /// threads.
         /// </remarks>
-        public Task<IQueryable<Permission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
+        public Task<IQueryable<PathPermission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

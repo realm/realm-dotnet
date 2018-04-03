@@ -1,4 +1,4 @@
-2.3.0 (TBD)
+3.0.0 (TBD)
 ------------------
 
 ### Enhancements
@@ -12,6 +12,9 @@ for more information. ([#1679](https://github.com/realm/realm-dotnet/pull/1679))
 
 ### Breaking Changes
 - Uses the Sync 3.0 client which is incompatible with ROS 2.x.
+- `Permission` has been renamed to `PathPermission` to more closely reflect its purpose.
+Furthermore, existing methods to modify permissions only work on full Realms. New methods
+and classes are introduced to configure access to a partially synchronized Realm.
 
 2.2.0 (2017-03-22)
 ------------------
