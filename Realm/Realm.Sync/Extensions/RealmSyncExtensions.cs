@@ -19,6 +19,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Realms.Helpers;
 
@@ -61,7 +62,7 @@ namespace Realms.Sync
             Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             var type = typeof(T);
-            if (!realm.Metadata.TryGetValue(type.Name, out var metadata) || metadata.Schema.Type.AsType() != type)
+            if (!realm.Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) || metadata.Schema.Type.AsType() != type)
             {
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
             }
