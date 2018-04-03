@@ -46,10 +46,14 @@
     <Compile Include="..\..\Realm\Realm.Sync\LogLevel.cs">
       <Link>LogLevel.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\SubscriptionState.cs">
+      <Link>SubscriptionState.cs</Link>
+    </Compile>
     <Compile Include="Exceptions\PermissionDeniedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CredentialsPCL.cs" />
     <Compile Include="SessionPCL.cs" />
+    <Compile Include="SubscriptionPCL.cs" />
     <Compile Include="SyncConfigurationPCL.cs" />
     <Compile Include="UserPCL.cs" />
     <Compile Include="Permissions\PermissionChangePCL.cs" />

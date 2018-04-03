@@ -94,7 +94,10 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
-        config.schema = create_schema(objects, objects_length, properties);
+        if (objects_length > 0) {
+            config.schema = create_schema(objects, objects_length, properties);
+        }
+        
         config.schema_version = configuration.schema_version;
 
         std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));

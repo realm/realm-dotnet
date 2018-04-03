@@ -291,6 +291,7 @@ namespace Tests.Sync
         [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork)]
         [Category("ProgressTests")]
+        [Ignore("SimulateProgress is no longer exposed")]
         public void Session_ProgressObservable_UnitTests(ProgressDirection direction, ProgressMode mode)
         {
             AsyncContext.Run(async () =>
@@ -368,6 +369,7 @@ namespace Tests.Sync
 
         [Test]
         [Category("ProgressTests")]
+        [Ignore("SimulateProgress is no longer exposed")]
         public void Session_ProgressObservable_WhenModeIsForOutstandingWork_CallsOnCompleted()
         {
             AsyncContext.Run(async () =>
@@ -400,6 +402,7 @@ namespace Tests.Sync
 
         [Test]
         [Category("ProgressTests")]
+        [Ignore("SimulateProgress is no longer exposed")]
         public void Session_RXCombineLatestTests()
         {
             AsyncContext.Run(async () =>
@@ -459,6 +462,7 @@ namespace Tests.Sync
 
         [Test]
         [Category("ProgressTests")]
+        [Ignore("SimulateProgress is no longer exposed")]
         public void Session_RXThrottleTests()
         {
             AsyncContext.Run(async () =>

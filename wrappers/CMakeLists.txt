@@ -159,6 +159,11 @@ elseif(WIN32)
               WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${sync_filename}")
 
       include("${CMAKE_BINARY_DIR}/${sync_filename}/lib/cmake/realm/realm-sync-config.cmake")
+
+	  if(NOT TARGET realm-sync)
+	    add_library(realm-sync INTERFACE)
+		target_link_libraries(realm-sync INTERFACE Sync)
+	  endif()
     endif()
   endif()
 else()

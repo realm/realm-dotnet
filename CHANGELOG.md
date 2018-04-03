@@ -3,10 +3,15 @@
 
 ### Enhancements
 - Allow `[MapTo]` to be applied on classes to change the name of the table corresponding to that class. ([#1712](https://github.com/realm/realm-dotnet/pull/1712))
+- Added an improved API for adding subscriptions in partially-synchronized Realms. `IQueryable<T>.Subscribe` can be used
+to subscribe to any query, and the returned `Subscription<T>` object can be used to observe the state of the subscription
+and ultimately remove the subscription. See the [documentation](https://docs.realm.io/platform/v/3.x/using-synced-realms/syncing-data)
+for more information. ([#1679](https://github.com/realm/realm-dotnet/pull/1679))
 
 ### Bug fixes
 
 ### Breaking Changes
+- Uses the Sync 3.0 client which is incompatible with ROS 2.x.
 
 2.2.0 (2017-03-22)
 ------------------

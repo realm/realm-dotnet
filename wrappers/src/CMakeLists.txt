@@ -30,6 +30,7 @@ if(REALM_ENABLE_SYNC)
         sync_manager_cs.cpp
         sync_session_cs.cpp
         sync_user_cs.cpp
+        subscription_cs.cpp
     )
 
     list(APPEND HEADERS
