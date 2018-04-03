@@ -370,4 +370,32 @@ namespace Tests
         [MapTo("name")]
         public string Name { get; set; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [MapTo("__RemappedTypeObject")]
+    public class RemappedTypeObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("__id")]
+        public int Id { get; set; }
+
+        public string StringValue { get; set; }
+
+        public RemappedTypeObject NormalLink { get; set; }
+
+        [MapTo("__mappedLink")]
+        public RemappedTypeObject MappedLink { get; set; }
+
+        public IList<RemappedTypeObject> NormalList { get; }
+
+        [MapTo("__mappedList")]
+        public IList<RemappedTypeObject> MappedList { get; }
+
+        [Backlink(nameof(NormalLink))]
+        public IQueryable<RemappedTypeObject> NormalBacklink { get; }
+
+        [Backlink(nameof(MappedLink))]
+        [MapTo("__mappedBacklink")]
+        public IQueryable<RemappedTypeObject> MappedBacklink { get; }
+    }
 }

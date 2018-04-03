@@ -1016,6 +1016,49 @@ namespace Tests.Database
             Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
+        [Test]
+        public void AddOrUpdate_WhenObjectIsRemapped_ShouldWork()
+        {
+            var first = new RemappedTypeObject
+            {
+                Id = 1
+            };
+
+            var second = new RemappedTypeObject
+            {
+                Id = 2,
+            };
+
+            first.MappedLink = second;
+            first.MappedList.Add(second);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(first, update: true);
+            });
+
+            Assert.That(first.IsManaged);
+            Assert.That(second.IsManaged);
+            Assert.That(first.MappedLink, Is.EqualTo(second));
+            Assert.That(first.MappedList, Does.Contain(second));
+            Assert.That(second.MappedBacklink, Does.Contain(first));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new RemappedTypeObject
+                {
+                    Id = 1,
+                    MappedLink = new RemappedTypeObject
+                    {
+                        Id = 2,
+                        StringValue = "Updated"
+                    }
+                }, update: true);
+            });
+
+            Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]

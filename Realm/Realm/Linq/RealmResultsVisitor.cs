@@ -142,16 +142,17 @@ namespace Realms
 
             while (expression != null)
             {
-                var typeName = expression.Member.DeclaringType.Name;
+                var type = expression.Member.DeclaringType;
+                var typeName = type.GetTypeInfo().GetMappedOrOriginalName();
                 if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
                 {
-                    throw new NotSupportedException($"The class {typeName} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");
+                    throw new NotSupportedException($"The class {type.Name} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");
                 }
 
                 var columnName = GetColumnName(expression);
                 if (!metadata.PropertyIndices.TryGetValue(columnName, out var index))
                 {
-                    throw new NotSupportedException($"The property {columnName} is not a persisted property on {typeName} so sorting by it is not allowed.");
+                    throw new NotSupportedException($"The property {columnName} is not a persisted property on {type.Name} so sorting by it is not allowed.");
                 }
 
                 chain.Add(index);
@@ -849,8 +850,7 @@ namespace Realms
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
         {
-            var name = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
-                       memberExpression?.Member.Name;
+            var name = memberExpression?.Member.GetMappedOrOriginalName();
 
             if (parentType.HasValue)
             {

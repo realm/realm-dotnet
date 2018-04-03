@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -234,7 +235,8 @@ namespace Realms.Sync
         public static void SubscribeForObjects(SharedRealmHandle handle, Type objectType, string query, TaskCompletionSource<ResultsHandle> tcs)
         {
             var tcsPtr = GCHandle.ToIntPtr(GCHandle.Alloc(tcs));
-            NativeMethods.subscribe_for_objects(handle, objectType.Name, (IntPtr)objectType.Name.Length, query, (IntPtr)query.Length, tcsPtr, out var ex);
+            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            NativeMethods.subscribe_for_objects(handle, objectName, (IntPtr)objectName.Length, query, (IntPtr)query.Length, tcsPtr, out var ex);
             ex.ThrowIfNecessary();
         }
 

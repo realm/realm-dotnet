@@ -1091,6 +1091,66 @@ namespace Tests.Database
             Assert.That(objsByName, Is.EqualTo(new[] { 3, 2, 1 }));
         }
 
+        [Test]
+        public void Where_WhenTypeIsMappedTo_FiltersCorrectly()
+        {
+            RemappedTypeObject first = null;
+            _realm.Write(() =>
+            {
+                first = _realm.Add(new RemappedTypeObject
+                {
+                    Id = 1,
+                    StringValue = "1"
+                });
+
+                _realm.Add(new RemappedTypeObject
+                {
+                    Id = 2,
+                    StringValue = "2",
+                    MappedLink = first,
+                    NormalLink = first
+                });
+
+                _realm.Add(new RemappedTypeObject
+                {
+                    Id = 3,
+                    StringValue = "3",
+                    MappedLink = first,
+                    NormalLink = first
+                });
+            });
+
+            var normalLinks = _realm.All<RemappedTypeObject>()
+                                    .Where(o => o.NormalLink == first)
+                                    .ToArray()
+                                    .Select(n => n.Id);
+            Assert.That(normalLinks, Is.EquivalentTo(new[] { 2, 3 }));
+
+            var mappedLinks = _realm.All<RemappedTypeObject>()
+                                    .Where(o => o.MappedLink == first)
+                                    .ToArray()
+                                    .Select(n => n.Id);
+            Assert.That(mappedLinks, Is.EquivalentTo(new[] { 2, 3 }));
+
+            var mappedLinksAndStringValue = _realm.All<RemappedTypeObject>()
+                                                  .Where(o => o.MappedLink == first && o.StringValue.StartsWith("2"))
+                                                  .ToArray()
+                                                  .Select(n => n.Id);
+            Assert.That(mappedLinksAndStringValue, Is.EquivalentTo(new[] { 2 }));
+
+            var normalBacklinks = first.NormalBacklink
+                                       .Where(m => m.StringValue.StartsWith("2"))
+                                       .ToArray()
+                                       .Select(n => n.Id);
+            Assert.That(normalBacklinks, Is.EquivalentTo(new[] { 2 }));
+
+            var mappedBacklinks = first.MappedBacklink
+                                       .Where(m => m.StringValue.StartsWith("3"))
+                                       .ToArray()
+                                       .Select(n => n.Id);
+            Assert.That(mappedBacklinks, Is.EquivalentTo(new[] { 3 }));
+        }
+
         #endregion
 
         [Test]

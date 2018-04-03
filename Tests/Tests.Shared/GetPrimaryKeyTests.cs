@@ -109,7 +109,7 @@ namespace Tests.Database
 
         private IRealmObjectHelper GetHelper(Type type)
         {
-            return _realm.Metadata[type.Name].Helper;
+            return _realm.Metadata[type.GetTypeInfo().GetMappedOrOriginalName()].Helper;
         }
     }
 }
