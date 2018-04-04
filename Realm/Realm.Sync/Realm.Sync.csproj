@@ -49,6 +49,14 @@
     <Compile Include="Handles\SubscriptionTokenHandle.cs" />
     <Compile Include="Native\StringStringPair.cs" />
     <Compile Include="Native\SyncConfiguration.cs" />
+    <Compile Include="ObjectLevelPermissions\Permission.cs" />
+    <Compile Include="ObjectLevelPermissions\PermissionRole.cs" />
+    <Compile Include="ObjectLevelPermissions\ClassPermission.cs" />
+    <Compile Include="ObjectLevelPermissions\PermissionUser.cs" />
+    <Compile Include="ObjectLevelPermissions\RealmPermission.cs" />
+    <Compile Include="ObjectLevelPermissions\RealmPrivileges.cs" />
+    <Compile Include="ObjectLevelPermissions\ClassPrivileges.cs" />
+    <Compile Include="ObjectLevelPermissions\ObjectPrivileges.cs" />
     <Compile Include="Permissions\IPermissionObject.cs" />
     <Compile Include="Permissions\ManagementObjectStatus.cs" />
     <Compile Include="Permissions\PathPermission.cs" />

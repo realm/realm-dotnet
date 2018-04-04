@@ -97,10 +97,24 @@ namespace Realms.Sync
                                                               IntPtr task_completion_source, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
-            public static  extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
+            public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern LogLevel get_log_level();
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_realm_privileges", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern byte get_realm_privileges(SharedRealmHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_class_privileges", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern byte get_class_privileges(SharedRealmHandle handle,
+                                                           [MarshalAs(UnmanagedType.LPWStr)] string class_name, IntPtr class_name_len,
+                                                           out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_object_privileges", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern byte get_object_privileges(SharedRealmHandle handle, ObjectHandle objectHandle, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -238,6 +252,27 @@ namespace Realms.Sync
             var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
             NativeMethods.subscribe_for_objects(handle, objectName, (IntPtr)objectName.Length, query, (IntPtr)query.Length, tcsPtr, out var ex);
             ex.ThrowIfNecessary();
+        }
+
+        public static RealmPrivileges GetPrivileges(this SharedRealmHandle handle)
+        {
+            var result = NativeMethods.get_realm_privileges(handle, out var ex);
+            ex.ThrowIfNecessary();
+            return (RealmPrivileges)result;
+        }
+
+        public static ClassPrivileges GetPrivileges(this SharedRealmHandle handle, string className)
+        {
+            var result = NativeMethods.get_class_privileges(handle, className, (IntPtr)className.Length, out var ex);
+            ex.ThrowIfNecessary();
+            return (ClassPrivileges)result;
+        }
+
+        public static ObjectPrivileges GetPrivileges(this SharedRealmHandle handle, ObjectHandle objectHandle)
+        {
+            var result = NativeMethods.get_object_privileges(handle, objectHandle, out var ex);
+            ex.ThrowIfNecessary();
+            return (ObjectPrivileges)result;
         }
 
         [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
