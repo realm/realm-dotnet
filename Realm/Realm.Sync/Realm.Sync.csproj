@@ -57,6 +57,7 @@
     <Compile Include="ObjectLevelPermissions\RealmPrivileges.cs" />
     <Compile Include="ObjectLevelPermissions\ClassPrivileges.cs" />
     <Compile Include="ObjectLevelPermissions\ObjectPrivileges.cs" />
+    <Compile Include="ObjectLevelPermissions\PermissionExtensions.cs" />
     <Compile Include="Permissions\IPermissionObject.cs" />
     <Compile Include="Permissions\ManagementObjectStatus.cs" />
     <Compile Include="Permissions\PathPermission.cs" />

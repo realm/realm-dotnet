@@ -49,17 +49,30 @@ namespace Realms.Sync
         [MapTo("members")]
         public IList<PermissionUser> Users { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PermissionRole"/> class.
-        /// </summary>
-        /// <param name="name">The name of the Role.</param>
-        public PermissionRole(string name)
-        {
-            Name = name;
-        }
-
         private PermissionRole()
         {
+        }
+
+        /// <summary>
+        /// Gets or creates a <see cref="PermissionRole"/> in the provided Realm.
+        /// </summary>
+        /// <param name="roleName">The name of the Role.</param>
+        /// <param name="realm">The Realm where the Role will be created.</param>
+        /// <returns>
+        /// A <see cref="PermissionRole"/> instance that can be inspected or manipulated.
+        /// </returns>
+        public static PermissionRole Get(string roleName, Realm realm)
+        {
+            var role = realm.Find<PermissionRole>(roleName);
+            if (role == null)
+            {
+                role = realm.Add(new PermissionRole
+                {
+                    Name = roleName
+                });
+            }
+
+            return role;
         }
     }
 }

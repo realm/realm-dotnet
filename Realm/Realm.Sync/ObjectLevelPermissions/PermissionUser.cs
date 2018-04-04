@@ -63,10 +63,7 @@ namespace Realms.Sync
                 return user;
             }
 
-            user = realm.Add(new PermissionUser { Identity = identity });
-            var role = realm.Add(new PermissionRole("everyone"), update: true);
-            role.Users.Add(user);
-            return user;
+            return realm.Add(new PermissionUser { Identity = identity });
         }
 
         private PermissionUser()
