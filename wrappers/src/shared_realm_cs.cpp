@@ -310,7 +310,16 @@ Object* create_object_unique(const SharedRealm& realm, Table& table, const KeyTy
         is_new = false;
     }
 
-    return new Object(realm, object_schema, table.get(row_index));
+    auto result = new Object(realm, object_schema, table.get(row_index));
+    
+#if REALM_ENABLE_SYNC
+    if (realm->is_partial() && object_schema.name == "__User") {
+        result->ensure_user_in_everyone_role();
+        result->ensure_private_role_exists_for_user();
+    }
+#endif
+    
+    return result;
 }
 
 extern "C" {

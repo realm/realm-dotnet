@@ -356,7 +356,7 @@ namespace Realms.Sync
             }
 
             Permission result = null;
-            var filtered = realmList.Where(p => p.Role == role).ToArray();
+            var filtered = realmList.Where(p => p.Role.Equals(role)).ToArray();
             foreach (var permission in filtered)
             {
                 if (result == null)

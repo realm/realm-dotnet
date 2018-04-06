@@ -42,6 +42,13 @@ namespace Realms.Sync
         public string Identity { get; private set; }
 
         /// <summary>
+        /// Gets the user's private role. This will be initialized to a role named for the user's
+        /// identity that contains this user as its only member.
+        /// </summary>
+        [MapTo("role")]
+        public PermissionRole Role { get; private set; }
+
+        /// <summary>
         /// Gets the Roles which this user belongs to.
         /// </summary>
         [MapTo("roles")]
