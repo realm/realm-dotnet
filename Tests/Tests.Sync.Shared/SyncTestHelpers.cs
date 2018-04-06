@@ -117,6 +117,12 @@ namespace Tests.Sync
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
+        public static Task<User> GetAdminUserAsync()
+        {
+            var credentials = AdminCredentials();
+            return User.LoginAsync(credentials, AuthServerUri);
+        }
+
         public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             var user = await GetFakeUserAsync(userId);
