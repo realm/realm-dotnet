@@ -122,6 +122,8 @@ namespace Tests.Sync
 
                     assignRoles(realm);
                 });
+
+                await WaitForSyncAsync(realm);
             }
 
             return uri;
