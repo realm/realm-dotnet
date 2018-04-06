@@ -63,7 +63,9 @@ namespace Tests.Sync
                     AddObjectsToRealm(userARealm, 4, 5, 6);
 
                     Assert.That(userASubscription.Results.Count(), Is.EqualTo(6));
-                    await WaitForSyncAsync(userARealm);
+
+                    // We don't have a deterministic predictor on when the server is going to remove the changes.
+                    await TestHelpers.WaitForConditionAsync(() => userASubscription.Results.Count() == 3);
                     Assert.That(userASubscription.Results.Count(), Is.EqualTo(3));
                 }
             });
