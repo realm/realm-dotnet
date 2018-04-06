@@ -168,7 +168,7 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected internal bool GetBooleanValue(string propertyName)
+        protected bool GetBooleanValue(string propertyName)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
@@ -304,7 +304,7 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected internal void SetBooleanValue(string propertyName, bool value)
+        protected void SetBooleanValue(string propertyName, bool value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
