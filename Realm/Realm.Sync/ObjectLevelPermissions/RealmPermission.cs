@@ -29,6 +29,7 @@ namespace Realms.Sync
     /// instance for a specific Realm.
     /// </remarks>
     [MapTo("__Realm")]
+    [Explicit]
     public class RealmPermission : RealmObject
     {
         [MapTo("id")]

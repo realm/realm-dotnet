@@ -33,6 +33,7 @@ namespace Realms.Sync
     /// managed as normal Realm objects.
     /// </remarks>
     [MapTo("__Role")]
+    [Explicit]
     public class PermissionRole : RealmObject
     {
         /// <summary>
@@ -56,12 +57,12 @@ namespace Realms.Sync
         /// <summary>
         /// Gets or creates a <see cref="PermissionRole"/> in the provided Realm.
         /// </summary>
-        /// <param name="roleName">The name of the Role.</param>
         /// <param name="realm">The Realm where the Role will be created.</param>
+        /// <param name="roleName">The name of the Role.</param>
         /// <returns>
         /// A <see cref="PermissionRole"/> instance that can be inspected or manipulated.
         /// </returns>
-        public static PermissionRole Get(string roleName, Realm realm)
+        public static PermissionRole Get(Realm realm, string roleName)
         {
             var role = realm.Find<PermissionRole>(roleName);
             if (role == null)

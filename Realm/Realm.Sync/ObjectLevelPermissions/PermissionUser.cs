@@ -29,6 +29,7 @@ namespace Realms.Sync
     /// which has not yet connected to this Realm.
     /// </remarks>
     [MapTo("__User")]
+    [Explicit]
     public class PermissionUser : RealmObject
     {
         /// <summary>

@@ -102,10 +102,19 @@ namespace Realms.Schema
             return GetEnumerator();
         }
 
-        internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes)
+        internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, RealmSchema existing = null)
         {
             var builder = new Builder();
             var classNames = new HashSet<string>();
+            if (existing != null)
+            {
+                builder.AddRange(existing);
+                foreach (var item in existing)
+                {
+                    classNames.Add(item.Name);
+                }
+            }
+
             foreach (var @class in classes)
             {
                 var objectSchema = ObjectSchema.FromType(@class.GetTypeInfo());

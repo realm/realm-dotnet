@@ -31,6 +31,7 @@ namespace Realms.Sync
     /// <see cref="ClassPermission"/> as normal.
     /// </remarks>
     [MapTo("__Class")]
+    [Explicit]
     public class ClassPermission : RealmObject
     {
         /// <summary>

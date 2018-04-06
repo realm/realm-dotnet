@@ -128,13 +128,24 @@ namespace Realms.Sync
                 throw new ArgumentException($"{nameof(GetOrCreatePermission)} may only be called on managed lists.", nameof(permissions));
             }
 
-            var role = PermissionRole.Get(roleName, realmPermissions.Realm);
+            var role = PermissionRole.Get(realmPermissions.Realm, roleName);
             return permissions.GetOrCreatePermission(role);
         }
 
         public static Permission GetOrCreatePermission(this IList<Permission> permissions, PermissionRole role)
         {
             return Permission.GetPermissionForRole(role, permissions);
+        }
+
+        public static void Add(this IList<PermissionUser> users, User user)
+        {
+            if (!(users is RealmList<PermissionUser> realmUsers))
+            {
+                throw new ArgumentException($"{nameof(Add)} may only be called on managed lists.", nameof(users));
+            }
+
+            var permissionUser = PermissionUser.Get(realmUsers.Realm, user.Identity);
+            realmUsers.Add(permissionUser);
         }
     }
 }

@@ -37,6 +37,7 @@ namespace Realms.Sync
     /// that type.
     /// </remarks>
     [MapTo("__Permission")]
+    [Explicit]
     public class Permission : RealmObject
     {
         /// <summary>
@@ -231,7 +232,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(string roleName, Realm realm)
         {
-            return Get(PermissionRole.Get(roleName, realm), realm);
+            return Get(PermissionRole.Get(realm, roleName), realm);
         }
 
         /// <summary>
@@ -259,7 +260,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get<T>(string roleName, Realm realm) where T : RealmObject
         {
-            return GetPermissionForRole(PermissionRole.Get(roleName, realm), ClassPermission.Get<T>(realm).Permissions);
+            return GetPermissionForRole(PermissionRole.Get(realm, roleName), ClassPermission.Get<T>(realm).Permissions);
         }
 
         /// <summary>
@@ -287,7 +288,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(string roleName, string className, Realm realm)
         {
-            return GetPermissionForRole(PermissionRole.Get(roleName, realm), ClassPermission.Get(realm, className).Permissions);
+            return GetPermissionForRole(PermissionRole.Get(realm, roleName), ClassPermission.Get(realm, className).Permissions);
         }
 
         /// <summary>
@@ -320,7 +321,7 @@ namespace Realms.Sync
             var permissionType = typeof(Permission).GetTypeInfo().GetMappedOrOriginalName();
             var prop = obj.ObjectSchema.SingleOrDefault(o => o.Type == PropertyType.Array && o.ObjectType == permissionType);
             var permissions = obj.GetListValue<Permission>(prop.Name);
-            return GetPermissionForRole(PermissionRole.Get(roleName, obj.Realm), permissions);
+            return GetPermissionForRole(PermissionRole.Get(obj.Realm, roleName), permissions);
         }
 
         private Permission()
