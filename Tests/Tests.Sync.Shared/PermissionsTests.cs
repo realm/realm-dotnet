@@ -53,7 +53,8 @@ namespace Tests.Sync
         [Test]
         public void Permission_ShouldNotBeInDefaultSchema()
         {
-            Assert.That(RealmSchema.Default.Find(nameof(Permission)), Is.Null);
+            Assert.That(RealmSchema.Default.Find("Permission"), Is.Null);
+            Assert.That(RealmSchema.Default.Find(nameof(PathPermission)), Is.Null);
         }
 
         [Test]
@@ -212,9 +213,9 @@ namespace Tests.Sync
                 var bob = await SyncTestHelpers.GetUserAsync();
 
                 var permissionRealm = alice.GetPermissionRealm();
-                var tcs = new TaskCompletionSource<Permission>();
+                var tcs = new TaskCompletionSource<PathPermission>();
                 var aliceId = alice.Identity; // LINQ :/
-                var token = permissionRealm.All<Permission>()
+                var token = permissionRealm.All<PathPermission>()
                                            .Where(p => p.UserId != aliceId)
                                            .SubscribeForNotifications((sender, changes, error) =>
                                            {

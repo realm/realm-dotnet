@@ -186,7 +186,7 @@ namespace Realms.Sync
         internal User(SyncUserHandle handle)
         {
             Handle = handle;
-            _permissionRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__permission", typeof(Permission)));
+            _permissionRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__permission", typeof(PathPermission)));
             _managementRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__management", typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse)));
         }
 
@@ -332,7 +332,7 @@ namespace Realms.Sync
         /// Asynchronously retrieve all permissions associated with the user calling this method.
         /// </summary>
         /// <returns>
-        /// A queryable collection of <see cref="Permission"/> objects that provide detailed information
+        /// A queryable collection of <see cref="PathPermission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
         /// <param name="recipient">The optional recipient of the permission.</param>
@@ -345,7 +345,7 @@ namespace Realms.Sync
         /// features and limitations apply - you can query and subscribe for notifications, but you cannot pass it between
         /// threads.
         /// </remarks>
-        public async Task<IQueryable<Permission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
+        public async Task<IQueryable<PathPermission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
         {
             // TODO: this should eventually use GetInstanceAsync
 
@@ -365,7 +365,7 @@ namespace Realms.Sync
                 }
             }
 
-            var result = PermissionRealm.All<Permission>()
+            var result = PermissionRealm.All<PathPermission>()
                                         .Where(p => !p.Path.EndsWith("/__permission", StringComparison.OrdinalIgnoreCase) &&
                                                     !p.Path.EndsWith("/__management", StringComparison.OrdinalIgnoreCase));
 

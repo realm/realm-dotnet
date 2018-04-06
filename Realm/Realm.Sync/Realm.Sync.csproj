@@ -51,7 +51,7 @@
     <Compile Include="Native\SyncConfiguration.cs" />
     <Compile Include="Permissions\IPermissionObject.cs" />
     <Compile Include="Permissions\ManagementObjectStatus.cs" />
-    <Compile Include="Permissions\Permission.cs" />
+    <Compile Include="Permissions\PathPermission.cs" />
     <Compile Include="Permissions\PermissionChange.cs" />
     <Compile Include="Permissions\PermissionOffer.cs" />
     <Compile Include="Permissions\PermissionOfferResponse.cs" />

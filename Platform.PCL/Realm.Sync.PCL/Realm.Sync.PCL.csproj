@@ -90,8 +90,8 @@
     <Compile Include="..\..\Realm\Realm.Sync\Permissions\ManagementObjectStatus.cs">
       <Link>Permissions\ManagementObjectStatus.cs</Link>
     </Compile>
-    <Compile Include="..\..\Realm\Realm.Sync\Permissions\Permission.cs">
-      <Link>Permissions\Permission.cs</Link>
+    <Compile Include="..\..\Realm\Realm.Sync\Permissions\PathPermission.cs">
+      <Link>Permissions\PathPermission.cs</Link>
     </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\ProgressNotifications\ProgressDirection.cs">
       <Link>ProgressNotifications\ProgressDirection.cs</Link>

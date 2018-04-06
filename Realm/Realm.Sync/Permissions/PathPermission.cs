@@ -25,7 +25,8 @@ namespace Realms.Sync
     /// It should be used in conjunction with a <see cref="User"/>'s Permission Realm.
     /// </summary>
     /// <see cref="UserPermissionsExtensions.GetPermissionRealm"/>
-    public class Permission : RealmObject
+    [MapTo("Permission")]
+    public class PathPermission : RealmObject
     {
         /// <summary>
         /// Gets when the object was updated the last time.
@@ -74,7 +75,7 @@ namespace Realms.Sync
         [MapTo("mayManage")]
         public bool MayManage { get; private set; }
 
-        private Permission()
+        private PathPermission()
         {
         }
     }
