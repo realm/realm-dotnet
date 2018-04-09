@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -395,7 +396,7 @@ namespace Tests.Database
         }
 
         [Test]
-        public void Results_GetFiltered_ReturnsFilteredCollection()
+        public void Results_GetFiltered_SanityTest()
         {
             _realm.Write(() =>
             {
@@ -409,6 +410,195 @@ namespace Tests.Database
 
             Assert.That(query.Count(), Is.EqualTo(5));
             Assert.That(query.ToArray().All(i => i.Int >= 5));
+        }
+
+        [Test]
+        public void Results_GetFiltered_List()
+        {
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    var owner = new Owner
+                    {
+                        Name = $"Owner {i}",
+                        Dogs =
+                        {
+                            new Dog
+                            {
+                                Name = $"Dog {2 * i}",
+                                Vaccinated = (2 * i) % 5 == 0
+                            },
+                            new Dog
+                            {
+                                Name = $"Dog {2 * i + 1}",
+                                Vaccinated = (2 * i + 1) % 5 == 0
+                            }
+                        }
+                    };
+                    _realm.Add(owner);
+                }
+            });
+
+            var owners = _realm.All<Owner>().Filter("Dogs.Vaccinated == true");
+            Assert.That(owners.Count(), Is.EqualTo(4));
+            Assert.That(owners.ToArray().All(o => o.Dogs.Any(d => d.Vaccinated)));
+        }
+
+        [Test]
+        public void Results_GetFiltered_NamedBacklink()
+        {
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    var dog = new Dog
+                    {
+                        Name = $"Dog {i}"
+                    };
+
+                    _realm.Add(new Owner
+                    {
+                        Name = $"Person {(2 * i) % 5}",
+                        Dogs = { dog }
+                    });
+
+                    _realm.Add(new Owner
+                    {
+                        Name = $"Person {(2 * i + 1) % 5}",
+                        Dogs = { dog }
+                    });
+                }
+            });
+
+            var dogs = _realm.All<Dog>().Filter("Owners.Name == 'Person 0'");
+            Assert.That(dogs.Count(), Is.EqualTo(4));
+            Assert.That(dogs.ToArray().All(d => d.Owners.Any(o => o.Name == "Person 0")));
+        }
+
+        [Test]
+        public void Results_GetFiltered_UnnamedBacklink()
+        {
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    var dog = new Dog
+                    {
+                        Name = $"Dog {i}"
+                    };
+
+                    _realm.Add(new Owner
+                    {
+                        Name = $"Person {(2 * i) % 5}",
+                        Dogs = { dog }
+                    });
+
+                    _realm.Add(new Owner
+                    {
+                        Name = $"Person {(2 * i + 1) % 5}",
+                        Dogs = { dog }
+                    });
+                }
+            });
+
+            var dogs = _realm.All<Dog>().Filter("@links.class_Owner.Dogs.Name == 'Person 0'");
+            Assert.That(dogs.Count(), Is.EqualTo(4));
+            Assert.That(dogs.ToArray().All(d => d.Owners.Any(o => o.Name == "Person 0")));
+        }
+
+        [Test]
+        public void Results_GetFiltered_FollowLinks()
+        {
+            PopulateAObjects();
+
+            var objects = _realm.All<A>().Filter("B.C.Int < 5");
+            Assert.That(objects.Count(), Is.EqualTo(5));
+            Assert.That(objects.ToArray().All(o => o.B.C.Int < 5));
+        }
+
+        [Test]
+        public void Results_GetFiltered_Notifications()
+        {
+            PopulateAObjects(3, 4, 5, 6, 7);
+
+            var objects = _realm.All<A>().Filter("B.C.Int < 5");
+            Assert.That(objects.Count(), Is.EqualTo(2));
+
+            var notificationsCount = 0;
+
+            using (var token = objects.SubscribeForNotifications(callbackHandler))
+            {
+                PopulateAObjects(2);
+                Assert.That(notificationsCount, Is.EqualTo(1));
+
+                PopulateAObjects(8);
+                Assert.That(notificationsCount, Is.EqualTo(1));
+
+                PopulateAObjects(1);
+                Assert.That(notificationsCount, Is.EqualTo(2));
+
+                PopulateAObjects(9);
+                Assert.That(notificationsCount, Is.EqualTo(2));
+            }
+
+            Assert.That(objects.Count(), Is.EqualTo(4));
+
+            void callbackHandler(IRealmCollection<A> sender, ChangeSet changes, Exception error)
+            {
+                if (changes != null)
+                {
+                    notificationsCount++;
+                    Assert.That(changes.InsertedIndices.Length, Is.EqualTo(1));
+                }
+            }
+        }
+
+        [Test]
+        public void Results_GetFiltered_BeforeLINQ()
+        {
+            PopulateAObjects();
+
+            var objects = _realm.All<A>().Filter("B.C.Int < 6");
+            Assert.That(objects.Count(), Is.EqualTo(6));
+
+            objects = objects.Where(a => a.Value);
+            Assert.That(objects.Count(), Is.EqualTo(3));
+            Assert.That(objects.ToArray().All(o => o.Value && o.B.C.Int < 6));
+        }
+
+        [Test]
+        public void Results_GetFiltered_AfterLINQ()
+        {
+            PopulateAObjects();
+
+            var objects = _realm.All<A>().Where(o => o.Value);
+            Assert.That(objects.Count(), Is.EqualTo(5));
+
+            objects = objects.Filter("B.C.Int < 6");
+            Assert.That(objects.Count(), Is.EqualTo(3));
+            Assert.That(objects.ToArray().All(o => o.Value && o.B.C.Int < 6));
+        }
+
+        private void PopulateAObjects(params int[] values)
+        {
+            if (values.Length == 0)
+            {
+                values = Enumerable.Range(0, 10).ToArray();
+            }
+
+            _realm.Write(() =>
+            {
+                foreach (var value in values)
+                {
+                    _realm.Add(new A
+                    {
+                        Value = value % 2 == 0,
+                        B = new B { C = new IntPropertyObject { Int = value } }
+                    });
+                }
+            });
+            _realm.Refresh();
         }
 
         private void TestStableIteration<T>(Action<int> addItem, Func<IEnumerable<T>> getItems, Action<T> modifyItem)
@@ -443,6 +633,18 @@ namespace Tests.Database
             _realm.Write(() => _realm.Add(container));
 
             return container;
+        }
+
+        private class A : RealmObject
+        {
+            public bool Value { get; set; }
+
+            public B B { get; set; }
+        }
+
+        private class B : RealmObject
+        {
+            public IntPropertyObject C { get; set; }
         }
     }
 }
