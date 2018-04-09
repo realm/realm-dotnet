@@ -580,6 +580,33 @@ namespace Tests.Database
             Assert.That(objects.ToArray().All(o => o.Value && o.B.C.Int < 6));
         }
 
+        [Test]
+        public void Results_GetFiltered_Sorted()
+        {
+            PopulateAObjects();
+            var objects = _realm.All<A>().Filter("TRUEPREDICATE SORT(Value ASC, B.C.Int DESC)").AsRealmCollection();
+
+            var expectedOrder = new[] { 9, 7, 5, 3, 1, 8, 6, 4, 2, 0 };
+            for (var i = 0; i < 10; i++)
+            {
+                var obj = objects[i];
+                Assert.That(obj.Value, Is.EqualTo(i >= 5));
+
+                Assert.That(obj.B.C.Int, Is.EqualTo(expectedOrder[i]));
+            }
+        }
+
+        [Test]
+        public void Results_GetFiltered_Distinct()
+        {
+            PopulateAObjects();
+            var objects = _realm.All<A>().Filter("TRUEPREDICATE SORT(Value ASC) DISTINCT(Value)").AsRealmCollection();
+
+            Assert.That(objects.Count, Is.EqualTo(2));
+            Assert.That(objects[0].Value, Is.False);
+            Assert.That(objects[1].Value, Is.True);
+        }
+
         private void PopulateAObjects(params int[] values)
         {
             if (values.Length == 0)
