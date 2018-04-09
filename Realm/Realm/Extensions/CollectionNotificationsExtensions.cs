@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -142,6 +143,12 @@ namespace Realms
                 list.RemoveAt(from);
                 list.Insert(to, item);
             }
+        }
+
+        public static IQueryable<T> Filter<T>(this IQueryable<T> results, string query)
+        {
+            var realmResults = Argument.EnsureType<RealmResults<T>>(results, $"{nameof(results)} must be a query obtained by calling Realm.All.", nameof(results));
+            return realmResults.GetFilteredResults(query);
         }
     }
 }

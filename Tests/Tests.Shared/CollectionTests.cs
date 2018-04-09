@@ -394,6 +394,23 @@ namespace Tests.Database
             }
         }
 
+        [Test]
+        public void Results_GetFiltered_ReturnsFilteredCollection()
+        {
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    _realm.Add(new IntPropertyObject { Int = i });
+                }
+            });
+
+            var query = _realm.All<IntPropertyObject>().Filter("Int >= 5");
+
+            Assert.That(query.Count(), Is.EqualTo(5));
+            Assert.That(query.ToArray().All(i => i.Int >= 5));
+        }
+
         private void TestStableIteration<T>(Action<int> addItem, Func<IEnumerable<T>> getItems, Action<T> modifyItem)
         {
             _realm.Write(() =>

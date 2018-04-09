@@ -371,5 +371,10 @@ namespace Realms
 
             return new ResultsHandle(Root ?? this, ptr);
         }
+
+        public override ResultsHandle GetFilteredResults(string query)
+        {
+            throw new NotImplementedException("Lists can't be filtered yet.");
+        }
     }
 }

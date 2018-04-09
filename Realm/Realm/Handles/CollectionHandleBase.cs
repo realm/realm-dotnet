@@ -68,5 +68,7 @@ namespace Realms
         public abstract int Count();
 
         public abstract ResultsHandle Snapshot();
+
+        public abstract ResultsHandle GetFilteredResults(string query);
     }
 }
