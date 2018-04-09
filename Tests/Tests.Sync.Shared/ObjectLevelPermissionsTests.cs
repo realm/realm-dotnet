@@ -607,6 +607,7 @@ namespace Tests.Sync
         {
             var config = new SyncConfiguration(user, uri, Guid.NewGuid().ToString())
             {
+                ObjectClasses = new[] { typeof(ObjectWithPermissions) },
                 IsPartial = true
             };
 
@@ -619,6 +620,7 @@ namespace Tests.Sync
             var admin = await SyncTestHelpers.GetAdminUserAsync();
             var config = new SyncConfiguration(admin, uri)
             {
+                ObjectClasses = new[] { typeof(ObjectWithPermissions) },
                 IsPartial = true
             };
 
@@ -724,6 +726,7 @@ namespace Tests.Sync
             });
         }
 
+        [Realms.Explicit]
         private class ObjectWithPermissions : RealmObject
         {
             [PrimaryKey]
