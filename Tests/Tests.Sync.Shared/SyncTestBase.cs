@@ -113,6 +113,7 @@ namespace Tests.Sync
         {
             var session = GetSession(realm);
             await session.WaitForUploadAsync();
+            await Task.Delay(50);
             await session.WaitForDownloadAsync();
         }
     }

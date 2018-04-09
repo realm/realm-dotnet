@@ -25,7 +25,7 @@ namespace Realms.Sync
     /// </summary>
     /// <remarks>
     /// This is a combination of all of the privileges granted to all of the Roles which the
-    /// current User is a member of, obtained by calling <see cref="RealmSyncExtensions.GetPrivileges(Realm, RealmObject)"/>
+    /// current User is a member of, obtained by calling <see cref="PermissionExtensions.GetPrivileges(Realm, RealmObject)"/>
     /// </remarks>
     [Flags]
     public enum ObjectPrivileges : byte

@@ -226,7 +226,7 @@ namespace Realms.Sync
             Results = query;
 
             Handle = handle;
-            State = Handle.GetState();
+            ((ISubscription)this).ReloadState();
 
             var managedSubscriptionHandle = GCHandle.Alloc(this, GCHandleType.Weak);
             SubscriptionToken = Handle.AddNotificationCallback(GCHandle.ToIntPtr(managedSubscriptionHandle), Subscription.SubscriptionCallback);

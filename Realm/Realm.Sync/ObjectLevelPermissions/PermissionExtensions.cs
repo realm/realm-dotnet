@@ -145,7 +145,10 @@ namespace Realms.Sync
             }
 
             var permissionUser = PermissionUser.Get(realmUsers.Realm, user.Identity);
-            realmUsers.Add(permissionUser);
+            if (!realmUsers.Contains(permissionUser))
+            {
+                realmUsers.Add(permissionUser);
+            }
         }
     }
 }
