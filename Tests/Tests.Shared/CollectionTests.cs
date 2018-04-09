@@ -22,6 +22,7 @@ using System.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
+using Realms.Exceptions;
 
 namespace Tests.Database
 {
@@ -605,6 +606,14 @@ namespace Tests.Database
             Assert.That(objects.Count, Is.EqualTo(2));
             Assert.That(objects[0].Value, Is.False);
             Assert.That(objects[1].Value, Is.True);
+        }
+
+        [Test]
+        public void Results_GetFiltered_WhenPredicateIsInvalid_Throws()
+        {
+            Assert.That(
+                () => _realm.All<A>().Filter("Foo == 5"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("No property 'Foo' on object of type 'A'"));
         }
 
         private void PopulateAObjects(params int[] values)
