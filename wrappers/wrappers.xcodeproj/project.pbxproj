@@ -10,7 +10,6 @@
 		42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
 		484632DB1D6DC71E00275B56 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 484632DA1D6DC71E00275B56 /* weak_realm_notifier.cpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
-		48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios.a */; };
 		48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347351C74861900CD0E02 /* external_commit_helper.cpp */; };
 		48D347571C74861900CD0E02 /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */; };
 		48D347591C74861900CD0E02 /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473C1C74861900CD0E02 /* transact_log_handler.cpp */; };
@@ -73,7 +72,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		424267201C070BE500670B1C /* librealm-ios-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-dbg.a"; path = "core/librealm-ios-dbg.a"; sourceTree = "<group>"; };
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
 		48371F4A1D22952D00B52DAB /* atomic_shared_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = atomic_shared_ptr.hpp; path = "src/object-store/src/util/atomic_shared_ptr.hpp"; sourceTree = "<group>"; };
@@ -81,7 +79,6 @@
 		488FF1F31C997EC600172055 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug.cpp; path = src/debug.cpp; sourceTree = "<group>"; };
 		488FF1F41C997EC600172055 /* debug.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = debug.hpp; path = src/debug.hpp; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		48D101431B3991B6004A4B2C /* librealm-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios.a"; path = "core/librealm-ios.a"; sourceTree = "<group>"; };
 		48D347321C74861900CD0E02 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "src/object-store/src/binding_context.hpp"; sourceTree = "<group>"; };
 		48D347351C74861900CD0E02 /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/src/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		48D347361C74861900CD0E02 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/src/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
@@ -192,7 +189,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,8 +250,6 @@
 				85C041331DD4953200CBF37B /* sync_session_cs.cpp */,
 				51D1D1391E36683E00BFA787 /* sync_session_cs.hpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
-				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
-				48D101431B3991B6004A4B2C /* librealm-ios.a */,
 				48D101391B39902E004A4B2C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -653,6 +647,7 @@
 		48D1013D1B39902E004A4B2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LIBTOOLFLAGS = "-lrealm-ios-dbg -lrealm-parser-ios-dbg";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -660,6 +655,7 @@
 		48D1013E1B39902E004A4B2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LIBTOOLFLAGS = "-lrealm-ios -lrealm-parser-ios";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
