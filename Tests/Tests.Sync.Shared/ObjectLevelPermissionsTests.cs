@@ -365,8 +365,7 @@ namespace Tests.Sync
                     // A should be able to update role access level
                     realm.Write(() =>
                     {
-                        var permissions = ClassPermission.Get<ObjectWithPermissions>(realm).Permissions;
-                        var readerPermission = permissions.GetOrCreatePermission("reader");
+                        var readerPermission = Permission.Get<ObjectWithPermissions>("reader", realm);
                         readerPermission.CanUpdate = true;
                         readerPermission.CanCreate = true;
                     });
@@ -585,7 +584,7 @@ namespace Tests.Sync
                         });
 
                         var foo = PermissionRole.Get(realm, "foo");
-                        var permission = obj1.Permissions.GetOrCreatePermission(foo);
+                        var permission = Permission.Get(foo, obj1);
                         permission.CanRead = true;
                         foo.Users.Add(userB);
                     });
@@ -662,7 +661,7 @@ namespace Tests.Sync
 
         private static void CreatePermissions(IList<Permission> permissions)
         {
-            var everyone = permissions.GetOrCreatePermission("everyone");
+            var everyone = Permission.Get("everyone", permissions);
             everyone.CanCreate = false;
             everyone.CanDelete = false;
             everyone.CanModifySchema = false;
@@ -671,16 +670,16 @@ namespace Tests.Sync
             everyone.CanSetPermissions = false;
             everyone.CanUpdate = false;
 
-            var reader = permissions.GetOrCreatePermission("reader");
+            var reader = Permission.Get("reader", permissions);
             reader.CanQuery = true;
             reader.CanRead = true;
 
-            var writer = permissions.GetOrCreatePermission("writer");
+            var writer = Permission.Get("writer", permissions);
             writer.CanCreate = true;
             writer.CanDelete = true;
             writer.CanUpdate = true;
 
-            var adminPermission = permissions.GetOrCreatePermission("admin");
+            var adminPermission = Permission.Get("admin", permissions);
             adminPermission.CanSetPermissions = true;
         }
 
@@ -717,7 +716,7 @@ namespace Tests.Sync
                         StringValue = $"Object #{id}"
                     });
 
-                    var permission = obj.Permissions.GetOrCreatePermission("everyone");
+                    var permission = Permission.Get("everyone", obj);
                     permission.CanRead = true;
                     permission.CanUpdate = true;
                     permission.CanDelete = true;

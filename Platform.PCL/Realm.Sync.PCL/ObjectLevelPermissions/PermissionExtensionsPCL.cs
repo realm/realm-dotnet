@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Realms.Sync
@@ -120,6 +121,21 @@ namespace Realms.Sync
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return default(ObjectPrivileges);
+        }
+
+        /// <summary>
+        /// A convenience method that converts a <see cref="User"/> to
+        /// <see cref="PermissionUser"/> and adds it to the list of users
+        /// if necessary. If a <see cref="PermissionUser"/> with that identity
+        /// already belongs to the collection, this method will be a no-op.
+        /// </summary>
+        /// <param name="users">
+        /// The collection of users to which <c>user</c> will be added.
+        /// </param>
+        /// <param name="user">The user to add.</param>
+        public static void Add(this IList<PermissionUser> users, User user)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
     }
 }

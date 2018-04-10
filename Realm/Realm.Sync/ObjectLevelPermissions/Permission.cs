@@ -123,7 +123,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(PermissionRole role, Realm realm)
         {
-            return GetPermissionForRole(role, RealmPermission.Get(realm).Permissions);
+            return Get(role, RealmPermission.Get(realm).Permissions);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get<T>(PermissionRole role, Realm realm) where T : RealmObject
         {
-            return GetPermissionForRole(role, ClassPermission.Get<T>(realm).Permissions);
+            return Get(role, ClassPermission.Get<T>(realm).Permissions);
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(PermissionRole role, string className, Realm realm)
         {
-            return GetPermissionForRole(role, ClassPermission.Get(realm, className).Permissions);
+            return Get(role, ClassPermission.Get(realm, className).Permissions);
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace Realms.Sync
             }
 
             var permissions = obj.GetListValue<Permission>(prop.Name);
-            return GetPermissionForRole(role, permissions);
+            return Get(role, permissions);
         }
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get<T>(string roleName, Realm realm) where T : RealmObject
         {
-            return GetPermissionForRole(PermissionRole.Get(realm, roleName), ClassPermission.Get<T>(realm).Permissions);
+            return Get(PermissionRole.Get(realm, roleName), ClassPermission.Get<T>(realm).Permissions);
         }
 
         /// <summary>
@@ -288,7 +288,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(string roleName, string className, Realm realm)
         {
-            return GetPermissionForRole(PermissionRole.Get(realm, roleName), ClassPermission.Get(realm, className).Permissions);
+            return Get(PermissionRole.Get(realm, roleName), ClassPermission.Get(realm, className).Permissions);
         }
 
         /// <summary>
@@ -321,25 +321,65 @@ namespace Realms.Sync
             var permissionType = typeof(Permission).GetTypeInfo().GetMappedOrOriginalName();
             var prop = obj.ObjectSchema.SingleOrDefault(o => o.Type == PropertyType.Array && o.ObjectType == permissionType);
             var permissions = obj.GetListValue<Permission>(prop.Name);
-            return GetPermissionForRole(PermissionRole.Get(obj.Realm, roleName), permissions);
+            return Get(PermissionRole.Get(obj.Realm, roleName), permissions);
         }
 
-        private Permission()
+        /// <summary>
+        /// Gets or creates a <see cref="Permission"/> instance for the named role
+        /// on the collection.
+        /// </summary>
+        /// <remarks>
+        /// This function should be used in preference to manually querying for the
+        /// applicable Permission as it ensures that there is exactly one Permission for
+        /// the given Role on the object, merging duplicates or creating and adding new ones
+        /// as needed.
+        /// </remarks>
+        /// <param name="roleName">
+        /// The name of the <see cref="PermissionRole"/> associated with that Permission. If no such
+        /// Role exists, it will be created automatically.
+        /// </param>
+        /// <param name="permissions">
+        /// The collection of permissions to which the new instance will be added.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Permission"/> instance that can be used to inspect or modify the object
+        /// permissions of that <see cref="PermissionRole"/>.
+        /// </returns>
+        public static Permission Get(string roleName, IList<Permission> permissions)
         {
+#if PCL
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+#else
+            if (!(permissions is RealmList<Permission> realmPermissions))
+            {
+                throw new ArgumentException($"{nameof(Get)} may only be called on managed lists.", nameof(permissions));
+            }
+
+            var role = PermissionRole.Get(realmPermissions.Realm, roleName);
+            return Get(role, permissions);
+#endif
         }
 
-        private static string[] _propertiesToMerge = new[]
-        {
-            nameof(CanRead),
-            nameof(CanUpdate),
-            nameof(CanDelete),
-            nameof(CanSetPermissions),
-            nameof(CanQuery),
-            nameof(CanCreate),
-            nameof(CanModifySchema),
-        };
-
-        internal static Permission GetPermissionForRole(PermissionRole role, IList<Permission> permissions)
+        /// <summary>
+        /// Gets or creates a <see cref="Permission"/> instance for the named role
+        /// on the collection.
+        /// </summary>
+        /// <remarks>
+        /// This function should be used in preference to manually querying for the
+        /// applicable Permission as it ensures that there is exactly one Permission for
+        /// the given Role on the object, merging duplicates or creating and adding new ones
+        /// as needed.
+        /// </remarks>
+        /// <param name="role">The <see cref="PermissionRole"/> associated with that Permission.</param>
+        /// <param name="permissions">
+        /// The collection of permissions to which the new instance will be added.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Permission"/> instance that can be used to inspect or modify the object
+        /// permissions of that <see cref="PermissionRole"/>.
+        /// </returns>
+        public static Permission Get(PermissionRole role, IList<Permission> permissions)
         {
 #if PCL
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -386,6 +426,21 @@ namespace Realms.Sync
             return result;
 #endif
         }
+
+        private Permission()
+        {
+        }
+
+        private static string[] _propertiesToMerge = new[]
+        {
+            nameof(CanRead),
+            nameof(CanUpdate),
+            nameof(CanDelete),
+            nameof(CanSetPermissions),
+            nameof(CanQuery),
+            nameof(CanCreate),
+            nameof(CanModifySchema),
+        };
 
         private static void MergePermission(Permission target, Permission source, string propertyName)
         {
