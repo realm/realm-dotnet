@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -108,6 +107,14 @@ namespace Tests.Sync
             var result = await Realm.GetInstanceAsync(config);
             CleanupOnTearDown(result);
             return result;
+        }
+
+        protected async Task WaitForSyncAsync(Realm realm)
+        {
+            var session = GetSession(realm);
+            await session.WaitForUploadAsync();
+            await Task.Delay(50);
+            await session.WaitForDownloadAsync();
         }
     }
 }

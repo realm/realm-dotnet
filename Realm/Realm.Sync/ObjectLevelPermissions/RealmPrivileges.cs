@@ -25,7 +25,7 @@ namespace Realms.Sync
     /// </summary>
     /// <remarks>
     /// This is a combination of all of the privileges granted to all of the Roles which the
-    /// current User is a member of, obtained by calling <see cref="RealmSyncExtensions.GetPrivileges(Realm)"/> on
+    /// current User is a member of, obtained by calling <see cref="PermissionExtensions.GetPrivileges(Realm)"/> on
     /// the Realm.
     /// </remarks>
     [Flags]
@@ -50,7 +50,7 @@ namespace Realms.Sync
         /// changes made will be reverted by the server.
         /// </summary>
         /// <remarks>
-        /// Note that if invalid privilege changes are made, <see cref="RealmSyncExtensions.GetPrivileges(Realm)"/>
+        /// Note that if invalid privilege changes are made, <see cref="PermissionExtensions.GetPrivileges(Realm)"/>
         /// will return results reflecting those invalid changes until synchronization occurs.
         /// <para/>
         /// Even if this flag is present, note that the user will be unable to grant more

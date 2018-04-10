@@ -121,22 +121,16 @@ namespace Realms.Sync
             return realm.SharedRealmHandle.GetPrivileges(obj.ObjectHandle);
         }
 
-        public static Permission GetOrCreatePermission(this IList<Permission> permissions, string roleName)
-        {
-            if (!(permissions is RealmList<Permission> realmPermissions))
-            {
-                throw new ArgumentException($"{nameof(GetOrCreatePermission)} may only be called on managed lists.", nameof(permissions));
-            }
-
-            var role = PermissionRole.Get(realmPermissions.Realm, roleName);
-            return permissions.GetOrCreatePermission(role);
-        }
-
-        public static Permission GetOrCreatePermission(this IList<Permission> permissions, PermissionRole role)
-        {
-            return Permission.GetPermissionForRole(role, permissions);
-        }
-
+        /// <summary>
+        /// A convenience method that converts a <see cref="User"/> to
+        /// <see cref="PermissionUser"/> and adds it to the list of users
+        /// if necessary. If a <see cref="PermissionUser"/> with that identity
+        /// already belongs to the collection, this method will be a no-op.
+        /// </summary>
+        /// <param name="users">
+        /// The collection of users to which <c>user</c> will be added.
+        /// </param>
+        /// <param name="user">The user to add.</param>
         public static void Add(this IList<PermissionUser> users, User user)
         {
             if (!(users is RealmList<PermissionUser> realmUsers))
@@ -145,7 +139,10 @@ namespace Realms.Sync
             }
 
             var permissionUser = PermissionUser.Get(realmUsers.Realm, user.Identity);
-            realmUsers.Add(permissionUser);
+            if (!realmUsers.Contains(permissionUser))
+            {
+                realmUsers.Add(permissionUser);
+            }
         }
     }
 }
