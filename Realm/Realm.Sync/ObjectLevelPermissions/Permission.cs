@@ -201,7 +201,7 @@ namespace Realms.Sync
         public static Permission Get(PermissionRole role, RealmObject obj)
         {
             var permissionType = typeof(Permission).GetTypeInfo().GetMappedOrOriginalName();
-            var prop = obj.ObjectSchema.FirstOrDefault(o => o.Type == PropertyType.Array && o.ObjectType == permissionType);
+            var prop = obj.ObjectSchema.FirstOrDefault(o => o.Type == (PropertyType.Array | PropertyType.Object) && o.ObjectType == permissionType);
             if (prop.Name == null)
             {
                 throw new ArgumentException("The given object doesn't have an IList<Permission> property.", nameof(obj));
