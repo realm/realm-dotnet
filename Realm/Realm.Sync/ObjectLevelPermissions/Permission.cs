@@ -318,10 +318,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(string roleName, RealmObject obj)
         {
-            var permissionType = typeof(Permission).GetTypeInfo().GetMappedOrOriginalName();
-            var prop = obj.ObjectSchema.SingleOrDefault(o => o.Type == PropertyType.Array && o.ObjectType == permissionType);
-            var permissions = obj.GetListValue<Permission>(prop.Name);
-            return Get(PermissionRole.Get(obj.Realm, roleName), permissions);
+            return Get(PermissionRole.Get(obj.Realm, roleName), obj);
         }
 
         /// <summary>
