@@ -29,6 +29,7 @@ scenarios such as:
 - The `SyncConfiguration` constructor now accepts relative Uris. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 
 ### Bug fixes
+- Fixed a bug that could cause deadlocks on Android devices when resolving thread safe references. ([#1708](https://github.com/realm/realm-dotnet/pull/1708))
 
 ### Breaking Changes
 - Uses the Sync 3.0 client which is incompatible with ROS 2.x.
