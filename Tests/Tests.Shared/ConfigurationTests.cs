@@ -61,7 +61,7 @@ namespace Tests.Database
         public void CanSetConfigurationPartialPath()
         {
             // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan" + Path.DirectorySeparatorChar + "docs" + Path.DirectorySeparatorChar);
+            var config = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath("jan" + Path.DirectorySeparatorChar + "docs" + Path.DirectorySeparatorChar);
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
@@ -72,7 +72,7 @@ namespace Tests.Database
         public void PathIsCanonicalised()
         {
             // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath(Path.Combine("..", "Documents", "fred.realm"));
+            var config = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath(Path.Combine("..", "Documents", "fred.realm"));
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));

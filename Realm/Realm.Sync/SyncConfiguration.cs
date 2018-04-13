@@ -89,9 +89,6 @@ namespace Realms.Sync
         /// Partial synchronization mode means that no objects are synchronized from the remote Realm
         /// except those matching queries that the user explicitly specifies.
         /// </summary>
-        /// <remarks>
-        /// Partial synchronization is a tech preview.Its APIs are subject to change.
-        /// </remarks>
         public bool IsPartial { get; set; }
 
         // TODO: expose and document this.
@@ -100,22 +97,42 @@ namespace Realms.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
-        /// <param name="user">A valid <see cref="User"/>.</param>
+        /// <param name="user">
+        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// </param>
         /// <param name="serverUri">
         /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
+        /// If a relative Uri is provided, it will be resolved using the user's <see cref="ServerUri"/> as baseUri.
+        /// If <c>null</c> is passed, a Uri will be constructed from the user's <see cref="ServerUri"/>, combined with
+        /// <c>/default</c> and <see cref="IsPartial"/> will be set to <c>true</c>.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
-            : base(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(user, serverUri))
+        public SyncConfiguration(User user = null, Uri serverUri = null, string optionalPath = null)
         {
-            Argument.NotNull(user, nameof(user));
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.Ensure(serverUri.Scheme.StartsWith("realm"), "Unexpected protocol for server url. Expected realm:// or realms://.", nameof(serverUri));
+            Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
+                "The user must be explicitly specified when the number of logged-in users is not 1.",
+                nameof(user));
 
-            User = user ?? throw new ArgumentNullException(nameof(user));
-            ServerUri = serverUri ?? throw new ArgumentNullException(nameof(serverUri));
+            User = user ?? User.Current;
+            if (serverUri == null)
+            {
+                // Using default realm
+                IsPartial = true;
+                ServerUri = User.GetUriForRealm("/default");
+            }
+            else if (!serverUri.IsAbsoluteUri)
+            {
+                ServerUri = User.GetUriForRealm(serverUri);
+            }
+            else
+            {
+                Argument.Ensure(serverUri.Scheme.StartsWith("realm"), "Unexpected protocol for server url. Expected realm:// or realms://.", nameof(serverUri));
+                ServerUri = serverUri;
+            }
+
+            DatabasePath = GetPathToRealm(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(User, ServerUri));
         }
 
         /// <summary>

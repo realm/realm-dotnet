@@ -198,13 +198,19 @@ namespace Realms.Sync
 
         internal Uri GetUriForRealm(string path)
         {
-            var uriBuilder = new UriBuilder(ServerUri)
+            if (!path.StartsWith("/"))
             {
-                Path = path
-            };
+                path = $"/{path}";
+            }
 
+            return GetUriForRealm(new Uri(path, UriKind.Relative));
+        }
+
+        internal Uri GetUriForRealm(Uri uri)
+        {
+            Argument.Ensure(!uri.IsAbsoluteUri, "The passed Uri must be relative", nameof(uri));
+            var uriBuilder = new UriBuilder(new Uri(ServerUri, uri));
             uriBuilder.Scheme = uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ? "realms" : "realm";
-
             return uriBuilder.Uri;
         }
 

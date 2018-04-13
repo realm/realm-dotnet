@@ -106,18 +106,23 @@ namespace Realms.Sync
         /// Partial synchronization mode means that no objects are synchronized from the remote Realm
         /// except those matching queries that the user explicitly specifies.
         /// </summary>
-        /// <remarks>
-        /// Partial synchronization is a tech preview.Its APIs are subject to change.
-        /// </remarks>
         public bool IsPartial { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
-        /// <param name="user">A valid <see cref="User"/>.</param>
-        /// <param name="serverUri">A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.</param>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public SyncConfiguration(User user, Uri serverUri, string optionalPath = null)
+        /// <param name="user">
+        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// </param>
+        /// <param name="serverUri">
+        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
+        /// If not provided, a Uri will be constructed from the user's <see cref="ServerUri"/>, combined with <c>/default</c>.
+        /// If the default Uri is used, the configuration's <see cref="IsPartial"/> will be set to <c>true</c>.
+        /// </param>
+        /// <param name="optionalPath">
+        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
+        /// </param>
+        public SyncConfiguration(User user = null, Uri serverUri = null, string optionalPath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

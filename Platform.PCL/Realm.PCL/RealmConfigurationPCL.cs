@@ -81,10 +81,10 @@ namespace Realms
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="RealmConfiguration"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
+        /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
-        public static RealmConfiguration DefaultConfiguration
+        public static RealmConfigurationBase DefaultConfiguration
         {
             get
             {

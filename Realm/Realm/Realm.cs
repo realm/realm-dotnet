@@ -64,13 +64,7 @@ namespace Realms
         /// </exception>
         public static Realm GetInstance(string databasePath)
         {
-            var config = RealmConfiguration.DefaultConfiguration;
-            if (!string.IsNullOrEmpty(databasePath))
-            {
-                config = config.ConfigWithPath(databasePath);
-            }
-
-            return GetInstance(config);
+            return GetInstance(new RealmConfiguration(databasePath));
         }
 
         /// <summary>
@@ -98,11 +92,11 @@ namespace Realms
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
-        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config)
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null)
         {
             if (config == null)
             {
-                throw new ArgumentNullException(nameof(config));
+                config = RealmConfiguration.DefaultConfiguration;
             }
 
             RealmSchema schema;

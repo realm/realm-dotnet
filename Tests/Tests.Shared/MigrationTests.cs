@@ -19,8 +19,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
 
@@ -34,7 +32,7 @@ namespace Tests.Database
         [Test]
         public void TriggerMigrationBySchemaVersion()
         {
-            var config = RealmConfiguration.DefaultConfiguration;
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
 
             // Arrange
             using (var realm = Realm.GetInstance())
