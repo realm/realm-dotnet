@@ -73,6 +73,7 @@ namespace Realms
             {
                 return base[index];
             }
+
             set
             {
                 if (index < 0)

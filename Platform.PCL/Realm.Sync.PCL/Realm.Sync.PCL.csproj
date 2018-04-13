@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>DEBUG;PCL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -29,6 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <DefineConstants>PCL</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\RealmAssemblyInfo.cs">
@@ -46,10 +47,35 @@
     <Compile Include="..\..\Realm\Realm.Sync\LogLevel.cs">
       <Link>LogLevel.cs</Link>
     </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\ClassPermission.cs">
+      <Link>ObjectLevelPermissions\ClassPermission.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\ClassPrivileges.cs">
+      <Link>ObjectLevelPermissions\ClassPrivileges.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\ObjectPrivileges.cs">
+      <Link>ObjectLevelPermissions\ObjectPrivileges.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\Permission.cs">
+      <Link>ObjectLevelPermissions\Permission.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\PermissionRole.cs">
+      <Link>ObjectLevelPermissions\PermissionRole.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\PermissionUser.cs">
+      <Link>ObjectLevelPermissions\PermissionUser.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\RealmPermission.cs">
+      <Link>ObjectLevelPermissions\RealmPermission.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Realm\Realm.Sync\ObjectLevelPermissions\RealmPrivileges.cs">
+      <Link>ObjectLevelPermissions\RealmPrivileges.cs</Link>
+    </Compile>
     <Compile Include="..\..\Realm\Realm.Sync\SubscriptionState.cs">
       <Link>SubscriptionState.cs</Link>
     </Compile>
     <Compile Include="Exceptions\PermissionDeniedException.cs" />
+    <Compile Include="ObjectLevelPermissions\PermissionExtensionsPCL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CredentialsPCL.cs" />
     <Compile Include="SessionPCL.cs" />

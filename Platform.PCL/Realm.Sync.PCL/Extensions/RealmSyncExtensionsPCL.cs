@@ -19,6 +19,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Realms.Sync
@@ -54,6 +55,12 @@ namespace Realms.Sync
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         [Obsolete("Use the IQueryable.SubscribeToObjects extension method")]
         public static Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        internal static string GetMappedOrOriginalName(this MemberInfo member)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

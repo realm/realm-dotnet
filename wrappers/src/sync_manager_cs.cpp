@@ -225,6 +225,28 @@ REALM_EXPORT void realm_syncmanager_install_callbacks(decltype(s_subscribe_for_o
 {
     s_subscribe_for_objects_callback = subscribe_callback;
 }
+    
+REALM_EXPORT uint8_t realm_syncmanager_get_realm_privileges(SharedRealm& sharedRealm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return static_cast<uint8_t>(sharedRealm->get_privileges());
+    });
+}
+
+REALM_EXPORT uint8_t realm_syncmanager_get_class_privileges(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor class_name(class_buf, class_len);
+        return static_cast<uint8_t>(sharedRealm->get_privileges(class_name));
+    });
+}
+
+REALM_EXPORT uint8_t realm_syncmanager_get_object_privileges(SharedRealm& sharedRealm, Object& object, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return static_cast<uint8_t>(sharedRealm->get_privileges(object.row()));
+    });
+}
 
 }
 

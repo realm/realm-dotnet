@@ -7,6 +7,10 @@
 to subscribe to any query, and the returned `Subscription<T>` object can be used to observe the state of the subscription
 and ultimately remove the subscription. See the [documentation](https://docs.realm.io/platform/v/3.x/using-synced-realms/syncing-data)
 for more information. ([#1679](https://github.com/realm/realm-dotnet/pull/1679))
+- Added a fine-grained permissions system for use with partially-synchronized Realms. This allows permissions to be
+defined at the level of individual objects or classes. See the
+[documentation](https://docs.realm.io/platform/v/3.x/using-synced-realms/access-control)
+for more information. ([#1714](https://github.com/realm/realm-dotnet/pull/1714))
 - Exposed a string-based `IQueryable<T>.Filter(predicate)` method to enable more advanced querying
 scenarios such as:
   - Following links: `realm.All<Dog>().Filter("Owner.FirstName BEGINSWITH 'J'")`.

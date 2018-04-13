@@ -33,6 +33,15 @@ namespace Realms.Sync
     /// <seealso cref="Credentials"/>
     public class SyncConfiguration : RealmConfigurationBase
     {
+        internal static readonly Type[] _partialSyncTypes = new[]
+        {
+            typeof(ClassPermission),
+            typeof(Permission),
+            typeof(PermissionRole),
+            typeof(PermissionUser),
+            typeof(RealmPermission)
+        };
+
         /// <summary>
         /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
@@ -145,6 +154,11 @@ namespace Realms.Sync
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache
             };
+
+            if (IsPartial)
+            {
+                schema = RealmSchema.CreateSchemaForClasses(_partialSyncTypes, schema);
+            }
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())

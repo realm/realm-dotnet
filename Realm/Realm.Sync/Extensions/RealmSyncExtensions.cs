@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Helpers;
 
 namespace Realms.Sync
