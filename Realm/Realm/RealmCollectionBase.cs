@@ -162,6 +162,12 @@ namespace Realms
             return new RealmResults<T>(Realm, Metadata, handle);
         }
 
+        internal RealmResults<T> GetFilteredResults(string query)
+        {
+            var handle = Handle.Value.GetFilteredResults(query);
+            return new RealmResults<T>(Realm, Metadata, handle);
+        }
+
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
         {
             if (_callbacks.Count == 0)

@@ -11,6 +11,21 @@ for more information. ([#1679](https://github.com/realm/realm-dotnet/pull/1679))
 defined at the level of individual objects or classes. See the
 [documentation](https://docs.realm.io/platform/v/3.x/using-synced-realms/access-control)
 for more information. ([#1714](https://github.com/realm/realm-dotnet/pull/1714))
+- Exposed a string-based `IQueryable<T>.Filter(predicate)` method to enable more advanced querying
+scenarios such as:
+  - Following links: `realm.All<Dog>().Filter("Owner.FirstName BEGINSWITH 'J'")`.
+  - Queries on collections: `realm.All<Child>().Filter("Parents.FirstName BEGINSWITH 'J'")` - find all
+  children who have a parent whose name begins with J or `realm.All<Child>().Filter("Parents.@avg.Age > 50")` -
+  find all children whose parents' average age is more than 50.
+  - Subqueries: `realm.All<Person>().Filter("SUBQUERY(Dogs, $dog, $dog.Vaccinated == false).@count > 3")` - find all
+  people who have more than 3 unvaccinated dogs.
+  - Sorting: `realm.All<Dog>().Filter("TRUEPREDICATE SORT(Owner.FirstName ASC, Age DESC)")` - find all dogs and
+  sort them by their owner's first name in ascending order, then by the dog's age in descending.
+  - Distinct: `realm.All<Dog>().Filter("TRUEPREDICATE DISTINCT(Age) SORT(Name)")` - find all dogs, sort them
+  by their name and pick one dog for each age value.
+  - For more examples, check out the
+  [javascript query language docs](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) -
+  the query syntax is identical - or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
 
 ### Bug fixes
 

@@ -39,6 +39,16 @@ namespace Realms.Helpers
             }
         }
 
+        public static T EnsureType<T>(object obj, string message, string paramName)
+        {
+            if (!(obj is T tObj))
+            {
+                throw new ArgumentException(message, paramName);
+            }
+
+            return tObj;
+        }
+
         public static void Ensure(bool condition, string message, string paramName)
         {
             if (!condition)

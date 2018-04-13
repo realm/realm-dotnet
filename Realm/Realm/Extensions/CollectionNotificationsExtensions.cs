@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -142,6 +143,41 @@ namespace Realms
                 list.RemoveAt(from);
                 list.Insert(to, item);
             }
+        }
+
+        /// <summary>
+        /// Apply an NSPredicate-based filter over a collection. It can be used to create
+        /// more complex queries, that are currently unsupported by the LINQ provider and
+        /// supports SORT and DISTINCT clauses in addition to filtering.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
+        /// <param name="results">
+        /// A Queryable collection, obtained by calling <see cref="Realm.All{T}"/>.
+        /// </param>
+        /// <param name="predicate">The predicate that will be applied.</param>
+        /// <returns>A queryable observable collection of objects that match the predicate.</returns>
+        /// <remarks>
+        /// This method can be used in combination with LINQ filtering, but it is strongly recommended
+        /// to avoid combining it if a <c>SORT</c> clause appears in the predicate.
+        /// <para/>
+        /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
+        /// after applying the predicate.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var results1 = realm.All&lt;Foo&gt;("Bar.IntValue > 0");
+        /// var results2 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC)");
+        /// var results3 = realm.All&lt;Foo&gt;("Bar.IntValue > 0 SORT(Bar.IntValue ASC Bar.StringValue DESC) DISTINCT(Bar.IntValue)");
+        /// </code>
+        /// </example>
+        /// <seealso href="https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md">
+        /// Examples of the NSPredicate syntax
+        /// </seealso>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static IQueryable<T> Filter<T>(this IQueryable<T> results, string predicate)
+        {
+            var realmResults = Argument.EnsureType<RealmResults<T>>(results, $"{nameof(results)} must be a query obtained by calling Realm.All.", nameof(results));
+            return realmResults.GetFilteredResults(predicate);
         }
     }
 }

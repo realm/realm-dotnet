@@ -26,7 +26,8 @@
 #include "notifications_cs.hpp"
 #include "wrapper_exceptions.hpp"
 #include "timestamp_helpers.hpp"
-
+#include <realm/parser/parser.hpp>
+#include <realm/parser/query_builder.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -41,6 +42,22 @@ inline T get(Results* results, size_t ndx, NativeException::Marshallable& ex)
 
         return results->get<T>(ndx);
     });
+}
+
+inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
+{
+    const realm::Schema &schema = realm->schema();
+    for (auto it = schema.begin(); it != schema.end(); ++it) {
+        for (const Property &property : it->computed_properties) {
+            if (property.type == realm::PropertyType::LinkingObjects) {
+                auto target_object_schema = schema.find(property.object_type);
+                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
+                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
+                mapping.add_mapping(table, property.name, native_name);
+            }
+        }
+    }
 }
 
 extern "C" {
@@ -118,11 +135,32 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
         });
     });
 }
-
+    
 REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Query(results_ptr->get_query());
+    });
+}
+    
+REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor query_string(query_buf, query_len);
+        auto query = results.get_query();
+        auto const &realm = results.get_realm();
+        
+        parser::ParserResult result = parser::parse(query_string);
+        
+        parser::KeyPathMapping mapping;
+        alias_backlinks(mapping, realm);
+        
+        query_builder::NoArguments no_args;
+        query_builder::apply_predicate(query, result.predicate, no_args, mapping);
+        
+        DescriptorOrdering ordering;
+        query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
+        return new Results(realm, std::move(query), std::move(ordering));
     });
 }
     

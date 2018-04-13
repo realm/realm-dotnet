@@ -40,7 +40,14 @@ namespace Realms.Sync
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public static class Subscription
     {
-        internal static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback = SubscriptionCallbackImpl;
+        internal static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback;
+
+        static Subscription()
+        {
+            SubscriptionCallback = SubscriptionCallbackImpl;
+            // prevent the delegate from ever being garbage collected
+            GCHandle.Alloc(SubscriptionCallback);
+        }
 
         /// <summary>
         /// For partially synchronized Realms, fetches and synchronizes the objects that match the query. 

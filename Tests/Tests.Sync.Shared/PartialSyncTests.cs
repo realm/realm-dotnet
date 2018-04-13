@@ -288,6 +288,23 @@ namespace Tests.Sync
             });
         }
 
+        // https://github.com/realm/realm-dotnet/issues/1716
+        [Test]
+        public void Subcribe_WaitForSynchronization_Multiple()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetPartialRealm())
+                {
+                    var subscription = realm.All<ObjectA>().Where(f => f.IntValue > 0).Subscribe();
+                    await subscription.WaitForSynchronizationAsync().Timeout(5000);
+
+                    var subscription2 = realm.All<ObjectA>().Where(f => f.IntValue > 0).Subscribe();
+                    await subscription2.WaitForSynchronizationAsync().Timeout(5000);
+                }
+            });
+        }
+
         private async Task<Realm> GetPartialRealm(Action<SyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
         {
             SyncTestHelpers.RequiresRos();
