@@ -245,7 +245,7 @@ namespace Tests.Database
         [TestCase(false)]
         public void ShouldCompact_IsInvokedAfterOpening(bool shouldCompact)
         {
-            var config = RealmConfiguration.DefaultConfiguration;
+            var config = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration);
 
             using (var realm = Realm.GetInstance(config))
             {
@@ -549,7 +549,7 @@ namespace Tests.Database
             AsyncContext.Run(async () =>
             {
                 Realm realm = null;
-                var config = RealmConfiguration.DefaultConfiguration;
+                var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
                 config.SchemaVersion = 1;
 
                 using (var firstRealm = Realm.GetInstance(config))

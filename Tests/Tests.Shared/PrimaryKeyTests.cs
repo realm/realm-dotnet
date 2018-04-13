@@ -342,7 +342,7 @@ namespace Tests.Database
         [Test]
         public void PrimaryKeyFailsIfClassNotInRealm()
         {
-            var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath(Path.GetTempFileName());
+            var conf = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath(Path.GetTempFileName());
             conf.ObjectClasses = new[] { typeof(Person) };
             try
             {

@@ -128,5 +128,59 @@ namespace Tests.Sync
                 Assert.That(() => new SyncConfiguration(user, new Uri(url)), Throws.TypeOf<ArgumentException>());
             });
         }
+
+        [Test]
+        public void DefaultConfiguration_WhenNoUserLoggedIn_ShouldThrow()
+        {
+            Assert.That(() => new SyncConfiguration(), Throws.TypeOf<ArgumentException>().And.Message.Contains("The user must be explicitly specified when the number of logged-in users is not 1."));
+        }
+
+        [Test]
+        public void DefaultConfiguration_WhenMoreThanOneUserLoggedIn_ShouldThrow()
+        {
+            AsyncContext.Run(async () =>
+            {
+                await SyncTestHelpers.GetFakeUserAsync();
+                await SyncTestHelpers.GetFakeUserAsync();
+
+                Assert.That(() => new SyncConfiguration(), Throws.TypeOf<ArgumentException>().And.Message.Contains("The user must be explicitly specified when the number of logged-in users is not 1."));
+            });
+        }
+
+        [TestCase("http", "realm")]
+        [TestCase("https", "realms")]
+        public void DefaultConfiguration_WhenOneUserLoggedIn_ShouldWork(string userScheme, string realmScheme)
+        {
+            AsyncContext.Run(async () =>
+            {
+                await SyncTestHelpers.GetFakeUserAsync(scheme: userScheme);
+
+                var config = new SyncConfiguration();
+                Assert.That(config.IsPartial);
+                Assert.That(config.ServerUri.Scheme, Is.EqualTo(realmScheme));
+                Assert.That(config.ServerUri.Segments, Is.EqualTo(new[] { "/", "default" }));
+            });
+        }
+
+        [Test]
+        public void SyncConfiguration_CanBeSetAsRealmConfigurationDefault()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetUserAsync();
+
+                RealmConfiguration.DefaultConfiguration = new SyncConfiguration();
+
+                using (var realm = GetRealm(null))
+                {
+                    Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
+                    var syncConfig = (SyncConfiguration)realm.Config;
+                    Assert.That(syncConfig.User.Identity, Is.EqualTo(user.Identity));
+                    Assert.That(syncConfig.ServerUri.Segments, Is.EqualTo(new[] { "/", "default" }));
+                }
+            });
+        }
     }
 }

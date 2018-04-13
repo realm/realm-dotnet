@@ -97,10 +97,10 @@ namespace Realms
         public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="RealmConfiguration"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
+        /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
-        public static RealmConfiguration DefaultConfiguration { get; set; } = new RealmConfiguration();
+        public static RealmConfigurationBase DefaultConfiguration { get; set; } = new RealmConfiguration();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
