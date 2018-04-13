@@ -70,7 +70,6 @@ namespace Realms.Sync
             /// The Nickname provider, associated with <see cref="Credentials.Nickname"/>.
             /// </summary>
             public const string Nickname = "nickname";
-
         }
 
         internal static class Keys

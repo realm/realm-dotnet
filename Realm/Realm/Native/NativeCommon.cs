@@ -53,10 +53,11 @@ namespace Realms
         public static extern void reset_for_testing();
 
         private static int _isInitialized;
+
         internal static unsafe void Initialize()
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
-            {   
+            {
                 try
                 {
                     var osVersionPI = typeof(Environment).GetProperty("OSVersion");

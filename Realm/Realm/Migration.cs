@@ -89,7 +89,6 @@ namespace Realms
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
 
-
             var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, IsReadOnly = true };
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
