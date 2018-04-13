@@ -34,6 +34,11 @@ scenarios such as:
 - `Permission` has been renamed to `PathPermission` to more closely reflect its purpose.
 Furthermore, existing methods to modify permissions only work on full Realms. New methods
 and classes are introduced to configure access to a partially synchronized Realm.
+- The type of `RealmConfiguration.DefaultConfiguration` has changed to `RealmConfigurationBase` to allow
+any subclass to be set as default. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
+- The `SyncConfiguration` constructor arguments are now optional. The `user` value will default to the
+currently logged in user and the `serverUri` value will default to `realm://MY-SERVER-URL/default` where
+`MY-SERVER-URL` is the host the user authenticated against. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 
 2.2.0 (2017-03-22)
 ------------------
