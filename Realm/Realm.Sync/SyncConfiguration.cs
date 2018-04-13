@@ -102,8 +102,9 @@ namespace Realms.Sync
         /// </param>
         /// <param name="serverUri">
         /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
-        /// If not provided, a Uri will be constructed from the user's <see cref="ServerUri"/>, combined with <c>/default</c>.
-        /// If the default Uri is used, the configuration's <see cref="IsPartial"/> will be set to <c>true</c>.
+        /// If a relative Uri is provided, it will be resolved using the user's <see cref="ServerUri"/> as baseUri.
+        /// If <c>null</c> is passed, a Uri will be constructed from the user's <see cref="ServerUri"/>, combined with
+        /// <c>/default</c> and <see cref="IsPartial"/> will be set to <c>true</c>.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
@@ -119,7 +120,11 @@ namespace Realms.Sync
             {
                 // Using default realm
                 IsPartial = true;
-                ServerUri = User.GetUriForRealm("default");
+                ServerUri = User.GetUriForRealm("/default");
+            }
+            else if (!serverUri.IsAbsoluteUri)
+            {
+                ServerUri = User.GetUriForRealm(serverUri);
             }
             else
             {

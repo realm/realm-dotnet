@@ -26,6 +26,7 @@ scenarios such as:
   - For more examples, check out the
   [javascript query language docs](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) -
   the query syntax is identical - or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
+- The `SyncConfiguration` constructor now accepts relative Uris. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 
 ### Bug fixes
 

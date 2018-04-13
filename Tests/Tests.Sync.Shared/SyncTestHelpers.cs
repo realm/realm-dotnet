@@ -31,6 +31,8 @@ namespace Tests.Sync
 {
     public static class SyncTestHelpers
     {
+        public const string FakeRosUrl = "some.fake.server:9080";
+
         public static string DeveloperFeatureToken => GetFeatureToken("DEVELOPER");
 
         public static string ProfessionalFeatureToken => GetFeatureToken("PROFESSIONAL");
@@ -132,7 +134,7 @@ namespace Tests.Sync
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
         {
-            var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://some.fake.server:9080", string.Empty, isAdmin: true);
+            var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty, isAdmin: true);
             return Task.FromResult(new User(handle));
         }
 

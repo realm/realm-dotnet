@@ -17,13 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
-using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Tests.Sync
@@ -180,6 +178,20 @@ namespace Tests.Sync
                     Assert.That(syncConfig.User.Identity, Is.EqualTo(user.Identity));
                     Assert.That(syncConfig.ServerUri.Segments, Is.EqualTo(new[] { "/", "default" }));
                 }
+            });
+        }
+
+        [TestCase("bar", "/bar")]
+        [TestCase("/bar", "/bar")]
+        [TestCase("/~/bar", "/~/bar")]
+        [TestCase("~/bar", "/~/bar")]
+        public void SyncConfiguration_WithRelativeUri_ResolvesCorrectly(string path, string expected)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var syncConfiguration = new SyncConfiguration(user, new Uri(path, UriKind.Relative));
+                Assert.That(syncConfiguration.ServerUri.AbsoluteUri, Is.EqualTo($"realm://{SyncTestHelpers.FakeRosUrl}{expected}"));
             });
         }
     }
