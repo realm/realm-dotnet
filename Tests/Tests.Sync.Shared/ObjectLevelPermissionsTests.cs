@@ -49,7 +49,7 @@ namespace Tests.Sync
 
                 using (var realm = GetRealm(userA, realmUri))
                 {
-                    var query = realm.All<ObjectWithPermissions>().Where(o => o.Id > 0);
+                    var query = realm.All<ObjectWithPermissions>();
                     var subscription = query.Subscribe();
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
@@ -68,7 +68,7 @@ namespace Tests.Sync
 
                 using (var realm = GetRealm(userB, realmUri))
                 {
-                    var query = realm.All<ObjectWithPermissions>().Where(o => o.Id > 0);
+                    var query = realm.All<ObjectWithPermissions>();
                     var subscription = query.Subscribe();
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
@@ -625,7 +625,7 @@ namespace Tests.Sync
 
             using (var realm = GetRealm(config))
             {
-                var objects = realm.All<ObjectWithPermissions>().Where(o => o.Id > 0);
+                var objects = realm.All<ObjectWithPermissions>();
                 var subscription = await SubscribeToObjectsAsync(realm);
                 if (addObjects)
                 {
@@ -653,7 +653,7 @@ namespace Tests.Sync
 
         private static async Task<Subscription<ObjectWithPermissions>> SubscribeToObjectsAsync(Realm realm)
         {
-            var query = realm.All<ObjectWithPermissions>().Where(o => o.Id > 0);
+            var query = realm.All<ObjectWithPermissions>();
             var subscription = query.Subscribe();
             await subscription.WaitForSynchronizationAsync().Timeout(5000);
             return subscription;
