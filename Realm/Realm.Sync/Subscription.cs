@@ -95,18 +95,14 @@ namespace Realms.Sync
             Argument.Ensure(syncConfig?.IsPartial == true, $"{nameof(realm)} must be a partial synchronized Realm.", nameof(realm));
 
             var config = realm.Config.Clone();
-            config.IsDynamic = true;
-            config.ObjectClasses = null;
+            config.ObjectClasses = new[] { typeof(ResultSets) };
+            config.EnableCache = false;
 
             return Task.Run(() =>
             {
                 using (var backgroundRealm = Realm.GetInstance(config))
                 {
-                    // We can't query with dynamic :/
-                    var resultSets = backgroundRealm.All("__ResultSets")
-                                                    .AsEnumerable()
-                                                    .Where(s => s.name == subscriptionName)
-                                                    .ToArray();
+                    var resultSets = backgroundRealm.All<ResultSets>().Where(r => r.Name == subscriptionName);
                     if (!resultSets.Any())
                     {
                         throw new RealmException($"A subscription with the name {subscriptionName} doesn't exist.");
@@ -114,10 +110,7 @@ namespace Realms.Sync
 
                     backgroundRealm.Write(() =>
                     {
-                        foreach (var item in resultSets)
-                        {
-                            backgroundRealm.Remove(item);
-                        }
+                        backgroundRealm.RemoveRange(resultSets);
                     });
                 }
             });

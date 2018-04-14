@@ -50,6 +50,7 @@
     <Compile Include="Native\StringStringPair.cs" />
     <Compile Include="Native\SyncConfiguration.cs" />
     <Compile Include="ObjectLevelPermissions\Permission.cs" />
+    <Compile Include="ObjectLevelPermissions\ResultSets.cs" />
     <Compile Include="ObjectLevelPermissions\PermissionRole.cs" />
     <Compile Include="ObjectLevelPermissions\ClassPermission.cs" />
     <Compile Include="ObjectLevelPermissions\PermissionUser.cs" />
