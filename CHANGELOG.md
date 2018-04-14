@@ -27,6 +27,10 @@ scenarios such as:
   [javascript query language docs](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) -
   the query syntax is identical - or the [NSPredicate Cheatsheet](https://academy.realm.io/posts/nspredicate-cheatsheet/).
 - The `SyncConfiguration` constructor now accepts relative Uris. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
+- Added the following methods for resetting the user's password and confirming their email:
+`RequestPasswordResetAsync`, `CompletePasswordResetAsync`, `RequestEmailConfirmationAsync`, and `ConfirmEmailAsync`.
+These all apply only to users created via `Credentials.UsernamePassword` who have provided their email as
+the username. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
 
 ### Bug fixes
 - Fixed a bug that could cause deadlocks on Android devices when resolving thread safe references. ([#1708](https://github.com/realm/realm-dotnet/pull/1708))
@@ -41,6 +45,9 @@ any subclass to be set as default. ([#1720](https://github.com/realm/realm-dotne
 - The `SyncConfiguration` constructor arguments are now optional. The `user` value will default to the
 currently logged in user and the `serverUri` value will default to `realm://MY-SERVER-URL/default` where
 `MY-SERVER-URL` is the host the user authenticated against. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
+- The `serverUrl` argument in `User.LoginAsync(credentials, serverUrl)` and `User.GetLoggedInUser(identity, serverUrl)`
+has been renamed to `serverUri` for consistency. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
+
 
 2.2.0 (2017-03-22)
 ------------------

@@ -180,6 +180,26 @@ namespace Realms.Sync
             await MakeAuthRequestAsync(HttpMethod.Post, uri, body, refreshToken).ConfigureAwait(continueOnCapturedContext: false);
         }
 
+        public static Task UpdateAccountAsync(Uri serverUri, string action, string email = null, IDictionary<string, string> data = null)
+        {
+            data = data ?? new Dictionary<string, string>();
+            data["action"] = action;
+
+            var body = new Dictionary<string, object>
+            {
+                ["data"] = data
+            };
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                body["provider_id"] = email;
+            }
+
+            var updateUri = new Uri(serverUri, "auth/password/updateAccount");
+
+            return MakeAuthRequestAsync(HttpMethod.Post, updateUri, body);
+        }
+
         private static void ScheduleTokenRefresh(string userId, Uri authServerUrl, string path, DateTimeOffset expireDate)
         {
             var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;

@@ -64,9 +64,9 @@ namespace Realms.Sync
         /// Logs the user in to the Realm Object Server.
         /// </summary>
         /// <param name="credentials">The credentials to use for authentication.</param>
-        /// <param name="serverUrl">The URI of the server that the user is authenticated against.</param>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
         /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
-        public static Task<User> LoginAsync(Credentials credentials, Uri serverUrl)
+        public static Task<User> LoginAsync(Credentials credentials, Uri serverUri)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -90,6 +90,18 @@ namespace Realms.Sync
         public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Gets a logged in user with a specified identity.
+        /// </summary>
+        /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
+        /// <param name="identity">The identity of the user.</param>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        public static User GetLoggedInUser(string identity, Uri serverUri)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         #endregion
@@ -229,6 +241,75 @@ namespace Realms.Sync
         /// or <c>null</c> if a user has not been found.
         /// </returns>
         public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerUserIdentity)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Request a password reset email to be sent to a user's email. This method requires internet connection
+        /// and will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+        /// </summary>
+        /// <remarks>
+        /// This can only be used for users who authenticated with <see cref="Credentials.UsernamePassword"/>
+        /// and passed a valid email address as a username.
+        /// </remarks>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        /// <param name="email">The email that corresponds to the user's username.</param>
+        /// <returns>An awaitable task that, upon completion, indicates that the request has been sent.</returns>
+        public static Task RequestPasswordResetAsync(Uri serverUri, string email)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Complete the password reset flow by using the reset token sent to the user's email as a one-time
+        /// authorization token to change the password.
+        /// </summary>
+        /// <remarks>
+        /// By default, the link that will be sent to the user's email will redirect to a webpage where
+        /// they can enter their new password. If you wish to provide a native UX, you may wish to modify
+        /// the url to use deep linking to open the app, extract the token, and navigate to a view that
+        /// allows them to change their password within the app.
+        /// </remarks>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        /// <param name="token">The token that was sent to the user's email address.</param>
+        /// <param name="newPassword">The user's new password.</param>
+        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
+        public static Task CompletePasswordResetAsync(Uri serverUri, string token, string newPassword)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Request an email confirmation email to be sent to a user's email. This method requires internet connection
+        /// and will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+        /// </summary>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        /// <param name="email">The email that corresponds to the user's username.</param>
+        /// <returns>An awaitable task that, upon completion, indicates that the request has been sent.</returns>
+        public static Task RequestEmailConfirmationAsync(Uri serverUri, string email)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
+        /// Complete the password reset flow by using the confirmation token sent to the user's email as a one-time
+        /// authorization token to confirm their email.
+        /// </summary>
+        /// <remarks>
+        /// By default, the link that will be sent to the user's email will redirect to a webpage where
+        /// they'll see a generic "Thank you for confirming" text. If you wish to provide a native UX, you
+        /// may wish to modify the url to use deep linking to open the app, extract the token, and inform them
+        /// that their email has been confirmed.
+        /// </remarks>
+        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        /// <param name="token">The token that was sent to the user's email address.</param>
+        /// <returns>An awaitable task that, when successful, indicates that the email has been confirmed.</returns>
+        public static Task ConfirmEmailAsync(Uri serverUri, string token)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
