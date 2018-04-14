@@ -45,7 +45,7 @@ any subclass to be set as default. ([#1720](https://github.com/realm/realm-dotne
 currently logged in user and the `serverUri` value will default to `realm://MY-SERVER-URL/default` where
 `MY-SERVER-URL` is the host the user authenticated against. ([#1720](https://github.com/realm/realm-dotnet/pull/1720))
 - The `serverUrl` argument in `User.LoginAsync(credentials, serverUrl)` and `User.GetLoggedInUser(identity, serverUrl)`
-to `serverUri` for consistency. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
+has been renamed to `serverUri` for consistency. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
 
 
 2.2.0 (2017-03-22)
