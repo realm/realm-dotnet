@@ -105,10 +105,8 @@ namespace Tests.Sync
                 {
                     var subscription = await SubscribeToObjectsAsync(realm);
                     AssertRealmPrivileges(realm, RealmPrivileges.Read | RealmPrivileges.Update);
-                    AssertClassPrivileges(realm, ClassPrivileges.Read | ClassPrivileges.Subscribe |
-                                          ClassPrivileges.Create | ClassPrivileges.SetPermissions | ClassPrivileges.Update);
-                    AssertObjectPrivileges(realm, ObjectPrivileges.Read | ObjectPrivileges.Delete |
-                                           ObjectPrivileges.SetPermissions | ObjectPrivileges.Update);
+                    AssertClassPrivileges(realm, ClassPrivileges.Read | ClassPrivileges.Subscribe | ClassPrivileges.Create | ClassPrivileges.SetPermissions | ClassPrivileges.Update);
+                    AssertObjectPrivileges(realm, ObjectPrivileges.Read | ObjectPrivileges.Delete | ObjectPrivileges.SetPermissions | ObjectPrivileges.Update);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
                     AddObjectsToRealm(realm, new[] { 4, 5, 6 });
@@ -293,7 +291,6 @@ namespace Tests.Sync
                     Assert.That(subscription.Results.Count(), Is.EqualTo(9));
                     await WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
-
                 }
             });
         }
