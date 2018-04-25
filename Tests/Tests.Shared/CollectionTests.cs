@@ -433,7 +433,7 @@ namespace Tests.Database
                             new Dog
                             {
                                 Name = $"Dog {2 * i + 1}",
-                                Vaccinated = (2 * i + 1) % 5 == 0
+                                Vaccinated = ((2 * i) + 1) % 5 == 0
                             }
                         }
                     };

@@ -245,7 +245,7 @@ namespace Tests.Database
         [TestCase(false)]
         public void ShouldCompact_IsInvokedAfterOpening(bool shouldCompact)
         {
-            var config = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration);
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
 
             using (var realm = Realm.GetInstance(config))
             {
