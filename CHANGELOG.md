@@ -1,4 +1,4 @@
-3.0.0 (TBD)
+3.0.0 (2018-04-15)
 ------------------
 
 ### Enhancements
@@ -49,7 +49,7 @@ currently logged in user and the `serverUri` value will default to `realm://MY-S
 has been renamed to `serverUri` for consistency. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
 
 
-2.2.0 (2017-03-22)
+2.2.0 (2018-03-22)
 ------------------
 
 ### Enhancements
