@@ -695,13 +695,23 @@ namespace Realms
             if (SynchronizationContext.Current != null)
             {
                 var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                ulong otherVersion = 0;
                 return Task.Run(() =>
                 {
                     using (var realm = GetInstance(Config))
                     {
                         realm.Write(() => action(realm));
+                        otherVersion = realm.SharedRealmHandle.GetTransactionVersion();
                     }
-                }).ContinueWith(_ => Refresh(), scheduler);
+                }).ContinueWith(_ =>
+                {
+                    if (otherVersion == SharedRealmHandle.GetTransactionVersion())
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    return WaitForChangesAsync();
+                }, scheduler).Unwrap();
             }
             else
             {
@@ -722,6 +732,30 @@ namespace Realms
             ThrowIfDisposed();
 
             return SharedRealmHandle.Refresh();
+        }
+
+        /// <summary>
+        /// Waits for the realm and outstanding objects to be updated to a newer version.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/>.</returns>
+        private Task WaitForChangesAsync()
+        {
+            if (SynchronizationContext.Current == null)
+            {
+                Refresh();
+                return Task.CompletedTask;
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            RealmChangedEventHandler handler = null;
+            handler = (sender, e) =>
+            {
+                ((Realm)sender).RealmChanged -= handler;
+                tcs.TrySetResult(null);
+            };
+
+            RealmChanged += handler;
+            return tcs.Task;
         }
 
         /// <summary>
