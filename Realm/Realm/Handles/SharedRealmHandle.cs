@@ -117,6 +117,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_transaction_version", CallingConvention = CallingConvention.Cdecl)]
+            public static extern ulong get_transaction_version(SharedRealmHandle sharedRealm);
         }
 
         static SharedRealmHandle()
@@ -298,6 +301,11 @@ namespace Realms
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
+        }
+
+        public ulong GetTransactionVersion()
+        {
+            return NativeMethods.get_transaction_version(this);
         }
 
         private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
