@@ -371,6 +371,25 @@ namespace Realms
         }
 
         /// <summary>
+        /// Asynchronously wait for the <see cref="Realm"/> instance and outstanding objects to get updated
+        /// to point to the most recent persisted version.
+        /// </summary>
+        /// <remarks>
+        /// On worker threads (where the SynchronizationContext) is null, this will call the blocking <see cref="Refresh"/>
+        /// method instead. On the main thread (or other threads that have SynchronizationContext), this will wait until
+        /// the instance automatically updates to resolve the task. Note that you must keep a reference to the Realm
+        /// until the returned task is resolved.
+        /// </remarks>
+        /// <returns>
+        /// Whether the <see cref="Realm"/> had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public Task<bool> RefreshAsync()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
