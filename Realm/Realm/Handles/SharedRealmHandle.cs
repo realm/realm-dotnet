@@ -118,8 +118,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_transaction_version", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ulong get_transaction_version(SharedRealmHandle sharedRealm);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool has_changed(SharedRealmHandle sharedRealm);
         }
 
         static SharedRealmHandle()
@@ -303,9 +304,9 @@ namespace Realms
             }
         }
 
-        public ulong GetTransactionVersion()
+        public bool HasChanged()
         {
-            return NativeMethods.get_transaction_version(this);
+            return NativeMethods.has_changed(this);
         }
 
         private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
