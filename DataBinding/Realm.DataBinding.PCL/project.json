@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "StyleCop.MSBuild": "4.7.55.0",
+    "StyleCop.MSBuild": "5.0.0",
     "NETStandard.Library": "1.6.0",
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1"
   },
