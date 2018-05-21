@@ -16,14 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
-using Mono.Cecil;
 using NUnit.Framework;
 
-namespace RealmWeaver 
+namespace RealmWeaver
 {
     [TestFixture(AssemblyType.NonPCL)]
     [TestFixture(AssemblyType.PCL)]
@@ -42,21 +37,7 @@ namespace RealmWeaver
                 ? typeof(RealmFreeAssemblyToProcess.NonPCLModuleLocator).Assembly.Location
                 : typeof(PCLRealmFreeAssemblyToProcess.PCLModuleLocator).Assembly.Location;
 
-            var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
-
-            var assemblyResolver = moduleDefinition.AssemblyResolver as DefaultAssemblyResolver;
-            assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
-
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-            {
-                // With Mono, we need the actual reference assemblies that we build against, rather than
-                // the GAC because typeforwarding might cause the layouts to be different.
-                var referenceAssembliesPath = Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location),
-                    "Facades");
-                assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
-            }
-
-            WeaveRealm(moduleDefinition);
+            WeaveRealm(_sourceAssemblyPath);
         }
 
         [Test]

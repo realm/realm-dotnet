@@ -42,8 +42,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FodyCecil" Version="2.4.6" />
-    <PackageReference Include="StyleCop.MSBuild" Version="5.0.0" />
+    <PackageReference Include="FodyHelpers" Version="3.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\RealmAssemblyInfo.cs">
