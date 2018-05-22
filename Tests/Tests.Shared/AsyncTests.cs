@@ -105,25 +105,41 @@ namespace Tests.Database
         [Test]
         public void AsyncWrite_UpdateViaPrimaryKey()
         {
-            AsyncContext.Run(async delegate
+            AsyncContext.Run(async () =>
             {
                 IntPrimaryKeyWithValueObject obj = null;
                 _realm.Write(() =>
                 {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject());
+                    obj = _realm.Add(new IntPrimaryKeyWithValueObject { Id = 123 });
                 });
-
-                var reference = ThreadSafeReference.Create(obj);
 
                 await _realm.WriteAsync(realm =>
                 {
-                    var dataObj = realm.ResolveReference(reference);
+                    var dataObj = realm.Find<IntPrimaryKeyWithValueObject>(123);
                     dataObj.StringValue = "foobar";
                 });
 
                 // Make sure the changes are immediately visible on the caller thread
                 Assert.That(obj.StringValue, Is.EqualTo("foobar"));
             });
+        }
+
+        [Test]
+        public void AsyncWrite_ShouldRethrowExceptions()
+        {
+            AsyncContext.Run(async () =>
+            {
+                const string message = "this is an exception from user code";
+                try
+                {
+                    await _realm.WriteAsync(_ => throw new Exception(message));
+                    Assert.Fail("Previous method should have thrown");
+                }
+                catch (Exception e)
+                {
+                    Assert.That(e.Message, Is.EqualTo(message));
+                }
+            });        
         }
 
         [Test]

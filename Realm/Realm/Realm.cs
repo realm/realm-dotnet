@@ -694,17 +694,20 @@ namespace Realms
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
             {
-                var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-                return Task.Run(() =>
+                async Task doWorkAsync()
                 {
-                    using (var realm = GetInstance(Config))
+                    var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    await Task.Run(() =>
                     {
-                        realm.Write(() => action(realm));
-                    }
-                }).ContinueWith(_ =>
-                {
-                    return RefreshAsync();
-                }, scheduler).Unwrap();
+                        using (var realm = GetInstance(Config))
+                        {
+                            realm.Write(() => action(realm));
+                        }
+                    });
+                    var didRefresh = await RefreshAsync();
+                    System.Diagnostics.Debug.Assert(didRefresh);
+                }
+                return doWorkAsync();
             }
             else
             {
