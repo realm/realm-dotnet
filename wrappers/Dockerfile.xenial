@@ -22,4 +22,4 @@ RUN apt-get install -y \
             librealm-sync-node-dev=${REALM_SYNC_VERSION}-*
 
 VOLUME /source
-ENTRYPOINT ["/bin/bash", "/source/build.sh"]
+CMD ["/source/build.sh"]

@@ -29,4 +29,4 @@ ARG REALM_SYNC_VERSION
 RUN yum install -y realm-sync-node-devel-$(echo ${REALM_SYNC_VERSION/\-/\_} | sed 's/-\([^g]\)/~\1/g')
 
 VOLUME /source
-ENTRYPOINT ["/bin/bash", "/source/build.sh"]
+CMD ["/source/build.sh"]
