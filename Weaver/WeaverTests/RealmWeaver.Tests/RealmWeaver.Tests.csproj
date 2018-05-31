@@ -121,7 +121,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets')" />
-  <Import Project="..\..\..\packages\Fody.2.4.6\build\Fody.targets" Condition="Exists('..\..\..\packages\Fody.2.4.6\build\Fody.targets')" />
+  <Import Project="..\..\..\packages\Fody.3.0.3\build\Fody.targets" Condition="Exists('..\..\..\packages\Fody.3.0.3\build\Fody.targets')" />
   <Import Project="..\..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.targets" Condition="Exists('..\..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
