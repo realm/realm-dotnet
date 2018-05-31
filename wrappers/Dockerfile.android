@@ -20,4 +20,4 @@ RUN mkdir /opt/android-ndk-tmp && \
     chmod -R a+rX /opt/android-ndk
 
 VOLUME /source
-ENTRYPOINT ["/bin/bash", "/source/build-android.sh"]
+CMD ["/source/build-android.sh"]
