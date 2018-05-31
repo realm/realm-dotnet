@@ -62,5 +62,5 @@
   </ItemGroup>
   <Import Project="..\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems" Label="Shared" Condition="Exists('..\Realm.DataBinding.TypeDelegator\DataBinding.TypeDelegator.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.55.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets')" />
 </Project>
