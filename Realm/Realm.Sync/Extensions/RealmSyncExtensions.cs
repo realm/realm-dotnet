@@ -35,32 +35,31 @@ namespace Realms.Sync
         /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
         /// <returns>The <see cref="Session"/> that is responsible for synchronizing with a Realm Object Server instance.</returns>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <c>realm</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfiguration"/> object.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfigurationBase"/> object.</exception>
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
-            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfigurationBase, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             return new Session(realm.Config.DatabasePath);
         }
 
         /// <summary>
-        /// If the Realm is a partially synchronized Realm, fetch and synchronize the objects
+        /// If the Realm uses query-based synchronization, fetch and synchronize the objects
         /// of a given object type that match the given query (in string format).
         /// </summary>
         /// <typeparam name="T">The type of the objects making up the query.</typeparam>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
         /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
         /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
-        /// <remarks>Partial synchronization is in beta. Its APIs are subject to change.</remarks>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         [Obsolete("Use the IQueryable.SubscribeToObjects extension method")]
         public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
         {
             Argument.NotNull(realm, nameof(realm));
-            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfigurationBase, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             var type = typeof(T);
             if (!realm.Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) || metadata.Schema.Type.AsType() != type)

@@ -20,20 +20,18 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// A set of helper methods exposing partial-sync related functionality over collections.
+    /// A set of helper methods exposing query-based sync related functionality over collections.
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public static class Subscription
-    {        
+    {
         /// <summary>
-        /// For partially synchronized Realms, fetches and synchronizes the objects that match the query. 
+        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query. 
         /// </summary>
         /// <typeparam name="T">The type of the objects making up the query.</typeparam>
         /// <param name="query">
@@ -45,7 +43,9 @@ namespace Realms.Sync
         /// the state of the subscription.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown if <c>query</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <c>query</c> was not obtained from a partially synchronized Realm.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the <c>query</c> was not obtained from a query-based synchronized Realm.
+        /// </exception>
         public static Subscription<T> Subscribe<T>(this IQueryable<T> query, string name = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -90,7 +90,7 @@ namespace Realms.Sync
     /// <summary>
     /// A class that represents a subscription to a set of objects in a synced Realm.
     /// <para/>
-    /// When partial sync is enabled for a synced Realm, the only objects that the server synchronizes to the
+    /// When query-based sync is enabled for a synced Realm, the only objects that the server synchronizes to the
     /// client are those that match a sync subscription registered by that client. A subscription consists of
     /// of a query (represented by an <c>IQueryable{T}</c>) and an optional name.
     /// <para/>

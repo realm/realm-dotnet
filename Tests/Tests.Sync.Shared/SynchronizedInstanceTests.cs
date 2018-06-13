@@ -48,7 +48,7 @@ namespace Tests.Sync
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
 
-                var config = new SyncConfiguration(user, serverUri);
+                var config = new FullSyncConfiguration(serverUri, user);
                 if (encrypt)
                 {
                     config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
@@ -88,8 +88,8 @@ namespace Tests.Sync
 
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_ShouldDownloadRealm");
 
-                var config = new SyncConfiguration(user, realmUri, Guid.NewGuid().ToString());
-                var asyncConfig = new SyncConfiguration(user, realmUri, config.DatabasePath + "_async");
+                var config = new FullSyncConfiguration(realmUri, user, Guid.NewGuid().ToString());
+                var asyncConfig = new FullSyncConfiguration(realmUri, user, config.DatabasePath + "_async");
 
                 using (var realm = GetRealm(config))
                 {
@@ -117,14 +117,14 @@ namespace Tests.Sync
                 var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUri = SyncTestHelpers.RealmUri($"{alice.Identity}/GetInstanceAsync_OpensReadonlyRealm");
-                var aliceConfig = new SyncConfiguration(alice, realmUri, Guid.NewGuid().ToString());
+                var aliceConfig = new FullSyncConfiguration(realmUri, alice, Guid.NewGuid().ToString());
                 var aliceRealm = GetRealm(aliceConfig);
 
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUri.AbsoluteUri, AccessLevel.Read).Timeout(1000);
 
                 AddDummyData(aliceRealm, singleTransaction);
 
-                var bobConfig = new SyncConfiguration(bob, realmUri, Guid.NewGuid().ToString());
+                var bobConfig = new FullSyncConfiguration(realmUri, bob, Guid.NewGuid().ToString());
                 var bobRealm = await GetRealmAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
@@ -165,7 +165,7 @@ namespace Tests.Sync
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_CreatesNonExistentRealm");
-                var config = new SyncConfiguration(user, realmUri, Guid.NewGuid().ToString());
+                var config = new FullSyncConfiguration(realmUri, user, Guid.NewGuid().ToString());
 
                 try
                 {

@@ -53,7 +53,7 @@ namespace Tests.Sync
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
-                var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri("~/TrustedCA_WhenFileDoesntExist_Throws"))
+                var config = new FullSyncConfiguration(SyncTestHelpers.RealmUri("~/TrustedCA_WhenFileDoesntExist_Throws"), user)
                 {
                     TrustedCAPath = "something.pem"
                 };
@@ -73,17 +73,17 @@ namespace Tests.Sync
             }, openAsync);
         }
 
-        private void TestSSLCore(Action<SyncConfiguration> setupSecureConfig, bool openAsync)
+        private void TestSSLCore(Action<FullSyncConfiguration> setupSecureConfig, bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 const string path = "~/TestSSLCore";
                 var realmUri = SyncTestHelpers.RealmUri(path);
-                var config = new SyncConfiguration(user, realmUri);
+                var config = new FullSyncConfiguration(realmUri, user);
 
                 var secureRealmUri = SyncTestHelpers.SecureRealmUri(path);
-                var secureConfig = new SyncConfiguration(user, secureRealmUri, config.DatabasePath + "2");
+                var secureConfig = new FullSyncConfiguration(secureRealmUri, user, config.DatabasePath + "2");
                 setupSecureConfig(secureConfig);
 
                 using (var realm = GetRealm(config))

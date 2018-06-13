@@ -44,7 +44,7 @@ namespace Realms.Sync
 
         /// <summary>
         /// Retrieve the singleton object for the given Realm. This will return
-        /// <c>null</c> for non-partial Realms.
+        /// <c>null</c> for Realms in full synchronization mode.
         /// </summary>
         /// <param name="realm">The Realm instance.</param>
         /// <returns>

@@ -149,7 +149,7 @@ namespace Tests.Sync
                 // Opening a synced realm with just read permission fails.
                 // OS issue: https://github.com/realm/realm-object-store/issues/312
                 var realmUrl = await GrantPermissions(alice, bob);
-                var syncConfig = new SyncConfiguration(bob, new Uri(realmUrl), Guid.NewGuid().ToString());
+                var syncConfig = new FullSyncConfiguration(new Uri(realmUrl), bob, Guid.NewGuid().ToString());
 
                 Assert.That(() => GetRealm(syncConfig), Throws.Nothing);
                 var handler = new EventHandler<ErrorEventArgs>((sender, e) =>
@@ -457,7 +457,7 @@ namespace Tests.Sync
                 // Give Bob just read permissions
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read);
 
-                var config = new SyncConfiguration(bob, new Uri(realmUrl), Guid.NewGuid().ToString());
+                var config = new FullSyncConfiguration(new Uri(realmUrl), bob, Guid.NewGuid().ToString());
 
                 var sessionErrorTask = TestHelpers.EventToTask<ErrorEventArgs>(h => Session.Error += h, h => Session.Error -= h);
 
@@ -508,8 +508,8 @@ namespace Tests.Sync
         {
             await Task.Delay(500);
 
-            var firstRealm = GetRealm(new SyncConfiguration(first, new Uri(realmUrl), Guid.NewGuid().ToString()));
-            var secondRealm = GetRealm(new SyncConfiguration(second, new Uri(realmUrl), Guid.NewGuid().ToString()));
+            var firstRealm = GetRealm(new FullSyncConfiguration(new Uri(realmUrl), first, Guid.NewGuid().ToString()));
+            var secondRealm = GetRealm(new FullSyncConfiguration(new Uri(realmUrl), second, Guid.NewGuid().ToString()));
 
             var firstObjects = firstRealm.All<PrimaryKeyInt64Object>();
             var secondObjects = secondRealm.All<PrimaryKeyInt64Object>();
@@ -590,7 +590,7 @@ namespace Tests.Sync
 
         private void EnsureRealmExists(User user, string realmUrl)
         {
-            var syncConfig = new SyncConfiguration(user, new Uri(realmUrl), Guid.NewGuid().ToString());
+            var syncConfig = new FullSyncConfiguration(new Uri(realmUrl), user, Guid.NewGuid().ToString());
             using (var realm = GetRealm(syncConfig))
             {
                 // Make sure the realm exists

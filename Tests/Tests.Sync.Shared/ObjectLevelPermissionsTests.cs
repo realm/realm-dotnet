@@ -601,10 +601,9 @@ namespace Tests.Sync
 
         private Realm GetRealm(User user, Uri uri)
         {
-            var config = new SyncConfiguration(user, uri, Guid.NewGuid().ToString())
+            var config = new QueryBasedSyncConfiguration(uri, user, Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(ObjectWithPermissions) },
-                IsPartial = true
+                ObjectClasses = new[] { typeof(ObjectWithPermissions) }
             };
 
             return GetRealm(config);
@@ -614,10 +613,9 @@ namespace Tests.Sync
         {
             var uri = SyncTestHelpers.RealmUri(Guid.NewGuid().ToString());
             var admin = await SyncTestHelpers.GetAdminUserAsync();
-            var config = new SyncConfiguration(admin, uri)
+            var config = new QueryBasedSyncConfiguration(uri, admin)
             {
-                ObjectClasses = new[] { typeof(ObjectWithPermissions) },
-                IsPartial = true
+                ObjectClasses = new[] { typeof(ObjectWithPermissions) }
             };
 
             using (var realm = GetRealm(config))

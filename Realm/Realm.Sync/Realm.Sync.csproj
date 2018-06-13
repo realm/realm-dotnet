@@ -23,7 +23,10 @@
     <Compile Include="Session.cs" />
     <Compile Include="SessionState.cs" />
     <Compile Include="LogLevel.cs" />
-    <Compile Include="SyncConfiguration.cs" />
+    <Compile Include="Configurations\SyncConfiguration.cs" />
+    <Compile Include="Configurations\FullSyncConfiguration.cs" />
+    <Compile Include="Configurations\QueryBasedSyncConfiguration.cs" />
+    <Compile Include="Configurations\SyncConfigurationBase.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Subscription.cs" />
     <Compile Include="SubscriptionState.cs" />

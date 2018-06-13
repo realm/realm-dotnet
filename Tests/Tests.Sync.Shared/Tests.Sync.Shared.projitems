@@ -23,6 +23,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SSLConfigurationTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialSyncTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QueryBasedSyncTests.cs" />
   </ItemGroup>
 </Project>
