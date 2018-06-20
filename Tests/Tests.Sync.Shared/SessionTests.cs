@@ -42,7 +42,7 @@ namespace Tests.Sync
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
-                var config = new SyncConfiguration(user, serverUri);
+                var config = new FullSyncConfiguration(serverUri, user);
 
                 using (var realm = GetRealm(config))
                 {
@@ -101,7 +101,7 @@ namespace Tests.Sync
                     Assert.That(error.ErrorCode, Is.EqualTo(code));
 
                     var errorSession = result.Item1;
-                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
+                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfigurationBase)realm.Config).ServerUri));
                 }
             });
         }
@@ -206,6 +206,7 @@ namespace Tests.Sync
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
+            Console.WriteLine("Aaaaa");
             SyncTestHelpers.RequiresRos();
 
             const int ObjectSize = 1000000;

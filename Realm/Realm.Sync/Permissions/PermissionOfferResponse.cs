@@ -34,7 +34,7 @@ namespace Realms.Sync
     /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
     /// <see cref="ErrorCode"/> will be updated accordingly.
     /// If the request has been processed successfully, the <see cref="RealmUrl"/> will be populated and you can use it
-    /// to create a new <see cref="SyncConfiguration"/>.
+    /// to create a new <see cref="FullSyncConfiguration"/>.
     /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
     /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
     /// </remarks>

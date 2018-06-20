@@ -657,7 +657,7 @@ namespace Realms.Sync
 
         private Realm GetSpecialPurposeRealm(string path, params Type[] objectClasses)
         {
-            var configuration = new SyncConfiguration(this, GetUriForRealm($"/~/{path}"))
+            var configuration = new FullSyncConfiguration(GetUriForRealm($"/~/{path}"), this)
             {
                 ObjectClasses = objectClasses
             };

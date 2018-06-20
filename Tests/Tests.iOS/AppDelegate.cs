@@ -40,7 +40,9 @@ namespace Tests
                 LogToOutput = true
             };
 
-            var arguments = NSProcessInfo.ProcessInfo.Arguments;
+            var arguments = NSProcessInfo.ProcessInfo.Arguments
+                                         .Select(a => a.Replace("-app-arg=", string.Empty))
+                                         .ToArray();
             if (arguments.Any("--headless".Equals))
             {
                 options.AutoRun = true;

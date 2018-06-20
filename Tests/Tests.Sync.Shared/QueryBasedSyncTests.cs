@@ -29,14 +29,14 @@ using Realms.Sync;
 namespace Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class PartialSyncTests : SyncTestBase
+    public class QueryBasedSyncTests : SyncTestBase
     {
         [Test]
         public void SubscribeForObjects_ReturnsExpectedQuery()
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -62,7 +62,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -87,7 +87,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
                     var range1to6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 1 && o.IntValue < 6).Subscribe();
@@ -117,7 +117,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
                     var olderThan6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 6).Subscribe();
@@ -147,7 +147,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     try
                     {
@@ -167,7 +167,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "less than 5");
@@ -190,7 +190,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "foo");
@@ -221,7 +221,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -246,7 +246,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "query");
@@ -271,7 +271,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "query");
@@ -294,7 +294,7 @@ namespace Tests.Sync
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetPartialRealm())
+                using (var realm = await GetQueryBasedRealm())
                 {
                     var subscription = realm.All<ObjectA>().Where(f => f.IntValue > 0).Subscribe();
                     await subscription.WaitForSynchronizationAsync().Timeout(5000);
@@ -305,15 +305,14 @@ namespace Tests.Sync
             });
         }
 
-        private async Task<Realm> GetPartialRealm(Action<SyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
+        private async Task<Realm> GetQueryBasedRealm(Action<QueryBasedSyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
         {
             SyncTestHelpers.RequiresRos();
 
             var user = await SyncTestHelpers.GetUserAsync();
-            var config = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/{realmPath}"), Guid.NewGuid().ToString())
+            var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}"), user, Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) },
-                IsPartial = true
+                ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) }
             };
 
             setupConfig?.Invoke(config);
@@ -348,10 +347,9 @@ namespace Tests.Sync
             {
             }
 
-            config = new SyncConfiguration(config.User, config.ServerUri, config.DatabasePath + "_partial")
+            config = new QueryBasedSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "_partial")
             {
-                ObjectClasses = config.ObjectClasses,
-                IsPartial = true
+                ObjectClasses = config.ObjectClasses
             };
 
             var result = GetRealm(config);

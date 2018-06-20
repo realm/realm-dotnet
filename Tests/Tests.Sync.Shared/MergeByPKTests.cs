@@ -38,8 +38,6 @@ namespace Tests.Sync
 
             AsyncContext.Run(async () =>
             {
-                User.ConfigurePersistence(UserPersistenceMode.NotEncrypted);
-
                 var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                            .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
 
@@ -107,7 +105,7 @@ namespace Tests.Sync
         {
             var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
             var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
-            var configuration = new SyncConfiguration(user, SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), Guid.NewGuid().ToString())
+            var configuration = new FullSyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { objectType }
             };

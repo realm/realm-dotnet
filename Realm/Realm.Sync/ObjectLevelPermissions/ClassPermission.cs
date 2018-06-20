@@ -50,7 +50,7 @@ namespace Realms.Sync
 
         /// <summary>
         /// Retrieves the <see cref="ClassPermission"/> for the given
-        /// <see cref="RealmObject"/> subclass. This will return <c>null</c> for non-partial Realms.
+        /// <see cref="RealmObject"/> subclass. This will return <c>null</c> for Realms in full synchronization mode.
         /// </summary>
         /// <typeparam name="T">
         /// The <see cref="RealmObject"/> subclass whose corresponding <see cref="ClassPermission"/>
@@ -68,7 +68,7 @@ namespace Realms.Sync
 
         /// <summary>
         /// Retrieves the <see cref="ClassPermission"/> for the given class name.
-        /// This will return <c>null</c> for non-partial Realms.
+        /// This will return <c>null</c> for Realms in full synchronization mode.
         /// </summary>
         /// <param name="realm">The Realm instance.</param>
         /// <param name="className">

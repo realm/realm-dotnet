@@ -125,11 +125,11 @@ namespace Tests.Sync
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
-        public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
+        public static async Task<FullSyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             var user = await GetFakeUserAsync(userId);
             var serverUri = new Uri("realm://localhost:9080/foobar");
-            return new SyncConfiguration(user, serverUri, optionalPath);
+            return new FullSyncConfiguration(serverUri, user, optionalPath);
         }
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
@@ -138,13 +138,13 @@ namespace Tests.Sync
             return Task.FromResult(new User(handle));
         }
 
-        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
+        public static async Task<FullSyncConfiguration> GetIntegrationConfigAsync(string path)
         {
             var user = await GetUserAsync();
-            return new SyncConfiguration(user, RealmUri($"~/{path}"));
+            return new FullSyncConfiguration(RealmUri($"~/{path}"), user);
         }
 
-        public static async Task<Realm> GetInstanceAsync(SyncConfiguration config, bool openAsync, bool waitForRemote = true)
+        public static async Task<Realm> GetInstanceAsync(SyncConfigurationBase config, bool openAsync, bool waitForRemote = true)
         {
             if (openAsync)
             {

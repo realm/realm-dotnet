@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2018 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,30 +26,25 @@ using Realms.Schema;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
-    /// Realm Object Server. A valid <see cref="User"/> is required to create a <see cref="SyncConfiguration"/>.
+    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
+    /// Realm Object Server.
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
-    public class SyncConfiguration : RealmConfigurationBase
+    /// <seealso cref="FullSyncConfiguration"/>
+    /// <seealso cref="QueryBasedSyncConfiguration"/>
+    public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
-        internal static readonly Type[] _partialSyncTypes = new[]
-        {
-            typeof(ClassPermission),
-            typeof(Permission),
-            typeof(PermissionRole),
-            typeof(PermissionUser),
-            typeof(RealmPermission)
-        };
+        internal abstract bool IsFullSync { get; }
 
         /// <summary>
-        /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfiguration"/>.
+        /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfigurationBase"/>.
         /// </summary>
         /// <value>The <see cref="Uri"/> where the Realm Object Server is hosted.</value>
         public Uri ServerUri { get; }
 
         /// <summary>
-        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
+        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfigurationBase"/>.
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
@@ -84,45 +79,14 @@ namespace Realms.Sync
         /// </seealso>
         public string TrustedCAPath { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this Realm should be opened in 'partial synchronization' mode.
-        /// Partial synchronization mode means that no objects are synchronized from the remote Realm
-        /// except those matching queries that the user explicitly specifies.
-        /// </summary>
-        public bool IsPartial { get; set; }
-
-        // TODO: expose and document this.
-        internal string PartialSyncIdentifier { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
-        /// </summary>
-        /// <param name="user">
-        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
-        /// </param>
-        /// <param name="serverUri">
-        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
-        /// If a relative Uri is provided, it will be resolved using the user's <see cref="ServerUri"/> as baseUri.
-        /// If <c>null</c> is passed, a Uri will be constructed from the user's <see cref="ServerUri"/>, combined with
-        /// <c>/default</c> and <see cref="IsPartial"/> will be set to <c>true</c>.
-        /// </param>
-        /// <param name="optionalPath">
-        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
-        /// </param>
-        public SyncConfiguration(User user = null, Uri serverUri = null, string optionalPath = null)
+        internal SyncConfigurationBase(Uri serverUri, User user = null, string optionalPath = null)
         {
             Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
                 "The user must be explicitly specified when the number of logged-in users is not 1.",
                 nameof(user));
 
             User = user ?? User.Current;
-            if (serverUri == null)
-            {
-                // Using default realm
-                IsPartial = true;
-                ServerUri = User.GetUriForRealm("/default");
-            }
-            else if (!serverUri.IsAbsoluteUri)
+            if (!serverUri.IsAbsoluteUri)
             {
                 ServerUri = User.GetUriForRealm(serverUri);
             }
@@ -133,19 +97,6 @@ namespace Realms.Sync
             }
 
             DatabasePath = GetPathToRealm(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(User, ServerUri));
-        }
-
-        /// <summary>
-        /// Sets the feature token, associated with your edition. You only need to call it if you're using a professional
-        /// or higher edition and only on platforms where features are disabled for lower editions.
-        /// </summary>
-        /// <param name="token">The feature token provided to you by the Realm team.</param>
-        /// <seealso href="https://realm.io/docs/realm-object-server/pe-ee/#enabling-professional-and-enterprise-apis">
-        /// See more details on Enabling Professional and Enterprise APIs in the documentation.
-        /// </seealso>
-        [Obsolete("Feature tokens are no longer necessary to access Professional or Enterprise API.")]
-        public static void SetFeatureToken(string token)
-        {
         }
 
         /// <summary>
@@ -171,11 +122,6 @@ namespace Realms.Sync
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache
             };
-
-            if (IsPartial)
-            {
-                schema = RealmSchema.CreateSchemaForClasses(_partialSyncTypes, schema);
-            }
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
@@ -215,8 +161,8 @@ namespace Realms.Sync
                 Url = ServerUri.ToString(),
                 client_validate_ssl = EnableSSLValidation,
                 TrustedCAPath = TrustedCAPath,
-                is_partial = IsPartial,
-                PartialSyncIdentifier = PartialSyncIdentifier
+                is_partial = !IsFullSync,
+                PartialSyncIdentifier = null
             };
         }
     }

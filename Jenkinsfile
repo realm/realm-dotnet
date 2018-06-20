@@ -528,7 +528,7 @@ def iOSTest(stashName) {
       def workspace = pwd()
       try {
         sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "--headless --resultpath ${workspace}/temp/${stashName}.xml")
+        runSimulator('Tests.iOS.app', ' io.realm.xamarintests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${workspace}/temp/${stashName}.xml")
       } finally {
         dir("${workspace}/temp") {
           reportTests "${stashName}.xml"
