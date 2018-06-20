@@ -44,7 +44,6 @@ namespace Realms.Sync
             typeof(RealmPermission)
         };
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryBasedSyncConfiguration"/> class.
         /// </summary>

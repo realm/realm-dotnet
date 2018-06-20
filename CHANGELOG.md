@@ -6,6 +6,12 @@
 ### Bug fixes
 
 ### Breaking Changes
+- `SyncConfiguration` is now deprecated and will be removed in a future version. Two new configuration
+classes have been exposed - [QueryBasedSyncConfiguration](https://docs.realm.io/platform/using-synced-realms/syncing-data#using-query-based-synchronization)
+and [FullSyncConfiguration](https://docs.realm.io/platform/using-synced-realms/syncing-data#full-synchronization).
+If you were using a `SyncConfiguration` with `IsPartial = true`, then change your code to use
+`QueryBasedSyncConfiguration`. Similarly, if `IsPartial` was not set or was set to `false`, use
+`FullSyncConfiguration`.
 
 3.0.0 (2018-04-16)
 ------------------
