@@ -171,6 +171,9 @@ namespace RealmWeaver
         {
             version = "UNKNOWN";
 
+            // Default to windows for backward compatibility
+            name = "windows";
+
             try
             {
                 // Legacy reporting used ios, osx, and android
