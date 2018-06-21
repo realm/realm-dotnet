@@ -27,7 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using Mono.Cecil;
+using Fody;
 using NUnit.Framework;
 using Realms;
 using Realms.Weaving;
@@ -69,7 +69,7 @@ namespace RealmWeaver
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
-        private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
+        private string WeavePropertyChanged(string assemblyPath)
         {
             // Disable CheckForEquality, because this will rewrite all our properties and some tests will
             // behave differently based on whether PropertyChanged is weaved or not.
@@ -80,13 +80,18 @@ namespace RealmWeaver
             // Fody.PropertyChanged will always return 'false' (ModuleWeaver.cs@214).
             var config = new XElement("PropertyChanged");
             config.SetAttributeValue("CheckForEquality", false);
-            new propertychanged::ModuleWeaver
+            var weaver = new propertychanged::ModuleWeaver
             {
-                ModuleDefinition = moduleDefinition,
-                AssemblyResolver = moduleDefinition.AssemblyResolver,
-                LogWarning = s => _warnings.Add(s),
                 Config = config
-            }.Execute();
+            };
+            var targetPath = $"{Path.GetDirectoryName(assemblyPath)}/{Path.GetFileNameWithoutExtension(assemblyPath)}_propertychanged.dll";
+            weaver.ExecuteTestRun(assemblyPath, runPeVerify: false,
+                afterExecuteCallback: module =>
+                { 
+                    var parameters = new Mono.Cecil.WriterParameters { WriteSymbols = true };
+                    module.Write(targetPath, parameters);
+                });
+            return targetPath;
         }
 
         private static string GetCoreMethodName(string type)
@@ -136,45 +141,40 @@ namespace RealmWeaver
         public void FixtureSetup()
         {
             _sourceAssemblyPath = _assemblyType == AssemblyType.NonPCL ?
-                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.Location :
-                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.Location;
+                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.GetAssemblyLocation() :
+                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.GetAssemblyLocation();
 
-            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}.dll");
-
-            var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
-
-            var assemblyResolver = moduleDefinition.AssemblyResolver as DefaultAssemblyResolver;
-            assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
-
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            var newPath = Path.Combine(Path.GetDirectoryName(_sourceAssemblyPath), $"{_assemblyType}_{_propertyChangedWeaver}_{Path.GetFileName(_sourceAssemblyPath)}");
+            if (File.Exists(newPath))
             {
-                // With Mono, we need the actual reference assemblies that we build against, rather than
-                // the GAC because typeforwarding might cause the layouts to be different.
-                var referenceAssembliesPath = Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "Facades");
-                assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
+                File.Delete(newPath);
             }
+            File.Copy(_sourceAssemblyPath, newPath);
+
+            var newPathPdb = Path.ChangeExtension(newPath, "pdb");
+            if (File.Exists(newPathPdb))
+            {
+                File.Delete(newPathPdb);
+            }
+            File.Copy(Path.ChangeExtension(_sourceAssemblyPath, "pdb"), newPathPdb);
+
+            _sourceAssemblyPath = newPath;
 
             switch (_propertyChangedWeaver)
             {
                 case PropertyChangedWeaver.NotUsed:
-                    WeaveRealm(moduleDefinition);
+                    _targetAssemblyPath = WeaveRealm(_sourceAssemblyPath);
                     break;
 
                 case PropertyChangedWeaver.BeforeRealmWeaver:
-                    WeavePropertyChanged(moduleDefinition);
-                    WeaveRealm(moduleDefinition);
+                    _targetAssemblyPath = WeaveRealm(WeavePropertyChanged(_sourceAssemblyPath));
                     break;
 
                 case PropertyChangedWeaver.AfterRealmWeaver:
-                    WeaveRealm(moduleDefinition);
-                    WeavePropertyChanged(moduleDefinition);
+                    _targetAssemblyPath = WeavePropertyChanged(WeaveRealm(_sourceAssemblyPath));
                     break;
             }
 
-            // we need to change the assembly name because otherwise Mono loads the original assembly
-            moduleDefinition.Assembly.Name.Name += $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}";
-
-            moduleDefinition.Write(_targetAssemblyPath);
             _assembly = Assembly.LoadFile(_targetAssemblyPath);
             Console.WriteLine(_assembly.Location);
 
@@ -702,7 +702,7 @@ namespace RealmWeaver
         [Test]
         public void PeVerify()
         {
-            Verifier.Verify(_sourceAssemblyPath, _targetAssemblyPath);
+            Verifier.Verify(_sourceAssemblyPath, _assembly.Location);
         }
 #endif
     }

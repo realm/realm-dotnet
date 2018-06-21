@@ -22,7 +22,6 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Runtime.Versioning;
 using System.Text;
-using Mono.Cecil;
 
 namespace RealmWeaver
 {
@@ -73,7 +72,8 @@ namespace RealmWeaver
    }
 }";
 
-        private readonly ModuleDefinition _moduleDefinition;
+        private readonly FrameworkName _frameworkName;
+        private readonly string _anonymizedAppID;
 
         private static string AnonymizedUserID
         {
@@ -113,8 +113,6 @@ namespace RealmWeaver
                                    .FirstOrDefault();
         }
 
-        private string AnonymizedAppID => SHA256Hash(Encoding.UTF8.GetBytes(_moduleDefinition.Name));
-
         private string JsonPayload
         {
             get
@@ -125,7 +123,7 @@ namespace RealmWeaver
                     .Replace("%EVENT%", "Run")
                     .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
-                    .Replace("%APP_ID%", AnonymizedAppID)
+                    .Replace("%APP_ID%", _anonymizedAppID)
 
                     // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
@@ -137,9 +135,10 @@ namespace RealmWeaver
             }
         }
 
-        internal Analytics(ModuleDefinition moduleDefinition)
+        internal Analytics(FrameworkName frameworkName, string moduleName)
         {
-            _moduleDefinition = moduleDefinition;
+            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleName));
+            _frameworkName = frameworkName;
         }
 
         internal string SubmitAnalytics()
@@ -172,42 +171,30 @@ namespace RealmWeaver
         {
             version = "UNKNOWN";
 
+            // Default to windows for backward compatibility
+            name = "windows";
+
             try
             {
-                var targetFrameworkAttribute = _moduleDefinition.Assembly.CustomAttributes.FirstOrDefault(f => f.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
-                if (targetFrameworkAttribute != null)
+                // Legacy reporting used ios, osx, and android
+                switch (_frameworkName.Identifier)
                 {
-                    var value = targetFrameworkAttribute.ConstructorArguments
-                                                         .SingleOrDefault()
-                                                         .Value
-                                                         .ToString()
-                                                         .Split(',');
-
-                    // Legacy reporting used ios, osx, and android
-                    switch (value[0])
-                    {
-                        case "Xamarin.iOS":
-                            name = "ios";
-                            break;
-                        case "Xamarin.Mac":
-                            name = "osx";
-                            break;
-                        case "MonoAndroid":
-                        case "Mono.Android":
-                            name = "android";
-                            break;
-                        default:
-                            name = value[0];
-                            break;
-                    }
-
-                    if (value.Length > 1)
-                    {
-                        version = value[1].Replace("Version=", string.Empty);
-                    }
-
-                    return;
+                    case "Xamarin.iOS":
+                        name = "ios";
+                        break;
+                    case "Xamarin.Mac":
+                        name = "osx";
+                        break;
+                    case "MonoAndroid":
+                    case "Mono.Android":
+                        name = "android";
+                        break;
+                    default:
+                        name = _frameworkName.Identifier;
+                        break;
                 }
+
+                version = _frameworkName.Version.ToString();
             }
             catch
             {
@@ -216,24 +203,6 @@ namespace RealmWeaver
                 // but don't fail users' builds because of that.
                 throw;
 #endif
-            }
-
-            // Fallback
-            if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
-            {
-                name = "ios";
-            }
-            else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
-            {
-                name = "osx";
-            }
-            else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
-            {
-                name = "android";
-            }
-            else
-            {
-                name = "windows";
             }
         }
 

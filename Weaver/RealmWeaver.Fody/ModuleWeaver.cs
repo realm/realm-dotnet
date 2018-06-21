@@ -21,12 +21,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Versioning;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
 [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-public partial class ModuleWeaver
+public partial class ModuleWeaver : Fody.BaseModuleWeaver
 {
     private const MethodAttributes DefaultMethodAttributes = MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot;
 
@@ -50,29 +51,6 @@ public partial class ModuleWeaver
     internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
     internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
-
-    // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string> LogWarning { get; set; } = m => { };
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string> LogError { get; set; } = m => { };
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public Action<string, SequencePoint> LogErrorPoint { get; set; } = (m, p) => { };
-
-    // An instance of Mono.Cecil.ModuleDefinition for processing
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public ModuleDefinition ModuleDefinition { get; set; }
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
@@ -149,16 +127,19 @@ public partial class ModuleWeaver
         }
     }
 
-    public void Execute()
+    public override void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
         // Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FileName);
 
+        var targetFramework = ModuleDefinition.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
+        var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
+
         var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {
-            var analytics = new RealmWeaver.Analytics(ModuleDefinition);
+            var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
             try
             {
                 var payload = analytics.SubmitAnalytics();
@@ -176,7 +157,7 @@ Analytics payload
             }
         });
 
-        _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
+        _references = RealmWeaver.ImportedReferences.Create(frameworkName, ModuleDefinition);
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Accessors>();
@@ -231,6 +212,7 @@ Analytics payload
                         var realmAttributeNames = prop.CustomAttributes
                                                       .Select(a => a.AttributeType.Name)
                                                       .Intersect(RealmPropertyAttributes)
+                                                      .OrderBy(a => a)
                                                       .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
 
                         if (realmAttributeNames.Any())
@@ -1281,6 +1263,18 @@ Analytics payload
         realmObjectType.NestedTypes.Add(helperType);
 
         return helperType;
+    }
+
+    public override IEnumerable<string> GetAssembliesForScanning()
+    {
+        yield return "mscorlib";
+        yield return "System";
+        yield return "System.Runtime";
+        yield return "System.Core";
+        yield return "netstandard";
+        yield return "System.Collections";
+        yield return "System.ObjectModel";
+        yield return "System.Threading";
     }
 
     private class WeaveResult

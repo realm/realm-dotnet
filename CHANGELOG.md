@@ -12,6 +12,11 @@ and [FullSyncConfiguration](https://docs.realm.io/platform/using-synced-realms/s
 If you were using a `SyncConfiguration` with `IsPartial = true`, then change your code to use
 `QueryBasedSyncConfiguration`. Similarly, if `IsPartial` was not set or was set to `false`, use
 `FullSyncConfiguration`.
+x.y.z (TBD)
+------------------
+
+### Enhancements
+- Update Fody to 3.0.
 
 3.0.0 (2018-04-16)
 ------------------

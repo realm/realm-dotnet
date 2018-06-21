@@ -18,7 +18,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Mono.Cecil;
+using System.IO;
+using System.Linq;
+using Fody;
 
 namespace RealmWeaver
 {
@@ -36,15 +38,19 @@ namespace RealmWeaver
             _assemblyType = assemblyType;
         }
 
-        protected void WeaveRealm(ModuleDefinition moduleDefinition)
+        protected string WeaveRealm(string assemblyPath)
         {
-            new realm::ModuleWeaver
-            {
-                ModuleDefinition = moduleDefinition,
-                LogError = s => _errors.Add(s),
-                LogErrorPoint = (s, point) => _errors.Add(s),
-                LogWarningPoint = (s, point) => _warnings.Add(s)
-            }.Execute();
+            var weaver = new realm::ModuleWeaver();
+            var targetPath = $"{Path.GetDirectoryName(assemblyPath)}/{Path.GetFileNameWithoutExtension(assemblyPath)}_realm.dll";
+            var result = weaver.ExecuteTestRun(assemblyPath, runPeVerify: false, 
+                afterExecuteCallback: module =>
+                {
+                    var parameters = new Mono.Cecil.WriterParameters { WriteSymbols = true };
+                    module.Write(targetPath, parameters);
+                });
+            _warnings.AddRange(result.Warnings.Select(m => m.Text));
+            _errors.AddRange(result.Errors.Select(m => m.Text));
+            return targetPath;
         }
 
         public enum AssemblyType 

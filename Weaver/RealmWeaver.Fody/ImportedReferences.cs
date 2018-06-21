@@ -494,13 +494,9 @@ namespace RealmWeaver
             }
         }
 
-        public static ImportedReferences Create(ModuleDefinition module)
+        public static ImportedReferences Create(FrameworkName frameworkName, ModuleDefinition module)
         {
-            var targetFramework = module.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
-
             ImportedReferences references;
-
-            var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
