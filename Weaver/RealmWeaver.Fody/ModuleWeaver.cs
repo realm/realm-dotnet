@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Versioning;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -133,9 +134,12 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FileName);
 
+        var targetFramework = ModuleDefinition.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
+        var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
+
         var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {
-            var analytics = new RealmWeaver.Analytics(ModuleDefinition);
+            var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
             try
             {
                 var payload = analytics.SubmitAnalytics();
@@ -153,7 +157,7 @@ Analytics payload
             }
         });
 
-        _references = RealmWeaver.ImportedReferences.Create(ModuleDefinition);
+        _references = RealmWeaver.ImportedReferences.Create(frameworkName, ModuleDefinition);
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Accessors>();
