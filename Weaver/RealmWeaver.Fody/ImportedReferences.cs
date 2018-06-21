@@ -19,6 +19,7 @@
 #pragma warning disable SA1306
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -500,7 +501,24 @@ namespace RealmWeaver
 
             ImportedReferences references;
 
+            // HACK: This line will introduce a duplicate entry in targetFramework.Properties which will
+            // generate an invalid attribute and break WPF among others. Remove the entry manually.
             var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
+
+            var props = new HashSet<string>();
+            var counter = 0;
+            while (props.Count != targetFramework.Properties.Count)
+            {
+                if (props.Add(targetFramework.Properties[counter].Name))
+                {
+                    counter++;
+                }
+                else
+                {
+                    targetFramework.Properties.RemoveAt(counter);
+                }
+            }
+
             switch (frameworkName.Identifier)
             {
                 case ".NETFramework":
