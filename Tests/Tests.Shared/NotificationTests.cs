@@ -700,6 +700,46 @@ namespace Tests.Database
             });
         }
 
+        [Test]
+        public void ModifiedIndices_ReportCorrectlyForOldAndNewVersions()
+        {
+            ChangeSet changes = null;
+            void cb(IRealmCollection<IntPrimaryKeyWithValueObject> s, ChangeSet c, Exception e) => changes = c;
+
+            var toDelete = new IntPrimaryKeyWithValueObject { Id = 1 };
+            var toModify = new IntPrimaryKeyWithValueObject { Id = 2 };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(toDelete);
+                _realm.Add(toModify);
+            });
+
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().OrderBy(i => i.Id);
+            using (query.SubscribeForNotifications(cb))
+            {
+                Assert.That(query.ElementAt(0).Equals(toDelete));
+                Assert.That(query.ElementAt(1).Equals(toModify));
+
+                _realm.Write(() =>
+                {
+                    _realm.Remove(toDelete);
+                    toModify.StringValue = "newValue";
+                });
+
+                _realm.Refresh();
+                Assert.That(changes, Is.Not.Null);
+                Assert.That(changes.DeletedIndices, Is.EquivalentTo(new int[] { 0 }));
+                
+                // Modified should be in the old collection
+                Assert.That(changes.ModifiedIndices, Is.EquivalentTo(new int[] { 1 }));
+
+                // NewModified should be in the new collection that is just 1 element
+                Assert.That(changes.NewModifiedIndices, Is.EquivalentTo(new int[] { 0 }));
+                Assert.That(query.ElementAt(changes.NewModifiedIndices[0]).Equals(toModify));
+            }
+        }
+
         public static IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
             yield return new TestCaseData(new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 }, 0);
