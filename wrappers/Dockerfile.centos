@@ -22,11 +22,5 @@ RUN mkdir -p /opt/cmake && \
     rm /cmake-3.7.2-Linux-x86_64.sh
 ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
 
-ARG PACKAGECLOUD_URL
-RUN curl -s ${PACKAGECLOUD_URL}/script.rpm.sh | bash
-
-ARG REALM_SYNC_VERSION
-RUN yum install -y realm-sync-node-devel-$(echo ${REALM_SYNC_VERSION/\-/\_} | sed 's/-\([^g]\)/~\1/g')
-
 VOLUME /source
 CMD ["/source/build.sh"]
