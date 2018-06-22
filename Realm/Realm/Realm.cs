@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
+using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
 
@@ -118,10 +119,7 @@ namespace Realms
 
         internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
         {
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
+            Argument.NotNull(config, nameof(config));
 
             if (schema == null)
             {
@@ -389,7 +387,9 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            return SharedRealmHandle.IsSameInstance(other.SharedRealmHandle);
+            Argument.NotNull(other, nameof(other));
+
+            return SharedRealmHandle == other.SharedRealmHandle || SharedRealmHandle.IsSameInstance(other.SharedRealmHandle);
         }
 
         /// <inheritdoc/>
@@ -439,10 +439,7 @@ namespace Realms
 
         private RealmObject CreateObject(string className, object primaryKey, out RealmObject.Metadata metadata)
         {
-            if (!Metadata.TryGetValue(className, out metadata))
-            {
-                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
-            }
+            Argument.Ensure(Metadata.TryGetValue(className, out metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
 
             var result = metadata.Helper.CreateInstance();
 
@@ -541,19 +538,12 @@ namespace Realms
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            if (objectType == null)
-            {
-                throw new ArgumentNullException(nameof(objectType));
-            }
+            Argument.NotNull(obj, nameof(obj));
+            Argument.NotNull(objectType, nameof(objectType));
 
             if (obj.IsManaged)
             {
-                if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
+                if (IsSameInstance(obj.Realm))
                 {
                     // Already managed by this realm, so nothing to do.
                     return;
@@ -563,10 +553,7 @@ namespace Realms
             }
 
             var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
-            if (!Metadata.TryGetValue(objectName, out var metadata))
-            {
-                throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
-            }
+            Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(objectType));
 
             ObjectHandle objectHandle;
             bool isNew;
@@ -686,10 +673,7 @@ namespace Realms
             // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            Argument.NotNull(action, nameof(action));
 
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
@@ -777,10 +761,9 @@ namespace Realms
             ThrowIfDisposed();
 
             var type = typeof(T);
-            if (!Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) || metadata.Schema.Type.AsType() != type)
-            {
-                throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
-            }
+            Argument.Ensure(
+                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
 
             return new RealmResults<T>(this, metadata);
         }
@@ -795,10 +778,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            if (!Metadata.TryGetValue(className, out var metadata))
-            {
-                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
-            }
+            Argument.Ensure(Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
 
             return new RealmResults<RealmObject>(this, metadata);
         }
@@ -977,15 +957,8 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            if (!obj.IsManaged)
-            {
-                throw new ArgumentException("Object is not managed by Realm, so it cannot be removed.", nameof(obj));
-            }
+            Argument.NotNull(obj, nameof(obj));
+            Argument.Ensure(obj.IsManaged, "Object is not managed by Realm, so it cannot be removed.", nameof(obj));
 
             obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
         }
@@ -1006,15 +979,8 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            if (range == null)
-            {
-                throw new ArgumentNullException(nameof(range));
-            }
-
-            if (!(range is RealmResults<T>))
-            {
-                throw new ArgumentException("range should be the return value of .All or a LINQ query applied to it.", nameof(range));
-            }
+            Argument.NotNull(range, nameof(range));
+            Argument.Ensure(range is RealmResults<T>, "range should be the return value of .All or a LINQ query applied to it.", nameof(range));
 
             var results = (RealmResults<T>)range;
             results.ResultsHandle.Clear(SharedRealmHandle);

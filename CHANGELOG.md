@@ -5,6 +5,8 @@
 
 ### Bug fixes
 - `WriteAsync` will no longer perform a synchronous `Refresh` on the main thread. ([#1729](https://github.com/realm/realm-dotnet/pull/1729))
+- Trying to add a managed Realm Object to a different instance of the same on-disk Realm will no
+longer throw an exception.
 
 ### Breaking Changes
 - `SyncConfiguration` is now deprecated and will be removed in a future version. Two new configuration
@@ -13,6 +15,7 @@ and [FullSyncConfiguration](https://docs.realm.io/platform/using-synced-realms/s
 If you were using a `SyncConfiguration` with `IsPartial = true`, then change your code to use
 `QueryBasedSyncConfiguration`. Similarly, if `IsPartial` was not set or was set to `false`, use
 `FullSyncConfiguration`.
+
 x.y.z (TBD)
 ------------------
 
