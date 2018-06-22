@@ -184,6 +184,20 @@ namespace Tests.Database
         }
 
         [Test]
+        public void AddAnObject_WhenRealmIsDifferentInstanceOnSameThread_ShouldSucceed()
+        {
+            var firstObject = new IntPrimaryKeyWithValueObject();
+            _realm.Write(() => _realm.Add(firstObject));
+
+            using (var realm2 = Realm.GetInstance(_realm.Config))
+            {
+                Assert.That(firstObject.IsManaged);
+                Assert.That(realm2.IsSameInstance(firstObject.Realm));
+                realm2.Write(() => realm2.Add(firstObject));
+            }
+        }
+
+        [Test]
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
