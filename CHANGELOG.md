@@ -4,6 +4,7 @@
 ### Enhancements
 
 ### Bug fixes
+- `WriteAsync` will no longer perform a synchronous `Refresh` on the main thread. ([#1729](https://github.com/realm/realm-dotnet/pull/1729))
 
 ### Breaking Changes
 - `SyncConfiguration` is now deprecated and will be removed in a future version. Two new configuration

@@ -48,6 +48,15 @@ namespace binding {
         notify_realm_changed(m_managed_state_handle);
     }
 }
+
+// the name of this class is an ugly hack to get around get_shared_group being private
+class TestHelper {
+public:
+    static bool has_changed(const SharedRealm& realm)
+    {
+        return Realm::Internal::get_shared_group(*realm)->has_changed();
+    }
+};
 }
 
 extern "C" {
@@ -381,6 +390,11 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
             schema_properties.data()
         }, managed_callback);
     });
+}
+
+REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
+{
+    return TestHelper::has_changed(realm);
 }
 
 }

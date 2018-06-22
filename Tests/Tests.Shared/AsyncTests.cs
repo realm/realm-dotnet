@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,35 +102,92 @@ namespace Tests.Database
             });
         }
 
-        internal class MyDataObject : RealmObject
-        {
-            [PrimaryKey]
-            public string Path { get; set; }
-
-            public int? ExpensiveToComputeValue { get; set; }
-        }
-
         [Test]
         public void AsyncWrite_UpdateViaPrimaryKey()
         {
-            AsyncContext.Run(async delegate
+            AsyncContext.Run(async () =>
             {
-                var path = "/path/to/some/item";
-                MyDataObject obj = null;
+                IntPrimaryKeyWithValueObject obj = null;
                 _realm.Write(() =>
                 {
-                    obj = _realm.Add(new MyDataObject { Path = path });
+                    obj = _realm.Add(new IntPrimaryKeyWithValueObject { Id = 123 });
                 });
 
                 await _realm.WriteAsync(realm =>
                 {
-                    var dataObj = realm.Find<MyDataObject>(path);
-                    dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
+                    var dataObj = realm.Find<IntPrimaryKeyWithValueObject>(123);
+                    dataObj.StringValue = "foobar";
                 });
 
-                await Task.Yield();
+                // Make sure the changes are immediately visible on the caller thread
+                Assert.That(obj.StringValue, Is.EqualTo("foobar"));
+            });
+        }
 
-                Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
+        [Test]
+        public void AsyncWrite_ShouldRethrowExceptions()
+        {
+            AsyncContext.Run(async () =>
+            {
+                const string message = "this is an exception from user code";
+                try
+                {
+                    await _realm.WriteAsync(_ => throw new Exception(message));
+                    Assert.Fail("Previous method should have thrown");
+                }
+                catch (Exception e)
+                {
+                    Assert.That(e.Message, Is.EqualTo(message));
+                }
+            });        
+        }
+
+        [Test]
+        public void RefreshAsync_Tests()
+        {
+            AsyncContext.Run(async () =>
+            {
+                Assert.That(SynchronizationContext.Current != null);
+
+                IntPrimaryKeyWithValueObject obj = null;
+                _realm.Write(() =>
+                {
+                    obj = _realm.Add(new IntPrimaryKeyWithValueObject());
+                });
+
+                var reference = ThreadSafeReference.Create(obj);
+
+                Task.Run(() =>
+                {
+                    using (var realm = Realm.GetInstance(_realm.Config))
+                    {
+                        var bgObj = realm.ResolveReference(reference);
+                        realm.Write(() =>
+                        {
+                            bgObj.StringValue = "123";
+                        });
+                    }
+                }).Wait(); // <- wait to avoid the main thread autoupdating while idle
+
+                Assert.That(obj.StringValue, Is.Null);
+
+                var changeTiming = await measureTiming(_realm.RefreshAsync);
+
+                Assert.That(obj.StringValue, Is.EqualTo("123"));
+
+                // Make sure when there are no changes RefreshAsync completes quickly
+                var idleTiming = await measureTiming(_realm.RefreshAsync);
+
+                Assert.That(changeTiming, Is.GreaterThan(idleTiming));
+
+                async Task<long> measureTiming(Func<Task> func)
+                {
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    await func();
+                    sw.Stop();
+                    return sw.ElapsedTicks;
+                }
             });
         }
     }

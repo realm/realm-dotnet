@@ -694,14 +694,20 @@ namespace Realms
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (SynchronizationContext.Current != null)
             {
-                var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-                return Task.Run(() =>
+                async Task doWorkAsync()
                 {
-                    using (var realm = GetInstance(Config))
+                    var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    await Task.Run(() =>
                     {
-                        realm.Write(() => action(realm));
-                    }
-                }).ContinueWith(_ => Refresh(), scheduler);
+                        using (var realm = GetInstance(Config))
+                        {
+                            realm.Write(() => action(realm));
+                        }
+                    });
+                    var didRefresh = await RefreshAsync();
+                    System.Diagnostics.Debug.Assert(didRefresh);
+                }
+                return doWorkAsync();
             }
             else
             {
@@ -722,6 +728,43 @@ namespace Realms
             ThrowIfDisposed();
 
             return SharedRealmHandle.Refresh();
+        }
+
+        /// <summary>
+        /// Asynchronously wait for the <see cref="Realm"/> instance and outstanding objects to get updated
+        /// to point to the most recent persisted version.
+        /// </summary>
+        /// <remarks>
+        /// On worker threads (where the SynchronizationContext) is null, this will call the blocking <see cref="Refresh"/>
+        /// method instead. On the main thread (or other threads that have SynchronizationContext), this will wait until
+        /// the instance automatically updates to resolve the task. Note that you must keep a reference to the Realm
+        /// until the returned task is resolved.
+        /// </remarks>
+        /// <returns>
+        /// Whether the <see cref="Realm"/> had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public Task<bool> RefreshAsync()
+        {
+            if (!SharedRealmHandle.HasChanged())
+            {
+                return Task.FromResult(false);
+            }
+
+            if (SynchronizationContext.Current == null)
+            {
+                return Task.FromResult(Refresh());
+            }
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            RealmChanged += handler;
+            return tcs.Task;
+
+            void handler(object sender, EventArgs e)
+            {
+                ((Realm)sender).RealmChanged -= handler;
+                tcs.TrySetResult(true);
+            }
         }
 
         /// <summary>
