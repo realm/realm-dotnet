@@ -32,7 +32,8 @@ namespace realm {
         MarshallableIndexSet deletions;
         MarshallableIndexSet insertions;
         MarshallableIndexSet modifications;
-        
+        MarshallableIndexSet modifications_new;
+
         struct {
             CollectionChangeSet::Move* moves;
             size_t count;
@@ -88,6 +89,7 @@ namespace realm {
             auto deletions = get_indexes_vector(changes.deletions);
             auto insertions = get_indexes_vector(changes.insertions);
             auto modifications = get_indexes_vector(changes.modifications);
+            auto modifications_new = get_indexes_vector(changes.modifications_new);
             
             std::vector<size_t> properties;
             
@@ -101,6 +103,7 @@ namespace realm {
                 { deletions.data(), deletions.size() },
                 { insertions.data(), insertions.size() },
                 { modifications.data(), modifications.size() },
+                { modifications_new.data(), modifications_new.size() },
                 { changes.moves.data(), changes.moves.size() },
                 { properties.data(), properties.size() }
             };

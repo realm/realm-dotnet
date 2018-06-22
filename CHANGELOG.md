@@ -2,6 +2,9 @@
 ------------------
 
 ### Enhancements
+- Exposed a `ChangeSet.NewModifiedIndices` collection that contains information about the
+indices of the objects that changed in the new version of the collection (i.e. after
+accounting for the insertions and deletions).
 
 ### Bug fixes
 - `WriteAsync` will no longer perform a synchronous `Refresh` on the main thread. ([#1729](https://github.com/realm/realm-dotnet/pull/1729))
