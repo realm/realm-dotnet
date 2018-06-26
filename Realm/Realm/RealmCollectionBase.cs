@@ -35,7 +35,6 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          IList,
           ISchemaSource,
           IThreadConfined
     {
@@ -413,7 +412,6 @@ namespace Realms
             var list = (IList)array;
             foreach (var obj in this)
             {
-
                 list[index++] = obj;
             }
         }
