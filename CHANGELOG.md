@@ -5,11 +5,14 @@
 - Exposed a `ChangeSet.NewModifiedIndices` collection that contains information about the
 indices of the objects that changed in the new version of the collection (i.e. after
 accounting for the insertions and deletions).
+- Update Fody to 3.0.
 
 ### Bug fixes
 - `WriteAsync` will no longer perform a synchronous `Refresh` on the main thread. ([#1729](https://github.com/realm/realm-dotnet/pull/1729))
 - Trying to add a managed Realm Object to a different instance of the same on-disk Realm will no
 longer throw an exception.
+- Removed the `IList` compliance for Realm collections. This fixes an issue which would cause the app to hang
+on Android when deselecting an item from a ListView bound to a Realm collection.
 
 ### Breaking Changes
 - `SyncConfiguration` is now deprecated and will be removed in a future version. Two new configuration
@@ -18,12 +21,8 @@ and [FullSyncConfiguration](https://docs.realm.io/platform/using-synced-realms/s
 If you were using a `SyncConfiguration` with `IsPartial = true`, then change your code to use
 `QueryBasedSyncConfiguration`. Similarly, if `IsPartial` was not set or was set to `false`, use
 `FullSyncConfiguration`.
-
-x.y.z (TBD)
-------------------
-
-### Enhancements
-- Update Fody to 3.0.
+- Removed the `IList` compliance for Realm collections. This will prevent automatic updates of ListViews
+databound to Realm collections in UWP projects.
 
 3.0.0 (2018-04-16)
 ------------------

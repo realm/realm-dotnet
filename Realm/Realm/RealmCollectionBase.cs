@@ -35,7 +35,6 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          IList,
           ISchemaSource,
           IThreadConfined
     {
@@ -377,8 +376,6 @@ namespace Realms
 
         public object SyncRoot => null;
 
-        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
-
         public virtual int Add(object value) => throw new NotSupportedException();
 
         public virtual void Clear() => throw new NotSupportedException();
@@ -413,7 +410,6 @@ namespace Realms
             var list = (IList)array;
             foreach (var obj in this)
             {
-
                 list[index++] = obj;
             }
         }
