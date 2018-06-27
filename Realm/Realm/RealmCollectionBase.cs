@@ -376,8 +376,6 @@ namespace Realms
 
         public object SyncRoot => null;
 
-        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
-
         public virtual int Add(object value) => throw new NotSupportedException();
 
         public virtual void Clear() => throw new NotSupportedException();
