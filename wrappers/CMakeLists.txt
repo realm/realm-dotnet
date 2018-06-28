@@ -136,7 +136,7 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
   endif()
 
   if(REALM_ENABLE_SYNC)
-    find_package(Zlib REQUIRED)
+    find_package(ZLIB REQUIRED)
     find_package(OpenSSL REQUIRED)
     set(REALM_SYNC_BUILDTREE "${CMAKE_SOURCE_DIR}/../realm-sync/CMakeBuild/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
     if(CMAKE_GENERATOR_PLATFORM)

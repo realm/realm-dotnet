@@ -15,13 +15,19 @@ RUN yum install -y \
         devtoolset-3-binutils \
         git \
         procps-devel \
-        openssl-static
+        openssh-clients \
+        openssl-static \
+        zlib-devel
 
 RUN mkdir -p /opt/cmake && \
-    curl -s https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.sh -o /cmake-3.7.2-Linux-x86_64.sh && \
-    sh /cmake-3.7.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
-    rm /cmake-3.7.2-Linux-x86_64.sh
+    curl -s https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh -o /cmake-3.11.4-Linux-x86_64.sh && \
+    sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
+    rm /cmake-3.11.4-Linux-x86_64.sh
 ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
+
+RUN mkdir -p ~/.ssh && \
+    echo "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config && \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 VOLUME /source
 CMD ["/source/build.sh"]
