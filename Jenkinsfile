@@ -391,12 +391,6 @@ stage('Build with sync') {
         dir('wrappers') {
           buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f Dockerfile.centos").inside() {
             sshagent(credentials: ['realm-ci-ssh']) {
-              sh '''
-                mkdir -p $HOME/.ssh
-                ssh-keyscan github.com >> $HOME/.ssh/known_hosts
-                echo "Host github.com\n\tStrictHostKeyChecking no\n" >> $HOME/.ssh/config
-              '''
-
               cmake 'build-linux', "${pwd()}/build", configuration, [
                 'REALM_ENABLE_SYNC': 'ON'
               ]

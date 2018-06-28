@@ -13,6 +13,7 @@ RUN yum install -y \
         devtoolset-3-gcc \
         devtoolset-3-gcc-c++ \
         devtoolset-3-binutils \
+        git \
         procps-devel \
         openssl-static
 
