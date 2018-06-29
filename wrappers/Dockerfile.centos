@@ -25,9 +25,9 @@ RUN mkdir -p /opt/cmake && \
     rm /cmake-3.11.4-Linux-x86_64.sh
 ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
 
-RUN mkdir -p ~/.ssh && \
-    echo "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config && \
-    ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN mkdir -p /etc/ssh && \
+    echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config && \
+    ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
 
 VOLUME /source
 CMD ["/source/build.sh"]

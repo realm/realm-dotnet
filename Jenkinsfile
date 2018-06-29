@@ -389,7 +389,7 @@ stage('Build with sync') {
         unstash 'dotnet-wrappers-source'
 
         dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f Dockerfile.centos").inside() {
+          buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f Dockerfile.centos").inside('-v /etc/passwd:/etc/passwd') {
             sshagent(credentials: ['realm-ci-ssh']) {
               cmake 'build-linux', "${pwd()}/build", configuration, [
                 'REALM_ENABLE_SYNC': 'ON'
