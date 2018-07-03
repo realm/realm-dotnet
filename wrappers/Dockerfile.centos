@@ -13,20 +13,21 @@ RUN yum install -y \
         devtoolset-3-gcc \
         devtoolset-3-gcc-c++ \
         devtoolset-3-binutils \
+        git \
         procps-devel \
-        openssl-static
+        openssh-clients \
+        openssl-static \
+        zlib-devel
 
 RUN mkdir -p /opt/cmake && \
-    curl -s https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.sh -o /cmake-3.7.2-Linux-x86_64.sh && \
-    sh /cmake-3.7.2-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
-    rm /cmake-3.7.2-Linux-x86_64.sh
+    curl -s https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh -o /cmake-3.11.4-Linux-x86_64.sh && \
+    sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
+    rm /cmake-3.11.4-Linux-x86_64.sh
 ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
 
-ARG PACKAGECLOUD_URL
-RUN curl -s ${PACKAGECLOUD_URL}/script.rpm.sh | bash
-
-ARG REALM_SYNC_VERSION
-RUN yum install -y realm-sync-node-devel-$(echo ${REALM_SYNC_VERSION/\-/\_} | sed 's/-\([^g]\)/~\1/g')
+RUN mkdir -p /etc/ssh && \
+    echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config && \
+    ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
 
 VOLUME /source
 CMD ["/source/build.sh"]
