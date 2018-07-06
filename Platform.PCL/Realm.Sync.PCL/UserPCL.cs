@@ -78,6 +78,7 @@ namespace Realms.Sync
         /// <param name="mode">The persistence mode.</param>
         /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
         /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
+        /// <param name="basePath">The base folder relative to which Realm files will be stored.</param>
         /// <remarks>
         /// Users are persisted in a realm file within the application's sandbox.
         /// <para>
@@ -87,7 +88,7 @@ namespace Realms.Sync
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
         /// </para>
         /// </remarks>
-        public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false)
+        public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
