@@ -1,3 +1,15 @@
+3.2.0 (TBD)
+------------------
+
+### Enhancements
+
+### Bug fixes
+- When constructing queries that compare an invalid/unmanaged RealmObject (e.g. `realm.All<Foo>().Where(f => f.Bar == someBar)`),
+a meaningful exception will now be thrown rather than an obscure ArgumentNullException. 
+
+### Breaking Changes
+
+
 3.1.0 (2018-07-04)
 ------------------
 

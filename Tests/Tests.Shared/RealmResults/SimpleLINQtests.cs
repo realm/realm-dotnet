@@ -571,6 +571,38 @@ namespace Tests.Database
         }
 
         [Test]
+        public void SearchComparingObjects_WhenObjectIsUnmanaged_ShouldFail()
+        {
+            var rex = new Dog { Name = "Rex" };
+            Assert.That(
+                () => _realm.All<Owner>().Where(o => o.TopDog == rex).ToArray(),
+                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObject"));
+        }
+
+        [Test]
+        public void SearchComparingObjects_WhenObjectIsDeleted_ShouldFail()
+        {
+            var rex = new Dog { Name = "Rex" };
+            _realm.Write(() =>
+            {
+                _realm.Add(rex);
+            });
+
+            Assert.That(
+                () => _realm.All<Owner>().Where(o => o.TopDog == rex).ToArray(),
+                Throws.Nothing);
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(rex);
+            });
+
+            Assert.That(
+                () => _realm.All<Owner>().Where(o => o.TopDog == rex).ToArray(),
+                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObject"));
+        }
+
+        [Test]
         public void StringSearch_Equals_CaseSensitivityTests()
         {
             MakeThreePatricks();

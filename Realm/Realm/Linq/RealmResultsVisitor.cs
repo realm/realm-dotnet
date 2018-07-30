@@ -597,7 +597,12 @@ namespace Realms
 
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
+                }
+
+                if (rightValue is RealmObject obj && (!obj.IsManaged || !obj.IsValid))
+                {
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObject. \nUnable to process '{node.Right}'.");
                 }
 
                 switch (node.NodeType)
