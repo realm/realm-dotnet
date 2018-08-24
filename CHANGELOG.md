@@ -2,6 +2,8 @@
 ------------------
 
 ### Enhancements
+- `RealmObject` inheritors will now raise `PropertyChanged` after they have been removed from Realm.
+The property name in the event arguments will be `IsValid`.
 
 ### Bug fixes
 - When constructing queries that compare an invalid/unmanaged RealmObject (e.g. `realm.All<Foo>().Where(f => f.Bar == someBar)`),

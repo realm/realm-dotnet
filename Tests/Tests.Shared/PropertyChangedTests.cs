@@ -790,6 +790,33 @@ namespace Tests.Database
             obj.PropertyChanged -= handler;
         }
 
+        [Test]
+        public void ManagedObject_WhenDeleted_NotifiesIsValidChanged()
+        {
+            var notifiedPropertyNames = new List<string>();
+            var person = new Person();
+            _realm.Write(() =>
+            {
+                _realm.Add(person);
+            });
+
+            person.PropertyChanged += (sender, e) =>
+            {
+                notifiedPropertyNames.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(person);
+            });
+
+            _realm.Refresh();
+
+            Assert.That(notifiedPropertyNames.Count, Is.EqualTo(1));
+            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(RealmObject.IsValid)));
+            Assert.That(person.IsValid, Is.False);
+        }
+
         private async Task TestManagedAsync(Func<Person, string, Task> writeFirstNameAction)
         {
             var notifiedPropertyNames = new List<string>();
