@@ -627,6 +627,17 @@ namespace Realms
                         ++i;
                     }
                 }
+
+                if (changes.Value.Deletions.AsEnumerable().Any())
+                {
+                    RaisePropertyChanged(nameof(IsValid));
+
+                    if (!IsValid)
+                    {
+                        // We can proactively unsubscribe because the object has been deleted
+                        UnsubscribeFromNotifications();
+                    }
+                }
             }
         }
 
