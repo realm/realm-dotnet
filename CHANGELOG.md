@@ -4,6 +4,8 @@
 ### Enhancements
 - `RealmObject` inheritors will now raise `PropertyChanged` after they have been removed from Realm.
 The property name in the event arguments will be `IsValid`.
+- Bundle some common certificate authorities on Linux so connecting to ROS instances over SSL should work out of the box
+for most certificates. Notably, it will now work out of the box for Realm Cloud instances.
 
 ### Bug fixes
 - When constructing queries that compare an invalid/unmanaged RealmObject (e.g. `realm.All<Foo>().Where(f => f.Bar == someBar)`),
