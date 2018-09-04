@@ -8,6 +8,7 @@ The property name in the event arguments will be `IsValid`.
 ### Bug fixes
 - When constructing queries that compare an invalid/unmanaged RealmObject (e.g. `realm.All<Foo>().Where(f => f.Bar == someBar)`),
 a meaningful exception will now be thrown rather than an obscure ArgumentNullException. 
+- Added `ShouldCompactOnLaunch` to the PCL version of the library.
 
 ### Breaking Changes
 
