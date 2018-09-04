@@ -10,9 +10,9 @@ RUN yum install -y \
         which \
         curl \
         make \
-        devtoolset-3-gcc \
-        devtoolset-3-gcc-c++ \
-        devtoolset-3-binutils \
+        devtoolset-6-gcc \
+        devtoolset-6-gcc-c++ \
+        devtoolset-6-binutils \
         git \
         procps-devel \
         openssh-clients \
@@ -23,7 +23,7 @@ RUN mkdir -p /opt/cmake && \
     curl -s https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh -o /cmake-3.11.4-Linux-x86_64.sh && \
     sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
     rm /cmake-3.11.4-Linux-x86_64.sh
-ENV PATH="/opt/rh/devtoolset-3/root/usr/bin:/opt/cmake/bin:${PATH}"
+ENV PATH="/opt/rh/devtoolset-6/root/usr/bin:/opt/cmake/bin:${PATH}"
 
 RUN mkdir -p /etc/ssh && \
     echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config && \
