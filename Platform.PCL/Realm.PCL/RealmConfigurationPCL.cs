@@ -81,6 +81,15 @@ namespace Realms
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         /// <summary>
+        /// Gets or sets the compact on launch callback.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ShouldCompactDelegate"/> that will be invoked when opening a Realm for the first time
+        /// to determine if it should be compacted before being returned to the user.
+        /// </value>
+        public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
+        
+        /// <summary>
         /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
         /// </summary>
         /// <value>The default configuration.</value>
