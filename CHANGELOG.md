@@ -1,4 +1,4 @@
-3.2.0 (TBD)
+3.2.0 (2018-08-04)
 ------------------
 
 ### Enhancements
@@ -11,9 +11,6 @@ for most certificates. Notably, it will now work out of the box for Realm Cloud 
 - When constructing queries that compare an invalid/unmanaged RealmObject (e.g. `realm.All<Foo>().Where(f => f.Bar == someBar)`),
 a meaningful exception will now be thrown rather than an obscure ArgumentNullException. 
 - Added `ShouldCompactOnLaunch` to the PCL version of the library. ([dotnet-private#125](https://github.com/realm/realm-dotnet-private/issues/125))
-
-### Breaking Changes
-
 
 3.1.0 (2018-07-04)
 ------------------
