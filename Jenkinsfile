@@ -539,7 +539,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             if (isUnix()) {
               if (nodeName == 'docker') {
                 def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
-                withRos("3.0.0") { ros ->
+                withRos("3.11.0") { ros ->
                   test_runner_image.inside("--link ${ros.id}:ros") {
                     sh """
                       cd ${pwd()}/${binaryFolder}
