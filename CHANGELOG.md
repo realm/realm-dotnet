@@ -2,10 +2,8 @@
 ------------------
 
 ### Bug fixes
-- Fixed a bug with marshalling subscription state from native objects to .NET which could result in the .NET type reading a broader
-chunk of memory than the native type has allocated. This would typically result in exceptions with a message like 
-`An unknown error has occurred. State: *some-number-larger than 127*` when subscribing to queries.
-([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128))
+- Fixed a bug that would typically result in exceptions with a message like `An unknown error has occurred. State: *some-number-larger than 127*`
+when subscribing to queries. ([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128))
 
 3.2.0 (2018-08-04)
 ------------------
