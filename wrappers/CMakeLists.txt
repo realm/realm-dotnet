@@ -11,7 +11,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 if(NOT REALM_PLATFORM)
-  set(REALM_PLATFORM DotNet) 
+  set(REALM_PLATFORM DotNet)
 endif()
 
 include(CompilerFlags)
@@ -184,6 +184,10 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
+  add_definitions(
+    /D_DISABLE_EXTENDED_ALIGNED_STORAGE # https://developercommunity.visualstudio.com/comments/279328/view.html
+  )
+
   if(WINDOWS_STORE)
     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib")
