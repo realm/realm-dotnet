@@ -3,7 +3,7 @@
 
 ### Bug fixes
 - Fixed a bug that would typically result in exceptions with a message like `An unknown error has occurred. State: *some-number-larger than 127*`
-when subscribing to queries. ([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128))
+when subscribing to queries. ([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128), since `3.0.0`)
 
 3.2.0 (2018-08-04)
 ------------------
