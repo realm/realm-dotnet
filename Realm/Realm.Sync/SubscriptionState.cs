@@ -21,7 +21,7 @@ namespace Realms.Sync
     /// <summary>
     /// An enumeration, representing the possible state of a sync subscription.
     /// </summary>
-    public enum SubscriptionState
+    public enum SubscriptionState : sbyte
     {
         /// <summary>
         /// An error occurred while creating the subscription or while the server was processing it.
