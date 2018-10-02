@@ -1,3 +1,25 @@
+x.y.z (2018-09-27)
+------------------
+
+### Enhancements
+* None.
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-dotnet/issues/????), since v?.?.?)
+* None.
+
+### Breaking changes
+<!-- ONLY INCLUDE for Major versions breaking in non-backwards compatible ways -->
+
+### Compatibility
+* File format: ver. 7 (upgrades automatically from previous formats)
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous releases in the 3.x.y series.
+ 
+ ### Internal
+* None.
+
+
 3.2.1 (2018-09-27)
 ------------------
 
