@@ -1,4 +1,4 @@
-x.y.z (2018-09-27)
+x.y.z (2018-mm-dd)
 ------------------
 
 ### Enhancements
@@ -12,10 +12,10 @@ x.y.z (2018-09-27)
 <!-- ONLY INCLUDE for Major versions breaking in non-backwards compatible ways -->
 
 ### Compatibility
-* File format: ver. 7 (upgrades automatically from previous formats)
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous releases in the 3.x.y series.
- 
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
  ### Internal
 * None.
 
