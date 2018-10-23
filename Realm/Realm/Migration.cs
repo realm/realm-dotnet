@@ -32,7 +32,7 @@ namespace Realms
     /// the classes by using the dynamic API.
     /// </summary>
     /// <seealso href="https://realm.io/docs/xamarin/latest/#migrations">See more in the migrations section in the documentation.</seealso>
-    public class Migration
+    public class Migration : IDisposable
     {
         private readonly RealmConfiguration _configuration;
         private readonly RealmSchema _schema;
@@ -50,6 +50,8 @@ namespace Realms
         public Realm NewRealm { get; private set; }
 
         internal Exception MigrationException;
+        private GCHandle _handle;
+        private bool _disposed;
 
         internal Migration(RealmConfiguration configuration, RealmSchema schema)
         {
@@ -59,10 +61,10 @@ namespace Realms
 
         internal void PopulateConfiguration(ref Configuration configuration)
         {
-            var migrationHandle = GCHandle.Alloc(this);
+            _handle = GCHandle.Alloc(this);
 
             configuration.migration_callback = MigrationCallback;
-            configuration.managed_migration_handle = GCHandle.ToIntPtr(migrationHandle);
+            configuration.managed_migration_handle = GCHandle.ToIntPtr(_handle);
         }
 
         private bool Execute(Realm oldRealm, Realm newRealm)
@@ -97,9 +99,30 @@ namespace Realms
             var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);
 
             var result = migration.Execute(oldRealm, newRealm);
-            migrationHandle.Free();
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+
+            _handle.Free();
+        }
+
+        ~Migration()
+        {
+            Dispose(false);
         }
     }
 }

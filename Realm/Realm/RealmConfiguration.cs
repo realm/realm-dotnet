@@ -147,23 +147,26 @@ namespace Realms
                 configuration.managed_should_compact_delegate = GCHandle.ToIntPtr(handle);
             }
 
-            var srPtr = IntPtr.Zero;
-            try
+            using (migration)
             {
-                srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
-            }
-            catch (ManagedExceptionDuringMigrationException)
-            {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
-            }
+                var srPtr = IntPtr.Zero;
+                try
+                {
+                    srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+                }
+                catch (ManagedExceptionDuringMigrationException)
+                {
+                    throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
+                }
 
-            var srHandle = new SharedRealmHandle(srPtr);
-            if (IsDynamic && !schema.Any())
-            {
-                srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
-            }
+                var srHandle = new SharedRealmHandle(srPtr);
+                if (IsDynamic && !schema.Any())
+                {
+                    srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                }
 
-            return new Realm(srHandle, this, schema);
+                return new Realm(srHandle, this, schema);
+            }
         }
 
         internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
