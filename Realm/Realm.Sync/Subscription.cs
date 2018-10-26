@@ -137,6 +137,8 @@ namespace Realms.Sync
                 return;
             }
 
+            AsyncHelper.EnsureValidContext();
+
             subscription.Handle.Unsubscribe();
 
             var tcs = new TaskCompletionSource<object>();
@@ -244,6 +246,8 @@ namespace Realms.Sync
         /// </returns>
         public Task WaitForSynchronizationAsync()
         {
+            AsyncHelper.EnsureValidContext();
+
             return _syncTcs.Task;
         }
 
