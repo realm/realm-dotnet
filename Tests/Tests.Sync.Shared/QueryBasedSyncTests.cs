@@ -317,10 +317,10 @@ namespace Tests.Sync
                     {
                         using (var bgRealm = GetRealm(config))
                         {
-                            var sub = realm.All<ObjectA>().Subscribe();
+                            var sub = bgRealm.All<ObjectA>().Subscribe();
                             Assert.Throws<NotSupportedException>(() => sub.WaitForSynchronizationAsync());
                         }
-                    });
+                    }).Timeout(2000);
                 }
             });
         }
