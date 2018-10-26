@@ -305,6 +305,26 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void WaitForSynchronization_OnBackgroundThread_Throws()
+        {
+            AsyncContext.Run(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm())
+                {
+                    var config = realm.Config;
+                    await Task.Run(() =>
+                    {
+                        using (var bgRealm = GetRealm(config))
+                        {
+                            var sub = realm.All<ObjectA>().Subscribe();
+                            Assert.Throws<NotSupportedException>(() => sub.WaitForSynchronizationAsync());
+                        }
+                    });
+                }
+            });
+        }
+
         private async Task<Realm> GetQueryBasedRealm(Action<QueryBasedSyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
         {
             SyncTestHelpers.RequiresRos();
