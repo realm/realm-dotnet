@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifiers>win81-x64;osx.10.10-x64;debian.8-x64</RuntimeIdentifiers>
     <DefineConstants Condition="'$(RealmNoSync)' == 'true'">REALM_NO_SYNC</DefineConstants>

@@ -17,6 +17,7 @@
     <PackageReference Include="StyleCop.MSBuild" Version="4.7.55" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\AsyncHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ErrorMessages.cs" />
     <Compile Include="ISchemaSource.cs" />

@@ -676,11 +676,10 @@ namespace Realms
             Argument.NotNull(action, nameof(action));
 
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (SynchronizationContext.Current != null)
+            if (AsyncHelper.HasValidContext)
             {
                 async Task doWorkAsync()
                 {
-                    var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
                     await Task.Run(() =>
                     {
                         using (var realm = GetInstance(Config))
@@ -734,7 +733,7 @@ namespace Realms
                 return Task.FromResult(false);
             }
 
-            if (SynchronizationContext.Current == null)
+            if (!AsyncHelper.HasValidContext)
             {
                 return Task.FromResult(Refresh());
             }
