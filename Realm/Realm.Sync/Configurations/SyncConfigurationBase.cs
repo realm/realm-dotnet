@@ -79,6 +79,8 @@ namespace Realms.Sync
         /// </seealso>
         public string TrustedCAPath { get; set; }
 
+        public Action<SyncProgress> OnProgress { get; set; }
+
         internal SyncConfigurationBase(Uri serverUri, User user = null, string optionalPath = null)
         {
             Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
@@ -104,14 +106,8 @@ namespace Realms.Sync
         /// </summary>
         public static LogLevel LogLevel
         {
-            get
-            {
-                return SharedRealmHandleExtensions.GetLogLevel();
-            }
-            set
-            {
-                SharedRealmHandleExtensions.SetLogLevel(value);
-            }
+            get => SharedRealmHandleExtensions.GetLogLevel();
+            set => SharedRealmHandleExtensions.SetLogLevel(value);
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -135,12 +131,19 @@ namespace Realms.Sync
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
             var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
+            IDisposable subscription = null;
             try
             {
+                if (OnProgress != null)
+                {
+                    var observer = new Observer<SyncProgress>(OnProgress);
+                    subscription = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork).Subscribe(observer);
+                }
                 await session.WaitForDownloadAsync();
             }
             finally
             {
+                subscription?.Dispose();
                 session.CloseHandle();
             }
 

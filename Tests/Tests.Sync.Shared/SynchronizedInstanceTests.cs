@@ -181,6 +181,52 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void GetInstanceAsync_ReportsProgress()
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                var realmPath = Guid.NewGuid().ToString();
+                var user = await SyncTestHelpers.GetUserAsync();
+                var config = new FullSyncConfiguration(new Uri($"/~/{realmPath}", UriKind.Relative), user, Guid.NewGuid().ToString());
+                const int ObjectSize = 1000000;
+                const int ObjectsToRecord = 20;
+                using (var realm = GetRealm(config))
+                {
+                    for (var i = 0; i < ObjectsToRecord; i++)
+                    {
+                        realm.Write(() =>
+                        {
+                            realm.Add(new HugeSyncObject(ObjectSize));
+                        });
+                    }
+
+                    await WaitForSyncAsync(realm);
+                }
+
+                var callbacksInvoked = 0;
+
+                var lastProgress = default(SyncProgress);
+                config = new FullSyncConfiguration(new Uri($"/~/{realmPath}", UriKind.Relative), user, Guid.NewGuid().ToString())
+                {
+                    OnProgress = (progress) =>
+                    {
+                        callbacksInvoked++;
+                        lastProgress = progress; 
+                    }
+                };
+
+                using (var realm = await GetRealmAsync(config))
+                {
+                    Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(ObjectsToRecord));
+                    Assert.That(callbacksInvoked, Is.GreaterThan(0));
+                    Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
+                }
+            });
+        }
+
         [TestCase(true, true)]
         [TestCase(true, false)]
         [TestCase(false, true)]
