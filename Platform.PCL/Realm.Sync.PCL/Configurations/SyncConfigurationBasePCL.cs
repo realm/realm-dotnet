@@ -73,7 +73,7 @@ namespace Realms.Sync
         public string TrustedCAPath { get; set; }
 
         /// <summary>
-        /// A callback that is invoked when download progress is made when using <see cref="Realm.GetInstanceAsync"/>.
+        /// Gets or sets a callback that is invoked when download progress is made when using <see cref="Realm.GetInstanceAsync"/>.
         /// This will only be invoked for the initial download of the Realm and will not be invoked as futher download
         /// progress is made during the lifetime of the Realm. It is ignored when using 
         /// <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
