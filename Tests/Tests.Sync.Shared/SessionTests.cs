@@ -206,7 +206,6 @@ namespace Tests.Sync
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
-            Console.WriteLine("Aaaaa");
             SyncTestHelpers.RequiresRos();
 
             const int ObjectSize = 1000000;
