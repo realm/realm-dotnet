@@ -8,9 +8,6 @@
 <!-- * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-dotnet/issues/????), since v?.?.?) -->
 * Trying to call `Subscription.WaitForSynchronizationAsync` on a background thread (without a `SynchronizationContext`) would previously hang indefinitely. Now a meaningful exception will be thrown to indicate that this is not supported and this method should be called on a thread with a synchronization context. ([dotnet-private#130](https://github.com/realm/realm-dotnet-private/issues/130), since v3.0.0)
 
-### Breaking changes
-<!-- ONLY INCLUDE for Major versions breaking in non-backwards compatible ways -->
-
 ### Compatibility
 * Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous releases in the 3.x.y series.
