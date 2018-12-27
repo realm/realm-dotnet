@@ -539,7 +539,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             if (isUnix()) {
               if (nodeName == 'docker') {
                 def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
-                withRos("3.11.0") { ros ->
+                withROS_temp("3.11.0") { ros ->
                   test_runner_image.inside("--link ${ros.id}:ros") {
                     sh """
                       cd ${pwd()}/${binaryFolder}
@@ -785,6 +785,18 @@ def cmake(String binaryDir, String installPrefix, String configuration, Map argu
 
 def reportTests(String file) {
   junit file
+}
+
+def withROS_temp(String version, block = { it }) {
+  withCredentials([string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
+    docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
+      // run image, get IP
+      docker.image("${env.DOCKER_REGISTRY}/realm-object-server:${version}")
+        .withRun("--expose 9080 -P -e ROS_TOS_EMAIL_ADDRESS=testing@realm.io -e SYNC_WORKER_FEATURE_TOKEN=${env.ENTERPRISE_FEATURE_TOKEN} --name ros") { obj ->
+          block(obj)
+      }
+    }
+  }
 }
 
 // Required due to JENKINS-27421
