@@ -45,34 +45,5 @@ namespace Realms.Sync
 
             return new Session(realm.Config.DatabasePath);
         }
-
-        /// <summary>
-        /// If the Realm uses query-based synchronization, fetch and synchronize the objects
-        /// of a given object type that match the given query (in string format).
-        /// </summary>
-        /// <typeparam name="T">The type of the objects making up the query.</typeparam>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
-        /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
-        /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
-        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        [Obsolete("Use the IQueryable.SubscribeToObjects extension method")]
-        public static async Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
-        {
-            Argument.NotNull(realm, nameof(realm));
-            Argument.Ensure(realm.Config is SyncConfigurationBase, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
-
-            var type = typeof(T);
-            if (!realm.Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) || metadata.Schema.Type.AsType() != type)
-            {
-                throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
-            }
-
-            var tcs = new TaskCompletionSource<ResultsHandle>();
-
-            SharedRealmHandleExtensions.SubscribeForObjects(realm.SharedRealmHandle, type, query, tcs);
-
-            var resultsHandle = await tcs.Task;
-            return new RealmResults<T>(realm, metadata, resultsHandle);
-        }
     }
 }

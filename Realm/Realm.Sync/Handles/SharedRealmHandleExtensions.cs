@@ -58,20 +58,15 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void SessionWaitCallback(IntPtr task_completion_source, int error_code, byte* message_buf, IntPtr message_len);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void SubscribeForObjectsCallback(IntPtr results, IntPtr task_completion_source, NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure_file_system", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe void configure_file_system([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth,
-                                                                   UserPersistenceMode* userPersistence, byte[] encryptionKey,
-                                                                   [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
-                                                                   out NativeException exception);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure", CallingConvention = CallingConvention.Cdecl)]
+            public static extern unsafe void configure([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_length,
+                                                       [MarshalAs(UnmanagedType.LPWStr)] string user_agent, IntPtr user_agent_length,
+                                                       UserPersistenceMode* userPersistence, byte[] encryptionKey,
+                                                       [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
+                                                       out NativeException exception);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_callbacks(SubscribeForObjectsCallback subscribe_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
@@ -89,12 +84,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_subscribe_for_objects", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr subscribe_for_objects(SharedRealmHandle handle,
-                                                              [MarshalAs(UnmanagedType.LPWStr)] string class_name, IntPtr class_name_len,
-                                                              [MarshalAs(UnmanagedType.LPWStr)] string query, IntPtr query_len,
-                                                              IntPtr task_completion_source, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
@@ -132,12 +121,6 @@ namespace Realms.Sync
             GCHandle.Alloc(wait);
 
             NativeMethods.install_syncsession_callbacks(refresh, error, progress, wait);
-
-            NativeMethods.SubscribeForObjectsCallback subscribe = HandleSubscribeForObjectsCallback;
-
-            GCHandle.Alloc(subscribe);
-
-            NativeMethods.install_callbacks(subscribe);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -192,7 +175,12 @@ namespace Realms.Sync
                 modePtr = &mode;
             }
 
-            NativeMethods.configure_file_system(basePath, (IntPtr)basePath.Length, modePtr, encryptionKey, resetMetadataOnError, out var ex);
+            // TODO: provide proper user agent.
+            var userAgent = ".NET";
+            NativeMethods.configure(
+                basePath, (IntPtr)basePath.Length,
+                userAgent, (IntPtr)userAgent.Length,
+                modePtr, encryptionKey, resetMetadataOnError, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -244,14 +232,6 @@ namespace Realms.Sync
             nativeException.ThrowIfNecessary();
 
             return new SessionHandle(result);
-        }
-
-        public static void SubscribeForObjects(SharedRealmHandle handle, Type objectType, string query, TaskCompletionSource<ResultsHandle> tcs)
-        {
-            var tcsPtr = GCHandle.ToIntPtr(GCHandle.Alloc(tcs));
-            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
-            NativeMethods.subscribe_for_objects(handle, objectName, (IntPtr)objectName.Length, query, (IntPtr)query.Length, tcsPtr, out var ex);
-            ex.ThrowIfNecessary();
         }
 
         public static RealmPrivileges GetPrivileges(this SharedRealmHandle handle)
@@ -341,30 +321,6 @@ namespace Realms.Sync
                     var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
                     const string outerMessage = "A system error occurred while waiting for completion. See InnerException for more details";
                     tcs.TrySetException(new RealmException(outerMessage, inner));
-                }
-            }
-            finally
-            {
-                handle.Free();
-            }
-        }
-
-        [NativeCallback(typeof(NativeMethods.SubscribeForObjectsCallback))]
-        private static void HandleSubscribeForObjectsCallback(IntPtr results, IntPtr taskCompletionSource, NativeException ex)
-        {
-            var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<ResultsHandle>)handle.Target;
-
-            try
-            {
-                if (ex.type == RealmExceptionCodes.NoError)
-                {
-                    var resultsHandle = new ResultsHandle(null, results);
-                    tcs.TrySetResult(resultsHandle);
-                }
-                else
-                {
-                    tcs.TrySetException(ex.Convert());
                 }
             }
             finally
