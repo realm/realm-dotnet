@@ -1,3 +1,27 @@
+vNext (TBD)
+------------------
+
+The sync protocol version has been bumped to version 25. The server is backwards-compatible with clients using protocol version 24 or below, but clients at version 25 are not backwards-compatible with a server at protocol version 24. The server must be upgraded before any clients are upgraded.
+
+### Enahancements
+* Clients using protocol 25 now report download progress to the server, even when they make no local changes. This allows the server to do history compaction much more aggressively, especially when there are many clients that rarely or never make local changes. ([#1772](https://github.com/realm/realm-dotnet/pull/1772))
+
+### Fixed
+<!-- * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-dotnet/issues/????), since v?.?.?) -->
+* None.
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later.
+* APIs are backwards compatible with all previous releases in the 3.x.y series.
+* File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
+
+### Breaking Changes
+* The deprecated method `realm.SubscribeToObjectsAsync` has been removed in this version. ([#1772](https://github.com/realm/realm-dotnet/pull/1772))
+
+ ### Internal
+* None.
+
+
 3.3.0 (2018-11-08)
 ------------------
 
@@ -13,9 +37,6 @@
 * APIs are backwards compatible with all previous releases in the 3.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
- ### Internal
-* None.
-
 
 3.2.1 (2018-09-27)
 ------------------
@@ -23,13 +44,6 @@
 ### Bug fixes
 - Fixed a bug that would typically result in exceptions with a message like `An unknown error has occurred. State: *some-number-larger than 127*`
 when subscribing to queries. ([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128), since `3.0.0`)
-3.3.0 (2018-09-21)
-------------------
-
-The sync protocol version has been bumped to version 25. The server is backwards-compatible with clients using protocol version 24 or below, but clients at version 25 are not backwards-compatible with a server at protocol version 24. The server must be upgraded before any clients are upgraded.
-
-### Enahancements
-- Clients using protocol 25 now report download progress to the server, even when they make no local changes. This allows the server to do history compaction much more aggressively, especially when there are many clients that rarely or never make local changes.
 
 3.2.0 (2018-08-04)
 ------------------
