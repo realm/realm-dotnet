@@ -143,26 +143,6 @@ namespace Tests.Sync
         }
 
         [Test]
-        public void SubscribeForObjects_WhenQueryIsInvalid_Throws()
-        {
-            AsyncContext.Run(async () =>
-            {
-                using (var realm = await GetQueryBasedRealm())
-                {
-                    try
-                    {
-                        var objectAs = await realm.SubscribeToObjectsAsync<ObjectA>("foo = bar").Timeout(2000);
-                        Assert.Fail("Expected an exception to be thrown.");
-                    }
-                    catch (RealmException ex)
-                    {
-                        Assert.That(ex.Message, Contains.Substring("No property 'foo'"));
-                    }
-                }
-            });
-        }
-
-        [Test]
         public void NamedSubscription_CanResubscribe()
         {
             AsyncContext.Run(async () =>

@@ -43,22 +43,6 @@ namespace Realms.Sync
             return null;
         }
 
-        /// <summary>
-        /// If the Realm uses query-based synchronization, fetch and synchronize the objects
-        /// of a given object type that match the given query (in string format).
-        /// </summary>
-        /// <typeparam name="T">The type of the objects making up the query.</typeparam>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
-        /// <param name="query">A string-based query using the NSPredicate syntax to specify which objects should be returned.</param>
-        /// <returns>An awaitable task that, upon completion, contains all objects matching the query.</returns>
-        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        [Obsolete("Use the IQueryable.SubscribeToObjects extension method")]
-        public static Task<IQueryable<T>> SubscribeToObjectsAsync<T>(this Realm realm, string query)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return null;
-        }
-
         internal static string GetMappedOrOriginalName(this MemberInfo member)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
