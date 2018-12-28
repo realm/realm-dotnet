@@ -12,11 +12,25 @@ NOTE!!! You will need to upgrade your Realm Object Server to at least version 3.
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
+The sync protocol version has been bumped to version 25. The server is backwards-compatible with clients using protocol version 24 or below, but clients at version 25 are not backwards-compatible with a server at protocol version 24. The server must be upgraded before any clients are upgraded.
+
+### Enahancements
+* Clients using protocol 25 now report download progress to the server, even when they make no local changes. This allows the server to do history compaction much more aggressively, especially when there are many clients that rarely or never make local changes. ([#1772](https://github.com/realm/realm-dotnet/pull/1772))
+* Add a User-Agent header to HTTP requests made to the Realm Object Server. By default, this contains information about the Realm library version and .NET platform. Additional details may be provided (such as the application name/version) by setting `SyncConfigurationBase.UserAgent` prior to opening a synchronized Realm. If developing a Xamarin app, you can use the Xamarin.Essentials plugin to automate that: `SyncConfiguration.UserAgent = $"{AppInfo.Name} ({AppInfo.PackageName} {AppInfo.VersionString})"`.
+
+
+### Fixed
+<!-- * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-dotnet/issues/????), since v?.?.?) -->
+* None.
+
+### Compatibility
+* Realm Object Server: 3.0.0 or later.
 * APIs are backwards compatible with all previous releases in the 3.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 ### Breaking Changes
 * The deprecated method `realm.SubscribeToObjectsAsync` has been removed in this version. ([#1772](https://github.com/realm/realm-dotnet/pull/1772))
+* `User.ConfigurePersistence` has been deprecated in favor of `SyncConfigurationBase.Initialize`.
 
  ### Internal
 * Upgraded Sync from 3.9.2 to 3.14.11 and Core from 5.8.0 to 5.12.7.

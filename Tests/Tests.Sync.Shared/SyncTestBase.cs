@@ -31,8 +31,6 @@ namespace Tests.Sync
         private readonly List<Session> _sessions = new List<Session>();
         private readonly List<Realm> _realms = new List<Realm>();
 
-        private readonly UserPersistenceMode? persistence = TestHelpers.IsMacOS ? UserPersistenceMode.NotEncrypted : (UserPersistenceMode?)null;
-
         protected override void CustomSetUp()
         {
             base.CustomSetUp();
@@ -53,7 +51,8 @@ namespace Tests.Sync
                 }
             }
 
-            SharedRealmHandleExtensions.ConfigureFileSystem(persistence, null, false, defaultFolder);
+            SyncConfigurationBase.UserAgent = GetType().Name;
+            SyncConfigurationBase.Initialize(UserPersistenceMode.NotEncrypted, null, false, defaultFolder);
         }
 
         protected override void CustomTearDown()

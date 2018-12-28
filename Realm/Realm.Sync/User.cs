@@ -111,14 +111,10 @@ namespace Realms.Sync
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
         /// </para>
         /// </remarks>
+        [Obsolete("Use SyncConfigurationBase.Initialize() instead")]
         public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
         {
-            if (mode == UserPersistenceMode.Encrypted && encryptionKey != null && encryptionKey.Length != 64)
-            {
-                throw new ArgumentException("The encryption key must be 64 bytes long", nameof(encryptionKey));
-            }
-
-            SharedRealmHandleExtensions.ConfigureFileSystem(mode, encryptionKey, resetOnError, basePath);
+            SyncConfigurationBase.Initialize(mode, encryptionKey, resetOnError, basePath);
         }
 
         /// <summary>
