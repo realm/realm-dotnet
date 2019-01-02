@@ -36,12 +36,10 @@
 
 ## Version of Realm and Tooling
 
-- Realm Object Server Version: ?
+- Realm Object Server Version: ? (you can see this as well in Studio once connected to a Realm instance) 
 - Flavor:
-  - [ ] Developer
-  - [ ] Professional
-  - [ ] Enterprise
+  - [ ] Realm Cloud
+  - [ ] Self-Hosted
 - Server OS & Version: ? (e.g. CentOS 6)
 - Client SDK Version: ?
 - Client OS & Version: ?
-
