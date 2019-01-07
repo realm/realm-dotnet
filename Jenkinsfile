@@ -757,12 +757,6 @@ step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresh
 
 def nodeWithCleanup(String label, Closure steps) {
   node(label) {
-    if (isUnix()) {
-      env.NUGET_PACKAGES='';
-    } else {
-      env.NUGET_PACKAGES='C:\\Windows\\system32\\config\\systemprofile\\.nuget\\packages';
-    }
-
     // compute a shorter workspace name by removing the UUID at the end
     def terminus = env.WORKSPACE.lastIndexOf('-')
     def at = env.WORKSPACE.lastIndexOf('@')
@@ -772,7 +766,13 @@ def nodeWithCleanup(String label, Closure steps) {
 
     ws(workspace) {
       try {
-        steps()
+        if (!isUnix()) {
+          withEnv(['NUGET_PACKAGES=C:\\Windows\\system32\\config\\systemprofile\\.nuget\\packages']) {
+            steps()
+          }
+        } else {
+          steps()
+        }
       } finally {
         deleteDir()
       }
