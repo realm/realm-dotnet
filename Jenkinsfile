@@ -767,7 +767,8 @@ def nodeWithCleanup(String label, Closure steps) {
     ws(workspace) {
       try {
         if (!isUnix()) {
-          withEnv(['NUGET_PACKAGES=C:\\Windows\\system32\\config\\systemprofile\\.nuget\\packages']) {
+          // https://stackoverflow.com/questions/48896486/jenkins-not-restoring-nuget-packages-with-new-msbuild-restore-target
+          withEnv(['NUGET_PACKAGES=C:\\NugetPackageCache']) {
             steps()
           }
         } else {
