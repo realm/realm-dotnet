@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms;
@@ -193,6 +194,39 @@ namespace Tests.Sync
                 var syncConfiguration = new FullSyncConfiguration(new Uri(path, UriKind.Relative), user);
                 Assert.That(syncConfiguration.ServerUri.AbsoluteUri, Is.EqualTo($"realm://{SyncTestHelpers.FakeRosUrl}{expected}"));
             });
+        }
+
+        [TestCase(LogLevel.Debug)]
+        [TestCase(LogLevel.Info)]
+        public void SyncConfiguration_LoggerFactory_Test(LogLevel logLevel)
+        {
+            SyncTestHelpers.RequiresRos();
+
+            AsyncContext.Run(async () =>
+            {
+                SyncConfigurationBase.LogLevel = logLevel;
+                var logBuilder = new StringBuilder();
+                SyncConfigurationBase.Initialize(UserPersistenceMode.NotEncrypted, customLogger: (message, level) =>
+                {
+                    logBuilder.AppendLine($"[{level}] {message}");
+                });
+
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                using (var realm = await GetRealmAsync(config))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new Person());
+                    });
+
+                    await GetSession(realm).WaitForUploadAsync();
+                }
+
+                var log = logBuilder.ToString();
+
+                Assert.That(log, Does.Contain($"[{logLevel}]"));
+                Assert.That(log, Does.Not.Contain($"[{(logLevel - 1)}]"));
+           });
         }
     }
 }

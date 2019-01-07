@@ -36,6 +36,9 @@ namespace Realms.Sync
         // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
         private static int _fileSystemConfigured;
 
+        // We only save it to avoid allocating the GCHandle multiple times.
+        private static readonly NativeMethods.LogMessageCallback _logCallback;
+
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
@@ -129,6 +132,9 @@ namespace Realms.Sync
             GCHandle.Alloc(wait);
 
             NativeMethods.install_syncsession_callbacks(refresh, error, progress, wait);
+
+            _logCallback = HandleLogMessage;
+            GCHandle.Alloc(_logCallback);
         }
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
@@ -212,9 +218,7 @@ namespace Realms.Sync
 
         public static unsafe void InstallLogCallback()
         {
-            NativeMethods.LogMessageCallback nativeCallback = HandleLogMessage;
-            GCHandle.Alloc(nativeCallback);
-            NativeMethods.set_log_callback(nativeCallback, out var ex);
+            NativeMethods.set_log_callback(_logCallback, out var ex);
             ex.ThrowIfNecessary();
         }
 
@@ -353,9 +357,23 @@ namespace Realms.Sync
         [NativeCallback(typeof(NativeMethods.LogMessageCallback))]
         private static unsafe void HandleLogMessage(byte* messageBuffer, IntPtr messageLength, LogLevel level)
         {
-            // TODO: pass to user-defined callback
-            var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
-            Console.WriteLine($"[{level}] {message}");
+            try
+            {
+                var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
+                SyncConfigurationBase.CustomLogger?.Invoke(message, level);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"An error occurred while trying to log a message: {ex}";
+                try
+                {
+                    SyncConfigurationBase.CustomLogger(errorMessage, LogLevel.Error);
+                }
+                catch
+                {
+                    Console.Error.WriteLine(errorMessage);
+                }
+            }
         }
     }
 }

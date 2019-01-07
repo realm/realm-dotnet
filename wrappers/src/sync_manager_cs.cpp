@@ -117,10 +117,10 @@ REALM_EXPORT void realm_syncmanager_set_user_agent(const uint16_t* user_agent_bu
     });
 }
     
-REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level level, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level* level, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        SyncManager::shared().set_log_level(level);
+        SyncManager::shared().set_log_level(*level);
     });
 }
     

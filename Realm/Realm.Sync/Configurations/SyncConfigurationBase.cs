@@ -37,6 +37,8 @@ namespace Realms.Sync
     /// <seealso cref="QueryBasedSyncConfiguration"/>
     public abstract class SyncConfigurationBase : RealmConfigurationBase
     {
+        internal static Action<string, LogLevel> CustomLogger { get; private set; }
+
         internal abstract bool IsFullSync { get; }
 
         /// <summary>
@@ -158,7 +160,7 @@ namespace Realms.Sync
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
         /// </para>
         /// </remarks>
-        public static void Initialize(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
+        public static void Initialize(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null, Action<string, LogLevel> customLogger = null)
         {
             if (mode == UserPersistenceMode.Encrypted && encryptionKey != null && encryptionKey.Length != 64)
             {
@@ -166,6 +168,11 @@ namespace Realms.Sync
             }
 
             SharedRealmHandleExtensions.Configure(mode, encryptionKey, resetOnError, basePath);
+            CustomLogger = customLogger;
+            if (CustomLogger != null)
+            {
+                SharedRealmHandleExtensions.InstallLogCallback();
+            }
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
