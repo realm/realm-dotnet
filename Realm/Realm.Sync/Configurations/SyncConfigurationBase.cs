@@ -151,6 +151,11 @@ namespace Realms.Sync
         /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
         /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
         /// <param name="basePath">The base folder relative to which Realm files will be stored.</param>
+        /// <param name="customLogger">
+        /// A custom log function that will be invoked by Sync instead of writing to the standard error.
+        /// This callback will not be invoked in a thread-safe manner, so it's up to the implementor to ensure
+        /// that log messages arriving from multiple threads are processed without garbling the final output.
+        /// </param>
         /// <remarks>
         /// Users are persisted in a realm file within the application's sandbox.
         /// <para>
