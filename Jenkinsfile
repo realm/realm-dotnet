@@ -766,6 +766,7 @@ def nodeWithCleanup(String label, Closure steps) {
 
     ws(workspace) {
       try {
+        env.NUGET_PACKAGES='C:\\NugetPackageCache';
         steps()
       } finally {
         deleteDir()
