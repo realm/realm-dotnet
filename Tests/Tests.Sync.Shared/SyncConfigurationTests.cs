@@ -204,12 +204,13 @@ namespace Tests.Sync
 
             AsyncContext.Run(async () =>
             {
-                SyncConfigurationBase.LogLevel = logLevel;
                 var logBuilder = new StringBuilder();
-                SyncConfigurationBase.Initialize(UserPersistenceMode.NotEncrypted, customLogger: (message, level) =>
+
+                SyncConfigurationBase.CustomLogger = (message, level) =>
                 {
                     logBuilder.AppendLine($"[{level}] {message}");
-                });
+                };
+                SyncConfigurationBase.LogLevel = logLevel;
 
                 var config = await SyncTestHelpers.GetIntegrationConfigAsync(Guid.NewGuid().ToString());
                 using (var realm = await GetRealmAsync(config))

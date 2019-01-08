@@ -86,6 +86,17 @@ namespace Realms.Sync
         public static LogLevel LogLevel { get; set; }
 
         /// <summary>
+        /// Gets or sets a custom log function that will be invoked by Sync instead of writing
+        /// to the standard error. This must be set before using any of the sync API.
+        /// </summary>
+        /// <remarks>
+        /// This callback will not be invoked in a thread-safe manner, so it's up to the implementor to ensure
+        /// that log messages arriving from multiple threads are processed without garbling the final output.
+        /// </remarks>
+        /// <value>The custom log function.</value>
+        public static Action<string, LogLevel> CustomLogger { get; set; }
+
+        /// <summary>
         /// Gets or sets a string identifying this application which is included in the User-Agent
         /// header of sync connections.
         /// </summary>
@@ -111,11 +122,6 @@ namespace Realms.Sync
         /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
         /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
         /// <param name="basePath">The base folder relative to which Realm files will be stored.</param>
-        /// <param name="customLogger">
-        /// A custom log function that will be invoked by Sync instead of writing to the standard error.
-        /// This callback will not be invoked in a thread-safe manner, so it's up to the implementor to ensure
-        /// that log messages arriving from multiple threads are processed without garbling the final output.
-        /// </param>
         /// <remarks>
         /// Users are persisted in a realm file within the application's sandbox.
         /// <para>
@@ -125,7 +131,7 @@ namespace Realms.Sync
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
         /// </para>
         /// </remarks>
-        public static void Initialize(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null, Action<string, LogLevel> customLogger = null)
+        public static void Initialize(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

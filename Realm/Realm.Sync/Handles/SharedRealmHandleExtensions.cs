@@ -195,6 +195,8 @@ namespace Realms.Sync
                 userAgent, (IntPtr)userAgent.Length,
                 modePtr, encryptionKey, resetMetadataOnError, out var ex);
             ex.ThrowIfNecessary();
+
+            InstallLogCallback();
         }
 
         public static unsafe void SetLogLevel(LogLevel level)
@@ -216,10 +218,13 @@ namespace Realms.Sync
             return NativeMethods.get_log_level();
         }
 
-        public static unsafe void InstallLogCallback()
+        public static void InstallLogCallback()
         {
-            NativeMethods.set_log_callback(_logCallback, out var ex);
-            ex.ThrowIfNecessary();
+            if (SyncConfigurationBase.CustomLogger != null)
+            {
+                NativeMethods.set_log_callback(_logCallback, out var ex);
+                ex.ThrowIfNecessary();
+            }
         }
 
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
