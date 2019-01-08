@@ -337,27 +337,6 @@ stage('Build with sync') {
         stash includes: "Tests/Tests.Win32/bin/${configuration}/**", name: 'win32-tests-sync'
       }
     },
-    'UWP': {
-      nodeWithCleanup('windows') {
-        unstash 'dotnet-wrappers-source'
-
-        dir('wrappers') {
-          sshagent(['realm-ci-ssh']) {
-            Map cmakeArgs = [
-              'CMAKE_SYSTEM_NAME': 'WindowsStore', 'CMAKE_SYSTEM_VERSION': '10.0',
-              'REALM_ENABLE_SYNC': 'ON',
-              'CMAKE_TOOLCHAIN_FILE': 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
-            ]
-            cmake 'build-win32', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'Win32', 'VCPKG_TARGET_TRIPLET': 'x86-uwp-static' ] << cmakeArgs
-            cmake 'build-x64', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'x64', 'VCPKG_TARGET_TRIPLET': 'x64-uwp-static' ] << cmakeArgs
-            cmake 'build-arm', "${pwd()}\\build", configuration, [ 'CMAKE_GENERATOR_PLATFORM': 'ARM', 'VCPKG_TARGET_TRIPLET': 'arm-uwp-static' ] << cmakeArgs
-          }
-        }
-
-        archive 'wrappers/build/**/*.pdb'
-        stash includes: 'wrappers/build/**/*.dll', name: 'uwp-wrappers-sync'
-      }
-    },
     'macOS': {
       nodeWithCleanup('osx || macos') {
         unstash 'dotnet-wrappers-source'
@@ -712,7 +691,6 @@ stage('NuGet') {
         unstash 'macos-wrappers-sync'
         unstash 'linux-wrappers-sync'
         unstash 'win32-wrappers-sync'
-        unstash 'uwp-wrappers-sync'
 
         dir('NuGet/Realm') {
           nugetPack('Realm', versionString)
