@@ -1,4 +1,4 @@
-vNext (TBD)
+3.4.0 (2019-01-09)
 ------------------
 
 NOTE!!! You will need to upgrade your Realm Object Server to at least version 3.11.0 or use Realm Cloud. If you try to connect to a ROS v3.10.x or previous, you will see an error like Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24.
