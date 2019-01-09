@@ -362,6 +362,9 @@ namespace Tests.Sync
             };
 
             Realm result;
+
+            // We test both `GetInstance` and `GetInstanceAsync` to guard against regressions:
+            // https://github.com/realm/realm-dotnet/issues/1814
             if (openAsync)
             {
                 result = await GetRealmAsync(config).Timeout(5000);
