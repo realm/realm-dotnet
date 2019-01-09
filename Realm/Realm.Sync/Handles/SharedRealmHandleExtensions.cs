@@ -88,6 +88,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_user_agent", CallingConvention = CallingConvention.Cdecl)]
+            public static extern unsafe void set_user_agent([MarshalAs(UnmanagedType.LPWStr)] string user_agent, IntPtr user_agent_length, out NativeException exception);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern LogLevel get_log_level();
 
@@ -150,11 +153,11 @@ namespace Realms.Sync
         {
             if (Interlocked.Exchange(ref _fileSystemConfigured, 1) == 0)
             {
-                ConfigureFileSystem(null, null, false);
+                Configure(null, null, false);
             }
         }
 
-        public static unsafe void ConfigureFileSystem(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)
+        public static unsafe void Configure(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)
         {
             // mark the file system as configured in case this is called directly
             // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
@@ -175,8 +178,7 @@ namespace Realms.Sync
                 modePtr = &mode;
             }
 
-            // TODO: provide proper user agent.
-            var userAgent = ".NET";
+            var userAgent = SyncConfigurationBase.GetSDKUserAgent();
             NativeMethods.configure(
                 basePath, (IntPtr)basePath.Length,
                 userAgent, (IntPtr)userAgent.Length,
@@ -192,6 +194,12 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        public static void SetUserAgent(string userAgent)
+        {
+            NativeMethods.set_user_agent(userAgent, (IntPtr)userAgent.Length, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
         public static LogLevel GetLogLevel()
         {
             return NativeMethods.get_log_level();
@@ -200,7 +208,7 @@ namespace Realms.Sync
         public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
         {
             NativeCommon.reset_for_testing();
-            ConfigureFileSystem(userPersistenceMode, null, false);
+            Configure(userPersistenceMode, null, false);
         }
 
         public static bool ImmediatelyRunFileActions(string path)

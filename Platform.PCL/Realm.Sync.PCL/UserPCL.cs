@@ -88,6 +88,7 @@ namespace Realms.Sync
         /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
         /// </para>
         /// </remarks>
+        [Obsolete("Use SyncConfigurationBase.Initialize() instead")]
         public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

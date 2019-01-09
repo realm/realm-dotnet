@@ -70,6 +70,14 @@ REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, siz
     });
 }
     
+REALM_EXPORT void realm_syncmanager_set_user_agent(const uint16_t* user_agent_buf, size_t user_agent_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor user_agent(user_agent_buf, user_agent_len);
+        SyncManager::shared().set_user_agent(user_agent);
+    });
+}
+    
 REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level level, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
