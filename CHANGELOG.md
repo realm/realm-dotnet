@@ -11,7 +11,7 @@ The sync protocol version has been bumped to version 25. The server is backwards
 * None.
 
 ### Compatibility
-* Realm Object Server: 3.0.0 or later.
+* Realm Object Server: 3.11.0 or later.
 * APIs are backwards compatible with all previous releases in the 3.x.y series.
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
