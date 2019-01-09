@@ -31,12 +31,13 @@ namespace Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class QueryBasedSyncTests : SyncTestBase
     {
-        [Test]
-        public void SubscribeForObjects_ReturnsExpectedQuery()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SubscribeForObjects_ReturnsExpectedQuery(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -57,12 +58,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void SubscribeForObjects_SynchronizesOnlyMatchingObjects()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SubscribeForObjects_SynchronizesOnlyMatchingObjects(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -82,12 +84,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void SubscribeForObjects_WhenTwoQueriesOverlap_SynchronizesTheUnion()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SubscribeForObjects_WhenTwoQueriesOverlap_SynchronizesTheUnion(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
                     var range1to6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 1 && o.IntValue < 6).Subscribe();
@@ -112,12 +115,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void SubscribeForObjects_WhenTwoQueriesDontOverlap_SynchronizesTheUnion()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SubscribeForObjects_WhenTwoQueriesDontOverlap_SynchronizesTheUnion(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var youngerThan3Subscription = realm.All<ObjectA>().Where(o => o.IntValue < 3).Subscribe();
                     var olderThan6Subscription = realm.All<ObjectA>().Where(o => o.IntValue > 6).Subscribe();
@@ -142,12 +146,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void NamedSubscription_CanResubscribe()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void NamedSubscription_CanResubscribe(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "less than 5");
@@ -165,12 +170,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void NamedSubscription_CannotChangeQuery()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void NamedSubscription_CannotChangeQuery(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "foo");
@@ -196,12 +202,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void UnnamedSubscription_CanUnsubscribe()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void UnnamedSubscription_CanUnsubscribe(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe();
@@ -221,12 +228,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void NamedSubscription_CanUnsubscribe()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void NamedSubscription_CanUnsubscribe(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "query");
@@ -246,12 +254,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void NamedSubscription_CanUnsubscribeByName()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void NamedSubscription_CanUnsubscribeByName(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
                     var subscription = query.Subscribe(name: "query");
@@ -269,12 +278,13 @@ namespace Tests.Sync
         }
 
         // https://github.com/realm/realm-dotnet/issues/1716
-        [Test]
-        public void Subcribe_WaitForSynchronization_Multiple()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Subcribe_WaitForSynchronization_Multiple(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var subscription = realm.All<ObjectA>().Where(f => f.IntValue > 0).Subscribe();
                     await subscription.WaitForSynchronizationAsync().Timeout(5000);
@@ -285,12 +295,13 @@ namespace Tests.Sync
             });
         }
 
-        [Test]
-        public void WaitForSynchronization_OnBackgroundThread_Throws()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void WaitForSynchronization_OnBackgroundThread_Throws(bool openAsync)
         {
             AsyncContext.Run(async () =>
             {
-                using (var realm = await GetQueryBasedRealm())
+                using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var config = realm.Config;
                     await Task.Run(() =>
@@ -305,17 +316,15 @@ namespace Tests.Sync
             });
         }
 
-        private async Task<Realm> GetQueryBasedRealm(Action<QueryBasedSyncConfiguration> setupConfig = null, [CallerMemberName] string realmPath = null)
+        private async Task<Realm> GetQueryBasedRealm(bool openAsync, [CallerMemberName] string realmPath = null)
         {
             SyncTestHelpers.RequiresRos();
 
             var user = await SyncTestHelpers.GetUserAsync();
-            var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}"), user, Guid.NewGuid().ToString())
+            var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}_{openAsync}"), user, Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) }
             };
-
-            setupConfig?.Invoke(config);
 
             using (var original = GetRealm(config))
             {
@@ -352,8 +361,19 @@ namespace Tests.Sync
                 ObjectClasses = config.ObjectClasses
             };
 
-            var result = GetRealm(config);
-            await GetSession(result).WaitForDownloadAsync();
+            Realm result;
+
+            // We test both `GetInstance` and `GetInstanceAsync` to guard against regressions:
+            // https://github.com/realm/realm-dotnet/issues/1814
+            if (openAsync)
+            {
+                result = await GetRealmAsync(config).Timeout(5000);
+            }
+            else
+            {
+                result = GetRealm(config);
+                await GetSession(result).WaitForDownloadAsync();
+            }
 
             Assert.That(result.All<ObjectB>().Count(), Is.EqualTo(0));
             Assert.That(result.All<ObjectA>().Count(), Is.EqualTo(0));
