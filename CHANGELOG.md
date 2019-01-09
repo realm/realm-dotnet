@@ -10,7 +10,7 @@ NOTE!!! You will need to upgrade your Realm Object Server to at least version 3.
 
 ### Fixed
 * Fixed a bug that could lead to crashes with a message such as `Assertion failed: ndx < size() with (ndx, size()) = [742, 742]`.
-* Fixed a bug that resulted in an incorrect `LogLevel` being sent to Sync when setting `SyncConfigurationBase.LogLevel`. ([#1824](https://github.com/realm/realm-dotnet/pull/1824))
+* Fixed a bug that resulted in an incorrect `LogLevel` being sent to Sync when setting `SyncConfigurationBase.LogLevel`. ([#1824](https://github.com/realm/realm-dotnet/pull/1824), since 2.2.0)
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.
