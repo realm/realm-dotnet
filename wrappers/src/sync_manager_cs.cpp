@@ -242,7 +242,13 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
 #endif
         
         config.client_validate_ssl = sync_configuration.client_validate_ssl;
+        config.is_partial = sync_configuration.is_partial;
         
+        if (sync_configuration.partial_sync_identifier) {
+            Utf16StringAccessor partial_sync_identifier(sync_configuration.partial_sync_identifier, sync_configuration.partial_sync_identifier_len);
+            config.custom_partial_sync_identifier = partial_sync_identifier.to_string();
+        }
+
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
 }
