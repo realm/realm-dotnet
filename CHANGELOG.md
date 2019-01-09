@@ -7,7 +7,6 @@ The sync protocol version has been bumped to version 25. The server is backwards
 * Clients using protocol 25 now report download progress to the server, even when they make no local changes. This allows the server to do history compaction much more aggressively, especially when there are many clients that rarely or never make local changes. ([#1772](https://github.com/realm/realm-dotnet/pull/1772))
 
 ### Fixed
-<!-- * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-dotnet/issues/????), since v?.?.?) -->
 * None.
 
 ### Compatibility
