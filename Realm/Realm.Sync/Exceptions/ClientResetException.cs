@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.IO;
 
 namespace Realms.Sync.Exceptions
 {
@@ -36,8 +37,9 @@ namespace Realms.Sync.Exceptions
         internal ClientResetException(string message, IDictionary<string, string> userInfo)
             : base(message, ErrorCode.DivergingHistories)
         {
-            _originalFilePath = userInfo[OriginalFilePathKey];
-            BackupFilePath = userInfo[BackupFilePathKey];
+            // Using Path.GetFullPath to normalize path separators on Windows
+            _originalFilePath = Path.GetFullPath(userInfo[OriginalFilePathKey]);
+            BackupFilePath = Path.GetFullPath(userInfo[BackupFilePathKey]);
             HelpLink = "https://realm.io/docs/xamarin/latest/#client-reset";
         }
 

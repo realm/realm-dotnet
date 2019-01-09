@@ -98,30 +98,22 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
   if(EXISTS "${REALM_CORE_BUILDTREE}/realm-config.cmake")
     set(core_config_file "${REALM_CORE_BUILDTREE}/realm-config.cmake")
   else()
+    set(core_filename "realm-core-${CMAKE_BUILD_TYPE}-v${REALM_CORE_VERSION}-${platform}-devel")
+    if(WINDOWS_STORE)
+      string(REPLACE "WindowsStore" "UWP" core_filename ${core_filename})
+    endif()
+
+    message(STATUS "Downloading realm-core...")
+    file(DOWNLOAD "http://static.realm.io/downloads/core/${core_filename}.tar.gz" "${CMAKE_BINARY_DIR}/${core_filename}.tar.gz")
+
+    message(STATUS "Uncompressing realm-core...")
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz "${CMAKE_BINARY_DIR}/${core_filename}.tar.gz"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
+
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-      message(STATUS "Downloading realm-core...")
-      file(DOWNLOAD "http://static.realm.io/downloads/core/realm-core-${REALM_CORE_VERSION}.tgz" "${CMAKE_BINARY_DIR}/realm-core-${REALM_CORE_VERSION}.tgz")
-
-      message(STATUS "Uncompressing realm-core...")
-      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
-      execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz "${CMAKE_BINARY_DIR}/realm-core-${REALM_CORE_VERSION}.tgz"
-              WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-      set(core_config_file "${CMAKE_BINARY_DIR}/realm-core-${REALM_CORE_VERSION}/lib64/cmake/realm/realm-config.cmake")
+      set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib64/cmake/realm/realm-config.cmake")
     else()
-      set(core_filename "realm-core-${CMAKE_BUILD_TYPE}-v${REALM_CORE_VERSION}-${platform}-devel")
-      if(WINDOWS_STORE)
-        string(REPLACE "WindowsStore" "UWP" core_filename ${core_filename})
-      endif()
-
-      message(STATUS "Downloading realm-core...")
-      file(DOWNLOAD "http://static.realm.io/downloads/core/${core_filename}.tar.gz" "${CMAKE_BINARY_DIR}/${core_filename}.tar.gz")
-
-      message(STATUS "Uncompressing realm-core...")
-      file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
-      execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz "${CMAKE_BINARY_DIR}/${core_filename}.tar.gz"
-              WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
-
       set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib/cmake/realm/realm-config.cmake")
     endif()
   endif()
@@ -145,23 +137,10 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
     if(EXISTS "${REALM_SYNC_BUILDTREE}/realm-sync-config.cmake")
       include("${REALM_SYNC_BUILDTREE}/realm-sync-config.cmake")
     else()
-      find_package(Git)
-      execute_process(COMMAND "${GIT_EXECUTABLE}" ls-remote git@github.com:realm/realm-sync.git --tags v${REALM_SYNC_VERSION}^{}
-              OUTPUT_VARIABLE git_output)
-
-      if (git_output STREQUAL "")
-        execute_process(COMMAND "${GIT_EXECUTABLE}" ls-remote git@github.com:realm/realm-sync.git --tags v${REALM_SYNC_VERSION}
-                OUTPUT_VARIABLE git_output)
-      endif()
-
-      string(REGEX MATCHALL "([^\t]+)" commit_and_ref "${git_output}")
-      list(GET commit_and_ref 0 sync_commit_sha)
-
       set(sync_filename "realm-sync-${CMAKE_BUILD_TYPE}-v${REALM_SYNC_VERSION}-${platform}-devel")
-      set(sync_url "http://static.realm.io/downloads/sync/sha-version/${sync_commit_sha}/${sync_filename}.tar.gz")
 
       message(STATUS "Downloading realm-sync...")
-      file(DOWNLOAD "${sync_url}" "${CMAKE_BINARY_DIR}/${sync_filename}.tar.gz")
+      file(DOWNLOAD "http://static.realm.io/downloads/sync/${sync_filename}.tar.gz" "${CMAKE_BINARY_DIR}/${sync_filename}.tar.gz")
 
       message(STATUS "Uncompressing realm-sync...")
       file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${sync_filename}")

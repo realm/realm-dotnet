@@ -590,7 +590,7 @@ def NetCoreTest(String nodeName, String platform, String stashSuffix) {
             if (isUnix()) {
               if (nodeName == 'docker') {
                 def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
-                withRos("3.0.0") { ros ->
+                withRos("3.11.0") { ros ->
                   test_runner_image.inside("--link ${ros.id}:ros") {
                     sh """
                       cd ${pwd()}/${binaryFolder}
@@ -757,6 +757,8 @@ step([$class: 'XUnitPublisher', testTimeMargin: '3000', thresholdMode: 1, thresh
 
 def nodeWithCleanup(String label, Closure steps) {
   node(label) {
+    echo "Running job on ${env.NODE_NAME}"
+
     // compute a shorter workspace name by removing the UUID at the end
     def terminus = env.WORKSPACE.lastIndexOf('-')
     def at = env.WORKSPACE.lastIndexOf('@')
@@ -766,7 +768,14 @@ def nodeWithCleanup(String label, Closure steps) {
 
     ws(workspace) {
       try {
-        steps()
+        if (!isUnix()) {
+          // https://stackoverflow.com/questions/48896486/jenkins-not-restoring-nuget-packages-with-new-msbuild-restore-target
+          withEnv(['NUGET_PACKAGES=C:\\NugetPackageCache']) {
+            steps()
+          }
+        } else {
+          steps()
+        }
       } finally {
         deleteDir()
       }

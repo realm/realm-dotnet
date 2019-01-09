@@ -42,21 +42,15 @@ using namespace realm::binding;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
-namespace realm {
-namespace binding {
-
-void (*s_subscribe_for_objects_callback)(Results* results, void* task_completion_source, NativeException::Marshallable nativeException);
-    
-}
-}
-
 extern "C" {
-REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_path_buf, size_t base_path_len,
-                                                          const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
-                                                          NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, size_t base_path_len,
+                                              const uint16_t* user_agent_buf, size_t user_agent_len,
+                                              const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
+                                              NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
         Utf16StringAccessor base_path(base_path_buf, base_path_len);
+        Utf16StringAccessor user_agent(user_agent_buf, user_agent_len);
 
         auto metadata_mode = SyncManager::MetadataMode::NoEncryption;
         if (mode) {
@@ -71,8 +65,8 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
         if (encryption_key_buf) {
             encryption_key = std::vector<char>(encryption_key_buf, encryption_key_buf + 64);
         }
-
-        SyncManager::shared().configure_file_system(base_path, metadata_mode, encryption_key, reset_on_error);
+        
+        SyncManager::shared().configure(base_path, metadata_mode, user_agent, encryption_key, reset_on_error);
     });
 }
     
@@ -197,33 +191,6 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
         
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
-}
-    
-REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, uint16_t* query_buf, size_t query_len, void* task_completion_source, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        Utf16StringAccessor class_name(class_buf, class_len);
-        Utf16StringAccessor query(query_buf, query_len);
-
-        partial_sync::register_query(sharedRealm, class_name, query, [=](Results results, std::exception_ptr err) {
-            if (err) {
-                try {
-                    std::rethrow_exception(err);
-                }
-                catch (...) {
-                    NativeException::Marshallable nex = convert_exception().for_marshalling();
-                    s_subscribe_for_objects_callback(nullptr, task_completion_source, nex);
-                }
-            } else {
-                s_subscribe_for_objects_callback(new Results(results), task_completion_source, NativeException::Marshallable{RealmErrorType::NoError});
-            }
-        });
-    });
-}
-    
-REALM_EXPORT void realm_syncmanager_install_callbacks(decltype(s_subscribe_for_objects_callback) subscribe_callback)
-{
-    s_subscribe_for_objects_callback = subscribe_callback;
 }
     
 REALM_EXPORT uint8_t realm_syncmanager_get_realm_privileges(SharedRealm& sharedRealm, NativeException::Marshallable& ex)
