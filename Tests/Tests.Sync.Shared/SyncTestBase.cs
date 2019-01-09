@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -49,6 +49,13 @@ namespace Tests.Sync
 
                     Directory.CreateDirectory(defaultFolder);
                 }
+            }
+
+            if (TestHelpers.IsMacOS)
+            {
+                // VS for Mac hangs when Realm files are written in a location it doesn't ignore.
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Documents");
+                Directory.CreateDirectory(folder);
             }
 
             SyncConfigurationBase.UserAgent = GetType().Name;

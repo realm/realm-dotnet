@@ -98,6 +98,27 @@ namespace Realms.Sync
             set => SharedRealmHandleExtensions.SetLogLevel(value);
         }
 
+        private static Action<string, LogLevel> _customLogger;
+
+        /// <summary>
+        /// Gets or sets a custom log function that will be invoked by Sync instead of writing
+        /// to the standard error. This must be set before using any of the sync API.
+        /// </summary>
+        /// <remarks>
+        /// This callback will not be invoked in a thread-safe manner, so it's up to the implementor to ensure
+        /// that log messages arriving from multiple threads are processed without garbling the final output.
+        /// </remarks>
+        /// <value>The custom log function.</value>
+        public static Action<string, LogLevel> CustomLogger
+        {
+            get => _customLogger;
+            set
+            {
+                _customLogger = value;
+                SharedRealmHandleExtensions.InstallLogCallback();
+            }
+        }
+
         private static string _userAgent;
 
         /// <summary>

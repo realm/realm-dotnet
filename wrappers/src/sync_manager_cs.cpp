@@ -40,6 +40,45 @@
 using namespace realm;
 using namespace realm::binding;
 
+using LogMessageDelegate = void(const char* message, size_t message_len, util::Logger::Level level);
+
+namespace realm {
+namespace binding {
+    class SyncLogger : public util::RootLogger {
+    public:
+        SyncLogger(LogMessageDelegate* delegate)
+            : m_log_message_delegate(delegate)
+        {
+        }
+        
+        void do_log(util::Logger::Level level, std::string message) {
+            m_log_message_delegate(message.c_str(), message.length(), level);
+        }
+    private:
+        LogMessageDelegate* m_log_message_delegate;
+    };
+    
+    class SyncLoggerFactory : public realm::SyncLoggerFactory {
+    public:
+        SyncLoggerFactory(LogMessageDelegate* delegate)
+            : m_log_message_delegate(delegate)
+        {
+        }
+        
+        std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
+        {
+            auto logger = std::make_unique<SyncLogger>(m_log_message_delegate);
+            logger->set_level_threshold(level);
+            return std::unique_ptr<util::Logger>(logger.release());
+        }
+    private:
+        LogMessageDelegate* m_log_message_delegate;
+    };
+}
+
+}
+
+
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 extern "C" {
@@ -78,10 +117,17 @@ REALM_EXPORT void realm_syncmanager_set_user_agent(const uint16_t* user_agent_bu
     });
 }
     
-REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level level, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level* level, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        SyncManager::shared().set_log_level(level);
+        SyncManager::shared().set_log_level(*level);
+    });
+}
+    
+REALM_EXPORT void realm_syncmanager_set_log_callback(LogMessageDelegate delegate, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        SyncManager::shared().set_logger_factory(*new realm::binding::SyncLoggerFactory(delegate));
     });
 }
 
