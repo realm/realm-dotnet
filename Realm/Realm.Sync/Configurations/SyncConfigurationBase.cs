@@ -84,7 +84,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets or sets a callback that is invoked when download progress is made when using <see cref="Realm.GetInstanceAsync"/>.
         /// This will only be invoked for the initial download of the Realm and will not be invoked as futher download
-        /// progress is made during the lifetime of the Realm. It is ignored when using 
+        /// progress is made during the lifetime of the Realm. It is ignored when using
         /// <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
         /// </summary>
         public Action<SyncProgress> OnProgress { get; set; }
@@ -142,7 +142,8 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Configures various parameters of the sync .
+        /// Configures various parameters of the sync system, such as the way users are persisted or the base
+        /// path relative to which files will be saved.
         /// </summary>
         /// <param name="mode">The user persistence mode.</param>
         /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
@@ -229,7 +230,7 @@ namespace Realms.Sync
         internal static string GetSDKUserAgent()
         {
             var version = typeof(SyncConfigurationBase).GetTypeInfo().Assembly.GetName().Version;
-            return $"RealmNet/{version} ({RuntimeInformation.FrameworkDescription})";
+            return $"RealmDotNet/{version} ({RuntimeInformation.FrameworkDescription})";
         }
     }
 }
