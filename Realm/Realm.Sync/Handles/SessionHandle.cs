@@ -69,6 +69,12 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_stop", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void stop(SessionHandle session, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void start(SessionHandle session, out NativeException ex);
         }
 
         static SessionHandle()
@@ -155,6 +161,18 @@ namespace Realms.Sync
         public void ReportErrorForTesting(int errorCode, string errorMessage, bool isFatal)
         {
             NativeMethods.report_error_for_testing(this, errorCode, errorMessage, (IntPtr)errorMessage.Length, isFatal);
+        }
+
+        public void Stop()
+        {
+            NativeMethods.stop(this, out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public void Start()
+        {
+            NativeMethods.start(this, out var ex);
+            ex.ThrowIfNecessary();
         }
 
         public static SessionHandle GetSessionForPath(string path)

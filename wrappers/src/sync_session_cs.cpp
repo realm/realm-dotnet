@@ -182,5 +182,19 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
     SyncSession::OnlyForTesting::handle_error(*session, SyncError{error_code, std::move(message), is_fatal});
 }
     
+REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        session->log_out();
+    });
+}
+
+REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        session->revive_if_needed();
+    });
+}
+
 }
 
