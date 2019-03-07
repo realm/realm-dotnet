@@ -157,5 +157,31 @@ namespace Realms.Sync
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
+
+        /// <summary>
+        /// Stops any synchronization with the Realm Object Server until the Realm is re-opened again
+        /// after fully closing it.
+        /// <br/>
+        /// Synchronization can be re-enabled by calling <see cref="Start"/> again.
+        /// </summary>
+        /// <remarks>
+        /// If the session is already stopped, calling this method will do nothing.
+        /// </remarks>
+        public void Stop()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Attempts to resume the session and enable synchronization with the Realm Object Server.
+        /// </summary>
+        /// <remarks>
+        /// All sessions will be active by default and calling this method only makes sense if
+        /// <see cref="Stop"/> was called before that.
+        /// </remarks>
+        public void Start()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
     }
 }

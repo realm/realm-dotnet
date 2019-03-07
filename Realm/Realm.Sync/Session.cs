@@ -136,6 +136,32 @@ namespace Realms.Sync
             return tcs.Task;
         }
 
+        /// <summary>
+        /// Stops any synchronization with the Realm Object Server until the Realm is re-opened again
+        /// after fully closing it.
+        /// <br/>
+        /// Synchronization can be re-enabled by calling <see cref="Start"/> again.
+        /// </summary>
+        /// <remarks>
+        /// If the session is already stopped, calling this method will do nothing.
+        /// </remarks>
+        public void Stop()
+        {
+            Handle.Stop();
+        }
+
+        /// <summary>
+        /// Attempts to resume the session and enable synchronization with the Realm Object Server.
+        /// </summary>
+        /// <remarks>
+        /// All sessions will be active by default and calling this method only makes sense if
+        /// <see cref="Stop"/> was called before that.
+        /// </remarks>
+        public void Start()
+        {
+            Handle.Start();
+        }
+
         internal readonly SessionHandle Handle;
 
         internal Session(SessionHandle handle)
