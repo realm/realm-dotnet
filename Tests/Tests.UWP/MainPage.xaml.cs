@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
 using NUnit.Runner.Services;
 
-namespace Tests.UWP
+namespace Realms.Tests.UWP
 {
     public sealed partial class MainPage
     {
@@ -28,7 +27,7 @@ namespace Tests.UWP
             InitializeComponent();
 
             var nunit = new NUnit.Runner.App();
-            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+            nunit.AddTestAssembly(typeof(RealmTest).Assembly);
 
             nunit.Options = new TestOptions
             {

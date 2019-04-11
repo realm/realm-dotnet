@@ -1,0 +1,28 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <DisableFody>true</DisableFody>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    <PackageReference Include="PropertyChanged.Fody" Version="2.6.0">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </PackageReference>
+    <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj" />
+    <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj" />
+    <ProjectReference Include="..\RealmFreeAssemblyToProcess\RealmFreeAssemblyToProcess.csproj" />
+    <ProjectReference Include="..\..\..\Realm\Realm.Fody\Realm.Fody.csproj">
+      <Aliases>realm</Aliases>
+    </ProjectReference>
+    <Reference Include="@(WeaverFiles)">
+      <Aliases>propertychanged</Aliases>
+    </Reference>
+  </ItemGroup>
+
+</Project>

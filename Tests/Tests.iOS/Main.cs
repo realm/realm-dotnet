@@ -1,6 +1,6 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 
 using UIKit;
 
-namespace Tests
+namespace Realms.Tests.iOS
 {
     public class Application
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
             UIApplication.Main(args, null, "AppDelegate");
         }

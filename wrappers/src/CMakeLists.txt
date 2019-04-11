@@ -47,6 +47,10 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 endif()
 
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
+set_target_properties(realm-wrappers PROPERTIES
+  FRAMEWORK ${BUILD_APPLE_FRAMEWORK}
+  MACOSX_FRAMEWORK_IDENTIFIER io.realm.wrappers
+)
 target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
 target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
 target_link_libraries(realm-wrappers realm-object-store realm-parser)
@@ -62,6 +66,7 @@ endif()
 install(TARGETS realm-wrappers
     RUNTIME DESTINATION ${runtime_target}
     LIBRARY DESTINATION ${runtime_target}
+    FRAMEWORK DESTINATION ${runtime_target}
 )
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:realm-wrappers> DESTINATION ${runtime_target} OPTIONAL)

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+    <RootNamespace>Realms.Fody</RootNamespace>
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
+    <BuildOutputTargetFolder>weaver</BuildOutputTargetFolder>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+  <ItemGroup Label="References">
+    <PackageReference Include="FodyHelpers" Version="4.0.2" PrivateAssets="Build;Compile;Runtime" />
+    <PackageReference Include="System.Management" Version="4.5.0" PrivateAssets="Build;Compile;Runtime" />
+    <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Weaver.props" Pack="true" PackagePath="build\Realm.Fody.props" />
+    <TfmSpecificPackageFile Include="Realm.Fody.xcf" Pack="true" PackagePath="$(BuildOutputTargetFolder)\$(TargetFramework)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </TfmSpecificPackageFile>
+  </ItemGroup>
+  <Import Project="..\AssemblyInfo.props" />
+</Project>

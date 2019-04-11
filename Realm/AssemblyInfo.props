@@ -1,0 +1,26 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Product>Realm .NET</Product>
+    <Version>4.0</Version>
+    <Description Condition="'$(Description)' == ''">Realm is a mobile database: a replacement for SQLite</Description>
+    <Company>Realm Inc.</Company>
+    <Copyright>Copyright © $([System.DateTime]::Now.ToString(yyyy)) Realm Inc.</Copyright>
+    <Authors>Realm</Authors>
+    <owners>realmnuget</owners>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/realm/realm-dotnet</PackageProjectUrl>
+    <PackageIconUrl>https://realm.io/img/favicon-32x32.png</PackageIconUrl>
+    <PackageTags>Realm database db persistence sqlite</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageOutputPath>$(MsBuildThisFileDirectory)packages</PackageOutputPath>
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All"/>
+  </ItemGroup>
+</Project>
