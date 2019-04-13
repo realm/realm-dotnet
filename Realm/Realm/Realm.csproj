@@ -20,12 +20,45 @@
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
     <!-- iOS -->
     <None Update="app.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
-    <None Include="..\..\wrappers\build\$(Configuration)-ios-universal\librealm-wrappers.a">
+    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework\*">
       <Pack>true</Pack>
-      <PackagePath>native\ios\universal</PackagePath>
-      <Link>wrappers\iOS\librealm-wrappers..a</Link>
+      <PackagePath>native\ios\universal\realm-wrappers.framework</PackagePath>
+      <Link>wrappers\iOS\realm-wrappers.framework\%(Filename).%(Extension)</Link>
     </None>
-    <!-- Windows --><!--
+    <!-- macOS -->
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\osx.10.10-x64\native</PackagePath>
+      <Link>wrappers\Darwin\%(Filename).%(Extension)</Link>
+    </None>
+    <!-- Linux -->
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-x64\native</PackagePath>
+      <Link>wrappers\Linux\%(Filename).%(Extension)</Link>
+    </None>
+    <!-- Android -->
+    <None Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>native\android\armeabi-v7a</PackagePath>
+      <Link>wrappers\Android\armeabi-v7a\%(Filename).%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>native\android\arm64-v8a</PackagePath>
+      <Link>wrappers\Android\arm64-v8a\%(Filename).%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Android\$(Configuration)-x86\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>native\android\x86</PackagePath>
+      <Link>wrappers\Android\x86\%(Filename).%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Android\$(Configuration)-x86_64\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>native\android\x86_64</PackagePath>
+      <Link>wrappers\Android\x86_64\%(Filename).%(Extension)</Link>
+    </None>
+    <!-- Windows -->
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win81-x86\native</PackagePath>
@@ -36,22 +69,22 @@
       <PackagePath>runtimes\win81-x64\native</PackagePath>
       <Link>wrappers\Windows\x64\%(Filename).%(Extension)</Link>
     </None>
-    --><!-- WindowsStore --><!--
+    <!-- WindowsStore -->
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-x86\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\Win32\%(Filename).%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-x64\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\x64\%(Filename).%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-ARM\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\ARM\%(Filename).%(Extension)</Link>
-    </None>-->
+    </None>
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props " />
   <Import Project="..\Realm.Fody\InSolutionWeaver.props" />

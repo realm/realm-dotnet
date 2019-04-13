@@ -18,8 +18,6 @@ param(
     [ValidateSet('Win32', 'x64', 'ARM')]
     [string[]]$Platforms = ('Win32'),
 
-    [switch]$EnableSync,
-
     [ValidateSet('Windows', 'WindowsStore')]
     [Parameter(Position=0)]
     [string]$Target = 'Windows'
@@ -28,19 +26,22 @@ param(
 Push-Location $PSScriptRoot
 
 if (!(Get-Module -ListAvailable -Name VSSetup)) {
+    Install-PackageProvider NuGet -Scope CurrentUser -Force
+    Import-PackageProvider NuGet -Force
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     Install-Module -Name VSSetup -Scope CurrentUser -Force
 }
 
 $vs = Get-VSSetupInstance | Select-VSSetupInstance -Latest -Require Microsoft.VisualStudio.Component.VC.CMake.Project
+
+# Work-around for Visual Studio 16.0 and CMake 3.13
+$Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"
+
 $cmake = Join-Path $vs.InstallationPath -ChildPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-$cmakeArgs = "-DCMAKE_BUILD_TYPE=$Configuration",  "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUILD_TYPE=$Configuration",  "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
 
 if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
-}
-
-if ($EnableSync) {
-    $cmakeArgs += "-DREALM_ENABLE_SYNC=ON"
 }
 
 function triplet([string]$target, [string]$platform) {
