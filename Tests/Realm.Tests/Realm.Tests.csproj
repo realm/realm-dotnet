@@ -3,11 +3,9 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp20;monoandroid81;xamarin.ios10;xamarin.mac20</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp20</TargetFrameworks>
     <RootNamespace>Realms.Tests</RootNamespace>
     <BuildWithRealmNugets Condition="'$(BuildWithRealmNugets)' == ''">False</BuildWithRealmNugets>
     <IsTestProject>true</IsTestProject>
-    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

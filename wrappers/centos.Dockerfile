@@ -20,9 +20,9 @@ RUN yum install -y \
         zlib-devel
 
 RUN mkdir -p /opt/cmake && \
-    curl -s https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh -o /cmake-3.11.4-Linux-x86_64.sh && \
-    sh /cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license && \
-    rm /cmake-3.11.4-Linux-x86_64.sh
+    curl -s https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh -o /cmake.sh && \
+    sh /cmake.sh --prefix=/opt/cmake --skip-license && \
+    rm /cmake.sh
 ENV PATH="/opt/rh/devtoolset-6/root/usr/bin:/opt/cmake/bin:${PATH}"
 
 RUN mkdir -p /etc/ssh && \
