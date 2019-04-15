@@ -1,8 +1,3 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:attribute name="WeaveDataBinding" type="xs:boolean">
-    <xs:annotation>
-      <xs:documentation>'true' to weave support for two-way data-binding using the Realm.DataBinding package, otherwise 'false'. Default is 'true'.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
 </xs:complexType>
