@@ -16,23 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Helpers;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Realms.DataBinding.TypeDelegator
+namespace Realms.DataBinding
 {
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-    public static class TypeInfoHelper
+    internal static class TypeInfoHelper
     {
         // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
         private static readonly ConcurrentDictionary<Type, RealmObjectTypeDelegator> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeDelegator>();
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        public static TypeInfo GetInfo<T>()
+        public static TypeInfo GetInfo(RealmObject obj)
         {
-            return TypeCache.GetOrAdd(typeof(T), t => new RealmObjectTypeDelegator(t));
+            Argument.NotNull(obj, nameof(obj));
+            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t));
         }
     }
 }

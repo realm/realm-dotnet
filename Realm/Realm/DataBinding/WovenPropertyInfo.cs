@@ -21,7 +21,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security;
 
-namespace Realms.DataBinding.TypeDelegator
+namespace Realms.DataBinding
 {
     internal class WovenPropertyInfo : PropertyInfo
     {

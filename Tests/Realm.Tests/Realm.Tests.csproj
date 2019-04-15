@@ -22,7 +22,6 @@
 
   <ItemGroup Condition="!$(BuildWithRealmNugets)">
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" />
-    <ProjectReference Include="..\..\Realm\Realm.DataBinding\Realm.DataBinding.csproj" />
   </ItemGroup>
   <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="!$(BuildWithRealmNugets)" />
   <ItemGroup Condition="$(BuildWithRealmNugets)">
