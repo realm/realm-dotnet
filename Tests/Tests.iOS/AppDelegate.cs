@@ -38,7 +38,7 @@ namespace Realms.Tests.iOS
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
             {
-                //LogToOutput = true
+                LogToOutput = true
             };
 
             var arguments = NSProcessInfo.ProcessInfo.Arguments

@@ -5,13 +5,7 @@
     <xs:complexType>
       <xs:all>
         <xs:element name="Realm" minOccurs="0" maxOccurs="1">
-          <xs:complexType>
-            <xs:attribute name="WeaveDataBinding" type="xs:boolean">
-              <xs:annotation>
-                <xs:documentation>'true' to weave support for two-way data-binding using the Realm.DataBinding package, otherwise 'false'. Default is 'true'.</xs:documentation>
-              </xs:annotation>
-            </xs:attribute>
-          </xs:complexType>
+          <xs:complexType></xs:complexType>
         </xs:element>
       </xs:all>
       <xs:attribute name="VerifyAssembly" type="xs:boolean">
