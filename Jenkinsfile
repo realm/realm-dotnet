@@ -30,7 +30,7 @@ stage('Checkout') {
       versionSuffix = "PR-${env.CHANGE_ID}-${env.BUILD_ID}"
     }
 
-    stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source'
+    stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
     stash includes: 'wrappers/**', name: 'dotnet-wrappers-source'
   }
 }
@@ -131,13 +131,10 @@ stage('Package') {
     dir('Realm') {
       def props = [ Configuration: configuration, PackageOutputPath: "${env.WORKSPACE}/Realm/packages", VersionSuffix: versionSuffix]
       dir('Realm.Fody') {
-        msbuild target: 'Restore,Build,Pack', properties: props
+        msbuild target: 'Pack', properties: props, restore: true
       }
       dir('Realm') {
-        msbuild target: 'Restore,Build,Pack', properties: props
-      }
-      dir('Realm.DataBinding') {
-        msbuild target: 'Restore,Build,Pack', properties: props
+        msbuild target: 'Pack', properties: props, restore: true
       }
 
       dir('packages') {
@@ -361,14 +358,7 @@ def nodeWithCleanup(String label, Closure steps) {
 
     ws(workspace) {
       try {
-        if (!isUnix()) {
-          // https://stackoverflow.com/questions/48896486/jenkins-not-restoring-nuget-packages-with-new-msbuild-restore-target
-          withEnv(['NUGET_PACKAGES=C:\\NugetPackageCache']) {
-            steps()
-          }
-        } else {
-          steps()
-        }
+        steps()
       } finally {
         //deleteDir()
       }
@@ -388,6 +378,9 @@ def msbuild(Map args = [:]) {
     for (property in mapToList(args.properties)) {
       invocation += " /p:${property[0]}=\"${property[1]}\""
     }
+  }
+  if (args['restore']) {
+    invocation += ' /restore'
   }
   if ('extraArguments' in args) {
     invocation += " ${args.extraArguments}"

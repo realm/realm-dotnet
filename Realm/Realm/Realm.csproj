@@ -20,13 +20,13 @@
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
     <!-- iOS -->
     <None Update="app.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
-    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">
+    <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework\*">
       <Pack>true</Pack>
-      <PackagePath>native\ios\universal</PackagePath>
-      <Link>wrappers\iOS\%(Filename).%(Extension)</Link>
+      <PackagePath>native\ios\universal\realm-wrappers.framework</PackagePath>
+      <Link>wrappers\iOS\realm-wrappers.framework\%(Filename).%(Extension)</Link>
     </None>
     <!-- macOS -->
-    <None Include="..\..\wrappers\build\macOS\$(Configuration)\librealm-wrappers.dylib">
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
       <PackagePath>runtimes\osx.10.10-x64\native</PackagePath>
       <Link>wrappers\Darwin\%(Filename).%(Extension)</Link>
@@ -75,12 +75,12 @@
       <PackagePath>runtimes\win10-x86\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\Win32\%(Filename).%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-x64\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\x64\%(Filename).%(Extension)</Link>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-ARM\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\ARM\%(Filename).%(Extension)</Link>
