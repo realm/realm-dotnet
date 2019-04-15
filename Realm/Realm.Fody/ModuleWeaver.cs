@@ -265,8 +265,6 @@ Analytics payload
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
         wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_references.System_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
-
-        WeaveReflectableType(type);
     }
 
     private WeaveResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Accessors> methodTable)

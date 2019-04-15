@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Helpers;
 using System;
 using System.Globalization;
 using System.Reflection;
 
-namespace Realms.DataBinding.TypeDelegator
+namespace Realms.DataBinding
 {
     internal class WovenGetterMethodInfo : MethodInfo
     {
@@ -42,11 +43,7 @@ namespace Realms.DataBinding.TypeDelegator
 
         public WovenGetterMethodInfo(MethodInfo mi)
         {
-            if (mi == null)
-            {
-                throw new ArgumentNullException(nameof(mi));
-            }
-
+            Argument.NotNull(mi, nameof(mi));
             _mi = mi;
         }
 

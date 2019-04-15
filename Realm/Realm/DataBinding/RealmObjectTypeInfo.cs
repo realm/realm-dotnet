@@ -20,7 +20,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace Realms.DataBinding.TypeDelegator
+namespace Realms.DataBinding
 {
     internal class RealmObjectTypeDelegator : System.Reflection.TypeDelegator
     {

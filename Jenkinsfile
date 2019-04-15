@@ -136,9 +136,6 @@ stage('Package') {
       dir('Realm') {
         msbuild target: 'Pack', properties: props, restore: true
       }
-      dir('Realm.DataBinding') {
-        msbuild target: 'Pack', properties: props, restore: true
-      }
 
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
