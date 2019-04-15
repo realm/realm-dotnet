@@ -150,7 +150,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         auto query = results.get_query();
         auto const &realm = results.get_realm();
         
-        parser::ParserResult result = parser::parse(query_string);
+        parser::ParserResult result = parser::parse(query_string.to_string());
         
         parser::KeyPathMapping mapping;
         alias_backlinks(mapping, realm);
