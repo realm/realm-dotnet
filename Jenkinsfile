@@ -233,6 +233,8 @@ stage('Test') {
             sh '''
               adb uninstall io.realm.xamarintests
               adb install io.realm.xamarintests-Signed.apk
+              adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
+              adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
             '''
 
             def instrumentationOutput = sh script: '''

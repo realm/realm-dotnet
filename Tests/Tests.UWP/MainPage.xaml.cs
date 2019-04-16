@@ -27,7 +27,7 @@ namespace Realms.Tests.UWP
             InitializeComponent();
 
             var nunit = new NUnit.Runner.App();
-            nunit.AddTestAssembly(typeof(RealmTest).Assembly);
+            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
 
             nunit.Options = new TestOptions
             {
