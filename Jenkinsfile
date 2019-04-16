@@ -271,6 +271,29 @@ stage('Test') {
 
         junit 'TestResults.xml'
       }
+    },
+    'Windows': {
+      nodeWithCleanup('windows && dotnet') {
+        unstash 'dotnet-source'
+        dir('Realm/packages') { unstash 'packages' }
+
+        dir('Tests/Realm.Tests') {
+          msbuild restore: true,
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFramework: 'net461' ] << props
+          dir("bin/${configuration}/net461") {
+            try {
+              withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
+                bat '''
+                  mkdir "%TMP%"
+                  Realm.Tests.exe --result=temp.xml --labels=After
+                '''
+              }
+              nunit 'temp.xml'
+            } finally {
+            }
+          }
+        }
+      }
     }
   ]
 
@@ -412,6 +435,21 @@ def msbuild(Map args = [:]) {
       bat invocation
     }
   }
+}
+
+def nunit(String file) {
+  String template = readFile('nunit3-junit.xslt')
+  String input = readFile(file)
+  writeFile("${file}.junit", xsltTransform(template, input))
+  junit "${file}.junit"
+}
+
+@NonCPS
+String xsltTransform(String template, String input) {
+  def transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer(new javax.xml.transform.stream.StreamSource(new StringReader(template)))
+  def writer = new StringWriter()
+  transformer.transform(new javax.xml.transform.stream.StreamSource(new StringReader(input)), new javax.xml.transform.stream.StreamResult(writer))
+  return writer.toString()
 }
 
 // Required due to JENKINS-27421
