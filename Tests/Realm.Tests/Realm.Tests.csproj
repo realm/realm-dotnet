@@ -56,11 +56,11 @@
       <Link>lib\win32\x64\ucrtbased.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll')">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
+    <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll')">
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
