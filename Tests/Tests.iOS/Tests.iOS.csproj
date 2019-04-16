@@ -123,17 +123,22 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
+    <Reference Include="nunit.runner.iOS">
+      <HintPath>..\..\dependencies\nunit.xamarin.3.11.0\Xamarin.iOS\nunit.runner.iOS.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.5.0.169047" />
-    <PackageReference Include="nunit.xamarin" Version="3.10.1-dev-00206" />
+    <PackageReference Include="Xamarin.Forms" Version="3.6.0.293080" />
+    <PackageReference Include="PCLStorage" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
       <Project>{78799fcd-be2e-4ece-a52e-662846615b58}</Project>
       <Name>Realm.Tests</Name>
     </ProjectReference>
-    <None Include="..\..\Realm\Realm\app.config" Link="Realm.dll.config">
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <None Include="..\..\Realm\Realm\ios-dllmap.config" Link="Realm.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <NativeReference Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">

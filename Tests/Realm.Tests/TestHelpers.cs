@@ -28,8 +28,6 @@ using Realms.Helpers;
 using Application = Android.App.Application;
 #endif
 
-[assembly: Parallelizable(ParallelScope.Fixtures)]
-
 namespace Realms.Tests
 {
     public static class TestHelpers

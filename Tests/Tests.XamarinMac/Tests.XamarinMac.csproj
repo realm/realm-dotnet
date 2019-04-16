@@ -54,7 +54,7 @@
     </XamMacArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
-    <StartArguments>--headless --labels=On</StartArguments>
+    <StartArguments>--headless --labels=After</StartArguments>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -67,10 +67,6 @@
     <ImageAsset Include="Assets.xcassets\Contents.json" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\RealmGenericFilled-256.png" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\RealmGenericFilled-128.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="NUnitLite" Version="3.11.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
@@ -92,7 +88,7 @@
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
     <NativeReference Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>

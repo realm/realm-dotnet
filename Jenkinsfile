@@ -112,6 +112,7 @@ stage('Build wrappers') {
   parallel jobs
 }
 
+String packageVersion
 stage('Package') {
   nodeWithCleanup('windows && dotnet') {
     unstash 'dotnet-source'
@@ -140,22 +141,27 @@ stage('Package') {
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
         archive '*.nupkg'
+
+        // extract the package version from the weaver package because it has the most definite name
+        def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
+        def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
+        packageVersion = match[0][1]
       }
     }
   }
 }
 
 stage('Test') {
+  Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
-    'iOS': {
+    'Xamarin iOS': {
       nodeWithCleanup('xamarin.ios') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.iOS') {
-          msbuild target: 'Restore,Build',
-                  properties: [ Configuration: configuration, Platform: 'iPhoneSimulator',
-                                RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '' ]
+          msbuild restore: true,
+                  properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests'
           }
@@ -172,14 +178,14 @@ stage('Test') {
         }
       }
     },
-    'macOS': {
+    'Xamarin macOS': {
       nodeWithCleanup('xamarin.mac') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.XamarinMac') {
-          msbuild target: 'Restore,Build',
-                  properties: [ Configuration: configuration, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '' ]
+          msbuild restore: true,
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/${configuration}") {
             stash includes: 'Tests.XamarinMac.app/**/*', name: 'macos-tests'
           }
@@ -200,15 +206,14 @@ stage('Test') {
         }
       }
     },
-    'Android': {
+    'Xamarin Android': {
       nodeWithCleanup('xamarin.android') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.Android') {
-          msbuild target: 'Restore,SignAndroidPackage',
-                  properties: [ Configuration: configuration, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '',
-                                AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
+          msbuild target: 'SignAndroidPackage', restore: true,
+                  properties: [ AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
@@ -223,16 +228,17 @@ stage('Test') {
 
           try {
             // start logcat
-            sh '''
+            backgroundPid = sh script: '''
               adb logcat -c
               adb logcat -v time > "logcat.txt" &
-              echo $! > pid
-            '''
-            backgroundPid readFile("pid").trim()
+              echo $!
+            ''', returnStdout: true
 
             sh '''
               adb uninstall io.realm.xamarintests
               adb install io.realm.xamarintests-Signed.apk
+              adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
+              adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
             '''
 
             def instrumentationOutput = sh script: '''
@@ -264,88 +270,74 @@ stage('Test') {
 
         junit 'TestResults.xml'
       }
-    }
-  ]
-}
+    },
+    '.NET Framework Windows': {
+      nodeWithCleanup('windows && dotnet', false) {
+        unstash 'dotnet-source'
+        dir('Realm/packages') { unstash 'packages' }
 
-def Win32Test(stashName) {
-  return {
-    nodeWithCleanup('windows') {
-      unstash 'dotnet-source'
-      unstash stashName
-
-      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.7.0\\tools\\nunit3-console.exe"
-      dir("Tests/Tests.Win32/bin/${configuration}") {
-        try {
-          withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
-            bat """
-              mkdir "%TMP%"
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x86.xml;transform=nunit3-junit.xslt --x86 --labels=After
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x64.xml;transform=nunit3-junit.xslt --labels=After
-            """
+        dir('Tests/Realm.Tests') {
+          msbuild restore: true,
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFramework: 'net461' ] << props
+          dir("bin/${configuration}/net461") {
+            try {
+              withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
+                bat '''
+                  mkdir "%TMP%"
+                  Realm.Tests.exe --result=temp.xml --labels=After
+                '''
+              }
+            } finally {
+              nunit 'temp.xml'
+            }
           }
-        } finally {
-          reportTests "${stashName}-x86.xml"
-          reportTests "${stashName}-x64.xml"
         }
       }
-    }
-  }
+    },
+    '.NET Core macOS': NetCoreTest('dotnet && macos'),
+    '.NET Core Linux': NetCoreTest('docker'),
+    '.NET Core Windows': NetCoreTest('dotnet && windows')
+  ]
+
+  parallel jobs
 }
 
-def NetCoreTest(String nodeName, String platform, String stashSuffix) {
+def NetCoreTest(String nodeName) {
   return {
-    nodeWithCleanup(nodeName) {
+    nodeWithCleanup(nodeName, false) {
       unstash 'dotnet-source'
-      unstash "netcore-${platform}-tests-${stashSuffix}"
+      dir('Realm/packages') { unstash 'packages' }
 
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'),
-                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'),
-                       string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
-        dir("Tests/Tests.NetCore") {
-          def binaryFolder = "bin/${configuration}/${platform}publish"
-          try {
-            if (isUnix()) {
-              if (nodeName == 'docker') {
-                def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
-                withRos("3.11.0") { ros ->
-                  test_runner_image.inside("--link ${ros.id}:ros") {
-                    sh """
-                      cd ${pwd()}/${binaryFolder}
-                      chmod +x Tests.NetCore
-                      ./Tests.NetCore --labels=After --result=temp.xml --ros \"\$ROS_PORT_9080_TCP_ADDR\" --rosport \"\$ROS_PORT_9080_TCP_PORT\"
-                      xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-                    """
-                  }
+      dir('Tests/Realm.Tests') {
+        String script = """
+          dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
+          dotnet run -f netcoreapp20 --no-build -- labels=After --result=temp.xml
+        """
+        try {
+          if (isUnix()) {
+            if (nodeName == 'docker') {
+              def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+              withRos('3.20.0') { ros ->
+                test_runner_image.inside("--link ${ros.id}:ros") {
+                  script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
+                  sh script
                 }
-              } else {
-                sh """
-                  cd ${pwd()}/${binaryFolder}
-                  chmod +x Tests.NetCore
-                  ./Tests.NetCore --labels=After --result=temp.xml
-                  xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-                """
               }
             } else {
-              dir(binaryFolder) {
-                bat """
-                  Tests.NetCore.exe --labels=After --result=temp.xml
-                  powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) NetCore-${platform}-${stashSuffix}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
-                """
-              }
+              sh script
             }
-          } finally {
-            dir(binaryFolder) {
-              reportTests "NetCore-${platform}-${stashSuffix}.xml"
-            }
+          } else {
+            bat script
           }
+        } finally {
+          nunit 'temp.xml'
         }
       }
     }
   }
 }
 
-def nodeWithCleanup(String label, Closure steps) {
+def nodeWithCleanup(String label, Boolean cleanup = true, Closure steps) {
   node(label) {
     echo "Running job on ${env.NODE_NAME}"
 
@@ -360,7 +352,9 @@ def nodeWithCleanup(String label, Closure steps) {
       try {
         steps()
       } finally {
-        //deleteDir()
+        if (cleanup) {
+          deleteDir()
+        }
       }
     }
   }
@@ -387,10 +381,37 @@ def msbuild(Map args = [:]) {
   }
 
   if (isUnix()) {
-    sh invocation
+    def env = [
+      "NUGET_PACKAGES=${env.HOME}/.nuget/packages-ci-${env.EXECUTOR_NUMBER}",
+      "NUGET_HTTP_CACHE_PATH=${env.HOME}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
+    ]
+    withEnv(env) {
+      sh invocation
+    }
   } else {
-    bat invocation
+    def env = [
+      "NUGET_PACKAGES=${env.userprofile}/.nuget/packages-ci-${env.EXECUTOR_NUMBER}",
+      "NUGET_HTTP_CACHE_PATH=${env.userprofile}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
+    ]
+    withEnv(env) {
+      bat invocation
+    }
   }
+}
+
+def nunit(String file) {
+  String template = readFile('nunit3-junit.xslt')
+  String input = readFile(file)
+  writeFile("${file}.junit", xsltTransform(template, input))
+  junit "${file}.junit"
+}
+
+@NonCPS
+String xsltTransform(String template, String input) {
+  def transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer(new javax.xml.transform.stream.StreamSource(new StringReader(template)))
+  def writer = new StringWriter()
+  transformer.transform(new javax.xml.transform.stream.StreamSource(new StringReader(input)), new javax.xml.transform.stream.StreamResult(writer))
+  return writer.toString()
 }
 
 // Required due to JENKINS-27421

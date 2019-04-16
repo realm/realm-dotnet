@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Runner.Services;
+using System.Reflection;
+using NUnitLite;
 
-namespace Realms.Tests.UWP
+namespace Realms.Tests
 {
-    public sealed partial class MainPage
+    public class Program
     {
-        public MainPage()
+        public static int Main(string[] args)
         {
-            InitializeComponent();
+            var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
+            var arguments = Sync.SyncTestHelpers.ExtractRosSettings(args);
 
-            var nunit = new NUnit.Runner.App();
-            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
-
-            nunit.Options = new TestOptions
-            {
-                LogToOutput = true
-            };
-
-            LoadApplication(nunit);
+            autorun.Execute(arguments);
+            return 0;
         }
     }
 }

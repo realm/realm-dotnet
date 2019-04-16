@@ -20,7 +20,7 @@
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
     <!-- iOS -->
-    <None Update="app.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
+    <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
     <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework\*">
       <Pack>true</Pack>
       <PackagePath>native\ios\universal\realm-wrappers.framework</PackagePath>
