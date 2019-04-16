@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using System;
 
-[assembly: InternalsVisibleTo("Realm.Tests")]
+namespace Realms.Server
+{
+    /// <summary>
+    /// An notifier instance that observes Realms and invokes handlers with change details.
+    /// It can be obtained by calling <see cref="Notifier.StartAsync"/>.
+    /// </summary>
+    public interface INotifier : IDisposable
+    {
+        /// <summary>
+        /// Gets the <see cref="NotifierConfiguration"/> that was used to create this <see cref="INotifier"/>.
+        /// </summary>
+        /// <value>The Notifier's configuration.</value>
+        NotifierConfiguration Configuration { get; }
+    }
+}

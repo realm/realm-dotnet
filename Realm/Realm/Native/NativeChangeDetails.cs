@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
-[assembly: InternalsVisibleTo("Realm.Tests")]
+namespace Realms.Server.Native
+{
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct NativeChangeDetails
+    {
+        public byte* path_buf;
+        public IntPtr path_len;
+
+        public byte* path_on_disk_buf;
+        public IntPtr path_on_disk_len;
+
+        public IntPtr previous_realm;
+
+        public IntPtr current_realm;
+
+        public MarshaledVector<NativeChangeSet> change_sets;
+
+        public string Path => Encoding.UTF8.GetString(path_buf, (int)path_len);
+
+        public string PathOnDisk => Encoding.UTF8.GetString(path_on_disk_buf, (int)path_on_disk_len);
+    }
+}

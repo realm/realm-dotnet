@@ -38,6 +38,12 @@ if(REALM_ENABLE_SYNC)
     )
 endif()
 
+if(REALM_ENABLE_SERVER)
+    list(APPEND SOURCES
+        global_notifier_cs.cpp
+    )
+endif()
+
 set(INCLUDE_DIRS
     ${REALM_CORE_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})

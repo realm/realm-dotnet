@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using Realms.Exceptions;
 
-[assembly: InternalsVisibleTo("Realm.Tests")]
+namespace Realms.Server.Exceptions
+{
+    /// <summary>
+    /// An exception thrown while attempting to start the Notifier.
+    /// </summary>
+    public class NotifierStartException : RealmException
+    {
+        /// <summary>
+        /// Gets an integer value representing the code of the error.
+        /// </summary>
+        /// <value>An integer error code.</value>
+        public int ErrorCode { get; }
+
+        internal NotifierStartException(int errorCode, string detailMessage) : base(detailMessage)
+        {
+            ErrorCode = errorCode;
+        }
+    }
+}

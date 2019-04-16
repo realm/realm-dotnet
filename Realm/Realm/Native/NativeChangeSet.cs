@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2019 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
-[assembly: InternalsVisibleTo("Realm.Tests")]
+namespace Realms.Server.Native
+{
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct NativeChangeSet
+    {
+        public byte* class_name_buf;
+        public IntPtr class_name_len;
+
+        public MarshaledVector<IntPtr> deletions;
+        public MarshaledVector<IntPtr> insertions;
+        public MarshaledVector<IntPtr> previous_modifications;
+        public MarshaledVector<IntPtr> current_modifications;
+
+        public string ClassName => Encoding.UTF8.GetString(class_name_buf, (int)class_name_len);
+    }
+}

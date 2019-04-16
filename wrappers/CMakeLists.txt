@@ -18,6 +18,7 @@ include(CompilerFlags)
 include(RealmCore)
 
 set(REALM_ENABLE_SYNC ON)
+set(REALM_ENABLE_SERVER ON)
 
 if(APPLE)
   if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
