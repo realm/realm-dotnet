@@ -27,48 +27,24 @@ namespace Realms.Sync
     /// </summary>
     public class Credentials
     {
-        /// <summary>
-        /// A class, containing the names for the built in providers.
-        /// </summary>
-        public static class Provider
+        internal static class Provider
         {
-            internal const string Debug = "debug";
+            public const string Debug = "debug";
 
-            internal const string AdminToken = "adminToken";
+            public const string AdminToken = "adminToken";
 
-            /// <summary>
-            /// The Facebook provider, associated with <see cref="Credentials.Facebook"/>.
-            /// </summary>
             public const string Facebook = "facebook";
 
-            /// <summary>
-            /// The Google provider, associated with <see cref="Credentials.Google"/>.
-            /// </summary>
             public const string Google = "google";
 
-            /// <summary>
-            /// The Username/Password provider, associated with <see cref="Credentials.UsernamePassword"/>.
-            /// </summary>
             public const string UsernamePassword = "password";
 
-            /// <summary>
-            /// The Azure Active Directory provider, associated with <see cref="Credentials.AzureAD"/>.
-            /// </summary>
             public const string AzureAD = "azuread";
 
-            /// <summary>
-            /// The Json Web Token provider, associated with <see cref="Credentials.JWT"/>.
-            /// </summary>
             public const string JWT = "jwt";
 
-            /// <summary>
-            /// The Anonymous provider, associated with <see cref="Credentials.Anonymous"/>.
-            /// </summary>
             public const string Anonymous = "anonymous";
 
-            /// <summary>
-            /// The Nickname provider, associated with <see cref="Credentials.Nickname"/>.
-            /// </summary>
             public const string Nickname = "nickname";
         }
 
@@ -98,18 +74,6 @@ namespace Realms.Sync
                 IdentityProvider = identityProvider,
                 Token = userIdentifier,
                 UserInfo = new ReadOnlyDictionary<string, object>(userInfo)
-            };
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="Credentials"/> to be used during development. Not enabled for Realm Object Server configured for production.
-        /// </summary>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials Debug()
-        {
-            return new Credentials
-            {
-                IdentityProvider = Provider.Debug
             };
         }
 
@@ -214,17 +178,21 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates <see cref="Credentials"/> based on a Facebook login.
+        /// Creates <see cref="Credentials"/> based on a JWT access token.
         /// </summary>
-        /// <param name="token">A Json Web Token, obtained by logging into Facebook.</param>
+        /// <param name="token">A Json Web Token, obtained by logging into your auth service.</param>
+        /// <param name="providerName">
+        /// The name of the jwt provider in ROS. By default, it will be jwt, unless explicitly overridden
+        /// by the ROS configuration.
+        /// </param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials JWT(string token)
+        public static Credentials JWT(string token, string providerName = Provider.JWT)
         {
             Argument.NotNull(token, nameof(token));
 
             return new Credentials
             {
-                IdentityProvider = Provider.JWT,
+                IdentityProvider = providerName,
                 Token = token
             };
         }

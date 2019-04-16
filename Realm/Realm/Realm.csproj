@@ -30,61 +30,61 @@
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
       <PackagePath>runtimes\osx.10.10-x64\native</PackagePath>
-      <Link>wrappers\Darwin\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Darwin\librealm-wrappers..dylib</Link>
     </None>
     <!-- Linux -->
     <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
-      <Link>wrappers\Linux\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Linux\librealm-wrappers..so</Link>
     </None>
     <!-- Android -->
     <None Include="..\..\wrappers\build\Android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\armeabi-v7a</PackagePath>
-      <Link>wrappers\Android\armeabi-v7a\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Android\armeabi-v7a\librealm-wrappers..so</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\arm64-v8a</PackagePath>
-      <Link>wrappers\Android\arm64-v8a\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Android\arm64-v8a\librealm-wrappers..so</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-x86\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\x86</PackagePath>
-      <Link>wrappers\Android\x86\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Android\x86\librealm-wrappers..so</Link>
     </None>
     <None Include="..\..\wrappers\build\Android\$(Configuration)-x86_64\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>native\android\x86_64</PackagePath>
-      <Link>wrappers\Android\x86_64\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Android\x86_64\librealm-wrappers..so</Link>
     </None>
     <!-- Windows -->
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win81-x86\native</PackagePath>
-      <Link>wrappers\Windows\Win32\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Windows\Win32\realm-wrappers..dll</Link>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win81-x64\native</PackagePath>
-      <Link>wrappers\Windows\x64\%(Filename).%(Extension)</Link>
+      <Link>wrappers\Windows\x64\realm-wrappers..dll</Link>
     </None>
     <!-- WindowsStore -->
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-x86\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\Win32\%(Filename).%(Extension)</Link>
+      <Link>wrappers\WindowsStore\Win32\realm-wrappers..dll</Link>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-x64\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-x64\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\x64\%(Filename).%(Extension)</Link>
+      <Link>wrappers\WindowsStore\x64\realm-wrappers..dll</Link>
     </None>
     <None Include="..\..\wrappers\build\WindowsStore\$(Configuration)-ARM\realm-wrappers.dll">
       <Pack>true</Pack>
       <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
-      <Link>wrappers\WindowsStore\ARM\%(Filename).%(Extension)</Link>
+      <Link>wrappers\WindowsStore\ARM\realm-wrappers..dll</Link>
     </None>
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props " />

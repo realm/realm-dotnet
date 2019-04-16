@@ -688,7 +688,7 @@ namespace Realms
                         }
                     });
                     var didRefresh = await RefreshAsync();
-                    System.Diagnostics.Debug.Assert(didRefresh);
+                    System.Diagnostics.Debug.Assert(didRefresh, "Expected RefreshAsync to return true.");
                 }
                 return doWorkAsync();
             }

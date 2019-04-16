@@ -96,28 +96,6 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Configures user persistence. If you need to call this, be sure to do so before accessing any other Realm API.
-        /// </summary>
-        /// <param name="mode">The persistence mode.</param>
-        /// <param name="encryptionKey">The key to encrypt the persistent user store with.</param>
-        /// <param name="resetOnError">If set to <c>true</c> reset the persistent user store on error.</param>
-        /// <param name="basePath">The base folder relative to which Realm files will be stored.</param>
-        /// <remarks>
-        /// Users are persisted in a realm file within the application's sandbox.
-        /// <para>
-        /// By default <see cref="User"/> objects are persisted and are additionally protected with an encryption key stored
-        /// in the iOS Keychain when running on an iOS device (but not on a Simulator).
-        /// On Android users are persisted in plaintext, because the AndroidKeyStore API is only supported on API level 18 and up.
-        /// You might want to provide your own encryption key on Android or disable persistence for security reasons.
-        /// </para>
-        /// </remarks>
-        [Obsolete("Use SyncConfigurationBase.Initialize() instead")]
-        public static void ConfigurePersistence(UserPersistenceMode mode, byte[] encryptionKey = null, bool resetOnError = false, string basePath = null)
-        {
-            SyncConfigurationBase.Initialize(mode, encryptionKey, resetOnError, basePath);
-        }
-
-        /// <summary>
         /// Gets a logged in user with a specified identity.
         /// </summary>
         /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
@@ -210,15 +188,6 @@ namespace Realms.Sync
             var uriBuilder = new UriBuilder(new Uri(ServerUri, uri));
             uriBuilder.Scheme = uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ? "realms" : "realm";
             return uriBuilder.Uri;
-        }
-
-        /// <summary>
-        /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
-        /// </summary>
-        [Obsolete("Use LogOutAsync instead")]
-        public void LogOut()
-        {
-            LogOutAsync();
         }
 
         /// <summary>
