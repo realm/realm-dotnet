@@ -154,7 +154,7 @@ stage('Package') {
 stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
-    'iOS': {
+    'Xamarin iOS': {
       nodeWithCleanup('xamarin.ios') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
@@ -178,7 +178,7 @@ stage('Test') {
         }
       }
     },
-    'macOS': {
+    'Xamarin macOS': {
       nodeWithCleanup('xamarin.mac') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
@@ -206,7 +206,7 @@ stage('Test') {
         }
       }
     },
-    'Android': {
+    'Xamarin Android': {
       nodeWithCleanup('xamarin.android') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
@@ -228,12 +228,11 @@ stage('Test') {
 
           try {
             // start logcat
-            sh '''
+            backgroundPid = sh script: '''
               adb logcat -c
               adb logcat -v time > "logcat.txt" &
-              echo $! > pid
-            '''
-            backgroundPid readFile("pid").trim()
+              echo $!
+            ''', returnStdout: true
 
             sh '''
               adb uninstall io.realm.xamarintests
@@ -272,8 +271,8 @@ stage('Test') {
         junit 'TestResults.xml'
       }
     },
-    'Windows': {
-      nodeWithCleanup('windows && dotnet') {
+    '.NET Framework Windows': {
+      nodeWithCleanup('windows && dotnet', false) {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -288,96 +287,57 @@ stage('Test') {
                   Realm.Tests.exe --result=temp.xml --labels=After
                 '''
               }
-              nunit 'temp.xml'
             } finally {
+              nunit 'temp.xml'
             }
           }
         }
       }
-    }
+    },
+    '.NET Core macOS': NetCoreTest('dotnet && macos'),
+    '.NET Core Linux': NetCoreTest('docker'),
+    '.NET Core Windows': NetCoreTest('dotnet && windows')
   ]
 
   parallel jobs
 }
 
-def Win32Test(stashName) {
+def NetCoreTest(String nodeName) {
   return {
-    nodeWithCleanup('windows') {
+    nodeWithCleanup(nodeName, false) {
       unstash 'dotnet-source'
-      unstash stashName
+      dir('Realm/packages') { unstash 'packages' }
 
-      def nunit = "${env.WORKSPACE}\\packages\\NUnit.ConsoleRunner.3.7.0\\tools\\nunit3-console.exe"
-      dir("Tests/Tests.Win32/bin/${configuration}") {
+      dir('Tests/Realm.Tests') {
+        String script = """
+          dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
+          dotnet run -f netcoreapp20 --no-build -- labels=After --result=temp.xml
+        """
         try {
-          withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
-            bat """
-              mkdir "%TMP%"
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x86.xml;transform=nunit3-junit.xslt --x86 --labels=After
-              "${nunit}" Tests.Win32.dll --result=${stashName}-x64.xml;transform=nunit3-junit.xslt --labels=After
-            """
-          }
-        } finally {
-          reportTests "${stashName}-x86.xml"
-          reportTests "${stashName}-x64.xml"
-        }
-      }
-    }
-  }
-}
-
-def NetCoreTest(String nodeName, String platform, String stashSuffix) {
-  return {
-    nodeWithCleanup(nodeName) {
-      unstash 'dotnet-source'
-      unstash "netcore-${platform}-tests-${stashSuffix}"
-
-      withCredentials([string(credentialsId: 'realm-sync-feature-token-developer', variable: 'DEVELOPER_FEATURE_TOKEN'),
-                       string(credentialsId: 'realm-sync-feature-token-professional', variable: 'PROFESSIONAL_FEATURE_TOKEN'),
-                       string(credentialsId: 'realm-sync-feature-token-enterprise', variable: 'ENTERPRISE_FEATURE_TOKEN')]) {
-        dir("Tests/Tests.NetCore") {
-          def binaryFolder = "bin/${configuration}/${platform}publish"
-          try {
-            if (isUnix()) {
-              if (nodeName == 'docker') {
-                def test_runner_image = buildDockerEnv("ci/realm-dotnet:netcore_tests");
-                withRos("3.11.0") { ros ->
-                  test_runner_image.inside("--link ${ros.id}:ros") {
-                    sh """
-                      cd ${pwd()}/${binaryFolder}
-                      chmod +x Tests.NetCore
-                      ./Tests.NetCore --labels=After --result=temp.xml --ros \"\$ROS_PORT_9080_TCP_ADDR\" --rosport \"\$ROS_PORT_9080_TCP_PORT\"
-                      xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-                    """
-                  }
+          if (isUnix()) {
+            if (nodeName == 'docker') {
+              def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+              withRos('3.20.0') { ros ->
+                test_runner_image.inside("--link ${ros.id}:ros") {
+                  script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
+                  sh script
                 }
-              } else {
-                sh """
-                  cd ${pwd()}/${binaryFolder}
-                  chmod +x Tests.NetCore
-                  ./Tests.NetCore --labels=After --result=temp.xml
-                  xsltproc nunit3-junit.xslt temp.xml > NetCore-${platform}-${stashSuffix}.xml
-                """
               }
             } else {
-              dir(binaryFolder) {
-                bat """
-                  Tests.NetCore.exe --labels=After --result=temp.xml
-                  powershell \"\$xml = Resolve-Path temp.xml;\$output = Join-Path (\$pwd) NetCore-${platform}-${stashSuffix}.xml;\$xslt = New-Object System.Xml.Xsl.XslCompiledTransform;\$xslt.Load(\\\"nunit3-junit.xslt\\\");\$xslt.Transform(\$xml, \$output);\"
-                """
-              }
+              sh script
             }
-          } finally {
-            dir(binaryFolder) {
-              reportTests "NetCore-${platform}-${stashSuffix}.xml"
-            }
+          } else {
+            bat script
           }
+        } finally {
+          nunit 'temp.xml'
         }
       }
     }
   }
 }
 
-def nodeWithCleanup(String label, Closure steps) {
+def nodeWithCleanup(String label, Boolean cleanup = true, Closure steps) {
   node(label) {
     echo "Running job on ${env.NODE_NAME}"
 
@@ -392,7 +352,9 @@ def nodeWithCleanup(String label, Closure steps) {
       try {
         steps()
       } finally {
-        deleteDir()
+        if (cleanup) {
+          deleteDir()
+        }
       }
     }
   }
