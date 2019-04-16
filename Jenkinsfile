@@ -112,6 +112,7 @@ stage('Build wrappers') {
   parallel jobs
 }
 
+String packageVersion
 stage('Package') {
   nodeWithCleanup('windows && dotnet') {
     unstash 'dotnet-source'
@@ -140,12 +141,18 @@ stage('Package') {
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
         archive '*.nupkg'
+
+        // extract the package version from the weaver package because it has the most definite name
+        def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
+        def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
+        packageVersion = match[0][1]
       }
     }
   }
 }
 
 stage('Test') {
+  Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     'iOS': {
       nodeWithCleanup('xamarin.ios') {
@@ -153,9 +160,8 @@ stage('Test') {
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.iOS') {
-          msbuild target: 'Restore,Build',
-                  properties: [ Configuration: configuration, Platform: 'iPhoneSimulator',
-                                RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '' ]
+          msbuild restore: true,
+                  properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests'
           }
@@ -178,8 +184,8 @@ stage('Test') {
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.XamarinMac') {
-          msbuild target: 'Restore,Build',
-                  properties: [ Configuration: configuration, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '' ]
+          msbuild restore: true,
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/${configuration}") {
             stash includes: 'Tests.XamarinMac.app/**/*', name: 'macos-tests'
           }
@@ -206,9 +212,8 @@ stage('Test') {
         dir('Realm/packages') { unstash 'packages' }
 
         dir('Tests/Tests.Android') {
-          msbuild target: 'Restore,SignAndroidPackage',
-                  properties: [ Configuration: configuration, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", UseRealmNupkgsWithVersion: '',
-                                AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true ]
+          msbuild target: 'SignAndroidPackage', restore: true,
+                  properties: [ AndroidUseSharedRuntime: false, EmbedAssembliesIntoApk: true, RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/${configuration}") {
             stash includes: 'io.realm.xamarintests-Signed.apk', name: 'android-tests'
           }
@@ -268,6 +273,8 @@ stage('Test') {
       }
     }
   ]
+
+  parallel jobs
 }
 
 def Win32Test(stashName) {
@@ -389,9 +396,21 @@ def msbuild(Map args = [:]) {
   }
 
   if (isUnix()) {
-    sh invocation
+    def env = [
+      "NUGET_PACKAGES=${env.HOME}/.nuget/packages-ci-${env.EXECUTOR_NUMBER}",
+      "NUGET_HTTP_CACHE_PATH=${env.HOME}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
+    ]
+    withEnv(env) {
+      sh invocation
+    }
   } else {
-    bat invocation
+    def env = [
+      "NUGET_PACKAGES=${env.userprofile}/.nuget/packages-ci-${env.EXECUTOR_NUMBER}",
+      "NUGET_HTTP_CACHE_PATH=${env.userprofile}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
+    ]
+    withEnv(env) {
+      bat invocation
+    }
   }
 }
 
