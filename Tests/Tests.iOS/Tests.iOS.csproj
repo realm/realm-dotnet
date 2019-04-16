@@ -133,7 +133,7 @@
       <Project>{78799fcd-be2e-4ece-a52e-662846615b58}</Project>
       <Name>Realm.Tests</Name>
     </ProjectReference>
-    <None Include="..\..\Realm\Realm\app.config" Link="Realm.dll.config">
+    <None Include="..\..\Realm\Realm\ios-dllmap.config" Link="Realm.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <NativeReference Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">

@@ -6,15 +6,17 @@
     <RootNamespace>Realms.Tests</RootNamespace>
     <BuildWithRealmNugets Condition="'$(BuildWithRealmNugets)' == ''">False</BuildWithRealmNugets>
     <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Fody" Version="4.0.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
-    <PackageReference Include="Nito.AsyncEx.Context" Version="1.1.0" />
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.0.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="NUnit.Console" Version="3.9.0" />
+    <PackageReference Include="NUnitLite" Version="3.10.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
     <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
     <PackageReference Include="System.Reactive" Version="4.1.3" />

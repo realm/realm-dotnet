@@ -14,13 +14,15 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
-    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
     <!-- iOS -->
-    <None Update="app.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
+    <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
     <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework\*">
       <Pack>true</Pack>
       <PackagePath>native\ios\universal\realm-wrappers.framework</PackagePath>
