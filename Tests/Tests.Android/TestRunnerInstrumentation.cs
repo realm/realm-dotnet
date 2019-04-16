@@ -25,7 +25,7 @@ using Android.Runtime;
 
 using Environment = Android.OS.Environment;
 
-namespace Tests.Android
+namespace Realms.Tests.Android
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation

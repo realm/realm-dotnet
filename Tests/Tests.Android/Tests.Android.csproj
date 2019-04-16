@@ -20,6 +20,7 @@
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <DisableFody>true</DisableFody>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -74,6 +75,8 @@
       <Project>{78799FCD-BE2E-4ECE-A52E-662846615B58}</Project>
       <Name>Realm.Tests</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" Condition="'$(UseRealmNupkgsWithVersion)' != ''" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />

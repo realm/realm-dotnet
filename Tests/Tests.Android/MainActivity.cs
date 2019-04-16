@@ -22,12 +22,10 @@ using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
-using Realms;
-using Realms.Tests;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-namespace Tests.Android
+namespace Realms.Tests.Android
 {
     [Activity(Label = "Realm Tests", MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
@@ -41,7 +39,7 @@ namespace Tests.Android
             Forms.Init(this, savedInstanceState);
 
             var nunit = new App();
-
+            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
             {
                 LogToOutput = true,
@@ -50,7 +48,7 @@ namespace Tests.Android
             if (Intent.GetBooleanExtra("headless", false))
             {
                 TestHelpers.CopyBundledDatabaseToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-                var transformPath = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
+                var transformPath = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
                 options.XmlTransformFile = transformPath;
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
