@@ -360,7 +360,7 @@ def nodeWithCleanup(String label, Closure steps) {
       try {
         steps()
       } finally {
-        //deleteDir()
+        deleteDir()
       }
     }
   }
