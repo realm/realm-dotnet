@@ -198,7 +198,7 @@ stage('Test') {
       }
     },
     'Xamarin Android': {
-      nodeWithCleanup('xamarin.android') {
+      nodeWithCleanup('windows && xamarin.android') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
