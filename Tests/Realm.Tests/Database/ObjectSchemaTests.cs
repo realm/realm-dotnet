@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
                 Assert.Fail("Could not find property");
             }
 
-            Assert.That(prop.IsNullable, Is.False);
+            Assert.That(prop.Type.HasFlag(PropertyType.Nullable), Is.False);
         }
 
         [Realms.Explicit]

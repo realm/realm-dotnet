@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -30,37 +29,6 @@ namespace Realms.Sync
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class UserPermissionsExtensions
     {
-        /// <summary>
-        /// Returns an instance of the Management Realm owned by the user.
-        /// </summary>
-        /// <remarks>
-        /// This Realm can be used to control access and permissions for Realms owned by the user. This includes
-        /// giving other users access to Realms.
-        /// </remarks>
-        /// <seealso href="https://realm.io/docs/realm-object-server/#modifying-permissions">How to control permissions</seealso>
-        /// <param name="user">The user whose Management Realm to get.</param>
-        /// <returns>A Realm that can be used to control access and permissions for Realms owned by the user.</returns>
-        [Obsolete("Use User.ApplyPermissions instead")]
-        public static Realm GetManagementRealm(this User user)
-        {
-            return user.ManagementRealm;
-        }
-
-        /// <summary>
-        /// Returns an instance of the Permission Realm owned by the user.
-        /// </summary>
-        /// <remarks>
-        /// This Realm can be used to review access permissions for Realms managed by the user
-        /// and to Realms which the user was granted access to by other users.
-        /// </remarks>
-        /// <param name="user">The user whose Permission Realm to get.</param>
-        /// <returns>A Realm that can be used to inspect access to other Realms.</returns>
-        [Obsolete("Use User.GetGrantedPermissions instead")]
-        public static Realm GetPermissionRealm(this User user)
-        {
-            return user.PermissionRealm;
-        }
-
         internal static async Task WaitForProcessingAsync<T>(this T permissionObject) where T : RealmObject, IPermissionObject
         {
             // Retain the object, otherwise it gets GC'd and the handler is never invoked

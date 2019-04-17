@@ -58,201 +58,6 @@ namespace Realms.Tests.Sync
             Assert.That(RealmSchema.Default.Find(nameof(PathPermission)), Is.Null);
         }
 
-        [Test]
-        public void PermissionChange_IsProcessedByServer()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var permissionChange = await CreateChange(user, "*");
-                Assert.That(permissionChange.Status, Is.EqualTo(ManagementObjectStatus.Success));
-            });
-        }
-
-        [Test]
-        public void PermissionOffer_WhenValid_TokenIsSet()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var permissionOffer = await CreateOffer(user);
-                Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
-                Assert.That(permissionOffer.Token, Is.Not.Null);
-            });
-        }
-
-        [Test]
-        public void PermissionOffer_WhenExpired_ShouldGetError()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddDays(-1));
-                Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionOffer.Token, Is.Null);
-                Assert.That(permissionOffer.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
-                Assert.That(permissionOffer.StatusMessage, Is.Not.Null);
-            });
-        }
-
-        [Test]
-        public void PermissionResponse_WhenOfferExpired_ShouldGetError()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var permissionOffer = await CreateOffer(user, expiresAt: DateTimeOffset.UtcNow.AddSeconds(2));
-
-                Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
-                Assert.That(permissionOffer.Token, Is.Not.Null);
-
-                await Task.Delay(2500);
-                var permissionResponse = await CreateResponse(user, permissionOffer.Token);
-                Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
-                Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
-            });
-        }
-
-        [Test]
-        public void PermissionResponse_WhenTokenIsInvalid_ShouldGetError()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var user = await SyncTestHelpers.GetUserAsync();
-                var permissionResponse = await CreateResponse(user, "Some string");
-                Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Error));
-                Assert.That(permissionResponse.ErrorCode, Is.EqualTo(ErrorCode.InvalidParameters));
-                Assert.That(permissionResponse.StatusMessage, Is.Not.Null);
-            });
-        }
-
-        [Test]
-        public void PermissionResponse_WhenOfferIsValid_ShouldSetRealmUrl()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var alice = await SyncTestHelpers.GetUserAsync();
-                var bob = await SyncTestHelpers.GetUserAsync();
-
-                // Opening a synced realm with just read permission fails.
-                // OS issue: https://github.com/realm/realm-object-store/issues/312
-                var realmUrl = await GrantPermissions(alice, bob);
-                var syncConfig = new FullSyncConfiguration(new Uri(realmUrl), bob, Guid.NewGuid().ToString());
-
-                Assert.That(() => GetRealm(syncConfig), Throws.Nothing);
-                var handler = new EventHandler<ErrorEventArgs>((sender, e) =>
-                {
-                    Assert.Fail("Opening the realm should not cause an error.", e.Exception);
-                });
-
-                Session.Error += handler;
-
-                await Task.Delay(2000);
-
-                Session.Error -= handler;
-            });
-        }
-
-        [Test]
-        public void Permission_ValidateWrite()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var alice = await SyncTestHelpers.GetUserAsync();
-                var bob = await SyncTestHelpers.GetUserAsync();
-
-                var realmUrl = await GrantPermissions(alice, bob);
-
-                await ValidateWriteAndSync(realmUrl, alice, bob, 1, 2);
-            });
-        }
-
-        [Test]
-        public void Permission_ValidateManage()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var alice = await SyncTestHelpers.GetUserAsync();
-                var bob = await SyncTestHelpers.GetUserAsync();
-                var charlie = await SyncTestHelpers.GetUserAsync();
-
-                var alicesUrl = await GrantPermissions(alice, bob, mayManage: true);
-
-                await GrantPermissions(bob, charlie, realmUrl: alicesUrl);
-
-                await ValidateWriteAndSync(alicesUrl, alice, charlie, 1, 2);
-
-                await ValidateWriteAndSync(alicesUrl, bob, charlie, 3, 4);
-            });
-        }
-
-        [Test]
-        public void PermissionChange_UpdatesPermissionRealm()
-        {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
-            {
-                var alice = await SyncTestHelpers.GetUserAsync();
-                var bob = await SyncTestHelpers.GetUserAsync();
-
-                var permissionRealm = alice.GetPermissionRealm();
-                var tcs = new TaskCompletionSource<PathPermission>();
-                var aliceId = alice.Identity; // LINQ :/
-                var token = permissionRealm.All<PathPermission>()
-                                           .Where(p => p.UserId != aliceId)
-                                           .SubscribeForNotifications((sender, changes, error) =>
-                                           {
-                                               if (sender.Count > 0)
-                                               {
-                                                   try
-                                                   {
-                                                       tcs.TrySetResult(sender.Single());
-                                                   }
-                                                   catch (Exception ex)
-                                                   {
-                                                       tcs.TrySetException(ex);
-                                                   }
-                                               }
-                                           });
-
-                var realmPath = $"/{alice.Identity}/testPermission";
-                var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
-
-                await CreateChange(alice, bob.Identity, realmUrl);
-                var permission = await tcs.Task.Timeout(2000);
-
-                Assert.That(permission.UserId, Is.EqualTo(bob.Identity));
-                Assert.That(permission.Path, Is.EqualTo(realmPath));
-                Assert.That(permission.MayRead, Is.True);
-                Assert.That(permission.MayWrite, Is.False);
-                Assert.That(permission.MayManage, Is.False);
-
-                token.Dispose();
-                permissionRealm.Dispose();
-            });
-        }
-
-        #region User API
-
         [Ignore("Regression in ROS")]
         [Test]
         public void User_ApplyPermissions_WithUserId_GrantsAndRevokesPermissions()
@@ -439,8 +244,6 @@ namespace Realms.Tests.Sync
             }
         }
 
-        #endregion
-
         [Test]
         public void WriteToReadOnlyRealm_ThrowsPermissionDenied()
         {
@@ -491,20 +294,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private async Task<string> GrantPermissions(User granter, User receiver, bool mayRead = true, bool mayWrite = true, bool mayManage = false, string realmUrl = null)
-        {
-            var permissionOffer = await CreateOffer(granter, mayRead, mayWrite, mayManage, realmUrl: realmUrl);
-
-            Assert.That(permissionOffer.Status, Is.EqualTo(ManagementObjectStatus.Success));
-            Assert.That(permissionOffer.Token, Is.Not.Null);
-
-            var permissionResponse = await CreateResponse(receiver, permissionOffer.Token);
-            Assert.That(permissionResponse.Status, Is.EqualTo(ManagementObjectStatus.Success));
-            Assert.That(permissionResponse.RealmUrl, Is.Not.Null);
-
-            return SyncTestHelpers.RealmUri(permissionResponse.RealmUrl).AbsoluteUri;
-        }
-
         private async Task ValidateWriteAndSync(string realmUrl, User first, User second, long firstObjectId, long secondObjectId)
         {
             await Task.Delay(500);
@@ -546,47 +335,6 @@ namespace Realms.Tests.Sync
 
             Assert.That(firstObjects.Count(), Is.EqualTo(secondObjects.Count()));
             Assert.That(firstRealm.Find<PrimaryKeyInt64Object>(secondObjectId), Is.Not.Null);
-        }
-
-        private Task<PermissionChange> CreateChange(User user, string receiverId, string url = "*", bool mayRead = true, bool mayWrite = false, bool mayManage = false)
-        {
-            return CreatePermissionObject(user, _ => new PermissionChange(receiverId, url, mayRead, mayWrite, mayManage));
-        }
-
-        private Task<PermissionOffer> CreateOffer(User user, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null, string realmUrl = null)
-        {
-            return CreatePermissionObject(user, url =>
-            {
-                return new PermissionOffer(url, mayRead, mayWrite, mayManage, expiresAt);
-            }, realmUrl);
-        }
-
-        private Task<PermissionOfferResponse> CreateResponse(User user, string token)
-        {
-            return CreatePermissionObject(user, _ => new PermissionOfferResponse(token));
-        }
-
-        private async Task<T> CreatePermissionObject<T>(User user, Func<string, T> itemFactory, string realmUrl = null) where T : RealmObject, IPermissionObject
-        {
-            realmUrl = realmUrl ?? SyncTestHelpers.RealmUri($"{user.Identity}/offer").AbsoluteUri;
-            EnsureRealmExists(user, realmUrl);
-
-            var managementRealm = user.GetManagementRealm();
-            var item = itemFactory(realmUrl);
-            managementRealm.Write(() => managementRealm.Add(item));
-            var tcs = new TaskCompletionSource<object>();
-
-            item.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == nameof(IPermissionObject.Status))
-                {
-                    tcs.TrySetResult(null);
-                }
-            };
-
-            await tcs.Task.Timeout(5000);
-
-            return item;
         }
 
         private void EnsureRealmExists(User user, string realmUrl)

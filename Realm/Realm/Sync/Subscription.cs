@@ -45,6 +45,7 @@ namespace Realms.Sync
         static Subscription()
         {
             SubscriptionCallback = SubscriptionCallbackImpl;
+
             // prevent the delegate from ever being garbage collected
             GCHandle.Alloc(SubscriptionCallback);
         }

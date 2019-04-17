@@ -86,8 +86,8 @@ namespace Realms.Sync
         /// <para/>
         /// Non-synchronized Realms always have permission to perform all operations.
         /// </summary>
-        /// <param name="className">The name of a <see cref="RealmObject"/> inheritor to get the privileges for.</param>
         /// <param name="realm">The Realm whose privileges are inspected.</param>
+        /// <param name="className">The name of a <see cref="RealmObject"/> inheritor to get the privileges for.</param>
         /// <returns>The privileges which the current user has for the given class.</returns>
         public static ClassPrivileges GetPrivileges(this Realm realm, string className)
         {
@@ -113,8 +113,8 @@ namespace Realms.Sync
         /// invalidated object, an unmanaged object, or an object managed by a
         /// different Realm will throw an exception.
         /// </remarks>
-        /// <param name="obj">A managed object to get the privileges for.</param>
         /// <param name="realm">The Realm whose privileges are inspected.</param>
+        /// <param name="obj">A managed object to get the privileges for.</param>
         /// <returns>The privileges which the current user has for the given object.</returns>
         public static ObjectPrivileges GetPrivileges(this Realm realm, RealmObject obj)
         {
