@@ -76,11 +76,29 @@
       <Project>{78799FCD-BE2E-4ECE-A52E-662846615B58}</Project>
       <Name>Realm.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" Condition="'$(UseRealmNupkgsWithVersion)' != ''" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj">
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
     </ProjectReference>
-    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" Condition="'$(UseRealmNupkgsWithVersion)' != ''" />
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
+      <Link>lib\x86\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>        
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86_64\librealm-wrappers.so">
+      <Link>lib\x86_64\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>        
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+      <Link>lib\arm64-v8a\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>        
+    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+      <Link>lib\armeabi-v7a\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>                
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />
