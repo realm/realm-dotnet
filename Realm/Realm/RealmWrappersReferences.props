@@ -8,6 +8,7 @@
       <SmartLink>False</SmartLink>
     </NativeReference>
     <Content Include="$(_RealmNugetNativePath)ios\Realm.dll.config">
+      <Link>Realm.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

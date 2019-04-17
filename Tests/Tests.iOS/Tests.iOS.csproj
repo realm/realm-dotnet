@@ -142,9 +142,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
-    <Content Include="..\..\Realm\Realm\ios-dllmap.config" Link="Realm.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <NativeReference Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
