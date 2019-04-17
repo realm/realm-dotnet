@@ -81,7 +81,7 @@ public partial class ModuleWeaver
         {
             processedAssemblies = processedAssemblies ?? new HashSet<string>();
 
-            if (module.AssemblyReferences.Any(a => a.Name == "Realm" || a.Name == "Realm.Database"))
+            if (module.AssemblyReferences.Any(a => a.Name == "Realm"))
             {
                 foreach (var type in module.GetTypes())
                 {
