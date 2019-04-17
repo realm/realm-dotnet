@@ -320,7 +320,11 @@ def NetCoreTest(String nodeName) {
               withRos('3.20.0') { ros ->
                 test_runner_image.inside("--link ${ros.id}:ros") {
                   script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
-                  sh script
+                  // see https://stackoverflow.com/a/53782505
+                  sh """
+                    export HOME=/tmp
+                    ${script}
+                  """
                 }
               }
             } else {
@@ -401,8 +405,9 @@ def msbuild(Map args = [:]) {
 
 def nunit(String file) {
   String template = readFile('nunit3-junit.xslt')
-  String input = readFile("${pwd()}/${file}")
-  writeFile("${file}.junit", xsltTransform(template, input))
+  String input = readFile(file)
+  String transformed = xsltTransform(template, input)
+  writeFile("${file}.junit", transformed)
   junit "${file}.junit"
 }
 
