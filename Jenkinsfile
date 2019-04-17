@@ -170,12 +170,9 @@ stage('Test') {
       nodeWithCleanup('osx || macos') {
         unstash 'ios-tests'
 
-        try {
-          sh 'mkdir -p temp'
-          runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.xml")
-        } finally {
-          junit 'temp/TestResults.xml'
-        }
+        sh 'mkdir -p temp'
+        runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
+        junit 'temp/TestResults.iOS.xml'
       }
     },
     'Xamarin macOS': {
@@ -194,15 +191,12 @@ stage('Test') {
       nodeWithCleanup('osx || macos') {
         unstash 'macos-tests'
 
-        try {
-          dir("Tests.XamarinMac.app/Contents") {
-            sh """
-              MacOS/Tests.XamarinMac --headless --labels=All --result=temp.xml
-              xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${env.WORKSPACE}/TestResults.xml
-            """
-          }
-        } finally {
-          junit 'TestResults.xml'
+        dir("Tests.XamarinMac.app/Contents") {
+          sh """
+            MacOS/Tests.XamarinMac --headless --labels=All --result=temp.xml
+            xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${env.WORKSPACE}/TestResults.macOS.xml
+          """
+          junit 'TestResults.macOS.xml'
         }
       }
     },
@@ -242,7 +236,7 @@ stage('Test') {
 
             def instrumentationOutput = sh script: '''
               adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-              adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.xml
+              adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.Android.xml
               adb shell rm /sdcard/Realmtests/TestResults.Android.xml
             ''', returnStdout: true
 
@@ -265,7 +259,7 @@ stage('Test') {
           }
         }
 
-        junit 'TestResults.xml'
+        junit 'TestResults.Android.xml'
       }
     },
     '.NET Framework Windows': {
@@ -277,16 +271,14 @@ stage('Test') {
           msbuild restore: true,
                   properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFramework: 'net461' ] << props
           dir("bin/${configuration}/net461") {
-            try {
-              withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
-                bat '''
-                  mkdir "%TMP%"
-                  Realm.Tests.exe --result=temp.xml --labels=After
-                '''
-              }
-            } finally {
-              nunit 'temp.xml'
+            withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
+              bat '''
+                mkdir "%TMP%"
+                Realm.Tests.exe --result=TestResults.Windows.xml --labels=After
+              '''
             }
+
+            nunit 'TestResults.Windows.xml'
           }
         }
       }
@@ -307,38 +299,33 @@ def NetCoreTest(String nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
-      dir('Tests/Realm.Tests') {
-        String script = """
-          dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
-          dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${pwd()}/temp.xml
-        """
-        try {
-          if (isUnix()) {
-            if (nodeName == 'docker') {
-              // copy global.json here so it's accessible inside the docker container for the MSBuild SDK lookup
-              sh 'cp $WORKSPACE/global.json .'
-              def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
-              test_runner_image.pull()
-              withRos('3.20.0') { ros ->
-                test_runner_image.inside("--link ${ros.id}:ros") {
-                  script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
-                  // see https://stackoverflow.com/a/53782505
-                  sh """
-                    export HOME=/tmp
-                    ${script}
-                  """
-                }
-              }
-            } else {
-              sh script
+      String script = """
+        cd ${env.WORKSPACE}/Tests/Realm.Tests
+        dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
+        dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+      """
+      if (isUnix()) {
+        if (nodeName == 'docker') {
+          def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+          test_runner_image.pull()
+          withRos('3.20.0') { ros ->
+            test_runner_image.inside("--link ${ros.id}:ros") {
+              script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
+              // see https://stackoverflow.com/a/53782505
+              sh """
+                export HOME=/tmp
+                ${script}
+              """
             }
-          } else {
-            bat script
           }
-        } finally {
-          nunit 'temp.xml'
+        } else {
+          sh script
         }
+      } else {
+        bat script
       }
+
+      nunit 'TestResults.NetCore.xml'
     }
   }
 }
@@ -403,22 +390,6 @@ def msbuild(Map args = [:]) {
       bat invocation
     }
   }
-}
-
-def nunit(String file) {
-  String template = readFile('EmbeddedResources/nunit3-junit.xslt')
-  String input = readFile(file)
-  String transformed = xsltTransform(template, input)
-  writeFile("${file}.junit", transformed)
-  junit "${file}.junit"
-}
-
-@NonCPS
-String xsltTransform(String template, String input) {
-  def transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer(new javax.xml.transform.stream.StreamSource(new StringReader(template)))
-  def writer = new StringWriter()
-  transformer.transform(new javax.xml.transform.stream.StreamSource(new StringReader(input)), new javax.xml.transform.stream.StreamResult(writer))
-  return writer.toString()
 }
 
 // Required due to JENKINS-27421

@@ -66,7 +66,8 @@ namespace Realms.Tests.iOS
                     throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
                 }
 
-                //options.XmlTransformFile = "nunit3-junit.xslt";
+                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+                options.XmlTransformFile = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
             }
 
             nunit.Options = options;
