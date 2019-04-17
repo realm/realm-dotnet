@@ -33,9 +33,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_RealmRead()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -62,7 +60,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
                 }
 
@@ -83,9 +81,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_RealmUpdate()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -113,7 +109,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
                 }
 
@@ -130,7 +126,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(9));
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
                 }
             });
@@ -139,9 +135,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ClassRead()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -165,7 +159,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
                 }
 
@@ -183,9 +177,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ClassUpdate()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -215,7 +207,7 @@ namespace Realms.Tests.Sync
                         obj.StringValue = "New value";
                     });
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(obj.StringValue, Is.EqualTo("New value"));
                 }
 
@@ -233,7 +225,7 @@ namespace Realms.Tests.Sync
                     });
 
                     Assert.That(obj.StringValue, Is.EqualTo("New value 2"));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
 
                     // Change is reverted
                     Assert.That(obj.StringValue, Is.EqualTo("New value"));
@@ -244,9 +236,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ClassCreate()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -273,7 +263,7 @@ namespace Realms.Tests.Sync
                     AddObjectsToRealm(realm, new[] { 4, 5, 6 });
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
                 }
 
@@ -289,7 +279,7 @@ namespace Realms.Tests.Sync
                     AddObjectsToRealm(realm, new[] { 7, 8, 9 });
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(9));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
                 }
             });
@@ -298,9 +288,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ClassSetPermissions()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -335,7 +323,7 @@ namespace Realms.Tests.Sync
                         readerPermission.CanCreate = true;
                     });
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                 }
 
                 using (var realm = GetRealm(userC, realmUri))
@@ -351,7 +339,7 @@ namespace Realms.Tests.Sync
                     AddObjectsToRealm(realm, new[] { 4, 5, 6 });
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(6));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
                 }
 
@@ -367,7 +355,7 @@ namespace Realms.Tests.Sync
                         readerPermission.CanCreate = true;
                     });
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                 }
 
                 using (var realm = GetRealm(userC, realmUri))
@@ -376,7 +364,7 @@ namespace Realms.Tests.Sync
                     // Why does my subscription timeout?
                     // var subscription = await SubscribeToObjectsAsync(realm);
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     AssertRealmPrivileges(realm, RealmPrivileges.Read | RealmPrivileges.Update | RealmPrivileges.ModifySchema | RealmPrivileges.SetPermissions);
                     AssertClassPrivileges(realm, ClassPrivileges.Read | ClassPrivileges.Subscribe | ClassPrivileges.Update | ClassPrivileges.Create);
                     AssertObjectPrivileges(realm, ObjectPrivileges.Read | ObjectPrivileges.Update | ObjectPrivileges.Delete | ObjectPrivileges.SetPermissions);
@@ -387,7 +375,7 @@ namespace Realms.Tests.Sync
                     AddObjectsToRealm(realm, new[] { 4, 5, 6 });
 
                     Assert.That(objects.Count(), Is.EqualTo(6));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(objects.Count(), Is.EqualTo(6));
                 }
             });
@@ -396,9 +384,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ObjectRead()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -440,9 +426,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ObjectUpdate()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -473,7 +457,7 @@ namespace Realms.Tests.Sync
                         obj1.StringValue = "New value";
                     });
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
 
                     Assert.That(obj1.StringValue, Is.EqualTo("New value"));
                 }
@@ -488,7 +472,7 @@ namespace Realms.Tests.Sync
                     });
 
                     Assert.That(obj1.StringValue, Is.EqualTo("New value #2"));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
 
                     Assert.That(obj1.StringValue, Is.EqualTo("New value"));
                 }
@@ -498,9 +482,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ObjectDelete()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -533,7 +515,7 @@ namespace Realms.Tests.Sync
                     });
 
                     Assert.That(subscriptionB.Results.Count(), Is.Zero);
-                    await WaitForSyncAsync(realmB);
+                    await SyncTestHelpers.WaitForSyncAsync(realmB);
                     Assert.That(subscriptionB.Results.Count(), Is.EqualTo(1));
                     objB = subscriptionB.Results.Single();
 
@@ -544,8 +526,8 @@ namespace Realms.Tests.Sync
                         realmA.Remove(objA);
                     });
 
-                    await WaitForSyncAsync(realmA);
-                    await WaitForSyncAsync(realmB);
+                    await SyncTestHelpers.WaitForSyncAsync(realmA);
+                    await SyncTestHelpers.WaitForSyncAsync(realmB);
 
                     Assert.That(subscriptionA.Results.Count(), Is.Zero);
                     Assert.That(subscriptionB.Results.Count(), Is.Zero);
@@ -559,9 +541,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_ObjectSetPermissions()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userA = await SyncTestHelpers.GetUserAsync();
                 var userB = await SyncTestHelpers.GetUserAsync();
@@ -587,7 +567,7 @@ namespace Realms.Tests.Sync
                     });
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(1));
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
 
@@ -627,7 +607,7 @@ namespace Realms.Tests.Sync
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                     AddObjectsToRealm(realm, new[] { 1, 2, 3 });
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
                 }
@@ -640,7 +620,7 @@ namespace Realms.Tests.Sync
                     });
                 }
 
-                await WaitForSyncAsync(realm);
+                await SyncTestHelpers.WaitForSyncAsync(realm);
             }
 
             return uri;

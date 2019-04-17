@@ -33,12 +33,6 @@ namespace Realms.Tests.Sync
     {
         public const string FakeRosUrl = "some.fake.server:9080";
 
-        public static string DeveloperFeatureToken => GetFeatureToken("DEVELOPER");
-
-        public static string ProfessionalFeatureToken => GetFeatureToken("PROFESSIONAL");
-
-        public static string EnterpriseFeatureToken => GetFeatureToken("ENTERPRISE");
-
         public static Credentials CreateCredentials()
         {
             return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);
@@ -49,12 +43,14 @@ namespace Realms.Tests.Sync
             return Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, createUser: false);
         }
 
-        public static void RequiresRos()
+        public static void RunRosTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
             if (Constants.RosUrl == null)
             {
                 Assert.Ignore("ROS is not setup.");
             }
+
+            TestHelpers.RunAsyncTest(testFunc, timeout);
         }
 
         public static string[] ExtractRosSettings(string[] args)
@@ -89,30 +85,6 @@ namespace Realms.Tests.Sync
 
         public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.RosUrl}:{Constants.RosSecurePort}/{path.TrimStart('/')}");
 
-        public static async Task<Exception> VerifyRosRunningAsync(CancellationToken cancellationToken)
-        {
-            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
-            {
-                var success = false;
-                Exception result = null;
-                while (!success && !cancellationToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        var response = await client.GetAsync($"http://{Constants.RosUrl}:{Constants.RosPort}/health");
-                        success = response.IsSuccessStatusCode;
-                    }
-                    catch (Exception ex)
-                    {
-                        result = ex;
-                        await Task.Delay(1000);
-                    }
-                }
-
-                return success ? null : result;
-            }
-        }
-
         public static Task<User> GetUserAsync()
         {
             var credentials = CreateCredentials();
@@ -144,31 +116,6 @@ namespace Realms.Tests.Sync
             return new FullSyncConfiguration(RealmUri($"~/{path}"), user);
         }
 
-        public static async Task<Realm> GetInstanceAsync(SyncConfigurationBase config, bool openAsync, bool waitForRemote = true)
-        {
-            if (openAsync)
-            {
-                return await Realm.GetInstanceAsync(config);
-            }
-
-            var realm = Realm.GetInstance(config);
-
-            if (waitForRemote)
-            {
-                var session = realm.GetSession();
-                try
-                {
-                    await session.WaitForDownloadAsync();
-                }
-                finally
-                {
-                    session.CloseHandle();
-                }
-            }
-
-            return realm;
-        }
-
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message) where T : Exception
         {
             var tcs = new TaskCompletionSource<Tuple<Session, T>>();
@@ -195,6 +142,34 @@ namespace Realms.Tests.Sync
             return tcs.Task;
         }
 
-        private static string GetFeatureToken(string prefix) => Environment.GetEnvironmentVariable($"{prefix}_FEATURE_TOKEN");
+        public static Task WaitForUploadAsync(Realm realm) => WaitForSyncAsync(realm, upload: true, download: false);
+
+        public static Task WaitForDownloadAsync(Realm realm) => WaitForSyncAsync(realm, upload: false, download: true);
+
+        public static async Task WaitForSyncAsync(Realm realm, bool upload = true, bool download = true)
+        {
+            var session = realm.GetSession();
+            try
+            {
+                if (upload)
+                {
+                    await session.WaitForUploadAsync();
+                }
+
+                if (upload && download)
+                {
+                    await Task.Delay(50);
+                }
+
+                if (download)
+                {
+                    await session.WaitForDownloadAsync();
+                }
+            }
+            finally
+            {
+                session.CloseHandle();
+            }
+        }
     }
 }

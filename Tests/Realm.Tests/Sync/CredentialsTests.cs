@@ -54,7 +54,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserCurrent_WhenThereIsOneUser_ShouldReturnThatUser()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var currentUser = User.Current;
@@ -66,7 +66,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserCurrent_WhenThereIsMoreThanOneUser_ShouldThrow()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 await SyncTestHelpers.GetFakeUserAsync();
                 await SyncTestHelpers.GetFakeUserAsync();
@@ -86,7 +86,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserAllLoggedIn_WhenThereIsOneUser_ShouldReturnThatUser()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
 
@@ -100,7 +100,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserAllLoggedIn_WhenThereAreNineUsers_ShouldReturnAllOfThem()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var users = new List<User>();
                 for (var i = 0; i < 9; i++)
@@ -119,7 +119,7 @@ namespace Realms.Tests.Sync
         [TestCase("foo://bar")]
         public void UserLogin_WrongProtocolTestCases(string url)
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 try
                 {
@@ -139,9 +139,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserChangePasswordTest()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
@@ -158,9 +156,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void AdminChangePasswordTest()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
@@ -182,9 +178,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogout_RevokesRefreshToken()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var userId = Guid.NewGuid().ToString();
                 var credentials = Credentials.UsernamePassword(userId, OriginalPassword, createUser: true);
@@ -222,9 +216,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLookup_WhenTargetUserExists_ShouldReturnResponse()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
 
@@ -247,9 +239,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLookup_WhenTargetUserDoesNotExist_ShouldReturnNull()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
 
@@ -261,9 +251,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLookup_WhenTargetUserIsSelf_ShouldReturnResponse()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var admin = await User.LoginAsync(SyncTestHelpers.AdminCredentials(), SyncTestHelpers.AuthServerUri);
 
@@ -282,9 +270,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLookup_WhenUserIsNotAdmin_ShouldThrow()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
 
@@ -303,9 +289,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenAnonymous_LogsUserIn()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var credentials = Credentials.Anonymous();
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
@@ -318,9 +302,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenAnonymousAndSameCredentials_ShouldLoginDifferentUser()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var credentials = Credentials.Anonymous();
                 var first = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
@@ -334,9 +316,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenAnonymousAndDifferentCredentials_ShouldLoginDifferentUser()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
                 var second = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
@@ -349,9 +329,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenAnonymousAndOtherUsersLoggedIn_ShouldLoginDifferentUser()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 // Login a regular user
                 await SyncTestHelpers.GetUserAsync();
@@ -374,9 +352,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenAnonymous_AfterLogoutShouldLoginDifferentUser()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 // Login an anonymous user
                 var first = await User.LoginAsync(Credentials.Anonymous(), SyncTestHelpers.AuthServerUri);
@@ -394,9 +370,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenNickname_LogsUserIn()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var credentials = Credentials.Nickname(Guid.NewGuid().ToString());
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
@@ -409,9 +383,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenNickname_LogsSameUserIn()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var nickname = Guid.NewGuid().ToString();
                 var first = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);
@@ -428,9 +400,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void UserLogin_WhenNicknameAfterLogout_LogsSameUserIn()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var nickname = Guid.NewGuid().ToString();
                 var first = await User.LoginAsync(Credentials.Nickname(nickname), SyncTestHelpers.AuthServerUri);

@@ -279,7 +279,7 @@ namespace Realms.Tests.Database
         [Test]
         public void GetByPrimaryKeyDifferentThreads()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 _realm.Write(() =>
                 {

@@ -33,7 +33,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithoutPath()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
@@ -54,7 +54,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithRelativePath()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
@@ -76,7 +76,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
@@ -101,7 +101,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithEncryptionKey_DoesntThrow()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
@@ -120,7 +120,7 @@ namespace Realms.Tests.Sync
         [TestCase("foo://bar/~/foo")]
         public void SyncConfiguration_WrongProtocolTests(string url)
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
 
@@ -137,7 +137,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void DefaultConfiguration_WhenMoreThanOneUserLoggedIn_ShouldThrow()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 await SyncTestHelpers.GetFakeUserAsync();
                 await SyncTestHelpers.GetFakeUserAsync();
@@ -150,7 +150,7 @@ namespace Realms.Tests.Sync
         [TestCase("https", "realms")]
         public void DefaultConfiguration_WhenOneUserLoggedIn_ShouldWork(string userScheme, string realmScheme)
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 await SyncTestHelpers.GetFakeUserAsync(scheme: userScheme);
 
@@ -164,9 +164,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_CanBeSetAsRealmConfigurationDefault()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
 
@@ -188,7 +186,7 @@ namespace Realms.Tests.Sync
         [TestCase("~/bar", "/~/bar")]
         public void SyncConfiguration_WithRelativeUri_ResolvesCorrectly(string path, string expected)
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var syncConfiguration = new FullSyncConfiguration(new Uri(path, UriKind.Relative), user);
@@ -200,9 +198,7 @@ namespace Realms.Tests.Sync
         [TestCase(LogLevel.Info)]
         public void SyncConfiguration_LoggerFactory_Test(LogLevel logLevel)
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var logBuilder = new StringBuilder();
 
@@ -220,7 +216,7 @@ namespace Realms.Tests.Sync
                         realm.Add(new Person());
                     });
 
-                    await GetSession(realm).WaitForUploadAsync();
+                    await SyncTestHelpers.WaitForUploadAsync(realm);
                 }
 
                 var log = logBuilder.ToString();

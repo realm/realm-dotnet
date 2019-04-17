@@ -65,7 +65,7 @@ namespace Realms.Tests.Database
         [Test]
         public void InMemoryRealm_ReceivesNotifications()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
 
@@ -138,7 +138,7 @@ namespace Realms.Tests.Database
         [Test]
         public void InMemoryRealm_WhenGarbageCollected_DeletesData()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 WeakReference realmReference = null;
                 new Action(() =>

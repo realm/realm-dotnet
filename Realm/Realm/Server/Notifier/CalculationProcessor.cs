@@ -60,8 +60,8 @@ namespace Realms.Server
             {
                 if (!_locks.TryGetValue(key, out var locker))
                 {
-                            // TODO: figure out how to propagate this
-                            throw new Exception("Should not be possible!");
+                    // TODO: figure out how to propagate this
+                    throw new Exception("Should not be possible!");
                 }
 
                 while (TryDequeue(key, queue, out var value))

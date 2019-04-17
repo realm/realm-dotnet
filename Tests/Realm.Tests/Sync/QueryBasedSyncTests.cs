@@ -35,7 +35,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void SubscribeForObjects_ReturnsExpectedQuery(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -62,7 +62,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void SubscribeForObjects_SynchronizesOnlyMatchingObjects(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -88,7 +88,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void SubscribeForObjects_WhenTwoQueriesOverlap_SynchronizesTheUnion(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -119,7 +119,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void SubscribeForObjects_WhenTwoQueriesDontOverlap_SynchronizesTheUnion(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -150,7 +150,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void NamedSubscription_CanResubscribe(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -174,7 +174,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void NamedSubscription_CannotChangeQuery(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -206,7 +206,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void UnnamedSubscription_CanUnsubscribe(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -232,7 +232,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void NamedSubscription_CanUnsubscribe(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -258,7 +258,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void NamedSubscription_CanUnsubscribeByName(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -282,7 +282,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void Subcribe_WaitForSynchronization_Multiple(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -299,7 +299,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void WaitForSynchronization_OnBackgroundThread_Throws(bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
@@ -318,8 +318,6 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetQueryBasedRealm(bool openAsync, [CallerMemberName] string realmPath = null)
         {
-            SyncTestHelpers.RequiresRos();
-
             var user = await SyncTestHelpers.GetUserAsync();
             var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}_{openAsync}"), user, Guid.NewGuid().ToString())
             {
@@ -345,7 +343,7 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                await GetSession(original).WaitForUploadAsync();
+                await SyncTestHelpers.WaitForUploadAsync(original);
             }
 
             try
@@ -361,19 +359,9 @@ namespace Realms.Tests.Sync
                 ObjectClasses = config.ObjectClasses
             };
 
-            Realm result;
-
             // We test both `GetInstance` and `GetInstanceAsync` to guard against regressions:
             // https://github.com/realm/realm-dotnet/issues/1814
-            if (openAsync)
-            {
-                result = await GetRealmAsync(config).Timeout(5000);
-            }
-            else
-            {
-                result = GetRealm(config);
-                await GetSession(result).WaitForDownloadAsync();
-            }
+            var result = await GetRealmAsync(config, openAsync).Timeout(5000);
 
             Assert.That(result.All<ObjectB>().Count(), Is.EqualTo(0));
             Assert.That(result.All<ObjectA>().Count(), Is.EqualTo(0));

@@ -62,9 +62,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_ApplyPermissions_WithUserId_GrantsAndRevokesPermissions()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
@@ -77,9 +75,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_ApplyPermissions_WithEmail_GrantsAndRevokesPermissions()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bobEmail = $"{Guid.NewGuid()}@foo.bar";
@@ -94,9 +90,7 @@ namespace Realms.Tests.Sync
         [Ignore("Regression in ROS")]
         public void User_OfferPermissions_GrantsPermissions()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
@@ -117,9 +111,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_OfferPermissions_WhenExpired_ShouldThrow()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
 
@@ -133,9 +125,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_OfferPermissions_WhenNoAccess_ShouldThrow()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
 
@@ -149,9 +139,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_AcceptPermissionOffer_WhenOfferExpired_ShouldGetError()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
@@ -175,9 +163,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void User_AcceptPermissionOffer_WhenTokenIsInvalid_ShouldGetError()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
 
@@ -247,9 +233,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void WriteToReadOnlyRealm_ThrowsPermissionDenied()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async() =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
@@ -272,7 +256,7 @@ namespace Realms.Tests.Sync
                     try
                     {
                         // Sometimes PermissionDenied will be thrown too fast moving the session to an error state
-                        await GetSession(realm).WaitForUploadAsync();
+                        await SyncTestHelpers.WaitForUploadAsync(realm);
                     }
                     catch
                     {

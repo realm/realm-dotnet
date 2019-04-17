@@ -37,8 +37,6 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void TrustedCA_WhenProvided_ValidatesCorrectly(bool openAsync)
         {
-            SyncTestHelpers.RequiresRos();
-
             TestSSLCore(config =>
             {
                 config.TrustedCAPath = TestHelpers.CopyBundledFileToDocuments("trusted_ca.pem", "trusted_ca.pem");
@@ -48,9 +46,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void TrustedCA_WhenFileDoesntExist_Throws()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 var config = new FullSyncConfiguration(SyncTestHelpers.RealmUri("~/TrustedCA_WhenFileDoesntExist_Throws"), user)
@@ -65,8 +61,6 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void EnableSSLValidation_WhenFalse_ValidatesCorrectly(bool openAsync)
         {
-            SyncTestHelpers.RequiresRos();
-
             TestSSLCore(config =>
             {
                 config.EnableSSLValidation = false;
@@ -75,7 +69,7 @@ namespace Realms.Tests.Sync
 
         private void TestSSLCore(Action<FullSyncConfiguration> setupSecureConfig, bool openAsync)
         {
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 const string path = "~/TestSSLCore";
@@ -97,13 +91,11 @@ namespace Realms.Tests.Sync
                         });
                     });
 
-                    await GetSession(realm).WaitForUploadAsync();
+                    await SyncTestHelpers.WaitForUploadAsync(realm);
                 }
 
-                using (var newRealm = await SyncTestHelpers.GetInstanceAsync(secureConfig, openAsync))
+                using (var newRealm = await GetRealmAsync(secureConfig, openAsync))
                 {
-                    CleanupOnTearDown(newRealm);
-
                     var items = newRealm.All<IntPrimaryKeyWithValueObject>();
 
                     Assert.That(items.Count(), Is.EqualTo(1));

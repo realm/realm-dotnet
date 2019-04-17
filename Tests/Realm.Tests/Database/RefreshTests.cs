@@ -57,7 +57,7 @@ namespace Realms.Tests.Database
         [Test]
         public void CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 _realm.Write(() =>
                 {
