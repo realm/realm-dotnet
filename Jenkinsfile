@@ -315,6 +315,8 @@ def NetCoreTest(String nodeName) {
         try {
           if (isUnix()) {
             if (nodeName == 'docker') {
+              // copy global.json here so it's accessible inside the docker container for the MSBuild SDK lookup
+              sh 'cp $WORKSPACE/global.json .'
               def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
               test_runner_image.pull()
               withRos('3.20.0') { ros ->
@@ -404,7 +406,7 @@ def msbuild(Map args = [:]) {
 }
 
 def nunit(String file) {
-  String template = readFile('nunit3-junit.xslt')
+  String template = readFile('EmbeddedResources/nunit3-junit.xslt')
   String input = readFile(file)
   String transformed = xsltTransform(template, input)
   writeFile("${file}.junit", transformed)

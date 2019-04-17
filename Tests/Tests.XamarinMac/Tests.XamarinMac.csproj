@@ -96,23 +96,5 @@
       <SmartLink>False</SmartLink>
     </NativeReference>
   </ItemGroup>
-  <ItemGroup>
-    <BundleResource Include="..\Realm.Tests\ForMigrationsToCopyAndMigrate.realm">
-      <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </BundleResource>
-    <BundleResource Include="..\Realm.Tests\nunit3-junit.xslt">
-      <Link>Resources\nunit3-junit.xslt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </BundleResource>
-    <BundleResource Include="..\Realm.Tests\sync-1.x.realm">
-      <Link>Resources\sync-1.x.realm</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </BundleResource>
-    <BundleResource Include="..\Realm.Tests\sync-1.x-encrypted.realm">
-      <Link>Resources\sync-1.x-encrypted.realm</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </BundleResource>
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>
