@@ -308,7 +308,7 @@ def NetCoreTest(String nodeName) {
       dir('Tests/Realm.Tests') {
         String script = """
           dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
-          dotnet run -f netcoreapp20 --no-build -- labels=After --result=${pwd()}/temp.xml
+          dotnet run -c ${configuration} -f netcoreapp20 --no-build -- labels=After --result=${pwd()}/temp.xml
         """
         try {
           if (isUnix()) {

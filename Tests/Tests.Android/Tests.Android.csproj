@@ -76,7 +76,10 @@
       <Project>{78799FCD-BE2E-4ECE-A52E-662846615B58}</Project>
       <Name>Realm.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" Condition="'$(UseRealmNupkgsWithVersion)' != ''" />
   </ItemGroup>
   <ItemGroup>
