@@ -172,7 +172,7 @@ stage('Test') {
 
         try {
           sh 'mkdir -p temp'
-          runSimulator('Tests.iOS.app', 'io.realm.xamarintests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.xml")
+          runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.xml")
         } finally {
           junit 'temp/TestResults.xml'
         }
