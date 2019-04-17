@@ -116,7 +116,11 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     {
         foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject)))
         {
-            if (type.BaseType.IsSameAs(_references.RealmObject))
+            if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
+            {
+                continue;
+            }
+            else if (type.BaseType.IsSameAs(_references.RealmObject))
             {
                 yield return type;
             }

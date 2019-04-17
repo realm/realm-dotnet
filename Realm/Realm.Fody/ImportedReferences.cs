@@ -235,7 +235,7 @@ namespace RealmWeaver
             }
         }
 
-        private void InitializeRealm(AssemblyNameReference realmAssembly)
+        private void InitializeRealm(IMetadataScope realmAssembly)
         {
             Realm = new TypeReference("Realms", "Realm", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
@@ -496,6 +496,10 @@ namespace RealmWeaver
             if (realmAssembly != null)
             {
                 references.InitializeRealm(realmAssembly);
+            }
+            else if (module.Name == "Realm.dll")
+            {
+                references.InitializeRealm(module);
             }
 
             return references;
