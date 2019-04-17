@@ -112,7 +112,7 @@ stage('Build wrappers') {
   parallel jobs
 }
 
-String packageVersion
+packageVersion = ''
 stage('Package') {
   nodeWithCleanup('windows && dotnet') {
     unstash 'dotnet-source'
@@ -224,15 +224,14 @@ stage('Test') {
 
         lock("${env.NODE_NAME}-android") {
           boolean archiveLog = true
-          String backgroundPid
 
           try {
             // start logcat
-            backgroundPid = sh script: '''
+            sh '''
               adb logcat -c
               adb logcat -v time > "logcat.txt" &
-              echo $!
-            ''', returnStdout: true
+              echo $! > logcat.pid
+            '''
 
             sh '''
               adb uninstall io.realm.xamarintests
@@ -255,15 +254,13 @@ stage('Test') {
             archiveLog = false
           } finally {
             // stop logcat
-            if (backgroundPid != null) {
-              sh "kill ${backgroundPid}"
-              if (archiveLog) {
-                zip([
-                  zipFile: 'android-logcat.zip',
-                  archive: true,
-                  glob: 'logcat.txt'
-                ])
-              }
+            sh 'kill `cat logcat.pid`'
+            if (archiveLog) {
+              zip([
+                zipFile: 'android-logcat.zip',
+                archive: true,
+                glob: 'logcat.txt'
+              ])
             }
           }
         }
@@ -284,7 +281,7 @@ stage('Test') {
               withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
                 bat '''
                   mkdir "%TMP%"
-                  Realm.Tests.exe --result=temp.xml --labels=After
+                  Realm.Tests.exe --result=%cd%\\temp.xml --labels=After
                 '''
               }
             } finally {
@@ -311,7 +308,7 @@ def NetCoreTest(String nodeName) {
       dir('Tests/Realm.Tests') {
         String script = """
           dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
-          dotnet run -f netcoreapp20 --no-build -- labels=After --result=temp.xml
+          dotnet run -f netcoreapp20 --no-build -- labels=After --result=${pwd()}/temp.xml
         """
         try {
           if (isUnix()) {
