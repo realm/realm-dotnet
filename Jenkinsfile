@@ -281,7 +281,7 @@ stage('Test') {
               withEnv(["TMP=${env.WORKSPACE}\\temp"]) {
                 bat '''
                   mkdir "%TMP%"
-                  Realm.Tests.exe --result=%cd%\\temp.xml --labels=After
+                  Realm.Tests.exe --result=temp.xml --labels=After
                 '''
               }
             } finally {
@@ -296,7 +296,9 @@ stage('Test') {
     '.NET Core Windows': NetCoreTest('dotnet && windows')
   ]
 
-  parallel jobs
+  timeout(time: 30, unit: 'MINUTES') {
+    parallel jobs
+  }
 }
 
 def NetCoreTest(String nodeName) {
@@ -308,12 +310,13 @@ def NetCoreTest(String nodeName) {
       dir('Tests/Realm.Tests') {
         String script = """
           dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
-          dotnet run -c ${configuration} -f netcoreapp20 --no-build -- labels=After --result=${pwd()}/temp.xml
+          dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${pwd()}/temp.xml
         """
         try {
           if (isUnix()) {
             if (nodeName == 'docker') {
               def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+              test_runner_image.pull()
               withRos('3.20.0') { ros ->
                 test_runner_image.inside("--link ${ros.id}:ros") {
                   script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
@@ -398,7 +401,7 @@ def msbuild(Map args = [:]) {
 
 def nunit(String file) {
   String template = readFile('nunit3-junit.xslt')
-  String input = readFile(file)
+  String input = readFile("${pwd()}/${file}")
   writeFile("${file}.junit", xsltTransform(template, input))
   junit "${file}.junit"
 }
