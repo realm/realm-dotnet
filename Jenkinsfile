@@ -171,7 +171,7 @@ stage('Test') {
         unstash 'ios-tests'
 
         sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "Tranforming using nunit3-junit.xslt", "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
+        runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
         junit 'temp/TestResults.iOS.xml'
       }
     },
