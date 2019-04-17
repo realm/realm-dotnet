@@ -367,10 +367,10 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
+                else if (IsStringContainsWithComparison(node.Method, out var index))
                 {
                     member = node.Arguments[0] as MemberExpression;
-                    stringArgumentIndex = 1;
+                    stringArgumentIndex = index;
                     queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
@@ -484,6 +484,26 @@ namespace Realms
             }
 
             return true;
+        }
+
+        private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
+        {
+            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            {
+                // This is an extension method, so the string to compare against is at position 1.
+                stringArgumentIndex = 1;
+                return true;
+            }
+
+            // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
+            // string.Contains overload that accepts comparison. 
+            stringArgumentIndex = 0;
+            var parameters = method.GetParameters();
+            return method.DeclaringType == typeof(string) &&
+                method.Name == nameof(string.Contains) &&
+                parameters.Length == 2 &&
+                parameters[0].ParameterType == typeof(string) &&
+                parameters[1].ParameterType == typeof(StringComparison);
         }
 
         protected override Expression VisitUnary(UnaryExpression node)
