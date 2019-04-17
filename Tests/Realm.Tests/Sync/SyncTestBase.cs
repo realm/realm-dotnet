@@ -106,19 +106,21 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config)
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true)
         {
-            var result = await Realm.GetInstanceAsync(config);
+            Realm result;
+            if (openAsync)
+            {
+                result = await Realm.GetInstanceAsync(config);
+            }
+            else
+            {
+                result = Realm.GetInstance(config);
+                await SyncTestHelpers.WaitForDownloadAsync(result);
+            }
+
             CleanupOnTearDown(result);
             return result;
-        }
-
-        protected async Task WaitForSyncAsync(Realm realm)
-        {
-            var session = GetSession(realm);
-            await session.WaitForUploadAsync();
-            await Task.Delay(50);
-            await session.WaitForDownloadAsync();
         }
     }
 }

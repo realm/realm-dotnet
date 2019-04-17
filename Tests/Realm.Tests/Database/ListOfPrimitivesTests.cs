@@ -454,23 +454,20 @@ namespace Realms.Tests.Database
 
         private void RunManagedTests<T>(Func<ListsObject, IList<T>> itemsGetter, T[] toAdd)
         {
-            Task.Run(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                AsyncContext.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        var listObject = new ListsObject();
-                        _realm.Write(() => _realm.Add(listObject));
-                        var items = itemsGetter(listObject);
-                        await RunManagedTestsCore(items, toAdd);
-                    }
-                    finally
-                    {
-                        _realm.Dispose();
-                    }
-                });
-            }).Timeout(105000).Wait();
+                    var listObject = new ListsObject();
+                    _realm.Write(() => _realm.Add(listObject));
+                    var items = itemsGetter(listObject);
+                    await RunManagedTestsCore(items, toAdd);
+                }
+                finally
+                {
+                    _realm.Dispose();
+                }
+            }, timeout: 100000);
         }
 
         private static async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)

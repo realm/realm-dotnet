@@ -91,7 +91,7 @@ namespace Realms.Tests.Database
         [Test]
         public void GetUniqueInstancesDifferentThreads()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 Realm realm1 = null;
                 Realm realm2 = null;
@@ -333,7 +333,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Compact_WhenOpenOnDifferentThread_ShouldReturnFalse()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 using (var realm = Realm.GetInstance())
                 {
@@ -390,7 +390,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmChangedShouldFireForEveryInstance()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 using (var realm1 = Realm.GetInstance())
                 using (var realm2 = Realm.GetInstance())
@@ -478,7 +478,7 @@ namespace Realms.Tests.Database
         [Test]
         public void Dispose_WhenOnDifferentThread_ShouldNotInvalidateOtherInstances()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
 
@@ -504,7 +504,7 @@ namespace Realms.Tests.Database
         [Test]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var realm = Realm.GetInstance();
                 realm.Dispose();
@@ -546,7 +546,7 @@ namespace Realms.Tests.Database
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 Realm realm = null;
                 var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;

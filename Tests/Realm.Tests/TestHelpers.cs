@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
 #if __ANDROID__
@@ -177,6 +178,24 @@ namespace Realms.Tests
             }
 
             throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+        }
+
+        public static async Task<bool> EnsureAsync(Func<bool> testFunc, int retryDelay, int attempts)
+        {
+            var success = testFunc();
+            while (!success && attempts > 0)
+            {
+                await Task.Delay(retryDelay);
+                success = testFunc();
+                attempts--;
+            }
+
+            return success;
+        }
+
+        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000)
+        {
+            AsyncContext.Run(() => testFunc().Timeout(timeout));
         }
     }
 }

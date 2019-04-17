@@ -627,7 +627,7 @@ namespace Realms.Tests.Database
         [Test]
         public void WhenSynchronizationContextExists_ShouldAutoRefresh()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
                 var query = _realm.All<Person>();
@@ -659,7 +659,7 @@ namespace Realms.Tests.Database
         [Test]
         public void SubscribeForNotifications_InvokedWithInitialCallback()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var initCalls = 0;
                 var updateCalls = 0;

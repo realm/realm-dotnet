@@ -93,11 +93,11 @@ namespace Realms.Tests.Database
         [Test]
         public void TestTaskTimeout()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 try
                 {
-                    await Task.Delay(500).Timeout(250);
+                    await Task.Delay(100).Timeout(10);
                 }
                 catch (Exception ex)
                 {

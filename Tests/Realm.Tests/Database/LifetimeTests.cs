@@ -90,7 +90,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.IgnoreOnWindows("GC blocks on Windows");
 
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async delegate
             {
                 var realm = GetWeakRealm();
                 Func<Transaction> transactionFactory = () => ((Realm)realm.Target).BeginWrite();

@@ -44,7 +44,7 @@ namespace Realms.Tests.Sync
         [TestCase(false, false)]
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
@@ -81,9 +81,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void GetInstanceAsync_ShouldDownloadRealm(bool singleTransaction)
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
 
@@ -96,7 +94,7 @@ namespace Realms.Tests.Sync
                 {
                     AddDummyData(realm, singleTransaction);
 
-                    await GetSession(realm).WaitForUploadAsync();
+                    await SyncTestHelpers.WaitForUploadAsync(realm);
                 }
 
                 using (var asyncRealm = await GetRealmAsync(asyncConfig))
@@ -110,9 +108,7 @@ namespace Realms.Tests.Sync
         [TestCase(false)]
         public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
@@ -160,9 +156,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void GetInstanceAsync_CreatesNonExistentRealm()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
                 var realmUri = SyncTestHelpers.RealmUri("~/GetInstanceAsync_CreatesNonExistentRealm");
@@ -185,9 +179,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void GetInstanceAsync_ReportsProgress()
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var realmPath = Guid.NewGuid().ToString();
                 var user = await SyncTestHelpers.GetUserAsync();
@@ -204,7 +196,7 @@ namespace Realms.Tests.Sync
                         });
                     }
 
-                    await WaitForSyncAsync(realm);
+                    await SyncTestHelpers.WaitForSyncAsync(realm);
                 }
 
                 var callbacksInvoked = 0;
@@ -231,7 +223,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
                 config.ObjectClasses = new[] { typeof(AllTypesObject) };
@@ -268,7 +260,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
                 config.IsDynamic = true;

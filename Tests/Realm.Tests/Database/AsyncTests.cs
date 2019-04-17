@@ -57,7 +57,7 @@ namespace Realms.Tests.Database
         [Test]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var currentThreadId = Environment.CurrentManagedThreadId;
                 var otherThreadId = currentThreadId;
@@ -78,7 +78,7 @@ namespace Realms.Tests.Database
         [Test]
         public void AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 await Task.Run(async () =>
                 {
@@ -105,7 +105,7 @@ namespace Realms.Tests.Database
         [Test]
         public void AsyncWrite_UpdateViaPrimaryKey()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 IntPrimaryKeyWithValueObject obj = null;
                 _realm.Write(() =>
@@ -127,7 +127,7 @@ namespace Realms.Tests.Database
         [Test]
         public void AsyncWrite_ShouldRethrowExceptions()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 const string message = "this is an exception from user code";
                 try
@@ -145,7 +145,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RefreshAsync_Tests()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 Assert.That(SynchronizationContext.Current != null);
 

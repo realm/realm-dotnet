@@ -34,9 +34,7 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(MergeTestCases))]
         public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
-            SyncTestHelpers.RequiresRos();
-
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                            .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
@@ -58,13 +56,13 @@ namespace Realms.Tests.Sync
                             // Sync went through too quickly (that's why we do 5 attempts)
                         }
 
-                        await GetSession(realm).WaitForUploadAsync();
+                        await SyncTestHelpers.WaitForUploadAsync(realm);
                     }
                 }
 
                 using (var realm = await GetSyncedRealm(objectType))
                 {
-                    await GetSession(realm).WaitForDownloadAsync();
+                    await SyncTestHelpers.WaitForDownloadAsync(realm);
                     var allObjects = realm.All(objectType.Name).ToArray();
 
                     Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));

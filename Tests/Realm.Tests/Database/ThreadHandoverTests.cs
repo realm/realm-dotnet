@@ -34,7 +34,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectReference_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var objReference = SetupObjectReference();
 
@@ -55,7 +55,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ListReference_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
                 obj.Dogs.Add(new Dog { Name = "1" });
@@ -82,7 +82,7 @@ namespace Realms.Tests.Database
         [Test]
         public void QueryReference_WhenNoQueryApplied_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var queryReference = SetupQueryReference(q => q);
                 await AssertQueryReferenceAsync(queryReference, new[] { 1, 2, 3, 4 });
@@ -92,7 +92,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ThreadSafeReference_CanOnlyBeConsumedOnce()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var objReference = SetupObjectReference();
 
@@ -184,7 +184,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ThreadReference_WhenResolvedWithDifferentConfiguration_ShouldFail()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var objReference = SetupObjectReference();
 
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ThreadSafeReference_WhenTargetRealmInTransaction_ShouldFail()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var objReference = SetupObjectReference();
 
@@ -242,7 +242,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectReference_ResolveDeletedObject_ShouldReturnNull()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new IntPropertyObject { Int = 12 };
                 _realm.Write(() => _realm.Add(obj));
@@ -265,7 +265,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ListReference_ResolveDeletedParentObject_ShouldReturnNull()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var obj = new Owner();
                 obj.Dogs.Add(new Dog { Name = "1" });
@@ -292,7 +292,7 @@ namespace Realms.Tests.Database
         [Test]
         public void QueryReference_WhenFilterApplied_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 _realm.Write(() =>
                 {
@@ -311,7 +311,7 @@ namespace Realms.Tests.Database
         [Test]
         public void QueryReference_WhenSortApplied_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var queryReference = SetupQueryReference(q => q.OrderByDescending(o => o.Int));
                 await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 2, 1 });
@@ -321,7 +321,7 @@ namespace Realms.Tests.Database
         [Test]
         public void QueryReference_WhenSortAndFilterApplied_ShouldWork()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var queryReference = SetupQueryReference(q => q.Where(o => o.Int != 2).OrderByDescending(o => o.Int));
                 await AssertQueryReferenceAsync(queryReference, new[] { 4, 3, 1 });

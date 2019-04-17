@@ -40,7 +40,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
@@ -68,7 +68,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_GetSession_ShouldReturnSameObject()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
                 using (var realm = GetRealm(config))
@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Error_ShouldPassCorrectSession()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
                 using (var realm = GetRealm(config))
@@ -111,7 +111,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_DivergingHistories_ShouldRaiseClientResetException()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
                 ClientResetException error = null;
@@ -142,7 +142,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Error_WhenInvalidRefreshToken()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var errors = new List<Exception>();
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
@@ -175,7 +175,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Error_WhenInvalidAccessToken()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var errors = new List<Exception>();
                 var config = await SyncTestHelpers.GetFakeConfigAsync();
@@ -208,11 +208,9 @@ namespace Realms.Tests.Sync
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
-            SyncTestHelpers.RequiresRos();
-
             const int ObjectSize = 1000000;
             const int ObjectsToRecord = 2;
-            AsyncContext.Run(async () =>
+            SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var config = await SyncTestHelpers.GetIntegrationConfigAsync("progress");
                 var realm = GetRealm(config);
@@ -291,7 +289,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Stop_StopsSession()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 // OpenRealmAndStopSession will call Stop and assert the state changed
                 await OpenRealmAndStopSession();
@@ -301,7 +299,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Start_ResumesSession()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var session = await OpenRealmAndStopSession();
 
@@ -313,7 +311,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Stop_IsIdempotent()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var session = await OpenRealmAndStopSession();
 
@@ -326,7 +324,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Start_IsIdempotent()
         {
-            AsyncContext.Run(async () =>
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var session = await OpenRealmAndStopSession();
 

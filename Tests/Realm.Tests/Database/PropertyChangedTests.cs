@@ -59,7 +59,7 @@ namespace Realms.Tests.Database
         [Test]
         public void UnmanagedObject()
         {
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 string notifiedPropertyName = null;
                 var person = new Person();
@@ -124,7 +124,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSameInstanceChanged()
         {
-            AsyncContext.Run(delegate
+            TestHelpers.RunAsyncTest(() =>
             {
                 return TestManagedAsync((person, name) =>
                 {
@@ -140,7 +140,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenAnotherInstanceChanged()
         {
-            AsyncContext.Run(delegate
+            TestHelpers.RunAsyncTest(() =>
             {
                 return TestManagedAsync((_, name) =>
                 {
@@ -157,7 +157,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenAnotherThreadInstanceChanged()
         {
-            AsyncContext.Run(delegate
+            TestHelpers.RunAsyncTest(() =>
             {
                 return TestManagedAsync(async (_, name) =>
                 {
@@ -194,7 +194,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenAnotherThreadInstanceTransactionRollback()
         {
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var notifiedPropertyNames = new List<string>();
                 var person = new Person();
@@ -439,7 +439,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.IgnoreOnWindows("GC blocks on Windows");
 
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var notifiedPropertyNames = new List<string>();
                 WeakReference personReference = null;
@@ -515,7 +515,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
-            AsyncContext.Run(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var item = new AgedObject
                 {

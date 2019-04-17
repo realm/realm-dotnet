@@ -66,6 +66,7 @@ namespace Realms.Server
             {
                 return _encryptionKey;
             }
+
             set
             {
                 if (value != null && value.Length != 64)
