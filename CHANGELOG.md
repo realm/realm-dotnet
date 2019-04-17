@@ -1,3 +1,15 @@
+3.5.0 (TBD)
+------------------
+
+### Enhancements
+* Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Object Server: 3.11.0 or later.
+
 3.4.0 (2019-01-09)
 ------------------
 

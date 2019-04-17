@@ -286,6 +286,57 @@ namespace Tests.Sync
             });
         }
 
+        [Test]
+        public void Session_Stop_StopsSession()
+        {
+            AsyncContext.Run(async () =>
+            {
+                // OpenRealmAndStopSession will call Stop and assert the state changed
+                await OpenRealmAndStopSession();
+            });
+        }
+
+        [Test]
+        public void Session_Start_ResumesSession()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var session = await OpenRealmAndStopSession();
+
+                session.Start();
+                Assert.That(session.State, Is.EqualTo(SessionState.Active));
+            });
+        }
+
+        [Test]
+        public void Session_Stop_IsIdempotent()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var session = await OpenRealmAndStopSession();
+
+                // Stop it again
+                session.Stop();
+                Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
+            });
+        }
+
+        [Test]
+        public void Session_Start_IsIdempotent()
+        {
+            AsyncContext.Run(async () =>
+            {
+                var session = await OpenRealmAndStopSession();
+
+                session.Start();
+                Assert.That(session.State, Is.EqualTo(SessionState.Active));
+
+                // Start it again
+                session.Start();
+                Assert.That(session.State, Is.EqualTo(SessionState.Active));
+            });
+        }
+
         [TestCase(ProgressDirection.Upload, ProgressMode.ReportIndefinitely)]
         [TestCase(ProgressDirection.Download, ProgressMode.ReportIndefinitely)]
         [TestCase(ProgressDirection.Upload, ProgressMode.ForCurrentlyOutstandingWork)]
@@ -518,6 +569,25 @@ namespace Tests.Sync
                     Assert.That(callbacksInvoked, Is.EqualTo(8));
                 }
             });
+        }
+
+        /// <summary>
+        /// Opens a random realm and calls session.Stop(). It will assert state changes
+        /// to Inactive.
+        /// </summary>
+        /// <returns>The stopped session.</returns>
+        private async Task<Session> OpenRealmAndStopSession()
+        {
+            var config = await SyncTestHelpers.GetFakeConfigAsync();
+            var realm = GetRealm(config);
+            var session = GetSession(realm);
+
+            Assert.That(session.State, Is.EqualTo(SessionState.Active));
+
+            session.Stop();
+            Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
+
+            return session;
         }
     }
 }

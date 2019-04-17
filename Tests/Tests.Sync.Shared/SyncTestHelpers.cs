@@ -128,7 +128,7 @@ namespace Tests.Sync
         public static async Task<FullSyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             var user = await GetFakeUserAsync(userId);
-            var serverUri = new Uri("realm://localhost:9080/foobar");
+            var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid().ToString()}");
             return new FullSyncConfiguration(serverUri, user, optionalPath);
         }
 
