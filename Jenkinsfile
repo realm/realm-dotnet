@@ -167,7 +167,7 @@ stage('Test') {
           }
         }
       }
-      nodeWithCleanup('osx || macos') {
+      nodeWithCleanup('osx') {
         unstash 'ios-tests'
 
         sh 'mkdir -p temp'
@@ -260,7 +260,7 @@ stage('Test') {
       }
     },
     '.NET Framework Windows': {
-      nodeWithCleanup('windows && dotnet', false) {
+      nodeWithCleanup('windows && dotnet') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -292,7 +292,7 @@ stage('Test') {
 
 def NetCoreTest(String nodeName) {
   return {
-    nodeWithCleanup(nodeName, false) {
+    nodeWithCleanup(nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 

@@ -195,7 +195,7 @@ namespace Realms.Tests.Sync
                     {
                         Assert.That(subscription2.State, Is.EqualTo(SubscriptionState.Error));
                         Assert.That(subscription2.Error, Is.Not.Null);
-                        Assert.That(subscription2.Error.Message, Does.Contain("An existing subscription exists with the same name"));
+                        Assert.That(subscription2.Error.Message, Does.Contain("An existing subscription exists with the name"));
                         Assert.That(ex, Is.EqualTo(subscription2.Error));
                     }
                 }
