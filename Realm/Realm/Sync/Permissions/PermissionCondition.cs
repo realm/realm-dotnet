@@ -47,6 +47,7 @@ namespace Realms.Sync
         /// access will not be write to a Realm, even if the default permissions grant <see cref="AccessLevel.Write"/>
         /// access.
         /// </remarks>
+        /// <value>A <see cref="PermissionCondition"/> describing the default permissions.</value>
         public static PermissionCondition Default => UserId("*");
 
         /// <summary>

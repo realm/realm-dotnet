@@ -30,7 +30,7 @@ namespace Realms.Server
         private readonly Regex _pathRegex;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegexNotificationHandler"/>.
+        /// Initializes a new instance of the <see cref="RegexNotificationHandler"/> class.
         /// </summary>
         /// <param name="regex">
         /// A regular expression that will be used to match Realm paths against.
@@ -54,7 +54,7 @@ namespace Realms.Server
         /// <remarks>
         /// Handlers will be invoked sequentially in the order in which they have been supplied
         /// in the <see cref="NotifierConfiguration.Handlers"/>.
-        ///
+        /// <para/>
         /// This method will be invoked sequentially for Realms with the same path and in parallel
         /// for different Realms. This means that if the processing takes a lot of time, it will
         /// build up a queue of changes for that Realm path but will not affect notifications from

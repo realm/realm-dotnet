@@ -1,5 +1,16 @@
-3.5.0 (TBD)
+4.0.0 (TBD)
 ------------------
+
+### Breaking Changes
+* The following deprecated methods and classes have been removed:
+  * The `SyncConfiguration` class has been split into `FullSyncConfiguration` and `QueryBasedSyncConfiguration`. Use one of these classes to connect to the Realm Object Server.
+  * The `TestingExtensions.SimulateProgress` method has been removed as it hasn't worked for some time.
+  * The `Property.IsNullable` property has been removed. To check if a property is nullable, check `Property.Type` for the `PropertyType.Nullable` flag.
+  * The `Credentials.Provider` class has been removed. Previously, it contained a few constants that were intended for internal use mostly.
+  * The `User.ConfigurePersistance` method has been superseded by `SyncConfigurationBase.Initialize`.
+  * `User.LogOut` has been removed in favor of `User.LogOutAsync`.
+  * `User.GetManagementRealm` has been removed in favor of the `User.ApplyPermissionsAsync` set of wrapper API.
+  * `User.GetPermissionRealm` has been removed in favor of the `User.GetGrantedPermissions` wrapper API.
 
 ### Enhancements
 * Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))

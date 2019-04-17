@@ -29,9 +29,10 @@
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
     <HttpClientHandler>NSUrlSessionHandler</HttpClientHandler>
-    <LinkMode>None</LinkMode>
+    <LinkMode>SdkOnly</LinkMode>
     <XamMacArch>
     </XamMacArch>
+    <AOTMode>None</AOTMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>
@@ -48,10 +49,11 @@
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
-    <LinkMode>None</LinkMode>
+    <LinkMode>SdkOnly</LinkMode>
     <HttpClientHandler>NSUrlSessionHandler</HttpClientHandler>
     <XamMacArch>
     </XamMacArch>
+    <AOTMode>None</AOTMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartArguments>--headless --labels=After</StartArguments>

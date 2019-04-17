@@ -47,14 +47,14 @@ namespace Realms.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryBasedSyncConfiguration"/> class.
         /// </summary>
-        /// <param name="user">
-        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
-        /// </param>
         /// <param name="serverUri">
         /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
         /// If a relative Uri is provided, it will be resolved using the user's <see cref="User.ServerUri"/> as baseUri.
         /// If <c>null</c> is passed, a Uri will be constructed from the user's <see cref="User.ServerUri"/>, combined with
         /// <c>/default</c>.
+        /// </param>
+        /// <param name="user">
+        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.

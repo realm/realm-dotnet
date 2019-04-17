@@ -42,24 +42,5 @@ namespace Realms.Sync.Testing
         {
             session.Handle.ReportErrorForTesting((int)errorCode, message, isFatal);
         }
-
-        /// <summary>
-        /// Simulates a progress update.
-        /// </summary>
-        /// <param name="session">Session which will report progress.</param>
-        /// <param name="downloadedBytes">Downloaded bytes.</param>
-        /// <param name="downloadableBytes">Downloadable bytes.</param>
-        /// <param name="uploadedBytes">Uploaded bytes.</param>
-        /// <param name="uploadableBytes">Uploadable bytes.</param>
-        /// <remarks>
-        /// Use this method to test your progress handling code without connecting to a Realm Object Server.
-        /// Some throttling may occur at a native level, so it is recommended to use <c>Task.Delay()</c> between invocations.
-        /// </remarks>
-        [Obsolete("This method no longer works and will be removed in a future version of the SDK.")]
-        public static void SimulateProgress(this Session session,
-                                            ulong downloadedBytes, ulong downloadableBytes,
-                                            ulong uploadedBytes, ulong uploadableBytes)
-        {
-        }
     }
 }

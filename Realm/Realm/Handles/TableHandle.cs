@@ -149,22 +149,3 @@ namespace Realms
         }
     }
 }
-
-/*sample implementation of two-tiered handle instantiation , from http://blogs.msdn.com/b/bclteam/archive/2005/03/15/396335.aspx
- * 
- * //Best practice to avoid object allocation inside CER.
-MySafeHandle mySafeHandle = new MySafeHandle(0, true);
-IntPtr myHandle;
-IntPtr invalidHandle = new IntPtr(-1));
-Int32 ret;
- 
-       // The creation of myHandle and assignment to mySafeHandle should be done inside a CER
-RuntimeHelpers.PrepareConstrainedRegions();
-try {// Begin CER
-}
-        finally {
-ret = MyNativeMethods.CreateHandle(out myHandle);
-              if (ret ==0 && !myHandle.IsNull() && myHandle != invalidHandle)
-            mySafeHandle.SetHandle(myHandle);
-        }// End CER
-*/

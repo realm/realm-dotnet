@@ -20,11 +20,11 @@ namespace Realms.Tests.Sync
 {
     public static class Constants
     {
+        public const string AdminUsername = "realm-admin";
+        public const string AdminPassword = "";
+
         public static string RosUrl;
         public static string RosPort;
         public static string RosSecurePort;
-
-        public const string AdminUsername = "realm-admin";
-        public const string AdminPassword = "";
     }
 }

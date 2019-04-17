@@ -35,7 +35,7 @@ namespace Realms.Server
         /// <remarks>
         /// This method is invoked on the <see cref="INotifier"/>'s worker thread, so it should return
         /// as soon as possible to avoid adversely affecting performance.
-        ///
+        /// <para/>
         /// If the handler returns <c>false</c> and no other handler wants to be notified about
         /// the Realm at this path, then this method will no longer will be called for Realms
         /// with that path. It is recommended that you always return the same value for a path
@@ -64,7 +64,7 @@ namespace Realms.Server
         /// <remarks>
         /// Handlers will be invoked sequentially in the order in which they have been supplied
         /// in the <see cref="NotifierConfiguration.Handlers"/>.
-        ///
+        /// <para/>
         /// This method will be invoked sequentially for Realms with the same path and in parallel
         /// for different Realms. This means that if the processing takes a lot of time, it will
         /// build up a queue of changes for that Realm path but will not affect notifications from

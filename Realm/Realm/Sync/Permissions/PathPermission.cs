@@ -24,7 +24,6 @@ namespace Realms.Sync
     /// This model is used to reflect permissions granted to a user.
     /// It should be used in conjunction with a <see cref="User"/>'s Permission Realm.
     /// </summary>
-    /// <see cref="UserPermissionsExtensions.GetPermissionRealm"/>
     [MapTo("Permission")]
     public class PathPermission : RealmObject
     {

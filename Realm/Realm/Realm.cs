@@ -688,8 +688,9 @@ namespace Realms
                         }
                     });
                     var didRefresh = await RefreshAsync();
+
                     // TODO: figure out why this assertion fails in `AsyncTests.AsyncWrite_ShouldExecuteOnWorkerThread`
-                    //System.Diagnostics.Debug.Assert(didRefresh);
+                    //System.Diagnostics.Debug.Assert(didRefresh, "Expected RefreshAsync to return true.");
                 }
                 return doWorkAsync();
             }
