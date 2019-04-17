@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
         public static object[] InvalidContainsTestCases =
         {
-            new object[] { null, "x", StringComparison.Ordinal, typeof(ArgumentNullException) },
             new object[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
             new object[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
         };

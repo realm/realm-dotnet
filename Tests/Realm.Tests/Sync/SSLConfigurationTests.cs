@@ -41,7 +41,7 @@ namespace Realms.Tests.Sync
 
             TestSSLCore(config =>
             {
-                config.TrustedCAPath = TestHelpers.CopyBundledDatabaseToDocuments("trusted_ca.pem", "trusted_ca.pem");
+                config.TrustedCAPath = TestHelpers.CopyBundledFileToDocuments("trusted_ca.pem", "trusted_ca.pem");
             }, openAsync);
         }
 

@@ -27,24 +27,6 @@
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="ForMigrationsToCopyAndMigrate.realm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="nunit3-junit.xslt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="sync-1.x-encrypted.realm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="sync-1.x.realm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="trusted_ca.pem">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' == 'Windows_NT' AND '$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x86\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'">
       <Link>lib\win32\x86\ucrtbased.dll</Link>
@@ -76,5 +58,10 @@
     <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
+    <EmbeddedResource Include="EmbeddedResources\nunit3-junit.xslt" />
+    <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
 </Project>

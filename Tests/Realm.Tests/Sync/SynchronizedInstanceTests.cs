@@ -228,64 +228,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCase(true, true)]
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        [TestCase(false, false)]
-        [Ignore("Changes in sync make this test fail. Sync v1 went out a long time ago though, so we can just delete it.")]
-        public void Realm_WhenCreatedWithSync1_ThrowsIncompatibleSyncedFileException(bool async, bool encrypt)
-        {
-            AsyncContext.Run(async () =>
-            {
-                var legacyRealmName = $"sync-1.x{(encrypt ? "-encrypted" : string.Empty)}.realm";
-                var legacyRealmPath = TestHelpers.CopyBundledDatabaseToDocuments(legacyRealmName, Guid.NewGuid().ToString());
-                var config = await SyncTestHelpers.GetFakeConfigAsync("a@a", legacyRealmPath);
-                if (encrypt)
-                {
-                    config.EncryptionKey = _sync1xEncryptionKey;
-                }
-
-                try
-                {
-                    if (async)
-                    {
-                        await GetRealmAsync(config);
-                    }
-                    else
-                    {
-                        GetRealm(config);
-                    }
-
-                    Assert.Fail("Expected IncompatibleSyncedFileException");
-                }
-                catch (IncompatibleSyncedFileException ex)
-                {
-                    var backupConfig = ex.GetBackupRealmConfig(encrypt ? _sync1xEncryptionKey : null);
-                    using (var backupRealm = Realm.GetInstance(backupConfig))
-                    using (var newRealm = GetRealm(config))
-                    {
-                        Assert.That(newRealm.All<Person>(), Is.Empty);
-
-                        var backupPeopleQuery = backupRealm.All(nameof(Person));
-                        Assert.That(backupPeopleQuery, Is.Not.Empty);
-
-                        var backupPerson = backupPeopleQuery.First();
-                        Assert.That(backupPerson.FirstName, Is.EqualTo("John"));
-                        Assert.That(backupPerson.LastName, Is.EqualTo("Smith"));
-
-                        newRealm.Write(() =>
-                        {
-                            newRealm.Add(new Person
-                            {
-                                FirstName = backupPerson.FirstName,
-                                LastName = backupPerson.LastName
-                            });
-                        });
-                    }
-                }
-            });
-        }
-
         [Test]
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {

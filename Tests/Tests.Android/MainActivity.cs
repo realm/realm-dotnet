@@ -47,7 +47,7 @@ namespace Realms.Tests.Android
 
             if (Intent.GetBooleanExtra("headless", false))
             {
-                TestHelpers.CopyBundledDatabaseToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
                 var transformPath = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
                 options.XmlTransformFile = transformPath;
                 options.AutoRun = true;

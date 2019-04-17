@@ -68,7 +68,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, Path.GetTempFileName());
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.GetTempFileName());
 
             var triggersSchemaFieldValue = string.Empty;
 
@@ -108,7 +108,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, Path.GetTempFileName());
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.GetTempFileName());
 
             var dummyException = new Exception();
 
@@ -136,7 +136,7 @@ namespace Realms.Tests.Database
                 ShouldDeleteIfMigrationNeeded = true
             };
 
-            TestHelpers.CopyBundledDatabaseToDocuments(FileToMigrate, path);
+            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, path);
 
             try
             {

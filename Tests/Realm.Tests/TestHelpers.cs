@@ -67,29 +67,22 @@ namespace Realms.Tests
             return (T)GetPropertyValue(obj, propertyName);
         }
 
-        public static string CopyBundledDatabaseToDocuments(string realmName, string destPath = null, bool overwrite = true)
+        public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
         {
+            var assembly = typeof(TestHelpers).Assembly;
+            var resourceName = assembly.GetManifestResourceNames().SingleOrDefault(s => s.EndsWith(realmName));
+            if (resourceName == null)
+            {
+                throw new Exception($"Couldn't find embedded resource '{realmName}' in the RealmTests assembly");
+            }
+
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
 
-#if __ANDROID__
-            using (var asset = Application.Context.Assets.Open(realmName))
-            using (var destination = File.OpenWrite(destPath))
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var destination = new FileStream(destPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
-                asset.CopyTo(destination);
+                stream.CopyTo(destination);
             }
-#else
-#if __IOS__
-            var sourceDir = Foundation.NSBundle.MainBundle.BundlePath;
-#elif WINDOWS_UWP
-            var sourceDir = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-#elif __MACOS__
-            var sourceDir = Foundation.NSBundle.MainBundle.ResourcePath;
-#else
-            var sourceDir = NUnit.Framework.TestContext.CurrentContext.TestDirectory;
-#endif
-
-            File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
-#endif
 
             return destPath;
         }
