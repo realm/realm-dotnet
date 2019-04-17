@@ -192,12 +192,9 @@ stage('Test') {
         unstash 'macos-tests'
 
         dir("Tests.XamarinMac.app/Contents") {
-          sh """
-            MacOS/Tests.XamarinMac --headless --labels=All --result=temp.xml
-            xsltproc Resources/nunit3-junit.xslt Resources/temp.xml > ${env.WORKSPACE}/TestResults.macOS.xml
-          """
-          junit 'TestResults.macOS.xml'
+          sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/TestResults.macOS.xml"
         }
+        reportTests 'TestResults.macOS.xml'
       }
     },
     'Xamarin Android': {
@@ -278,7 +275,7 @@ stage('Test') {
               '''
             }
 
-            nunit 'TestResults.Windows.xml'
+            reportTests 'TestResults.Windows.xml'
           }
         }
       }
@@ -301,9 +298,9 @@ def NetCoreTest(String nodeName) {
 
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.config -p:UseRealmNupkgsWithVersion=${packageVersion}
+        dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
         dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
-      """
+      """.trim()
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
@@ -325,7 +322,7 @@ def NetCoreTest(String nodeName) {
         bat script
       }
 
-      nunit 'TestResults.NetCore.xml'
+      reportTests 'TestResults.NetCore.xml'
     }
   }
 }
@@ -390,6 +387,10 @@ def msbuild(Map args = [:]) {
       bat invocation
     }
   }
+}
+
+def reportTests(spec) {
+  xunit([NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)])
 }
 
 // Required due to JENKINS-27421
