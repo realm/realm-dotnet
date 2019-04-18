@@ -54,24 +54,27 @@ public:
     size_t changesets_count;
 };
 
-bool (*s_should_handle_callback)(void* managed_instance, const char* path, size_t path_len);
-void (*s_enqueue_calculation_callback)(void* managed_instance, const char* path, size_t path_len, GlobalNotifier::ChangeNotification*);
-void (*s_start_callback)(void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
-void (*s_calculation_complete_callback)(MarshaledChangeNotification& change, void* managed_callback);
+bool (*s_should_handle_callback)(const void* managed_instance, const char* path, size_t path_len);
+void (*s_enqueue_calculation_callback)(const void* managed_instance, const char* path, size_t path_len, GlobalNotifier::ChangeNotification*);
+void (*s_start_callback)(const void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
+void (*s_calculation_complete_callback)(MarshaledChangeNotification& change, const void* managed_callback);
 
 class Callback : public GlobalNotifier::Callback {
 public:
     Callback(void* managed_instance, void* start_task_completion_source)
     : m_managed_instance(managed_instance)
     , m_start_task_completion_source(start_task_completion_source)
+    , m_logger(SyncManager::shared().make_logger())
     { }
 
     virtual void download_complete() {
         m_did_download = true;
+        m_logger->trace("ManagedGlobalNotifier: download_complete()");
         s_start_callback(m_start_task_completion_source, 0, nullptr, 0);
     }
 
     virtual void error(std::exception_ptr error) {
+        m_logger->trace("ManagedGlobalNotifier: error()");
         if (!m_did_download) {
             try {
                 std::rethrow_exception(error);
@@ -79,6 +82,7 @@ public:
                 const std::error_code& ec = system_error.code();
                 s_start_callback(m_start_task_completion_source, ec.value(), ec.message().c_str(), ec.message().length());
             } catch (const std::exception& e) {
+                m_logger->fatal("ManagedGlobalNotifier fatal error: %1", e.what());
                 realm::util::terminate("Unhandled GlobalNotifier exception type", __FILE__, __LINE__);
             }
         } else {
@@ -87,17 +91,20 @@ public:
     }
 
     virtual bool realm_available(StringData, StringData virtual_path) {
+        m_logger->trace("ManagedGlobalNotifier: realm_available(%1)", virtual_path);
         return s_should_handle_callback(m_managed_instance, virtual_path.data(), virtual_path.size());
     }
 
     virtual void realm_changed(GlobalNotifier* notifier) {
+        m_logger->trace("ManagedGlobalNotifier: realm_changed()");
         while (auto change = notifier->next_changed_realm()) {
             s_enqueue_calculation_callback(m_managed_instance, change->realm_path.c_str(), change->realm_path.size(), new GlobalNotifier::ChangeNotification(std::move(change.value())));
         }
     }
 private:
-    void* m_managed_instance;
-    void* m_start_task_completion_source;
+    const void* m_managed_instance;
+    const void* m_start_task_completion_source;
+    const std::unique_ptr<util::Logger> m_logger;
     bool m_did_download = false;
 };
 
@@ -161,21 +168,10 @@ REALM_EXPORT void realm_server_global_notifier_notification_get_changes(GlobalNo
 {
     handle_errors(ex, [&] {
         MarshaledChangeNotification notification;
-        notification.path_buf = change.realm_path.c_str();
-        notification.path_len = change.realm_path.size();
 
-        if (auto previous = change.get_old_realm()) {
-            notification.previous = new SharedRealm(previous);
-        }
-        auto newRealm = change.get_new_realm();
-        notification.current = new SharedRealm(newRealm);
-
-        notification.path_on_disk_buf = newRealm->config().path.c_str();
-        notification.path_on_disk_len = newRealm->config().path.size();
-
-        std::vector<std::remove_pointer<decltype(notification.changesets_buf)>::type> changesets;
         auto changes = change.get_changes();
         notification.changesets_count = changes.size();
+        std::vector<std::remove_pointer<decltype(notification.changesets_buf)>::type> changesets;
         changesets.reserve(notification.changesets_count);
 
         std::vector<std::vector<size_t>> vector_storage;
@@ -199,6 +195,19 @@ REALM_EXPORT void realm_server_global_notifier_notification_get_changes(GlobalNo
         }
 
         notification.changesets_buf = changesets.data();
+
+        notification.path_buf = change.realm_path.c_str();
+        notification.path_len = change.realm_path.size();
+
+        if (auto previous = change.get_old_realm()) {
+            notification.previous = new SharedRealm(std::move(previous));
+        }
+        auto newRealm = change.get_new_realm();
+
+        notification.path_on_disk_buf = newRealm->config().path.c_str();
+        notification.path_on_disk_len = newRealm->config().path.size();
+
+        notification.current = new SharedRealm(std::move(newRealm));
 
         s_calculation_complete_callback(notification, managed_callback);
     });

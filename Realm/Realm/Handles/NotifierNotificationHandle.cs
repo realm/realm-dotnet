@@ -33,7 +33,7 @@ namespace Realms.Server
             public static extern void get_changes(NotifierNotificationHandle handle, IntPtr callback, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_server_global_notifier_notification_destroy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void destroy(NotifierNotificationHandle handle);
+            public static extern void destroy(IntPtr handle);
         }
 
         public void GetChanges(Action<NativeChangeDetails?> callback)
@@ -49,7 +49,7 @@ namespace Realms.Server
 
         protected override void Unbind()
         {
-            NativeMethods.destroy(this);
+            NativeMethods.destroy(handle);
         }
     }
 }

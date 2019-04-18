@@ -51,6 +51,8 @@ void collection_get_primitive(Collection* collection, size_t ndx, PrimitiveValue
             throw IndexOutOfRangeException("Get from Collection", ndx, count);
         
         value.has_value = true;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
             case realm::PropertyType::Bool:
                 value.value.bool_value = collection->template
@@ -101,6 +103,7 @@ void collection_get_primitive(Collection* collection, size_t ndx, PrimitiveValue
             default:
                 REALM_UNREACHABLE();
         }
+#pragma GCC diagnostic pop
     });
 }
     

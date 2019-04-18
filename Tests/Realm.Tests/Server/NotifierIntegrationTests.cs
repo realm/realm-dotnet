@@ -28,7 +28,6 @@ namespace Realms.Tests.Server
     public class NotifierIntegrationTests : ServerTestBase
     {
         [Test]
-        [Ignore("??")]
         public void SmokeTest()
         {
             SyncTestHelpers.RunRosTestAsync(async () =>

@@ -83,6 +83,8 @@ REALM_EXPORT void list_add_object(List* list, const Object& object_ptr, NativeEx
 REALM_EXPORT void list_add_primitive(List* list, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
             case realm::PropertyType::Bool:
                 list->add(value.value.bool_value);
@@ -117,6 +119,7 @@ REALM_EXPORT void list_add_primitive(List* list, PrimitiveValue& value, NativeEx
             default:
                 REALM_UNREACHABLE();
         }
+#pragma GCC diagnostic pop
     });
 }
     
@@ -153,7 +156,9 @@ REALM_EXPORT void list_set_primitive(List* list, size_t list_ndx, PrimitiveValue
         if (list_ndx >= count) {
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
-        
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
             case realm::PropertyType::Bool:
                 list->set(list_ndx, value.value.bool_value);
@@ -188,6 +193,7 @@ REALM_EXPORT void list_set_primitive(List* list, size_t list_ndx, PrimitiveValue
             default:
                 REALM_UNREACHABLE();
         }
+#pragma GCC diagnostic pop
     });
 }
 
@@ -225,6 +231,8 @@ REALM_EXPORT void list_insert_primitive(List* list, size_t list_ndx, PrimitiveVa
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
             case realm::PropertyType::Bool:
                 list->insert(list_ndx, value.value.bool_value);
@@ -259,6 +267,7 @@ REALM_EXPORT void list_insert_primitive(List* list, size_t list_ndx, PrimitiveVa
             default:
                 REALM_UNREACHABLE();
         }
+#pragma GCC diagnostic pop
     });
 }
 
@@ -319,6 +328,8 @@ REALM_EXPORT size_t list_find_object(List* list, const Object& object_ptr, Nativ
 REALM_EXPORT size_t list_find_primitive(List* list, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
             case realm::PropertyType::Bool:
                 return list->find(value.value.bool_value);
@@ -343,6 +354,7 @@ REALM_EXPORT size_t list_find_primitive(List* list, PrimitiveValue& value, Nativ
             default:
                 REALM_UNREACHABLE();
         }
+#pragma GCC diagnostic pop
     });
 }
     

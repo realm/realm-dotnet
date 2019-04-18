@@ -55,7 +55,7 @@ namespace Realms.Server
             public static extern IntPtr get_realm_for_writing(SharedRealmHandle currentRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_server_global_notifier_destroy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void destroy(NotifierHandle handle);
+            public static extern void destroy(IntPtr handle);
         }
 
         static unsafe NotifierHandle()
@@ -99,7 +99,7 @@ namespace Realms.Server
 
         protected override void Unbind()
         {
-            NativeMethods.destroy(this);
+            NativeMethods.destroy(handle);
         }
     }
 }
