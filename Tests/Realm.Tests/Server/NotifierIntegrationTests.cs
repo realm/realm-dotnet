@@ -44,7 +44,7 @@ namespace Realms.Tests.Server
 
                 var config = await GetConfiguration(handler);
 
-                using (var notifier = Notifier.StartAsync(config))
+                using (var notifier = await Notifier.StartAsync(config))
                 using (realm)
                 {
                     var obj = new IntPropertyObject { Int = 3 };

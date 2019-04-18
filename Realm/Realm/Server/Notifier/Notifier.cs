@@ -72,20 +72,20 @@ namespace Realms.Server
             }
         }
 
-        internal static unsafe void OnStarted(IntPtr tcsHandle, int errorCode, byte* messageBuffer, IntPtr messageLength)
+        internal static unsafe void OnStarted(IntPtr managedInstance, int errorCode, byte* messageBuffer, IntPtr messageLength)
         {
-            var handle = GCHandle.FromIntPtr(tcsHandle);
-            var tcs = (TaskCompletionSource<object>)handle.Target;
+            var handle = GCHandle.FromIntPtr(managedInstance);
+            var notifier = (Impl)handle.Target;
             if (errorCode == 0)
             {
-                tcs.TrySetResult(null);
+                notifier.OnStarted(null);
             }
             else
             {
                 var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
-                tcs.TrySetException(new NotifierStartException(errorCode, message));
+                notifier.OnStarted(new NotifierStartException(errorCode, message));
             }
-            handle.Free();
+
         }
 
         internal static void OnCalculationCompleted(IntPtr details_ptr, IntPtr managedCallbackPtr)
@@ -102,21 +102,23 @@ namespace Realms.Server
             private readonly INotificationHandler[] _handlers;
             private readonly AsyncContextThread _notificationsThread;
             private readonly CalculationProcessor<string, IntPtr> _processor;
+            private readonly TaskCompletionSource<INotifier> _start;
 
             private readonly NotifierHandle _notifierHandle;
             private readonly GCHandle _gcHandle;
 
             public NotifierConfiguration Configuration { get; }
 
-            private Impl(NotifierConfiguration config, TaskCompletionSource<object> onStarted, AsyncContextThread notificationsThread)
+            private Impl(NotifierConfiguration config, AsyncContextThread notificationsThread)
             {
                 _handlers = config.Handlers.ToArray();
                 _notificationsThread = notificationsThread;
                 _gcHandle = GCHandle.Alloc(this);
                 Configuration = config;
+                _start = new TaskCompletionSource<INotifier>();
                 try
                 {
-                    _notifierHandle = NotifierHandle.CreateHandle(_gcHandle, config, onStarted);
+                    _notifierHandle = NotifierHandle.CreateHandle(_gcHandle, config);
                 }
                 catch
                 {
@@ -140,20 +142,34 @@ namespace Realms.Server
                 Directory.CreateDirectory(config.WorkingDirectory);
 
                 var thread = new AsyncContextThread();
-                return thread.Factory.Run(async () =>
+                return thread.Factory.Run(() =>
                 {
-                    var tcs = new TaskCompletionSource<object>();
-                    var notifier = new Impl(config, tcs, thread);
-                    await tcs.Task;
-                    return (INotifier)notifier;
+                    var notifier = new Impl(config, thread);
+                    return notifier._start.Task;
                 });
+            }
+
+            internal void OnStarted(NotifierStartException exception)
+            {
+                if (exception != null)
+                {
+                    _start.SetException(exception);
+                }
+                else
+                {
+                    _start.SetResult(this);
+                }
             }
 
             internal bool ShouldHandle(string path) => _handlers.Any(h => h.ShouldHandle(path));
 
             internal void CalculateChanges(string path, IntPtr calculation_ptr)
             {
-                _processor.Enqueue(path, calculation_ptr);
+                if (_isDisposed == 0)
+                {
+                    _processor.Enqueue(path, calculation_ptr);
+
+                }
             }
 
             private async Task CalculateAsync(IntPtr calculation_ptr)

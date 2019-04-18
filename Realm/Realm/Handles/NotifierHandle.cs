@@ -47,7 +47,6 @@ namespace Realms.Server
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_server_create_global_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_notifier(IntPtr managedInstance,
                 NativeSyncConfiguration sync_configuration,
-                IntPtr task_completion_source,
                 byte[] encryptionKey,
                 out NativeException ex);
 
@@ -75,11 +74,10 @@ namespace Realms.Server
             NativeMethods.install_callbacks(shouldHandle, enqueueCalculation, start, calculationComplete);
         }
 
-        public static NotifierHandle CreateHandle(GCHandle managedNotifier, NotifierConfiguration configuration, TaskCompletionSource<object> tcs)
+        public static NotifierHandle CreateHandle(GCHandle managedNotifier, NotifierConfiguration configuration)
         {
             var nativeConfig = configuration.ToNative();
-            var tcsHandle = GCHandle.Alloc(tcs);
-            var result = NativeMethods.create_notifier(GCHandle.ToIntPtr(managedNotifier), nativeConfig, GCHandle.ToIntPtr(tcsHandle), configuration.EncryptionKey,
+            var result = NativeMethods.create_notifier(GCHandle.ToIntPtr(managedNotifier), nativeConfig, configuration.EncryptionKey,
                                                        out var nativeException);
             nativeException.ThrowIfNecessary();
 

@@ -56,21 +56,20 @@ public:
 
 bool (*s_should_handle_callback)(const void* managed_instance, const char* path, size_t path_len);
 void (*s_enqueue_calculation_callback)(const void* managed_instance, const char* path, size_t path_len, GlobalNotifier::ChangeNotification*);
-void (*s_start_callback)(const void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
+void (*s_start_callback)(const void* managed_instance, int32_t error_code, const char* message, size_t message_len);
 void (*s_calculation_complete_callback)(MarshaledChangeNotification& change, const void* managed_callback);
 
 class Callback : public GlobalNotifier::Callback {
 public:
-    Callback(void* managed_instance, void* start_task_completion_source)
+    Callback(void* managed_instance)
     : m_managed_instance(managed_instance)
-    , m_start_task_completion_source(start_task_completion_source)
     , m_logger(SyncManager::shared().make_logger())
     { }
 
     virtual void download_complete() {
         m_did_download = true;
         m_logger->trace("ManagedGlobalNotifier: download_complete()");
-        s_start_callback(m_start_task_completion_source, 0, nullptr, 0);
+        s_start_callback(m_managed_instance, 0, nullptr, 0);
     }
 
     virtual void error(std::exception_ptr error) {
@@ -80,7 +79,7 @@ public:
                 std::rethrow_exception(error);
             } catch (const std::system_error& system_error) {
                 const std::error_code& ec = system_error.code();
-                s_start_callback(m_start_task_completion_source, ec.value(), ec.message().c_str(), ec.message().length());
+                s_start_callback(m_managed_instance, ec.value(), ec.message().c_str(), ec.message().length());
             } catch (const std::exception& e) {
                 m_logger->fatal("ManagedGlobalNotifier fatal error: %1", e.what());
                 realm::util::terminate("Unhandled GlobalNotifier exception type", __FILE__, __LINE__);
@@ -103,7 +102,6 @@ public:
     }
 private:
     const void* m_managed_instance;
-    const void* m_start_task_completion_source;
     const std::unique_ptr<util::Logger> m_logger;
     bool m_did_download = false;
 };
@@ -122,7 +120,6 @@ REALM_EXPORT void realm_server_install_callbacks(decltype(s_should_handle_callba
 
 REALM_EXPORT NotifierHandle* realm_server_create_global_notifier(void* managed_instance,
                                                                  SyncConfiguration configuration,
-                                                                 void* task_completion_source,
                                                                  uint8_t* encryption_key,
                                                                  NativeException::Marshallable& ex)
 {
@@ -140,7 +137,7 @@ REALM_EXPORT NotifierHandle* realm_server_create_global_notifier(void* managed_i
         // the partial_sync_identifier field was hijacked to carry the working directory
         Utf16StringAccessor working_dir(configuration.partial_sync_identifier, configuration.partial_sync_identifier_len);
 
-        auto callback = std::make_unique<Callback>(managed_instance, task_completion_source);
+        auto callback = std::make_unique<Callback>(managed_instance);
         auto notifier = std::make_shared<GlobalNotifier>(std::move(callback), std::move(working_dir), std::move(config));
         notifier->start();
         return new NotifierHandle(std::move(notifier));
