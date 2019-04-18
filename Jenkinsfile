@@ -167,7 +167,7 @@ stage('Test') {
           }
         }
       }
-      nodeWithCleanup('osx') {
+      nodeWithCleanup('xamarin.ios') {
         unstash 'ios-tests'
 
         sh 'mkdir -p temp'
