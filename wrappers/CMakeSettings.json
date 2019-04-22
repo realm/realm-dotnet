@@ -27,7 +27,7 @@
       "namespace": "system",
       "Name": "Windows",
       "vcpkg": "windows",
-      "CMakeArgs": ""
+      "CMakeArgs": "-DCMAKE_SYSTEM_VERSION=8.1 -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=8.1"
     },
     {
       "environment": "system_WindowsStore",
