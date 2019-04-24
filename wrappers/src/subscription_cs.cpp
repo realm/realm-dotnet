@@ -28,18 +28,18 @@ struct SubscriptionNotificationTokenContext {
 
 extern "C" {
 
-REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t* name_buf, size_t name_len, bool has_name, NativeException::Marshallable& ex)
+REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t* name_buf, int32_t name_len, int64_t time_to_live, bool update, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        util::Optional<std::string> name;
-        if (has_name) {
-            name = util::Optional<std::string>(Utf16StringAccessor(name_buf, name_len).to_string());
-        }
-        else {
-            name = util::none;
-        }
+        auto name = name_len >= 0 ? util::Optional<std::string>(Utf16StringAccessor(name_buf, name_len).to_string()) : none;
+        auto optional_ttl = time_to_live >= 0 ? util::Optional<int64_t>(time_to_live) : none;
+        realm::partial_sync::SubscriptionOptions options {
+            name,
+            optional_ttl,
+            update
+        };
         
-        auto result = realm::partial_sync::subscribe(results, name);
+        auto result = realm::partial_sync::subscribe(results, options);
         return new Subscription(std::move(result));
     });
 }

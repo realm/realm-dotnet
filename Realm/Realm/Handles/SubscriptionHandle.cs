@@ -33,16 +33,18 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
 
+            // -1 for name_len and time_to_live means "no value" as both would be meaningless with negative numbers
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr subscribe(
                 ResultsHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string name,
-                IntPtr name_len,
-                [MarshalAs(UnmanagedType.I1)] bool has_name,
+                int name_len,
+                long time_to_live,
+                [MarshalAs(UnmanagedType.I1)] bool update,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_state", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int get_state(SubscriptionHandle subscription, out NativeException ex);
+            public static extern sbyte get_state(SubscriptionHandle subscription, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_get_error", CallingConvention = CallingConvention.Cdecl)]
             public static extern NativeException get_error(SubscriptionHandle subscription);
@@ -62,9 +64,10 @@ namespace Realms.Sync
         {
         }
 
-        public static SubscriptionHandle Create(ResultsHandle results, string name)
+        public static SubscriptionHandle Create(ResultsHandle results, string name, long? timeToLive, bool update)
         {
-            var handle = NativeMethods.subscribe(results, name, (IntPtr)(name?.Length ?? 0), name != null, out var ex);
+            // We use -1 to signal "no value"
+            var handle = NativeMethods.subscribe(results, name, name?.Length ?? -1, timeToLive ?? -1, update, out var ex);
             ex.ThrowIfNecessary();
 
             return new SubscriptionHandle(handle);

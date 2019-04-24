@@ -22,6 +22,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
@@ -146,6 +147,142 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void Subscription_GetAll_FindsSubscription(bool openAsync, bool isNamed)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    var name = isNamed ? "some subscription" : null;
+                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
+                    var now = DateTimeOffset.UtcNow;
+                    var subscription = query.Subscribe(new SubscriptionOptions { Name = name });
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    var sub = realm.GetAllSubscriptions().FirstOrDefault(s => s.ObjectType == nameof(ObjectA));
+
+                    Assert.That(sub, Is.Not.Null);
+                    Assert.That(sub.Error, Is.Null);
+                    Assert.That(sub.Name, isNamed ? (IResolveConstraint)Is.EqualTo(name) : Is.Not.Null);
+                    Assert.That(sub.ObjectType, Is.EqualTo(nameof(ObjectA)));
+                    Assert.That(sub.CreatedAt, Is.InRange(now, now.AddSeconds(2)));
+                    Assert.That(sub.CreatedAt, Is.EqualTo(sub.UpdatedAt));
+                    Assert.That(sub.ExpiresAt, Is.Null);
+                    Assert.That(sub.TimeToLive, Is.Null);
+                }
+            });
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Subscribe_WhenTtlSet_ExpiresSubscription(bool openAsync)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                RealmConfigurationBase config;
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    config = realm.Config;
+                    var ttl = TimeSpan.FromMilliseconds(500);
+                    var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
+                    var subscription = query.Subscribe(new SubscriptionOptions { TimeToLive = ttl });
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    var sub = realm.GetAllSubscriptions().FirstOrDefault(s => s.ObjectType == nameof(ObjectA));
+
+                    Assert.That(sub, Is.Not.Null);
+                    Assert.That(sub.ExpiresAt, Is.EqualTo(sub.CreatedAt.Add(ttl)));
+                    Assert.That(sub.TimeToLive, Is.EqualTo(ttl));
+                }
+            });
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Subscribe_UpdatesQuery(bool openAsync)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    var subscription = realm.All<ObjectA>()
+                                            .Where(o => o.IntValue < 5)
+                                            .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true });
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(5));
+
+                    var namedSub = realm.GetAllSubscriptions().Single(s => s.ObjectType == nameof(ObjectA));
+                    var originalQuery = namedSub.Query;
+                    var originalUpdatedAt = namedSub.UpdatedAt;
+                    var originalCreatedAt = namedSub.CreatedAt;
+
+                    Assert.That(originalCreatedAt, Is.EqualTo(originalUpdatedAt));
+
+                    var updatedSub = realm.All<ObjectA>()
+                                          .Where(o => o.IntValue < 3)
+                                          .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true });
+
+
+                    await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
+                    Assert.That(subscription.Results.Count(), Is.EqualTo(3));
+
+                    // NamedSub is a Realm object so it should have updated itself.
+                    Assert.That(originalQuery, Is.Not.EqualTo(namedSub.Query));
+                    Assert.That(originalCreatedAt, Is.EqualTo(namedSub.CreatedAt));
+                    Assert.That(originalUpdatedAt, Is.LessThan(namedSub.UpdatedAt));
+                }
+            });
+        }
+
+        [TestCase(true, true)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        [TestCase(false, false)]
+        public void Subscribe_UpdatesTtl(bool openAsync, bool changeTtlValue)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    var originalTtl = TimeSpan.FromSeconds(1);
+                    var subscription = realm.All<ObjectA>()
+                                            .Where(o => o.IntValue < 5)
+                                            .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true, TimeToLive = originalTtl });
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    var namedSub = realm.GetAllSubscriptions().Single(s => s.ObjectType == nameof(ObjectA));
+                    var originalUpdatedAt = namedSub.UpdatedAt;
+                    var originalCreatedAt = namedSub.CreatedAt;
+
+                    Assert.That(originalCreatedAt, Is.EqualTo(originalUpdatedAt));
+                    Assert.That(namedSub.TimeToLive, Is.EqualTo(originalTtl));
+                    Assert.That(namedSub.ExpiresAt, Is.EqualTo(namedSub.UpdatedAt.Add(originalTtl)));
+
+                    var updatedTtl = changeTtlValue ? TimeSpan.FromSeconds(2) : originalTtl;
+                    var updatedSub = realm.All<ObjectA>()
+                                          .Where(o => o.IntValue < 5)
+                                          .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true, TimeToLive = updatedTtl });
+                                          
+                    await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
+
+                    // NamedSub is a Realm object so it should have updated itself.
+                    Assert.That(originalCreatedAt, Is.EqualTo(namedSub.CreatedAt));
+                    Assert.That(originalUpdatedAt, Is.LessThan(namedSub.UpdatedAt));
+                    Assert.That(namedSub.TimeToLive, Is.EqualTo(updatedTtl));
+                    Assert.That(namedSub.ExpiresAt, Is.EqualTo(namedSub.UpdatedAt.Add(updatedTtl)));
+                }
+            });
+        }
+
         [TestCase(true)]
         [TestCase(false)]
         public void NamedSubscription_CanResubscribe(bool openAsync)
@@ -155,13 +292,13 @@ namespace Realms.Tests.Sync
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.Subscribe(name: "less than 5");
+                    var subscription = query.Subscribe(new SubscriptionOptions { Name = "less than 5" });
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
-                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue < 5).Subscribe(name: "less than 5");
+                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue < 5).Subscribe(new SubscriptionOptions { Name = "less than 5" });
                     await subscription2.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
@@ -179,13 +316,15 @@ namespace Realms.Tests.Sync
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.Subscribe(name: "foo");
+                    var subscription = query.Subscribe(new SubscriptionOptions { Name = "foo" });
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
                     Assert.That(subscription.Results.Count(), Is.EqualTo(5));
 
-                    var subscription2 = realm.All<ObjectA>().Where(o => o.IntValue > 5).Subscribe(name: "foo");
+                    var subscription2 = realm.All<ObjectA>()
+                                             .Where(o => o.IntValue > 5)
+                                             .Subscribe(new SubscriptionOptions { Name = "foo" });
                     try
                     {
                         await subscription2.WaitForSynchronizationAsync().Timeout(5000);
@@ -237,7 +376,7 @@ namespace Realms.Tests.Sync
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.Subscribe(name: "query");
+                    var subscription = query.Subscribe(new SubscriptionOptions { Name = "query" });
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 
@@ -263,7 +402,7 @@ namespace Realms.Tests.Sync
                 using (var realm = await GetQueryBasedRealm(openAsync))
                 {
                     var query = realm.All<ObjectA>().Where(o => o.IntValue < 5);
-                    var subscription = query.Subscribe(name: "query");
+                    var subscription = query.Subscribe(new SubscriptionOptions { Name = "query" });
 
                     await subscription.WaitForSynchronizationAsync().Timeout(2000);
 

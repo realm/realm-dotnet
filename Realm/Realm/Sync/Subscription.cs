@@ -35,7 +35,7 @@ namespace Realms.Sync
     }
 
     /// <summary>
-    /// A set of helper methods exposing query-based sync related functionality over collections.
+    /// A set of extension methods exposing query-based sync related functionality over collections.
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public static class Subscription
@@ -66,7 +66,34 @@ namespace Realms.Sync
         /// <exception cref="ArgumentException">
         /// Thrown if the <c>query</c> was not obtained from a query-based synchronized Realm.
         /// </exception>
-        public static Subscription<T> Subscribe<T>(this IQueryable<T> query, string name = null)
+        [Obsolete("Use Subscribe(query, options) instead.")]
+        public static Subscription<T> Subscribe<T>(this IQueryable<T> query, string name)
+        {
+            return query.Subscribe(new SubscriptionOptions
+            {
+                Name = name
+            });
+        }
+
+        /// <summary>
+        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query. 
+        /// </summary>
+        /// <typeparam name="T">The type of the objects making up the query.</typeparam>
+        /// <param name="query">
+        /// A query, obtained by calling <see cref="Realm.All{T}"/> with or without additional filtering applied.
+        /// </param>
+        /// <param name="options">
+        /// Options that configure some metadata of the subscription, such as its name or time to live.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Subscription{T}"/> instance that contains information and methods for monitoring
+        /// the state of the subscription.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown if <c>query</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// Thrown if the <c>query</c> was not obtained from a query-based synchronized Realm.
+        /// </exception>
+        public static Subscription<T> Subscribe<T>(this IQueryable<T> query, SubscriptionOptions options = null)
         {
             Argument.NotNull(query, nameof(query));
 
@@ -76,12 +103,26 @@ namespace Realms.Sync
             var syncConfig = results.Realm.Config as SyncConfigurationBase;
             Argument.Ensure(syncConfig?.IsFullSync == false, $"{nameof(query)} must be obtained from a synchronized Realm using query-based synchronization.", nameof(query));
 
-            var handle = SubscriptionHandle.Create(results.ResultsHandle, name);
+            var handle = SubscriptionHandle.Create(results.ResultsHandle, options.Name, (long?)options.TimeToLive?.TotalMilliseconds, options.ShouldUpdate);
             return new Subscription<T>(handle, results);
         }
 
         /// <summary>
-        /// Cancel a named subscription that was created by calling <see cref="Subscribe"/>.
+        /// Returns all subscriptions registered for that Realm.
+        /// </summary>
+        /// <returns>A queryable collection of all registered subscriptions.</returns>
+        /// <param name="realm">A Realm opened with a <see cref="QueryBasedSyncConfiguration"/>.</param>
+        public static IRealmCollection<NamedSubscription> GetAllSubscriptions(this Realm realm)
+        {
+            Argument.NotNull(realm, nameof(realm));
+            var syncConfig = realm.Config as SyncConfigurationBase;
+            Argument.Ensure(syncConfig?.IsFullSync == false, $"{nameof(realm)} must be a synchronized Realm using query-based synchronization.", nameof(realm));
+
+            return realm.All<NamedSubscription>().AsRealmCollection();
+        }
+
+        /// <summary>
+        /// Cancel a named subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
         /// <para />
         /// Removing a subscription will delete all objects from the local Realm that were matched
         /// only by that subscription and not any remaining subscriptions. The deletion is performed
@@ -98,14 +139,14 @@ namespace Realms.Sync
             Argument.Ensure(syncConfig?.IsFullSync == false, $"{nameof(realm)} must be a synchronized Realm using query-based synchronization.", nameof(realm));
 
             var config = realm.Config.Clone();
-            config.ObjectClasses = new[] { typeof(ResultSets) };
+            config.ObjectClasses = new[] { typeof(NamedSubscription) };
             config.EnableCache = false;
 
             return Task.Run(() =>
             {
                 using (var backgroundRealm = Realm.GetInstance(config))
                 {
-                    var resultSets = backgroundRealm.All<ResultSets>().Where(r => r.Name == subscriptionName);
+                    var resultSets = backgroundRealm.All<NamedSubscription>().Where(r => r.Name == subscriptionName);
                     if (!resultSets.Any())
                     {
                         throw new RealmException($"A subscription with the name {subscriptionName} doesn't exist.");
@@ -120,7 +161,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Cancel a subscription that was created by calling <see cref="Subscribe"/>.
+        /// Cancel a subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
         /// <para />
         /// Removing a subscription will delete all objects from the local Realm that were matched
         /// only by that subscription and not any remaining subscriptions. The deletion is performed
@@ -188,7 +229,7 @@ namespace Realms.Sync
     /// <para/>
     /// The state of the subscription can be observed by subscribing to the <see cref="PropertyChanged"/> event handler.
     /// <para/>
-    /// Subscriptions are created by calling <see cref="Subscription.Subscribe"/>.
+    /// Subscriptions are created by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
     /// </summary>
     /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
