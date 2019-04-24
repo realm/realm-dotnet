@@ -42,6 +42,11 @@ struct PrimitiveValue
     } value;
 };
     
+struct StringValue
+{
+    const char* value;
+};
+    
 template<typename Collection>
 void collection_get_primitive(Collection* collection, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {

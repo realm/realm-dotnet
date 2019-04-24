@@ -20,20 +20,25 @@
 #define SCHEMA_CS_HPP
 
 #include <vector>
+#include "object_accessor.hpp"
 #include "object-store/src/schema.hpp"
 #include "object-store/src/object_schema.hpp"
 #include "object-store/src/property.hpp"
+#include <realm/parser/parser.hpp>
+#include <realm/parser/query_builder.hpp>
+
+using namespace realm;
 
 struct SchemaProperty
 {
     const char* name;
-    realm::PropertyType type;
+    PropertyType type;
     const char* object_type;
     const char* link_origin_property_name;
     bool is_primary;
     bool is_indexed;
     
-    static SchemaProperty for_marshalling(const realm::Property&);
+    static SchemaProperty for_marshalling(const Property&);
 };
 
 struct SchemaObject
@@ -42,7 +47,7 @@ struct SchemaObject
     int properties_start;
     int properties_end;
     
-    static SchemaObject for_marshalling(const realm::ObjectSchema&, std::vector<SchemaProperty>&);
+    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
 };
 
 struct SchemaForMarshaling
@@ -54,7 +59,7 @@ struct SchemaForMarshaling
     
 };
 
-REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const realm::Property& property)
+REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property& property)
 {
     return {
         property.name.c_str(),
@@ -66,7 +71,7 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const realm::Pr
     };
 }
 
-REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const realm::ObjectSchema& object, std::vector<SchemaProperty>& properties)
+REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties)
 {
     SchemaObject ret;
     ret.name = object.name.c_str();
@@ -83,6 +88,21 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const realm::Object
     return ret;
 }
 
-realm::util::Optional<realm::Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
+util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
 
+REALM_FORCEINLINE void alias_backlinks(parser::KeyPathMapping &mapping, const SharedRealm &realm)
+{
+    const Schema &schema = realm->schema();
+    for (auto it = schema.begin(); it != schema.end(); ++it) {
+        for (const Property &property : it->computed_properties) {
+            if (property.type == PropertyType::LinkingObjects) {
+                auto target_object_schema = schema.find(property.object_type);
+                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
+                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
+                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
+                mapping.add_mapping(table, property.name, native_name);
+            }
+        }
+    }
+}
 #endif /* defined(SCHEMA_CS_HPP) */

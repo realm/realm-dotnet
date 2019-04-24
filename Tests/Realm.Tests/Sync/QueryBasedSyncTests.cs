@@ -229,8 +229,7 @@ namespace Realms.Tests.Sync
                     var updatedSub = realm.All<ObjectA>()
                                           .Where(o => o.IntValue < 3)
                                           .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true });
-
-
+                                          
                     await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
 
@@ -271,7 +270,7 @@ namespace Realms.Tests.Sync
                     var updatedSub = realm.All<ObjectA>()
                                           .Where(o => o.IntValue < 5)
                                           .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true, TimeToLive = updatedTtl });
-                                          
+
                     await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
 
                     // NamedSub is a Realm object so it should have updated itself.
@@ -455,12 +454,55 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Subscribe_WithInclusions(bool openAsync)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    var subscription = realm.All<ObjectB>()
+                                            .Where(b => b.BoolValue)
+                                            .Subscribe(includedBacklinks: b => b.As);
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(5));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(5));
+                    Assert.That(realm.All<ObjectA>().ToArray().All(a => a.IntValue % 2 == 0));
+                }
+            });
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Subscribe_WithInclusions_ExtraHop(bool openAsync)
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                using (var realm = await GetQueryBasedRealm(openAsync))
+                {
+                    var subscription = realm.All<ObjectC>()
+                                            .Filter("B.BoolValue == true")
+                                            .Subscribe(includedBacklinks: c => c.B.As);
+
+                    await subscription.WaitForSynchronizationAsync().Timeout(2000);
+
+                    Assert.That(realm.All<ObjectC>().Count(), Is.EqualTo(5));
+                    Assert.That(realm.All<ObjectB>().Count(), Is.EqualTo(5));
+                    Assert.That(realm.All<ObjectA>().Count(), Is.EqualTo(5));
+                    Assert.That(realm.All<ObjectA>().ToArray().All(a => a.IntValue % 2 == 0));
+                }
+            });
+        }
+
         private async Task<Realm> GetQueryBasedRealm(bool openAsync, [CallerMemberName] string realmPath = null)
         {
             var user = await SyncTestHelpers.GetUserAsync();
             var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}_{openAsync}"), user, Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB) }
+                ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB), typeof(ObjectC) }
             };
 
             using (var original = GetRealm(config))
@@ -469,7 +511,7 @@ namespace Realms.Tests.Sync
                 {
                     for (var i = 0; i < 10; i++)
                     {
-                        original.Add(new ObjectA
+                        var a = original.Add(new ObjectA
                         {
                             StringValue = "A #" + i,
                             IntValue = i,
@@ -478,6 +520,12 @@ namespace Realms.Tests.Sync
                                 StringValue = "B #" + i,
                                 BoolValue = i % 2 == 0,
                             }
+                        });
+
+                        original.Add(new ObjectC
+                        {
+                            IntValue = i,
+                            B = a.B
                         });
                     }
                 });
@@ -522,6 +570,16 @@ namespace Realms.Tests.Sync
             public string StringValue { get; set; }
 
             public bool BoolValue { get; set; }
+
+            [Backlink(nameof(ObjectA.B))]
+            public IQueryable<ObjectA> As { get; }
+        }
+
+        public class ObjectC : RealmObject
+        {
+            public int IntValue { get; set; }
+
+            public ObjectB B { get; set; }
         }
     }
 }
