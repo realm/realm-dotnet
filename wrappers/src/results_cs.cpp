@@ -29,6 +29,7 @@
 #include "schema_cs.hpp"
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
+#include "keypath_helpers.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -138,7 +139,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         parser::ParserResult result = parser::parse(query_string.to_string());
         
         parser::KeyPathMapping mapping;
-        alias_backlinks(mapping, realm);
+        realm::alias_backlinks(mapping, *realm);
         
         query_builder::NoArguments no_args;
         query_builder::apply_predicate(query, result.predicate, no_args, mapping);

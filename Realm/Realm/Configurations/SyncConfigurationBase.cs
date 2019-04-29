@@ -209,24 +209,24 @@ namespace Realms.Sync
 
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
         {
-            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
-            IDisposable subscription = null;
-            try
+            var configuration = new Realms.Native.Configuration
             {
-                if (OnProgress != null)
-                {
-                    var observer = new Observer<SyncProgress>(OnProgress);
-                    subscription = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork).Subscribe(observer);
-                }
-                await session.WaitForDownloadAsync();
-            }
-            finally
+                Path = DatabasePath,
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache
+            };
+
+            // Keep that until we open the Realm on the foreground.
+            var backgroundHandle = await SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey);
+
+            var foregroundHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
+            backgroundHandle.Close();
+            if (IsDynamic && !schema.Any())
             {
-                subscription?.Dispose();
-                session.CloseHandle();
+                foregroundHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
             }
 
-            return CreateRealm(schema);
+            return new Realm(foregroundHandle, this, schema);
         }
 
         internal Native.SyncConfiguration ToNative()

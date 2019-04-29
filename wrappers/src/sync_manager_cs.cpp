@@ -44,6 +44,9 @@ using LogMessageDelegate = void(const char* message, size_t message_len, util::L
 
 namespace realm {
 namespace binding {
+    void (*s_open_realm_callback)(void* task_completion_source, SharedRealm* realm, int32_t error_code, const char* message, size_t message_len);
+
+    
     class SyncLogger : public util::RootLogger {
     public:
         SyncLogger(LogMessageDelegate* delegate)
@@ -76,12 +79,61 @@ namespace binding {
     };
 }
 
+Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
+{
+    Realm::Config config;
+    config.schema_mode = SchemaMode::Additive;
+    
+    if (objects_length > 0) {
+        config.schema = create_schema(objects, objects_length, properties);
+    }
+    
+    config.schema_version = configuration.schema_version;
+    
+    std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
+    
+    config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
+    config.sync_config->bind_session_handler = bind_session;
+    config.sync_config->error_handler = handle_session_error;
+    config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+    
+    // by definition the key is only allowed to be 64 bytes long, enforced by C# code
+    if (encryption_key) {
+        auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+        
+        config.encryption_key = std::vector<char>(key.begin(), key.end());
+        config.sync_config->realm_encryption_key = key;
+    }
+    
+#if !REALM_PLATFORM_APPLE
+    if (sync_configuration.trusted_ca_path) {
+        Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
+        config.sync_config->ssl_trust_certificate_path = trusted_ca_path.to_string();
+    }
+#endif
+    
+    config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
+    config.sync_config->is_partial = sync_configuration.is_partial;
+    
+    if (sync_configuration.partial_sync_identifier) {
+        Utf16StringAccessor partial_sync_identifier(sync_configuration.partial_sync_identifier, sync_configuration.partial_sync_identifier_len);
+        config.sync_config->custom_partial_sync_identifier = partial_sync_identifier.to_string();
+    }
+    
+    return config;
+}
+    
 }
 
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 extern "C" {
+REALM_EXPORT void realm_install_syncmanager_callbacks(decltype(s_open_realm_callback) open_callback)
+{
+    s_open_realm_callback = open_callback;
+}
+    
 REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, size_t base_path_len,
                                               const uint16_t* user_agent_buf, size_t user_agent_len,
                                               const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
@@ -135,48 +187,31 @@ REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
 {
     return SyncManager::shared().log_level();
 }
+    
+REALM_EXPORT void shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+
+        Realm::get_shared_realm(config, [task_completion_source](SharedRealm realm, std::exception_ptr error) {
+            if (error) {
+                try {
+                    std::rethrow_exception(error);
+                } catch (const std::system_error& system_error) {
+                    const std::error_code& ec = system_error.code();
+                    s_open_realm_callback(task_completion_source, nullptr, ec.value(), ec.message().c_str(), ec.message().length());
+                }
+            } else {
+                s_open_realm_callback(task_completion_source, new SharedRealm(realm), 0, nullptr, 0);
+            }
+        });
+    });
+}
 
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {        
-        Realm::Config config;
-        config.schema_mode = SchemaMode::Additive;
-
-        if (objects_length > 0) {
-            config.schema = create_schema(objects, objects_length, properties);
-        }
-        
-        config.schema_version = configuration.schema_version;
-
-        std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
-        
-        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
-        config.sync_config->bind_session_handler = bind_session;
-        config.sync_config->error_handler = handle_session_error;
-        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
-        
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        if (encryption_key) {
-            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
-            
-            config.encryption_key = std::vector<char>(key.begin(), key.end());
-            config.sync_config->realm_encryption_key = key;
-        }
-
-#if !REALM_PLATFORM_APPLE
-        if (sync_configuration.trusted_ca_path) {
-            Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
-            config.sync_config->ssl_trust_certificate_path = trusted_ca_path.to_string();
-        }
-#endif
-        
-        config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
-        config.sync_config->is_partial = sync_configuration.is_partial;
-        
-        if (sync_configuration.partial_sync_identifier) {
-            Utf16StringAccessor partial_sync_identifier(sync_configuration.partial_sync_identifier, sync_configuration.partial_sync_identifier_len);
-            config.sync_config->custom_partial_sync_identifier = partial_sync_identifier.to_string();
-        }
+    return handle_errors(ex, [&]() {
+        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
         
         auto realm = Realm::get_shared_realm(config);
         if (!configuration.read_only)

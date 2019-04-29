@@ -38,7 +38,7 @@ namespace Realms
           ISchemaSource,
           IThreadConfined
     {
-        protected static readonly PropertyType _argumentType = PropertyTypeEx.ToPropertyType(typeof(T), out _);
+        protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 

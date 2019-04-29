@@ -90,19 +90,4 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema&
 
 util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
 
-REALM_FORCEINLINE void alias_backlinks(parser::KeyPathMapping &mapping, const SharedRealm &realm)
-{
-    const Schema &schema = realm->schema();
-    for (auto it = schema.begin(); it != schema.end(); ++it) {
-        for (const Property &property : it->computed_properties) {
-            if (property.type == PropertyType::LinkingObjects) {
-                auto target_object_schema = schema.find(property.object_type);
-                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
-                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
-                mapping.add_mapping(table, property.name, native_name);
-            }
-        }
-    }
-}
 #endif /* defined(SCHEMA_CS_HPP) */

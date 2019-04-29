@@ -65,7 +65,7 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_wait", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
+            public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void report_error_for_testing(SessionHandle session, int error_code, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.I1)] bool is_fatal);
@@ -145,12 +145,11 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public bool Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
+        public void Wait(TaskCompletionSource<object> tcs, ProgressDirection direction)
         {
             var tcsHandle = GCHandle.Alloc(tcs);
-            var result = NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
+            NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
             ex.ThrowIfNecessary();
-            return result;
         }
 
         public IntPtr GetRawPointer()

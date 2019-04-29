@@ -160,17 +160,17 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
     });
 }
 
-REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&] {
+    handle_errors(ex, [&] {
         auto waiter = [task_completion_source](std::error_code error) {
             s_wait_callback(task_completion_source, error.value(), error.message().c_str(), error.message().length());
         };
         
         if (direction == CSharpNotifierType::Upload) {
-            return session->wait_for_upload_completion(waiter);
+            session->wait_for_upload_completion(waiter);
         } else {
-            return session->wait_for_download_completion(waiter);
+            session->wait_for_download_completion(waiter);
         }
     });
 }
