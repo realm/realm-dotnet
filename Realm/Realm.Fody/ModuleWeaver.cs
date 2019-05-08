@@ -141,6 +141,15 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         var targetFramework = ModuleDefinition.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
+        _references = RealmWeaver.ImportedReferences.Create(this, frameworkName);
+
+        var isWoven = ModuleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
+        if (isWoven)
+        {
+            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it has already been processed.");
+            return;
+        }
+
         var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {
             var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
@@ -161,7 +170,6 @@ Analytics payload
             }
         });
 
-        _references = RealmWeaver.ImportedReferences.Create(this, frameworkName);
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Accessors>();
@@ -181,12 +189,15 @@ Analytics payload
 
         WeaveSchema(matchingTypes);
 
+        var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
+        ModuleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
+
         submitAnalytics.Wait();
     }
 
     private void WeaveType(TypeDefinition type, Dictionary<string, Accessors> methodTable)
     {
-        Debug.WriteLine("Weaving " + type.Name);
+        LogDebug("Weaving " + type.Name);
 
         var persistedProperties = new List<WeaveResult>();
         foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
