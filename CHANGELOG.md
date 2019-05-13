@@ -11,9 +11,12 @@
   * `User.LogOut` has been removed in favor of `User.LogOutAsync`.
   * `User.GetManagementRealm` has been removed in favor of the `User.ApplyPermissionsAsync` set of wrapper API.
   * `User.GetPermissionRealm` has been removed in favor of the `User.GetGrantedPermissions` wrapper API.
+* Deprecated the `IQueryable<T>.Subscribe(string name)` extension method in favor of `IQueryable<T>.Subscribe(SubscriptionOptions options)`.
 
 ### Enhancements
 * Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))
+* Added an `IQueryable<T>.Subscribe(SubscriptionOptions)` extension method that allows you to configure additional options for the subscription, such as the name, time to live, and whether it should update an existing subscription. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
+* Added a `Realm.GetAllSubscriptions()` extension method that allows you to obtain a collection of all registered query-based sync subscriptions. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
 
 ### Fixed
 * Fixes an issue where using the `StringExtensions.Contains(string, string, StringComparison)` extension method inside a LINQ query would result in an exception being thrown on .NET Core 2.1+ or Xamarin.iOS/Android projects.([Issue #1848](https://github.com/realm/realm-dotnet/issues/1848))
