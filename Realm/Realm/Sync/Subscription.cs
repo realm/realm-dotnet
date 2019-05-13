@@ -20,6 +20,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -85,6 +86,11 @@ namespace Realms.Sync
         /// <param name="options">
         /// Options that configure some metadata of the subscription, such as its name or time to live.
         /// </param>
+        /// <param name="includedBacklinks">
+        /// An array of property expressions which specifies which linkingObjects relationships should be included in
+        /// the subscription. Subscriptions already include link and list properties (in the forward direction)
+        /// automatically by default.
+        /// </param>
         /// <returns>
         /// A <see cref="Subscription{T}"/> instance that contains information and methods for monitoring
         /// the state of the subscription.
@@ -93,17 +99,27 @@ namespace Realms.Sync
         /// <exception cref="ArgumentException">
         /// Thrown if the <c>query</c> was not obtained from a query-based synchronized Realm.
         /// </exception>
-        public static Subscription<T> Subscribe<T>(this IQueryable<T> query, SubscriptionOptions options = null)
+        public static Subscription<T> Subscribe<T>(
+            this IQueryable<T> query,
+            SubscriptionOptions options = null,
+            params Expression<Func<T, IQueryable>>[] includedBacklinks)
         {
             Argument.NotNull(query, nameof(query));
 
             var results = query as RealmResults<T>;
             Argument.Ensure(results != null, $"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
 
+            options = options ?? new SubscriptionOptions();
+
             var syncConfig = results.Realm.Config as SyncConfigurationBase;
             Argument.Ensure(syncConfig?.IsFullSync == false, $"{nameof(query)} must be obtained from a synchronized Realm using query-based synchronization.", nameof(query));
 
-            var handle = SubscriptionHandle.Create(results.ResultsHandle, options.Name, (long?)options.TimeToLive?.TotalMilliseconds, options.ShouldUpdate);
+            var handle = SubscriptionHandle.Create(
+                results.ResultsHandle,
+                options.Name,
+                (long?)options.TimeToLive?.TotalMilliseconds,
+                options.ShouldUpdate,
+                includedBacklinks.ToStringPaths());
             return new Subscription<T>(handle, results);
         }
 
@@ -122,7 +138,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Cancel a named subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
+        /// Cancel a named subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions, Expression{Func{T, IQueryable}}[])"/>.
         /// <para />
         /// Removing a subscription will delete all objects from the local Realm that were matched
         /// only by that subscription and not any remaining subscriptions. The deletion is performed
@@ -161,7 +177,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Cancel a subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
+        /// Cancel a subscription that was created by calling <see cref="Subscribe{T}(IQueryable{T}, SubscriptionOptions, Expression{Func{T, IQueryable}}[])"/>.
         /// <para />
         /// Removing a subscription will delete all objects from the local Realm that were matched
         /// only by that subscription and not any remaining subscriptions. The deletion is performed
@@ -229,7 +245,7 @@ namespace Realms.Sync
     /// <para/>
     /// The state of the subscription can be observed by subscribing to the <see cref="PropertyChanged"/> event handler.
     /// <para/>
-    /// Subscriptions are created by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
+    /// Subscriptions are created by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions, Expression{Func{T, IQueryable}}[])"/>.
     /// </summary>
     /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
