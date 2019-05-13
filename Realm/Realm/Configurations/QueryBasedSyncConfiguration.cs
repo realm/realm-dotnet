@@ -35,13 +35,14 @@ namespace Realms.Sync
     {
         internal override bool IsFullSync => false;
 
-        internal static readonly Type[] _queryBasedPermissionTypes = new[]
+        internal static readonly Type[] _queryBasedPermissionTypes =
         {
             typeof(ClassPermission),
             typeof(Permission),
             typeof(PermissionRole),
             typeof(PermissionUser),
-            typeof(RealmPermission)
+            typeof(RealmPermission),
+            typeof(NamedSubscription)
         };
 
         /// <summary>
