@@ -15,7 +15,37 @@
 
 ### Enhancements
 * Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))
-* Added an `IQueryable<T>.Subscribe(SubscriptionOptions)` extension method that allows you to configure additional options for the subscription, such as the name, time to live, and whether it should update an existing subscription. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
+* Added an `IQueryable<T>.Subscribe(SubscriptionOptions, params Expression<Func<T, IQueryable>>[] includedBacklinks)` extension method that allows you to configure additional options for the subscription, such as the name, time to live, and whether it should update an existing subscription. The `includedBacklinks` argument allows you to specify which backlink properties should be included in the transitive closure when doing query-based sync. For example:
+
+  ```csharp
+  class Dog : RealmObject
+  {
+      public Person Owner { get; set; }
+  }
+
+  class Person : RealmObject
+  {
+      [Backlink(nameof(Dog.Owner))]
+      public IQueryable<Dog> Dogs { get; }
+  }
+
+  var options = new SubscriptionOptions
+  {
+      Name = "adults",
+      TimeToLive = TimeSpan.FromDays(1),
+      ShouldUpdate = true
+  };
+
+  var people = realm.All<Person>()
+                    .Where(p => p.Age > 18)
+                    .Subscribe(options, p => p.Dogs);
+
+  await people.WaitForSynchronzationAsync();
+  // Dogs that have an owner set to a person that is over 18
+  // will now be included in the objects synchronized locally.
+  var firstPersonDogs = people.Results.First().Dogs;
+  ```
+  ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838) & [Issue #1834](https://github.com/realm/realm-dotnet/issues/1834))
 * Added a `Realm.GetAllSubscriptions()` extension method that allows you to obtain a collection of all registered query-based sync subscriptions. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
 
 ### Fixed
