@@ -33,9 +33,12 @@ using Realms.Weaving;
 
 namespace RealmWeaver
 {
-    [TestFixture(PropertyChangedWeaver.NoPropertyChanged)]
-    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver)]
-    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(PropertyChangedWeaver.NoPropertyChanged, false)]
+    [TestFixture(PropertyChangedWeaver.NoPropertyChanged, true)]
+    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, false)]
+    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, true)]
+    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, false)]
+    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, true)]
     public class Tests : WeaverTestBase
     {
         #region helpers
@@ -117,32 +120,53 @@ namespace RealmWeaver
         }
 
         private readonly PropertyChangedWeaver _propertyChangedWeaver;
+        private readonly bool _weaveTwice;
 
         private Assembly _assembly;
 
-        public Tests(PropertyChangedWeaver propertyChangedWeaver)
+        public Tests(PropertyChangedWeaver propertyChangedWeaver, bool weaveTwice)
         {
             _propertyChangedWeaver = propertyChangedWeaver;
+            _weaveTwice = weaveTwice;
         }
 
         [OneTimeSetUp]
         public void FixtureSetup()
         {
             var sourceAssemblyPath = typeof(AssemblyToProcess.Person).Assembly.GetAssemblyLocation();
+            TestResult result;
 
             switch (_propertyChangedWeaver)
             {
                 case PropertyChangedWeaver.NoPropertyChanged:
-                    _assembly = WeaveRealm(sourceAssemblyPath).Assembly;
+                    result = WeaveRealm(sourceAssemblyPath);
                     break;
 
                 case PropertyChangedWeaver.BeforeRealmWeaver:
-                    _assembly = WeaveRealm(WeavePropertyChanged(sourceAssemblyPath).AssemblyPath).Assembly;
+                    result = WeaveRealm(WeavePropertyChanged(sourceAssemblyPath).AssemblyPath);
                     break;
 
                 case PropertyChangedWeaver.AfterRealmWeaver:
-                    _assembly = WeavePropertyChanged(WeaveRealm(sourceAssemblyPath).AssemblyPath).Assembly;
+                    result = WeavePropertyChanged(WeaveRealm(sourceAssemblyPath).AssemblyPath);
                     break;
+
+                default:
+                    throw new NotSupportedException();
+            }
+
+            _assembly = result.Assembly;
+
+            if (_weaveTwice)
+            {
+                var errorsCount = _errors.Count;
+                var warningsCount = _warnings.Count;
+                var messageCount = _messages.Count;
+                _assembly = WeaveRealm(result.AssemblyPath).Assembly;
+                Assert.That(_errors.Count, Is.EqualTo(errorsCount));
+                Assert.That(_warnings.Count, Is.EqualTo(warningsCount));
+                Assert.That(_messages.Count, Is.EqualTo(messageCount + 1));
+
+                Assert.That(_messages.Last(), Is.EqualTo("Not weaving assembly 'AssemblyToProcess, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' because it has already been processed."));
             }
 
             // Try accessing assembly to ensure that the assembly is still valid.

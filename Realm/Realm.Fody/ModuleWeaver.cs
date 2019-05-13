@@ -143,6 +143,12 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
         _references = RealmWeaver.ImportedReferences.Create(this, frameworkName);
 
+        if (_references.WovenAssemblyAttribute == null)
+        {
+            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it doesn't reference Realm.");
+            return;
+        }
+
         var isWoven = ModuleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
         if (isWoven)
         {
