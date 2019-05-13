@@ -20,7 +20,7 @@ using NUnit.Framework;
 
 namespace RealmWeaver
 {
-    public class WeaveEmptyTests : WeaverTestBase 
+    public class WeaveEmptyTests : WeaverTestBase
     {
         [OneTimeSetUp]
         public void FixtureSetup()
@@ -34,12 +34,9 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = new string[0];
-
-            var expectedErrors = new string[0];
-
-            Assert.That(_errors, Is.EquivalentTo(expectedErrors));
-            Assert.That(_warnings, Is.EquivalentTo(expectedWarnings));
+            Assert.That(_errors, Is.Empty);
+            Assert.That(_warnings, Is.Empty);
+            Assert.That(_messages, Is.EquivalentTo(new[] { "Not weaving assembly 'RealmFreeAssemblyToProcess, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' because it doesn't reference Realm." }));
         }
     }
 }

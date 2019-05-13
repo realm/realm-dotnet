@@ -16,11 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Fody;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using Fody;
 
 namespace RealmWeaver
 {
@@ -31,6 +30,7 @@ namespace RealmWeaver
     {
         protected readonly List<string> _warnings = new List<string>();
         protected readonly List<string> _errors = new List<string>();
+        protected readonly List<string> _messages = new List<string>();
 
         protected TestResult WeaveRealm(string assemblyPath)
         {
@@ -39,6 +39,7 @@ namespace RealmWeaver
             var result = weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" });
             _warnings.AddRange(result.Warnings.Select(m => m.Text));
             _errors.AddRange(result.Errors.Select(m => m.Text));
+            _messages.AddRange(result.Messages.Where(m => m.MessageImportance?.Equals(MessageImportance.Normal) == true).Select(m => m.Text));
             return result;
         }
     }

@@ -121,6 +121,10 @@ namespace RealmWeaver
 
         public MethodReference WovenAttribute_Constructor { get; private set; }
 
+        public TypeReference WovenAssemblyAttribute { get; private set; }
+
+        public MethodReference WovenAssemblyAttribute_Constructor { get; private set; }
+
         public TypeReference ExplicitAttribute { get; private set; }
 
         public TypeReference WovenPropertyAttribute { get; private set; }
@@ -327,6 +331,9 @@ namespace RealmWeaver
                 HasThis = true,
                 Parameters = { new ParameterDefinition(System_Type) }
             };
+
+            WovenAssemblyAttribute = new TypeReference("Realms", "WovenAssemblyAttribute", Module, realmAssembly);
+            WovenAssemblyAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, WovenAssemblyAttribute) { HasThis = true };
 
             WovenPropertyAttribute = new TypeReference("Realms", "WovenPropertyAttribute", Module, realmAssembly);
             WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, WovenPropertyAttribute) { HasThis = true };

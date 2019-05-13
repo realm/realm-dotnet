@@ -47,7 +47,7 @@ public partial class ModuleWeaver
         if (realmTypes.Any())
         {
             // TODO: test with more convoluted scenario
-            LogDebug($"Default schema woven with the following classes:{string.Join(", ", realmTypes.Select(t => t.Name))}");
+            LogInfo($"Default schema woven with the following classes:{string.Join(", ", realmTypes.Select(t => t.Name))}");
 
             var entryPoint = GetModuleInitializer();
             var start = entryPoint.Body.Instructions.First();
