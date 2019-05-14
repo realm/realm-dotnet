@@ -36,7 +36,7 @@ REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t*
     return handle_errors(ex, [&]() {
         auto name = name_len >= 0 ? util::Optional<std::string>(Utf16StringAccessor(name_buf, name_len).to_string()) : none;
         auto optional_ttl = time_to_live >= 0 ? util::Optional<int64_t>(time_to_live) : none;
-        
+
         IncludeDescriptor inclusion_paths;
         if (inclusions_len >= 0) {
             DescriptorOrdering combined_orderings;
@@ -50,19 +50,18 @@ REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t*
                 query_builder::apply_ordering(ordering, results.get_query().get_table(), ordering_state, mapping);
                 combined_orderings.append_include(ordering.compile_included_backlinks());
             }
-            
+
             if (combined_orderings.will_apply_include()) {
                 inclusion_paths = combined_orderings.compile_included_backlinks();
             }
         }
-        
-        realm::partial_sync::SubscriptionOptions options {
-            name,
-            optional_ttl,
-            update,
-            inclusion_paths
-        };
-        
+
+        realm::partial_sync::SubscriptionOptions options;
+        options.user_provided_name = name;
+        options.time_to_live_ms = optional_ttl;
+        options.update = update;
+        options.inclusions = inclusion_paths;
+
         auto result = realm::partial_sync::subscribe(results, options);
         return new Subscription(std::move(result));
     });
@@ -88,7 +87,7 @@ REALM_EXPORT NativeException::Marshallable realm_subscription_get_error(Subscrip
     else {
         NativeException no_error = { RealmErrorType::NoError };
         return no_error.for_marshalling();
-    }    
+    }
 }
 
 REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notification_callback(Subscription* subscription, void* managed_subscription, ManagedSubscriptionCallback callback, NativeException::Marshallable& ex)
@@ -100,7 +99,7 @@ REALM_EXPORT SubscriptionNotificationTokenContext* realm_subscription_add_notifi
         context->token = subscription->add_notification_callback([context]() {
             context->callback(context->managed_subscription);
         });
-        
+
         return context;
     });
 }
@@ -113,7 +112,7 @@ REALM_EXPORT void* realm_subscription_destroy_notification_token(SubscriptionNot
         return managed_subscription;
     });
 }
-    
+
 REALM_EXPORT void realm_subscription_unsubscribe(Subscription* subscription, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
