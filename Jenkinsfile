@@ -282,7 +282,16 @@ stage('Test') {
     },
     '.NET Core macOS': NetCoreTest('dotnet && macos'),
     '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('dotnet && windows')
+    '.NET Core Windows': NetCoreTest('dotnet && windows'),
+    'Weaver': {
+      nodeWithCleanup('dotnet && windows') {
+        unstash 'dotnet-source'
+        dir('Tests/Weaver/Realm.Fody.Tests') {
+          bat "dotnet run -f netcoreapp2.0 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
+          reportTests 'TestResults.Weaver.xml'
+        }
+      }
+    }
   ]
 
   timeout(time: 30, unit: 'MINUTES') {
