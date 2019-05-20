@@ -85,7 +85,6 @@ namespace Realms.Server
                 var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
                 notifier.OnStarted(new NotifierStartException(errorCode, message));
             }
-
         }
 
         internal static void OnCalculationCompleted(IntPtr details_ptr, IntPtr managedCallbackPtr)
@@ -168,7 +167,6 @@ namespace Realms.Server
                 if (_isDisposed == 0)
                 {
                     _processor.Enqueue(path, calculation_ptr);
-
                 }
             }
 

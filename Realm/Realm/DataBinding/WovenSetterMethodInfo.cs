@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Helpers;
 using System;
 using System.Globalization;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.DataBinding
 {

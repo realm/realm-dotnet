@@ -121,15 +121,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                try
-                {
-                    await User.LoginAsync(SyncTestHelpers.CreateCredentials(), new Uri(url));
-                    Assert.Fail("Expected exception to be thrown.");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<ArgumentException>());
-                }
+                await TestHelpers.AssertThrows<ArgumentException>(() => User.LoginAsync(SyncTestHelpers.CreateCredentials(), new Uri(url)));
             });
         }
 
@@ -196,20 +188,14 @@ namespace Realms.Tests.Sync
                     }
                 };
 
-                try
-                {
-                    await AuthenticationHelper.MakeAuthRequestAsync(HttpMethod.Put, new Uri(SyncTestHelpers.AuthServerUri, "auth/password"), json, token);
+                await TestHelpers.AssertThrows<HttpException>(
+                    () => AuthenticationHelper.MakeAuthRequestAsync(HttpMethod.Put, new Uri(SyncTestHelpers.AuthServerUri, "auth/password"), json, token),
+                    ex =>
+                    {
+                        Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                        Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.AccessDenied));
 
-                    Assert.Fail("Expected an error");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<AuthenticationException>());
-                    var aex = (AuthenticationException)ex;
-
-                    Assert.That(aex.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
-                    Assert.That(aex.ErrorCode, Is.EqualTo(ErrorCode.AccessDenied));
-                }
+                    });
             });
         }
 
@@ -274,15 +260,7 @@ namespace Realms.Tests.Sync
             {
                 var alice = await SyncTestHelpers.GetUserAsync();
 
-                try
-                {
-                    await alice.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "some-id");
-                    Assert.Fail("Expected an exception to be thrown.");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<InvalidOperationException>());
-                }
+                await TestHelpers.AssertThrows<InvalidOperationException>(() => alice.RetrieveInfoForUserAsync(Credentials.Provider.UsernamePassword, "some-id"));
             });
         }
 
@@ -420,17 +398,10 @@ namespace Realms.Tests.Sync
             Assert.That(User.Current, Is.Null);
 
             // Try to login with the same credentials
-            try
+            await TestHelpers.AssertThrows<HttpException>(() => User.LoginAsync(Credentials.UsernamePassword(userId, OriginalPassword, createUser: false), SyncTestHelpers.AuthServerUri), ex =>
             {
-                await User.LoginAsync(Credentials.UsernamePassword(userId, OriginalPassword, createUser: false), SyncTestHelpers.AuthServerUri);
-                Assert.Fail("Should be impossible to login with old password");
-            }
-            catch (Exception ex)
-            {
-                Assert.That(ex, Is.TypeOf<AuthenticationException>());
-                var authEx = (AuthenticationException)ex;
-                Assert.That(authEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
-            }
+                Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
+            });
 
             var newCredentials = Credentials.UsernamePassword(userId, NewPassword, createUser: false);
             var newUser = await User.LoginAsync(newCredentials, SyncTestHelpers.AuthServerUri);

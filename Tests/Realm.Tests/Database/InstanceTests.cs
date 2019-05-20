@@ -526,15 +526,7 @@ namespace Realms.Tests.Database
                 Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
 
-                try
-                {
-                    await realm.WriteAsync(_ => { });
-                    Assert.Fail("An exception should have been thrown.");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.TypeOf<ObjectDisposedException>());
-                }
+                await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.WriteAsync(_ => { }));
 
                 other.Dispose();
             });

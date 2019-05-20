@@ -23,6 +23,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -282,21 +283,26 @@ namespace Realms.Sync
             var errorJson = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             Exception ex;
+            string helpLink = null;
+            string errorMessage;
+            ErrorCode errorCode;
             try
             {
                 var problem = JObject.Parse(errorJson);
-
-                var code = ErrorCodeHelper.GetErrorCode(problem["code"].Value<int>()) ?? ErrorCode.Unknown;
-
-                ex = new AuthenticationException(code, response.StatusCode, response.ReasonPhrase, errorJson, problem["title"].Value<string>())
-                {
-                    HelpLink = problem["type"].Value<string>()
-                };
+                errorCode = ErrorCodeHelper.GetErrorCode(problem["code"].Value<int>()) ?? ErrorCode.Unknown;
+                errorMessage = problem["title"].Value<string>();
+                helpLink = problem["type"].Value<string>();
             }
             catch
             {
-                ex = new HttpException(response.StatusCode, response.ReasonPhrase, errorJson);
+                errorCode = ErrorCode.Unknown;
+                errorMessage = "An HTTP exception has occurred.";
             }
+
+            ex = new HttpException(response.StatusCode, response.ReasonPhrase, errorJson, errorMessage, errorCode)
+            {
+                HelpLink = helpLink
+            };
 
             throw ex;
         }

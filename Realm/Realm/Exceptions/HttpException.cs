@@ -19,6 +19,8 @@
 using System;
 using System.Net;
 
+using ErrorCodeEnum = Realms.Sync.Exceptions.ErrorCode;
+
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
@@ -26,6 +28,12 @@ namespace Realms.Sync.Exceptions
     /// </summary>
     public class HttpException : Exception
     {
+        /// <summary>
+        /// Gets the <see cref="ErrorCode"/> of the error.
+        /// </summary>
+        /// <value>An enum value indicating the error code.</value>
+        public ErrorCodeEnum? ErrorCode { get; }
+
         /// <summary>
         /// Gets the <see cref="HttpStatusCode"/> of the response.
         /// </summary>
@@ -44,16 +52,12 @@ namespace Realms.Sync.Exceptions
         /// <value>The body of the HTTP response.</value>
         public string Payload { get; }
 
-        internal HttpException(HttpStatusCode code, string reasonPhrase, string payload) :
-            this(code, reasonPhrase, payload, "An HTTP exception has occurred.")
-        {
-        }
-
-        internal HttpException(HttpStatusCode statusCode, string reasonPhrase, string payload, string message) : base(message)
+        internal HttpException(HttpStatusCode statusCode, string reasonPhrase, string payload, string message, ErrorCodeEnum errorCode = ErrorCodeEnum.Unknown) : base(message)
         {
             StatusCode = statusCode;
             ReasonPhrase = reasonPhrase;
             Payload = payload;
+            ErrorCode = errorCode;
         }
     }
 }

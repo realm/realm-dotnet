@@ -17,139 +17,70 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
     /// <summary>
     /// Objects of this class are used to offer permissions to owned Realms.
-    /// They are created exclusively by the client and are processed by the server
-    /// as indicated by the status fields.
     /// </summary>
-    /// <remarks>
-    /// When offering permissions, you should create the offer and add it to the <see cref="User"/>'s Management Realm.
-    /// Then you should subscribe to <see cref="RealmObject.PropertyChanged"/> to be notified when the server has
-    /// processed the request.
-    /// Once the request has been processed, the <see cref="Status"/>, <see cref="StatusMessage"/>, and
-    /// <see cref="ErrorCode"/> will be updated accordingly.
-    /// If the request has been processed successfully, the <see cref="Token"/> will be populated and you can share it
-    /// with users you wish to grant permissions to.
-    /// If the request has failed, the <see cref="StatusMessage"/> will be updated with relevant information about the
-    /// failure and <see cref="ErrorCode"/> will be set to a non-null value.
-    /// </remarks>
-    public class PermissionOffer : RealmObject, IPermissionObject, IStatusObject
+    public class PermissionOffer
     {
-        /// <inheritdoc />
-        [PrimaryKey, Required]
-        [MapTo("id")]
-        public string Id { get; private set; } = Guid.NewGuid().ToString();
-
-        /// <inheritdoc />
-        [MapTo("createdAt")]
+        /// <summary>
+        /// Gets the creation time of this object.
+        /// </summary>
+        /// <value>A <see cref="DateTimeOffset"/> indicating the object's creation date and time.</value>
+        [JsonProperty("createdAt")]
         public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
-
-        /// <inheritdoc />
-        [MapTo("updatedAt")]
-        public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
-
-        /// <inheritdoc />
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        [MapTo("statusCode")]
-        public int? StatusCode { get; set; }
-
-        /// <inheritdoc />
-        [MapTo("statusMessage")]
-        public string StatusMessage { get; private set; }
-
-        /// <inheritdoc />
-        public ManagementObjectStatus Status
-        {
-            get
-            {
-                switch (StatusCode)
-                {
-                    case null:
-                        return ManagementObjectStatus.NotProcessed;
-                    case 0:
-                        return ManagementObjectStatus.Success;
-                    default:
-                        return ManagementObjectStatus.Error;
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public ErrorCode? ErrorCode => ErrorCodeHelper.GetErrorCode(StatusCode);
 
         /// <summary>
         /// Gets the token that can be used to offer the permissions defined in this object to another user.
         /// </summary>
-        /// <value>A string, set by the server, that can be used to create a <see cref="PermissionOfferResponse"/>.</value>
-        [MapTo("token")]
-        [Indexed]
+        /// <value>A string, set by the server, that can be used in <see cref="User.InvalidateOfferAsync(string)"/> or
+        /// <see cref="User.AcceptPermissionOfferAsync(string)"/>.</value>
+        [JsonProperty("token")]
         public string Token { get; private set; }
 
         /// <summary>
-        /// Gets the url of the Realm to offer permissions to.
+        /// Gets the path of the Realm to offer permissions to.
         /// </summary>
-        [MapTo("realmUrl")]
-        [Required]
-        public string RealmUrl { get; private set; }
+        [JsonProperty("realmPath")]
+        public string RealmPath { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the receiver of this offer will be able to read from the Realm.
         /// </summary>
         /// <value><c>true</c> to allow the receiver to read data from the <see cref="Realm"/>.</value>
-        [MapTo("mayRead")]
-        public bool MayRead { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the receiver of this offer will be able to write to the Realm.
-        /// </summary>
-        /// <value><c>true</c> to allow the receiver to write data to the <see cref="Realm"/>.</value>
-        [MapTo("mayWrite")]
-        public bool MayWrite { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the receiver of this offer will be able to manage access rights for others.
-        /// </summary>
-        /// <value><c>true</c> to allow the receiver to offer others access to the <see cref="Realm"/>.</value>
-        [MapTo("mayManage")]
-        public bool MayManage { get; private set; }
+        [JsonProperty("accessLevel")]
+        public AccessLevel AccessLevel { get; private set; }
 
         /// <summary>
         /// Gets the expiration date and time of the offer.
         /// </summary>
         /// <value>If <c>null</c>, the offer will never expire. Otherwise, the offer may not be consumed past the expiration date.</value>
-        [MapTo("expiresAt")]
-        public DateTimeOffset? ExpiresAt { get; internal set; }
+        [JsonProperty("expiresAt")]
+        public DateTimeOffset? ExpiresAt { get; private set; }
 
-        internal PermissionOffer(string realmUrl, bool mayRead = true, bool mayWrite = false, bool mayManage = false, DateTimeOffset? expiresAt = null)
-        {
-            RealmUrl = realmUrl;
-            MayRead = mayRead;
-            MayWrite = mayWrite;
-            MayManage = mayManage;
-            ExpiresAt = expiresAt;
-        }
+        /// <summary>
+        /// Gets a value indicating whether the receiver of this offer will be able to read data from the Realm.
+        /// </summary>
+        /// <value><c>true</c> to allow the receiver to read date from the <see cref="Realm"/>.</value>
+        [Obsolete("Use AccessLevel >= AccessLevel.Read instead")]
+        public bool MayRead => AccessLevel >= AccessLevel.Read;
 
-        private PermissionOffer()
-        {
-        }
+        /// <summary>
+        /// Gets a value indicating whether the receiver of this offer will be able to write to the Realm.
+        /// </summary>
+        /// <value><c>true</c> to allow the receiver to write data to the <see cref="Realm"/>.</value>
+        [Obsolete("Use AccessLevel >= AccessLevel.Write instead")]
+        public bool MayWrite => AccessLevel >= AccessLevel.Write;
 
-        /// <inheritdoc />
-        protected override void OnPropertyChanged(string propertyName)
-        {
-            base.OnPropertyChanged(propertyName);
-
-            if (propertyName == nameof(StatusCode))
-            {
-                RaisePropertyChanged(nameof(Status));
-                RaisePropertyChanged(nameof(ErrorCode));
-            }
-        }
+        /// <summary>
+        /// Gets a value indicating whether the receiver of this offer will be able to manage access rights for others.
+        /// </summary>
+        /// <value><c>true</c> to allow the receiver to offer others access to the <see cref="Realm"/>.</value>
+        [Obsolete("Use AccessLevel >= AccessLevel.Admin instead")]
+        public bool MayManage => AccessLevel >= AccessLevel.Admin;
     }
 }

@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// <summary>
     /// A managed Realm object representing a subscription. Subscriptions are used by Query-based Realms to define which
     /// data should be available on the device. It is the persisted version of a <see cref="Subscription{T}"/> created by
-    /// calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
+    /// calling <see cref="Subscription.Subscribe"/>.
     /// </summary>
     [MapTo("__ResultSets")]
     [Explicit]

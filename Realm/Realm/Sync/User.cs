@@ -19,9 +19,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -162,8 +165,6 @@ namespace Realms.Sync
         internal User(SyncUserHandle handle)
         {
             Handle = handle;
-            _permissionRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__permission", typeof(PathPermission)));
-            _managementRealm = new Lazy<Realm>(() => GetSpecialPurposeRealm("__management", typeof(PermissionChange), typeof(PermissionOffer), typeof(PermissionOfferResponse)));
         }
 
         internal static User Create(IntPtr userPtr)
@@ -382,67 +383,18 @@ namespace Realms.Sync
 
         #region Permissions
 
-        private readonly Lazy<Realm> _permissionRealm;
-        private readonly Lazy<Realm> _managementRealm;
-
-        internal Realm PermissionRealm => _permissionRealm.Value;
-
-        internal Realm ManagementRealm => _managementRealm.Value;
-
         /// <summary>
         /// Asynchronously retrieve all permissions associated with the user calling this method.
         /// </summary>
         /// <returns>
-        /// A queryable collection of <see cref="PathPermission"/> objects that provide detailed information
+        /// A collection of <see cref="PathPermission"/> objects that provide detailed information
         /// regarding the granted access.
         /// </returns>
         /// <param name="recipient">The optional recipient of the permission.</param>
-        /// <param name="millisecondTimeout">
-        /// The timeout in milliseconds for downloading server changes. If the download times out, no error will be thrown
-        /// and instead the latest local state will be returned. If set to 0, the latest state will be returned immediately.
-        /// </param>
-        /// <remarks>
-        /// The collection is a live query, similar to what you would get by calling <see cref="Realm.All"/>, so the same
-        /// features and limitations apply - you can query and subscribe for notifications, but you cannot pass it between
-        /// threads.
-        /// </remarks>
-        public async Task<IQueryable<PathPermission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any, int millisecondTimeout = 2000)
+        public async Task<IEnumerable<PathPermission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any)
         {
-            // TODO: this should eventually use GetInstanceAsync
-
-            if (millisecondTimeout > 0)
-            {
-                var session = PermissionRealm.GetSession();
-                try
-                {
-                    await session.WaitForDownloadAsync().Timeout(millisecondTimeout);
-                }
-                catch (TimeoutException)
-                {
-                }
-                finally
-                {
-                    session.CloseHandle();
-                }
-            }
-
-            var result = PermissionRealm.All<PathPermission>()
-                                        .Where(p => !p.Path.EndsWith("/__permission", StringComparison.OrdinalIgnoreCase) &&
-                                                    !p.Path.EndsWith("/__management", StringComparison.OrdinalIgnoreCase));
-
-            var id = Identity;
-            switch (recipient)
-            {
-                case Recipient.CurrentUser:
-                    result = result.Where(p => p.UserId == id);
-                    break;
-
-                case Recipient.OtherUser:
-                    result = result.Where(p => p.UserId != id);
-                    break;
-            }
-
-            return result;
+            var result = await MakePermissionRequestAsync(HttpMethod.Get, $"permissions?recipient={recipient}");
+            return result["permissions"].ToObject<IEnumerable<PathPermission>>();
         }
 
         /// <summary>
@@ -452,38 +404,25 @@ namespace Realms.Sync
         /// An awaitable task, that, upon completion, indicates that the permissions have been successfully applied by the server.
         /// </returns>
         /// <param name="condition">A <see cref="PermissionCondition"/> that will be used to match existing users against.</param>
-        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
+        /// <param name="realmPath">The Realm path whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
         /// <param name="accessLevel">
         /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
         /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
         /// </param>
-        public Task ApplyPermissionsAsync(PermissionCondition condition, string realmUrl, AccessLevel accessLevel)
+        public async Task ApplyPermissionsAsync(PermissionCondition condition, string realmPath, AccessLevel accessLevel)
         {
-            if (string.IsNullOrEmpty(realmUrl))
+            if (string.IsNullOrEmpty(realmPath))
             {
-                throw new ArgumentNullException(nameof(realmUrl));
+                throw new ArgumentNullException(nameof(realmPath));
             }
 
-            var mayRead = accessLevel >= AccessLevel.Read;
-            var mayWrite = accessLevel >= AccessLevel.Write;
-            var mayManage = accessLevel >= AccessLevel.Admin;
-
-            PermissionChange change = null;
-
-            if (condition is UserIdCondition userIdCondition)
+            var payload = new Dictionary<string, object>
             {
-                change = new PermissionChange(userIdCondition.UserId, realmUrl, mayRead, mayWrite, mayManage);
-            }
-            else if (condition is KeyValueCondition keyValueCondition)
-            {
-                change = new PermissionChange(keyValueCondition.Key, keyValueCondition.Value, realmUrl, mayRead, mayWrite, mayManage);
-            }
-            else
-            {
-                throw new NotSupportedException("Invalid PermissionCondition.");
-            }
-
-            return WriteToManagementRealmAsync(change);
+                ["condition"] = condition.ToJsonObject(),
+                ["realmPath"] = realmPath,
+                ["accessLevel"] = accessLevel
+            };
+            await MakePermissionRequestAsync(HttpMethod.Post, "permissions/apply", payload);
         }
 
         /// <summary>
@@ -492,17 +431,17 @@ namespace Realms.Sync
         /// <returns>
         /// A token that can be shared with another user, e.g. via email or message and then consumed by
         /// <see cref="AcceptPermissionOfferAsync"/> to obtain permissions to a Realm.</returns>
-        /// <param name="realmUrl">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
+        /// <param name="realmPath">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
         /// <param name="accessLevel">
         /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
         /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
         /// </param>
         /// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
-        public async Task<string> OfferPermissionsAsync(string realmUrl, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
+        public async Task<string> OfferPermissionsAsync(string realmPath, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
         {
-            if (string.IsNullOrEmpty(realmUrl))
+            if (string.IsNullOrEmpty(realmPath))
             {
-                throw new ArgumentNullException(nameof(realmUrl));
+                throw new ArgumentNullException(nameof(realmPath));
             }
 
             if (expiresAt < DateTimeOffset.UtcNow)
@@ -515,14 +454,15 @@ namespace Realms.Sync
                 throw new ArgumentException("The access level may not be None", nameof(accessLevel));
             }
 
-            var offer = new PermissionOffer(realmUrl,
-                                            accessLevel >= AccessLevel.Read,
-                                            accessLevel >= AccessLevel.Write,
-                                            accessLevel >= AccessLevel.Admin,
-                                            expiresAt);
+            var payload = new Dictionary<string, object>
+            {
+                ["expiresAt"] = expiresAt?.ToString("O"),
+                ["realmPath"] = realmPath,
+                ["accessLevel"] = accessLevel
+            };
 
-            await WriteToManagementRealmAsync(offer);
-            return offer.Token;
+            var result = await MakePermissionRequestAsync(HttpMethod.Post, "permissions/offers", payload);
+            return result.ToObject<PermissionOffer>().Token;
         }
 
         /// <summary>
@@ -537,9 +477,8 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(offerToken));
             }
 
-            var permissionResponse = new PermissionOfferResponse(offerToken);
-            await WriteToManagementRealmAsync(permissionResponse);
-            return permissionResponse.RealmUrl;
+            var result = await MakePermissionRequestAsync(HttpMethod.Post, $"permissions/offers/{offerToken}/accept");
+            return result["path"].Value<string>();
         }
 
         /// <summary>
@@ -553,89 +492,34 @@ namespace Realms.Sync
         /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
         /// </returns>
         /// <param name="offer">The offer that should be invalidated.</param>
-        public async Task InvalidateOfferAsync(PermissionOffer offer)
-        {
-            var tcs = new TaskCompletionSource<object>();
-
-            ManagementRealm.Write(() => offer.ExpiresAt = DateTimeOffset.UtcNow);
-
-            var session = ManagementRealm.GetSession();
-            try
-            {
-                await session.WaitForUploadAsync();
-            }
-            finally
-            {
-                session.CloseHandle();
-            }
-        }
+        [Obsolete("Use InvalidateOfferAsync(string) by passing the offer.Token instead.")]
+        public Task InvalidateOfferAsync(PermissionOffer offer) => InvalidateOfferAsync(offer.Token);
 
         /// <summary>
-        /// Gets the permission offers that this user has created by invoking <see cref="OfferPermissionsAsync"/>.
+        /// Invalidates a permission offer by its token.
         /// </summary>
-        /// <returns>A queryable collection of <see cref="PermissionOffer"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
-        public IQueryable<PermissionOffer> GetPermissionOffers(params ManagementObjectStatus[] statuses)
-                    => GetPermissionObjects<PermissionOffer>(statuses);
+        /// <remarks>
+        /// Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
+        /// already been granted.
+        /// </remarks>
+        /// <returns>
+        /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
+        /// </returns>
+        /// <param name="offerToken">The token of the offer that should be invalidated.</param>
+        public Task InvalidateOfferAsync(string offerToken) => MakePermissionRequestAsync(HttpMethod.Post, $"permissions/offers/{offerToken}/accept");
 
         /// <summary>
-        /// Gets the permission offer responses that this user has created by invoking <see cref="AcceptPermissionOfferAsync"/>.
+        /// Asynchronously retrieve the permission offers that this user has created by invoking <see cref="OfferPermissionsAsync"/>.
         /// </summary>
-        /// <returns>A queryable collection of <see cref="PermissionOfferResponse"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
-        public IQueryable<PermissionOfferResponse> GetPermissionOfferResponses(params ManagementObjectStatus[] statuses)
-                    => GetPermissionObjects<PermissionOfferResponse>(statuses);
-
-        /// <summary>
-        /// Gets the permission changes that this user has created by invoking <see cref="ApplyPermissionsAsync"/>.
-        /// </summary>
-        /// <returns>A queryable collection of <see cref="PermissionChange"/> objects.</returns>
-        /// <param name="statuses">Optional statuses to filter by. If empty, will return objects with any status.</param>
-        public IQueryable<PermissionChange> GetPermissionChanges(params ManagementObjectStatus[] statuses)
-                    => GetPermissionObjects<PermissionChange>(statuses);
-
-        private IQueryable<T> GetPermissionObjects<T>(ManagementObjectStatus[] statuses) where T : RealmObject, IStatusObject
+        /// <returns>A collection of <see cref="PermissionOffer"/> objects.</returns>
+        public async Task<IEnumerable<PathPermission>> GetPermissionOffersAsync()
         {
-            var result = ManagementRealm.All<T>();
-            int? successCode = 0;
-            int? notProcessedCode = null;
-
-            if (statuses.Any())
-            {
-                if (!statuses.Contains(ManagementObjectStatus.Error))
-                {
-                    result = result.Where(p => p.StatusCode == successCode || p.StatusCode == notProcessedCode);
-                }
-
-                if (!statuses.Contains(ManagementObjectStatus.NotProcessed))
-                {
-                    result = result.Where(p => p.StatusCode != notProcessedCode);
-                }
-
-                if (!statuses.Contains(ManagementObjectStatus.Success))
-                {
-                    result = result.Where(p => p.StatusCode != successCode);
-                }
-            }
-
-            return result;
+            var result = await MakePermissionRequestAsync(HttpMethod.Get, $"permissions/offers");
+            return result["offers"].ToObject<IEnumerable<PathPermission>>();
         }
 
-        private Realm GetSpecialPurposeRealm(string path, params Type[] objectClasses)
-        {
-            var configuration = new FullSyncConfiguration(GetUriForRealm($"/~/{path}"), this)
-            {
-                ObjectClasses = objectClasses
-            };
-
-            return Realm.GetInstance(configuration);
-        }
-
-        private Task WriteToManagementRealmAsync<T>(T permissionObject) where T : RealmObject, IPermissionObject
-        {
-            ManagementRealm.Write(() => ManagementRealm.Add(permissionObject));
-            return permissionObject.WaitForProcessingAsync();
-        }
+        private Task<JObject> MakePermissionRequestAsync(HttpMethod method, string relativeUri, IDictionary<string, object> body = null)
+            => AuthenticationHelper.MakeAuthRequestAsync(method, new Uri(ServerUri, relativeUri), body, RefreshToken);
 
         #endregion Permissions
     }

@@ -12,6 +12,18 @@
   * `User.GetManagementRealm` has been removed in favor of the `User.ApplyPermissionsAsync` set of wrapper API.
   * `User.GetPermissionRealm` has been removed in favor of the `User.GetGrantedPermissions` wrapper API.
 * Deprecated the `IQueryable<T>.Subscribe(string name)` extension method in favor of `IQueryable<T>.Subscribe(SubscriptionOptions options)`.
+* Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `IQueryable<T>` has changed to `IEnumerable<T>`). ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
+  * Changed the return type of `User.GetGrantedPermissionsAsync` from `IQueryable<PathPermission>` to `IEnumerable<PathPermission>`. This means that the collection is no longer observable like regular Realm-backed collections. If you need to be notified for changes of this collection, you need to implement a polling-based mechanism yourself.
+  * `PathPermission.MayRead/MayWrite/MayManage` have been deprecated in favor of a more-consistent `AccessLevel` API.
+  * In `User.ApplyPermissionsAsync`, renamed the `realmUrl` parameter to `realmPath`.
+  * In `User.OfferPermissionsAsync`, renamed the `realmUrl` parameter to `realmPath`.
+  * Removed the `PermissionOfferResponse` and `PermissionChange` classes.
+  * Removed the `IPermissionObject` interface.
+  * Removed the `ManagementObjectStatus` enum.
+  * Removed the `User.GetPermissionChanges` and `User.GetPermissionOfferResponses` methods.
+  * The `millisecondTimeout` argument in `User.GetGrantedPermissionsAsync` has been removed.
+  * The `PermissionException` class has been replaced by `HttpException`.
+* The `AuthenticationException` class has been merged into the `HttpException` class.
 
 ### Enhancements
 * Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))
@@ -47,6 +59,8 @@
   ```
   ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838) & [Issue #1834](https://github.com/realm/realm-dotnet/issues/1834))
 * Added a `Realm.GetAllSubscriptions()` extension method that allows you to obtain a collection of all registered query-based sync subscriptions. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
+* Added `AccessLevel` property to `PathPermission` to replace the now deprecated `MayRead/MayWrite/MayManage`. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
+* Added `RealmOwnerId` property to `PathPermission` that indicates who the owner of the Realm is. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
 
 ### Fixed
 * Fixes an issue where using the `StringExtensions.Contains(string, string, StringComparison)` extension method inside a LINQ query would result in an exception being thrown on .NET Core 2.1+ or Xamarin.iOS/Android projects.([Issue #1848](https://github.com/realm/realm-dotnet/issues/1848))

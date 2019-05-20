@@ -324,18 +324,14 @@ namespace Realms.Tests.Sync
                     var subscription2 = realm.All<ObjectA>()
                                              .Where(o => o.IntValue > 5)
                                              .Subscribe(new SubscriptionOptions { Name = "foo" });
-                    try
-                    {
-                        await subscription2.WaitForSynchronizationAsync().Timeout(5000);
-                        Assert.Fail("Expected to fail.");
-                    }
-                    catch (RealmException ex)
+
+                    await TestHelpers.AssertThrows<RealmException>(() => subscription2.WaitForSynchronizationAsync(), ex =>
                     {
                         Assert.That(subscription2.State, Is.EqualTo(SubscriptionState.Error));
                         Assert.That(subscription2.Error, Is.Not.Null);
                         Assert.That(subscription2.Error.Message, Does.Contain("An existing subscription exists with the name"));
                         Assert.That(ex, Is.EqualTo(subscription2.Error));
-                    }
+                    });
                 }
             });
         }

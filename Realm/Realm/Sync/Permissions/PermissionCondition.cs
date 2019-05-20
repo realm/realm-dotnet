@@ -73,6 +73,8 @@ namespace Realms.Sync
         {
             return new KeyValueCondition(key, value);
         }
+
+        internal abstract object ToJsonObject();
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -83,6 +85,14 @@ namespace Realms.Sync
         public UserIdCondition(string userId)
         {
             UserId = userId;
+        }
+
+        internal override object ToJsonObject()
+        {
+            return new
+            {
+                userId = UserId
+            };
         }
     }
 
@@ -97,6 +107,15 @@ namespace Realms.Sync
         {
             Key = key;
             Value = value;
+        }
+
+        internal override object ToJsonObject()
+        {
+            return new
+            {
+                metadataKey = Key,
+                metadataValue = Value,
+            };
         }
     }
 }
