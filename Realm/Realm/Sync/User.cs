@@ -420,7 +420,7 @@ namespace Realms.Sync
             {
                 ["condition"] = condition.ToJsonObject(),
                 ["realmPath"] = realmPath,
-                ["accessLevel"] = accessLevel
+                ["accessLevel"] = accessLevel.ToString().ToLower()
             };
             await MakePermissionRequestAsync(HttpMethod.Post, "permissions/apply", payload);
         }
@@ -458,7 +458,7 @@ namespace Realms.Sync
             {
                 ["expiresAt"] = expiresAt?.ToString("O"),
                 ["realmPath"] = realmPath,
-                ["accessLevel"] = accessLevel
+                ["accessLevel"] = accessLevel.ToString().ToLower()
             };
 
             var result = await MakePermissionRequestAsync(HttpMethod.Post, "permissions/offers", payload);

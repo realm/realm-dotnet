@@ -33,7 +33,6 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class PermissionsTests : SyncTestBase
     {
-        [Ignore("Regression in ROS")]
         [Test]
         public void User_ApplyPermissions_WithUserId_GrantsAndRevokesPermissions()
         {
@@ -42,11 +41,10 @@ namespace Realms.Tests.Sync
                 var alice = await SyncTestHelpers.GetUserAsync();
                 var bob = await SyncTestHelpers.GetUserAsync();
 
-                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity)).Timeout(1000000);
+                await TestApplyPermissions(alice, bob, PermissionCondition.UserId(bob.Identity)).Timeout(20000);
             });
         }
 
-        [Ignore("Regression in ROS")]
         [Test]
         public void User_ApplyPermissions_WithEmail_GrantsAndRevokesPermissions()
         {
@@ -57,12 +55,11 @@ namespace Realms.Tests.Sync
                 var bobCredentials = Credentials.UsernamePassword(bobEmail, "a", createUser: true);
                 var bob = await User.LoginAsync(bobCredentials, SyncTestHelpers.AuthServerUri);
 
-                await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail)).Timeout(10000);
+                await TestApplyPermissions(alice, bob, PermissionCondition.Email(bobEmail)).Timeout(20000);
             });
         }
 
         [Test]
-        [Ignore("Regression in ROS")]
         public void User_OfferPermissions_GrantsPermissions()
         {
             SyncTestHelpers.RunRosTestAsync(async () =>
