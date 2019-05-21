@@ -35,9 +35,6 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests : SyncTestBase
     {
-        private static readonly byte[] _sync1xEncryptionKey = TestHelpers.GetEncryptionKey(42);
-
-        [Ignore("Due to #976, compact doesn't work with synced realms.")]
         [TestCase(true, true)]
         [TestCase(true, false)]
         [TestCase(false, true)]
@@ -47,7 +44,7 @@ namespace Realms.Tests.Sync
             TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var serverUri = new Uri($"realm://localhost:9080/~/compactrealm_{encrypt}_{populate}.realm");
+                var serverUri = new Uri($"/~/compactrealm_{encrypt}_{populate}.realm", UriKind.Relative);
 
                 var config = new FullSyncConfiguration(serverUri, user);
                 if (encrypt)
