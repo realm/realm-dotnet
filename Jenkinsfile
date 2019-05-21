@@ -352,11 +352,7 @@ def nodeWithCleanup(String label, Closure steps) {
       try {
         steps()
       } finally {
-        try {
-          deleteDir()
-        } catch (Exception ex) {
-          // Deletion failed - someone will delete it eventually
-        }
+        deleteDir()
       }
     }
   }
