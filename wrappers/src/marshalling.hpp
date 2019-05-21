@@ -33,6 +33,7 @@ struct PrimitiveValue
 {
     realm::PropertyType type;
     bool has_value;
+    char padding[6];
     
     union {
         bool bool_value;
