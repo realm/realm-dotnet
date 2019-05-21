@@ -52,8 +52,8 @@ namespace Realms.Tests.Sync
             if (TestHelpers.IsMacOS)
             {
                 // VS for Mac hangs when Realm files are written in a location it doesn't ignore.
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Documents");
-                Directory.CreateDirectory(folder);
+                defaultFolder = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Documents");
+                Directory.CreateDirectory(defaultFolder);
             }
 
             SyncConfigurationBase.UserAgent = GetType().Name;
