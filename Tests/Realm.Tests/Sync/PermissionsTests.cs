@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -69,7 +70,7 @@ namespace Realms.Tests.Sync
 
                 var realmPath = $"/{alice.Identity}/testPermission";
                 var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
+                await EnsureRealmExists(alice, realmUrl);
 
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write).Timeout(2000);
                 var alicesUrl = await bob.AcceptPermissionOfferAsync(token).Timeout(2000);
@@ -88,7 +89,7 @@ namespace Realms.Tests.Sync
                 var alice = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
+                await EnsureRealmExists(alice, realmUrl);
 
                 await TestHelpers.AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, DateTimeOffset.UtcNow.AddDays(-1)));
             });
@@ -102,7 +103,7 @@ namespace Realms.Tests.Sync
                 var alice = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
+                await EnsureRealmExists(alice, realmUrl);
 
                 await TestHelpers.AssertThrows<ArgumentException>(() => alice.OfferPermissionsAsync(realmUrl, AccessLevel.None));
             });
@@ -117,7 +118,7 @@ namespace Realms.Tests.Sync
                 var bob = await SyncTestHelpers.GetUserAsync();
 
                 var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
+                await EnsureRealmExists(alice, realmUrl);
 
                 var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write, expiresAt: DateTimeOffset.UtcNow.AddSeconds(1));
 
@@ -150,7 +151,7 @@ namespace Realms.Tests.Sync
         {
             var realmPath = $"/{alice.Identity}/testPermission";
             var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
-            EnsureRealmExists(alice, realmUrl);
+            await EnsureRealmExists(alice, realmUrl);
 
             // Grant write permissions
             await alice.ApplyPermissionsAsync(condition, realmUrl, AccessLevel.Write);
@@ -195,7 +196,7 @@ namespace Realms.Tests.Sync
 
                 var realmPath = $"/{alice.Identity}/willBeReadonly";
                 var realmUrl = SyncTestHelpers.RealmUri(realmPath).AbsoluteUri;
-                EnsureRealmExists(alice, realmUrl);
+                await EnsureRealmExists(alice, realmUrl);
 
                 // Give Bob just read permissions
                 await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUrl, AccessLevel.Read);
@@ -230,6 +231,58 @@ namespace Realms.Tests.Sync
 
                 Assert.That(result, Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
+            });
+        }
+
+        [Test]
+        public void User_InvalidateOffer_InvalidatesTheOffer()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUserAsync();
+                var bob = await SyncTestHelpers.GetUserAsync();
+                var charlie = await SyncTestHelpers.GetUserAsync();
+
+                var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
+                await EnsureRealmExists(alice, realmUrl);
+
+                var token = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write);
+                var bobUrl = await bob.AcceptPermissionOfferAsync(token);
+                Assert.That(bobUrl, Is.EqualTo($"/{alice.Identity}/testPermission"));
+
+                await alice.InvalidateOfferAsync(token);
+
+                await TestHelpers.AssertThrows<HttpException>(() => charlie.AcceptPermissionOfferAsync(token), ex =>
+                {
+                    Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                    Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.ExpiredPermissionOffer));
+                    Assert.That(ex.Message, Is.EqualTo("The permission offer is expired."));
+                });
+            });
+        }
+
+        [Test]
+        public void User_GetPermissionOffers_Test()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var alice = await SyncTestHelpers.GetUserAsync();
+
+                var realmUrl = SyncTestHelpers.RealmUri($"{alice.Identity}/testPermission").AbsoluteUri;
+                await EnsureRealmExists(alice, realmUrl);
+
+                var readToken = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Read);
+                var writeToken = await alice.OfferPermissionsAsync(realmUrl, AccessLevel.Write);
+
+                var offers = await alice.GetPermissionOffersAsync();
+                Assert.That(offers.Count(), Is.EqualTo(2));
+
+                await alice.InvalidateOfferAsync(readToken);
+                var offersAfterDeletion = await alice.GetPermissionOffersAsync();
+
+                Assert.That(offersAfterDeletion.Count(), Is.EqualTo(1));
+                Assert.That(offersAfterDeletion.Single().Token, Is.EqualTo(writeToken));
+
             });
         }
 
@@ -276,12 +329,13 @@ namespace Realms.Tests.Sync
             Assert.That(firstRealm.Find<PrimaryKeyInt64Object>(secondObjectId), Is.Not.Null);
         }
 
-        private void EnsureRealmExists(User user, string realmUrl)
+        private async Task EnsureRealmExists(User user, string realmUrl)
         {
             var syncConfig = new FullSyncConfiguration(new Uri(realmUrl), user, Guid.NewGuid().ToString());
             using (var realm = GetRealm(syncConfig))
             {
                 // Make sure the realm exists
+                await GetSession(realm).WaitForUploadAsync();
             }
         }
     }

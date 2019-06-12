@@ -506,16 +506,16 @@ namespace Realms.Sync
         /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
         /// </returns>
         /// <param name="offerToken">The token of the offer that should be invalidated.</param>
-        public Task InvalidateOfferAsync(string offerToken) => MakePermissionRequestAsync(HttpMethod.Post, $"permissions/offers/{offerToken}/accept");
+        public Task InvalidateOfferAsync(string offerToken) => MakePermissionRequestAsync(HttpMethod.Delete, $"permissions/offers/{offerToken}");
 
         /// <summary>
         /// Asynchronously retrieve the permission offers that this user has created by invoking <see cref="OfferPermissionsAsync"/>.
         /// </summary>
         /// <returns>A collection of <see cref="PermissionOffer"/> objects.</returns>
-        public async Task<IEnumerable<PathPermission>> GetPermissionOffersAsync()
+        public async Task<IEnumerable<PermissionOffer>> GetPermissionOffersAsync()
         {
             var result = await MakePermissionRequestAsync(HttpMethod.Get, $"permissions/offers");
-            return result["offers"].ToObject<IEnumerable<PathPermission>>();
+            return result["offers"].ToObject<IEnumerable<PermissionOffer>>();
         }
 
         private Task<JObject> MakePermissionRequestAsync(HttpMethod method, string relativeUri, IDictionary<string, object> body = null)
