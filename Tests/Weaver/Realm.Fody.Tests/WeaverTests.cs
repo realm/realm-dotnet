@@ -404,6 +404,7 @@ namespace RealmWeaver
         }
 
         [Test]
+        [Ignore("IList property tests still missing")]
         public void SetManyRelationship()
         {
             // Arrange
@@ -411,8 +412,6 @@ namespace RealmWeaver
             var pn1 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
             var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
             o.IsManaged = true;
-
-            Assert.Inconclusive("IList property tests still missing");
         }
 
         [Test]

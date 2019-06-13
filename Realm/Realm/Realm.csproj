@@ -11,7 +11,7 @@
     <PackageReference Include="Fody" Version="4.0.2" PrivateAssets="None" />
     <PackageReference Include="Nito.AsyncEx.Context" Version="5.0.0" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview6.19259.10" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
