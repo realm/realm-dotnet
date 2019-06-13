@@ -261,7 +261,7 @@ stage('Test') {
       // }
     },
     '.NET Framework Windows': {
-      nodeWithCleanup('windows && dotnet') {
+      nodeWithCleanup('cph-windows-02 && dotnet') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -283,7 +283,7 @@ stage('Test') {
     },
     '.NET Core macOS': NetCoreTest('dotnet && macos'),
     '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('dotnet && windows'),
+    '.NET Core Windows': NetCoreTest('dotnet && cph-windows-02'),
     'Weaver': {
       nodeWithCleanup('dotnet && windows') {
         unstash 'dotnet-source'
