@@ -13,7 +13,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
-    <NativeReference Include="$(_RealmNugetNativePath)..\runtimes\osx.10.10-x64\native\librealm-wrappers.dylib">
+    <NativeReference Include="$(_RealmNugetNativePath)..\runtimes\osx-x64\native\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
     </NativeReference>
   </ItemGroup>
@@ -33,11 +33,11 @@
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <None Include="$(_RealmNugetNativePath)..\runtimes\win81-x86\native\realm-wrappers.dll">
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win-x86\native\realm-wrappers.dll">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="$(_RealmNugetNativePath)..\runtimes\win81-x64\native\realm-wrappers.dll">
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win-x64\native\realm-wrappers.dll">
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

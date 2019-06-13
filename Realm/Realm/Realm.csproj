@@ -29,7 +29,7 @@
     <!-- macOS -->
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Pack>true</Pack>
-      <PackagePath>runtimes\osx.10.10-x64\native</PackagePath>
+      <PackagePath>runtimes\osx-x64\native</PackagePath>
       <Link>wrappers\Darwin\%(Filename).%(Extension)</Link>
     </None>
     <!-- Linux -->
@@ -62,12 +62,12 @@
     <!-- Windows -->
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll">
       <Pack>true</Pack>
-      <PackagePath>runtimes\win81-x86\native</PackagePath>
+      <PackagePath>runtimes\win-x86\native</PackagePath>
       <Link>wrappers\Windows\Win32\%(Filename).%(Extension)</Link>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll">
       <Pack>true</Pack>
-      <PackagePath>runtimes\win81-x64\native</PackagePath>
+      <PackagePath>runtimes\win-x64\native</PackagePath>
       <Link>wrappers\Windows\x64\%(Filename).%(Extension)</Link>
     </None>
     <!-- WindowsStore -->
