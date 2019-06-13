@@ -176,7 +176,6 @@ Analytics payload
             }
         });
 
-
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Accessors>();
 

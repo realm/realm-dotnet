@@ -197,5 +197,19 @@ namespace Realms.Tests
         {
             AsyncContext.Run(() => testFunc().Timeout(timeout));
         }
+
+        public static async Task AssertThrows<T>(Func<Task> function, Action<T> exceptionAsserts = null)
+            where T : Exception
+        {
+            try
+            {
+                await function().Timeout(5000);
+                Assert.Fail($"Exception of type {typeof(T)} expected.");
+            }
+            catch (T ex)
+            {
+                exceptionAsserts?.Invoke(ex);
+            }
+        }
     }
 }

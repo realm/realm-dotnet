@@ -261,7 +261,7 @@ stage('Test') {
       // }
     },
     '.NET Framework Windows': {
-      nodeWithCleanup('windows && dotnet') {
+      nodeWithCleanup('cph-windows-02 && dotnet') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -283,7 +283,7 @@ stage('Test') {
     },
     '.NET Core macOS': NetCoreTest('dotnet && macos'),
     '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('dotnet && windows'),
+    '.NET Core Windows': NetCoreTest('dotnet && cph-windows-02'),
     'Weaver': {
       nodeWithCleanup('dotnet && windows') {
         unstash 'dotnet-source'
@@ -315,7 +315,7 @@ def NetCoreTest(String nodeName) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
-          withRos('3.21.1') { ros ->
+          withRos('3.23.1') { ros ->
             test_runner_image.inside("--link ${ros.id}:ros") {
               script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
               // see https://stackoverflow.com/a/53782505
