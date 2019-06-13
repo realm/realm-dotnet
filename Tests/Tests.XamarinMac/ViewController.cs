@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using AppKit;
 using NUnitLite;
 
-namespace Tests.XamarinMac
+namespace Realms.Tests.XamarinMac
 {
     public partial class ViewController : NSViewController
     {
@@ -43,7 +43,7 @@ namespace Tests.XamarinMac
 
             await Task.Delay(50);
 
-            var result = new AutoRun(typeof(MainClass).Assembly).Execute(MainClass.NUnitArgs);
+            var result = new AutoRun(typeof(TestHelpers).Assembly).Execute(MainClass.NUnitArgs);
 
             StateField.StringValue = $"Test run complete. Failed: {result}";
 

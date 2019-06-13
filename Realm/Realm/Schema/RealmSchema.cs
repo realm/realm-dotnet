@@ -117,16 +117,24 @@ namespace Realms.Schema
 
             foreach (var @class in classes)
             {
+                var typeInfo = @class.GetTypeInfo();
                 var objectSchema = ObjectSchema.FromType(@class.GetTypeInfo());
-                if (!classNames.Add(objectSchema.Name))
+
+                if (classNames.Add(objectSchema.Name))
                 {
-                    var duplicateType = builder.Single(s => s.Name == objectSchema.Name).Type;
-                    var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
-                        $"The duplicate types are {@class.FullName} and {duplicateType.FullName}. Either rename one" +
-                        " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
-                    throw new NotSupportedException(errorMessage);
+                    builder.Add(objectSchema);
                 }
-                builder.Add(objectSchema);
+                else
+                {
+                    var duplicateType = builder.FirstOrDefault(s => s.Name == objectSchema.Name).Type;
+                    if (typeInfo.FullName != duplicateType.FullName)
+                    {
+                        var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
+                            $"The duplicate types are {@class.FullName} and {duplicateType.FullName}. Either rename one" +
+                            " of them or explicitly specify ObjectClasses on your RealmConfiguration.";
+                        throw new NotSupportedException(errorMessage);
+                    }
+                }
             }
 
             return builder.Build();

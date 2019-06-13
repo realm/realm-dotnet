@@ -74,7 +74,7 @@ namespace realm {
         return std::vector<size_t>();
     }
     
-    static void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
+    static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
         if (e) {
             try {
                 std::rethrow_exception(e);

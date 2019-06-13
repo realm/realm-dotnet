@@ -7,7 +7,7 @@
 using Foundation;
 using System.CodeDom.Compiler;
 
-namespace Tests.XamarinMac
+namespace Realms.Tests.XamarinMac
 {
 	[Register ("ViewController")]
 	partial class ViewController

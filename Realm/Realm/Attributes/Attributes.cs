@@ -50,6 +50,15 @@ namespace Realms
     }
 
     /// <summary>
+    /// An attribute that indicates that the assembly has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class WovenAssemblyAttribute : Attribute
+    {
+    }
+
+    /// <summary>
     /// An attribute that prevents the decorated class from being included in Realm's default schema.
     /// </summary>
     /// <remarks>

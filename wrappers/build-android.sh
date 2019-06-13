@@ -2,7 +2,7 @@
 
 SCRIPT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-CONFIGURATION=Debug
+REALM_CMAKE_CONFIGURATION=Debug
 EXTRA_CMAKE_ARGS=""
 
 for i in "$@"
@@ -13,7 +13,7 @@ case $i in
     shift
   ;;
   -c=*|--configuration=*)
-    CONFIGURATION="${i#*=}"
+    export REALM_CMAKE_CONFIGURATION="${i#*=}"
     shift
   ;;
   *)
@@ -23,7 +23,7 @@ esac
 done
 
 function build() {
-  REALM_CMAKE_SUBPLATFORM="Android/$1" bash "$SCRIPT_DIRECTORY"/build.sh -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/src/object-store/CMake/android.toolchain.cmake" -DANDROID_ABI=$1 -DREALM_PLATFORM=Android -DCMAKE_BUILD_TYPE=$CONFIGURATION $EXTRA_CMAKE_ARGS
+  REALM_CMAKE_SUBPLATFORM="Android/$1" bash "$SCRIPT_DIRECTORY"/build.sh -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/src/object-store/CMake/android.toolchain.cmake" -DANDROID_ABI=$1 -DREALM_PLATFORM=Android -DCMAKE_BUILD_TYPE=$REALM_CMAKE_CONFIGURATION $EXTRA_CMAKE_ARGS
 }
 
 if [[ "$ARCH" ]]; then

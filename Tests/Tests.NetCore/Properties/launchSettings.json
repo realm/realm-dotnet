@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Tests.NetCore": {
-      "commandName": "Project",
-      "commandLineArgs": "--labels=After"
-    }
-  }
-}

@@ -82,14 +82,14 @@ namespace Realms
                 try
                 {
                     using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
-                    { }
+                    {
+                    }
                     return true;
                 }
                 catch
                 {
                     return false;
                 }
-
             }
         });
 

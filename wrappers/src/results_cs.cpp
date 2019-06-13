@@ -26,6 +26,7 @@
 #include "notifications_cs.hpp"
 #include "wrapper_exceptions.hpp"
 #include "timestamp_helpers.hpp"
+#include "schema_cs.hpp"
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
 
@@ -42,22 +43,6 @@ inline T get(Results* results, size_t ndx, NativeException::Marshallable& ex)
 
         return results->get<T>(ndx);
     });
-}
-
-inline void alias_backlinks(parser::KeyPathMapping &mapping, const realm::SharedRealm &realm)
-{
-    const realm::Schema &schema = realm->schema();
-    for (auto it = schema.begin(); it != schema.end(); ++it) {
-        for (const Property &property : it->computed_properties) {
-            if (property.type == realm::PropertyType::LinkingObjects) {
-                auto target_object_schema = schema.find(property.object_type);
-                const TableRef table = ObjectStore::table_for_object_type(realm->read_group(), it->name);
-                const TableRef target_table = ObjectStore::table_for_object_type(realm->read_group(), target_object_schema->name);
-                std::string native_name = "@links." + std::string(target_table->get_name()) + "." + property.link_origin_property_name;
-                mapping.add_mapping(table, property.name, native_name);
-            }
-        }
-    }
 }
 
 extern "C" {
@@ -150,7 +135,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         auto query = results.get_query();
         auto const &realm = results.get_realm();
         
-        parser::ParserResult result = parser::parse(query_string);
+        parser::ParserResult result = parser::parse(query_string.to_string());
         
         parser::KeyPathMapping mapping;
         alias_backlinks(mapping, realm);

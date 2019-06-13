@@ -181,30 +181,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 # Misc.
-packages
-Tools/RealmWeaver.Fody.dll
-wrappers/DerivedData
-wrappers/core
-wrappers/core-android
-wrappers/realm-core*.bz2
-wrappers/realm-core-android*.gz
-wrappers/realm-*.xz
 wrappers/cmake
 doxyout*
-RealmNetWeaver.Fody.dll
-NuGetBuild
-realm-core-android-*.tar.gz
-*.so
 NDependOut
 *.realm.lock
 *.realm.log_a
 *.realm.log_b
-RealmWeaver.Fody.dll
-wrappers/libs-dbg
 *.xam
 Resource.designer.cs
-*.gz
-Mono.Cecil.dll
-Realm.BuildTasks.dll
-*.nuget.targets
-*.nuget.props
+FodyWeavers.xsd

@@ -1,11 +1,69 @@
-3.5.0 (TBD)
+4.0.0 (TBD)
 ------------------
+
+### Breaking Changes
+* The following deprecated methods and classes have been removed:
+  * The `SyncConfiguration` class has been split into `FullSyncConfiguration` and `QueryBasedSyncConfiguration`. Use one of these classes to connect to the Realm Object Server.
+  * The `TestingExtensions.SimulateProgress` method has been removed as it hasn't worked for some time.
+  * The `Property.IsNullable` property has been removed. To check if a property is nullable, check `Property.Type` for the `PropertyType.Nullable` flag.
+  * The `Credentials.Provider` class has been removed. Previously, it contained a few constants that were intended for internal use mostly.
+  * The `User.ConfigurePersistance` method has been superseded by `SyncConfigurationBase.Initialize`.
+  * `User.LogOut` has been removed in favor of `User.LogOutAsync`.
+  * `User.GetManagementRealm` has been removed in favor of the `User.ApplyPermissionsAsync` set of wrapper API.
+  * `User.GetPermissionRealm` has been removed in favor of the `User.GetGrantedPermissions` wrapper API.
+* Deprecated the `IQueryable<T>.Subscribe(string name)` extension method in favor of `IQueryable<T>.Subscribe(SubscriptionOptions options)`.
+* Reworked the internal implementation of the permission API. For the most part, the method signatures haven't changed or where they have changed, the API have remained close to the original (e.g. `IQueryable<T>` has changed to `IEnumerable<T>`). ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
+  * Changed the return type of `User.GetGrantedPermissionsAsync` from `IQueryable<PathPermission>` to `IEnumerable<PathPermission>`. This means that the collection is no longer observable like regular Realm-backed collections. If you need to be notified for changes of this collection, you need to implement a polling-based mechanism yourself.
+  * `PathPermission.MayRead/MayWrite/MayManage` have been deprecated in favor of a more-consistent `AccessLevel` API.
+  * In `User.ApplyPermissionsAsync`, renamed the `realmUrl` parameter to `realmPath`.
+  * In `User.OfferPermissionsAsync`, renamed the `realmUrl` parameter to `realmPath`.
+  * Removed the `PermissionOfferResponse` and `PermissionChange` classes.
+  * Removed the `IPermissionObject` interface.
+  * Removed the `ManagementObjectStatus` enum.
+  * Removed the `User.GetPermissionChanges` and `User.GetPermissionOfferResponses` methods.
+  * The `millisecondTimeout` argument in `User.GetGrantedPermissionsAsync` has been removed.
+  * The `PermissionException` class has been replaced by `HttpException`.
+* The `AuthenticationException` class has been merged into the `HttpException` class.
 
 ### Enhancements
 * Added `Session.Start()` and `Session.Stop()` methods that allow you to pause/resume synchronization with the Realm Object Server. ([Issue #138](https://github.com/realm/realm-dotnet-private/issues/138))
+* Added an `IQueryable<T>.Subscribe(SubscriptionOptions, params Expression<Func<T, IQueryable>>[] includedBacklinks)` extension method that allows you to configure additional options for the subscription, such as the name, time to live, and whether it should update an existing subscription. The `includedBacklinks` argument allows you to specify which backlink properties should be included in the transitive closure when doing query-based sync. For example:
+
+  ```csharp
+  class Dog : RealmObject
+  {
+      public Person Owner { get; set; }
+  }
+
+  class Person : RealmObject
+  {
+      [Backlink(nameof(Dog.Owner))]
+      public IQueryable<Dog> Dogs { get; }
+  }
+
+  var options = new SubscriptionOptions
+  {
+      Name = "adults",
+      TimeToLive = TimeSpan.FromDays(1),
+      ShouldUpdate = true
+  };
+
+  var people = realm.All<Person>()
+                    .Where(p => p.Age > 18)
+                    .Subscribe(options, p => p.Dogs);
+
+  await people.WaitForSynchronzationAsync();
+  // Dogs that have an owner set to a person that is over 18
+  // will now be included in the objects synchronized locally.
+  var firstPersonDogs = people.Results.First().Dogs;
+  ```
+  ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838) & [Issue #1834](https://github.com/realm/realm-dotnet/issues/1834))
+* Added a `Realm.GetAllSubscriptions()` extension method that allows you to obtain a collection of all registered query-based sync subscriptions. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
+* Added `AccessLevel` property to `PathPermission` to replace the now deprecated `MayRead/MayWrite/MayManage`. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
+* Added `RealmOwnerId` property to `PathPermission` that indicates who the owner of the Realm is. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
 
 ### Fixed
-* None
+* Fixes an issue where using the `StringExtensions.Contains(string, string, StringComparison)` extension method inside a LINQ query would result in an exception being thrown on .NET Core 2.1+ or Xamarin.iOS/Android projects.([Issue #1848](https://github.com/realm/realm-dotnet/issues/1848))
 
 ### Compatibility
 * Realm Object Server: 3.11.0 or later.

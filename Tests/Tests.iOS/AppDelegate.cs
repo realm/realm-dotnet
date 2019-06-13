@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -25,7 +25,7 @@ using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
-namespace Tests
+namespace Realms.Tests.iOS
 {
     [Register("AppDelegate")]
     public class AppDelegate : FormsApplicationDelegate
@@ -35,6 +35,7 @@ namespace Tests
             Forms.Init();
 
             var nunit = new App();
+            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
             {
                 LogToOutput = true
@@ -65,7 +66,8 @@ namespace Tests
                     throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
                 }
 
-                options.XmlTransformFile = "nunit3-junit.xslt";
+                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+                options.XmlTransformFile = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
             }
 
             nunit.Options = options;
