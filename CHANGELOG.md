@@ -65,7 +65,7 @@
 * Improved query performance for unindexed string columns when the query has a long chain of OR conditions. (Core upgrade)
 * Improved performance of encryption and decryption significantly by utilizing hardware optimized encryption functions. (Core upgrade)
 * Compacting a realm into an encrypted file could take a really long time. The process is now optimized by adjusting the write buffer size relative to the used space in the realm. (Core upgrade)
-* The string-based query parser (`results.Filter("...")`) now supports readable timestamps with a 'T' separator in addition to the originally supported "@" separator. For example: `"startDate > 1981-11-01T23:59:59:1"`. (Core upgrade)
+* The string-based query parser (`results.Filter("...")`) now supports readable timestamps with a 'T' separator in addition to the originally supported "@" separator. For example: `startDate > 1981-11-01T23:59:59:1` (Core upgrade)
 
 ### Fixed
 * Fixes an issue where using the `StringExtensions.Contains(string, string, StringComparison)` extension method inside a LINQ query would result in an exception being thrown on .NET Core 2.1+ or Xamarin.iOS/Android projects.([Issue #1848](https://github.com/realm/realm-dotnet/issues/1848))
