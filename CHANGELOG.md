@@ -1,4 +1,4 @@
-4.0.0 (TBD)
+4.0.0 (2019-06-13)
 ------------------
 
 ### Breaking Changes
@@ -61,12 +61,21 @@
 * Added a `Realm.GetAllSubscriptions()` extension method that allows you to obtain a collection of all registered query-based sync subscriptions. ([Issue #1838](https://github.com/realm/realm-dotnet/issues/1838))
 * Added `AccessLevel` property to `PathPermission` to replace the now deprecated `MayRead/MayWrite/MayManage`. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
 * Added `RealmOwnerId` property to `PathPermission` that indicates who the owner of the Realm is. ([Issue #1863](https://github.com/realm/realm-dotnet/issues/1863))
+* Added support for building with `dotnet build` (previously only the `msbuild` command line was supported). ([PR #1849](https://github.com/realm/realm-dotnet/pull/1849))
+* Improved query performance for unindexed string columns when the query has a long chain of OR conditions. (Core upgrade)
+* Improved performance of encryption and decryption significantly by utilizing hardware optimized encryption functions. (Core upgrade)
+* Compacting a realm into an encrypted file could take a really long time. The process is now optimized by adjusting the write buffer size relative to the used space in the realm. (Core upgrade)
+* The string-based query parser (`results.Filter("...")`) now supports readable timestamps with a 'T' separator in addition to the originally supported "@" separator. For example: `startDate > 1981-11-01T23:59:59:1` (Core upgrade)
 
 ### Fixed
 * Fixes an issue where using the `StringExtensions.Contains(string, string, StringComparison)` extension method inside a LINQ query would result in an exception being thrown on .NET Core 2.1+ or Xamarin.iOS/Android projects.([Issue #1848](https://github.com/realm/realm-dotnet/issues/1848))
+* Creating an object after creating an object with the int primary key of "null" would hit an assertion failure. (Core upgrade)
 
 ### Compatibility
-* Realm Object Server: 3.11.0 or later.
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* Upgraded Sync from 3.14.11 to 4.5.1 and Core 5.12.7 to 5.20.0.
 
 3.4.0 (2019-01-09)
 ------------------
@@ -93,7 +102,7 @@
 * Realm Object Server: 3.11.0 or later.
 The sync protocol version has been bumped to version 25. The server is backwards-compatible with clients using protocol version 24 or below, but clients at version 25 are not backwards-compatible with a server at protocol version 24. The server must be upgraded before any clients are upgraded.
 
- ### Internal
+### Internal
 * Upgraded Sync from 3.9.2 to 3.14.11 and Core from 5.8.0 to 5.12.7.
 
 

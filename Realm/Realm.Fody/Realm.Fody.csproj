@@ -5,6 +5,8 @@
     <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <BuildOutputTargetFolder>weaver</BuildOutputTargetFolder>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <Title>Realm.Fody</Title>
+    <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
   </PropertyGroup>
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="4.0.2" PrivateAssets="Build;Compile;Runtime" />
