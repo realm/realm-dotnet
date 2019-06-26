@@ -323,7 +323,7 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        [NativeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
         private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
@@ -332,7 +332,7 @@ namespace Realms
             handle.Free();
         }
 
-        [NativeCallback(typeof(NativeMethods.NotifyRealmCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.NotifyRealmCallback))]
         public static void NotifyRealmChanged(IntPtr stateHandle)
         {
             var gch = GCHandle.FromIntPtr(stateHandle);

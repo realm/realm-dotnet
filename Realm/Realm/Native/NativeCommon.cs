@@ -35,7 +35,7 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void DebugLoggerCallback(byte* utf8String, IntPtr stringLen);
 
-        [NativeCallback(typeof(DebugLoggerCallback))]
+        [MonoPInvokeCallback(typeof(DebugLoggerCallback))]
         private static unsafe void DebugLogger(byte* utf8String, IntPtr stringLen)
         {
             var message = Encoding.UTF8.GetString(utf8String, (int)stringLen);

@@ -31,7 +31,7 @@ namespace Realms
 
         internal static readonly NotifiableObjectHandleBase.NotificationCallbackDelegate NotificationCallback = NotificationCallbackImpl;
 
-        [NativeCallback(typeof(NotifiableObjectHandleBase.NotificationCallbackDelegate))]
+        [MonoPInvokeCallback(typeof(NotifiableObjectHandleBase.NotificationCallbackDelegate))]
         private static void NotificationCallbackImpl(IntPtr managedHandle, IntPtr changes, IntPtr exception)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable notifiable)

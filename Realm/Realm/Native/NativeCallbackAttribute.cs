@@ -21,13 +21,16 @@ using System;
 namespace Realms.Native
 {
     /// <summary>
-    /// This attribute is replaced with <c>ObjCRuntime.MonoPInvokeCallback</c> on iOS and ignored otherwise.
+    /// Our own copy of MonoPInvokeCallbackAttribute to avoid the Xamarin.iOS dependency.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    internal class NativeCallbackAttribute : Attribute
+    internal class MonoPInvokeCallbackAttribute : Attribute
     {
-        public NativeCallbackAttribute(Type type)
+        public MonoPInvokeCallbackAttribute(Type type)
         {
+            Type = type;
         }
+
+        public Type Type { get; }
     }
 }
