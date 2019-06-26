@@ -56,6 +56,8 @@ add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
 set_target_properties(realm-wrappers PROPERTIES
   FRAMEWORK ${BUILD_APPLE_FRAMEWORK}
   MACOSX_FRAMEWORK_IDENTIFIER io.realm.wrappers
+  MACOSX_FRAMEWORK_SHORT_VERSION_STRING "4.0.0"
+  MACOSX_FRAMEWORK_BUNDLE_VERSION "4.0.0"
 )
 target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
 target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
