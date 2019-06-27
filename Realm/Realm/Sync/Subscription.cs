@@ -226,7 +226,7 @@ namespace Realms.Sync
             }
         }
 
-        [NativeCallback(typeof(SubscriptionHandle.SubscriptionCallbackDelegate))]
+        [MonoPInvokeCallback(typeof(SubscriptionHandle.SubscriptionCallbackDelegate))]
         private static void SubscriptionCallbackImpl(IntPtr managedHandle)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is ISubscription subscription)

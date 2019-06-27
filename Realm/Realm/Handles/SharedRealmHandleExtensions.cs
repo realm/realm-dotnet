@@ -285,7 +285,7 @@ namespace Realms.Sync
             return (ObjectPrivileges)result;
         }
 
-        [NativeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
+        [MonoPInvokeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
         private static void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
         {
             var handle = new SessionHandle(sessionHandlePtr);
@@ -293,7 +293,7 @@ namespace Realms.Sync
             AuthenticationHelper.RefreshAccessTokenAsync(session).ContinueWith(_ => session.CloseHandle());
         }
 
-        [NativeCallback(typeof(NativeMethods.SessionErrorCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
         private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
         {
             var handle = new SessionHandle(sessionHandlePtr);
@@ -327,14 +327,14 @@ namespace Realms.Sync
                              .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
-        [NativeCallback(typeof(NativeMethods.SessionProgressCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
             var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
             token.Notify(transferredBytes, transferableBytes);
         }
 
-        [NativeCallback(typeof(NativeMethods.SessionWaitCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
         private static unsafe void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
@@ -359,7 +359,7 @@ namespace Realms.Sync
             }
         }
 
-        [NativeCallback(typeof(NativeMethods.LogMessageCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
         private static unsafe void HandleLogMessage(byte* messageBuffer, IntPtr messageLength, LogLevel level)
         {
             try

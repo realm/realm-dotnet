@@ -1,3 +1,13 @@
+vNext (TBD)
+------------------
+
+### Fixed
+* Fixed an issue that would prevent iOS apps from being published to the app store with the following error:
+  > This bundle Payload/.../Frameworks/realm-wrappers.framework is invalid. The Info.plist file is missing the required key: CFBundleVersion.
+
+  ([Issue 1870](https://github.com/realm/realm-dotnet/issues/1870), since 4.0.0)
+* Fixed an issue that would cause iOS apps to crash on device upon launching. ([Issue 1871](https://github.com/realm/realm-dotnet/issues/1871), since 4.0.0)
+
 4.0.0 (2019-06-13)
 ------------------
 

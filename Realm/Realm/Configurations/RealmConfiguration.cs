@@ -183,7 +183,7 @@ namespace Realms
             return Task.FromResult(CreateRealm(schema));
         }
 
-        [NativeCallback(typeof(ShouldCompactCallback))]
+        [MonoPInvokeCallback(typeof(ShouldCompactCallback))]
         private static bool ShouldCompactOnLaunchCallback(IntPtr delegatePtr, ulong totalSize, ulong dataSize)
         {
             var handle = GCHandle.FromIntPtr(delegatePtr);

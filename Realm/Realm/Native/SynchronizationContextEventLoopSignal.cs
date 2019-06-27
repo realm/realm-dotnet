@@ -75,7 +75,7 @@ namespace Realms
             }
         }
 
-        [NativeCallback(typeof(get_eventloop))]
+        [MonoPInvokeCallback(typeof(get_eventloop))]
         private static IntPtr GetCurrentSynchronizationContext()
         {
             var context = SynchronizationContext.Current;
@@ -87,7 +87,7 @@ namespace Realms
             return GCHandle.ToIntPtr(GCHandle.Alloc(new EventLoop(context)));
         }
 
-        [NativeCallback(typeof(post_on_event_loop))]
+        [MonoPInvokeCallback(typeof(post_on_event_loop))]
         private static void PostOnSynchronizationContext(IntPtr eventloop, EventLoopPostHandler callback, IntPtr user_data)
         {
             if (eventloop != IntPtr.Zero)
@@ -97,7 +97,7 @@ namespace Realms
             }
         }
 
-        [NativeCallback(typeof(release_eventloop))]
+        [MonoPInvokeCallback(typeof(release_eventloop))]
         private static void ReleaseSynchronizationContext(IntPtr eventloop)
         {
             if (eventloop != IntPtr.Zero)

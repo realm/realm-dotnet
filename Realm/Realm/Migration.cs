@@ -83,7 +83,7 @@ namespace Realms
             return true;
         }
 
-        [NativeCallback(typeof(MigrationCallback))]
+        [MonoPInvokeCallback(typeof(MigrationCallback))]
         private static bool MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
