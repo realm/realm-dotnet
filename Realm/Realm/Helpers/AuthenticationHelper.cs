@@ -23,7 +23,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +34,6 @@ namespace Realms.Sync
 {
     internal static class AuthenticationHelper
     {
-        private const int ErrorContentTruncationLimit = 256 * 1024;
         private static readonly string AppId = string.Empty; // FIXME
         private static readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() => new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
 
