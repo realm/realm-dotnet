@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Realms.Helpers;
@@ -147,17 +148,16 @@ namespace Realms.Sync
         /// with the same nickname, they'll get the same underlying sync user.
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
-        /// <param name="isAdmin">An optional parameter controlling whether the user is admin.</param>
         /// <returns>
         /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
         /// </returns>
-        public static Credentials Nickname(string value, bool isAdmin = false)
+        [Obsolete("The Nickname auth provider is insecure and will be removed in a future version. Please use UsernamePassword or Anonymous instead.")]
+        public static Credentials Nickname(string value)
         {
             return new Credentials
             {
                 IdentityProvider = Provider.Nickname,
-                Token = value,
-                UserInfo = new Dictionary<string, object> { [Keys.IsAdmin] = isAdmin }
+                Token = value
             };
         }
 
