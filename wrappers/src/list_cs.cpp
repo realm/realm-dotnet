@@ -25,6 +25,9 @@
 #include "object-store/src/thread_safe_reference.hpp"
 #include "notifications_cs.hpp"
 #include "timestamp_helpers.hpp"
+#include <realm/parser/parser.hpp>
+#include <realm/parser/query_builder.hpp>
+#include "schema_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -72,7 +75,7 @@ inline size_t find(List* list, T value, NativeException::Marshallable& ex)
 }
 
 extern "C" {
-  
+    
 REALM_EXPORT void list_add_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -462,5 +465,28 @@ REALM_EXPORT Results* list_to_results(const List& list, NativeException::Marshal
         return new Results(list.as_results());
     });
 }
+    
+REALM_EXPORT Results* list_get_filtered_results(const List& list, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor query_string(query_buf, query_len);
+        auto const &realm = list.get_realm();
+        auto query = list.get_query();
+        
+        parser::ParserResult result = parser::parse(query_string.to_string());
+        
+        parser::KeyPathMapping mapping;
+        alias_backlinks(mapping, realm);
+        
+        query_builder::NoArguments no_args;
+        query_builder::apply_predicate(query, result.predicate, no_args, mapping);
+        
+        DescriptorOrdering ordering;
+        query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
+        query.find_all();
+        return new Results(realm, std::move(query), std::move(ordering));
+    });
+}
+
 
 }   // extern "C"
