@@ -142,16 +142,17 @@ namespace Realms
 
             while (expression != null)
             {
-                var typeName = expression.Member.DeclaringType.Name;
+                var type = expression.Member.DeclaringType;
+                var typeName = type.GetTypeInfo().GetMappedOrOriginalName();
                 if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
                 {
-                    throw new NotSupportedException($"The class {typeName} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");
+                    throw new NotSupportedException($"The class {type.Name} is not in the limited set of classes for this Realm, so sorting by its properties is not allowed.");
                 }
 
                 var columnName = GetColumnName(expression);
                 if (!metadata.PropertyIndices.TryGetValue(columnName, out var index))
                 {
-                    throw new NotSupportedException($"The property {columnName} is not a persisted property on {typeName} so sorting by it is not allowed.");
+                    throw new NotSupportedException($"The property {columnName} is not a persisted property on {type.Name} so sorting by it is not allowed.");
                 }
 
                 chain.Add(index);
@@ -366,10 +367,10 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.ContainsStringComparison.Value))
+                else if (IsStringContainsWithComparison(node.Method, out var index))
                 {
                     member = node.Arguments[0] as MemberExpression;
-                    stringArgumentIndex = 1;
+                    stringArgumentIndex = index;
                     queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
@@ -485,6 +486,26 @@ namespace Realms
             return true;
         }
 
+        private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
+        {
+            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            {
+                // This is an extension method, so the string to compare against is at position 1.
+                stringArgumentIndex = 1;
+                return true;
+            }
+
+            // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
+            // string.Contains overload that accepts comparison. 
+            stringArgumentIndex = 0;
+            var parameters = method.GetParameters();
+            return method.DeclaringType == typeof(string) &&
+                method.Name == nameof(string.Contains) &&
+                parameters.Length == 2 &&
+                parameters[0].ParameterType == typeof(string) &&
+                parameters[1].ParameterType == typeof(StringComparison);
+        }
+
         protected override Expression VisitUnary(UnaryExpression node)
         {
             switch (node.NodeType)
@@ -596,7 +617,12 @@ namespace Realms
 
                 if (!TryExtractConstantValue(node.Right, out object rightValue))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process `{node.Right}`");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
+                }
+
+                if (rightValue is RealmObject obj && (!obj.IsManaged || !obj.IsValid))
+                {
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObject. \nUnable to process '{node.Right}'.");
                 }
 
                 switch (node.NodeType)
@@ -849,8 +875,7 @@ namespace Realms
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)
         {
-            var name = memberExpression?.Member.GetCustomAttribute<MapToAttribute>()?.Mapping ??
-                       memberExpression?.Member.Name;
+            var name = memberExpression?.Member.GetMappedOrOriginalName();
 
             if (parentType.HasValue)
             {

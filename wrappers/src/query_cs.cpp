@@ -403,15 +403,25 @@ REALM_EXPORT void query_object_equal(Query* query_ptr, size_t columnIndex, Objec
     
 REALM_EXPORT void query_null_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
 {   
-    handle_errors(ex, [&]() {   
-        query_ptr->equal(columnIndex, null());    
-    });   
+    handle_errors(ex, [&]() {
+        if (query_ptr->get_table()->get_column_type(columnIndex) == DataType::type_Link) {
+            query_ptr->and_query(query_ptr->get_table()->column<Link>(columnIndex).is_null());
+        }
+        else {
+            query_ptr->equal(columnIndex, null());
+        }
+    });
 }   
     
 REALM_EXPORT void query_null_not_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
 {   
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, null());
+        if (query_ptr->get_table()->get_column_type(columnIndex) == DataType::type_Link) {
+            query_ptr->and_query(query_ptr->get_table()->column<Link>(columnIndex).is_not_null());
+        }
+        else {
+            query_ptr->not_equal(columnIndex, null());
+        }
     });   
 }
 

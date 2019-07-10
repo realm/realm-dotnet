@@ -41,6 +41,6 @@ namespace Realms
 
         public static bool HasCustomAttribute<T>(this MemberInfo member) where T : Attribute => member.CustomAttributes.Any(a => a.AttributeType == typeof(T));
 
-        public static string GetMappedOrOriginalName(this MemberInfo member) => member.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member.Name;
+        public static string GetMappedOrOriginalName(this MemberInfo member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
     }
 }

@@ -29,6 +29,27 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\.RealmList`1$
     type: Type
+- exclude:
+    uidRegex: ^System\.Object
+    type: Type
+- exclude:
+    uidRegex: ^System\.Attribute
+    type: Type
+- exclude:
+    uidRegex: ^System\.Exception
+    type: Type
+- exclude:
+    uidRegex: GetHashCode
+    type: Method
+- exclude:
+    uidRegex: Equals\(System\.Object\)$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.GetTypeInfo
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.RealmObject\.Finalize
+    type: Method
 - include:
     hasAttribute:
       uid: System.ComponentModel.EditorBrowsableAttribute

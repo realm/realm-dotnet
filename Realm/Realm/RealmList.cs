@@ -76,7 +76,19 @@ namespace Realms
 
             set
             {
-                throw new NotSupportedException("Setting items directly is not supported.");
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+
+                Execute(value, obj =>
+                {
+                    AddObjectToRealmIfNeeded(obj);
+                    _listHandle.Set(index, obj.ObjectHandle);
+                },
+                v => _listHandle.Set(index, v),
+                v => _listHandle.Set(index, v),
+                v => _listHandle.Set(index, v));
             }
         }
 

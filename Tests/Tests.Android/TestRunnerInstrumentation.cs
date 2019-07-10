@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -25,9 +25,9 @@ using Android.Runtime;
 
 using Environment = Android.OS.Environment;
 
-namespace Tests.Android
+namespace Realms.Tests.Android
 {
-    [Instrumentation(Name = Constants.PackageName + ".TestRunner")]
+    [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
     {
         public TestRunnerInstrumentation(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)

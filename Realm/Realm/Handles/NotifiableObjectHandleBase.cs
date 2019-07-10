@@ -29,6 +29,7 @@ namespace Realms
             public MarshaledVector<IntPtr> Deletions;
             public MarshaledVector<IntPtr> Insertions;
             public MarshaledVector<IntPtr> Modifications;
+            public MarshaledVector<IntPtr> Modifications_New;
 
             [StructLayout(LayoutKind.Sequential)]
             public struct Move

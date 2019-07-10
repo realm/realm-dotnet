@@ -26,7 +26,7 @@ namespace Realms
     /// <remarks>
     /// This is useful when opening a Realm across different bindings where code style conventions might differ.
     /// </remarks>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)]
     public class MapToAttribute : Attribute
     {
         /// <summary>

@@ -48,12 +48,21 @@ namespace binding {
         notify_realm_changed(m_managed_state_handle);
     }
 }
+
+// the name of this class is an ugly hack to get around get_shared_group being private
+class TestHelper {
+public:
+    static bool has_changed(const SharedRealm& realm)
+    {
+        return Realm::Internal::get_shared_group(*realm)->has_changed();
+    }
+};
 }
 
 extern "C" {
     
     
-REALM_EXPORT void register_callbacks(NotifyRealmChangedDelegate realm_changed, GetNativeSchemaDelegate get_schema)
+REALM_EXPORT void shared_realm_install_callbacks(NotifyRealmChangedDelegate realm_changed, GetNativeSchemaDelegate get_schema)
 {
     notify_realm_changed = realm_changed;
     get_native_schema = get_schema;
@@ -67,6 +76,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         Realm::Config config;
         config.path = pathStr.to_string();
         config.in_memory = configuration.in_memory;
+        config.cache = configuration.enable_cache;
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
         if (encryption_key )
@@ -309,7 +319,16 @@ Object* create_object_unique(const SharedRealm& realm, Table& table, const KeyTy
         is_new = false;
     }
 
-    return new Object(realm, object_schema, table.get(row_index));
+    auto result = new Object(realm, object_schema, table.get(row_index));
+    
+#if REALM_ENABLE_SYNC
+    if (realm->is_partial() && object_schema.name == "__User") {
+        result->ensure_user_in_everyone_role();
+        result->ensure_private_role_exists_for_user();
+    }
+#endif
+    
+    return result;
 }
 
 extern "C" {
@@ -371,6 +390,11 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
             schema_properties.data()
         }, managed_callback);
     });
+}
+
+REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
+{
+    return TestHelper::has_changed(realm);
 }
 
 }

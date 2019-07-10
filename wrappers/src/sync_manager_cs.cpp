@@ -19,7 +19,7 @@
 #include <future>
 #include <realm.hpp>
 #include <realm/util/uri.hpp>
-#include <realm/sync/feature_token.hpp>
+#include "sync_manager_cs.hpp"
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -40,53 +40,56 @@
 using namespace realm;
 using namespace realm::binding;
 
-using SharedSyncUser = std::shared_ptr<SyncUser>;
+using LogMessageDelegate = void(const char* message, size_t message_len, util::Logger::Level level);
 
-#if REALM_HAVE_FEATURE_TOKENS
-static std::unique_ptr<sync::FeatureGate> _features;
-
-inline bool should_gate_sync()
-{
-#if defined(__linux__)
-	return true;
-#elif REALM_WINDOWS
-	return IsWindowsServer();
-#else
-	return false;
-#endif
-}
-#endif
 namespace realm {
 namespace binding {
-
-void (*s_subscribe_for_objects_callback)(Results* results, void* task_completion_source, NativeException::Marshallable nativeException);
+    class SyncLogger : public util::RootLogger {
+    public:
+        SyncLogger(LogMessageDelegate* delegate)
+            : m_log_message_delegate(delegate)
+        {
+        }
+        
+        void do_log(util::Logger::Level level, std::string message) {
+            m_log_message_delegate(message.c_str(), message.length(), level);
+        }
+    private:
+        LogMessageDelegate* m_log_message_delegate;
+    };
     
+    class SyncLoggerFactory : public realm::SyncLoggerFactory {
+    public:
+        SyncLoggerFactory(LogMessageDelegate* delegate)
+            : m_log_message_delegate(delegate)
+        {
+        }
+        
+        std::unique_ptr<util::Logger> make_logger(util::Logger::Level level)
+        {
+            auto logger = std::make_unique<SyncLogger>(m_log_message_delegate);
+            logger->set_level_threshold(level);
+            return std::unique_ptr<util::Logger>(logger.release());
+        }
+    private:
+        LogMessageDelegate* m_log_message_delegate;
+    };
 }
-}
-struct SyncConfiguration
-{
-    std::shared_ptr<SyncUser>* user;
 
-    uint16_t* url;
-    size_t url_len;
-    
-    bool client_validate_ssl;
-    
-    uint16_t* trusted_ca_path;
-    size_t trusted_ca_path_len;
-    
-    bool is_partial;
-    uint16_t* partial_sync_identifier;
-    size_t partial_sync_identifier_len;
-};
+}
+
+
+using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 extern "C" {
-REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_path_buf, size_t base_path_len,
-                                                          const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
-                                                          NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, size_t base_path_len,
+                                              const uint16_t* user_agent_buf, size_t user_agent_len,
+                                              const SyncManager::MetadataMode* mode, const char* encryption_key_buf, bool reset_on_error,
+                                              NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
         Utf16StringAccessor base_path(base_path_buf, base_path_len);
+        Utf16StringAccessor user_agent(user_agent_buf, user_agent_len);
 
         auto metadata_mode = SyncManager::MetadataMode::NoEncryption;
         if (mode) {
@@ -101,29 +104,55 @@ REALM_EXPORT void realm_syncmanager_configure_file_system(const uint16_t* base_p
         if (encryption_key_buf) {
             encryption_key = std::vector<char>(encryption_key_buf, encryption_key_buf + 64);
         }
-
-        SyncManager::shared().configure_file_system(base_path, metadata_mode, encryption_key, reset_on_error);
+        
+        SyncManager::shared().configure(base_path, metadata_mode, user_agent, encryption_key, reset_on_error);
     });
 }
     
+REALM_EXPORT void realm_syncmanager_set_user_agent(const uint16_t* user_agent_buf, size_t user_agent_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor user_agent(user_agent_buf, user_agent_len);
+        SyncManager::shared().set_user_agent(user_agent);
+    });
+}
+    
+REALM_EXPORT void realm_syncmanager_set_log_level(util::Logger::Level* level, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        SyncManager::shared().set_log_level(*level);
+    });
+}
+    
+REALM_EXPORT void realm_syncmanager_set_log_callback(LogMessageDelegate delegate, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        SyncManager::shared().set_logger_factory(*new realm::binding::SyncLoggerFactory(delegate));
+    });
+}
+
+REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
+{
+    return SyncManager::shared().log_level();
+}
+
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-#if REALM_HAVE_FEATURE_TOKENS
-        if (should_gate_sync() && (!_features || !_features->has_feature("Sync"))) {
-            throw RealmFeatureUnavailableException("The Sync feature is not available on Linux or Windows Server. If you are using the Professional or Enterprise editions, make sure to call Realms.Sync.SyncConfiguration.SetFeatureToken before opening any synced Realms. Otherwise, contact sales@realm.io for more information.");
-        }
-#endif
-        
+    return handle_errors(ex, [&]() {        
         Realm::Config config;
         config.schema_mode = SchemaMode::Additive;
 
-        config.schema = create_schema(objects, objects_length, properties);
+        if (objects_length > 0) {
+            config.schema = create_schema(objects, objects_length, properties);
+        }
+        
         config.schema_version = configuration.schema_version;
 
         std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
         
-        config.sync_config = std::make_shared<SyncConfig>(SyncConfig{*sync_configuration.user, realm_url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error});
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
+        config.sync_config->bind_session_handler = bind_session;
+        config.sync_config->error_handler = handle_session_error;
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
@@ -198,7 +227,9 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
         std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
         std::string url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
         
-        SyncConfig config { *sync_configuration.user, url, SyncSessionStopPolicy::AfterChangesUploaded, bind_session, handle_session_error };
+        SyncConfig config(*sync_configuration.user, url);
+        config.bind_session_handler = bind_session;
+        config.error_handler = handle_session_error;
         if (encryption_key) {
             config.realm_encryption_key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
         }
@@ -211,46 +242,37 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
 #endif
         
         config.client_validate_ssl = sync_configuration.client_validate_ssl;
+        config.is_partial = sync_configuration.is_partial;
         
+        if (sync_configuration.partial_sync_identifier) {
+            Utf16StringAccessor partial_sync_identifier(sync_configuration.partial_sync_identifier, sync_configuration.partial_sync_identifier_len);
+            config.custom_partial_sync_identifier = partial_sync_identifier.to_string();
+        }
+
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
 }
-
-REALM_EXPORT void realm_syncmanager_set_feature_token(const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
-{
-#if REALM_HAVE_FEATURE_TOKENS
-    handle_errors(ex, [&]() {
-        Utf16StringAccessor token(token_buf, token_len);
-        _features.reset(new sync::FeatureGate(token));
-    });
-#endif
-}
     
-REALM_EXPORT void realm_syncmanager_subscribe_for_objects(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, uint16_t* query_buf, size_t query_len, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT uint8_t realm_syncmanager_get_realm_privileges(SharedRealm& sharedRealm, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]() {
+        return static_cast<uint8_t>(sharedRealm->get_privileges());
+    });
+}
+
+REALM_EXPORT uint8_t realm_syncmanager_get_class_privileges(SharedRealm& sharedRealm, uint16_t* class_buf, size_t class_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
         Utf16StringAccessor class_name(class_buf, class_len);
-        Utf16StringAccessor query(query_buf, query_len);
-
-        partial_sync::register_query(sharedRealm, class_name, query, [=](Results results, std::exception_ptr err) {
-            if (err) {
-                try {
-                    std::rethrow_exception(err);
-                }
-                catch (...) {
-                    NativeException::Marshallable nex = convert_exception().for_marshalling();
-                    s_subscribe_for_objects_callback(nullptr, task_completion_source, nex);
-                }
-            } else {
-                s_subscribe_for_objects_callback(new Results(results), task_completion_source, NativeException::Marshallable{RealmErrorType::NoError});
-            }
-        });
+        return static_cast<uint8_t>(sharedRealm->get_privileges(class_name));
     });
 }
-    
-REALM_EXPORT void realm_syncmanager_install_callbacks(decltype(s_subscribe_for_objects_callback) subscribe_callback)
+
+REALM_EXPORT uint8_t realm_syncmanager_get_object_privileges(SharedRealm& sharedRealm, Object& object, NativeException::Marshallable& ex)
 {
-    s_subscribe_for_objects_callback = subscribe_callback;
+    return handle_errors(ex, [&]() {
+        return static_cast<uint8_t>(sharedRealm->get_privileges(object.row()));
+    });
 }
 
 }

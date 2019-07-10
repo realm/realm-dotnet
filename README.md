@@ -1,48 +1,46 @@
 ![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
 
-Realm is a mobile database that runs directly inside phones, tablets or wearables.
+Realm is a mobile database that runs directly on phones, tablets or wearables.
 
-This repository holds the source code for the .NET / C# versions of Realm. Currently, we only support Xamarin, specifically Xamarin.iOS, and Xamarin.Android. We do plan to support Xamarin.Mac, UWP, and Unity in the future.
+This repository holds the source code for the .NET / C# versions of Realm. Currently, we support all major mobile and desktop operating systems, such as iOS, Android, UWP, macOS, Linux, and Windows. For a full list of supported platforms and their versions, check out the [Prerequisites](https://realm.io/docs/dotnet/latest/#prerequisites) section in the documentation.
 
 ## Features
 
-* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 2 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets, and wearables.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/dotnet/latest/#models) and [queryable by code](https://realm.io/docs/dotnet/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 2 common classes](https://realm.io/docs/dotnet/latest/api/) (RealmObject and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
-* **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
+* **Fast:** Realm is faster than even raw SQLite on common operations while maintaining an extremely rich feature set.
 
 ## Getting Started
 
-Please see the detailed instructions in our [User Guide](https://realm.io/docs/xamarin/latest/#installation) to add Realm to your solution.
+Please see the detailed instructions in our [User Guide](https://realm.io/docs/dotnet/latest/#installation) to add Realm to your solution.
 
 ## Documentation
 
-The documentation can be found at [realm.io/docs/xamarin/latest](https://realm.io/docs/xamarin/latest).  
-The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api).
+The documentation can be found at [realm.io/docs/dotnet/latest](https://realm.io/docs/dotnet/latest).
+The API reference is located at [realm.io/docs/dotnet/latest/api](https://realm.io/docs/dotnet/latest/api).
 
 ## Getting Help
 
-- **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We activtely monitor & answer questions on SO!
+- **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We actively monitor & answer questions on SO!
 - **Have a bug to report?** [Open an issue](https://github.com/realm/realm-dotnet/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 - **Have a feature request?** [Open an issue](https://github.com/realm/realm-dotnet/issues/new). Tell us what the feature should do, and why you want the feature.
-- Sign up for our [**Community Newsletter**](https://realm.io/realm-news-subscribe) to get regular tips, learn about other use-cases and get alerted of blogposts and tutorials about Realm.
+- Sign up for our [**Community Newsletter**](https://realm.io/realm-news-subscribe) to get regular tips, learn about other use-cases and get alerted to blog posts and tutorials about Realm.
 
 ## Nightly builds
 
 If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use the preview releases published after every
-commit to the [realm-nightly](https://www.myget.org/feed/Packages/realm-nightly) MyGet feed. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) 
+commit to the [realm-nightly](https://www.myget.org/feed/Packages/realm-nightly) MyGet feed. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume)
 for instructions on adding custom sources to the NuGet Package Manager. The source URL you need to specify is `https://www.myget.org/F/realm-nightly/api/v3/index.json`.
 
 ## Building Realm
 
-We highly recommend [using our pre-built binaries via NuGet](https://realm.io/docs/xamarin/latest/#installation) but you can also build from source.
+We highly recommend [using our pre-built binaries via NuGet](https://realm.io/docs/dotnet/latest/#installation) but you can also build from source.
 
 Prerequisites:
 
-* **If you target Android/iOS via Xamarin:** Xamarin Community or above. 
-* **Windows platforms:** Visual Studio 2015.
+* Visual Studio Community or above.
 * Building Xamarin iOS apps also requires Xcode 8.1.
-* If you are using Xamarin Studio, the [StyleCop Support](http://addins.monodevelop.com/Project/Index/54) add-in is required.
 
 We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
 
@@ -53,21 +51,10 @@ We support the current Xamarin _Stable_ update channel, at the time of release t
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
 1. Download and build the native libraries using the instructions in `wrappers/README.md`
-1. Open the `Realm.sln` in `Xamarin Studio` on macOS 
-    1. Choose the Solution `Realm` in the Solution navigator and use the context menu to `Clean Realm`
-    1. Use the context menu on the solution again and choose **Restore NuGet Packages** 
-    1. Choose the platform popup **Release | Default**
-    1. select `Platform.PCL/Realm.PCL` project and Build
-    1. select `Platform.PCL/Realm.Sync.PCL` project and Build
-    1. select `Weaver/RealmWeaver.Fody` project and build
-    1. select platform popup **Release | ARM**
-    1. select `Platforms.XamarinAndroid/Realm.XamarinAndroid` project and Build
-    1. select `Platforms.XamarinAndroid/Realm.Sync.XamarinAndroid` project and Build
-    1. ensure you have an iOS device attached
-    1. select platform popup **Release | iPhone**
-    1. select `Realm.XamarinIOS` project and Build    
-    1. select `Realm.Sync.XamarinIOS` project and Build    
-1. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
+1. Open the `Realm.sln` in `Visual Studio`
+1. Build `RealmWeaver.Fody` and `Realm.BuildTasks`
+1. Build `Realm` and `Realm.Sync`
+1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
@@ -81,7 +68,7 @@ unacceptable behavior to [info@realm.io](mailto:info@realm.io).
 
 ## License
 
-Realm Xamarin (.NET) is published under the Apache 2.0 license.  
+Realm .NET is published under the Apache 2.0 license.
 Realm Core is also published under the Apache 2.0 license and is available
 [here](https://github.com/realm/realm-core).
 

@@ -102,7 +102,7 @@ namespace Realms.Schema
             Argument.NotNull(type, nameof(type));
             Argument.Ensure(type.BaseType == typeof(RealmObject), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
 
-            var builder = new Builder(type.Name);
+            var builder = new Builder(type.GetMappedOrOriginalName());
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
                 var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();
@@ -121,13 +121,13 @@ namespace Realms.Schema
                     var linkOriginProperty = innerType.GetProperty(backlinks.Property);
 
                     schemaProperty.Type = PropertyType.LinkingObjects | PropertyType.Array;
-                    schemaProperty.ObjectType = innerType.Name;
+                    schemaProperty.ObjectType = innerType.GetTypeInfo().GetMappedOrOriginalName();
                     schemaProperty.LinkOriginPropertyName = linkOriginProperty.GetMappedOrOriginalName();
                 }
                 else
                 {
                     schemaProperty.Type = property.PropertyType.ToPropertyType(out var objectType);
-                    schemaProperty.ObjectType = objectType?.GetTypeInfo()?.GetMappedOrOriginalName();
+                    schemaProperty.ObjectType = objectType?.GetTypeInfo().GetMappedOrOriginalName();
                 }
 
                 if (property.HasCustomAttribute<RequiredAttribute>())

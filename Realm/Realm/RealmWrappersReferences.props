@@ -1,0 +1,45 @@
+﻿<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_RealmNugetNativePath Condition="'$(_RealmNugetNativePath)' == ''">$(MSBuildThisFileDirectory)..\native\</_RealmNugetNativePath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.iOS'">
+    <NativeReference Include="$(_RealmNugetNativePath)ios\universal\realm-wrappers.framework">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <Content Include="$(_RealmNugetNativePath)ios\Realm.dll.config">
+      <Link>Realm.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'Xamarin.Mac'">
+    <NativeReference Include="$(_RealmNugetNativePath)..\runtimes\osx-x64\native\librealm-wrappers.dylib">
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == 'MonoAndroid'">
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\armeabi-v7a\librealm-wrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\x86\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\x86\librealm-wrappers.so</Link>
+    </AndroidNativeLibrary>
+    <!-- 64bit -->
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\arm64-v8a\librealm-wrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="$(_RealmNugetNativePath)android\x86_64\librealm-wrappers.so">
+      <Link>$(_RealmNugetNativePath)android\x86_64\librealm-wrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win-x86\native\realm-wrappers.dll">
+      <Link>lib\win32\x86\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(_RealmNugetNativePath)..\runtimes\win-x64\native\realm-wrappers.dll">
+      <Link>lib\win32\x64\realm-wrappers.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

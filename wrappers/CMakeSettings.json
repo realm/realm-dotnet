@@ -27,7 +27,7 @@
       "namespace": "system",
       "Name": "Windows",
       "vcpkg": "windows",
-      "CMakeArgs": ""
+      "CMakeArgs": "-DCMAKE_SYSTEM_VERSION=8.1 -DCMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION=8.1"
     },
     {
       "environment": "system_WindowsStore",
@@ -37,7 +37,7 @@
       "CMakeArgs": "-DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0"
     },
     {
-      "CMakeCommandArgs": "-DCMAKE_GENERATOR_PLATFORM=${platform.Name} ${system.CMakeArgs} -DCMAKE_INSTALL_PREFIX=${projectDir}\\build -DCMAKE_TOOLCHAIN_FILE=c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${platform.vcpkg}-${system.vcpkg}-static"
+      "CMakeCommandArgs": "-DREALM_ENABLE_SYNC=ON -DCMAKE_GENERATOR_PLATFORM=${platform.Name} ${system.CMakeArgs} -DCMAKE_INSTALL_PREFIX=${projectDir}\\build -DCMAKE_TOOLCHAIN_FILE=c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${platform.vcpkg}-${system.vcpkg}-static"
     }
   ],
   "configurations": [

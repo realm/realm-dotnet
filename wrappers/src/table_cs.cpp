@@ -21,7 +21,6 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "util/format.hpp"
 
 #include <memory>
 #include "timestamp_helpers.hpp"

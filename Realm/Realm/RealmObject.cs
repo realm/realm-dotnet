@@ -22,8 +22,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.DataBinding;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -33,7 +35,7 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined, NotificationsHelper.INotifiable
+    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
     {
         private Realm _realm;
         private ObjectHandle _objectHandle;
@@ -220,7 +222,7 @@ namespace Realms
         }
 
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected IList<T> GetListValue<T>(string propertyName)
+        protected internal IList<T> GetListValue<T>(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
@@ -627,7 +629,24 @@ namespace Realms
                         ++i;
                     }
                 }
+
+                if (changes.Value.Deletions.AsEnumerable().Any())
+                {
+                    RaisePropertyChanged(nameof(IsValid));
+
+                    if (!IsValid)
+                    {
+                        // We can proactively unsubscribe because the object has been deleted
+                        UnsubscribeFromNotifications();
+                    }
+                }
             }
+        }
+
+        /// <inheritdoc />
+        public TypeInfo GetTypeInfo()
+        {
+            return TypeInfoHelper.GetInfo(this);
         }
 
         internal class Metadata

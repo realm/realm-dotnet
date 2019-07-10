@@ -22,13 +22,12 @@ using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
-using Realms;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-namespace Tests.Android
+namespace Realms.Tests.Android
 {
-    [Activity(Label = Constants.ActivityLabel, MainLauncher = true)]
+    [Activity(Label = "Realm Tests", MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
     {
         public Action<Result> OnFinished { get; set; }
@@ -40,7 +39,7 @@ namespace Tests.Android
             Forms.Init(this, savedInstanceState);
 
             var nunit = new App();
-
+            nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
             {
                 LogToOutput = true,
@@ -48,12 +47,11 @@ namespace Tests.Android
 
             if (Intent.GetBooleanExtra("headless", false))
             {
-                TestHelpers.CopyBundledDatabaseToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-                var transformPath = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
-                options.XmlTransformFile = transformPath;
+                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+                options.XmlTransformFile = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
-                options.OnCompletedCallback = () => 
+                options.OnCompletedCallback = () =>
                 {
                     Console.WriteLine("Activity finished...");
                     OnFinished(Result.Ok);

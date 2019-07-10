@@ -35,7 +35,6 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          IList,
           ISchemaSource,
           IThreadConfined
     {
@@ -46,6 +45,7 @@ namespace Realms
         internal readonly RealmObject.Metadata Metadata;
 
         private NotificationTokenHandle _notificationToken;
+        private bool _deliveredInitialNotification;
 
         private event NotifyCollectionChangedEventHandler _collectionChanged;
 
@@ -161,11 +161,21 @@ namespace Realms
             return new RealmResults<T>(Realm, Metadata, handle);
         }
 
+        internal RealmResults<T> GetFilteredResults(string query)
+        {
+            var handle = Handle.Value.GetFilteredResults(query);
+            return new RealmResults<T>(Realm, Metadata, handle);
+        }
+
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
         {
             if (_callbacks.Count == 0)
             {
                 SubscribeForNotifications();
+            }
+            else if (_deliveredInitialNotification)
+            {
+                callback(this, null, null);
             }
 
             _callbacks.Add(callback);
@@ -197,6 +207,7 @@ namespace Realms
         {
             _notificationToken?.Dispose();
             _notificationToken = null;
+            _deliveredInitialNotification = false;
         }
 
         #region INotifyCollectionChanged
@@ -336,8 +347,13 @@ namespace Realms
                 changeset = new ChangeSet(
                     insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
+                    newModifiedIndices: actualChanges.Modifications_New.AsEnumerable().Select(i => (int)i).ToArray(),
                     deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray(),
                     moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray());
+            }
+            else
+            {
+                _deliveredInitialNotification = true;
             }
 
             foreach (var callback in _callbacks.ToArray())
@@ -359,8 +375,6 @@ namespace Realms
         public bool IsSynchronized => false;
 
         public object SyncRoot => null;
-
-        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
 
         public virtual int Add(object value) => throw new NotSupportedException();
 
@@ -396,7 +410,6 @@ namespace Realms
             var list = (IList)array;
             foreach (var obj in this)
             {
-
                 list[index++] = obj;
             }
         }

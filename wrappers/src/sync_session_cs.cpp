@@ -87,21 +87,15 @@ REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedS
 
 enum class CSharpSessionState : uint8_t {
     Active = 0,
-    Inactive,
-    Invalid
+    Inactive
 };
 
 REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        if (!session) {
-            return CSharpSessionState::Invalid;
-        }
         switch (session->state()) {
         case SyncSession::PublicState::Inactive:
             return CSharpSessionState::Inactive;
-        case SyncSession::PublicState::Error:
-            return CSharpSessionState::Invalid;
         default:
             return CSharpSessionState::Active;
         }
@@ -180,12 +174,6 @@ REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void*
         }
     });
 }
-
-REALM_EXPORT void realm_syncsession_report_progress_for_testing(const SharedSyncSession& session, uint64_t downloaded, uint64_t downloadable,
-                                                                    uint64_t uploaded, uint64_t uploadable)
-{
-    SyncSession::OnlyForTesting::handle_progress_update(*session, downloaded, downloadable, uploaded, uploadable);
-}
     
 REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, const uint16_t* message_buf, size_t message_len, bool is_fatal)
 {
@@ -194,5 +182,19 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
     SyncSession::OnlyForTesting::handle_error(*session, SyncError{error_code, std::move(message), is_fatal});
 }
     
+REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        session->log_out();
+    });
+}
+
+REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        session->revive_if_needed();
+    });
+}
+
 }
 

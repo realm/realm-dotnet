@@ -26,7 +26,9 @@
 #include "notifications_cs.hpp"
 #include "wrapper_exceptions.hpp"
 #include "timestamp_helpers.hpp"
-
+#include "schema_cs.hpp"
+#include <realm/parser/parser.hpp>
+#include <realm/parser/query_builder.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -118,11 +120,32 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
         });
     });
 }
-
+    
 REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Query(results_ptr->get_query());
+    });
+}
+    
+REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor query_string(query_buf, query_len);
+        auto query = results.get_query();
+        auto const &realm = results.get_realm();
+        
+        parser::ParserResult result = parser::parse(query_string.to_string());
+        
+        parser::KeyPathMapping mapping;
+        alias_backlinks(mapping, realm);
+        
+        query_builder::NoArguments no_args;
+        query_builder::apply_predicate(query, result.predicate, no_args, mapping);
+        
+        DescriptorOrdering ordering;
+        query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
+        return new Results(realm, std::move(query), std::move(ordering));
     });
 }
     

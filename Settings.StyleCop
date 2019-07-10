@@ -21,6 +21,7 @@
       <Value>Xamarin</Value>
       <Value>deallocated</Value>
       <Value>nullable</Value>
+      <Value>Json</Value>
     </CollectionProperty>
   </GlobalSettings>
   <Analyzers>

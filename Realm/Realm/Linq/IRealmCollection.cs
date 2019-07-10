@@ -35,12 +35,20 @@ namespace Realms
         public int[] InsertedIndices { get; }
 
         /// <summary>
-        /// Gets the indices in the new version of the <see cref="IRealmCollection{T}"/> which were modified.
+        /// Gets the indices in the *old* version of the <see cref="IRealmCollection{T}"/> which were modified.
         /// This means that either the property of an object at that index was modified or the property of
         /// of an object it's related to has changed.
         /// </summary>
         /// <value>An array, containing the indices of the modified objects.</value>
         public int[] ModifiedIndices { get; }
+
+        /// <summary>
+        /// Gets the indices in the *new* version of the <see cref="IRealmCollection{T}"/> which were modified.
+        /// Conceptually, it contains the same entries as <see cref="ModifiedIndices"/> but after the insertions
+        /// and deletions have been accounted for.
+        /// </summary>
+        /// <value>An array, containing the indices of the modified objects.</value>
+        public int[] NewModifiedIndices { get; }
 
         /// <summary>
         /// Gets the indices of objects in the previous version of the <see cref="IRealmCollection{T}"/> which have been removed from this one.
@@ -58,10 +66,11 @@ namespace Realms
         /// <value>An array of <see cref="Move"/> structs, indicating the source and the destination index of the moved row.</value>
         public Move[] Moves { get; }
 
-        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices, Move[] moves)
+        internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] newModifiedIndices, int[] deletedIndices, Move[] moves)
         {
             InsertedIndices = insertedIndices;
             ModifiedIndices = modifiedIndices;
+            NewModifiedIndices = newModifiedIndices;
             DeletedIndices = deletedIndices;
             Moves = moves;
         }
