@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -91,6 +90,13 @@ namespace Realms.Sync
             if (credentials.IdentityProvider == Credentials.Provider.AdminToken)
             {
                 return new User(SyncUserHandle.GetAdminTokenUser(serverUri.AbsoluteUri, credentials.Token));
+            }
+
+            if (credentials.IdentityProvider == Credentials.Provider.CustomRefreshToken)
+            {
+                var userId = (string)credentials.UserInfo[Credentials.Keys.Identity];
+                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
+                return new User(SyncUserHandle.GetSyncUser(userId, serverUri.AbsoluteUri, credentials.Token, isAdmin));
             }
 
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUri);

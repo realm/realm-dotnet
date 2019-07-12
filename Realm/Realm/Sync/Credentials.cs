@@ -19,6 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -47,6 +50,8 @@ namespace Realms.Sync
             public const string Anonymous = "anonymous";
 
             public const string Nickname = "nickname";
+
+            public const string CustomRefreshToken = "customRefreshToken";
         }
 
         internal static class Keys
@@ -194,6 +199,32 @@ namespace Realms.Sync
             {
                 IdentityProvider = providerName,
                 Token = token
+            };
+        }
+
+        public static Credentials CustomRefreshToken(string token)
+        {
+            Argument.NotNull(token, nameof(token));
+
+            var parts = token.Split('.');
+            Argument.Ensure(parts.Length == 3, "Prodvided token is not a valid JWT", nameof(token));
+
+            var paddedPayload = parts[1].PadRight(parts[1].Length + (4 - parts[1].Length % 4) % 4, '=');
+            var payload = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
+            var deserialized = JObject.Parse(payload);
+
+            var userId = deserialized["sub"]?.Value<string>();
+            Argument.Ensure(userId != null, "The provided token must have a sub field.", nameof(token));
+
+            return new Credentials
+            {
+                IdentityProvider = Provider.CustomRefreshToken,
+                Token = token,
+                UserInfo = new Dictionary<string, object>
+                {
+                    [Keys.IsAdmin] = deserialized["isAdmin"]?.Value<bool>() ?? false,
+                    [Keys.Identity] = userId
+                }
             };
         }
 
