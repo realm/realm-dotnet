@@ -43,7 +43,7 @@ namespace Realms.LFS
         {
         }
 
-        protected override void OnManaged()
+        protected internal override void OnManaged()
         {
             base.OnManaged();
 

@@ -4,10 +4,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>Realms.LFS</RootNamespace>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Realm\Realm.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
 
 </Project>
