@@ -574,7 +574,7 @@ namespace Realms
         /// added to the Realm. It can be useful for providing some initialization logic as when the constructor is invoked,
         /// it is not yet clear whether the object is managed or not.
         /// </remarks>
-        protected internal virtual void OnManaged()
+        protected virtual void OnManaged()
         {
         }
 

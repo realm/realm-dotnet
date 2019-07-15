@@ -20,3 +20,4 @@ using System.Runtime.CompilerServices;
 
 [assembly: Realms.Explicit]
 [assembly: InternalsVisibleTo("Realm.Tests")]
+[assembly: InternalsVisibleTo("Realm.LFS")]
