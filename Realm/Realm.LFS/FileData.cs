@@ -27,14 +27,7 @@ namespace Realms.LFS
 
         public FileData(Stream data, string name = null)
         {
-            if (IsManaged)
-            {
-                throw new Exception("???");
-            }
-            else
-            {
-                FileManager.WriteFile(FileLocation.Temporary, Id, data);
-            }
+            FileManager.WriteFile(FileLocation.Temporary, Id, data);
             Name = name;
             Status = DataStatus.Local;
         }
@@ -47,7 +40,12 @@ namespace Realms.LFS
         {
             base.OnManaged();
 
-            FileManager.UploadFile(FileLocation.Temporary, this);
+            if (Status == DataStatus.Local)
+            {
+                // TODO: That's not very efficient - it checks for file existence
+                // on every instantiation - we should be able to do it more efficiently 
+                FileManager.UploadFile(FileLocation.Temporary, this);
+            }
         }
     }
 }

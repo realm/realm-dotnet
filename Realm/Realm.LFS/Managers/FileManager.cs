@@ -13,6 +13,8 @@ namespace Realms.LFS
         private static Func<RemoteFileManager> _remoteManagerFactory;
         private static ConcurrentDictionary<string, RemoteFileManager> _remoteManagers = new ConcurrentDictionary<string, RemoteFileManager>();
 
+        public static event EventHandler<FileUploadedEventArgs> OnFileUploaded;
+
         public static void Initialize(FileManagerOptions options)
         {
             _persistenceLocation = options.PersistenceLocation;
@@ -22,15 +24,9 @@ namespace Realms.LFS
             Argument.Ensure(_remoteManagerFactory != null, "Either a RemoteManagerFactory or DefaultRemoteManagerFactory must be provided.", nameof(options));
         }
 
-        public static void DeleteLocalCopy(FileData data, bool force = false)
+        public static Task WaitForUploads(RealmConfigurationBase config)
         {
-            if (data.Status != DataStatus.Remote && !force)
-            {
-                throw new Exception("Trying to delete the local file for a fileData, that hasn't been uploaded to remote yet. Either wait for it to upload or pass force: true");
-            }
-
-            var path = GetFilePath(data);
-            File.Delete(path);
+            return GetManager(config).WaitForUploads();
         }
 
         internal static Stream ReadFile(FileLocation location, string id)
@@ -73,6 +69,12 @@ namespace Realms.LFS
             }
 
             return Path.Combine(GetPath(FileLocation.Temporary), data.Id);
+        }
+
+        internal static bool FileExists(FileLocation location, string id)
+        {
+            var path = Path.Combine(GetPath(location), id);
+            return File.Exists(path);
         }
 
         private static Stream ReadFileCore(string path, string nameForPlaceholder = null, bool generatePlaceholder = true)
@@ -120,10 +122,12 @@ namespace Realms.LFS
             Argument.Ensure(data.IsManaged, "Expected data to be managed.", nameof(data));
 
             var sourceFile = Path.Combine(GetPath(fromLocation), data.Id);
-            var targetFile = Path.Combine(GetPath(data.Realm.Config), data.Id);
-            File.Move(sourceFile, targetFile);
-
-            GetManager(data.Realm.Config).EnqueueUpload(data);
+            if (File.Exists(sourceFile))
+            {
+                var targetFile = Path.Combine(GetPath(data.Realm.Config), data.Id);
+                File.Move(sourceFile, targetFile);
+                GetManager(data.Realm.Config).EnqueueUpload(data.Id);
+            }
         }
 
         private static string GetPath(FileLocation location)
@@ -147,6 +151,10 @@ namespace Realms.LFS
             {
                 var result = _remoteManagerFactory();
                 result.Start(config);
+                result.OnFileUploaded += (s, e) =>
+                {
+                    OnFileUploaded?.Invoke(s, e);
+                };
 
                 // TODO: trigger cleanup event with a list of files that can be deleted.
 

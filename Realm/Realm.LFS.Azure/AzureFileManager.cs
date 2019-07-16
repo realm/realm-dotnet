@@ -1,10 +1,9 @@
 ﻿using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.Storage.DataMovement;
-using Realms.LFS;
 using System.Threading.Tasks;
 
-namespace Realm.LFS.Azure
+namespace Realms.LFS.Azure
 {
     public class AzureFileManager : RemoteFileManager
     {

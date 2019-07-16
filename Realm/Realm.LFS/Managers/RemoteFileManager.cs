@@ -2,6 +2,7 @@
 using Realms.Helpers;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,11 +11,20 @@ namespace Realms.LFS
 {
     public abstract class RemoteFileManager
     {
+        private const int DefaultRetries = 3;
+        private const int MaxRetryDelay = 60000;
+        private const int MinRetryDelay = 1000;
+
         private RealmConfigurationBase _config;
-        private readonly ConcurrentQueue<string> _uploadQueue = new ConcurrentQueue<string>();
+        private readonly ConcurrentQueue<(string dataId, int retries)> _uploadQueue = new ConcurrentQueue<(string, int)>();
         private readonly AsyncContextThread _backgroundThread = new AsyncContextThread();
+        private TaskCompletionSource<object> _completionTcs;
+
+        private int _retryDelay = 500;
 
         private int _isProcessing = 0;
+
+        internal event EventHandler<FileUploadedEventArgs> OnFileUploaded;
 
         protected RemoteFileManager()
         {
@@ -23,21 +33,14 @@ namespace Realms.LFS
         internal void Start(RealmConfigurationBase config)
         {
             _config = config;
-            _backgroundThread.Factory.StartNew(EnqueueExisting);
+            _backgroundThread.Factory.Run(EnqueueExisting);
         }
 
-        internal void EnqueueUpload(FileData data)
+        internal void EnqueueUpload(string dataId)
         {
-            if (data.Status == DataStatus.Remote)
-            {
-                Logger.Error($"Expected data with Id: {data.Id} to be local, but was already remote.");
-                return;
-            }
+            _uploadQueue.Enqueue((dataId, DefaultRetries));
 
-            _uploadQueue.Enqueue(data.Id);
-
-            _backgroundThread.Factory.StartNew(ProcessQueue);
-            ProcessQueue();
+            _backgroundThread.Factory.Run(ProcessQueue);
         }
 
         internal Task DownloadFile(FileData data, string destinationFile)
@@ -47,27 +50,36 @@ namespace Realms.LFS
             return DownloadFile(GetId(data.Id), destinationFile);
         }
 
+        internal Task WaitForUploads()
+        {
+            _completionTcs = new TaskCompletionSource<object>();
+
+            _backgroundThread.Factory.Run(ProcessQueue);
+
+            return _completionTcs.Task;
+        }
+
         protected abstract Task<string> UploadFile(string id, string file);
 
         protected abstract Task DownloadFile(string id, string file);
 
         protected abstract Task DeleteFile(string id);
 
-        private void EnqueueExisting()
+        private async Task EnqueueExisting()
         {
             using (var realm = Realm.GetInstance(_config))
             {
                 var unprocessedDatas = realm.All<FileData>().Filter($"StatusInt == {(int)DataStatus.Local}");
                 foreach (var item in unprocessedDatas)
                 {
-                    _uploadQueue.Enqueue(item.Id);
+                    _uploadQueue.Enqueue((item.Id, DefaultRetries));
                 }
             }
 
-            ProcessQueue();
+            await ProcessQueue();
         }
 
-        private void ProcessQueue()
+        private async Task ProcessQueue()
         {
             if (Interlocked.Exchange(ref _isProcessing, 1) != 0)
             {
@@ -75,37 +87,35 @@ namespace Realms.LFS
                 return;
             }
 
+            var retryHash = new HashSet<string>();
+
             try
             {
-                while (_uploadQueue.TryDequeue(out var dataId))
+                using (var realm = Realm.GetInstance(_config))
                 {
-                    var filePath = FileManager.GetFilePath(_config, dataId);
-                    var url = UploadFile(GetId(dataId), filePath).GetAwaiter().GetResult();
-
-                    using (var realm = Realm.GetInstance(_config))
+                    while (_uploadQueue.TryDequeue(out var item))
                     {
-                        var data = realm.Find<FileData>(dataId);
-                        using (var transaction = realm.BeginWrite())
+                        var (result, filePath) = await UploadItem(realm, item.dataId);
+                        switch (result)
                         {
-                            if (data == null)
-                            {
-                                data = realm.Find<FileData>(dataId);
-                            }
-
-                            if (data == null)
-                            {
-                                transaction.Rollback();
-
-                                Logger.Error($"Could not find data with Id: {dataId}");
-                                DeleteFile(dataId).GetAwaiter().GetResult();
-                            }
-                            else
-                            {
-                                data.Url = url;
-                                data.Status = DataStatus.Remote;
-                                transaction.Commit();
-                            }
-
+                            case UploadStatus.Success:
+                                OnFileUploaded?.Invoke(this, new FileUploadedEventArgs
+                                {
+                                    FileDataId = item.dataId,
+                                    FilePath = filePath,
+                                    RealmPath = _config.DatabasePath,
+                                });
+                                break;
+                            case UploadStatus.Failure:
+                                if (item.retries > 0)
+                                {
+                                    _uploadQueue.Enqueue((item.dataId, item.retries - 1));
+                                }
+                                else
+                                {
+                                    retryHash.Add(item.dataId);
+                                }
+                                break;
                         }
                     }
                 }
@@ -116,14 +126,91 @@ namespace Realms.LFS
             }
             finally
             {
+                if (_completionTcs != null)
+                {
+                    _completionTcs.TrySetResult(null);
+                }
+
+
+                var nextDelay = _retryDelay * (retryHash.Count == 0 ? 0.5 : 2);
+                _retryDelay = (int)Math.Max(MinRetryDelay, Math.Min(MaxRetryDelay, nextDelay));
+
                 Interlocked.Exchange(ref _isProcessing, 0);
+            }
+
+            if (retryHash.Count > 0)
+            {
+                await Task.Delay(_retryDelay);
+                foreach (var item in retryHash)
+                {
+                    _uploadQueue.Enqueue((item, DefaultRetries));
+
+                    // Don't await
+                    _ = _backgroundThread.Factory.Run(ProcessQueue);
+                }
+            }
+        }
+
+        private async Task<(UploadStatus status, string filePath)> UploadItem(Realm realm, string dataId)
+        {
+            var filePath = FileManager.GetFilePath(_config, dataId);
+            if (!File.Exists(filePath))
+            {
+                return (UploadStatus.NotApplicable, null);
+            }
+
+            var data = realm.Find<FileData>(dataId);
+            if (data == null || data.Status == DataStatus.Remote)
+            {
+                return (UploadStatus.NotApplicable, null);
+            }
+
+            try
+            {
+                var url = await UploadFile(GetId(dataId), filePath);
+
+                using (var transaction = realm.BeginWrite())
+                {
+                    if (data == null)
+                    {
+                        data = realm.Find<FileData>(dataId);
+                    }
+
+                    if (data == null)
+                    {
+                        transaction.Rollback();
+
+                        Logger.Error($"Could not find data with Id: {dataId}");
+
+                        await DeleteFile(dataId);
+                        return (UploadStatus.NotApplicable, null);
+                    }
+
+                    data.Url = url;
+                    data.Status = DataStatus.Remote;
+                    transaction.Commit();
+
+                    return (UploadStatus.Success, filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message);
+                return (UploadStatus.Failure, null);
             }
         }
 
         private string GetId(string dataId)
         {
             var realmHash = HashHelper.MD5(Path.GetFileNameWithoutExtension(_config.DatabasePath));
-            return Path.Combine(realmHash, dataId);
+            return $"{realmHash}/{dataId}";
+        }
+
+        enum UploadStatus
+        {
+            Success,
+            Failure,
+            NotApplicable
         }
     }
 }

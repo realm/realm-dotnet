@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.2</Version>
+    <RootNamespace>Realms.LFS.S3</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
