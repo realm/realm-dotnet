@@ -115,15 +115,21 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="username">The username of the user.</param>
         /// <param name="password">The user's password.</param>
-        /// <param name="createUser"><c>true</c> if the user should be created, <c>false</c> otherwise. It is not possible to create a user twice when logging in, so this flag should only be set to true the first time a user logs in.</param>
+        /// <param name="createUser"><c>true</c> if the user should be created, <c>false</c> otherwise. Pass <c>null</c> to create a user if one doesn't exist or log them in otherwise.</param>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials UsernamePassword(string username, string password, bool createUser)
+        public static Credentials UsernamePassword(string username, string password, bool? createUser = null)
         {
+            var userInfo = new Dictionary<string, object> { [Keys.Password] = password };
+            if (createUser != null)
+            {
+                userInfo[Keys.CreateUser] = createUser;
+            }
+
             return new Credentials
             {
                 IdentityProvider = Provider.UsernamePassword,
                 Token = username,
-                UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
+                UserInfo = userInfo
             };
         }
 
