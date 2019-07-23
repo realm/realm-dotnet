@@ -1,5 +1,5 @@
 <!--
- Make sure to assign one and only one Type (`T:`) and State (`S:`) label.
+ Make sure to assign one and only one Type (`T:`) label.
  Select reviewers if ready for review. Our bot will automatically assign you.
  -->
 
@@ -11,4 +11,3 @@ Fixes #
 
 * [ ] Changelog entry
 * [ ] Tests (if applicable)
-* [ ] Update PCL (if applicable)
