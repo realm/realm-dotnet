@@ -93,7 +93,7 @@ stage('Build wrappers') {
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
         if (env.BRANCH_NAME == 'master') {
-          archive 'wrappers/build/**/*.pdb'
+          archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
     }
@@ -109,7 +109,7 @@ stage('Build wrappers') {
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
         if (env.BRANCH_NAME == 'master') {
-          archive 'wrappers/build/**/*.pdb'
+          archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
     }
@@ -146,7 +146,7 @@ stage('Package') {
 
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
-        archive '*.nupkg'
+        archiveArtifacts '*.nupkg'
 
         // extract the package version from the weaver package because it has the most definite name
         def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
