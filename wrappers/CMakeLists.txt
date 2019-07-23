@@ -183,12 +183,16 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
     /D_DISABLE_EXTENDED_ALIGNED_STORAGE # https://developercommunity.visualstudio.com/comments/279328/view.html
   )
 
+  # always produce a PDB
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+
   if(WINDOWS_STORE)
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib")
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib")
   else()
-    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "/nodefaultlib:libucrtd.lib /defaultlib:ucrtd.lib")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "/nodefaultlib:libucrt.lib /defaultlib:ucrt.lib")
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /nodefaultlib:libucrtd.lib /defaultlib:ucrtd.lib")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /nodefaultlib:libucrt.lib /defaultlib:ucrt.lib")
   endif()
 endif()
 

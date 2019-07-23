@@ -92,6 +92,9 @@ stage('Build wrappers') {
           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
+        if (env.BRANCH_NAME == 'master') {
+          archiveArtifacts includes: 'wrappers/build/**/*.pdb'
+        }
       }
     }
   }
@@ -105,6 +108,9 @@ stage('Build wrappers') {
           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
+        if (env.BRANCH_NAME == 'master') {
+          archiveArtifacts includes: 'wrappers/build/**/*.pdb'
+        }
       }
     }
   }
