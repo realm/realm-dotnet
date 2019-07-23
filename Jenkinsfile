@@ -93,7 +93,7 @@ stage('Build wrappers') {
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
         if (env.BRANCH_NAME == 'master') {
-          archiveArtifacts includes: 'wrappers/build/**/*.pdb'
+          archive 'wrappers/build/**/*.pdb'
         }
       }
     }
@@ -109,7 +109,7 @@ stage('Build wrappers') {
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
         if (env.BRANCH_NAME == 'master') {
-          archiveArtifacts includes: 'wrappers/build/**/*.pdb'
+          archive 'wrappers/build/**/*.pdb'
         }
       }
     }
