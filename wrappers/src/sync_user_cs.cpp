@@ -59,7 +59,15 @@ REALM_EXPORT SharedSyncUser* realm_get_admintoken_user(const uint16_t* auth_serv
         return new SharedSyncUser(SyncManager::shared().get_admin_token_user(auth_server_url, token));
     });
 }
-
+    
+REALM_EXPORT void realm_syncuser_set_refresh_token(SharedSyncUser& user, const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor token(token_buf, token_len);
+        user->update_refresh_token(token);
+    });
+}
+    
 REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {

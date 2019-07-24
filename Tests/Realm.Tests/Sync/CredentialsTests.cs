@@ -391,58 +391,104 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        #region CustomRefreshTokenTests
+
+        /*
+        // Keys
+
+        -----BEGIN PRIVATE KEY-----
+        MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCMgFkzVG4bc5DW
+        VtSVtYgdMRbTIyj6UnhOmmS7LjcT02sPQxs8tB5ggwGJSd4/wtv8J0p1Bsq43wOF
+        R+LCwYwZqZ/UysLxl2qg3m4LN7NcgIeDfCSNdbc97Vwg1Li0ygBr9vQcUTq9sgKD
+        7IFu48inn0xF7fxG/FhqGQYo/frLE/RDV3cbchyB5KP9lRoaZ54Wj3yyoiMlnrsX
+        OES91aZRLld4LYWUMg7aWzrRBm41QgYqAT05SGQ5TaU/Z1x/1i61nJ5jw5w50Mn7
+        AYvl3EYJ4/E+yh0XUSYjkbr9HGO6Q2+HugGpUl2WjVTmPhQAaAj3k/dDSSJFcYZE
+        z2yNV/MFAgMBAAECggEATB4ItU9La6HbWNOnzgeP20jJ9c75l0vwk5z/b4zlF9+V
+        A6q2adenEWBIB8m2F1MI/P2IUAhC8Y8YiC9ewWY78Xc8+Pp0TJBcmxSGB5vAlx+m
+        yuwJnX2lrW4XWE4GVyOMwPEEZQb4zOZQiIorwRi0j2M03jnFT+vMNoaiGLkoErZJ
+        xOw93+v83cPivQsR6PeZ8KrPSW0V/lzvH8ZqiQQjpDMm7Y90F4Hr1g6DJ2AogEjv
+        Tv8yWTlzPYcd5reevRV1eyzSHYwcr6dhdmGl1LQLkL9uPbwiQmXLgjWywm3xmDyX
+        BWJeIVI88H+E8hPb1A2yZjyr35CXdNPbcRo2B8YGLQKBgQDLQ/W24DvqUu9TZ3/B
+        EfTTzkXzIU+mUo9qnxtxB+2DnwksTxSK6HG4H1qxo8CCuOR8RBSoqJxqqNtKkq2L
+        lIYrMGoCpYRPcT0JHP7ZfqVnh15CrAkra5QvFXEzbK4aqrJR//HuzdUvFqvb/aNS
+        jEyuVaMNUGNiMYDreD0CX+q38wKBgQCw89waZsqdBtea3A2VKo5xMMicdssC2kNt
+        MJGPCXnXwATqjTHbaFQCbamUJPqlTiMnKVRC4mTr85IXM85gXonFYLYt0CCGX5wd
+        zyC2LcdCfvQBjgrtr9ytKhvK6gq9kBEPNgWNQO9AzuqN1BXmduLfc/8welErIfgA
+        HixAcdKfJwKBgQCAi9wK6Ug66nQcBOpQSXDRujOWjMx4XOICBdku5Fqa0KrWcLSH
+        HHU+geWzTeHjSdaFl/CQsQEqmtsEEDrcePNYwOdqAQ7pxq1Y5BNvrJ4iGQPNmkq6
+        QPCXzjGm2eZJSwY2wWxZH6bgfq/1EjSFceDUp6fUNbCEWtYzE/lRVSN1bQKBgQCK
+        P1uc/OYbXHciM/4gpkj3QgfZxi3Bosi/DA0M1XhuCUVOAtYK9y17YDX22hVBBRUN
+        yYpdXwc+GOPwYLdCL1ov7OkoTcy7bwNHfsWtz4I3/3ufo1wCaz1bxORF2iheBapu
+        WeRogWzrEz3JZQNfNU73CWc8drPnoPhjDy+/ga3uTQKBgFJHP+wZix0efZymu0VS
+        SacwuyolDNg1ebQsBA7XZ/ac9HH/cxxGHxFS76cwfxM7KUpgXEhmFUtEJjuy6UME
+        tw/6uOA95dBQztjvCmAgzdzExq1lSfadgpnj/SYbr70YKBvEnwb1KOPbFlVBnX4f
+        BuwMRU4Vebrdbe6RGRg8mByy
+        -----END PRIVATE KEY-----
+
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIBZM1RuG3OQ1lbUlbWI
+        HTEW0yMo+lJ4Tppkuy43E9NrD0MbPLQeYIMBiUneP8Lb/CdKdQbKuN8DhUfiwsGM
+        Gamf1MrC8ZdqoN5uCzezXICHg3wkjXW3Pe1cINS4tMoAa/b0HFE6vbICg+yBbuPI
+        p59MRe38RvxYahkGKP36yxP0Q1d3G3IcgeSj/ZUaGmeeFo98sqIjJZ67FzhEvdWm
+        US5XeC2FlDIO2ls60QZuNUIGKgE9OUhkOU2lP2dcf9YutZyeY8OcOdDJ+wGL5dxG
+        CePxPsodF1EmI5G6/RxjukNvh7oBqVJdlo1U5j4UAGgI95P3Q0kiRXGGRM9sjVfz
+        BQIDAQAB
+        -----END PUBLIC KEY-----
+
+        ROS Config:
+
+        import { BasicServer } from "..";
+        import * as path from "path";
+        import { ConsoleLogger } from "../shared";
+
+        require("../../feature-token-for-tests.js");
+
+        async function main() {
+            const server = new BasicServer();
+            const publicKey = `-----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIBZM1RuG3OQ1lbUlbWI
+        HTEW0yMo+lJ4Tppkuy43E9NrD0MbPLQeYIMBiUneP8Lb/CdKdQbKuN8DhUfiwsGM
+        Gamf1MrC8ZdqoN5uCzezXICHg3wkjXW3Pe1cINS4tMoAa/b0HFE6vbICg+yBbuPI
+        p59MRe38RvxYahkGKP36yxP0Q1d3G3IcgeSj/ZUaGmeeFo98sqIjJZ67FzhEvdWm
+        US5XeC2FlDIO2ls60QZuNUIGKgE9OUhkOU2lP2dcf9YutZyeY8OcOdDJ+wGL5dxG
+        CePxPsodF1EmI5G6/RxjukNvh7oBqVJdlo1U5j4UAGgI95P3Q0kiRXGGRM9sjVfz
+        BQIDAQAB
+        -----END PUBLIC KEY-----`;
+
+            await server.start({
+                dataPath: path.resolve("./data"),
+                graphQLServiceConfigOverride: (config) => {
+                    config.disableAuthentication = true;
+                },
+                logger: new ConsoleLogger("debug"),
+                refreshTokenValidators: [
+                    {
+                        algorithms: ["RS256"],
+                        issuer: "myissuer",
+                        publicKey,
+                        audience: "myApp",
+                        isAdminField: "admin"
+                    }
+                ]
+            });
+        }
+
+        main().catch((err) => {
+            console.log(err);
+            process.exit(1);
+        });
+
+        */
+
+        [Test, NUnit.Framework.Explicit("Requires non-default ROS")]
         public void UserLogin_WhenCustomRefreshToken_LogsUserIn()
         {
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
-                // Keys
-                /*
-                -----BEGIN PRIVATE KEY-----
-                MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCMgFkzVG4bc5DW
-                VtSVtYgdMRbTIyj6UnhOmmS7LjcT02sPQxs8tB5ggwGJSd4/wtv8J0p1Bsq43wOF
-                R+LCwYwZqZ/UysLxl2qg3m4LN7NcgIeDfCSNdbc97Vwg1Li0ygBr9vQcUTq9sgKD
-                7IFu48inn0xF7fxG/FhqGQYo/frLE/RDV3cbchyB5KP9lRoaZ54Wj3yyoiMlnrsX
-                OES91aZRLld4LYWUMg7aWzrRBm41QgYqAT05SGQ5TaU/Z1x/1i61nJ5jw5w50Mn7
-                AYvl3EYJ4/E+yh0XUSYjkbr9HGO6Q2+HugGpUl2WjVTmPhQAaAj3k/dDSSJFcYZE
-                z2yNV/MFAgMBAAECggEATB4ItU9La6HbWNOnzgeP20jJ9c75l0vwk5z/b4zlF9+V
-                A6q2adenEWBIB8m2F1MI/P2IUAhC8Y8YiC9ewWY78Xc8+Pp0TJBcmxSGB5vAlx+m
-                yuwJnX2lrW4XWE4GVyOMwPEEZQb4zOZQiIorwRi0j2M03jnFT+vMNoaiGLkoErZJ
-                xOw93+v83cPivQsR6PeZ8KrPSW0V/lzvH8ZqiQQjpDMm7Y90F4Hr1g6DJ2AogEjv
-                Tv8yWTlzPYcd5reevRV1eyzSHYwcr6dhdmGl1LQLkL9uPbwiQmXLgjWywm3xmDyX
-                BWJeIVI88H+E8hPb1A2yZjyr35CXdNPbcRo2B8YGLQKBgQDLQ/W24DvqUu9TZ3/B
-                EfTTzkXzIU+mUo9qnxtxB+2DnwksTxSK6HG4H1qxo8CCuOR8RBSoqJxqqNtKkq2L
-                lIYrMGoCpYRPcT0JHP7ZfqVnh15CrAkra5QvFXEzbK4aqrJR//HuzdUvFqvb/aNS
-                jEyuVaMNUGNiMYDreD0CX+q38wKBgQCw89waZsqdBtea3A2VKo5xMMicdssC2kNt
-                MJGPCXnXwATqjTHbaFQCbamUJPqlTiMnKVRC4mTr85IXM85gXonFYLYt0CCGX5wd
-                zyC2LcdCfvQBjgrtr9ytKhvK6gq9kBEPNgWNQO9AzuqN1BXmduLfc/8welErIfgA
-                HixAcdKfJwKBgQCAi9wK6Ug66nQcBOpQSXDRujOWjMx4XOICBdku5Fqa0KrWcLSH
-                HHU+geWzTeHjSdaFl/CQsQEqmtsEEDrcePNYwOdqAQ7pxq1Y5BNvrJ4iGQPNmkq6
-                QPCXzjGm2eZJSwY2wWxZH6bgfq/1EjSFceDUp6fUNbCEWtYzE/lRVSN1bQKBgQCK
-                P1uc/OYbXHciM/4gpkj3QgfZxi3Bosi/DA0M1XhuCUVOAtYK9y17YDX22hVBBRUN
-                yYpdXwc+GOPwYLdCL1ov7OkoTcy7bwNHfsWtz4I3/3ufo1wCaz1bxORF2iheBapu
-                WeRogWzrEz3JZQNfNU73CWc8drPnoPhjDy+/ga3uTQKBgFJHP+wZix0efZymu0VS
-                SacwuyolDNg1ebQsBA7XZ/ac9HH/cxxGHxFS76cwfxM7KUpgXEhmFUtEJjuy6UME
-                tw/6uOA95dBQztjvCmAgzdzExq1lSfadgpnj/SYbr70YKBvEnwb1KOPbFlVBnX4f
-                BuwMRU4Vebrdbe6RGRg8mByy
-                -----END PRIVATE KEY-----
-
-                -----BEGIN PUBLIC KEY-----
-                MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIBZM1RuG3OQ1lbUlbWI
-                HTEW0yMo+lJ4Tppkuy43E9NrD0MbPLQeYIMBiUneP8Lb/CdKdQbKuN8DhUfiwsGM
-                Gamf1MrC8ZdqoN5uCzezXICHg3wkjXW3Pe1cINS4tMoAa/b0HFE6vbICg+yBbuPI
-                p59MRe38RvxYahkGKP36yxP0Q1d3G3IcgeSj/ZUaGmeeFo98sqIjJZ67FzhEvdWm
-                US5XeC2FlDIO2ls60QZuNUIGKgE9OUhkOU2lP2dcf9YutZyeY8OcOdDJ+wGL5dxG
-                CePxPsodF1EmI5G6/RxjukNvh7oBqVJdlo1U5j4UAGgI95P3Q0kiRXGGRM9sjVfz
-                BQIDAQAB
-                -----END PUBLIC KEY-----
-                 */
-
                 var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.Xhl39nnVXIgTUqDKEfz2mDiHcfH8vZGDC4gJxAHZmQ_usf-uXTXfDxkjME2W5ynKeWUQrzIhOliHaouJq-XJpzqKPvQ4d70LwtijNC53O4SUaHHaTkhh98OLOZif0md7xHeeEJAI9sixNK4GDzA88a2K5dZ9dmv3XJJ3url481CNK5mSCMgTcN5dzChbewmJ327J7mDsHF74Nvdazevk7UyShLz0YfJaPr2ny9feUXcG7yMRTfg3XoSHGUZ1IDDyvjjslfelTZWIR3ccmiua2wyN1EKAQE0o1Ft89VFHDxIHVvfgdXr9aQvtEaPR7-GChL8rx1WiqujSMJ0DZC80gQ";
                 var credentials = Credentials.CustomRefreshToken(token);
 
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
-
                 var config = new FullSyncConfiguration(new Uri("/~/foo", UriKind.Relative), user);
                 using (var realm = await Realm.GetInstanceAsync(config))
                 {
@@ -478,6 +524,39 @@ namespace Realms.Tests.Sync
                 }
             });
         }
+
+        public void User_WhenCustomRefreshToken_CanUpdateToken()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.Xhl39nnVXIgTUqDKEfz2mDiHcfH8vZGDC4gJxAHZmQ_usf-uXTXfDxkjME2W5ynKeWUQrzIhOliHaouJq-XJpzqKPvQ4d70LwtijNC53O4SUaHHaTkhh98OLOZif0md7xHeeEJAI9sixNK4GDzA88a2K5dZ9dmv3XJJ3url481CNK5mSCMgTcN5dzChbewmJ327J7mDsHF74Nvdazevk7UyShLz0YfJaPr2ny9feUXcG7yMRTfg3XoSHGUZ1IDDyvjjslfelTZWIR3ccmiua2wyN1EKAQE0o1Ft89VFHDxIHVvfgdXr9aQvtEaPR7-GChL8rx1WiqujSMJ0DZC80gQ";
+                var credentials = Credentials.CustomRefreshToken(token);
+
+                var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+                Assert.That(token, Is.EqualTo(user.RefreshToken));
+
+                var newToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDI1LCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.PDW_HuOXzd1cCIAyCUcH2YuQ4FI3cDuDc2x0tMjvV8Lj7UYBPo3tErApoUIVmgb8nF20KAmeLwkYQs1AHHEZqIf7n0lOa-UPSW0CkG80ebTH0QHc3_5IY_NW-lIod0iUqetq9kFw4YXV2OYJXzbqq1W5RicMhhkt1Mtwe7qewFDF8phvwLAPg7KzBusk_yFjSCuYBdaTfWZb_xb3r8so-EcAaWVLnipgvfr_JQwTChkaDGWSOFqmjWLdpNPvFHvo-jx65j07em23X6f8xKIh06PGlGEDSfGNNKBiQXHhjo1m4L4r8rfH8Kp5FBvwbuwV6DsOlRcBnQyBwfxReZlukA";
+                user.RefreshToken = newToken;
+                Assert.That(newToken, Is.EqualTo(user.RefreshToken));
+
+                // Ensure we can still sync
+                var config = new FullSyncConfiguration(new Uri("/~/bar", UriKind.Relative), user);
+                using (var realm = await Realm.GetInstanceAsync(config))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new PrimaryKeyInt32Object
+                        {
+                            Int32Property = 123
+                        });
+                    });
+
+                    await realm.GetSession().WaitForUploadAsync();
+                }
+            });
+        }
+
+        #endregion
 
         private static async Task TestNewPassword(string userId)
         {
