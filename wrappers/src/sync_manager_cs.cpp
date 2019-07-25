@@ -32,6 +32,8 @@
 #include "sync_session_cs.hpp"
 #include "sync/impl/sync_metadata.hpp"
 #include "sync/partial_sync.hpp"
+#include "sync/async_open_task.hpp"
+#include "thread_safe_reference.hpp"
 
 #if REALM_WINDOWS
 #include <VersionHelpers.h>
@@ -44,7 +46,7 @@ using LogMessageDelegate = void(const char* message, size_t message_len, util::L
 
 namespace realm {
 namespace binding {
-    void (*s_open_realm_callback)(void* task_completion_source, SharedRealm* realm, int32_t error_code, const char* message, size_t message_len);
+    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference<SharedRealm>* ref, int32_t error_code, const char* message, size_t message_len);
 
     
     class SyncLogger : public util::RootLogger {
@@ -188,12 +190,13 @@ REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
     return SyncManager::shared().log_level();
 }
     
-REALM_EXPORT void shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT std::shared_ptr<AsyncOpenTask>* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]() {
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
-
-        Realm::get_shared_realm(config, [task_completion_source](SharedRealm realm, std::exception_ptr error) {
+        
+        auto task = Realm::get_synchronized_realm(config);
+        task->start([task_completion_source](ThreadSafeReference<Realm> ref, std::exception_ptr error) {
             if (error) {
                 try {
                     std::rethrow_exception(error);
@@ -202,9 +205,11 @@ REALM_EXPORT void shared_realm_open_with_sync_async(Configuration configuration,
                     s_open_realm_callback(task_completion_source, nullptr, ec.value(), ec.message().c_str(), ec.message().length());
                 }
             } else {
-                s_open_realm_callback(task_completion_source, new SharedRealm(realm), 0, nullptr, 0);
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference<Realm>(ref), 0, nullptr, 0);
             }
         });
+        
+        return new std::shared_ptr<AsyncOpenTask>(task);
     });
 }
 

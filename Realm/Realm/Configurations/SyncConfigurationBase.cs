@@ -216,17 +216,13 @@ namespace Realms.Sync
                 enable_cache = EnableCache
             };
 
-            // Keep that until we open the Realm on the foreground.
-            var backgroundHandle = await SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey);
-
-            var foregroundHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
-            backgroundHandle.Close();
+            var handle = await SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
             {
-                foregroundHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                handle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
             }
 
-            return new Realm(foregroundHandle, this, schema);
+            return new Realm(handle, this, schema);
         }
 
         internal Native.SyncConfiguration ToNative()

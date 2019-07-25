@@ -42,14 +42,14 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Configuration configuration, Native.SyncConfiguration sync_configuration,
+            public static extern IntPtr open_with_sync(Configuration configuration, SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void open_with_sync_async(Configuration configuration, Native.SyncConfiguration sync_configuration,
+            public static extern IntPtr open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
@@ -98,7 +98,7 @@ namespace Realms.Sync
             public static extern void reconnect();
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
+            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
@@ -125,6 +125,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_object_privileges", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern byte get_object_privileges(SharedRealmHandle handle, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_from_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_from_reference(IntPtr realm_reference, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -153,7 +156,7 @@ namespace Realms.Sync
             GCHandle.Alloc(_logCallback);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             DoInitialFileSystemConfiguration();
 
@@ -165,20 +168,23 @@ namespace Realms.Sync
             return new SharedRealmHandle(result);
         }
 
-        public static Task<SharedRealmHandle> OpenWithSyncAsync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static async Task<SharedRealmHandle> OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
-            System.Diagnostics.Debug.WriteLine("Thread on Open: " + Environment.CurrentManagedThreadId);
-
             DoInitialFileSystemConfiguration();
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
-            var tcs = new TaskCompletionSource<SharedRealmHandle>();
+            var tcs = new TaskCompletionSource<IntPtr>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+            var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+            // TODO: convert asyncTaskHandle to something meaningful.
             nativeException.ThrowIfNecessary();
 
-            return tcs.Task;
+            var realmReference = await tcs.Task;
+            var result = NativeMethods.get_from_reference(realmReference, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new SharedRealmHandle(result);
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
@@ -278,7 +284,7 @@ namespace Realms.Sync
             NativeMethods.reconnect();
         }
 
-        public static SessionHandle GetSession(string path, Native.SyncConfiguration configuration, byte[] encryptionKey)
+        public static SessionHandle GetSession(string path, SyncConfiguration configuration, byte[] encryptionKey)
         {
             DoInitialFileSystemConfiguration();
 
@@ -383,7 +389,7 @@ namespace Realms.Sync
             }
         }
 
-        [NativeCallback(typeof(NativeMethods.OpenRealmCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
         private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr shared_realm, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
