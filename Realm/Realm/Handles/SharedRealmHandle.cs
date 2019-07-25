@@ -39,9 +39,9 @@ namespace Realms
             public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open(Native.Configuration configuration,
-                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaObject[] objects, int objects_length,
-                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaProperty[] properties,
+            public static extern IntPtr open(Configuration configuration,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 out NativeException ex);
 
@@ -93,6 +93,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_realm_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
@@ -146,11 +149,18 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public static IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static IntPtr Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
-            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out NativeException nativeException);
+            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public static IntPtr ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
+        {
+            var result = NativeMethods.resolve_realm_reference(referenceHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

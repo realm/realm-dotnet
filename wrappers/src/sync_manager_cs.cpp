@@ -46,7 +46,7 @@ using LogMessageDelegate = void(const char* message, size_t message_len, util::L
 
 namespace realm {
 namespace binding {
-    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference<SharedRealm>* ref, int32_t error_code, const char* message, size_t message_len);
+    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference<Realm>* ref, int32_t error_code, const char* message, size_t message_len);
 
     
     class SyncLogger : public util::RootLogger {
@@ -205,7 +205,7 @@ REALM_EXPORT std::shared_ptr<AsyncOpenTask>* shared_realm_open_with_sync_async(C
                     s_open_realm_callback(task_completion_source, nullptr, ec.value(), ec.message().c_str(), ec.message().length());
                 }
             } else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference<Realm>(ref), 0, nullptr, 0);
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference<Realm>(std::move(ref)), 0, nullptr, 0);
             }
         });
         

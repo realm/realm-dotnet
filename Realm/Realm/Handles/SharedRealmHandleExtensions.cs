@@ -125,9 +125,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_object_privileges", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern byte get_object_privileges(SharedRealmHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_from_reference", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_from_reference(IntPtr realm_reference, out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -174,17 +171,24 @@ namespace Realms.Sync
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
-            var tcs = new TaskCompletionSource<IntPtr>();
+            var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
-            // TODO: convert asyncTaskHandle to something meaningful.
-            nativeException.ThrowIfNecessary();
+            try
+            {
+                var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+                // TODO: convert asyncTaskHandle to something meaningful.
+                nativeException.ThrowIfNecessary();
 
-            var realmReference = await tcs.Task;
-            var result = NativeMethods.get_from_reference(realmReference, out nativeException);
-            nativeException.ThrowIfNecessary();
-
-            return new SharedRealmHandle(result);
+                using (var referenceHandle = await tcs.Task)
+                {
+                    var realmPtr = SharedRealmHandle.ResolveFromReference(referenceHandle);
+                    return new SharedRealmHandle(realmPtr);
+                }
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
@@ -390,17 +394,17 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
-        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr shared_realm, int error_code, byte* messageBuffer, IntPtr messageLength)
+        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<SharedRealmHandle>)handle.Target;
+            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
 
             try
             {
                 if (error_code == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("Thread on Opened: " + Environment.CurrentManagedThreadId);
-                    tcs.TrySetResult(new SharedRealmHandle(shared_realm));
+                    tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference));
                 }
                 else
                 {

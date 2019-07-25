@@ -255,6 +255,13 @@ REALM_EXPORT Results* shared_realm_resolve_query_reference(SharedRealm* realm, T
     });
 }
     
+REALM_EXPORT SharedRealm* shared_realm_resolve_realm_reference(ThreadSafeReference<Realm>& reference, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new SharedRealm(Realm::get_shared_realm(std::move(reference)));
+    });
+}
+    
 REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReferenceBase* reference)
 {
     delete reference;
