@@ -18,11 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Testing;

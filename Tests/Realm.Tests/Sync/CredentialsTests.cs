@@ -437,46 +437,46 @@ BQIDAQAB
 
         ROS Config:
 
-        import { BasicServer } from "..";
-        import * as path from "path";
-        import { ConsoleLogger } from "../shared";
+import { BasicServer } from "..";
+import * as path from "path";
+import { ConsoleLogger } from "../shared";
 
-        require("../../feature-token-for-tests.js");
+require("../../feature-token-for-tests.js");
 
-        async function main() {
-            const server = new BasicServer();
-            const publicKey = `-----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIBZM1RuG3OQ1lbUlbWI
-        HTEW0yMo+lJ4Tppkuy43E9NrD0MbPLQeYIMBiUneP8Lb/CdKdQbKuN8DhUfiwsGM
-        Gamf1MrC8ZdqoN5uCzezXICHg3wkjXW3Pe1cINS4tMoAa/b0HFE6vbICg+yBbuPI
-        p59MRe38RvxYahkGKP36yxP0Q1d3G3IcgeSj/ZUaGmeeFo98sqIjJZ67FzhEvdWm
-        US5XeC2FlDIO2ls60QZuNUIGKgE9OUhkOU2lP2dcf9YutZyeY8OcOdDJ+wGL5dxG
-        CePxPsodF1EmI5G6/RxjukNvh7oBqVJdlo1U5j4UAGgI95P3Q0kiRXGGRM9sjVfz
-        BQIDAQAB
-        -----END PUBLIC KEY-----`;
+async function main() {
+    const server = new BasicServer();
+    const publicKey = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjIBZM1RuG3OQ1lbUlbWI
+HTEW0yMo+lJ4Tppkuy43E9NrD0MbPLQeYIMBiUneP8Lb/CdKdQbKuN8DhUfiwsGM
+Gamf1MrC8ZdqoN5uCzezXICHg3wkjXW3Pe1cINS4tMoAa/b0HFE6vbICg+yBbuPI
+p59MRe38RvxYahkGKP36yxP0Q1d3G3IcgeSj/ZUaGmeeFo98sqIjJZ67FzhEvdWm
+US5XeC2FlDIO2ls60QZuNUIGKgE9OUhkOU2lP2dcf9YutZyeY8OcOdDJ+wGL5dxG
+CePxPsodF1EmI5G6/RxjukNvh7oBqVJdlo1U5j4UAGgI95P3Q0kiRXGGRM9sjVfz
+BQIDAQAB
+-----END PUBLIC KEY-----`;
 
-            await server.start({
-                dataPath: path.resolve("./data"),
-                graphQLServiceConfigOverride: (config) => {
-                    config.disableAuthentication = true;
-                },
-                logger: new ConsoleLogger("debug"),
-                refreshTokenValidators: [
-                    {
-                        algorithms: ["RS256"],
-                        issuer: "myissuer",
-                        publicKey,
-                        audience: "myApp",
-                        isAdminField: "admin"
-                    }
-                ]
-            });
-        }
+    await server.start({
+        dataPath: path.resolve("./data"),
+        graphQLServiceConfigOverride: (config) => {
+            config.disableAuthentication = true;
+        },
+        logger: new ConsoleLogger("debug"),
+        refreshTokenValidators: [
+            {
+                algorithms: ["RS256"],
+                issuer: "myissuer",
+                publicKey,
+                audience: "myApp",
+                isAdminField: "admin"
+            }
+        ]
+    });
+}
 
-        main().catch((err) => {
-            console.log(err);
-            process.exit(1);
-        });
+main().catch((err) => {
+    console.log(err);
+    process.exit(1);
+});
 
         */
 
@@ -537,12 +537,25 @@ BQIDAQAB
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 Assert.That(token, Is.EqualTo(user.RefreshToken));
 
+                var config = new FullSyncConfiguration(new Uri($"/~/{Guid.NewGuid()}", UriKind.Relative), user);
+
+                // Can't use the async version as out token is expired
+                using (var expiredRealm = Realm.GetInstance(config))
+                {
+                    expiredRealm.Write(() =>
+                    {
+                        expiredRealm.Add(new PrimaryKeyInt32Object
+                        {
+                            Int32Property = 456
+                        });
+                    });
+                }
+
                 var newToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTYiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIiwic29tZXRoaW5nIjoiZWxzZSJ9.PnfTPoeLmfbjuuKDDzLyZ6BgLVjOmx8qazVdEkVxbjy5jtJnGIyyl77y71E4Auf4sIOqLzqs6Tve4JnrZIltXSzLBnmC76JPW9t3LT0-t09UGG7K0eTYaySlXgzjTZ1bEyc3plnr2Vw4y3g4uonmsU6fliaKoqpWnW-UHDMsPdRJR3BzQYIBkj3SSwCCb-uDRsZWQhyx2CyVvsJgAow_jae5oi38QO5UC6kqCMflUxMHDR5MmSRuhTvtA3Uk0rYMTnh4LzWhmL5yH_uSgBwluTcTJxnxU_jf_S9HqnbuBnyWbwlDVsd-ABffF-LkWhj1uSCW9OpSVBJyF5ekTYDqNQ";
                 user.RefreshToken = newToken;
                 Assert.That(newToken, Is.EqualTo(user.RefreshToken));
 
                 // Ensure we can still sync
-                var config = new FullSyncConfiguration(new Uri($"/~/{Guid.NewGuid()}", UriKind.Relative), user);
                 using (var realm = await GetRealmAsync(config))
                 {
                     realm.Write(() =>
@@ -554,8 +567,22 @@ BQIDAQAB
                     });
 
                     await GetSession(realm).WaitForUploadAsync();
+
+                    // Ensure we have both objects
+                    Assert.That(realm.All<PrimaryKeyInt32Object>().Count(), Is.EqualTo(2));
                 }
             });
+        }
+
+
+        [Test]
+        public void User_WhenCustomRefreshToken_CanLoginAUserDirectly()
+        {
+            var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQZXNobzEyMyIsImlhdCI6MTUxNjIzOTAyMn0.Hu99JXT28Gq2Zf-KjM75I1nBxhU3WxWqWjJSaAc6TP6Bwy4czlR4krw8LDdjrBJ0zyI6CAyVAR_y1lRyFbz3j-jaXmmuwyIgO61PJxOJaWEmBawz1_C3_z8-XjxNeBH8lXgGFcPzDG0HqbmXMgPEAFK4LAY5tFMkzEPP3w5OslZu17ixlzsYtSkia_bQSYId6-KSkj-tZE6KExgumIyF4JnS51s8oDr6U3C4qa1Y6-QkyWqCdFMRMd6558qECbVxV5CPP0x58LFyC6Coz1Xob6zkB2b_ba5FepFO-cJtvXaIBDOYsV3GsD9NfW8cLDCNqeJADbJuCP_iHRIDT4vFdg";
+            var credentials = Credentials.CustomRefreshToken(token);
+            var user = User.LoginAsync(credentials, new Uri($"http://{SyncTestHelpers.FakeRosUrl}")).Result;
+
+            Assert.That(user.Identity, Is.EqualTo("Pesho123"));
         }
 
         #endregion
