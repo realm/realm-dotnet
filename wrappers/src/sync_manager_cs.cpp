@@ -203,18 +203,6 @@ REALM_EXPORT bool realm_syncmanager_immediately_run_file_actions(uint16_t* pathb
         return SyncManager::shared().immediately_run_file_actions(path);
     });
 }
-    
-REALM_EXPORT bool realm_syncmanager_cancel_pending_file_actions(uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        std::string path(Utf16StringAccessor(pathbuffer, pathbuffer_len));
-        bool result;
-        SyncManager::shared().perform_metadata_update([&](const auto& manager) {
-            result = manager.delete_metadata_action(path);
-        });
-        return result;
-    });
-}
 
 REALM_EXPORT void realm_syncmanager_reconnect()
 {

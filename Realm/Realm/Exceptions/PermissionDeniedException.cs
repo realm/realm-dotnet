@@ -57,19 +57,13 @@ namespace Realms.Sync.Exceptions
         /// isn't called at all, the Realm file will be deleted the next time your application is launched and the
         /// sync subsystem is initialized. Can only be called once.
         /// </summary>
-        /// <param name="deleteRealm">Controls whether to initiate deletion immediately or cancel it altogether.</param>
         /// <returns><c>true</c> if actions were run successfully, <c>false</c> otherwise.</returns>
-        public bool DeleteRealmUserInfo(bool deleteRealm)
+        public bool DeleteRealmUserInfo()
         {
             Argument.Ensure<NotSupportedException>(!_actionInvoked, $"{nameof(DeleteRealmUserInfo)} can only be called once.");
             _actionInvoked = true;
 
-            if (deleteRealm)
-            {
-                return SharedRealmHandleExtensions.ImmediatelyRunFileActions(_originalFilePath);
-            }
-
-            return SharedRealmHandleExtensions.CancelPendingFileActions(_originalFilePath);
+            return SharedRealmHandleExtensions.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
 }

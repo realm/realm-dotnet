@@ -80,10 +80,6 @@ namespace Realms.Sync
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_cancel_pending_file_actions", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool cancel_pending_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect();
 
@@ -236,14 +232,6 @@ namespace Realms.Sync
         public static bool ImmediatelyRunFileActions(string path)
         {
             var result = NativeMethods.immediately_run_file_actions(path, (IntPtr)path.Length, out var ex);
-            ex.ThrowIfNecessary();
-
-            return result;
-        }
-
-        public static bool CancelPendingFileActions(string path)
-        {
-            var result = NativeMethods.cancel_pending_file_actions(path, (IntPtr)path.Length, out var ex);
             ex.ThrowIfNecessary();
 
             return result;
