@@ -194,7 +194,6 @@ namespace Realms.Tests.Sync
                     {
                         Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
                         Assert.That(ex.ErrorCode, Is.EqualTo(ErrorCode.AccessDenied));
-
                     });
             });
         }

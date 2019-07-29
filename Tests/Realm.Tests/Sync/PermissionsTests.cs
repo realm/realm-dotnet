@@ -227,7 +227,7 @@ namespace Realms.Tests.Sync
                 Assert.That(pde.ErrorCode, Is.EqualTo(ErrorCode.PermissionDenied));
                 Assert.That(File.Exists(config.DatabasePath), Is.True);
 
-                var result = pde.DeleteRealmUserInfo(deleteRealm: true);
+                var result = pde.DeleteRealmUserInfo();
 
                 Assert.That(result, Is.True);
                 Assert.That(File.Exists(config.DatabasePath), Is.False);
@@ -282,7 +282,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(offersAfterDeletion.Count(), Is.EqualTo(1));
                 Assert.That(offersAfterDeletion.Single().Token, Is.EqualTo(writeToken));
-
             });
         }
 

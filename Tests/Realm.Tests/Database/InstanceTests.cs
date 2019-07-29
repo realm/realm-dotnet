@@ -749,6 +749,33 @@ namespace Realms.Tests.Database
             }
         }
 
+        [TestCase("фоо-бар")]
+        [TestCase("Λορεμ")]
+        [TestCase("ლორემ")]
+        [TestCase("植物")]
+        [TestCase("החלל")]
+        [TestCase("جمعت")]
+        [TestCase("søren")]
+        public void GetInstance_WhenPathContainsNonASCIICharacters_ShouldWork(string path)
+        {
+            var folder = Path.Combine(Path.GetTempPath(), path);
+            Directory.CreateDirectory(folder);
+            var realmPath = Path.Combine(folder, "my.realm");
+            var config = new RealmConfiguration(realmPath);
+            try
+            {
+                using (var realm = Realm.GetInstance(config))
+                {
+                    realm.Write(() => realm.Add(new Person()));
+                    Assert.AreEqual(1, realm.All<Person>().Count());
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
+        }
+
         private static void AddDummyData(Realm realm)
         {
             for (var i = 0; i < 1000; i++)
