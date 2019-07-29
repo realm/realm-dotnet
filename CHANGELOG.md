@@ -4,6 +4,21 @@ vNEXT (TBD)
 ### Breaking Changes
 * Removed the `isAdmin` parameter from `Credentials.Nickname`. It doesn't have any effect on new ROS versions anyway as logging in an admin nickname user is not supported - this change just makes it explicit. (Issue [#1879](https://github.com/realm/realm-dotnet/issues/1879))
 * Marked the `Credentials.Nickname` method as deprecated - support for the Nickname auth provider is deprecated in ROS and will be removed in a future version. (Issue [#1879](https://github.com/realm/realm-dotnet/issues/1879))
+* Removed the `deleteRealm` parameter from `PermissionDeniedException.DeleteRealmInfo` as passing `false` has no effect. Calling the method is now equivalent to calling it with `deleteRealm: true`. (PR [#1890](https://github.com/realm/realm-dotnet/pull/1890))
+
+### Enhancements
+* Added support for unicode characters in realm path and filenames for Windows. (Core upgrade)
+
+### Fixed
+* Constructing an IncludeDescriptor made unnecessary table comparisons. This resulted in poor performance when creating a query-based subscription (`Subscription.Subscribe`) with `includedBacklinks`. (Core upgrade)
+* Queries involving an indexed int column which were constrained by a LinkList with an order different from the table's order would give incorrect results. (Core upgrade)
+* Queries involving an indexed int column had a memory leak if run multiple times. (Core upgrade)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* Upgraded Sync from 4.5.1 to 4.7.0 and Core 5.20.0 to 5.23.1.
 
 4.0.1 (2019-06-27)
 ------------------
