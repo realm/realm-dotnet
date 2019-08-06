@@ -44,6 +44,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_refresh_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_refresh_token(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_set_refresh_token", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_refresh_token(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string refresh_token, IntPtr refresh_token_len, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_server_url", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_server_url(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -101,6 +104,12 @@ namespace Realms.Sync
                 isNull = false;
                 return NativeMethods.get_refresh_token(this, buffer, length, out ex);
             });
+        }
+
+        public void SetRefreshToken(string token)
+        {
+            NativeMethods.set_refresh_token(this, token, (IntPtr)token.Length, out var ex);
+            ex.ThrowIfNecessary();
         }
 
         public string GetServerUrl()

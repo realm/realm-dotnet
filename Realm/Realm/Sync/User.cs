@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -93,6 +92,13 @@ namespace Realms.Sync
                 return new User(SyncUserHandle.GetAdminTokenUser(serverUri.AbsoluteUri, credentials.Token));
             }
 
+            if (credentials.IdentityProvider == Credentials.Provider.CustomRefreshToken)
+            {
+                var userId = (string)credentials.UserInfo[Credentials.Keys.Identity];
+                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
+                return new User(SyncUserHandle.GetSyncUser(userId, serverUri.AbsoluteUri, credentials.Token, isAdmin));
+            }
+
             var result = await AuthenticationHelper.LoginAsync(credentials, serverUri);
             var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUri.AbsoluteUri, result.RefreshToken, result.IsAdmin);
             return new User(handle);
@@ -119,10 +125,15 @@ namespace Realms.Sync
         #endregion static
 
         /// <summary>
-        /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
+        /// Gets or sets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
+        /// Setting the refresh token is only supported for users authenticated with <see cref="Credentials.CustomRefreshToken"/>.
         /// </summary>
         /// <value>A unique string that can be used for refreshing the user's credentials.</value>
-        public string RefreshToken => Handle.GetRefreshToken();
+        public string RefreshToken
+        {
+            get => Handle.GetRefreshToken();
+            set => Handle.SetRefreshToken(value);
+        }
 
         /// <summary>
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.

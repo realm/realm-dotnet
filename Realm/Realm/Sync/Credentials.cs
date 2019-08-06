@@ -19,6 +19,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
+using Newtonsoft.Json.Linq;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -47,6 +49,8 @@ namespace Realms.Sync
             public const string Anonymous = "anonymous";
 
             public const string Nickname = "nickname";
+
+            public const string CustomRefreshToken = "customRefreshToken";
         }
 
         internal static class Keys
@@ -194,6 +198,50 @@ namespace Realms.Sync
             {
                 IdentityProvider = providerName,
                 Token = token
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Credentials"/> based on a custom Refresh token.
+        /// </summary>
+        /// <param name="token">A Json Web Token, obtained by a 3rd party source that will be used instead of the ROS-issued refresh tokens.</param>
+        /// <remarks>
+        /// Unlike other <see cref="Credentials"/> methods, users logged in via the CustomRefreshToken API will not go through the regular
+        /// login flow (since we already have a refresh token). Instead, the provided token will be used at any point when we need to exchange
+        /// the refresh token for an access token, e.g. when opening a Realm file. If the refresh token is invalid or expired, the user instance
+        /// will still be valid and they'll be able to create/open Realms, but those will never be synchronized with ROS. If the token is then updated
+        /// with a new valid one, existing changes will be synchronized with the server as usual.
+        /// <para/>
+        /// To update a refresh token, just set <see cref="User.RefreshToken"/> to the new updated value.
+        /// <para/>
+        /// ROS must be configured with <c>refreshTokenValidators</c> for this user to ever be able to sync with it.
+        /// </remarks>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        public static Credentials CustomRefreshToken(string token)
+        {
+            Argument.NotNull(token, nameof(token));
+
+            var parts = token.Split('.');
+            Argument.Ensure(parts.Length == 3, "Prodvided token is not a valid JWT", nameof(token));
+
+            // C#'s base64 parser is strict about padding, but a lot of others are not.
+            var charactersToPad = (4 - parts[1].Length % 4) % 4;
+            var paddedPayload = parts[1].PadRight(parts[1].Length + charactersToPad, '=');
+            var payload = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
+            var deserialized = JObject.Parse(payload);
+
+            var userId = deserialized["sub"]?.Value<string>();
+            Argument.Ensure(userId != null, "The provided token must have a sub field.", nameof(token));
+
+            return new Credentials
+            {
+                IdentityProvider = Provider.CustomRefreshToken,
+                Token = token,
+                UserInfo = new Dictionary<string, object>
+                {
+                    [Keys.IsAdmin] = deserialized["isAdmin"]?.Value<bool>() ?? false,
+                    [Keys.Identity] = userId
+                }
             };
         }
 
