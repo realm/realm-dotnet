@@ -1223,17 +1223,24 @@ namespace Realms.Tests.Database
         [Test]
         public void Queryable_IndexOf_ShouldWork()
         {
-            var personA = new Person { FirstName = "A" };
-            var personB = new Person { FirstName = "B" };
+
+            var item1 = new IntPrimaryKeyWithValueObject { Id = 1, StringValue = "BBB" };
+            var item2 = new IntPrimaryKeyWithValueObject { Id = 2, StringValue = "AAA" };
             _realm.Write(() =>
             {
-                _realm.Add(personA);
-                _realm.Add(personB);
+                _realm.RemoveAll<IntPrimaryKeyWithValueObject>();
+
+                _realm.Add(item1);
+                _realm.Add(item2);
             });
 
-            var query = _realm.All<Person>().OrderBy(p => p.FirstName).AsRealmCollection();
-            Assert.That(query.IndexOf(personA), Is.Zero);
-            Assert.That(query.IndexOf(personB), Is.EqualTo(1));
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            Assert.That(query.IndexOf(item1), Is.Zero);
+            Assert.That(query.IndexOf(item2), Is.EqualTo(1));
+
+            var sortedQuery = _realm.All<IntPrimaryKeyWithValueObject>().OrderBy(i => i.StringValue).AsRealmCollection();
+            Assert.That(sortedQuery.IndexOf(item2), Is.Zero);
+            Assert.That(sortedQuery.IndexOf(item1), Is.EqualTo(1));
         }
 
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()

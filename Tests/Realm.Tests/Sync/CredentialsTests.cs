@@ -573,7 +573,6 @@ main().catch((err) => {
             });
         }
 
-
         [Test]
         public void User_WhenCustomRefreshToken_CanLoginAUserDirectly()
         {
