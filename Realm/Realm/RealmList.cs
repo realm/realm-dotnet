@@ -119,12 +119,7 @@ namespace Realms
             _listHandle.Clear();
         }
 
-        public bool Contains(T item)
-        {
-            return IndexOf(item) > -1;
-        }
-
-        public override bool Contains(object value) => Contains((T)value);
+        public bool Contains(T item) => Contains((object)item);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -149,7 +144,7 @@ namespace Realms
             }
         }
 
-        public int IndexOf(T item)
+        public override int IndexOf(T item)
         {
             switch (_argumentType)
             {
@@ -171,8 +166,6 @@ namespace Realms
                     return _listHandle.Find(PrimitiveValue.Create(item, _argumentType));
             }
         }
-
-        public override int IndexOf(object value) => IndexOf((T)value);
 
         public void Insert(int index, T item)
         {

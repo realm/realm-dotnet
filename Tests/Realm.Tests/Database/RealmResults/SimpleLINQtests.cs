@@ -1220,6 +1220,22 @@ namespace Realms.Tests.Database
             Assert.That(notNullTopDogs.Single(), Is.Not.EqualTo(ivar));
         }
 
+        [Test]
+        public void Queryable_IndexOf_ShouldWork()
+        {
+            var personA = new Person { FirstName = "A" };
+            var personB = new Person { FirstName = "B" };
+            _realm.Write(() =>
+            {
+                _realm.Add(personA);
+                _realm.Add(personB);
+            });
+
+            var query = _realm.All<Person>().OrderBy(p => p.FirstName).AsRealmCollection();
+            Assert.That(query.IndexOf(personA), Is.Zero);
+            Assert.That(query.IndexOf(personB), Is.EqualTo(1));
+        }
+
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()
         {
             _realm.Write(() =>

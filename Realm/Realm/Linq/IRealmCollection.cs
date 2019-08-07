@@ -117,6 +117,8 @@ namespace Realms
     /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
+        int IndexOf(object item);
+
         /// <summary>
         /// Gets a value indicating whether this collection is still valid to use, i.e. the <see cref="Realm"/> instance
         /// hasn't been closed and, if it represents a to-many relationship, it's parent object hasn't been deleted.

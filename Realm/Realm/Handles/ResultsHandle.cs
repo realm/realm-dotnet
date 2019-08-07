@@ -74,6 +74,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)]string query_buf, IntPtr query_len, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
         }
 
         public override bool IsValid
@@ -193,6 +196,13 @@ namespace Realms
             var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, out var ex);
             ex.ThrowIfNecessary();
             return new ResultsHandle(this, ptr);
+        }
+
+        public int Find(ObjectHandle objectHandle)
+        {
+            var result = NativeMethods.find_object(this, objectHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
         }
     }
 }

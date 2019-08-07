@@ -380,9 +380,19 @@ namespace Realms
 
         public virtual void Clear() => throw new NotSupportedException();
 
-        public abstract bool Contains(object value);
+        public bool Contains(object value) => IndexOf(value) > -1;
 
-        public abstract int IndexOf(object value);
+        public int IndexOf(object value)
+        {
+            if (!(value is T tValue))
+            {
+                return -1;
+            }
+
+            return IndexOf(tValue);
+        }
+
+        public abstract int IndexOf(T value);
 
         public virtual void Insert(int index, object value) => throw new NotSupportedException();
 

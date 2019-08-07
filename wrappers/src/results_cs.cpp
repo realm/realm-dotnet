@@ -170,4 +170,11 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
     });
 }
 
+REALM_EXPORT size_t results_find_object(Results& results, const Object& object_ptr, NativeException::Marshallable& ex)
+{
+	return handle_errors(ex, [&]() {
+		return results.index_of(object_ptr.row());
+	});
+}
+
 }   // extern "C"

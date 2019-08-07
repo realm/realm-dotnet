@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Helpers;
+using Realms.Schema;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -70,9 +72,21 @@ namespace Realms
 
         #region IList members
 
-        public override bool Contains(object value) => Contains((T)value);
+        public override int IndexOf(T value)
+        {
+            if (_argumentType != (PropertyType.Object | PropertyType.Nullable))
+            {
+                throw new NotSupportedException("IndexOf on non-object results is not supported.");
+            }
 
-        public override int IndexOf(object value) => IndexOf((T)value);
+            var obj = Operator.Convert<T, RealmObject>(value);
+            if (!obj.IsManaged)
+            {
+                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+            }
+
+            return ResultsHandle.Find(obj.ObjectHandle);
+        }
 
         #endregion
     }
