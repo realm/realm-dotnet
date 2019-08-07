@@ -117,7 +117,22 @@ namespace Realms
     /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Searches for the specified object and returns the zero-based index of the first        /// occurrence within the entire <see cref="IRealmCollection{T}"/>
+        /// </summary>
+        /// <param name="item">        /// The object to locate in the <see cref="IRealmCollection{T}"/>.
+        /// </param>
+        /// <returns>        /// The zero-based index of the first occurrence of item within the entire <see cref="IRealmCollection{T}"/>,        /// if found; otherwise, –1.
+        /// </returns>
         int IndexOf(object item);
+
+        /// <summary>
+        /// Determines whether an element is in the <see cref="IRealmCollection{T}"/>
+        /// </summary>
+        /// <param name="item">        /// The object to locate in the <see cref="IRealmCollection{T}"/>.
+        /// </param>
+        /// <returns>true if item is found in the <see cref="IRealmCollection{T}"/>; otherwise, false.</returns>
+        bool Contains(object item);
 
         /// <summary>
         /// Gets a value indicating whether this collection is still valid to use, i.e. the <see cref="Realm"/> instance

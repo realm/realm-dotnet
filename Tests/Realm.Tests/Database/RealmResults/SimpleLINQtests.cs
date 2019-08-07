@@ -1223,7 +1223,6 @@ namespace Realms.Tests.Database
         [Test]
         public void Queryable_IndexOf_ShouldWork()
         {
-
             var item1 = new IntPrimaryKeyWithValueObject { Id = 1, StringValue = "BBB" };
             var item2 = new IntPrimaryKeyWithValueObject { Id = 2, StringValue = "AAA" };
             _realm.Write(() =>

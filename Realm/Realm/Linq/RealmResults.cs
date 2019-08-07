@@ -74,6 +74,8 @@ namespace Realms
 
         public override int IndexOf(T value)
         {
+            Argument.NotNull(value, nameof(value));
+
             if (_argumentType != (PropertyType.Object | PropertyType.Nullable))
             {
                 throw new NotSupportedException("IndexOf on non-object results is not supported.");
