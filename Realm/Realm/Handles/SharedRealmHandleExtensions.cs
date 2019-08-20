@@ -173,22 +173,15 @@ namespace Realms.Sync
 
             var tcs = new TaskCompletionSource<IntPtr>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            try
-            {
-                var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
-                // TODO: convert asyncTaskHandle to something meaningful.
-                nativeException.ThrowIfNecessary();
+            var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+            // TODO: convert asyncTaskHandle to something meaningful.
+            nativeException.ThrowIfNecessary();
 
-                var referenceHandle = await tcs.Task;
+            var referenceHandle = await tcs.Task;
 
-                // TODO: investigate why converting to ThreadSafeReference handle fails on destroy
-                var realmPtr = SharedRealmHandle.ResolveFromReference(referenceHandle);
-                return new SharedRealmHandle(realmPtr);
-            }
-            finally
-            {
-                tcsHandle.Free();
-            }
+            // TODO: investigate why converting to ThreadSafeReference handle fails on destroy
+            var realmPtr = SharedRealmHandle.ResolveFromReference(referenceHandle);
+            return new SharedRealmHandle(realmPtr);
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
