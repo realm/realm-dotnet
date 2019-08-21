@@ -6,6 +6,24 @@ vNEXT (TBD)
 
 ### Fixed
 * Fixed an infinite recursion when calling `RealmCollectionBase<T>.IndexOf`. (Issue [#1892](https://github.com/realm/realm-dotnet/issues/1892))
+x.y.z (TBD)
+------------------
+
+### Breaking Changes
+* None.
+
+### Enhancements
+* Exposed an API - `SyncConfigurationBase.EnableSessionMultiplexing()` that allows toggling session multiplexing on the sync client.
+
+### Fixed
+* None.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* Upgraded Sync from 4.7.0 to 4.7.1.
+* Implemented direct access to sync workers on Cloud, bypassing the Sync Proxy: the binding will override the sync session's url prefix if the token refresh response for a realm contains a sync worker path field.
 
 4.1.0 (2019-08-06)
 ------------------

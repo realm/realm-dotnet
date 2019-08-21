@@ -72,9 +72,18 @@ namespace Realms.Sync
                 var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(user.ServerUri, "auth"), json)
                                         .ConfigureAwait(continueOnCapturedContext: false);
 
-                var accessToken = result["access_token"];
+                var syncWorker = result["sync_worker"];
+                if (syncWorker != null)
+                {
+                    session.Handle.SetUrlPrefix(syncWorker["path"].Value<string>());
+                }
 
-                session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), accessToken["token_data"]["path"].Value<string>());
+                var accessToken = result["access_token"];
+                var token_data = accessToken["token_data"];
+
+                session.Handle.SetMultiplexIdentifier(token_data["sync_label"].Value<string>());
+
+                session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), token_data["path"].Value<string>());
                 ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
             }
             catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))

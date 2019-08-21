@@ -196,5 +196,21 @@ REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, Nati
     });
 }
 
+REALM_EXPORT void realm_syncsession_set_multiplex_identifier(const SharedSyncSession& session, const uint16_t* identifier_buf, size_t identifier_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor identifier(identifier_buf, identifier_len);
+        session->set_multiplex_identifier(identifier);
+    });
+}
+
+REALM_EXPORT void realm_syncsession_set_url_prefix(const SharedSyncSession& session, const uint16_t* prefix_buf, size_t prefix_len, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&] {
+        Utf16StringAccessor prefix(prefix_buf, prefix_len);
+        session->set_url_prefix(prefix);
+    });
+}
+
 }
 

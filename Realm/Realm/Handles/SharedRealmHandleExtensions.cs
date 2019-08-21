@@ -111,6 +111,9 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_object_privileges", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern byte get_object_privileges(SharedRealmHandle handle, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_enable_session_multiplexing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void enable_session_multiplexing(out NativeException ex);
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -162,6 +165,12 @@ namespace Realms.Sync
             {
                 Configure(null, null, false);
             }
+        }
+
+        public static void EnableSessionMultiplexing()
+        {
+            NativeMethods.enable_session_multiplexing(out var nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public static unsafe void Configure(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)

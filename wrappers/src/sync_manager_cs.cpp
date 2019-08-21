@@ -263,5 +263,12 @@ REALM_EXPORT uint8_t realm_syncmanager_get_object_privileges(SharedRealm& shared
     });
 }
 
+REALM_EXPORT void realm_syncmanager_enable_session_multiplexing(NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        SyncManager::shared().enable_session_multiplexing();
+    });
+}
+
 }
 
