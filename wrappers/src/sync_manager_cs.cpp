@@ -43,6 +43,7 @@ using namespace realm;
 using namespace realm::binding;
 
 using LogMessageDelegate = void(const char* message, size_t message_len, util::Logger::Level level);
+using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 
 namespace realm {
 namespace binding {
@@ -190,7 +191,7 @@ REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
     return SyncManager::shared().log_level();
 }
     
-REALM_EXPORT std::shared_ptr<AsyncOpenTask>* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
@@ -209,7 +210,7 @@ REALM_EXPORT std::shared_ptr<AsyncOpenTask>* shared_realm_open_with_sync_async(C
             }
         });
         
-        return new std::shared_ptr<AsyncOpenTask>(task);
+        return new SharedAsyncOpenTask(task);
     });
 }
 

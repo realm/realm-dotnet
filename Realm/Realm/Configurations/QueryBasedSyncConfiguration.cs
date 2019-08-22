@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Threading.Tasks;
 using Realms.Schema;
+using System;
 
 namespace Realms.Sync
 {
@@ -66,7 +65,7 @@ namespace Realms.Sync
         {
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
+        internal override AsyncOpenTask CreateRealmAsync(RealmSchema schema)
         {
             schema = RealmSchema.CreateSchemaForClasses(_queryBasedPermissionTypes, schema);
             return base.CreateRealmAsync(schema);

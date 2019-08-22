@@ -87,6 +87,7 @@ namespace Realms.Sync
         /// progress is made during the lifetime of the Realm. It is ignored when using
         /// <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
         /// </summary>
+        [Obsolete("Use AsyncOpenTask.GetProgressObservable")]
         public Action<SyncProgress> OnProgress { get; set; }
 
         /// <summary>
@@ -207,7 +208,7 @@ namespace Realms.Sync
             return new Realm(srHandle, this, schema);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
+        internal override AsyncOpenTask CreateRealmAsync(RealmSchema schema)
         {
             var configuration = new Realms.Native.Configuration
             {
@@ -216,13 +217,17 @@ namespace Realms.Sync
                 enable_cache = EnableCache
             };
 
-            var handle = await SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey);
-            if (IsDynamic && !schema.Any())
+            var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
+            var handle = SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcs);
+            return new AsyncOpenTask(handle, tcs, (srHandle) =>
             {
-                handle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
-            }
+                if (IsDynamic && !schema.Any())
+                {
+                    srHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                }
 
-            return new Realm(handle, this, schema);
+                return new Realm(srHandle, this, schema);
+            });
         }
 
         internal Native.SyncConfiguration ToNative()

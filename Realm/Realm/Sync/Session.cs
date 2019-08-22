@@ -101,7 +101,16 @@ namespace Realms.Sync
         /// </example>
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode)
         {
-            return new SyncProgressObservable(this, direction, mode);
+            return new SyncProgressObservable(
+                register: (ptr) =>
+                {
+                    return Handle.RegisterProgressNotifier(ptr, direction, mode);
+                },
+                unregister: (nativeToken) =>
+                {
+                    Handle.UnregisterProgressNotifier(nativeToken);
+                },
+                isIndefinite: mode == ProgressMode.ReportIndefinitely);
         }
 
         /// <summary>

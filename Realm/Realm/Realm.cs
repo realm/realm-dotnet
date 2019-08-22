@@ -93,7 +93,7 @@ namespace Realms
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
-        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null)
+        public static AsyncOpenTask GetInstanceAsync(RealmConfigurationBase config = null)
         {
             if (config == null)
             {
@@ -187,7 +187,7 @@ namespace Realms
                    state.GetLiveRealms().Any();
         }
 
-        #endregion
+        #endregion static
 
         private State _state;
 
@@ -943,7 +943,7 @@ namespace Realms
             return new RealmResults<T>(this, reference.Metadata, resultsHandle);
         }
 
-        #endregion
+        #endregion Thread Handover
 
         /// <summary>
         /// Removes a persistent object from this Realm, effectively deleting it.
@@ -1080,7 +1080,7 @@ namespace Realms
             }
         }
 
-        #endregion
+        #endregion Transactions
 
         internal class State
         {

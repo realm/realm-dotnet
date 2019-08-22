@@ -16,6 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Exceptions;
+using Realms.Native;
+using Realms.Schema;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +28,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Exceptions;
-using Realms.Native;
-using Realms.Schema;
-using Realms.Sync.Exceptions;
-using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
@@ -165,23 +165,17 @@ namespace Realms.Sync
             return new SharedRealmHandle(result);
         }
 
-        public static async Task<SharedRealmHandle> OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, TaskCompletionSource<ThreadSafeReferenceHandle> tcs)
         {
             DoInitialFileSystemConfiguration();
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
-            var tcs = new TaskCompletionSource<IntPtr>();
             var tcsHandle = GCHandle.Alloc(tcs);
-            var asyncTaskHandle = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
-            // TODO: convert asyncTaskHandle to something meaningful.
+            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
             nativeException.ThrowIfNecessary();
-
-            var referenceHandle = await tcs.Task;
-
-            // TODO: investigate why converting to ThreadSafeReference handle fails on destroy
-            var realmPtr = SharedRealmHandle.ResolveFromReference(referenceHandle);
-            return new SharedRealmHandle(realmPtr);
+            var asyncTaskHandle = new AsyncOpenTaskHandle(asyncTaskPtr);
+            return asyncTaskHandle;
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
@@ -390,14 +384,14 @@ namespace Realms.Sync
         private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<IntPtr>)handle.Target;
+            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
 
             try
             {
                 if (error_code == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("Thread on Opened: " + Environment.CurrentManagedThreadId);
-                    tcs.TrySetResult(realm_reference);
+                    tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
                 }
                 else
                 {

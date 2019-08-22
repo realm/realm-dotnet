@@ -21,9 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
 
@@ -535,6 +533,7 @@ namespace Realms.Tests.Database
 #if WINDOWS_UWP
         [Ignore("Locks on .NET Native")]
 #endif
+
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()
         {
@@ -565,7 +564,7 @@ namespace Realms.Tests.Database
 
                 Exception ex = null;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Realm.GetInstanceAsync(config)
+                Realm.GetInstanceAsync(config).GetRealmAsync()
                      .ContinueWith(t =>
                      {
                          if (t.IsFaulted)

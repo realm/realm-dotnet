@@ -24,44 +24,41 @@ namespace Realms.Sync
 {
     internal class SyncProgressObservable : IObservable<SyncProgress>
     {
-        private readonly Session _session;
-        private readonly ProgressDirection _direction;
-        private readonly ProgressMode _mode;
+        private readonly Func<IntPtr, ulong> _register;
+        private readonly Action<ulong> _unregister;
+        private readonly bool _isIndefinite;
 
-        public SyncProgressObservable(Session session, ProgressDirection direction, ProgressMode mode)
+        public SyncProgressObservable(Func<IntPtr, ulong> register, Action<ulong> unregister, bool isIndefinite = false)
         {
-            _session = session;
-            _direction = direction;
-            _mode = mode;
+            _register = register;
+            _unregister = unregister;
+            _isIndefinite = isIndefinite;
         }
 
         public IDisposable Subscribe(IObserver<SyncProgress> observer)
         {
-            return new ProgressNotificationToken(_session, observer, _direction, _mode);
+            return new ProgressNotificationToken(observer, _register, _unregister, _isIndefinite);
         }
 
         public class ProgressNotificationToken : IDisposable
         {
             private readonly ulong _nativeToken;
-            private readonly ProgressMode _mode;
             private readonly GCHandle _gcHandle;
+            private readonly IObserver<SyncProgress> _observer;
+            private readonly Action<ulong> _unregister;
+            private readonly bool _isIndefinite;
 
             private bool isDisposed;
-            private Session _session;
-            private IObserver<SyncProgress> _observer;
 
-            public ProgressNotificationToken(Session session,
-                                             IObserver<SyncProgress> observer,
-                                             ProgressDirection direction,
-                                             ProgressMode mode)
+            public ProgressNotificationToken(IObserver<SyncProgress> observer, Func<IntPtr, ulong> register, Action<ulong> unregister, bool isIndefinite)
             {
-                _session = session;
                 _observer = observer;
-                _mode = mode;
                 _gcHandle = GCHandle.Alloc(this);
+                _unregister = unregister;
+                _isIndefinite = isIndefinite;
                 try
                 {
-                    _nativeToken = _session.Handle.RegisterProgressNotifier(GCHandle.ToIntPtr(_gcHandle), direction, mode);
+                    _nativeToken = register(GCHandle.ToIntPtr(_gcHandle));
                 }
                 catch
                 {
@@ -75,9 +72,7 @@ namespace Realms.Sync
                 Task.Run(() =>
                 {
                     _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
-
-                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork &&
-                        transferredBytes >= transferableBytes)
+                    if (!_isIndefinite && transferredBytes == transferableBytes)
                     {
                         _observer.OnCompleted();
                     }
@@ -91,11 +86,8 @@ namespace Realms.Sync
                     GC.SuppressFinalize(this);
 
                     isDisposed = true;
-
-                    _session.Handle.UnregisterProgressNotifier(_nativeToken);
+                    _unregister(_nativeToken);
                     _gcHandle.Free();
-                    _session = null;
-                    _observer = null;
                 }
             }
         }

@@ -266,6 +266,11 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReferenceBase* referen
 {
     delete reference;
 }
+
+REALM_EXPORT void realm_thread_safe_reference_destroy(ThreadSafeReference<Realm>* reference)
+{
+    delete reference;
+}
     
 REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, size_t path_len, char* encryption_key, NativeException::Marshallable& ex)
 {
