@@ -18,8 +18,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
@@ -1218,6 +1220,74 @@ namespace Realms.Tests.Database
 
             Assert.That(notNullTopDogs.Length, Is.EqualTo(1));
             Assert.That(notNullTopDogs.Single(), Is.Not.EqualTo(ivar));
+        }
+
+        [Test]
+        public void Queryable_IndexOf_ShouldWork()
+        {
+            var item1 = new IntPrimaryKeyWithValueObject { Id = 1, StringValue = "BBB" };
+            var item2 = new IntPrimaryKeyWithValueObject { Id = 2, StringValue = "AAA" };
+            _realm.Write(() =>
+            {
+                _realm.RemoveAll<IntPrimaryKeyWithValueObject>();
+
+                _realm.Add(item1);
+                _realm.Add(item2);
+            });
+
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            Assert.That(query.IndexOf(item1), Is.Zero);
+            Assert.That(query.IndexOf(item2), Is.EqualTo(1));
+
+            var sortedQuery = _realm.All<IntPrimaryKeyWithValueObject>().OrderBy(i => i.StringValue).AsRealmCollection();
+            Assert.That(sortedQuery.IndexOf(item2), Is.Zero);
+            Assert.That(sortedQuery.IndexOf(item1), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Queryable_IndexOf_WhenObjectIsNotManaged_ShouldThrow()
+        {
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            var nonManagedItem = new IntPrimaryKeyWithValueObject();
+            Assert.That(() => query.IndexOf(nonManagedItem), Throws.InstanceOf<ArgumentException>());
+        }
+
+        [Test]
+        public void Queryable_IndexOf_WhenObjectBelongsToADifferentRealm_ShouldThrow()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName());
+            try
+            {
+                using (var otherRealm = Realm.GetInstance(config))
+                {
+                    var otherRealmItem = new IntPrimaryKeyWithValueObject { Id = 1 };
+                    otherRealm.Write(() =>
+                    {
+                        otherRealm.Add(otherRealmItem);
+                    });
+
+                    var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+                    Assert.That(() => query.IndexOf(otherRealmItem), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
+        }
+
+        [Test]
+        public void Queryable_IndexOf_WhenNull_ShouldThrow()
+        {
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            Assert.That(() => query.IndexOf(null), Throws.InstanceOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void Queryable_IndexOf_WhenDifferentType_ShouldThrow()
+        {
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            Assert.That(() => query.IndexOf(123), Throws.InstanceOf<ArgumentException>());
         }
 
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()

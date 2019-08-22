@@ -380,9 +380,15 @@ namespace Realms
 
         public virtual void Clear() => throw new NotSupportedException();
 
-        public abstract bool Contains(object value);
+        public bool Contains(object value) => IndexOf(value) > -1;
 
-        public abstract int IndexOf(object value);
+        public int IndexOf(object value)
+        {
+            Argument.Ensure(value == null || value is T, $"value must be of type {typeof(T).FullName}, but got {value.GetType().FullName}", nameof(value));
+            return IndexOf((T)value);
+        }
+
+        public abstract int IndexOf(T value);
 
         public virtual void Insert(int index, object value) => throw new NotSupportedException();
 

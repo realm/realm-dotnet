@@ -1,3 +1,12 @@
+vNEXT (TBD)
+------------------
+
+### Enhancements
+* Added `int IndexOf(object)` and `bool Contains(object)` to the `IRealmCollection` interface. (PR [#1893](https://github.com/realm/realm-dotnet/issues/1893))
+
+### Fixed
+* Fixed an infinite recursion when calling `RealmCollectionBase<T>.IndexOf`. (Issue [#1892](https://github.com/realm/realm-dotnet/issues/1892))
+
 4.1.0 (2019-08-06)
 ------------------
 

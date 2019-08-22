@@ -119,12 +119,7 @@ namespace Realms
             _listHandle.Clear();
         }
 
-        public bool Contains(T item)
-        {
-            return IndexOf(item) > -1;
-        }
-
-        public override bool Contains(object value) => Contains((T)value);
+        public bool Contains(T item) => Contains((object)item);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -149,30 +144,30 @@ namespace Realms
             }
         }
 
-        public int IndexOf(T item)
+        public override int IndexOf(T value)
         {
             switch (_argumentType)
             {
                 case PropertyType.Object | PropertyType.Nullable:
-                    var obj = Operator.Convert<T, RealmObject>(item);
+                    Argument.NotNull(value, nameof(value));
+
+                    var obj = Operator.Convert<T, RealmObject>(value);
                     if (!obj.IsManaged)
                     {
-                        throw new ArgumentException("Value does not belong to a realm", nameof(item));
+                        throw new ArgumentException("Value does not belong to a realm", nameof(value));
                     }
 
                     return _listHandle.Find(obj.ObjectHandle);
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, string>(item));
+                    return _listHandle.Find(Operator.Convert<T, string>(value));
                 case PropertyType.Data:
                 case PropertyType.Data | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, byte[]>(item));
+                    return _listHandle.Find(Operator.Convert<T, byte[]>(value));
                 default:
-                    return _listHandle.Find(PrimitiveValue.Create(item, _argumentType));
+                    return _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
             }
         }
-
-        public override int IndexOf(object value) => IndexOf((T)value);
 
         public void Insert(int index, T item)
         {

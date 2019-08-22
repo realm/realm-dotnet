@@ -321,6 +321,10 @@ REALM_EXPORT size_t list_get_binary(List* list, size_t ndx, char* return_buffer,
 REALM_EXPORT size_t list_find_object(List* list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+		if (list->get_realm() != object_ptr.realm()) {
+			throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+		}
+
         return list->find(object_ptr.row());
     });
 }
