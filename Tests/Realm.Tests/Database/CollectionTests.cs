@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Nito.AsyncEx;
 using NUnit.Framework;
@@ -614,6 +615,35 @@ namespace Realms.Tests.Database
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
                 Throws.TypeOf<RealmException>().And.Message.Contains("No property 'Foo' on object of type 'A'"));
+        }
+
+        [Test]
+        public void List_IndexOf_WhenObjectBelongsToADifferentRealm_ShouldThrow()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName());
+            try
+            {
+                var owner = new Owner();
+                _realm.Write(() =>
+                {
+                    _realm.Add(owner);
+                });
+
+                using (var otherRealm = Realm.GetInstance(config))
+                {
+                    var otherRealmDog = new Dog();
+                    otherRealm.Write(() =>
+                    {
+                        otherRealm.Add(otherRealmDog);
+                    });
+
+                    Assert.That(() => owner.Dogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
+                }
+            }
+            finally
+            {
+                Realm.DeleteRealm(config);
+            }
         }
 
         private void PopulateAObjects(params int[] values)

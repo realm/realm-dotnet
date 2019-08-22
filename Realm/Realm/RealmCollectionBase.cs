@@ -384,12 +384,8 @@ namespace Realms
 
         public int IndexOf(object value)
         {
-            if (!(value is T tValue))
-            {
-                return -1;
-            }
-
-            return IndexOf(tValue);
+            Argument.Ensure(value == null || value is T, $"value must be of type {typeof(T).FullName}, but got {value.GetType().FullName}", nameof(value));
+            return IndexOf((T)value);
         }
 
         public abstract int IndexOf(T value);
