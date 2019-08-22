@@ -1,22 +1,15 @@
 vNEXT (TBD)
 ------------------
 
-### Enhancements
-* Added `int IndexOf(object)` and `bool Contains(object)` to the `IRealmCollection` interface. (PR [#1893](https://github.com/realm/realm-dotnet/issues/1893))
-
-### Fixed
-* Fixed an infinite recursion when calling `RealmCollectionBase<T>.IndexOf`. (Issue [#1892](https://github.com/realm/realm-dotnet/issues/1892))
-x.y.z (TBD)
-------------------
-
 ### Breaking Changes
 * None.
 
 ### Enhancements
+* Added `int IndexOf(object)` and `bool Contains(object)` to the `IRealmCollection` interface. (PR [#1893](https://github.com/realm/realm-dotnet/issues/1893))
 * Exposed an API - `SyncConfigurationBase.EnableSessionMultiplexing()` that allows toggling session multiplexing on the sync client.
 
 ### Fixed
-* None.
+* Fixed an infinite recursion when calling `RealmCollectionBase<T>.IndexOf`. (Issue [#1892](https://github.com/realm/realm-dotnet/issues/1892))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
