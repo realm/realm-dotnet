@@ -82,7 +82,7 @@ namespace Realms
             }
 
             var obj = Operator.Convert<T, RealmObject>(value);
-            if (!obj.IsManaged || obj.Realm.IsSameInstance(Realm))
+            if (!obj.IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
             }
@@ -90,6 +90,6 @@ namespace Realms
             return ResultsHandle.Find(obj.ObjectHandle);
         }
 
-        #endregion
+        #endregion IList members
     }
 }
