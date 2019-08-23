@@ -94,7 +94,7 @@ namespace Realms
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
-        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken? cancellationToken = null)
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken cancellationToken = default)
         {
             if (config == null)
             {
