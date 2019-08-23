@@ -189,7 +189,7 @@ REALM_EXPORT util::Logger::Level realm_syncmanager_get_log_level()
 {
     return SyncManager::shared().log_level();
 }
-    
+
 REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -304,4 +304,3 @@ REALM_EXPORT uint8_t realm_syncmanager_get_object_privileges(SharedRealm& shared
 }
 
 }
-

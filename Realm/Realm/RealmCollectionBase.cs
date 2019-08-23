@@ -143,12 +143,15 @@ namespace Realms
                         }
 
                         return Operator.Convert<RealmObject, T>(Realm.MakeObject(Metadata, objectHandle));
+
                     case PropertyType.String:
                     case PropertyType.String | PropertyType.Nullable:
                         return Operator.Convert<string, T>(Handle.Value.GetStringAtIndex(index));
+
                     case PropertyType.Data:
                     case PropertyType.Data | PropertyType.Nullable:
                         return Operator.Convert<byte[], T>(Handle.Value.GetByteArrayAtIndex(index));
+
                     default:
                         return Handle.Value.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
                 }

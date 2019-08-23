@@ -25,16 +25,16 @@ namespace Realms
     {
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_destroy", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_asyncopentask_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr asyncTaskHandle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_cancel", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_asyncopentask_cancel", CallingConvention = CallingConvention.Cdecl)]
             public static extern void cancel(AsyncOpenTaskHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_register_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_asyncopentask_register_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern ulong register_progress_notifier(AsyncOpenTaskHandle handle, IntPtr token_ptr, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_asyncopentask_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(AsyncOpenTaskHandle handle, ulong token, out NativeException ex);
         }
 

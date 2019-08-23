@@ -63,7 +63,7 @@ REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t*
         options.time_to_live_ms = optional_ttl;
         options.update = update;
         options.inclusions = inclusion_paths;
-        
+
         auto result = realm::partial_sync::subscribe(results, options);
         return new Subscription(std::move(result));
     });

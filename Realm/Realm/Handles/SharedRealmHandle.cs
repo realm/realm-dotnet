@@ -258,12 +258,15 @@ namespace Realms
                 case ThreadSafeReference.Type.Object:
                     result = NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException);
                     break;
+
                 case ThreadSafeReference.Type.List:
                     result = NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException);
                     break;
+
                 case ThreadSafeReference.Type.Query:
                     result = NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException);
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -306,9 +309,11 @@ namespace Realms
                 case PropertyType.String:
                     var stringKey = (string)primaryKey;
                     return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+
                 case PropertyType.Int:
                     var longKey = primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey);
                     return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
+
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }

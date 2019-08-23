@@ -67,7 +67,7 @@ namespace Realms.Tests.Server
 
                     var containsNewRealm = await TestHelpers.EnsureAsync(() => paths.Contains($"/{userId5}/newlyaddedrealm"),
                                                                          retryDelay: 100,
-                                                                         attempts: 100); // 1 second
+                                                                         attempts: 100); // 10 seconds
 
                     Assert.True(containsNewRealm);
                 }

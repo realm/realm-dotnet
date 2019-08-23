@@ -213,22 +213,24 @@ namespace Realms.Tests.Sync
                 // Update config to make sure we're not opening the same Realm file.
                 config = new FullSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "1");
 
-                var cts = new CancellationTokenSource();
-                var _ = Task.Run(async () =>
+                using (var cts = new CancellationTokenSource())
                 {
-                    await Task.Delay(1);
-                    cts.Cancel();
-                });
+                    var _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(1);
+                        cts.Cancel();
+                    });
 
-                try
-                {
-                    var realm = await Realm.GetInstanceAsync(config, cts.Token);
-                    CleanupOnTearDown(realm);
-                    Assert.Fail("Expected task to be cancelled.");
-                }
-                catch (Exception ex)
-                {
-                    Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
+                    try
+                    {
+                        var realm = await Realm.GetInstanceAsync(config, cts.Token);
+                        CleanupOnTearDown(realm);
+                        Assert.Fail("Expected task to be cancelled.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
+                    }
                 }
             });
         }

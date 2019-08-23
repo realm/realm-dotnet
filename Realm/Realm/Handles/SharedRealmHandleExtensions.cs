@@ -387,7 +387,6 @@ namespace Realms.Sync
 
             if (error_code == 0)
             {
-                System.Diagnostics.Debug.WriteLine("Thread on Opened: " + Environment.CurrentManagedThreadId);
                 tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
             }
             else
