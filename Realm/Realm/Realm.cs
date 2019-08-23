@@ -115,7 +115,7 @@ namespace Realms
                 schema = RealmSchema.Default;
             }
 
-            return config.CreateRealmAsync(schema, cancellationToken ?? CancellationToken.None);
+            return config.CreateRealmAsync(schema, cancellationToken);
         }
 
         internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
