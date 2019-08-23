@@ -131,10 +131,10 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public ulong RegisterProgressNotifier(IntPtr tokenPtr, ProgressDirection direction, ProgressMode mode)
+        public ulong RegisterProgressNotifier(GCHandle managedHandle, ProgressDirection direction, ProgressMode mode)
         {
             var isStreaming = mode == ProgressMode.ReportIndefinitely;
-            var token = NativeMethods.register_progress_notifier(this, tokenPtr, direction, isStreaming, out var ex);
+            var token = NativeMethods.register_progress_notifier(this, GCHandle.ToIntPtr(managedHandle), direction, isStreaming, out var ex);
             ex.ThrowIfNecessary();
             return token;
         }

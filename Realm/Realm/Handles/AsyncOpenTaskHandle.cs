@@ -32,9 +32,7 @@ namespace Realms
             public static extern void cancel(AsyncOpenTaskHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_register_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
-            public static extern ulong register_progress_notifier(AsyncOpenTaskHandle handle,
-                                                                  IntPtr token_ptr,
-                                                                  out NativeException ex);
+            public static extern ulong register_progress_notifier(AsyncOpenTaskHandle handle, IntPtr token_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_async_open_task_unregister_progress_notifier", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unregister_progress_notifier(AsyncOpenTaskHandle handle, ulong token, out NativeException ex);
@@ -55,9 +53,9 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public ulong RegisterProgressNotifier(IntPtr tokenPtr)
+        public ulong RegisterProgressNotifier(GCHandle managedHandle)
         {
-            var token = NativeMethods.register_progress_notifier(this, tokenPtr, out var ex);
+            var token = NativeMethods.register_progress_notifier(this, GCHandle.ToIntPtr(managedHandle), out var ex);
             ex.ThrowIfNecessary();
             return token;
         }

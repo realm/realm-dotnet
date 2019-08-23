@@ -21,29 +21,16 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "sync/async_open_task.hpp"
+#include "sync_session_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 
-namespace realm {
-namespace binding {
-	void (*s_async_open_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
-}
-}
-
-
 extern "C" {
-REALM_EXPORT void realm_install_async_open_task_callbacks(decltype(s_async_open_callback) async_open_callback)
+REALM_EXPORT void realm_async_open_task_destroy(SharedAsyncOpenTask* task)
 {
-	s_async_open_callback = async_open_callback;
-}
-
-REALM_EXPORT void realm_async_open_task_destroy(SharedAsyncOpenTask* task, NativeException::Marshallable& ex)
-{
-	handle_errors(ex, [&] {
-		delete task;
-	});
+	delete task;
 }
 
 REALM_EXPORT void realm_async_open_task_cancel(SharedAsyncOpenTask& task, NativeException::Marshallable& ex)
@@ -53,12 +40,20 @@ REALM_EXPORT void realm_async_open_task_cancel(SharedAsyncOpenTask& task, Native
 	});
 }
 
-REALM_EXPORT uint64_t realm_async_open_task_register_progress_notifier(const SharedAsyncOpenTask& task, size_t managed_state, NativeException::Marshallable& ex)
+REALM_EXPORT uint64_t realm_async_open_task_register_progress_notifier(const SharedAsyncOpenTask& task, void* managed_state, NativeException::Marshallable& ex)
 {
 	return handle_errors(ex, [&] {
 		return task->register_download_progress_notifier([managed_state](uint64_t transferred, uint64_t transferable) {
-				s_async_open_callback(managed_state, transferred, transferable);
-			});
+			s_progress_callback(managed_state, transferred, transferable);
+		});
 	});
 }
+
+REALM_EXPORT void realm_async_open_task_unregister_progress_notifier(const SharedAsyncOpenTask& task, uint64_t token, NativeException::Marshallable& ex)
+{
+	return handle_errors(ex, [&] {
+		task->unregister_download_progress_notifier(token);
+	});
+}
+
 }

@@ -564,7 +564,7 @@ namespace Realms.Tests.Database
 
                 Exception ex = null;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Realm.GetInstanceAsync(config).GetRealmAsync()
+                Realm.GetInstanceAsync(config)
                      .ContinueWith(t =>
                      {
                          if (t.IsFaulted)

@@ -19,8 +19,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
@@ -30,11 +30,12 @@ using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
     [TestFixture, Preserve(AllMembers = true)]
     public class SynchronizedInstanceTests : SyncTestBase
     {
+        private const int OneMegabyte = 1024 * 1024;
+        private const int NumberOfObjects = 20;
+
         [TestCase(true, true)]
         [TestCase(true, false)]
         [TestCase(false, true)]
@@ -178,41 +179,56 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
-                var realmPath = Guid.NewGuid().ToString();
-                var user = await SyncTestHelpers.GetUserAsync();
-                var config = new FullSyncConfiguration(new Uri($"/~/{realmPath}", UriKind.Relative), user, Guid.NewGuid().ToString());
-                const int ObjectSize = 1000000;
-                const int ObjectsToRecord = 20;
-                using (var realm = GetRealm(config))
-                {
-                    for (var i = 0; i < ObjectsToRecord; i++)
-                    {
-                        realm.Write(() =>
-                        {
-                            realm.Add(new HugeSyncObject(ObjectSize));
-                        });
-                    }
-
-                    await SyncTestHelpers.WaitForSyncAsync(realm);
-                }
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
+                await PopulateData(config);
 
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = new FullSyncConfiguration(new Uri($"/~/{realmPath}", UriKind.Relative), user, Guid.NewGuid().ToString())
+                config = new FullSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "1")
                 {
                     OnProgress = (progress) =>
                     {
                         callbacksInvoked++;
-                        lastProgress = progress; 
+                        lastProgress = progress;
                     }
                 };
 
                 using (var realm = await GetRealmAsync(config))
                 {
-                    Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(ObjectsToRecord));
+                    Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                     Assert.That(callbacksInvoked, Is.GreaterThan(0));
                     Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
+                }
+            });
+        }
+
+        [Test]
+        public void GetInstanceAsync_Cancel_ShouldCancelWait()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
+                await PopulateData(config);
+                // Update config to make sure we're not opening the same Realm file.
+                config = new FullSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "1");
+
+                var cts = new CancellationTokenSource();
+                var _ = Task.Run(async () =>
+                {
+                    await Task.Delay(1);
+                    cts.Cancel();
+                });
+
+                try
+                {
+                    var realm = await Realm.GetInstanceAsync(config, cts.Token);
+                    CleanupOnTearDown(realm);
+                    Assert.Fail("Expected task to be cancelled.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
                 }
             });
         }
@@ -314,6 +330,22 @@ namespace Realms.Tests.Sync
             if (singleTransaction)
             {
                 currentTransaction.Commit();
+            }
+        }
+
+        private async Task PopulateData(FullSyncConfiguration config)
+        {
+            using (var realm = GetRealm(config))
+            {
+                realm.Write(() =>
+                {
+                    for (var i = 0; i < NumberOfObjects; i++)
+                    {
+                        realm.Add(new HugeSyncObject(OneMegabyte));
+                    }
+                });
+
+                await GetSession(realm).WaitForUploadAsync();
             }
         }
 

@@ -16,11 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Exceptions;
-using Realms.Native;
-using Realms.Schema;
-using Realms.Sync.Exceptions;
-using Realms.Sync.Native;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +23,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Exceptions;
+using Realms.Native;
+using Realms.Schema;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Sync
 {
@@ -165,13 +165,12 @@ namespace Realms.Sync
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, TaskCompletionSource<ThreadSafeReferenceHandle> tcs)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
         {
             DoInitialFileSystemConfiguration();
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
-            var tcsHandle = GCHandle.Alloc(tcs);
             var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
             nativeException.ThrowIfNecessary();
             var asyncTaskHandle = new AsyncOpenTaskHandle(asyncTaskPtr);
@@ -351,7 +350,7 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
-            var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
+            var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
             token.Notify(transferredBytes, transferableBytes);
         }
 
@@ -386,23 +385,16 @@ namespace Realms.Sync
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
 
-            try
+            if (error_code == 0)
             {
-                if (error_code == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("Thread on Opened: " + Environment.CurrentManagedThreadId);
-                    tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
-                }
-                else
-                {
-                    var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                    const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details";
-                    tcs.TrySetException(new RealmException(OuterMessage, inner));
-                }
+                System.Diagnostics.Debug.WriteLine("Thread on Opened: " + Environment.CurrentManagedThreadId);
+                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
             }
-            finally
+            else
             {
-                handle.Free();
+                var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
+                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details";
+                tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }
 

@@ -43,5 +43,7 @@ namespace Realms.Sync
             TransferredBytes = transferred;
             TransferableBytes = transferable;
         }
+
+        internal bool IsComplete => TransferableBytes == TransferredBytes;
     }
 }

@@ -167,22 +167,21 @@ namespace Realms
             return new Realm(srHandle, this, schema);
         }
 
-        internal override AsyncOpenTask CreateRealmAsync(RealmSchema schema)
+        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (AsyncHelper.TryGetScheduler(out var scheduler))
             {
-                var cts = new CancellationTokenSource();
-                return new AsyncOpenTask(Task.Run(() =>
+                return Task.Run(() =>
                 {
                     using (CreateRealm(schema))
                     {
                     }
-                }, cts.Token).ContinueWith(_ => CreateRealm(schema), scheduler), cts);
+                }, cancellationToken).ContinueWith(_ => CreateRealm(schema), scheduler);
             }
 
-            return new AsyncOpenTask(CreateRealm(schema));
+            return Task.FromResult(CreateRealm(schema));
         }
 
         [MonoPInvokeCallback(typeof(ShouldCompactCallback))]

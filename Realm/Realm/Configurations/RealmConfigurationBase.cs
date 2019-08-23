@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Schema;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -140,6 +142,6 @@ namespace Realms
 
         internal abstract Realm CreateRealm(RealmSchema schema);
 
-        internal abstract AsyncOpenTask CreateRealmAsync(RealmSchema schema);
+        internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
     }
 }

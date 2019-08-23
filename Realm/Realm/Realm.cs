@@ -93,7 +93,8 @@ namespace Realms
         /// </remarks>
         /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
         /// <param name="config">A configuration object that describes the realm.</param>
-        public static AsyncOpenTask GetInstanceAsync(RealmConfigurationBase config = null)
+        /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken? cancellationToken = null)
         {
             if (config == null)
             {
@@ -114,7 +115,7 @@ namespace Realms
                 schema = RealmSchema.Default;
             }
 
-            return config.CreateRealmAsync(schema);
+            return config.CreateRealmAsync(schema, cancellationToken ?? CancellationToken.None);
         }
 
         internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)

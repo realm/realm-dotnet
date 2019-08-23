@@ -18,6 +18,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Sync;
 
@@ -106,12 +107,12 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true)
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken? cancellationToken = null)
         {
             Realm result;
             if (openAsync)
             {
-                result = await Realm.GetInstanceAsync(config);
+                result = await Realm.GetInstanceAsync(config, cancellationToken);
             }
             else
             {

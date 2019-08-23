@@ -48,8 +48,7 @@ using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 namespace realm {
 namespace binding {
     void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference<Realm>* ref, int32_t error_code, const char* message, size_t message_len);
-
-    
+        
     class SyncLogger : public util::RootLogger {
     public:
         SyncLogger(LogMessageDelegate* delegate)

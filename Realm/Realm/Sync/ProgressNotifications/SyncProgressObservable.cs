@@ -17,79 +17,32 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
     internal class SyncProgressObservable : IObservable<SyncProgress>
     {
-        private readonly Func<IntPtr, ulong> _register;
-        private readonly Action<ulong> _unregister;
-        private readonly bool _isIndefinite;
+        private readonly Session _session;
+        private readonly ProgressDirection _direction;
+        private readonly ProgressMode _mode;
 
-        public SyncProgressObservable(Func<IntPtr, ulong> register, Action<ulong> unregister, bool isIndefinite = false)
+        public SyncProgressObservable(Session session, ProgressDirection direction, ProgressMode mode)
         {
-            _register = register;
-            _unregister = unregister;
-            _isIndefinite = isIndefinite;
+            _session = session;
+            _direction = direction;
+            _mode = mode;
         }
 
         public IDisposable Subscribe(IObserver<SyncProgress> observer)
         {
-            return new ProgressNotificationToken(observer, _register, _unregister, _isIndefinite);
-        }
-
-        public class ProgressNotificationToken : IDisposable
-        {
-            private readonly ulong _nativeToken;
-            private readonly GCHandle _gcHandle;
-            private readonly IObserver<SyncProgress> _observer;
-            private readonly Action<ulong> _unregister;
-            private readonly bool _isIndefinite;
-
-            private bool isDisposed;
-
-            public ProgressNotificationToken(IObserver<SyncProgress> observer, Func<IntPtr, ulong> register, Action<ulong> unregister, bool isIndefinite)
+            return new ProgressNotificationToken(progress =>
             {
-                _observer = observer;
-                _gcHandle = GCHandle.Alloc(this);
-                _unregister = unregister;
-                _isIndefinite = isIndefinite;
-                try
+                observer.OnNext(progress);
+                if (_mode == ProgressMode.ForCurrentlyOutstandingWork && progress.IsComplete)
                 {
-                    _nativeToken = register(GCHandle.ToIntPtr(_gcHandle));
+                    observer.OnCompleted();
                 }
-                catch
-                {
-                    _gcHandle.Free();
-                    throw;
-                }
-            }
-
-            public void Notify(ulong transferredBytes, ulong transferableBytes)
-            {
-                Task.Run(() =>
-                {
-                    _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
-                    if (!_isIndefinite && transferredBytes == transferableBytes)
-                    {
-                        _observer.OnCompleted();
-                    }
-                });
-            }
-
-            public void Dispose()
-            {
-                if (!isDisposed)
-                {
-                    GC.SuppressFinalize(this);
-
-                    isDisposed = true;
-                    _unregister(_nativeToken);
-                    _gcHandle.Free();
-                }
-            }
+            }, handle => _session.Handle.RegisterProgressNotifier(handle, _direction, _mode), _session.Handle.UnregisterProgressNotifier);
         }
     }
 }
