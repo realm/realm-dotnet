@@ -107,7 +107,7 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             Realm result;
             if (openAsync)
