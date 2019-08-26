@@ -29,6 +29,7 @@
 #include "schema_cs.hpp"
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
+#include "keypath_helpers.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -138,7 +139,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         parser::ParserResult result = parser::parse(query_string.to_string());
         
         parser::KeyPathMapping mapping;
-        alias_backlinks(mapping, realm);
+        realm::alias_backlinks(mapping, *realm);
         
         query_builder::NoArguments no_args;
         query_builder::apply_predicate(query, result.predicate, no_args, mapping);
@@ -172,12 +173,12 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
 
 REALM_EXPORT size_t results_find_object(Results& results, const Object& object_ptr, NativeException::Marshallable& ex)
 {
-	return handle_errors(ex, [&]() {
-		if (results.get_realm() != object_ptr.realm()) {
-			throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
-		}
-		return results.index_of(object_ptr.row());
-	});
+    return handle_errors(ex, [&]() {
+        if (results.get_realm() != object_ptr.realm()) {
+            throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+        }
+        return results.index_of(object_ptr.row());
+    });
 }
 
 }   // extern "C"

@@ -112,11 +112,7 @@ namespace Realms.Sync
         public Task WaitForUploadAsync()
         {
             var tcs = new TaskCompletionSource<object>();
-            if (!Handle.Wait(tcs, ProgressDirection.Upload))
-            {
-                throw new InvalidOperationException("Cannot register a wait callback on a session in the Error state");
-            }
-
+            Handle.Wait(tcs, ProgressDirection.Upload);
             return tcs.Task;
         }
 
@@ -128,11 +124,7 @@ namespace Realms.Sync
         public Task WaitForDownloadAsync()
         {
             var tcs = new TaskCompletionSource<object>();
-            if (!Handle.Wait(tcs, ProgressDirection.Download))
-            {
-                throw new InvalidOperationException("Cannot register a wait callback on a session in the Error state");
-            }
-
+            Handle.Wait(tcs, ProgressDirection.Download);
             return tcs.Task;
         }
 

@@ -33,19 +33,27 @@ namespace Realms.Sync
 {
     internal static class SharedRealmHandleExtensions
     {
-        // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
-        private static int _fileSystemConfigured;
-
         // We only save it to avoid allocating the GCHandle multiple times.
         private static readonly NativeMethods.LogMessageCallback _logCallback;
+
+        // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
+        private static int _fileSystemConfigured;
 
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Configuration configuration, Native.SyncConfiguration sync_configuration,
+            public static extern IntPtr open_with_sync(Configuration configuration, SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
+                out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
+                byte[] encryptionKey,
+                IntPtr task_completion_source,
                 out NativeException ex);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -63,12 +71,18 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void LogMessageCallback(byte* message_buf, IntPtr message_len, LogLevel logLevel);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, int error_code, byte* message_buf, IntPtr message_len);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_configure", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void configure([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_length,
                                                        [MarshalAs(UnmanagedType.LPWStr)] string user_agent, IntPtr user_agent_length,
                                                        UserPersistenceMode* userPersistence, byte[] encryptionKey,
                                                        [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
                                                        out NativeException exception);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncmanager_callbacks", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void install_syncmanager_callbacks(OpenRealmCallback open_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
@@ -84,7 +98,7 @@ namespace Realms.Sync
             public static extern void reconnect();
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
+            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
@@ -132,11 +146,17 @@ namespace Realms.Sync
 
             NativeMethods.install_syncsession_callbacks(refresh, error, progress, wait);
 
+            NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
+
+            GCHandle.Alloc(openRealm);
+
+            NativeMethods.install_syncmanager_callbacks(openRealm);
+
             _logCallback = HandleLogMessage;
             GCHandle.Alloc(_logCallback);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             DoInitialFileSystemConfiguration();
 
@@ -146,6 +166,18 @@ namespace Realms.Sync
             nativeException.ThrowIfNecessary();
 
             return new SharedRealmHandle(result);
+        }
+
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
+        {
+            DoInitialFileSystemConfiguration();
+
+            var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
+
+            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
+            nativeException.ThrowIfNecessary();
+            var asyncTaskHandle = new AsyncOpenTaskHandle(asyncTaskPtr);
+            return asyncTaskHandle;
         }
 
         public static string GetRealmPath(User user, Uri serverUri)
@@ -251,7 +283,7 @@ namespace Realms.Sync
             NativeMethods.reconnect();
         }
 
-        public static SessionHandle GetSession(string path, Native.SyncConfiguration configuration, byte[] encryptionKey)
+        public static SessionHandle GetSession(string path, SyncConfiguration configuration, byte[] encryptionKey)
         {
             DoInitialFileSystemConfiguration();
 
@@ -327,7 +359,7 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
-            var token = (SyncProgressObservable.ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
+            var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
             token.Notify(transferredBytes, transferableBytes);
         }
 
@@ -346,13 +378,31 @@ namespace Realms.Sync
                 else
                 {
                     var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
-                    const string outerMessage = "A system error occurred while waiting for completion. See InnerException for more details";
-                    tcs.TrySetException(new RealmException(outerMessage, inner));
+                    const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
+                    tcs.TrySetException(new RealmException(OuterMessage, inner));
                 }
             }
             finally
             {
                 handle.Free();
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
+        private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
+        {
+            var handle = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handle.Target;
+
+            if (error_code == 0)
+            {
+                tcs.TrySetResult(new ThreadSafeReferenceHandle(realm_reference, isRealmReference: true));
+            }
+            else
+            {
+                var inner = new SessionException(Encoding.UTF8.GetString(messageBuffer, (int)messageLength), (ErrorCode)error_code);
+                const string OuterMessage = "A system error occurred while opening a Realm. See InnerException for more details";
+                tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
         }
 

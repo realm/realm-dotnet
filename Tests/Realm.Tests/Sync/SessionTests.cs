@@ -107,6 +107,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        [Ignore("This is no longer relevant with the automatic client reset recovery.")]
         public void Session_DivergingHistories_ShouldRaiseClientResetException()
         {
             TestHelpers.RunAsyncTest(async () =>

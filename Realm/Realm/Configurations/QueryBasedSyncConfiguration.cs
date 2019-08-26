@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -63,6 +65,12 @@ namespace Realms.Sync
         public QueryBasedSyncConfiguration(Uri serverUri = null, User user = null, string optionalPath = null)
             : base(serverUri ?? new Uri("/default", UriKind.Relative), user, optionalPath)
         {
+        }
+
+        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
+        {
+            schema = RealmSchema.CreateSchemaForClasses(_queryBasedPermissionTypes, schema);
+            return base.CreateRealmAsync(schema, cancellationToken);
         }
 
         internal override Realm CreateRealm(RealmSchema schema)

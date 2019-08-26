@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Schema;
 
@@ -41,7 +42,7 @@ namespace Realms.Server
             return new Realm(handle, this, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
+        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             return Task.FromResult(CreateRealm(schema));
         }

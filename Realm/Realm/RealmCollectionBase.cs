@@ -38,7 +38,7 @@ namespace Realms
           ISchemaSource,
           IThreadConfined
     {
-        protected static readonly PropertyType _argumentType = PropertyTypeEx.ToPropertyType(typeof(T), out _);
+        protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
@@ -143,12 +143,15 @@ namespace Realms
                         }
 
                         return Operator.Convert<RealmObject, T>(Realm.MakeObject(Metadata, objectHandle));
+
                     case PropertyType.String:
                     case PropertyType.String | PropertyType.Nullable:
                         return Operator.Convert<string, T>(Handle.Value.GetStringAtIndex(index));
+
                     case PropertyType.Data:
                     case PropertyType.Data | PropertyType.Nullable:
                         return Operator.Convert<byte[], T>(Handle.Value.GetByteArrayAtIndex(index));
+
                     default:
                         return Handle.Value.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
                 }
@@ -335,7 +338,7 @@ namespace Realms
             }
         }
 
-        #endregion
+        #endregion INotifyCollectionChanged
 
         void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
@@ -384,7 +387,11 @@ namespace Realms
 
         public int IndexOf(object value)
         {
-            Argument.Ensure(value == null || value is T, $"value must be of type {typeof(T).FullName}, but got {value.GetType().FullName}", nameof(value));
+            if (value != null && !(value is T))
+            {
+                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
+            }
+
             return IndexOf((T)value);
         }
 
@@ -420,7 +427,7 @@ namespace Realms
             }
         }
 
-        #endregion
+        #endregion IList
 
         private class NotificationToken : IDisposable
         {

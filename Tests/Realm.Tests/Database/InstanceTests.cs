@@ -21,9 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
 
@@ -535,6 +533,7 @@ namespace Realms.Tests.Database
 #if WINDOWS_UWP
         [Ignore("Locks on .NET Native")]
 #endif
+
         [Test]
         public void GetInstanceAsync_ExecutesMigrationsInBackground()
         {
