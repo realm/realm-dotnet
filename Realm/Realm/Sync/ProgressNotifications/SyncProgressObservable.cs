@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
@@ -37,67 +35,14 @@ namespace Realms.Sync
 
         public IDisposable Subscribe(IObserver<SyncProgress> observer)
         {
-            return new ProgressNotificationToken(_session, observer, _direction, _mode);
-        }
-
-        public class ProgressNotificationToken : IDisposable
-        {
-            private readonly ulong _nativeToken;
-            private readonly ProgressMode _mode;
-            private readonly GCHandle _gcHandle;
-
-            private bool isDisposed;
-            private Session _session;
-            private IObserver<SyncProgress> _observer;
-
-            public ProgressNotificationToken(Session session,
-                                             IObserver<SyncProgress> observer,
-                                             ProgressDirection direction,
-                                             ProgressMode mode)
+            return new ProgressNotificationToken(progress =>
             {
-                _session = session;
-                _observer = observer;
-                _mode = mode;
-                _gcHandle = GCHandle.Alloc(this);
-                try
+                observer.OnNext(progress);
+                if (_mode == ProgressMode.ForCurrentlyOutstandingWork && progress.IsComplete)
                 {
-                    _nativeToken = _session.Handle.RegisterProgressNotifier(GCHandle.ToIntPtr(_gcHandle), direction, mode);
+                    observer.OnCompleted();
                 }
-                catch
-                {
-                    _gcHandle.Free();
-                    throw;
-                }
-            }
-
-            public void Notify(ulong transferredBytes, ulong transferableBytes)
-            {
-                Task.Run(() =>
-                {
-                    _observer.OnNext(new SyncProgress(transferredBytes, transferableBytes));
-
-                    if (_mode == ProgressMode.ForCurrentlyOutstandingWork &&
-                        transferredBytes >= transferableBytes)
-                    {
-                        _observer.OnCompleted();
-                    }
-                });
-            }
-
-            public void Dispose()
-            {
-                if (!isDisposed)
-                {
-                    GC.SuppressFinalize(this);
-
-                    isDisposed = true;
-
-                    _session.Handle.UnregisterProgressNotifier(_nativeToken);
-                    _gcHandle.Free();
-                    _session = null;
-                    _observer = null;
-                }
-            }
+            }, handle => _session.Handle.RegisterProgressNotifier(handle, _direction, _mode), _session.Handle.UnregisterProgressNotifier);
         }
     }
 }

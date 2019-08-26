@@ -18,7 +18,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Server;
 using Realms.Tests.Sync;
@@ -68,7 +67,7 @@ namespace Realms.Tests.Server
 
                     var containsNewRealm = await TestHelpers.EnsureAsync(() => paths.Contains($"/{userId5}/newlyaddedrealm"),
                                                                          retryDelay: 100,
-                                                                         attempts: 10); // 1 second
+                                                                         attempts: 100); // 10 seconds
 
                     Assert.True(containsNewRealm);
                 }

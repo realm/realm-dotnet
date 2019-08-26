@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
 using Realms.Schema;
@@ -207,26 +208,66 @@ namespace Realms.Sync
             return new Realm(srHandle, this, schema);
         }
 
-        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema)
+        internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
-            var session = new Session(SharedRealmHandleExtensions.GetSession(DatabasePath, ToNative(), EncryptionKey));
-            IDisposable subscription = null;
+            var configuration = new Realms.Native.Configuration
+            {
+                Path = DatabasePath,
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache
+            };
+
+            var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+            ProgressNotificationToken progressToken = null;
             try
             {
-                if (OnProgress != null)
+                using (var handle = SharedRealmHandleExtensions.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcsHandle))
                 {
-                    var observer = new Observer<SyncProgress>(OnProgress);
-                    subscription = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ForCurrentlyOutstandingWork).Subscribe(observer);
+                    cancellationToken.Register(() =>
+                    {
+                        if (!handle.IsClosed)
+                        {
+                            handle.Cancel();
+                            tcs.TrySetCanceled();
+                        }
+                    });
+
+                    if (OnProgress != null)
+                    {
+                        progressToken = new ProgressNotificationToken(
+                            observer: (progress) =>
+                            {
+                                OnProgress(progress);
+                            },
+                            register: handle.RegisterProgressNotifier,
+                            unregister: (token) =>
+                            {
+                                if (!handle.IsClosed)
+                                {
+                                    handle.UnregisterProgressNotifier(token);
+                                }
+                            });
+                    }
+
+                    using (var realmReference = await tcs.Task)
+                    {
+                        var realmPtr = SharedRealmHandle.ResolveFromReference(realmReference);
+                        var sharedRealmHandle = new SharedRealmHandle(realmPtr);
+                        if (IsDynamic && !schema.Any())
+                        {
+                            sharedRealmHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                        }
+
+                        return new Realm(sharedRealmHandle, this, schema);
+                    }
                 }
-                await session.WaitForDownloadAsync();
             }
             finally
             {
-                subscription?.Dispose();
-                session.CloseHandle();
+                tcsHandle.Free();
+                progressToken?.Dispose();
             }
-
-            return CreateRealm(schema);
         }
 
         internal Native.SyncConfiguration ToNative()

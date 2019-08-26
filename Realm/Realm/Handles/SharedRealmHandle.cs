@@ -39,9 +39,9 @@ namespace Realms
             public delegate void GetNativeSchemaCallback(Native.Schema schema, IntPtr managed_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open(Native.Configuration configuration,
-                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaObject[] objects, int objects_length,
-                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaProperty[] properties,
+            public static extern IntPtr open(Configuration configuration,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
+                [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 out NativeException ex);
 
@@ -93,6 +93,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_realm_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void write_copy(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, byte[] encryptionKey, out NativeException ex);
@@ -146,11 +149,18 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public static IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static IntPtr Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
-            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out NativeException nativeException);
+            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public static IntPtr ResolveFromReference(ThreadSafeReferenceHandle referenceHandle)
+        {
+            var result = NativeMethods.resolve_realm_reference(referenceHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -248,12 +258,15 @@ namespace Realms
                 case ThreadSafeReference.Type.Object:
                     result = NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException);
                     break;
+
                 case ThreadSafeReference.Type.List:
                     result = NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException);
                     break;
+
                 case ThreadSafeReference.Type.Query:
                     result = NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException);
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -296,9 +309,11 @@ namespace Realms
                 case PropertyType.String:
                     var stringKey = (string)primaryKey;
                     return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+
                 case PropertyType.Int:
                     var longKey = primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey);
                     return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
+
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
@@ -341,12 +356,12 @@ namespace Realms
 
         public class SchemaMarshaler
         {
-            public readonly Native.SchemaObject[] Objects;
-            public readonly Native.SchemaProperty[] Properties;
+            public readonly SchemaObject[] Objects;
+            public readonly SchemaProperty[] Properties;
 
             public SchemaMarshaler(RealmSchema schema)
             {
-                var properties = new List<Native.SchemaProperty>();
+                var properties = new List<SchemaProperty>();
 
                 Objects = schema.Select(@object =>
                 {
@@ -354,7 +369,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    return new Native.SchemaObject
+                    return new SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -364,9 +379,9 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            public static Native.SchemaProperty ForMarshalling(Property property)
+            public static SchemaProperty ForMarshalling(Property property)
             {
-                return new Native.SchemaProperty
+                return new SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,

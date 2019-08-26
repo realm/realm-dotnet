@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Helpers;
@@ -166,7 +167,7 @@ namespace Realms
             return new Realm(srHandle, this, schema);
         }
 
-        internal override Task<Realm> CreateRealmAsync(RealmSchema schema)
+        internal override Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -177,7 +178,7 @@ namespace Realms
                     using (CreateRealm(schema))
                     {
                     }
-                }).ContinueWith(_ => CreateRealm(schema), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateRealm(schema), scheduler);
             }
 
             return Task.FromResult(CreateRealm(schema));

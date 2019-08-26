@@ -34,7 +34,7 @@ namespace realm {
 namespace binding {
     void (*s_refresh_access_token_callback)(std::shared_ptr<SyncSession>*);
     void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len);
-    void (*s_progress_callback)(size_t, uint64_t transferred_bytes, uint64_t transferrable_bytes);
+    void (*s_progress_callback)(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes);
     void (*s_wait_callback)(void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
 
     void bind_session(const std::string&, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session)
@@ -140,7 +140,7 @@ enum class CSharpNotifierType : uint8_t {
     Download = 1
 };
     
-REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedSyncSession& session, size_t managed_state, CSharpNotifierType direction, bool is_streaming, NativeException::Marshallable& ex)
+REALM_EXPORT uint64_t realm_syncsession_register_progress_notifier(const SharedSyncSession& session, void* managed_state, CSharpNotifierType direction, bool is_streaming, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         auto notifier_direction = direction == CSharpNotifierType::Upload
@@ -160,17 +160,17 @@ REALM_EXPORT void realm_syncsession_unregister_progress_notifier(const SharedSyn
     });
 }
 
-REALM_EXPORT bool realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&] {
+    handle_errors(ex, [&] {
         auto waiter = [task_completion_source](std::error_code error) {
             s_wait_callback(task_completion_source, error.value(), error.message().c_str(), error.message().length());
         };
         
         if (direction == CSharpNotifierType::Upload) {
-            return session->wait_for_upload_completion(waiter);
+            session->wait_for_upload_completion(waiter);
         } else {
-            return session->wait_for_download_completion(waiter);
+            session->wait_for_download_completion(waiter);
         }
     });
 }

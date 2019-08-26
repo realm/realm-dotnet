@@ -27,16 +27,30 @@ namespace Realms
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "thread_safe_reference_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_thread_safe_reference_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy_realm_reference(IntPtr handle);
         }
 
+        private bool _isRealmReference;
+
         [Preserve]
-        public ThreadSafeReferenceHandle(IntPtr handle) : base(null, handle)
+        public ThreadSafeReferenceHandle(IntPtr handle, bool isRealmReference = false) : base(null, handle)
         {
+            _isRealmReference = isRealmReference;
         }
 
         protected override unsafe void Unbind()
         {
-            NativeMethods.destroy(handle);
+            // This is a bit awkward because ThreadSafeReference<Realm> doesn't inherit from ThreadSafeReferenceBase
+            if (_isRealmReference)
+            {
+                NativeMethods.destroy_realm_reference(handle);
+            }
+            else
+            {
+                NativeMethods.destroy(handle);
+            }
         }
     }
 }
