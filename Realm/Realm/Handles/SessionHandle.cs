@@ -75,6 +75,12 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_start", CallingConvention = CallingConvention.Cdecl)]
             public static extern void start(SessionHandle session, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_set_multiplex_identifier", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_multiplex_identifier(SessionHandle session, [MarshalAs(UnmanagedType.LPWStr)] string identifier, IntPtr identifier_len, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_set_url_prefix", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_url_prefix(SessionHandle session, [MarshalAs(UnmanagedType.LPWStr)] string prefix, IntPtr prefix_len, out NativeException ex);
         }
 
         static SessionHandle()
@@ -123,6 +129,18 @@ namespace Realms.Sync
                 isNull = false;
                 return NativeMethods.get_path(this, buffer, length, out ex);
             });
+        }
+
+        public void SetMultiplexIdentifier(string multiplexIdentifier)
+        {
+            NativeMethods.set_multiplex_identifier(this, multiplexIdentifier, (IntPtr)multiplexIdentifier.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void SetUrlPrefix(string urlPrefix)
+        {
+            NativeMethods.set_url_prefix(this, urlPrefix, (IntPtr)urlPrefix.Length, out var nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public void RefreshAccessToken(string accessToken, string serverPath)
