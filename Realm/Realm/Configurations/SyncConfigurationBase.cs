@@ -90,6 +90,8 @@ namespace Realms.Sync
         /// </summary>
         public Action<SyncProgress> OnProgress { get; set; }
 
+        internal abstract ClientResyncMode ResyncMode { get; }
+
         /// <summary>
         /// Gets or sets a value indicating how detailed the sync client's logs will be.
         /// </summary>
@@ -302,7 +304,8 @@ namespace Realms.Sync
                 client_validate_ssl = EnableSSLValidation,
                 TrustedCAPath = TrustedCAPath,
                 is_partial = !IsFullSync,
-                PartialSyncIdentifier = null
+                PartialSyncIdentifier = null,
+                client_resync_mode = ResyncMode,
             };
         }
 

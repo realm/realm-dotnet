@@ -33,6 +33,13 @@ namespace Realms.Sync
     {
         internal override bool IsFullSync => true;
 
+        internal override ClientResyncMode ResyncMode => ClientResyncMode;
+
+        /// <summary>
+        /// Gets or sets a value controlling the behavior in case of a Client Resync. Default is <see cref="ClientResyncMode.RecoverLocalRealm"/>
+        /// </summary>
+        public ClientResyncMode ClientResyncMode { get; set; } = ClientResyncMode.RecoverLocalRealm;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FullSyncConfiguration"/> class.
         /// </summary>
