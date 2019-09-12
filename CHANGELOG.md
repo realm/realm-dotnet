@@ -9,7 +9,9 @@ vNEXT (TBD)
 * Exposed an API - `SyncConfigurationBase.EnableSessionMultiplexing()` that allows toggling session multiplexing on the sync client. (PR [1896](https://github.com/realm/realm-dotnet/pull/1896))
 * Added support for faster initial downloads when using `Realm.GetInstanceAsync`. (Issue [1847](https://github.com/realm/realm-dotnet/issues/1847))
 * Added an optional `cancellationToken` argument to `Realm.GetInstanceAsync` enabling clean cancelation of the in-progress download. (PR [1859](https://github.com/realm/realm-dotnet/pull/1859))
-
+* Added support for Client Resync which automatically will recover the local Realm in case the server is rolled back. This largely replaces the Client Reset mechanism for fully synchronized Realms. Can be configured using `FullSyncConfiguration.ClientResyncMode`. (PR [#1901](https://github.com/realm/realm-dotnet/pull/1901))
+* Made the `createUser` argument in `Credentials.UsernamePassword` optional. If not specified, the user will be created or logged in if they already exist. (PR [#1901](https://github.com/realm/realm-dotnet/pull/1901))
+	
 ### Fixed
 * Fixed an infinite recursion when calling `RealmCollectionBase<T>.IndexOf`. (Issue [#1892](https://github.com/realm/realm-dotnet/issues/1892))
 
