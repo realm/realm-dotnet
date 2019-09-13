@@ -19,6 +19,9 @@
 #pragma once
 
 #include "realm_export_decls.hpp"
+#include "sync/sync_config.hpp"
+
+using namespace realm;
 
 namespace realm {
     class SyncUser;
@@ -38,9 +41,6 @@ namespace realm {
         bool is_partial;
         uint16_t* partial_sync_identifier;
         size_t partial_sync_identifier_len;
+        realm::ClientResyncMode client_resync_mode;
     };
-    
-    namespace binding {
-        REALM_EXPORT bool has_feature(StringData feature);
-    }
 }

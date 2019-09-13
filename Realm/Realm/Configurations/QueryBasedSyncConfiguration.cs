@@ -37,6 +37,8 @@ namespace Realms.Sync
     {
         internal override bool IsFullSync => false;
 
+        internal override ClientResyncMode ResyncMode => ClientResyncMode.Manual;
+
         internal static readonly Type[] _queryBasedPermissionTypes =
         {
             typeof(ClassPermission),

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -284,6 +285,172 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(realm.Schema, Is.Empty);
                 }
+            });
+        }
+
+        // Used by TestClientResync and TestClientResync2. Must be either RecoverLocal or DiscardLocal. Manual is tested
+        // by TestManualClientResync.
+        private ClientResyncMode _clientResyncMode = ClientResyncMode.DiscardLocalRealm;
+
+        private async Task<FullSyncConfiguration> GetClientResyncConfig(ClientResyncMode? _mode = null)
+        {
+            if (!_mode.HasValue)
+            {
+                _mode = _clientResyncMode;
+            }
+
+            var user = await User.LoginAsync(Credentials.UsernamePassword("foo", "bar"), SyncTestHelpers.AuthServerUri);
+            return new FullSyncConfiguration(SyncTestHelpers.RealmUri($"~/{_mode.Value}"), user, $"{_mode}.realm")
+            {
+                ClientResyncMode = _mode.Value,
+                ObjectClasses = new[] { typeof(IntPrimaryKeyWithValueObject) },
+            };
+        }
+
+        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
+        public void TestClientResync()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var config = await GetClientResyncConfig();
+                // Let's delete anything local.
+                Realm.DeleteRealm(config);
+                Exception ex = null;
+                Session.Error += (s, e) =>
+                {
+                    if (e.Exception.Message != "End of input")
+                    {
+                        Debugger.Break();
+                        ex = e.Exception;
+                    }
+                };
+
+                using (var realm = await Realm.GetInstanceAsync(config))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new IntPrimaryKeyWithValueObject
+                        {
+                            Id = 1,
+                            StringValue = "1"
+                        });
+                    });
+
+                    await WaitForUploadAsync(realm);
+                }
+
+                // Stop ROS and backup the file. Then restart
+                Debugger.Break();
+
+                using (var realm = await GetRealmAsync(config))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new IntPrimaryKeyWithValueObject
+                        {
+                            Id = 2,
+                            StringValue = "2"
+                        });
+                    });
+
+                    await WaitForUploadAsync(realm);
+
+                    // Stop ROS
+                    Debugger.Break();
+
+                    realm.Write(() =>
+                    {
+                        realm.Add(new IntPrimaryKeyWithValueObject
+                        {
+                            Id = 3,
+                            StringValue = "3"
+                        });
+                    });
+                }
+
+                // Replace the file from backup. Restart ROS and run TestClientResync2
+                Debugger.Break();
+
+                Assert.That(ex, Is.Null);
+            }, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+        }
+
+        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
+        public void TestClientResync2()
+        {
+            Assert.That(new[] { ClientResyncMode.DiscardLocalRealm, ClientResyncMode.RecoverLocalRealm }, Does.Contain(_clientResyncMode));
+
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var config = await GetClientResyncConfig();
+
+                Exception ex = null;
+                Session.Error += (s, e) =>
+                {
+                    if (e.Exception.Message != "End of input")
+                    {
+                        ex = e.Exception;
+                    }
+                };
+
+                using (var realm = await GetRealmAsync(config))
+                {
+                    var values = realm.All<IntPrimaryKeyWithValueObject>().AsEnumerable().Select(i => i.StringValue).ToArray();
+
+                    // Verify expected result:
+                    //   - RecoverLocalRealm: we have 2 objects - "1" and "3". The "2" is lost because the client had uploaded them to the server already.
+                    //   - DiscardLocalRealm: we have 1 object - "1". The "2" is lost because we restored from backup and the "3" is discarded.
+                    switch (_clientResyncMode)
+                    {
+                        case ClientResyncMode.DiscardLocalRealm:
+                            Assert.That(values.Length, Is.EqualTo(1));
+                            Assert.That(values[0], Is.EqualTo("1"));
+                            Assert.That(ex, Is.Null);
+                            break;
+
+                        case ClientResyncMode.RecoverLocalRealm:
+                            Assert.That(values.Length, Is.EqualTo(2));
+                            CollectionAssert.AreEquivalent(values, new[] { "1", "3" });
+                            Assert.That(ex, Is.Null);
+                            break;
+                    }
+                }
+            }, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
+        }
+
+        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
+        public void TestManualClientResync()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var config = await GetClientResyncConfig(ClientResyncMode.Manual);
+
+                Realm.DeleteRealm(config);
+                using (var realm = await Realm.GetInstanceAsync(config))
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new IntPrimaryKeyWithValueObject());
+                    });
+
+                    await WaitForUploadAsync(realm);
+                }
+
+                // Delete Realm in ROS
+                Debugger.Break();
+
+                Exception ex = null;
+                Session.Error += (s, e) =>
+                {
+                    ex = e.Exception;
+                };
+
+                using (var realm = Realm.GetInstance(config))
+                {
+                    await Task.Delay(100);
+                }
+
+                Assert.That(ex, Is.InstanceOf<ClientResetException>());
             });
         }
 

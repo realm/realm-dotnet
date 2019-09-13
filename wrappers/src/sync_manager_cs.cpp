@@ -97,6 +97,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url);
     config.sync_config->bind_session_handler = bind_session;
     config.sync_config->error_handler = handle_session_error;
+    config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
     config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
     
     // by definition the key is only allowed to be 64 bytes long, enforced by C# code

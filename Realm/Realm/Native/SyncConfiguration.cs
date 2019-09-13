@@ -38,6 +38,7 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.LPWStr)]
         private string url;
+
         private IntPtr url_len;
 
         internal string Url
@@ -54,6 +55,7 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.LPWStr)]
         private string trusted_ca_path;
+
         private IntPtr trusted_ca_path_len;
 
         internal string TrustedCAPath
@@ -70,6 +72,7 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.LPWStr)]
         private string partial_sync_identifier;
+
         private IntPtr partial_sync_identifier_len;
 
         internal string PartialSyncIdentifier
@@ -80,5 +83,8 @@ namespace Realms.Sync.Native
                 partial_sync_identifier_len = (IntPtr)(value?.Length ?? 0);
             }
         }
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal ClientResyncMode client_resync_mode;
     }
 }
