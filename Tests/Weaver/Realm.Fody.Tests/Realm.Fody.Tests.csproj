@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net472;netcoreapp2.0</TargetFrameworks>
     <DisableFody>true</DisableFody>
     <IsTestProject>true</IsTestProject>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -13,10 +13,10 @@
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="NUnitLite" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
-    <PackageReference Include="PropertyChanged.Fody" Version="2.6.0">
+    <PackageReference Include="PropertyChanged.Fody" Version="3.1.3">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </PackageReference>
-    <PackageReference Include="FodyHelpers" Version="4.0.2" />
+    <PackageReference Include="FodyHelpers" Version="6.0.0" />
     <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj" />
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj" />
     <ProjectReference Include="..\RealmFreeAssemblyToProcess\RealmFreeAssemblyToProcess.csproj" />

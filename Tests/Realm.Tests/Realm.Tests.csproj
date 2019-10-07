@@ -16,7 +16,7 @@
     <PackageReference Include="NUnitLite" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
     <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
-    <PackageReference Include="System.Reactive" Version="4.1.3" />
+    <PackageReference Include="System.Reactive" Version="4.1.6" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
@@ -75,7 +75,7 @@
   <!-- workaround for https://github.com/onovotny/MSBuildSdkExtras/issues/181 -->
   <Target Name="_RemoveNonExistingResgenFile" BeforeTargets="CoreCompile" Condition="'$(_SdkSetAndroidResgenFile)' == 'true' And '$(AndroidResgenFile)' != '' And !Exists('$(AndroidResgenFile)')">
     <ItemGroup>
-      <Compile Remove="$(AndroidResgenFile)"/>
+      <Compile Remove="$(AndroidResgenFile)" />
     </ItemGroup>
   </Target>
 </Project>
