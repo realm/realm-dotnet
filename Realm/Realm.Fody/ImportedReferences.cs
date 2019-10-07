@@ -162,7 +162,7 @@ namespace RealmWeaver
             System_NullableOfT = new TypeReference("System", "Nullable`1", Module, Module.TypeSystem.CoreLibrary) { IsValueType = true };
             System_NullableOfT.GenericParameters.Add(new GenericParameter(System_NullableOfT)
             {
-                Constraints = { System_ValueType }
+                Constraints = { new GenericParameterConstraint(System_ValueType) }
             });
 
             System_NullableOfT_GetValueOrDefault = new MethodReference("GetValueOrDefault", System_NullableOfT.GenericParameters[0], System_NullableOfT)
@@ -268,7 +268,7 @@ namespace RealmWeaver
 
             {
                 Realm_Add = new MethodReference("Add", Types.VoidReference, Realm) { HasThis = true };
-                var T = new GenericParameter(Realm_Add) { Constraints = { RealmObject } };
+                var T = new GenericParameter(Realm_Add) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 Realm_Add.ReturnType = T;
                 Realm_Add.GenericParameters.Add(T);
                 Realm_Add.Parameters.Add(new ParameterDefinition(T));
@@ -285,7 +285,7 @@ namespace RealmWeaver
 
             {
                 RealmObject_GetObjectValue = new MethodReference("GetObjectValue", Types.VoidReference, RealmObject) { HasThis = true };
-                var T = new GenericParameter(RealmObject_GetObjectValue) { Constraints = { RealmObject } };
+                var T = new GenericParameter(RealmObject_GetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 RealmObject_GetObjectValue.ReturnType = T;
                 RealmObject_GetObjectValue.GenericParameters.Add(T);
                 RealmObject_GetObjectValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
@@ -293,7 +293,7 @@ namespace RealmWeaver
 
             {
                 RealmObject_SetObjectValue = new MethodReference("SetObjectValue", Types.VoidReference, RealmObject) { HasThis = true };
-                var T = new GenericParameter(RealmObject_SetObjectValue) { Constraints = { RealmObject } };
+                var T = new GenericParameter(RealmObject_SetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 RealmObject_SetObjectValue.GenericParameters.Add(T);
                 RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
                 RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(T));
@@ -309,7 +309,7 @@ namespace RealmWeaver
 
             {
                 RealmObject_GetBacklinks = new MethodReference("GetBacklinks", new GenericInstanceType(IQueryableOfT), RealmObject) { HasThis = true };
-                var T = new GenericParameter(RealmObject_GetBacklinks) { Constraints = { RealmObject } };
+                var T = new GenericParameter(RealmObject_GetBacklinks) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 (RealmObject_GetBacklinks.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetBacklinks.GenericParameters.Add(T);
                 RealmObject_GetBacklinks.Parameters.Add(new ParameterDefinition(Types.StringReference));
@@ -381,13 +381,13 @@ namespace RealmWeaver
         {
             var T = new GenericParameter(owner)
             {
-                Constraints = { System_ValueType, System_IFormattable }
+                Constraints = { new GenericParameterConstraint(System_ValueType), new GenericParameterConstraint(System_IFormattable) }
             };
 
-            T.Constraints.Add(new GenericInstanceType(System_IComparableOfT)
+            T.Constraints.Add(new GenericParameterConstraint(new GenericInstanceType(System_IComparableOfT)
             {
                 GenericParameters = { T }
-            });
+            }));
 
             return T;
         }
@@ -477,6 +477,7 @@ namespace RealmWeaver
                 case "Xamarin.Mac":
                     references = new NETFramework(module, weaver.TypeSystem, frameworkName);
                     break;
+
                 case ".NETStandard":
                     if (frameworkName.Version >= new Version(2, 0))
                     {
@@ -487,11 +488,13 @@ namespace RealmWeaver
                         references = new NETPortable(module, weaver.TypeSystem, frameworkName);
                     }
                     break;
+
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
                     references = new NETPortable(module, weaver.TypeSystem, frameworkName);
                     break;
+
                 default:
                     throw new Exception($"Unsupported target framework: {frameworkName}");
             }

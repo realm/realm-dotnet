@@ -98,7 +98,7 @@ namespace RealmWeaver
             return type;
         }
 
-        #endregion
+        #endregion helpers
 
         private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
         {
@@ -133,7 +133,7 @@ namespace RealmWeaver
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            var sourceAssemblyPath = typeof(AssemblyToProcess.Person).Assembly.GetAssemblyLocation();
+            var sourceAssemblyPath = typeof(AssemblyToProcess.Person).Assembly.Location;
             TestResult result;
 
             switch (_propertyChangedWeaver)
