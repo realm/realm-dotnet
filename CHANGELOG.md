@@ -1,8 +1,5 @@
-vNEXT (TBD)
+4.2.0 (2019-10-07)
 ------------------
-
-### Breaking Changes
-* None.
 
 ### Enhancements
 * Added `int IndexOf(object)` and `bool Contains(object)` to the `IRealmCollection` interface. (PR [#1893](https://github.com/realm/realm-dotnet/issues/1893))
