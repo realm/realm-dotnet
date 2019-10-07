@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
+    <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,10 +73,4 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
   </ItemGroup>
-  <!-- workaround for https://github.com/onovotny/MSBuildSdkExtras/issues/181 -->
-  <Target Name="_RemoveNonExistingResgenFile" BeforeTargets="CoreCompile" Condition="'$(_SdkSetAndroidResgenFile)' == 'true' And '$(AndroidResgenFile)' != '' And !Exists('$(AndroidResgenFile)')">
-    <ItemGroup>
-      <Compile Remove="$(AndroidResgenFile)" />
-    </ItemGroup>
-  </Target>
 </Project>
