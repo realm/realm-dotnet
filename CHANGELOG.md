@@ -1,3 +1,20 @@
+x.y.z (TBD)
+------------------
+
+### Enhancements
+* None
+
+### Fixed
+* Realm objects can now be correctly serialized with `System.Runtime.Serialization.Formatters` and `System.Xml.Serialization` serializers. (Issue [#1913](https://github.com/realm/realm-dotnet/issues/1913))
+  The private state fields of the class have been decorated with `[NonSerialized]` and `[XmlIgnore]` attributes so that eager opt-out
+  serializers do not attempt to serialize fields such as `Realm` and `ObjectSchema` which contain handles to unmanaged data.
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* None
+
 4.2.0 (2019-10-07)
 ------------------
 

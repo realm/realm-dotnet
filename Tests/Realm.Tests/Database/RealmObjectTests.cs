@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -178,6 +179,34 @@ namespace Realms.Tests.Database
 
             Assert.That(george, Is.Not.EqualTo(peter));
             Assert.That(peter, Is.Not.EqualTo(george));
+        }
+
+        [Test]
+        public void RealmObject_WhenSerialized_ShouldSkipBaseProperties()
+        {
+            var obj = new SerializedObject();
+            _realm.Write(() => _realm.Add(obj));
+
+            string text = null;
+            using (var stream = new System.IO.MemoryStream())
+            {
+                var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                formatter.Serialize(stream, obj);
+                text = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            }
+
+            foreach (var field in typeof(RealmObject).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            {
+                Assert.That(text, Does.Not.Contains(field.Name));
+            }
+        }
+
+        [Serializable]
+        private class SerializedObject : RealmObject
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
         }
 
         private class OnManagedTestClass : RealmObject

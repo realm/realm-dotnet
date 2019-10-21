@@ -25,6 +25,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Helpers;
 using Realms.Schema;
@@ -35,13 +36,22 @@ namespace Realms
     /// Base for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
+    [Serializable]
     public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
     {
+        [NonSerialized, XmlIgnore]
         private Realm _realm;
+
+        [NonSerialized, XmlIgnore]
         private ObjectHandle _objectHandle;
+
+        [NonSerialized, XmlIgnore]
         private Metadata _metadata;
+
+        [NonSerialized, XmlIgnore]
         private NotificationTokenHandle _notificationToken;
 
+        [field: NonSerialized, XmlIgnore]
         private event PropertyChangedEventHandler _propertyChanged;
 
         /// <inheritdoc />
