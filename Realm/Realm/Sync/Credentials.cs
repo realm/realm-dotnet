@@ -19,8 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -211,6 +209,15 @@ namespace Realms.Sync
         /// Creates a <see cref="Credentials"/> based on a custom Refresh token.
         /// </summary>
         /// <param name="token">A Json Web Token, obtained by a 3rd party source that will be used instead of the ROS-issued refresh tokens.</param>
+        /// <param name="userId">
+        /// The identity of the user. This value is used for client side validation only as the server will compute its own
+        /// value based on the <c>userIdFieldName</c> configuration. It is still important for proper functioning of the system
+        /// that these values match.
+        /// </param>
+        /// <param name="isAdmin">
+        /// A value indicating whether the user is an admin. This value is used for client side validation only as the server
+        /// will compute its own value based on the <c>isAdminQuery</c> configuration. It is still important for proper
+        /// functioning of the system that these values match.</param>
         /// <remarks>
         /// Unlike other <see cref="Credentials"/> methods, users logged in via the CustomRefreshToken API will not go through the regular
         /// login flow (since we already have a refresh token). Instead, the provided token will be used at any point when we need to exchange
@@ -223,21 +230,10 @@ namespace Realms.Sync
         /// ROS must be configured with <c>refreshTokenValidators</c> for this user to ever be able to sync with it.
         /// </remarks>
         /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
-        public static Credentials CustomRefreshToken(string token)
+        public static Credentials CustomRefreshToken(string token, string userId, bool isAdmin = false)
         {
             Argument.NotNull(token, nameof(token));
-
-            var parts = token.Split('.');
-            Argument.Ensure(parts.Length == 3, "Prodvided token is not a valid JWT", nameof(token));
-
-            // C#'s base64 parser is strict about padding, but a lot of others are not.
-            var charactersToPad = (4 - parts[1].Length % 4) % 4;
-            var paddedPayload = parts[1].PadRight(parts[1].Length + charactersToPad, '=');
-            var payload = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
-            var deserialized = JObject.Parse(payload);
-
-            var userId = deserialized["sub"]?.Value<string>();
-            Argument.Ensure(userId != null, "The provided token must have a sub field.", nameof(token));
+            Argument.NotNull(userId, nameof(userId));
 
             return new Credentials
             {
@@ -245,7 +241,7 @@ namespace Realms.Sync
                 Token = token,
                 UserInfo = new Dictionary<string, object>
                 {
-                    [Keys.IsAdmin] = deserialized["isAdmin"]?.Value<bool>() ?? false,
+                    [Keys.IsAdmin] = isAdmin,
                     [Keys.Identity] = userId
                 }
             };
