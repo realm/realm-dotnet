@@ -1,3 +1,18 @@
+vNext (TBD)
+------------------
+
+### Enhancements
+* Exposed an API to configure the `userId` and `isAdmin` of a user when creating credentials via `Credentials.CustomRefreshToken`. Previously these values would be inferred from the JWT itself but as there's no way to enforce the server configuration over which fields in the JWT payload represent the `userId` and the `isAdmin` field, it is now up to the consumer to determine the values for these.
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* None
+
 4.2.0 (2019-10-07)
 ------------------
 
