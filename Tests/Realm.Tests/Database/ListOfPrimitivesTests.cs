@@ -21,9 +21,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
+using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
@@ -292,7 +291,7 @@ namespace Realms.Tests.Database
             yield return new object[] { new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null } };
         }
 
-        #endregion
+        #endregion TestCaseSources
 
         #region Managed Tests
 
@@ -450,6 +449,79 @@ namespace Realms.Tests.Database
         public void Test_ManagedByteArrayList(byte[][] values)
         {
             RunManagedTests(obj => obj.ByteArrayList, values);
+        }
+
+        [TestCase]
+        public void RequiredStringList_CanAddEmptyString()
+        {
+            try
+            {
+                var obj = new ObjectWithRequiredStringList();
+                _realm.Write(() => _realm.Add(obj));
+
+                _realm.Write(() => obj.Strings.Add(string.Empty));
+
+                Assert.That(obj.Strings.Count, Is.EqualTo(1));
+                Assert.That(obj.Strings[0], Is.EqualTo(string.Empty));
+            }
+            finally
+            {
+                _realm.Dispose();
+            }
+        }
+
+        [TestCase]
+        public void RequiredStringList_CanNotAddNullString()
+        {
+            try
+            {
+                var obj = new ObjectWithRequiredStringList();
+                _realm.Write(() => _realm.Add(obj));
+
+                var ex = Assert.Throws<RealmException>(() => _realm.Write(() => obj.Strings.Add(null)));
+                Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
+            }
+            finally
+            {
+                _realm.Dispose();
+            }
+        }
+
+        [TestCase]
+        public void RequiredStringList_WhenContainsEmptyString_CanAddToRealm()
+        {
+            try
+            {
+                var obj = new ObjectWithRequiredStringList();
+                obj.Strings.Add(string.Empty);
+                obj.Strings.Add("strings.NonEmpty");
+                _realm.Write(() => _realm.Add(obj));
+
+                Assert.That(obj.Strings.Count, Is.EqualTo(2));
+                Assert.That(obj.Strings[0], Is.Empty);
+                Assert.That(obj.Strings[1], Is.Not.Empty);
+            }
+            finally
+            {
+                _realm.Dispose();
+            }
+        }
+
+        [TestCase]
+        public void RequiredStringList_WhenContainsNull_CanNotAddToRealm()
+        {
+            try
+            {
+                var obj = new ObjectWithRequiredStringList();
+                obj.Strings.Add(null);
+                obj.Strings.Add("strings.NonEmpty");
+                var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(obj)));
+                Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
+            }
+            finally
+            {
+                _realm.Dispose();
+            }
         }
 
         private void RunManagedTests<T>(Func<ListsObject, IList<T>> itemsGetter, T[] toAdd)
@@ -673,7 +745,7 @@ namespace Realms.Tests.Database
             notifications.Clear();
         }
 
-        #endregion
+        #endregion Managed Tests
 
         #region Unmanaged Tests
 
@@ -864,6 +936,6 @@ namespace Realms.Tests.Database
             }
         }
 
-        #endregion
+        #endregion Unmanaged Tests
     }
 }

@@ -397,4 +397,10 @@ namespace Realms.Tests.Database
         [MapTo("__mappedBacklink")]
         public IQueryable<RemappedTypeObject> MappedBacklink { get; }
     }
+
+    public class ObjectWithRequiredStringList : RealmObject
+    {
+        [Required]
+        public IList<string> Strings { get; }
+    }
 }
