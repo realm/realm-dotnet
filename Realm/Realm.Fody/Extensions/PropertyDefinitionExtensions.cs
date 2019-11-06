@@ -59,6 +59,11 @@ internal static class PropertyDefinitionExtensions
         return IsIList(property) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
     }
 
+    internal static bool IsIList(this PropertyDefinition property, System.Type elementType)
+    {
+        return IsIList(property) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().FullName == elementType.FullName;
+    }
+
     internal static bool IsIQueryable(this PropertyDefinition property)
     {
         return property.IsType("IQueryable`1", "System.Linq");
