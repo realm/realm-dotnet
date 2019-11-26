@@ -6,6 +6,7 @@ vNext (TBD)
 
 ### Fixed
 * Fixed an issue that would result in a compile error when `[Required]` is applied on `IList<string>` property. (Contributed by [braudabaugh](https://github.com/braudabaugh))
+* Fixed an issue that prevented projects that include the Realm NuGet package from being debugged. (PR [#1927](https://github.com/realm/realm-dotnet/pull/1927))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
