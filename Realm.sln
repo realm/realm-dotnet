@@ -24,6 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinMac", "Tests\T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{963FF6EA-00B7-42BF-8319-0F9B9EADCA9F}"
 	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
 		Directory.build.props = Directory.build.props
 		global.json = global.json
 	EndProjectSection
