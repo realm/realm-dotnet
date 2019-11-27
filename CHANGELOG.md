@@ -12,7 +12,7 @@ vNext (TBD)
 * Realm Object Server: 3.23.1 or later.
 
 ### Internal
-* None
+* Upgraded Sync from 4.7.5 to 4.9.0 and Core from 5.23.3 to 5.23.6.
 
 4.2.0 (2019-10-07)
 ------------------
