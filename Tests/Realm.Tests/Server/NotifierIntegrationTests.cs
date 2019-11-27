@@ -89,5 +89,20 @@ namespace Realms.Tests.Server
                 }
             }, timeout: 1000000);
         }
+
+        [Test]
+        public void Start_WhenWorkingDirectoryDoesNotExist_ShouldCreateIt()
+        {
+            SyncTestHelpers.RunRosTestAsync(async () =>
+            {
+                var config = await GetConfiguration(new DummyNotificationHandler());
+                config.WorkingDirectory = System.IO.Path.Combine(config.WorkingDirectory, System.Guid.NewGuid().ToString());
+
+                var notifier = await Notifier.StartAsync(config);
+                notifier.Dispose();
+
+                Assert.That(System.IO.Directory.Exists(config.WorkingDirectory));
+            });
+        }
     }
 }
