@@ -22,9 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -485,7 +483,7 @@ main().catch((err) => {
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.Xhl39nnVXIgTUqDKEfz2mDiHcfH8vZGDC4gJxAHZmQ_usf-uXTXfDxkjME2W5ynKeWUQrzIhOliHaouJq-XJpzqKPvQ4d70LwtijNC53O4SUaHHaTkhh98OLOZif0md7xHeeEJAI9sixNK4GDzA88a2K5dZ9dmv3XJJ3url481CNK5mSCMgTcN5dzChbewmJ327J7mDsHF74Nvdazevk7UyShLz0YfJaPr2ny9feUXcG7yMRTfg3XoSHGUZ1IDDyvjjslfelTZWIR3ccmiua2wyN1EKAQE0o1Ft89VFHDxIHVvfgdXr9aQvtEaPR7-GChL8rx1WiqujSMJ0DZC80gQ";
-                var credentials = Credentials.CustomRefreshToken(token);
+                var credentials = Credentials.CustomRefreshToken(token, "123", isAdmin: true);
 
                 var realmPath = Guid.NewGuid().ToString();
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
@@ -504,7 +502,7 @@ main().catch((err) => {
                 }
 
                 var token2 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTYiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.Hum9NA5KfBqKNsRN6hckbijSAME4LfH2xwmqwPrfjVEBlHRg6HIOnV4gxjY_KUhaazjsExNjAGEhxAamTiefHgvTryVlXwgLjaVs2DpR7F2t1JkpB9b7bU8fo0XV1ZhQ40s9_s3_t6Gdaf8cewSr2ADe0q71c09kP4VtxHQlzXkKuDjkwVXhaXFKglaJNy2Lhk04ybKJn0g_H-sWv2keTW1-J1RhZCzkB_o1Xv-SqoB_n5lahZ3rSUvbQalcQn20mOetTlfAkYfi3Eee4bYzc0iykDdG124uUnQVXXiQR67qlB4zqJ1LuG84KBYcO7W5g_kIBq7YzNaP68xT_x2YBw";
-                var credentials2 = Credentials.CustomRefreshToken(token2);
+                var credentials2 = Credentials.CustomRefreshToken(token2, "456", isAdmin: true);
 
                 var user2 = await User.LoginAsync(credentials2, SyncTestHelpers.AuthServerUri);
 
@@ -531,7 +529,7 @@ main().catch((err) => {
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTYiLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyLCJhdWQiOiJteUFwcCIsImlzcyI6Im15aXNzdWVyIn0.FmRf5n3o83vduCIShxmXOTWBegJwQqZKWNakIjQN3OAxfjJBK2tkSJGBqBBARN7nkEAWypGQzk1VkjuIKAZfGC1QpSSyv3RBw3D85hNs_aRvHgh2PXIiWbxMvRdZF6N5gN4Zi_47TsL67FqthQV6btOvrwqUuY5EY3vqW8LJT9D-966j6xmLOG7ZeEpWjNVvFx9nR5DmOYIXvamWGLCND_cqYhWcgrSs0I0FMZ6IxfjoiUZST5vc_c18XIbuszongqDUMJEIPbvjmN31tCuLXDuorf3eOpALIIsfR1Dt-RnkoOYAJrPTUjg_NnVqbIj0RzPzdbx7lClP1gZbE3HAjw";
-                var credentials = Credentials.CustomRefreshToken(token);
+                var credentials = Credentials.CustomRefreshToken(token, "123456", isAdmin: true);
 
                 var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
                 Assert.That(token, Is.EqualTo(user.RefreshToken));
@@ -577,13 +575,13 @@ main().catch((err) => {
         public void User_WhenCustomRefreshToken_CanLoginAUserDirectly()
         {
             var token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJQZXNobzEyMyIsImlhdCI6MTUxNjIzOTAyMn0.Hu99JXT28Gq2Zf-KjM75I1nBxhU3WxWqWjJSaAc6TP6Bwy4czlR4krw8LDdjrBJ0zyI6CAyVAR_y1lRyFbz3j-jaXmmuwyIgO61PJxOJaWEmBawz1_C3_z8-XjxNeBH8lXgGFcPzDG0HqbmXMgPEAFK4LAY5tFMkzEPP3w5OslZu17ixlzsYtSkia_bQSYId6-KSkj-tZE6KExgumIyF4JnS51s8oDr6U3C4qa1Y6-QkyWqCdFMRMd6558qECbVxV5CPP0x58LFyC6Coz1Xob6zkB2b_ba5FepFO-cJtvXaIBDOYsV3GsD9NfW8cLDCNqeJADbJuCP_iHRIDT4vFdg";
-            var credentials = Credentials.CustomRefreshToken(token);
+            var credentials = Credentials.CustomRefreshToken(token, "Pesho123");
             var user = User.LoginAsync(credentials, new Uri($"http://{SyncTestHelpers.FakeRosUrl}")).Result;
 
             Assert.That(user.Identity, Is.EqualTo("Pesho123"));
         }
 
-        #endregion
+        #endregion CustomRefreshTokenTests
 
         private static async Task TestNewPassword(string userId)
         {
