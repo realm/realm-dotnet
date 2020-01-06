@@ -54,7 +54,7 @@ REALM_EXPORT Subscription* realm_subscription_create(Results& results, uint16_t*
         }
 
         parser::KeyPathMapping mapping;
-        realm::alias_backlinks(mapping, *results.get_realm());
+        realm::populate_keypath_mapping(mapping, *results.get_realm());
 
         auto inclusion_paths = realm::generate_include_from_keypaths(paths, *results.get_realm(), results.get_object_schema(), mapping);
         

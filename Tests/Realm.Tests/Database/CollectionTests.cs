@@ -504,7 +504,7 @@ namespace Realms.Tests.Database
                 }
             });
 
-            var dogs = _realm.All<Dog>().Filter("@links.class_Owner.Dogs.Name == 'Person 0'");
+            var dogs = _realm.All<Dog>().Filter("@links.Owner.Dogs.Name == 'Person 0'");
             Assert.That(dogs.Count(), Is.EqualTo(4));
             Assert.That(dogs.ToArray().All(d => d.Owners.Any(o => o.Name == "Person 0")));
         }
