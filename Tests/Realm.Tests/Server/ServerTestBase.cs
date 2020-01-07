@@ -42,7 +42,6 @@ namespace Realms.Tests.Server
         {
             base.CustomSetUp();
 
-            //SyncConfigurationBase.Initialize(UserPersistenceMode.Disabled);
             _baseFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             Directory.CreateDirectory(NotifierFolder);
