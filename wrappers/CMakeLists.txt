@@ -181,6 +181,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   add_definitions(
     /D_DISABLE_EXTENDED_ALIGNED_STORAGE # https://developercommunity.visualstudio.com/comments/279328/view.html
+    /D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
   )
 
   # always produce a PDB
