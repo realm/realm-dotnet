@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Realm.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "--labels=After",
+      "nativeDebugging": true
+    }
+  }
+}
