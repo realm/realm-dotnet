@@ -130,26 +130,30 @@ namespace Realms.Tests.Database
         {
             var path = RealmConfiguration.DefaultConfiguration.DatabasePath;
 
-            // Arrange
-            var config = new RealmConfiguration(path)
+            var oldSchema = new Schema.RealmSchema.Builder();
             {
-                ShouldDeleteIfMigrationNeeded = true
-            };
-
-            TestHelpers.CopyBundledFileToDocuments(FileToMigrate, path);
-
-            try
-            {
-                // Act - should cope by deleting and silently recreating
-                using (var realm = Realm.GetInstance(config))
-                {
-                    // Assert
-                    Assert.That(File.Exists(config.DatabasePath));
-                }
+                var person = new Schema.ObjectSchema.Builder("Person");
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
+                oldSchema.Add(person.Build());
             }
-            finally
+            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
             {
-                Realm.DeleteRealm(config);
+                realm.Write(() =>
+                {
+                    dynamic person = realm.CreateObject("Person", null);
+                    person.Name = "Foo";
+                });
+            }
+
+            var newSchema = new Schema.RealmSchema.Builder();
+            {
+                var person = new Schema.ObjectSchema.Builder("Person");
+                person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
+                newSchema.Add(person.Build());
+            }
+            using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
+            {
+                Assert.That(realm.All("Person"), Is.Empty);
             }
         }
     }

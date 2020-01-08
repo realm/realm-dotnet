@@ -143,24 +143,26 @@ REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, siz
                                               NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        Utf16StringAccessor base_path(base_path_buf, base_path_len);
-        Utf16StringAccessor user_agent(user_agent_buf, user_agent_len);
+        SyncClientConfig config;
 
-        auto metadata_mode = SyncManager::MetadataMode::NoEncryption;
+        config.base_file_path = Utf16StringAccessor(base_path_buf, base_path_len);
+        config.user_agent_binding_info = Utf16StringAccessor(user_agent_buf, user_agent_len);
+
         if (mode) {
-            metadata_mode = *mode;
+            config.metadata_mode = *mode;
 #if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR
         } else {
-            metadata_mode = SyncManager::MetadataMode::Encryption;
+            config.metadata_mode = SyncManager::MetadataMode::Encryption;
 #endif
         }
 
-        util::Optional<std::vector<char>> encryption_key;
         if (encryption_key_buf) {
-            encryption_key = std::vector<char>(encryption_key_buf, encryption_key_buf + 64);
+            config.custom_encryption_key = std::vector<char>(encryption_key_buf, encryption_key_buf + 64);
         }
-        
-        SyncManager::shared().configure(base_path, metadata_mode, user_agent, encryption_key, reset_on_error);
+
+        config.reset_metadata_on_error = reset_on_error;
+
+        SyncManager::shared().configure(std::move(config));
     });
 }
     

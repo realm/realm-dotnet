@@ -139,7 +139,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         parser::ParserResult result = parser::parse(query_string.to_string());
         
         parser::KeyPathMapping mapping;
-        realm::alias_backlinks(mapping, *realm);
+        realm::populate_keypath_mapping(mapping, *realm);
         
         query_builder::NoArguments no_args;
         query_builder::apply_predicate(query, result.predicate, no_args, mapping);

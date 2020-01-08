@@ -10,12 +10,14 @@ vNext (TBD)
   serializers do not attempt to serialize fields such as `Realm` and `ObjectSchema` which contain handles to unmanaged data.
 * Fixed an issue that would result in a compile error when `[Required]` is applied on `IList<string>` property. (Contributed by [braudabaugh](https://github.com/braudabaugh))
 * Fixed an issue that prevented projects that include the Realm NuGet package from being debugged. (PR [#1927](https://github.com/realm/realm-dotnet/pull/1927))
+* The sync client would fail to reconnect after failing to integrate a changeset. The bug would lead to further corruption of the client’s Realm file. (since 3.0.0).
+* The string-based query parser (`results.Filter(...)`) used to need the `class_` prefix for class names when querying over backlink properties. This has been fixed so that only the public `ObjectSchema` name is necessary. For example, `@links.class_Person.Siblings` becomes `@links.Person.Siblings`.
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 
 ### Internal
-* None
+* Upgraded Sync from 4.7.5 to 4.9.0 and Core from 5.23.3 to 5.23.6.
 
 4.2.0 (2019-10-07)
 ------------------

@@ -168,7 +168,7 @@ namespace Realms.Schema
             return new RealmSchema(objects);
         }
 
-        private class Builder : List<ObjectSchema>
+        internal class Builder : List<ObjectSchema>
         {
             public RealmSchema Build()
             {

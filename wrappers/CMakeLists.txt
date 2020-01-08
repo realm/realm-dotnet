@@ -34,7 +34,7 @@ if(APPLE)
   set(REALM_PARSER_LIBRARY_LOCATION_DEBUG "${REALM_SYNC_DIRECTORY}/librealm-parser-${platform}-dbg.a")
   set(REALM_PARSER_LIBRARY_LOCATION "${REALM_SYNC_DIRECTORY}/librealm-parser-${platform}.a")
   set(REALM_SYNC_LIBRARIES ${REALM_SYNC_LIBRARY_LOCATION_DEBUG} ${REALM_SYNC_LIBRARY_LOCATION} ${REALM_PARSER_LIBRARY_LOCATION_DEBUG} ${REALM_PARSER_LIBRARY_LOCATION})
-  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.xz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
+  download_realm_tarball("https://static.realm.io/downloads/sync/realm-sync-cocoa-${REALM_SYNC_VERSION}.tar.gz" ${REALM_SYNC_DIRECTORY} "${REALM_SYNC_LIBRARIES}")
   add_custom_target(extract-realm-tarball DEPENDS ${REALM_SYNC_LIBRARIES})
 
   add_library(realm STATIC IMPORTED)
@@ -181,6 +181,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   add_definitions(
     /D_DISABLE_EXTENDED_ALIGNED_STORAGE # https://developercommunity.visualstudio.com/comments/279328/view.html
+    /D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
   )
 
   # always produce a PDB
