@@ -41,7 +41,7 @@ if(APPLE)
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${REALM_SYNC_LIBRARY_LOCATION_DEBUG})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${REALM_SYNC_LIBRARY_LOCATION})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${REALM_SYNC_LIBRARY_LOCATION})
-  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads -lz ${CRYPTO_LIBRARIES} ${SSL_LIBRARIES})
+  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads -lz ${CRYPTO_LIBRARIES} ${SSL_LIBRARIES} "-framework Security")
   add_dependencies(realm extract-realm-tarball)
 
   add_library(realm-parser STATIC IMPORTED)
