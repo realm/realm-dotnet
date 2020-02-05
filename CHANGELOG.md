@@ -1,4 +1,4 @@
-vNext (TBD)
+4.3.0 (2020-02-05)
 ------------------
 
 ### Enhancements
@@ -19,7 +19,7 @@ vNext (TBD)
 * Realm Object Server: 3.23.1 or later.
 
 ### Internal
-* Upgraded Sync from 4.7.5 to 4.9.0 and Core from 5.23.3 to 5.23.6.
+* Upgraded Sync from 4.7.5 to 4.9.5 and Core from 5.23.3 to 5.23.8.
 
 4.2.0 (2019-10-07)
 ------------------
