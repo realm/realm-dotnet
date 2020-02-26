@@ -4,7 +4,7 @@ FROM golang:alpine AS build
 
 # Do a system update
 # No need to put this into separate steps.
-RUN apk update && apk add git curl jq
+RUN apk update && apk add git curl
 
 # Declare base dir
 WORKDIR $GOPATH/src/github.com/10gen/stitch-cli
@@ -39,6 +39,6 @@ WORKDIR /project
 # Do a system update
 # We can run it in one step, as it is more likely that an update
 # is available than that ca-certificates have changed
-RUN apk update && apk add --no-cache ca-certificates
+RUN apk update && apk add ca-certificates jq curl
 
 COPY --from=build /go/src/github.com/10gen/stitch-cli/stitch-cli /usr/bin/
