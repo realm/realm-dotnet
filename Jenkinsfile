@@ -17,7 +17,9 @@ stage('Checkout') {
 
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
       test_runner_image.inside("--link ${rc.id}:rc") {
-        echo "realm cloud url: ${env.RC_PORT_9080_TCP_ADDR}:${env.RC_PORT_9080_TCP_PORT}"
+        sh """
+          echo $RC_PORT_9080_TCP_ADDR:$RC_PORT_9080_TCP_PORT
+        """
       }
     }
   }
