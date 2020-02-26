@@ -12,6 +12,17 @@ String versionSuffix = ''
 
 stage('Checkout') {
   nodeWithCleanup('docker-cph-01') {
+    checkout([
+      $class: 'GitSCM',
+      branches: scm.branches,
+      gitTool: 'native git',
+      extensions: scm.extensions + [
+        [$class: 'CloneOption', depth: 0, shallow: true],
+        [$class: 'SubmoduleOption', recursiveSubmodules: true]
+      ],
+      userRemoteConfigs: scm.userRemoteConfigs
+    ])
+
     def test_runner_image = buildDockerEnv("ci/realm-dotnet:testimage", extra_flags: "-f testimage.Dockerfile")
 
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
