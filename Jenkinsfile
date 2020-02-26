@@ -28,6 +28,20 @@ stage('Checkout') {
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
       test_runner_image.inside("--link ${rc.id}:rc") {
         sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
+
+        def access_token = sh(
+          script: 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login -s | jq ".access_token" -r'
+          returnStdout: true
+        ).trim()
+
+        echo "token: $access_token"
+
+        def group_id = sh(
+          script: "curl --header 'Authorization: Bearer $access_token' http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/profile -s | jq '.roles[0].group_id' -r"
+          returnStdout: true
+        ).trim()
+
+        echo "group id: $group_id"
       }
     }
   }

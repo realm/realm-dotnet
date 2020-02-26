@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:2.1
 
 RUN apt-get update -yq && apt-get upgrade -yq && \
-apt-get install -yq curl git nano
+apt-get install -yq curl git nano jq
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
 apt-get install -yq nodejs
