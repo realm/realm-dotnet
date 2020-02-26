@@ -23,33 +23,7 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    def stitch_cli_image = buildDockerEnv("ci/stitch-cli:190", extra_args: "-f stitch-cli.dockerfile")
-
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
-      stitch_cli_image.inside("--link ${rc.id}:rc") {
-        sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
-        sh 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login'
-
-        def access_token = sh(
-          script: 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login -s | jq ".access_token" -r',
-          returnStdout: true
-        ).trim()
-
-        echo "token: $access_token"
-
-        def group_id = sh(
-          script: "curl --header 'Authorization: Bearer $access_token' http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/profile -s | jq '.roles[0].group_id' -r",
-          returnStdout: true
-        ).trim()
-
-        echo "group id: $group_id"
-
-        sh """
-          /usr/bin/stitch-cli login --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT --auth-provider=local-userpass --username=unique_user@domain.com --password=password
-          /usr/bin/stitch-cli import --app-name some-app --app-id some-app-yxmfy --project-id $group_id --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT -y --strategy replace
-        """
-      }
-
       def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
       test_runner_image.pull()
       test_runner_image.inside("--link ${rc.id}:rc") {
@@ -84,8 +58,29 @@ def withRealmCloud(String version, block = { it }) {
   docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
     // run image, get IP
     docker.image("${env.DOCKER_REGISTRY}/ci/mongodb-realm-images:${version}")
-      .withRun() { obj ->
-        block(obj)
+      .withRun { rc ->
+        docker.image("${env.DOCKER_REGISTRY}/ci/stitch-cli:190").inside("--link ${rc.id}:rc") {
+          sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
+          def access_token = sh(
+            script: 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login -s | jq ".access_token" -r',
+            returnStdout: true
+          ).trim()
+
+          echo "token: $access_token"
+
+          def group_id = sh(
+            script: "curl --header 'Authorization: Bearer $access_token' http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/profile -s | jq '.roles[0].group_id' -r",
+            returnStdout: true
+          ).trim()
+
+          echo "group id: $group_id"
+
+          sh """
+            /usr/bin/stitch-cli login --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT --auth-provider=local-userpass --username=unique_user@domain.com --password=password
+            /usr/bin/stitch-cli import --app-name some-app --app-id some-app-yxmfy --project-id $group_id --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT -y --strategy replace
+          """
+        }
+        block(rc)
     }
   }
 }
