@@ -11,3 +11,5 @@ RUN npm install -g npm
 RUN cd /tmp && npm install mongodb-stitch-cli
 
 ENV PATH "${PATH}:/tmp/node_modules/mongodb-stitch-cli"
+
+WORKDIR /tmp
