@@ -11,7 +11,7 @@ def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 String versionSuffix = ''
 
 stage('Checkout') {
-  nodeWithCleanup('docker') {
+  nodeWithCleanup('docker-cph-03') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
