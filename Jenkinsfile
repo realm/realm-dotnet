@@ -12,7 +12,7 @@ String versionSuffix = ''
 
 stage('Checkout') {
   nodeWithCleanup('docker-cph-01') {
-    def test_runner_image = buildDockerEnv("ci/realm-dotnet:testimage2", extra_flags: "-f testimage.Dockerfile")
+    def test_runner_image = buildDockerEnv("ci/realm-dotnet-server:testimage", extra_flags: "-f testimage.Dockerfile")
 
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
       test_runner_image.inside("--link ${rc.id}:rc") {
