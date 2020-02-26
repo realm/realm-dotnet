@@ -85,7 +85,7 @@ def withRealmCloud(String version, block = { it }) {
   docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
     // run image, get IP
     docker.image("${env.DOCKER_REGISTRY}/ci/mongodb-realm-images:${version}")
-      .withRun("--name rc") { obj ->
+      .withRun("--name rc2") { obj ->
         block(obj)
     }
   }
