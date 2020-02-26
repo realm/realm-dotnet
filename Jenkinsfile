@@ -29,6 +29,8 @@ stage('Checkout') {
       test_runner_image.inside("--link ${rc.id}:rc") {
         sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
 
+        sh 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login'
+
         def access_token = sh(
           script: 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login -s | jq ".access_token" -r',
           returnStdout: true
@@ -42,6 +44,11 @@ stage('Checkout') {
         ).trim()
 
         echo "group id: $group_id"
+
+        sh """
+          stitch-cli login --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT --auth-provider=local-userpass --username=unique_user@domain.com --password=password
+          stitch-cli import --app-name some-app --app-id some-app-yxmfy --project-id $group_id --base-url=http://\$RC_PORT_9090_TCP_ADDR:\$RC_PORT_9090_TCP_PORT -y --strategy replace
+        """
       }
     }
   }
