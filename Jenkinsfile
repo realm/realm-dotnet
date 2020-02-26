@@ -59,7 +59,7 @@ def withRealmCloud(String version, block = { it }) {
     // run image, get IP
     docker.image("${env.DOCKER_REGISTRY}/ci/mongodb-realm-images:${version}")
       .withRun { rc ->
-        docker.image("${env.DOCKER_REGISTRY}/ci/stitch-cli:190").inside("--link ${rc.id}:rc") {
+        docker.image("${env.DOCKER_REGISTRY}/ci/stitch-cli:190").inside("-v $WORKSPACE/.config/stitch:/root/.config/stitch --link ${rc.id}:rc") {
           sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
           def access_token = sh(
             script: 'curl --request POST --header "Content-Type: application/json" --data \'{ "username":"unique_user@domain.com", "password":"password" }\' http://$RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT/api/admin/v3.0/auth/providers/local-userpass/login -s | jq ".access_token" -r',
