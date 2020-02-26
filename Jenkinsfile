@@ -25,9 +25,6 @@ stage('Checkout') {
 
     def stitch_cli_image = buildDockerEnv("ci/stitch-cli:190", extra_args: "-f stitch-cli.dockerfile")
 
-    def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
-    test_runner_image.pull()
-
     withRealmCloud("test_server-0ed2349a36352666402d0fb2e8763ac67731768c-race") { rc ->
       stitch_cli_image.inside("--link ${rc.id}:rc") {
         sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
@@ -53,6 +50,8 @@ stage('Checkout') {
         """
       }
 
+      def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+      test_runner_image.pull()
       test_runner_image.inside("--link ${rc.id}:rc") {
         sh 'echo $RC_PORT_9090_TCP_ADDR:$RC_PORT_9090_TCP_PORT'
       }
@@ -85,7 +84,7 @@ def withRealmCloud(String version, block = { it }) {
   docker.withRegistry("https://${env.DOCKER_REGISTRY}", "ecr:eu-west-1:aws-ci-user") {
     // run image, get IP
     docker.image("${env.DOCKER_REGISTRY}/ci/mongodb-realm-images:${version}")
-      .withRun("--name rc2") { obj ->
+      .withRun() { obj ->
         block(obj)
     }
   }
