@@ -11,7 +11,7 @@ def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 String versionSuffix = ''
 
 stage('Checkout') {
-  rlmNode('docker-cph-03') {
+  rlmNode('docker') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
