@@ -21,6 +21,7 @@
 
 #include <memory>
 #include "collection_notifications.hpp"
+#include "error_handling.hpp"
 
 namespace realm {
     struct MarshallableCollectionChangeSet {
@@ -51,13 +52,13 @@ namespace realm {
         ObjectSchema* schema;
     };
     
-    inline size_t get_property_index(const ObjectSchema* schema, const size_t column_index) {
+    inline size_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
         if (!schema)
             return 0;
         
         auto const& props = schema->persisted_properties;
         for (size_t i = 0; i < props.size(); ++i) {
-            if (props[i].table_column == column_index) {
+            if (props[i].column_key == column_key) {
                 return i;
             }
         }
@@ -73,7 +74,7 @@ namespace realm {
         
         return std::vector<size_t>();
     }
-    
+
     static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, std::exception_ptr e) {
         if (e) {
             try {
@@ -90,15 +91,15 @@ namespace realm {
             auto insertions = get_indexes_vector(changes.insertions);
             auto modifications = get_indexes_vector(changes.modifications);
             auto modifications_new = get_indexes_vector(changes.modifications_new);
-            
+
             std::vector<size_t> properties;
-            
-            for (size_t i = 0; i < changes.columns.size(); i++) {
-                if (!changes.columns[i].empty()) {
-                    properties.emplace_back(get_property_index(context->schema, i));
+
+            for (auto& pair : changes.columns) {
+                if (!pair.second.empty()) {
+                    properties.emplace_back(get_property_index(context->schema, ColKey(pair.first)));
                 }
             }
-            
+ 
             MarshallableCollectionChangeSet marshallable_changes {
                 { deletions.data(), deletions.size() },
                 { insertions.data(), insertions.size() },

@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-#ifndef ERROR_HANDLING_HPP
-#define ERROR_HANDLING_HPP
+#pragma once
 
 #include <string>
 #include <new>
@@ -112,5 +111,3 @@ auto handle_errors(NativeException::Marshallable& ex, F&& func) -> decltype(func
 }
 
 } // namespace realm
-
-#endif // ERROR_HANDLING_HPP

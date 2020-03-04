@@ -16,14 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef SCHEMA_CS_HPP
-#define SCHEMA_CS_HPP
+#pragma once
 
 #include <vector>
-#include "object_accessor.hpp"
-#include "object-store/src/schema.hpp"
-#include "object-store/src/object_schema.hpp"
-#include "object-store/src/property.hpp"
+#include <object_accessor.hpp>
+#include <schema.hpp>
+#include <object_schema.hpp>
+#include <property.hpp>
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
 
@@ -89,5 +88,3 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema&
 }
 
 util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
-
-#endif /* defined(SCHEMA_CS_HPP) */

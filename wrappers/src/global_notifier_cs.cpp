@@ -29,29 +29,29 @@
 using namespace realm;
 using namespace realm::binding;
 using NotifierHandle = std::shared_ptr<GlobalNotifier>;
-using MarshallableIndexSet = MarshallableCollectionChangeSet::MarshallableIndexSet;
+
+struct MarshaledModificationInfo {
+    ObjKey obj;
+    MarshaledVector<ColKey> changed_columns;
+};
+
+struct MarshaledChangeSet {
+    StringData class_name = {};
+
+    MarshaledVector<ObjKey> deletions;
+    MarshaledVector<ObjKey> insertions;
+    MarshaledVector<MarshaledModificationInfo> modifications;
+};
 
 struct MarshaledChangeNotification {
-public:
-    const char* path_buf;
-    size_t path_len;
+    StringData path = {};
 
-    const char* path_on_disk_buf;
-    size_t path_on_disk_len;
+    StringData path_on_disk = {};
 
     SharedRealm* previous = nullptr;
     SharedRealm* current;
 
-    struct {
-        const char* class_name_buf;
-        size_t class_name_len;
-
-        MarshallableIndexSet deletions;
-        MarshallableIndexSet insertions;
-        MarshallableIndexSet previous_modifications;
-        MarshallableIndexSet current_modifications;
-    }* changesets_buf;
-    size_t changesets_count;
+    MarshaledVector<MarshaledChangeSet> changesets;
 };
 
 bool (*s_should_handle_callback)(const void* managed_instance, const char* path, size_t path_len);
@@ -148,9 +148,7 @@ REALM_EXPORT SharedRealm* realm_server_global_notifier_get_realm_for_writing(Sha
                                                                              NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [current_realm] {
-        auto config = current_realm->config();
-        config.cache = true;
-        return new SharedRealm(Realm::get_shared_realm(std::move(config)));
+        return new SharedRealm(Realm::get_shared_realm(current_realm->config()));
     });
 }
 
@@ -167,42 +165,54 @@ REALM_EXPORT void realm_server_global_notifier_notification_get_changes(GlobalNo
         MarshaledChangeNotification notification;
 
         auto changes = change.get_changes();
-        notification.changesets_count = changes.size();
-        std::vector<std::remove_pointer<decltype(notification.changesets_buf)>::type> changesets;
-        changesets.reserve(notification.changesets_count);
+        std::vector<MarshaledChangeSet> changesets;
+        changesets.reserve(changes.size());
 
-        std::vector<std::vector<size_t>> vector_storage;
-        vector_storage.reserve(notification.changesets_count * 4);
+        std::vector<std::vector<ObjKey>> objkeys_storage;
+        std::vector<std::vector<MarshaledModificationInfo>> modifications_storage;
+        std::vector<std::vector<ColKey>> columns_storage;
+        objkeys_storage.reserve(changes.size() * 2);
+        modifications_storage.reserve(changes.size());
+        columns_storage.reserve(changes.size());
+
         for (auto& changeset : changes) {
-            decltype(changesets)::value_type c{changeset.first.c_str(), changeset.first.size()};
+            MarshaledChangeSet c;
+            c.class_name = changeset.first;
 
-            vector_storage.push_back(get_indexes_vector(changeset.second.deletions));
-            c.deletions = {vector_storage.back().data(), vector_storage.back().size()};
+            auto get_objkeys = [](const ObjectChangeSet::ObjectSet& set) {
+                return std::vector<ObjKey>(set.begin(), set.end());
+            };
 
-            vector_storage.push_back(get_indexes_vector(changeset.second.insertions));
-            c.insertions = {vector_storage.back().data(), vector_storage.back().size()};
+            auto get_colkeys = [](const ObjectChangeSet::ObjectMapToColumnSet::mapped_type& set) {
+                return std::vector<ColKey>(set.begin(), set.end());
+            };
 
-            vector_storage.push_back(get_indexes_vector(changeset.second.modifications));
-            c.previous_modifications = {vector_storage.back().data(), vector_storage.back().size()};
+            objkeys_storage.push_back(get_objkeys(changeset.second.get_deletions()));
+            c.deletions = objkeys_storage.back();
 
-            vector_storage.push_back(get_indexes_vector(changeset.second.modifications_new));
-            c.current_modifications = {vector_storage.back().data(), vector_storage.back().size()};
+            objkeys_storage.push_back(get_objkeys(changeset.second.get_insertions()));
+            c.insertions = objkeys_storage.back();
+
+            modifications_storage.emplace_back();
+            for (auto& modification : changeset.second.get_modifications()) {
+                columns_storage.push_back(get_colkeys(modification.second));
+                modifications_storage.back().push_back({ ObjKey(modification.first), columns_storage.back() });
+            }
+            c.modifications = modifications_storage.back();
 
             changesets.push_back(std::move(c));
         }
 
-        notification.changesets_buf = changesets.data();
+        notification.changesets = changesets;
 
-        notification.path_buf = change.realm_path.c_str();
-        notification.path_len = change.realm_path.size();
+        notification.path = change.realm_path;
 
         if (auto previous = change.get_old_realm()) {
             notification.previous = new SharedRealm(std::move(previous));
         }
         auto newRealm = change.get_new_realm();
 
-        notification.path_on_disk_buf = newRealm->config().path.c_str();
-        notification.path_on_disk_len = newRealm->config().path.size();
+        notification.path_on_disk = newRealm->config().path;
 
         notification.current = new SharedRealm(std::move(newRealm));
 

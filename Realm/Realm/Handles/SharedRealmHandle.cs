@@ -67,16 +67,19 @@ namespace Realms
             public static extern void cancel_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr refresh(SharedRealmHandle sharedRealm, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool refresh(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr is_same_instance(SharedRealmHandle lhs, SharedRealmHandle rhs, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool is_same_instance(SharedRealmHandle lhs, SharedRealmHandle rhs, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version", CallingConvention = CallingConvention.Cdecl)]
             public static extern ulong get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -206,14 +209,14 @@ namespace Realms
         {
             var result = NativeMethods.is_in_transaction(this, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         public bool Refresh()
         {
             var result = NativeMethods.refresh(this, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         public TableHandle GetTable(string tableName)
@@ -227,7 +230,7 @@ namespace Realms
         {
             var result = NativeMethods.is_same_instance(this, other, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         public ulong GetSchemaVersion()

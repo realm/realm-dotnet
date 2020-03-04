@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+
 namespace Realms.Server
 {
     /// <summary>
@@ -25,24 +27,23 @@ namespace Realms.Server
     public interface IChangeSetDetails
     {
         /// <summary>
-        /// Gets a collection of <see cref="IModificationDetails"/> instances, describing
-        /// the objects that have been inserted to the collection.
+        /// Gets a collection of objects that have been inserted to the collection.
         /// </summary>
-        /// <value>An array of insertions.</value>
-        IModificationDetails[] Insertions { get; }
+        /// <value>An array of <see cref="RealmObject"/>s.</value>
+        IReadOnlyList<dynamic> Insertions { get; }
 
         /// <summary>
         /// Gets a collection of <see cref="IModificationDetails"/> instances, describing
         /// the objects that have been modified in the collection.
         /// </summary>
         /// <value>An array of modifications.</value>
-        IModificationDetails[] Modifications { get; }
+        IReadOnlyList<IModificationDetails> Modifications { get; }
 
         /// <summary>
-        /// Gets a collection of <see cref="IModificationDetails"/> instances, describing
-        /// the objects that have been deleted from the collection.
+        /// Gets a collection of the objects that have been deleted from the collection,
+        /// at the version just prior to their deletion.
         /// </summary>
-        /// <value>An array of deletions.</value>
-        IModificationDetails[] Deletions { get; }
+        /// <value>An array of <see cref="RealmObject"/>s.</value>
+        IReadOnlyList<dynamic> Deletions { get; }
     }
 }

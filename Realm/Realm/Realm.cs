@@ -468,6 +468,17 @@ namespace Realms
             return ret;
         }
 
+        internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectKey objectKey)
+        {
+            var objectHandle = metadata.Table.Get(SharedRealmHandle, objectKey);
+            if (objectHandle != null)
+            {
+                return MakeObject(metadata, objectHandle);
+            }
+
+            return null;
+        }
+
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
             var resultsPtr = IntPtr.Zero;

@@ -52,11 +52,9 @@ namespace Realms.Tests.Server
 
                     var containsInsertion = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 1, change =>
                     {
-                        return change.Insertions.Length == 1 &&
-                               change.Deletions.Length == 0 &&
-                               change.Modifications.Length == 0 &&
-                               change.Insertions[0].CurrentIndex == 0 &&
-                               change.Insertions[0].PreviousIndex == -1;
+                        return change.Insertions.Count == 1 && obj.Equals(change.Insertions[0]) &&
+                               change.Deletions.Count == 0 &&
+                               change.Modifications.Count == 0;
                     });
 
                     Assert.True(containsInsertion);
@@ -65,11 +63,11 @@ namespace Realms.Tests.Server
 
                     var containsModification = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 2, change =>
                     {
-                        return change.Insertions.Length == 0 &&
-                               change.Deletions.Length == 0 &&
-                               change.Modifications.Length == 1 &&
-                               change.Modifications[0].CurrentIndex == 0 &&
-                               change.Modifications[0].PreviousIndex == 0;
+                        return change.Insertions.Count == 0 &&
+                               change.Deletions.Count == 0 &&
+                               change.Modifications.Count == 1 &&
+                               obj.Equals(change.Modifications[0].CurrentObject) &&
+                               change.Modifications[0].ChangedProperties.IsProperSubsetOf(new[] { nameof(obj.Int) });
                     });
 
                     Assert.True(containsModification);
@@ -78,11 +76,10 @@ namespace Realms.Tests.Server
 
                     var containsDeletion = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 3, change =>
                     {
-                        return change.Insertions.Length == 0 &&
-                               change.Deletions.Length == 1 &&
-                               change.Modifications.Length == 0 &&
-                               change.Deletions[0].CurrentIndex == -1 &&
-                               change.Deletions[0].PreviousIndex == 0;
+                        return change.Insertions.Count == 0 &&
+                               change.Deletions.Count == 1 &&
+                               change.Modifications.Count == 0 &&
+                               obj.Equals(change.Deletions[0]);
                     });
 
                     Assert.True(containsDeletion);

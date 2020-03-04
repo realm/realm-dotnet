@@ -16,59 +16,60 @@
 //
 //////////////////////////////////////////////////////////////////////////// 
 
-#include <realm.hpp>
-#include "error_handling.hpp"
-#include "marshalling.hpp"
-#include "realm_export_decls.hpp"
-#include "results.hpp"
-#include "object_accessor.hpp"
-#include "object-store/src/thread_safe_reference.hpp"
-#include "notifications_cs.hpp"
-#include "wrapper_exceptions.hpp"
-#include "timestamp_helpers.hpp"
-#include "schema_cs.hpp"
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
+
+#include <realm.hpp>
+#include <object_accessor.hpp>
+#include <thread_safe_reference.hpp>
+#include <results.hpp>
+
+#include "error_handling.hpp"
+#include "marshalling.hpp"
+#include "notifications_cs.hpp"
+#include "wrapper_exceptions.hpp"
+#include "schema_cs.hpp"
 #include "keypath_helpers.hpp"
+#include "realm_export_decls.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 template<typename T>
-inline T get(Results* results, size_t ndx, NativeException::Marshallable& ex)
+inline T get(Results& results, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        const size_t count = results->size();
+        const size_t count = results.size();
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
 
-        return results->get<T>(ndx);
+        return results.get<T>(ndx);
     });
 }
 
 extern "C" {
 
-REALM_EXPORT void results_destroy(Results* results_ptr)
+REALM_EXPORT void results_destroy(Results* results)
 {
-    delete results_ptr;
+    delete results;
 }
 
 // TODO issue https://github.com/realm/realm-dotnet-private/issues/40 added as needs
 // TODO https://github.com/realm/realm-object-store/issues/56 adding Results::operator==
-REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs, NativeException::Marshallable& ex)
+REALM_EXPORT bool results_is_same_internal_results(Results* lhs, Results* rhs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return (lhs == rhs || false /* *lhs == *rhs */);
     });
 }
 
-REALM_EXPORT Object* results_get_object(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* results_get_object(Results& results, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         try {
-            results_ptr->get_realm()->verify_thread();
+            results.get_realm()->verify_thread();
             
-            return new Object(results_ptr->get_realm(), results_ptr->get_object_schema(), results_ptr->get(ndx));
+            return new Object(results.get_realm(), results.get_object_schema(), results.get(ndx));
         }
         catch (std::out_of_range) {
             return static_cast<Object*>(nullptr);
@@ -76,56 +77,56 @@ REALM_EXPORT Object* results_get_object(Results* results_ptr, size_t ndx, Native
     });
 }
     
-REALM_EXPORT void results_get_primitive(Results* results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     collection_get_primitive(results, ndx, value, ex);
 }
 
-REALM_EXPORT size_t results_get_string(Results* results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
+REALM_EXPORT size_t results_get_string(Results& results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
 {
     return collection_get_string(results, ndx, value, value_len, is_null, ex);
 }
 
-REALM_EXPORT size_t results_get_binary(Results* results, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
+REALM_EXPORT size_t results_get_binary(Results& results, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
 {
     return collection_get_binary(results, ndx, return_buffer, buffer_size, is_null, ex);
 }
 
-REALM_EXPORT void results_clear(Results* results_ptr, SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT void results_clear(Results& results, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        if (results_ptr->get_realm() != realm) {
+        if (results.get_realm() != realm) {
             throw ObjectManagedByAnotherRealmException("Can only delete results from the Realm they belong to.");
         }
         
-        results_ptr->get_realm()->verify_in_write();
+        results.get_realm()->verify_in_write();
       
-        results_ptr->clear();
+        results.clear();
     });
 }
 
-REALM_EXPORT size_t results_count(Results* results_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        results_ptr->get_realm()->verify_thread();
+        results.get_realm()->verify_thread();
         
-        return results_ptr->size();
+        return results.size();
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results_ptr, void* managed_results, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, callback, [results_ptr](CollectionChangeCallback callback) {
-            return results_ptr->add_notification_callback(callback);
+        return subscribe_for_notifications(managed_results, callback, [results](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback);
         });
     });
 }
     
-REALM_EXPORT Query* results_get_query(Results* results_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Query(results_ptr->get_query());
+        return new Query(results.get_query());
     });
 }
     
@@ -157,10 +158,10 @@ REALM_EXPORT bool results_get_is_valid(const Results& results, NativeException::
     });
 }
 
-REALM_EXPORT ThreadSafeReference<Results>* results_get_thread_safe_reference(const Results& results, NativeException::Marshallable& ex)
+REALM_EXPORT ThreadSafeReference* results_get_thread_safe_reference(const Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new ThreadSafeReference<Results>{results.get_realm()->obtain_thread_safe_reference(results)};
+        return new ThreadSafeReference(results);
     });
 }
     
@@ -171,13 +172,13 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
     });
 }
 
-REALM_EXPORT size_t results_find_object(Results& results, const Object& object_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT size_t results_find_object(Results& results, const Object& object, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        if (results.get_realm() != object_ptr.realm()) {
+        if (results.get_realm() != object.realm()) {
             throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
         }
-        return results.index_of(object_ptr.row());
+        return results.index_of(object.obj());
     });
 }
 
