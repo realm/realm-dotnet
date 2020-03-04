@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Native;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Realms.Server.Native
+namespace Realms.Native
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct NativeChangeSet
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    internal struct ColumnKey
     {
-        public MarshaledString class_name;
-
-        public MarshaledVector<ObjectKey> deletions;
-        public MarshaledVector<ObjectKey> insertions;
-        public MarshaledVector<NativeModificationDetails> modifications;
-
-        public string ClassName => class_name.ToString();
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct NativeModificationDetails
-    {
-        public ObjectKey obj;
-
-        public MarshaledVector<ColumnKey> changed_columns;
+        private Int64 value;
     }
 }

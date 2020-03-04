@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
  
 #include <realm.hpp>
-#include <realm/lang_bind_helper.hpp>
 #include "marshalling.hpp"
 #include "error_handling.hpp"
 #include "realm_export_decls.hpp"
@@ -34,417 +33,399 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT void query_destroy(Query* query_ptr)
+REALM_EXPORT void query_destroy(Query* query)
 {
-    delete(query_ptr);
+    delete query;
 }
 
-REALM_EXPORT Object* query_find(Query* query_ptr, size_t begin_at_table_row, SharedRealm* realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> Object* {
-        if (begin_at_table_row >= query_ptr->get_table()->size())
-            return nullptr;
-
-        size_t row_ndx = query_ptr->find(begin_at_table_row);
-
-        if (row_ndx == not_found)
-            return nullptr;
-
-        const std::string object_name(ObjectStore::object_type_for_table_name(query_ptr->get_table()->get_name()));
-        auto& object_schema = *realm->get()->schema().find(object_name);
-        return new Object(*realm, object_schema, Row((*query_ptr->get_table())[row_ndx]));
-    });
-}
-    
-REALM_EXPORT Object* query_find_next(Query* query_ptr, const Object& after_object, NativeException::Marshallable& ex)
-{
-    auto realm = after_object.realm();
-    return query_find(query_ptr, after_object.row().get_index() + 1, &realm, ex);
-}
-    
-REALM_EXPORT size_t query_count(Query * query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT size_t query_count(Query& query, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return query_ptr->count();
+        return query.count();
     });
 }
 
-
-//convert from columnName to columnIndex returns -1 if the string is not a column name
+//convert from columnName to column_key returns -1 if the string is not a column name
 //assuming that the get_table() does not return anything that must be deleted
-REALM_EXPORT size_t query_get_column_index(Query* query_ptr, uint16_t* column_name, size_t column_name_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_get_column_key(Query& query, uint16_t* column_name, size_t column_name_len, ColKey& key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor str(column_name, column_name_len);
-        return query_ptr->get_table()->get_column_index(str);
+        key = query.get_table()->get_column_key(str);
     });
 }
 
-REALM_EXPORT void query_not(Query * query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void query_not(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->Not();
+        query.Not();
     });
 }
 
-REALM_EXPORT void query_group_begin(Query * query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void query_group_begin(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->group();
+        query.group();
     });
 }
 
-REALM_EXPORT void query_group_end(Query * query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void query_group_end(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->end_group();
+        query.end_group();
     });
 }
 
-REALM_EXPORT void query_or(Query * query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void query_or(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->Or();
+        query.Or();
     });
 }
 
-REALM_EXPORT void query_string_contains(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        Utf16StringAccessor str(value, value_len);
-        query_ptr->contains(columnIndex, str, case_sensitive);
-    });
-}
-
-REALM_EXPORT void query_string_starts_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_contains(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->begins_with(columnIndex, str, case_sensitive);
+        query.contains(column_key, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_ends_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_starts_with(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->ends_with(columnIndex, str, case_sensitive);
+        query.begins_with(column_key, str, case_sensitive);
+    });
+}
+
+REALM_EXPORT void query_string_ends_with(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        Utf16StringAccessor str(value, value_len);
+        query.ends_with(column_key, str, case_sensitive);
     });
 }
     
-REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_equal(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->equal(columnIndex, str, case_sensitive);
+        query.equal(column_key, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_not_equal(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->not_equal(columnIndex, str, case_sensitive);
+        query.not_equal(column_key, str, case_sensitive);
     });
 }
     
-REALM_EXPORT void query_string_like(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_like(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->like(columnIndex, str, case_sensitive);
+        query.like(column_key, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_bool_equal(Query& query, ColKey column_key, bool value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, size_t_to_bool(value));
+        query.equal(column_key, value);
     });
 }
 
-REALM_EXPORT void query_bool_not_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_bool_not_equal(Query& query, ColKey column_key, bool value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, size_t_to_bool(value));
+        query.not_equal(column_key, value);
     });
 }
 
-REALM_EXPORT void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, static_cast<int>(value));
+        query.equal(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_int_not_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_not_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, static_cast<int>(value));
+        query.not_equal(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_int_less(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_less(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, static_cast<int>(value));
+        query.less(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_int_less_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_less_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, static_cast<int>(value));
+        query.less_equal(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_int_greater(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_greater(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, static_cast<int>(value));
+        query.greater(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_int_greater_equal(Query * query_ptr, size_t columnIndex, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_int_greater_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, static_cast<int>(value));
+        query.greater_equal(column_key, static_cast<int>(value));
     });
 }
 
-REALM_EXPORT void query_long_equal(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, value);
+        query.equal(column_key, value);
     });
 }
 
-REALM_EXPORT void query_long_not_equal(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_not_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, value);
+        query.not_equal(column_key, value);
     });
 }
 
-REALM_EXPORT void query_long_less(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_less(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, value);
+        query.less(column_key, value);
     });
 }
 
-REALM_EXPORT void query_long_less_equal(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_less_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, value);
+        query.less_equal(column_key, value);
     });
 }
 
-REALM_EXPORT void query_long_greater(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_greater(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, value);
+        query.greater(column_key, value);
     });
 }
 
-REALM_EXPORT void query_long_greater_equal(Query * query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_long_greater_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, value);
+        query.greater_equal(column_key, value);
     });
 }
     
-    REALM_EXPORT void query_float_equal(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+    REALM_EXPORT void query_float_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, static_cast<float>(value));
+        query.equal(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_float_not_equal(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_float_not_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, static_cast<float>(value));
+        query.not_equal(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_float_less(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_float_less(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, static_cast<float>(value));
+        query.less(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_float_less_equal(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_float_less_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, static_cast<float>(value));
+        query.less_equal(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_float_greater(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_float_greater(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, static_cast<float>(value));
+        query.greater(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_float_greater_equal(Query * query_ptr, size_t columnIndex, float value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_float_greater_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, static_cast<float>(value));
+        query.greater_equal(column_key, static_cast<float>(value));
     });
 }
 
-REALM_EXPORT void query_double_equal(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, static_cast<double>(value));
+        query.equal(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_double_not_equal(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_not_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, static_cast<double>(value));
+        query.not_equal(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_double_less(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_less(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, static_cast<double>(value));
+        query.less(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_double_less_equal(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_less_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, static_cast<double>(value));
+        query.less_equal(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_double_greater(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_greater(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, static_cast<double>(value));
+        query.greater(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_double_greater_equal(Query * query_ptr, size_t columnIndex, double value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_double_greater_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, static_cast<double>(value));
+        query.greater_equal(column_key, static_cast<double>(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, from_ticks(value));
+        query.equal(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_not_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_not_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, from_ticks(value));
+        query.not_equal(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_less(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_less(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, from_ticks(value));
+        query.less(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_less_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_less_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, from_ticks(value));
+        query.less_equal(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_greater(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_greater(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, from_ticks(value));
+        query.greater(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_ticks_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_greater_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, from_ticks(value));
+        query.greater_equal(column_key, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_binary_equal(Query* query_ptr, size_t columnIndex, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+REALM_EXPORT void query_binary_equal(Query& query, ColKey column_key, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, BinaryData(buffer, buffer_length));
+        query.equal(column_key, BinaryData(buffer, buffer_length));
     });
 }
 
-REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+REALM_EXPORT void query_binary_not_equal(Query& query, ColKey column_key, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, BinaryData(buffer, buffer_length));
+        query.not_equal(column_key, BinaryData(buffer, buffer_length));
     });
 }
     
-REALM_EXPORT void query_object_equal(Query* query_ptr, size_t columnIndex, Object& object, NativeException::Marshallable& ex)
+REALM_EXPORT void query_object_equal(Query& query, ColKey column_key, Object& object, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->links_to(columnIndex, object.row());
+        query.links_to(column_key, object.obj().get_key());
     });
 }
     
-REALM_EXPORT void query_null_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
+REALM_EXPORT void query_null_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)   
 {   
     handle_errors(ex, [&]() {
-        if (query_ptr->get_table()->get_column_type(columnIndex) == DataType::type_Link) {
-            query_ptr->and_query(query_ptr->get_table()->column<Link>(columnIndex).is_null());
+        if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
+            query.and_query(query.get_table()->column<Link>(column_key).is_null());
         }
         else {
-            query_ptr->equal(columnIndex, null());
+            query.equal(column_key, null());
         }
     });
 }   
     
-REALM_EXPORT void query_null_not_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
+REALM_EXPORT void query_null_not_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)   
 {   
     handle_errors(ex, [&]() {
-        if (query_ptr->get_table()->get_column_type(columnIndex) == DataType::type_Link) {
-            query_ptr->and_query(query_ptr->get_table()->column<Link>(columnIndex).is_not_null());
+        if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
+            query.and_query(query.get_table()->column<Link>(column_key).is_not_null());
         }
         else {
-            query_ptr->not_equal(columnIndex, null());
+            query.not_equal(column_key, null());
         }
     });   
 }
 
-REALM_EXPORT Results* query_create_results(Query* query_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *query_ptr);
+        return new Results(realm, query);
     });
 }
 
-REALM_EXPORT Results* query_create_sorted_results(Query* query_ptr, SharedRealm* realm, Table* table_ptr, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_property_indices, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_sorted_results(Query& query, SharedRealm& realm, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_property_indices, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        std::vector<std::vector<size_t>> column_indices;
+        std::vector<std::vector<ColKey>> column_indices;
         std::vector<bool> ascending;
 
-        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
-        auto& properties = realm->get()->schema().find(object_name)->persisted_properties;
+        const std::string object_name(ObjectStore::object_type_for_table_name(query.get_table()->get_name()));
+        auto& properties = realm->schema().find(object_name)->persisted_properties;
         unflatten_sort_clauses(sort_clauses, clause_count, flattened_property_indices, column_indices, ascending, properties);
 
         DescriptorOrdering ordering;
-        ordering.append_sort({*table_ptr, column_indices, ascending});
-        return new Results(*realm, *query_ptr, std::move(ordering));
+        ordering.append_sort({column_indices, ascending});
+        Results result(realm, query, std::move(ordering));
+
+#if REALM_DEBUG
+        result.evaluate_query_if_needed(false);
+#endif
+
+        return new Results(std::move(result));
     });
 }
 

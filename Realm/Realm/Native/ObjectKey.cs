@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Native;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Realms.Server.Native
+namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct NativeChangeSet
+    internal struct ObjectKey : IEquatable<ObjectKey>
     {
-        public MarshaledString class_name;
+        private Int64 value;
 
-        public MarshaledVector<ObjectKey> deletions;
-        public MarshaledVector<ObjectKey> insertions;
-        public MarshaledVector<NativeModificationDetails> modifications;
+        public bool Equals(ObjectKey other) => value.Equals(other.value);
 
-        public string ClassName => class_name.ToString();
-    }
+        public override bool Equals(object obj)
+        {
+            switch(obj)
+            {
+                case ObjectKey other:
+                    return value.Equals(other.value);
+                default:
+                    return false;
+            }
+        }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct NativeModificationDetails
-    {
-        public ObjectKey obj;
+        public override int GetHashCode() => value.GetHashCode();
 
-        public MarshaledVector<ColumnKey> changed_columns;
+        public static bool operator ==(ObjectKey left, ObjectKey right) => left.value == right.value;
+
+        public static bool operator !=(ObjectKey left, ObjectKey right) => left.value != right.value;
     }
 }

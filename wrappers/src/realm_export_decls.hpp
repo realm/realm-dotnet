@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-#ifndef REALM_EXPORT
+#pragma once
 
 #ifdef WIN32
 #define REALM_EXPORT __declspec( dllexport )
 #else
 #define REALM_EXPORT __attribute__ ((visibility ("default")))
 #endif
-
-#endif  // REALM_EXPORT

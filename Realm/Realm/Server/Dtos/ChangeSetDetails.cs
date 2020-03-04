@@ -16,34 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
+using Realms.Native;
+using Realms.Server.Native;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Realms.Server
 {
     internal class ChangeSetDetails : IChangeSetDetails
     {
-        private readonly Lazy<IQueryable<dynamic>> _previousQuery;
-        private readonly Lazy<IQueryable<dynamic>> _currentQuery;
+        public IReadOnlyList<dynamic> Insertions { get; }
 
-        public IModificationDetails[] Insertions { get; }
+        public IReadOnlyList<IModificationDetails> Modifications { get; }
 
-        public IModificationDetails[] Modifications { get; }
+        public IReadOnlyList<dynamic> Deletions { get; }
 
-        public IModificationDetails[] Deletions { get; }
-
-        public ChangeSetDetails(Realm previous, Realm current, string className, int[] insertions, int[] modifications, int[] currentModifications, int[] deletions)
+        public ChangeSetDetails(Realm previous, Realm current, string className, IEnumerable<ObjectKey> insertions, IEnumerable<NativeModificationDetails> modifications, IEnumerable<ObjectKey> deletions)
         {
-            _previousQuery = new Lazy<IQueryable<dynamic>>(() => previous.All(className));
-            _currentQuery = new Lazy<IQueryable<dynamic>>(() => current.All(className));
+            var previousMetadata = previous?.Metadata[className];
+            var currentMetadata = current.Metadata[className];
 
-            Insertions = insertions.Select(i => new ModificationDetails(-1, i, _ => null, _currentQuery.Value.ElementAt)).ToArray();
-            Deletions = deletions.Select(i => new ModificationDetails(i, -1, _previousQuery.Value.ElementAt, _ => null)).ToArray();
-            Modifications = modifications.Select((value, index) => new ModificationDetails(
-                                                                            value,
-                                                                            currentModifications[index],
-                                                                            _previousQuery.Value.ElementAt,
-                                                                            _currentQuery.Value.ElementAt))
+            Insertions = insertions.Select(objKey => current.MakeObject(currentMetadata, objKey)).ToArray();
+            Deletions = deletions.Select(objKey => previous.MakeObject(previousMetadata, objKey)).ToArray();
+            Modifications = modifications.Select(m => new ModificationDetails(() => previous.MakeObject(previousMetadata, m.obj),
+                                                                              () => current.MakeObject(currentMetadata, m.obj),
+                                                                              () => new HashSet<string>(m.changed_columns.AsEnumerable().Select(currentMetadata.Table.GetColumnName))))
                                          .ToArray();
         }
     }

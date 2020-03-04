@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Native;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -32,8 +33,8 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_is_valid(ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_row_index", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_row_index(ObjectHandle objectHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_key", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_key(ObjectHandle objectHandle, out ObjectKey key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr objectHandle);
@@ -45,7 +46,8 @@ namespace Realms
             public static extern Int64 get_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_nullable_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
@@ -71,13 +73,15 @@ namespace Realms
             public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_bool(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
+            public static extern void set_bool(ObjectHandle handle, IntPtr propertyIndex, [MarshalAs(UnmanagedType.U1)] bool value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_bool(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_bool(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_nullable_bool(ObjectHandle handle, IntPtr propertyIndex, out IntPtr retVal, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_bool(ObjectHandle handle, IntPtr propertyIndex, out IntPtr retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
@@ -89,7 +93,8 @@ namespace Realms
             public static extern Int64 get_int64(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_nullable_int64(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_int64(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_float", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_float(ObjectHandle handle, IntPtr propertyIndex, Single value, out NativeException ex);
@@ -98,7 +103,8 @@ namespace Realms
             public static extern Single get_float(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_float", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_nullable_float(ObjectHandle handle, IntPtr propertyIndex, out Single retVal, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_float(ObjectHandle handle, IntPtr propertyIndex, out Single retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_double", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_double(ObjectHandle handle, IntPtr propertyIndex, Double value, out NativeException ex);
@@ -107,7 +113,8 @@ namespace Realms
             public static extern Double get_double(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_nullable_double(ObjectHandle handle, IntPtr propertyIndex, out Double retVal, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_nullable_double(ObjectHandle handle, IntPtr propertyIndex, out Double retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_binary(ObjectHandle handle, IntPtr propertyIndex,
@@ -117,8 +124,8 @@ namespace Realms
             public static extern IntPtr get_binary(ObjectHandle handle, IntPtr propertyIndex,
                 IntPtr buffer, IntPtr bufferLength, [MarshalAs(UnmanagedType.I1)] out bool is_null, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove_row", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void remove_row(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void remove(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -128,9 +135,7 @@ namespace Realms
             public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr propertyIndex, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle,
-                [MarshalAs(UnmanagedType.LPWStr)] string type, IntPtr typeLen,
-                [MarshalAs(UnmanagedType.LPWStr)] string property, IntPtr propertyLen, out NativeException nativeException);
+            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle, TableHandle source_table, IntPtr source_property_index, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
@@ -220,7 +225,7 @@ namespace Realms
 
         public DateTimeOffset? GetNullableDateTimeOffset(IntPtr propertyIndex)
         {
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_timestamp_ticks(this, propertyIndex, out var ticks, out var nativeException));
+            var hasValue = NativeMethods.get_nullable_timestamp_ticks(this, propertyIndex, out var ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
@@ -294,7 +299,7 @@ namespace Realms
 
         public void SetBoolean(IntPtr propertyIndex, bool value)
         {
-            NativeMethods.set_bool(this, propertyIndex, MarshalHelpers.BoolToIntPtr(value), out var nativeException);
+            NativeMethods.set_bool(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -303,7 +308,7 @@ namespace Realms
             NativeException nativeException;
             if (value.HasValue)
             {
-                NativeMethods.set_bool(this, propertyIndex, MarshalHelpers.BoolToIntPtr(value.Value), out nativeException);
+                NativeMethods.set_bool(this, propertyIndex, value.Value, out nativeException);
             }
             else
             {
@@ -317,12 +322,12 @@ namespace Realms
         {
             var result = NativeMethods.get_bool(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         public bool? GetNullableBoolean(IntPtr propertyIndex)
         {
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_bool(this, propertyIndex, out var value, out var nativeException));
+            var hasValue = NativeMethods.get_nullable_bool(this, propertyIndex, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? MarshalHelpers.IntPtrToBool(value) : (bool?)null;
         }
@@ -379,7 +384,7 @@ namespace Realms
 
         public long? GetNullableInt64(IntPtr propertyIndex)
         {
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_int64(this, propertyIndex, out var value, out var nativeException));
+            var hasValue = NativeMethods.get_nullable_int64(this, propertyIndex, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (long?)null;
         }
@@ -414,7 +419,7 @@ namespace Realms
 
         public float? GetNullableSingle(IntPtr propertyIndex)
         {
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_float(this, propertyIndex, out var value, out var nativeException));
+            var hasValue = NativeMethods.get_nullable_float(this, propertyIndex, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (float?)null;
         }
@@ -449,7 +454,7 @@ namespace Realms
 
         public double? GetNullableDouble(IntPtr propertyIndex)
         {
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeMethods.get_nullable_double(this, propertyIndex, out var value, out var nativeException));
+            var hasValue = NativeMethods.get_nullable_double(this, propertyIndex, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (double?)null;
         }
@@ -477,7 +482,7 @@ namespace Realms
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
         {
-            NativeMethods.remove_row(this, realmHandle, out var nativeException);
+            NativeMethods.remove(this, realmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -523,10 +528,9 @@ namespace Realms
             return new ResultsHandle(this, resultsPtr);
         }
 
-        public ResultsHandle GetBacklinksForType(string objectType, string propertyName)
+        public ResultsHandle GetBacklinksForType(TableHandle table, IntPtr propertyIndex)
         {
-            var resultsPtr = NativeMethods.get_backlinks_for_type(this, objectType, (IntPtr)objectType.Length,
-                propertyName, (IntPtr)propertyName.Length, out var nativeException);
+            var resultsPtr = NativeMethods.get_backlinks_for_type(this, table, (IntPtr)propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ResultsHandle(this, resultsPtr);
@@ -552,6 +556,13 @@ namespace Realms
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
+        }
+
+        public ObjectKey GetKey()
+        {
+            NativeMethods.get_key(this, out var result, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
     }
 }

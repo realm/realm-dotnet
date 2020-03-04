@@ -120,9 +120,9 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${core_filename}")
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-      set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib64/cmake/realm/realm-config.cmake")
+      set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib64/cmake/RealmCore/RealmCoreConfig.cmake")
     else()
-      set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib/cmake/realm/realm-config.cmake")
+      set(core_config_file "${CMAKE_BINARY_DIR}/${core_filename}/lib/cmake/RealmCore/RealmCoreConfig.cmake")
     endif()
   endif()
 
@@ -130,9 +130,9 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
   if(NOT TARGET realm)
     add_library(realm INTERFACE)
-    target_link_libraries(realm INTERFACE Realm::Core)
+    target_link_libraries(realm INTERFACE RealmCore::Storage)
     add_library(realm-parser INTERFACE)
-    target_link_libraries(realm-parser INTERFACE Realm::QueryParser)
+    target_link_libraries(realm-parser INTERFACE RealmCore::QueryParser)
   endif()
 
   find_package(ZLIB REQUIRED)
@@ -181,7 +181,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   add_definitions(
     /D_DISABLE_EXTENDED_ALIGNED_STORAGE # https://developercommunity.visualstudio.com/comments/279328/view.html
-    /D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
   )
 
   # always produce a PDB
