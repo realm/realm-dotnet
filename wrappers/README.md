@@ -3,7 +3,7 @@ About Wrappers
 
 Wrappers contains all our native code and its interfaces to C#.
 
-It usually involves a download phase which pulls prebuilt [Core ](https://github.com/realm/realm-core) libraries from a server.
+It usually involves a download phase which pulls prebuilt [Core](https://github.com/realm/realm-core) libraries from a server.
 
 We have a second C++ layer called [ObjectStore](https://github.com/realm/realm-object-store/)
 which contains many of our cross-platform abstractions and is pulled into Wrappers as a **git submodule**.
@@ -36,20 +36,23 @@ Building iOS wrappers on macOS
 These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
 
 1. `cd wrappers`
-1. `make clean`
-1. `make ios` or `make iosdbg` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator. Pass `REALM_ENABLE_SYNC=0` to build without sync (default is `1`)
+1. `build-ios.sh` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator.
 
 Building Android wrappers
 -------------
 
-Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-DREALM_ENABLE_SYNC=ON` and `-GNinja`.
+Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-GNinja`.
 
 You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK` pointing to its location.
 
 Building Windows wrappers
 -------------
 
-You need Visual Studio 2017 with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
+You need Visual Studio 2017 (or later) with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
+You also need [Vcpkg](https://github.com/Microsoft/vcpkg) installed in `C:\src\vcpkg`, with the OpenSSL and Zlib ports built:
+```
+c:\src\vcpkg\vcpkg.exe install zlib:x64-windows-static openssl:x64-windows-static
+```
 Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can specify all or a subset to save time when building.
 
 * To build for regular Windows run `.\build.ps1 Windows -Configuration Debug/Release -Platforms Win32, x64`
@@ -58,20 +61,18 @@ Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can s
 
 You can find the CMake-generated Visual Studio project files in `cmake\$Target\$Configuration-$Platform` and use them for debugging.
 
-Sync is not supported on Windows right now.
-
 Building .NET Core wrappers for macOS and Linux
 -------------
 
-`build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-DREALM_ENABLE_SYNC=ON` and `-GNinja`.
+`build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
 
 For Linux builds you can just build and run `Dockerfile.centos` if you don't have access to a Linux environment:
 
-1. `docker build . -f Dockerfile.centos -t realm-dotnet/wrappers --build-arg REALM_CORE_VERSION=x.y.z --build-arg REALM_SYNC_VERSION=x.y.z --build-arg PACKAGECLOUD_URL=personalized/repository/url/to/realm/sync-devel`
+1. `docker build . -f Dockerfile.centos -t realm-dotnet/wrappers`
 1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
 
 General Notes
 -------------
 All builds steps download the required realm components (core and sync) automatically.
 
-**Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `wrappers.xcodeproj` and `src/CMakeLists.txt` for builds to work.
+**Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `src/CMakeLists.txt` for builds to work.
