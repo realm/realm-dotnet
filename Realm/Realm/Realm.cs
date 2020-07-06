@@ -637,7 +637,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
+        /// Execute an function inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
         /// will be committed.
         /// </summary>
         /// <remarks>
@@ -648,7 +648,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// realm.Write(() =>
+        /// var doggo =realm.Write&lt;Dog&gt;(() =>
         /// {
         ///     realm.Add(new Dog
         ///     {
@@ -663,32 +663,32 @@ namespace Realms
         /// </param>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Name = "John"});</c></returns>
 
-        public T Write<T>(Func<T> action) where T : RealmObject
+        public T Write<T>(Func<T> func) where T : RealmObject
         {
             ThrowIfDisposed();
 
             using (var transaction = BeginWrite())
             {
-                var retVal = action();
+                var retVal = func();
                 transaction.Commit();
                 return retVal;
             }
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
+        /// Execute an function inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
         /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// the <c>function</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
         /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
+        /// wait realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
         ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
@@ -745,7 +745,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
+        /// Execute an function inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
@@ -757,34 +757,27 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
+        /// var doggo =realm.WriteAsync&lt;Dog&gt;(() =>
         /// {
-        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
-        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
-        ///     for (var i = 0; i &lt; 15; i++)
+        ///     realm.Add(new Dog
         ///     {
-        ///         tempRealm.Add(new Dog
-        ///         {
-        ///             Breed = "Dalmatian",
-        ///             Mum = missis,
-        ///             Dad = pongo
-        ///         });
-        ///     }
+        ///         Name = "Eddie",
+        ///         Age = 5
+        ///     });
         /// });
         /// </code>
-        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
         /// </example>
-        /// <param name="action">
-        /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// <param name="func">
+        /// Function to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects. First param is a <see cref="Realm"/>. The second param is a <see cref="RealmObject"/> 
         /// </param>
-        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Name = "John"});</c></returns>
+        /// <returns>An awaitable Task&lt;T&gt;  <see cref="Task"/>.</returns>
 
-        public Task<T> WriteAsync<T>(Func<Realm, T> action) where T : RealmObject
+        public Task<T> WriteAsync<T>(Func<Realm, T> func) where T : RealmObject
         {
             // Can't use async/await due to mono in-liner bugs
             ThrowIfDisposed();
 
-            Argument.NotNull(action, nameof(action));
+            Argument.NotNull(func, nameof(func));
 
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (AsyncHelper.HasValidContext)
@@ -797,7 +790,7 @@ namespace Realms
                         using (var realm = GetInstance(Config))
                         {
 
-                            retVal = realm.Write<T>(() => action(this));
+                            retVal = realm.Write<T>(() => func(this));
                         }
                     });
                     await RefreshAsync();
@@ -809,7 +802,7 @@ namespace Realms
 
             // If running on background thread, execute synchronously.
 
-            return Task<T>.FromResult(Write<T>(() => action(this)));
+            return Task<T>.FromResult(Write<T>(() => func(this)));
         }
 
 
