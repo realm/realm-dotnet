@@ -1,3 +1,18 @@
+vNext(TBD)
+------------------
+
+### Enhancements
+* None
+
+### Fixed
+* Fixed `Access to invalidated List object` being thrown when adding objects to a list while at the same time deleting the object containing the list. (Issue [#1971](https://github.com/realm/realm-dotnet/issues/1971))
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* Using Sync 4.9.5 and Core 5.23.8.
+
 4.3.0 (2020-02-05)
 ------------------
 

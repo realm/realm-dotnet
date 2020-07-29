@@ -89,7 +89,7 @@ namespace Realms
         {
             get
             {
-                if (Handle.Value.IsInvalid)
+                if (!IsValid)
                 {
                     return 0;
                 }
@@ -220,6 +220,10 @@ namespace Realms
             if (error != null)
             {
                 Realm.NotifyError(error);
+            }
+            else if (!sender.IsValid)
+            {
+                RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
             else if (change != null)
             {
