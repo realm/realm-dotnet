@@ -745,16 +745,16 @@ namespace Realms.Tests.Database
                 var person = new Person();
                 _realm.Write(() => _realm.Add(person));
 
-                var eventSource = new EventSource<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
+                var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
 
-                person.Friends.AsRealmCollection().CollectionChanged += eventSource.OnEvent;
+                person.Friends.AsRealmCollection().CollectionChanged += eventHelper.OnEvent;
 
                 _realm.Write(() =>
                 {
                     person.Friends.Add(new Person());
                 });
 
-                var changeEvent = await eventSource.GetNextEventAsync();
+                var changeEvent = await eventHelper.GetNextEventAsync();
 
                 Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
                 Assert.That(changeEvent.Args.NewStartingIndex, Is.EqualTo(0));
@@ -765,7 +765,7 @@ namespace Realms.Tests.Database
                     _realm.Remove(person);
                 });
 
-                changeEvent = await eventSource.GetNextEventAsync();
+                changeEvent = await eventHelper.GetNextEventAsync();
 
                 Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
                 Assert.That(changeEvent.Sender.IsValid, Is.False);
