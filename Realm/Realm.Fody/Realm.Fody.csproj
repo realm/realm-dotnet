@@ -7,17 +7,15 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <Title>Realm.Fody</Title>
     <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <LangVersion>8.0</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>$(NoWarn),1591</NoWarn>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="6.*" PrivateAssets="All" />
     <PackageReference Include="System.Management" Version="4.5.0" PrivateAssets="Build;Compile;Runtime" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -31,6 +29,9 @@
     <TfmSpecificPackageFile Include="Realm.Fody.xcf" Pack="true" PackagePath="$(BuildOutputTargetFolder)\$(TargetFramework)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </TfmSpecificPackageFile>
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props" />
 </Project>

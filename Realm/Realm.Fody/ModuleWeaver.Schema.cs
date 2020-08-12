@@ -109,7 +109,7 @@ public partial class ModuleWeaver
         // Very similar to https://github.com/Fody/ModuleInit
         var initializerType = new TypeDefinition(null, "RealmModuleInitializer",
                                                  TypeAttributes.Class | TypeAttributes.BeforeFieldInit,
-                                    ModuleDefinition.TypeSystem.Object);
+                                                 ModuleDefinition.TypeSystem.Object);
 
         var initialize = new MethodDefinition("Initialize", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, ModuleDefinition.TypeSystem.Void)
         {
