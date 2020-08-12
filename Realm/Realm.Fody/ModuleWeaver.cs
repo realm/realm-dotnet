@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -126,7 +127,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
             }
             else
             {
-                LogErrorPoint($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
+                WriteError($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
             }
         }
     }
@@ -137,6 +138,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         // Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FileName);
+        _ = this.GetMatchingTypes();
 
         var targetFramework = ModuleDefinition.Assembly.CustomAttributes.Single(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
@@ -145,25 +147,25 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
         if (_references.WovenAssemblyAttribute == null)
         {
-            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it doesn't reference Realm.");
+            WriteInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             return;
         }
 
         var isWoven = ModuleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
         if (isWoven)
         {
-            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it has already been processed.");
+            WriteInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it has already been processed.");
             return;
         }
 
-        var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
+        var submitAnalytics = Task.Run(() =>
         {
             var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
             try
             {
                 var payload = analytics.SubmitAnalytics();
 #if DEBUG
-                LogDebug($@"
+                WriteDebug($@"
 ----------------------------------
 Analytics payload
 {payload}
@@ -172,7 +174,7 @@ Analytics payload
             }
             catch (Exception e)
             {
-                LogDebug("Error submitting analytics: " + e.Message);
+                WriteDebug("Error submitting analytics: " + e.Message);
             }
         });
 
@@ -188,7 +190,7 @@ Analytics payload
             }
             catch (Exception e)
             {
-                LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                WriteError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
             }
         }
 
@@ -202,7 +204,7 @@ Analytics payload
 
     private void WeaveType(TypeDefinition type, Dictionary<string, Accessors> methodTable)
     {
-        LogDebug("Weaving " + type.Name);
+        WriteDebug("Weaving " + type.Name);
 
         var persistedProperties = new List<WeaveResult>();
         foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
@@ -220,13 +222,13 @@ Analytics payload
                     if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                     {
                         // We only want one error point, so even though there may be more problems, we only log the first one.
-                        LogErrorPoint(weaveResult.ErrorMessage, sequencePoint);
+                        WriteError(weaveResult.ErrorMessage, sequencePoint);
                     }
                     else
                     {
                         if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
                         {
-                            LogWarningPoint(weaveResult.WarningMessage, sequencePoint);
+                            WriteWarning(weaveResult.WarningMessage, sequencePoint);
                         }
 
                         var realmAttributeNames = prop.CustomAttributes
@@ -237,7 +239,7 @@ Analytics payload
 
                         if (realmAttributeNames.Any())
                         {
-                            LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                            WriteError($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
                         }
                     }
                 }
@@ -245,7 +247,7 @@ Analytics payload
             catch (Exception e)
             {
                 var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                LogErrorPoint(
+                WriteError(
                     $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                     sequencePoint);
             }
@@ -253,13 +255,13 @@ Analytics payload
 
         if (!persistedProperties.Any())
         {
-            LogError($"Class {type.Name} is a RealmObject but has no persisted properties.");
+            WriteError($"Class {type.Name} is a RealmObject but has no persisted properties.");
             return;
         }
 
         if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
         {
-            LogError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
+            WriteError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
             return;
         }
 
@@ -269,7 +271,7 @@ Analytics payload
         {
             var nonDefaultConstructor = type.GetConstructors().First();
             var sequencePoint = nonDefaultConstructor.DebugInformation.SequencePoints.FirstOrDefault();
-            LogErrorPoint($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
+            WriteError($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
             return;
         }
 
@@ -279,7 +281,7 @@ Analytics payload
         preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(ModuleDefinition.TypeSystem.Boolean, true)); // AllMembers
         preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(ModuleDefinition.TypeSystem.Boolean, false)); // Conditional
         type.CustomAttributes.Add(preserveAttribute);
-        LogDebug($"Added [Preserve] to {type.Name} and its constructor.");
+        WriteDebug($"Added [Preserve] to {type.Name} and its constructor.");
 
         var wovenAttribute = new CustomAttribute(_references.WovenAttribute_Constructor);
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
@@ -510,7 +512,7 @@ Analytics payload
 
         var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
         var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
-        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
+        WriteDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
         return WeaveResult.Success(prop, backingField, isPrimaryKey);
     }
 
@@ -594,7 +596,7 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
 
-        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        if (!prop.PropertyType.IsRealmInteger(out _, out _))
         {
             var convert = _references.RealmIntegerOfT_ConvertToT.MakeHostInstanceGeneric(integerType);
             if (isNullable)
@@ -877,7 +879,7 @@ Analytics payload
         var callSetter = il.Create(OpCodes.Call, setValueReference);
         il.Append(callSetter);
 
-        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        if (!prop.PropertyType.IsRealmInteger(out _, out _))
         {
             var convert = _references.RealmIntegerOfT_ConvertFromT.MakeHostInstanceGeneric(integerType);
             if (isNullable)
@@ -1027,7 +1029,7 @@ Analytics payload
                     var shouldSetAlways = property.IsNullable() ||     // The property is nullable - those should be set explicitly to null
                                           property.IsRequired() ||     // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
-                                          property.PropertyType.IsRealmInteger(out var _, out var __); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.PropertyType.IsRealmInteger(out _, out _); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!skipDefaults || castInstance.field != default(fieldType))
@@ -1209,7 +1211,7 @@ Analytics payload
                 else
                 {
                     var sequencePoint = property.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                    LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
+                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
             }
 

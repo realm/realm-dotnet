@@ -40,7 +40,7 @@ internal static class TypeReferenceExtensions
 
     public static bool IsSameAs(this TypeReference @this, TypeReference other)
     {
-        if (ReferenceEquals(@this, null) || ReferenceEquals(other, null))
+        if (@this is null || other is null)
         {
             return false;
         }
@@ -50,14 +50,11 @@ internal static class TypeReferenceExtensions
 
     public static string GetAssemblyName(this TypeReference @this)
     {
-        switch (@this.Scope.MetadataScopeType)
+        return @this.Scope.MetadataScopeType switch
         {
-            case MetadataScopeType.AssemblyNameReference:
-                return ((AssemblyNameReference)@this.Scope).FullName;
-            case MetadataScopeType.ModuleReference:
-                return ((ModuleReference)@this.Scope).Name;
-            default:
-                return ((ModuleDefinition)@this.Scope).Assembly.FullName;
-        }
+            MetadataScopeType.AssemblyNameReference => ((AssemblyNameReference)@this.Scope).FullName,
+            MetadataScopeType.ModuleReference => ((ModuleReference)@this.Scope).Name,
+            _ => ((ModuleDefinition)@this.Scope).Assembly.FullName,
+        };
     }
 }

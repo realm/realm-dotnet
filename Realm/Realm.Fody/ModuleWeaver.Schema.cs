@@ -47,7 +47,7 @@ public partial class ModuleWeaver
         if (realmTypes.Any())
         {
             // TODO: test with more convoluted scenario
-            LogInfo($"Default schema woven with the following classes:{string.Join(", ", realmTypes.Select(t => t.Name))}");
+            WriteInfo($"Default schema woven with the following classes:{string.Join(", ", realmTypes.Select(t => t.Name))}");
 
             var entryPoint = GetModuleInitializer();
             var start = entryPoint.Body.Instructions.First();
@@ -68,18 +68,18 @@ public partial class ModuleWeaver
         }
         else
         {
-            LogWarning("Default schema appears to be empty. This is not an error if you don't have any RealmObject inheritors declared. Otherwise it may be a bug with the weaver.");
+            WriteWarning("Default schema appears to be empty. This is not an error if you don't have any RealmObject inheritors declared. Otherwise it may be a bug with the weaver.");
         }
     }
 
     private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition module = null, HashSet<string> processedAssemblies = null)
     {
-        module = module ?? ModuleDefinition;
+        module ??= ModuleDefinition;
 
         // If module has been marked [Explicit], ignore all types
         if (ShouldInclude(module.Assembly))
         {
-            processedAssemblies = processedAssemblies ?? new HashSet<string>();
+            processedAssemblies ??= new HashSet<string>();
 
             if (module.AssemblyReferences.Any(a => a.Name == "Realm"))
             {
