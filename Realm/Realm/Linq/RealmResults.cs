@@ -50,6 +50,18 @@ namespace Realms
 
         public QueryHandle CreateQuery() => ResultsHandle.CreateQuery();
 
+        public override IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = ResultsHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return new RealmResults<T>(frozenRealm, Metadata, frozenHandle);
+        }
+
         internal override CollectionHandleBase CreateHandle()
         {
             if (_handle != null)

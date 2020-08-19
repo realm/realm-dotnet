@@ -182,4 +182,18 @@ REALM_EXPORT size_t results_find_object(Results& results, const Object& object, 
     });
 }
 
+REALM_EXPORT bool results_get_is_frozen(Results& results, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return results.is_frozen();
+    });
+}
+
+REALM_EXPORT Results* results_freeze(Results& results, const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(results.freeze(realm));
+    });
+}
+
 }   // extern "C"

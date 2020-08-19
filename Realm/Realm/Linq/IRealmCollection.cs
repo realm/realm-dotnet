@@ -70,6 +70,36 @@ namespace Realms
         bool IsValid { get; }
 
         /// <summary>
+        /// Gets the <see cref="Realm"/> instance this collection belongs to.
+        /// </summary>
+        /// <value>The <see cref="Realm"/> instance this collection belongs to.</value>
+        Realm Realm { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed
+        /// from any thread. The objects read from a frozen collection will also be frozen.
+        /// </summary>
+        bool IsFrozen { get; }
+
+        /// <summary>
+        /// Creates a frozen snapshot of this collection. The frozen copy can be read and queried from any thread.
+        /// <para/>
+        /// Freezing a collection also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// original collection is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
+        /// collection will be closed as well.
+        /// <para/>
+        /// Frozen collections can be queried as normal, but trying to mutate it in any way or attempting to register a listener will
+        /// throw a <see cref="Exceptions.RealmFrozenException"/>.
+        /// <para/>
+        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
+        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <returns>A frozen copy of this collection.</returns>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(IList{T})"/>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(System.Linq.IQueryable{T})"/>
+        IRealmCollection<T> Freeze();
+
+        /// <summary>
         /// Register a callback to be invoked each time this <see cref="IRealmCollection{T}"/> changes.
         /// </summary>
         /// <remarks>
@@ -101,6 +131,8 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
+        /// <seealso cref="CollectionNotificationsExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="CollectionNotificationsExtensions.SubscribeForNotifications{T}(System.Linq.IQueryable{T}, NotificationCallbackDelegate{T})"/>
         IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
     }
 }

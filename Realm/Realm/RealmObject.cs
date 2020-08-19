@@ -27,6 +27,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Realms.DataBinding;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -101,6 +102,14 @@ namespace Realms
         public bool IsValid => _objectHandle?.IsValid != false;
 
         /// <summary>
+        /// Gets a value indicating whether this object is frozen. Frozen objects are immutable
+        /// and will not update when writes are made to the Realm. Unlike live objects, frozen
+        /// objects can be used across threads.
+        /// </summary>
+        /// <seealso cref="FreezeInPlace"/>
+        public bool IsFrozen => _objectHandle?.IsFrozen == true;
+
+        /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
@@ -119,6 +128,46 @@ namespace Realms
         /// This property is not observable so the <see cref="PropertyChanged"/> event will not fire when its value changes.
         /// </remarks>
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+
+        /// <summary>
+        /// Freezes this object in place. The frozen object can be accessed from any thread.
+        /// <para/>
+        /// Freezing a RealmObject also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// original object is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
+        /// object will be closed as well.
+        /// <para/>
+        /// Frozen objects can be queried as normal, but trying to mutate it in any way or attempting to register a listener will
+        /// throw a <see cref="RealmFrozenException"/>.
+        /// <para/>
+        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
+        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
+        public void FreezeInPlace()
+        {
+            if (IsFrozen)
+            {
+                return;
+            }
+
+            UnsubscribeFromNotifications();
+            _propertyChanged = null;
+            var oldHandle = _objectHandle;
+            (_realm, _objectHandle) = FreezeImpl();
+            oldHandle.Dispose();
+        }
+
+        internal (Realm FrozenRealm, ObjectHandle FrozenHandle) FreezeImpl()
+        {
+            if (!IsManaged)
+            {
+                throw new RealmException("Unmanaged objects cannot be frozen.");
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = _objectHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return (frozenRealm, frozenHandle);
+        }
 
         /// <inheritdoc/>
         Metadata IThreadConfined.Metadata => ObjectMetadata;
@@ -573,6 +622,11 @@ namespace Realms
         private void SubscribeForNotifications()
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
+
+            if (IsFrozen)
+            {
+                throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObject since it never changes.");
+            }
 
             _realm.ExecuteOutsideTransaction(() =>
             {

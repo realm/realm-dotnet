@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Realms.Tests
 {
@@ -30,17 +32,44 @@ namespace Realms.Tests
 
         protected Realm _realm => _lazyRealm.Value;
 
-        protected override void CustomSetUp()
+        protected void FreezeInPlace(RealmObject obj)
         {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_configuration));
-            base.CustomSetUp();
+            obj.FreezeInPlace();
+            CleanupOnTearDown(obj.Realm);
         }
 
-        protected override void CustomTearDown()
+        protected T Freeze<T>(T obj) where T : RealmObject
         {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-            base.CustomTearDown();
+            var result = obj.Freeze();
+            CleanupOnTearDown(result.Realm);
+            return result;
+        }
+
+        protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection) where T : RealmObject
+        {
+            var result = collection.Freeze();
+            CleanupOnTearDown(result.Realm);
+            return result;
+        }
+
+        protected IList<T> Freeze<T>(IList<T> list) where T : RealmObject
+        {
+            var result = list.Freeze();
+            CleanupOnTearDown(result.AsRealmCollection().Realm);
+            return result;
+        }
+
+        protected IQueryable<T> Freeze<T>(IQueryable<T> query) where T : RealmObject
+        {
+            var result = query.Freeze();
+            CleanupOnTearDown(result.AsRealmCollection().Realm);
+            return result;
+        }
+
+        protected override void CustomSetUp()
+        {
+            _lazyRealm = new Lazy<Realm>(() => GetRealm(_configuration));
+            base.CustomSetUp();
         }
     }
 }

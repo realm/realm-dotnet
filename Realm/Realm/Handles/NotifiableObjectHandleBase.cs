@@ -52,5 +52,7 @@ namespace Realms
         public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback);
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
+
+        public abstract bool IsFrozen { get; }
     }
 }

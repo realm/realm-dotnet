@@ -2,7 +2,10 @@ vNext(TBD)
 ------------------
 
 ### Enhancements
-* None
+* Added the notion of "frozen objects" - these are objects, queries, lists, or Realms that have been "frozen" at a specific version. This allows you to access the data from any thread, but it will never change. All frozen objects can be accessed and queried as normal, but attempting to mutate them or add change listeners will throw an exception. (Issue [#1945](https://github.com/realm/realm-dotnet/issues/1945))
+  * Added `Realm.Freeze()`, `RealmObject.Freeze()`, `RealmObject.FreezeInPlace()`, `IQueryable<RealmObject>.Freeze()`, `IList<T>.Freeze()`, and `IRealmCollection<T>.Freeze()`. These methods will produce the frozen version of the instance on which they are called.
+  * Added `Realm.IsFrozen`, `RealmObject.IsFrozen`, and `IRealmCollection<T>.IsFrozen`, which returns whether or not the data is frozen.
+  * Added `RealmConfigurationBase.MaxNumberOfActiveVersions`. Setting this will cause Realm to throw an exception if too many versions of the Realm data are live at the same time. Having too many versions can dramatically increase the filesize of the Realm.
 
 ### Fixed
 * Fixed `Access to invalidated List object` being thrown when adding objects to a list while at the same time deleting the object containing the list. (Issue [#1971](https://github.com/realm/realm-dotnet/issues/1971))

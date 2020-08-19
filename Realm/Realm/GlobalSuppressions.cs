@@ -21,3 +21,4 @@
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._collectionChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObject._propertyChanged")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.Realm._realmChanged")]

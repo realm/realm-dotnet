@@ -126,6 +126,12 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of active versions allowed before an exception is thrown.
+        /// </summary>
+        /// <seealso cref="Realm.Freeze"/>
+        public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
+
         internal RealmConfigurationBase()
         {
         }
@@ -143,5 +149,16 @@ namespace Realms
         internal abstract Realm CreateRealm(RealmSchema schema);
 
         internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
+
+        internal Native.Configuration CreateConfiguration()
+        {
+            return new Native.Configuration
+            {
+                Path = DatabasePath,
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache,
+                max_number_of_active_versions = MaxNumberOfActiveVersions
+            };
+        }
     }
 }

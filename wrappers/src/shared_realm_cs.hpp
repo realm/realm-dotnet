@@ -51,6 +51,7 @@ struct Configuration
     void* managed_should_compact_delegate;
     
     bool enable_cache;
+    uint64_t max_number_of_active_versions;
 };
 
 namespace realm {

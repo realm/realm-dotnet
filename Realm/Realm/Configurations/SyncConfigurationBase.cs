@@ -214,12 +214,7 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = new Realms.Native.Configuration
-            {
-                Path = DatabasePath,
-                schema_version = SchemaVersion,
-                enable_cache = EnableCache
-            };
+            var configuration = CreateConfiguration();
 
             var srHandle = SharedRealmHandleExtensions.OpenWithSync(configuration, ToNative(), schema, EncryptionKey);
             if (IsDynamic && !schema.Any())
@@ -233,12 +228,7 @@ namespace Realms.Sync
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Realm instance will own its handle")]
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
-            var configuration = new Realms.Native.Configuration
-            {
-                Path = DatabasePath,
-                schema_version = SchemaVersion,
-                enable_cache = EnableCache
-            };
+            var configuration = CreateConfiguration();
 
             var tcs = new TaskCompletionSource<ThreadSafeReferenceHandle>();
             var tcsHandle = GCHandle.Alloc(tcs);

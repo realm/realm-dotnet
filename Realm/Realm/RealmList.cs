@@ -234,6 +234,18 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
+        public override IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
+        }
+
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
         private static void Execute(T item,

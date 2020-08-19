@@ -28,7 +28,6 @@ namespace Realms.Tests.Sync
     public abstract class SyncTestBase : RealmTest
     {
         private readonly List<Session> _sessions = new List<Session>();
-        private readonly List<Realm> _realms = new List<Realm>();
 
         protected override void CustomSetUp()
         {
@@ -65,18 +64,6 @@ namespace Realms.Tests.Sync
         {
             base.CustomTearDown();
 
-            foreach (var realm in _realms)
-            {
-                try
-                {
-                    realm.Dispose();
-                    Realm.DeleteRealm(realm.Config);
-                }
-                catch
-                {
-                }
-            }
-
             foreach (var session in _sessions)
             {
                 session?.CloseHandle();
@@ -86,11 +73,6 @@ namespace Realms.Tests.Sync
         protected void CleanupOnTearDown(Session session)
         {
             _sessions.Add(session);
-        }
-
-        protected void CleanupOnTearDown(Realm realm)
-        {
-            _realms.Add(realm);
         }
 
         protected Session GetSession(Realm realm)
@@ -112,13 +94,6 @@ namespace Realms.Tests.Sync
             var session = realm.GetSession();
             await session.WaitForDownloadAsync();
             session.CloseHandle();
-        }
-
-        protected Realm GetRealm(RealmConfigurationBase config)
-        {
-            var result = Realm.GetInstance(config);
-            CleanupOnTearDown(result);
-            return result;
         }
 
         protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)

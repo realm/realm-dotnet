@@ -365,5 +365,19 @@ extern "C" {
             return object.obj().get_backlink_count();
         });
     }
-    
+
+    REALM_EXPORT bool object_get_is_frozen(const Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return object.is_frozen();
+        });
+    }
+
+    REALM_EXPORT Object* object_freeze(const Object& object, const SharedRealm& realm, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new Object(object.freeze(realm));
+        });
+    }
+
 }   // extern "C"
