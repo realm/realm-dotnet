@@ -30,18 +30,23 @@ struct MarshalableSortClause {
 };
 
 inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_property_indices,
-                                   std::vector<std::vector<ColKey>>& column_keys, std::vector<bool>& ascending, const std::vector<Property>& properties)
+                                   std::vector<std::vector<ColKey>>& column_keys, std::vector<bool>& ascending, const realm::Schema& schema, const std::string& root_object_name)
 {
     ascending.reserve(clause_count);
     column_keys.reserve(clause_count);
 
     std::vector<ColKey> current_keys;
+    const std::vector<Property>* root_properties = &schema.find(root_object_name)->persisted_properties;
     for (size_t i = 0; i < clause_count; ++i) {
         ascending.push_back(sort_clauses[i].ascending);
+        const std::vector<Property>* current_properties = root_properties;
 
         current_keys.reserve(sort_clauses[i].count);
         for(auto j = sort_clauses[i].offset; j < sort_clauses[i].offset + sort_clauses[i].count; ++j) {
-            const Property& property = properties[flattened_property_indices[j]];
+            const Property& property = current_properties->at(flattened_property_indices[j]);
+            if (property.type == PropertyType::Object) {
+                current_properties = &schema.find(property.object_type)->persisted_properties;
+            }
             const ColKey& column_key = property.column_key;
             current_keys.push_back(column_key);
         }
