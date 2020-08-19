@@ -20,9 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -264,7 +262,7 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<IntPropertyObject>(), Is.Empty);
         }
 
-        [Test]
+        [Test, Ignore("Snapshotting primitive lists does not work with Core 6. We should probably freeze the list when that is implemented.")]
         public void PrimitiveList_WhenEnumerating_ShouldBeStable()
         {
             var container = new ListsObject();

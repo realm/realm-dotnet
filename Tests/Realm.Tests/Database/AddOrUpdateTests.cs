@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -573,23 +572,22 @@ namespace Realms.Tests.Database
             Assert.That(_realm.Find<PrimaryKeyWithPKRelation>(1).OtherObject, Is.Null);
         }
 
-        [Test, Ignore("Cyclic relations don't work yet.")]
+        [Test]
         public void CyclicRelations_ShouldWork()
         {
             var parent = new Parent
             {
                 Id = 1,
                 Name = "Peter",
-                Child = new Child
-                {
-                    Id = 1,
-                    Name = "Kate",
-                    Parent = new Parent
-                    {
-                        Id = 1
-                    }
-                }
             };
+
+            parent.Child = new Child
+            {
+                Id = 1,
+                Name = "Kate",
+                Parent = parent,
+            };
+
 
             _realm.Write(() =>
             {
