@@ -1,23 +1,30 @@
-FROM ubuntu:xenial
+FROM ubuntu:18.04
 
-ENV ANDROID_NDK /opt/android-ndk
-
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-            cmake \
-            curl \
-            make \
+# Keep the packages in alphabetical order to make it easy to avoid duplication
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -qq \
+    && apt-get install -y \
+               curl \
+               git \
+               make \
+               unzip \
     && apt-get clean
 
+# Install CMake
+RUN mkdir -p /opt/cmake \
+ && curl https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o /cmake.sh \
+ && sh /cmake.sh --prefix=/opt/cmake --skip-license \
+ && rm /cmake.sh
+ENV PATH "/opt/cmake/bin:$PATH"
+
 # Install the NDK
-RUN mkdir /opt/android-ndk-tmp && \
-    cd /opt/android-ndk-tmp && \
-    curl http://dl.google.com/android/ndk/android-ndk-r10e-linux-x86_64.bin -o android-ndk.bin && \
-    chmod a+x ./android-ndk.bin && \
-    ./android-ndk.bin && \
-    mv android-ndk-r10e /opt/android-ndk && \
-    rm -rf /opt/android-ndk-tmp && \
-    chmod -R a+rX /opt/android-ndk
+RUN cd /opt \
+ && curl -OJ https://dl.google.com/android/repository/android-ndk-r21-linux-x86_64.zip \
+ && unzip android-ndk-r21-linux-x86_64.zip \
+ && rm -f android-ndk-r21-linux-x86_64.zip
+
+ENV ANDROID_NDK_ROOT "/opt/android-ndk-r21"
+ENV ANDROID_NDK_HOME "/opt/android-ndk-r21"
+ENV ANDROID_NDK "/opt/android-ndk-r21"
 
 VOLUME /source
 CMD ["/source/build-android.sh"]

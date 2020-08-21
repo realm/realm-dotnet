@@ -3,19 +3,77 @@ cmake_minimum_required(VERSION 3.4.0)
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
 project(realm-wrappers)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/CMake")
+# Load dependency info from dependencies.list into REALM_FOO_VERSION variables.
+set(DEPENDENCIES_FILE "dependencies.list" CACHE STRING "path to dependencies list")
+file(STRINGS ${DEPENDENCIES_FILE} DEPENDENCIES)
+message("Dependencies: ${DEPENDENCIES}")
+foreach(DEPENDENCY IN LISTS DEPENDENCIES)
+    string(REGEX MATCHALL "([^=]+)" COMPONENT_AND_VERSION ${DEPENDENCY})
+    list(GET COMPONENT_AND_VERSION 0 COMPONENT)
+    list(GET COMPONENT_AND_VERSION 1 VERSION)
+    set(${COMPONENT} ${VERSION})
+endforeach()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  # set before including RealmCore.cmake which calls FindOpenSSL
-  set(OPENSSL_USE_STATIC_LIBS TRUE)
-endif()
+function(download_realm_tarball url target libraries)
+    get_filename_component(tarball_name "${url}" NAME)
+
+    set(tarball_parent_directory "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}")
+    set(tarball_path "${tarball_parent_directory}/${tarball_name}")
+    set(temp_tarball_path "/tmp/${tarball_name}")
+
+    if (NOT EXISTS ${tarball_path})
+        if (NOT EXISTS ${temp_tarball_path})
+            message("Downloading ${url}.")
+            file(DOWNLOAD ${url} ${temp_tarball_path}.tmp SHOW_PROGRESS)
+            file(RENAME ${temp_tarball_path}.tmp ${temp_tarball_path})
+        endif()
+        file(COPY ${temp_tarball_path} DESTINATION ${tarball_parent_directory})
+    endif()
+
+    if(APPLE)
+        add_custom_command(
+            COMMENT "Extracting ${tarball_name}"
+            OUTPUT ${libraries}
+            COMMAND ${CMAKE_COMMAND} -E tar xf ${tarball_path}
+            COMMAND ${CMAKE_COMMAND} -E remove_directory ${target}
+            COMMAND ${CMAKE_COMMAND} -E rename core ${target}
+            COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${libraries})
+    elseif(REALM_PLATFORM STREQUAL "Android" OR CMAKE_SYSTEM_NAME MATCHES "^Windows")
+        add_custom_command(
+            COMMENT "Extracting ${tarball_name}"
+            OUTPUT ${libraries}
+            COMMAND "${CMAKE_COMMAND}" -E make_directory "${target}"
+            COMMAND "${CMAKE_COMMAND}" -E chdir "${target}" "${CMAKE_COMMAND}" -E tar xf "${tarball_path}"
+            COMMAND "${CMAKE_COMMAND}" -E touch_nocreate ${libraries})
+    endif()
+endfunction()
+
+function(download_android_openssl)
+    if(ANDROID)
+        string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
+        set(OPENSSL_URL "http://static.realm.io/downloads/openssl/${ANDROID_OPENSSL_VERSION}/Android/${CMAKE_ANDROID_ARCH_ABI}/openssl.tgz")
+
+        message(STATUS "Downloading OpenSSL...s")
+        file(DOWNLOAD "${OPENSSL_URL}" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl.tgz")
+
+        message(STATUS "Uncompressing OpenSSL...")
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz ../openssl.tgz
+                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl")
+
+        message(STATUS "Importing OpenSSL...")
+        set(OpenSSL_DIR "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl/lib/cmake/OpenSSL")
+        find_package(OpenSSL REQUIRED CONFIG)
+    endif()
+endfunction()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/CMake")
 
 if(NOT REALM_PLATFORM)
   set(REALM_PLATFORM DotNet)
 endif()
 
 include(CompilerFlags)
-include(RealmCore)
 
 set(REALM_ENABLE_SYNC ON)
 if(NOT ANDROID)
@@ -23,6 +81,7 @@ if(NOT ANDROID)
 endif()
 
 if(APPLE)
+  find_package(Threads)
   if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(platform ios)
   else()
@@ -41,7 +100,7 @@ if(APPLE)
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${REALM_SYNC_LIBRARY_LOCATION_DEBUG})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${REALM_SYNC_LIBRARY_LOCATION})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${REALM_SYNC_LIBRARY_LOCATION})
-  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads -lz ${CRYPTO_LIBRARIES} ${SSL_LIBRARIES})
+  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads -lz "-framework Foundation" "-framework Security")
   add_dependencies(realm extract-realm-tarball)
 
   add_library(realm-parser STATIC IMPORTED)
@@ -56,6 +115,7 @@ if(APPLE)
   add_library(realm-sync INTERFACE)
   target_link_libraries(realm-sync INTERFACE realm)
 elseif(ANDROID)
+  find_package(Threads)
   set(REALM_SYNC_ANDROID_PLATFORM "android-${ANDROID_ABI}")
   set(REALM_SYNC_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/realm-sync-${REALM_SYNC_VERSION}")
   set(REALM_CORE_LIBRARY_LOCATION_DEBUG "${REALM_SYNC_DIRECTORY}/librealm-android-${ANDROID_ABI}-dbg.a")
@@ -72,7 +132,7 @@ elseif(ANDROID)
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${REALM_CORE_LIBRARY_LOCATION_DEBUG})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${REALM_CORE_LIBRARY_LOCATION})
   set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${REALM_CORE_LIBRARY_LOCATION})
-  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads ${CRYPTO_LIBRARIES})
+  set_property(TARGET realm PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads OpenSSL::Crypto)
   add_dependencies(realm extract-realm-tarball)
 
   add_library(realm-parser STATIC IMPORTED)
@@ -88,7 +148,7 @@ elseif(ANDROID)
   set_property(TARGET realm-sync PROPERTY IMPORTED_LOCATION_DEBUG ${REALM_SYNC_LIBRARY_LOCATION_DEBUG})
   set_property(TARGET realm-sync PROPERTY IMPORTED_LOCATION_RELEASE ${REALM_SYNC_LIBRARY_LOCATION})
   set_property(TARGET realm-sync PROPERTY IMPORTED_LOCATION ${REALM_SYNC_LIBRARY_LOCATION})
-  set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES realm ${SSL_LIBRARIES})
+  set_property(TARGET realm-sync PROPERTY INTERFACE_LINK_LIBRARIES realm OpenSSL::SSL)
 
   download_android_openssl()
 elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -136,7 +196,9 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
   endif()
 
   find_package(ZLIB REQUIRED)
-  find_package(OpenSSL REQUIRED)
+  if(WIN32)
+    find_package(OpenSSL REQUIRED)
+  endif()
   set(REALM_SYNC_BUILDTREE "${CMAKE_SOURCE_DIR}/../realm-sync/CMakeBuild/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}")
   if(CMAKE_GENERATOR_PLATFORM)
     set(REALM_SYNC_BUILDTREE "${REALM_SYNC_BUILDTREE}-${CMAKE_GENERATOR_PLATFORM}")
@@ -162,6 +224,7 @@ elseif(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
     endif()
   endif()
 else()
+  include(RealmCore)
   use_realm_core(${REALM_ENABLE_SYNC} "${REALM_CORE_PREFIX}" "${REALM_SYNC_PREFIX}")
 endif()
 

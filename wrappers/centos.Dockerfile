@@ -4,26 +4,25 @@ FROM centos:7
 RUN yum install -y \
         epel-release \
         centos-release-scl-rh \
-    && yum-config-manager --enable rhel-server-rhscl-7-rpms
+ && yum-config-manager --enable rhel-server-rhscl-7-rpms
 
 RUN yum install -y \
-        which \
-        curl \
-        make \
-        devtoolset-6-gcc \
-        devtoolset-6-gcc-c++ \
-        devtoolset-6-binutils \
-        git \
-        procps-devel \
+        chrpath \
+        devtoolset-9 \
+        jq \
+        libconfig-devel \
         openssh-clients \
-        openssl-static \
-        zlib-devel
+        rh-git218 \
+        zlib-devel \
+ && yum clean all
 
-RUN mkdir -p /opt/cmake && \
-    curl -s https://cmake.org/files/v3.14/cmake-3.14.1-Linux-x86_64.sh -o /cmake.sh && \
-    sh /cmake.sh --prefix=/opt/cmake --skip-license && \
-    rm /cmake.sh
-ENV PATH="/opt/rh/devtoolset-6/root/usr/bin:/opt/cmake/bin:${PATH}"
+ENV PATH /opt/cmake/bin:/opt/rh/rh-git218/root/usr/bin:/opt/rh/devtoolset-9/root/usr/bin:$PATH
+ENV LD_LIBRARY_PATH /opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:/opt/rh/devtoolset-9/root/usr/lib64/dyninst:/opt/rh/devtoolset-9/root/usr/lib/dyninst:/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib
+
+RUN mkdir -p /opt/cmake \
+ && curl https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.sh -o /cmake.sh \
+ && sh /cmake.sh --prefix=/opt/cmake --skip-license \
+ && rm /cmake.sh
 
 RUN mkdir -p /etc/ssh && \
     echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /etc/ssh/ssh_config && \
