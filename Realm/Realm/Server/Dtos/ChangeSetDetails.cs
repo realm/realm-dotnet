@@ -18,6 +18,7 @@
 
 using Realms.Native;
 using Realms.Server.Native;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +34,16 @@ namespace Realms.Server
 
         public ChangeSetDetails(Realm previous, Realm current, string className, IEnumerable<ObjectKey> insertions, IEnumerable<NativeModificationDetails> modifications, IEnumerable<ObjectKey> deletions)
         {
-            var previousMetadata = previous?.Metadata[className];
+            if (previous == null || !previous.Metadata.TryGetValue(className, out var previousMetadata))
+            {
+                if (deletions.Any() || modifications.Any())
+                {
+                    throw new NotSupportedException($"Failed to find metadata for object of type {className} in the previous Realm.");
+                }
+
+                previousMetadata = null;
+            }
+
             var currentMetadata = current.Metadata[className];
 
             Insertions = insertions.Select(objKey => current.MakeObject(currentMetadata, objKey)).ToArray();
