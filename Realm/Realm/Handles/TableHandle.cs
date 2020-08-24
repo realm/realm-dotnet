@@ -42,7 +42,7 @@ namespace Realms
             public static extern IntPtr get_column_name(TableHandle table, ColumnKey column_key, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object(TableHandle table, SharedRealmHandle realm, out NativeException ex);
+            public static extern IntPtr get_object(TableHandle table, SharedRealmHandle realm, ObjectKey objectKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_object_for_string_primarykey(TableHandle handle, SharedRealmHandle realmHandle,
@@ -75,7 +75,7 @@ namespace Realms
 
         public ObjectHandle Get(SharedRealmHandle realmHandle, ObjectKey objectKey)
         {
-            var result = NativeMethods.get_object(this, realmHandle, out var nativeException);
+            var result = NativeMethods.get_object(this, realmHandle, objectKey, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             if (result == IntPtr.Zero)
