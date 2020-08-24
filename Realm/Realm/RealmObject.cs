@@ -537,7 +537,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
+            return ObjectHandle.GetKey() == ((RealmObject)obj).ObjectHandle.GetKey();
         }
 
         /// <summary>
