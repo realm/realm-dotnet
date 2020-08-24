@@ -518,13 +518,18 @@ namespace Realms
             }
 
             // If run-time types are not exactly the same, return false.
-            if (GetType() != obj.GetType())
+            if (!(obj is RealmObject robj))
             {
                 return false;
             }
 
             // standalone objects cannot participate in the same store check
-            if (!IsManaged)
+            if (!IsManaged || !robj.IsManaged)
+            {
+                return false;
+            }
+
+            if (ObjectSchema.Name != robj.ObjectSchema.Name)
             {
                 return false;
             }
@@ -532,7 +537,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.GetKey() == ((RealmObject)obj).ObjectHandle.GetKey();
+            return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
         }
 
         /// <summary>
