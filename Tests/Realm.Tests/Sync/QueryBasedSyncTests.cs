@@ -20,10 +20,8 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
 
@@ -229,7 +227,7 @@ namespace Realms.Tests.Sync
                     var updatedSub = realm.All<ObjectA>()
                                           .Where(o => o.IntValue < 3)
                                           .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true });
-                                          
+
                     await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
 
@@ -495,7 +493,7 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetQueryBasedRealm(bool openAsync, [CallerMemberName] string realmPath = null)
         {
-            var user = await SyncTestHelpers.GetUserAsync();
+            var user = await SyncTestHelpers.GetUserAsync().Timeout(5000);
             var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}_{openAsync}"), user, Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB), typeof(ObjectC) }
@@ -526,7 +524,7 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                await SyncTestHelpers.WaitForUploadAsync(original);
+                await SyncTestHelpers.WaitForUploadAsync(original).Timeout(5000);
             }
 
             try

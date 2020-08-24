@@ -319,7 +319,8 @@ extern "C" {
         return handle_errors(ex, [&]() {
             return object.is_valid() &&
                 other_object.is_valid() &&
-                object.obj() == other_object.obj();
+                (*object.obj().get_table()).get_key() == (*other_object.obj().get_table()).get_key() &&
+                object.obj().get_key() == other_object.obj().get_key();
         });
     }
 
