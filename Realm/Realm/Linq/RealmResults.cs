@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -48,7 +48,9 @@ namespace Realms
             _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
         }
 
-        public QueryHandle CreateQuery() => ResultsHandle.CreateQuery();
+        public QueryHandle GetQuery() => ResultsHandle.GetQuery();
+
+        public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
         public override IRealmCollection<T> Freeze()
         {
@@ -72,9 +74,7 @@ namespace Realms
             // do all the LINQ expression evaluation to build a query
             var qv = ((RealmResultsProvider)Provider).MakeVisitor();
             qv.Visit(Expression);
-            var queryHandle = qv.CoreQueryHandle; // grab out the built query definition
-            var sortHandle = qv.OptionalSortDescriptorBuilder;
-            return Realm.MakeResultsForQuery(queryHandle, sortHandle);
+            return qv.MakeResultsForQuery();
         }
 
         #region IList members
@@ -109,6 +109,12 @@ namespace Realms
         /// Creates a query handle for the results.
         /// </summary>
         /// <returns>The query handle.</returns>
-        QueryHandle CreateQuery();
+        QueryHandle GetQuery();
+
+        /// <summary>
+        /// Creates a sort descriptor handle for the results.
+        /// </summary>
+        /// <returns>The sort descriptor handle.</returns>
+        SortDescriptorHandle GetSortDescriptor();
     }
 }

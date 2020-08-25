@@ -24,7 +24,6 @@
 #include <memory>
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "marshalable_sort_clause.hpp"
 #include "object_accessor.hpp"
 #include "schema.hpp"
 

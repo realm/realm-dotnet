@@ -34,8 +34,8 @@ namespace Realms
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _metadata;
 
-        internal QueryHandle CoreQueryHandle;  // set when recurse down to VisitConstant
-        internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
+        private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
+        private SortDescriptorHandle _sortDescriptor;
 
         private static class Methods
         {
@@ -111,33 +111,18 @@ namespace Realms
             }
         }
 
-        private void AddSort(LambdaExpression lambda, bool isStarting, bool ascending)
+        private void AddSort(LambdaExpression lambda, bool ascending)
         {
-            var body = lambda.Body as MemberExpression;
-            if (body == null)
+            if (!(lambda.Body is MemberExpression body))
             {
                 throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
             }
 
-            if (isStarting)
-            {
-                if (OptionalSortDescriptorBuilder == null)
-                {
-                    OptionalSortDescriptorBuilder = new SortDescriptorBuilder(_metadata.Table);
-                }
-                else
-                {
-                    var badCall = ascending ? "ThenBy" : "ThenByDescending";
-                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be {badCall}");
-                }
-            }
-
             var propertyChain = TraverseSort(body);
-
-            OptionalSortDescriptorBuilder.AddClause(propertyChain, ascending);
+            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, propertyChain, ascending);
         }
 
-        private IEnumerable<IntPtr> TraverseSort(MemberExpression expression)
+        private IntPtr[] TraverseSort(MemberExpression expression)
         {
             var chain = new List<IntPtr>();
 
@@ -162,7 +147,7 @@ namespace Realms
 
             chain.Reverse();
 
-            return chain;
+            return chain.ToArray();
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
@@ -178,51 +163,37 @@ namespace Realms
                     return node;
                 }
 
-                if (node.Method.Name == nameof(Queryable.OrderBy))
+                if (node.Method.Name == nameof(Queryable.OrderBy) || node.Method.Name == nameof(Queryable.ThenBy))
                 {
                     Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true, true);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true);
                     return node;
                 }
 
-                if (node.Method.Name == nameof(Queryable.OrderByDescending))
+                if (node.Method.Name == nameof(Queryable.OrderByDescending) || node.Method.Name == nameof(Queryable.ThenByDescending))
                 {
                     Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), true, false);
-                    return node;
-                }
-
-                if (node.Method.Name == nameof(Queryable.ThenBy))
-                {
-                    Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false, true);
-                    return node;
-                }
-
-                if (node.Method.Name == nameof(Queryable.ThenByDescending))
-                {
-                    Visit(node.Arguments[0]);
-                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false, false);
+                    AddSort((LambdaExpression)StripQuotes(node.Arguments[1]), false);
                     return node;
                 }
 
                 if (node.Method.Name == nameof(Queryable.Count))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    var foundCount = CoreQueryHandle.Count();
+                    var foundCount = _coreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
 
                 if (node.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    return Expression.Constant(CoreQueryHandle.Count() > 0);
+                    return Expression.Constant(_coreQueryHandle.Count() > 0);
                 }
 
                 if (node.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                    using (var rh = MakeResultsForQuery())
                     {
                         if (rh.TryGetObjectAtIndex(0, out var firstObject))
                         {
@@ -262,7 +233,7 @@ namespace Realms
                 if (node.Method.Name.StartsWith(nameof(Queryable.Single)))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                    using (var rh = MakeResultsForQuery())
                     {
                         var count = rh.Count();
                         if (count == 0)
@@ -292,7 +263,7 @@ namespace Realms
                     RecurseToWhereOrRunLambda(node);
 
                     ObjectHandle lastObject = null;
-                    using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                    using (var rh = MakeResultsForQuery())
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
@@ -325,7 +296,7 @@ namespace Realms
 
                     ObjectHandle objectHandle;
                     var index = (int)argument;
-                    using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                    using (var rh = MakeResultsForQuery())
                     {
                         rh.TryGetObjectAtIndex(index, out objectHandle);
                     }
@@ -391,13 +362,13 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = CoreQueryHandle.GetColumnKey(columnName);
+                    var columnKey = _coreQueryHandle.GetColumnKey(columnName);
 
-                    CoreQueryHandle.GroupBegin();
-                    CoreQueryHandle.NullEqual(columnKey);
-                    CoreQueryHandle.Or();
-                    CoreQueryHandle.StringEqual(columnKey, string.Empty, caseSensitive: true);
-                    CoreQueryHandle.GroupEnd();
+                    _coreQueryHandle.GroupBegin();
+                    _coreQueryHandle.NullEqual(columnKey);
+                    _coreQueryHandle.Or();
+                    _coreQueryHandle.StringEqual(columnKey, string.Empty, caseSensitive: true);
+                    _coreQueryHandle.GroupEnd();
                     return node;
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
@@ -430,7 +401,7 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = CoreQueryHandle.GetColumnKey(columnName);
+                    var columnKey = _coreQueryHandle.GetColumnKey(columnName);
 
                     if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
@@ -438,7 +409,7 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
 
-                    queryMethod(CoreQueryHandle, columnKey, (string)argument);
+                    queryMethod(_coreQueryHandle, columnKey, (string)argument);
                     return node;
                 }
             }
@@ -504,7 +475,7 @@ namespace Realms
             switch (node.NodeType)
             {
                 case ExpressionType.Not:
-                    CoreQueryHandle.Not();
+                    _coreQueryHandle.Not();
                     Visit(node.Operand);  // recurse into richer expression, expect to VisitCombination
                     break;
                 default:
@@ -516,11 +487,11 @@ namespace Realms
 
         protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
         {
-            CoreQueryHandle.GroupBegin();
+            _coreQueryHandle.GroupBegin();
             Visit(b.Left);
-            combineWith(CoreQueryHandle);
+            combineWith(_coreQueryHandle);
             Visit(b.Right);
-            CoreQueryHandle.GroupEnd();
+            _coreQueryHandle.GroupEnd();
         }
 
         internal static bool TryExtractConstantValue(Expression expr, out object value)
@@ -623,22 +594,22 @@ namespace Realms
                 switch (node.NodeType)
                 {
                     case ExpressionType.Equal:
-                        AddQueryEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryEqual(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.NotEqual:
-                        AddQueryNotEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryNotEqual(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.LessThan:
-                        AddQueryLessThan(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryLessThan(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.LessThanOrEqual:
-                        AddQueryLessThanOrEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryLessThanOrEqual(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.GreaterThan:
-                        AddQueryGreaterThan(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryGreaterThan(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     case ExpressionType.GreaterThanOrEqual:
-                        AddQueryGreaterThanOrEqual(CoreQueryHandle, leftName, rightValue, memberExpression.Type);
+                        AddQueryGreaterThanOrEqual(_coreQueryHandle, leftName, rightValue, memberExpression.Type);
                         break;
                     default:
                         throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
@@ -895,12 +866,13 @@ namespace Realms
             if (node.Value is IQueryableCollection results)
             {
                 // assume constant nodes w/ IQueryables are table references
-                if (CoreQueryHandle != null)
+                if (_coreQueryHandle != null)
                 {
                     throw new Exception("We already have a table...");
                 }
 
-                CoreQueryHandle = results.CreateQuery();
+                _coreQueryHandle = results.GetQuery();
+                _sortDescriptor = results.GetSortDescriptor();
             }
             else if (node.Value?.GetType() == typeof(object))
             {
@@ -918,13 +890,18 @@ namespace Realms
                 {
                     object rhs = true;  // box value
                     var leftName = GetColumnName(node, node.NodeType);
-                    AddQueryEqual(CoreQueryHandle, leftName, rhs, node.Type);
+                    AddQueryEqual(_coreQueryHandle, leftName, rhs, node.Type);
                 }
 
                 return node;
             }
 
             throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
+        }
+
+        public ResultsHandle MakeResultsForQuery()
+        {
+            return _coreQueryHandle.CreateResults(_realm.SharedRealmHandle, _sortDescriptor);
         }
     }
 }

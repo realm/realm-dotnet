@@ -82,6 +82,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_descriptor_ordering", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_sort_descriptor(ResultsHandle results, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_is_frozen(ResultsHandle results, out NativeException ex);
@@ -155,12 +158,20 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public QueryHandle CreateQuery()
+        public QueryHandle GetQuery()
         {
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new QueryHandle(Root ?? this, result);
+        }
+
+        public SortDescriptorHandle GetSortDescriptor()
+        {
+            var result = NativeMethods.get_sort_descriptor(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new SortDescriptorHandle(Root ?? this, result);
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)

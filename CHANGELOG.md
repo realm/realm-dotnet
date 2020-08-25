@@ -9,6 +9,7 @@ vNext(TBD)
 
 ### Fixed
 * Fixed `Access to invalidated List object` being thrown when adding objects to a list while at the same time deleting the object containing the list. (Issue [#1971](https://github.com/realm/realm-dotnet/issues/1971))
+* Fixed incorrect results being returned when using `.ElementAt()` on a query where a string filter with a sort clause was applied. (PR [#2002](https://github.com/realm/realm-dotnet/pull/2002))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.

@@ -541,16 +541,6 @@ namespace Realms
             return null;
         }
 
-        internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
-        {
-            if (optionalSortDescriptorBuilder == null)
-            {
-                return builtQuery.CreateResults(SharedRealmHandle);
-            }
-
-            return builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
-        }
-
         /// <summary>
         /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
         /// </summary>
