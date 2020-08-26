@@ -17,13 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct Schema
     {
         internal IntPtr /* SchemaObject[] */ objects;

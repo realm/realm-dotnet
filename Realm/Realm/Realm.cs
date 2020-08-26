@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,7 +49,7 @@ namespace Realms
         private static readonly ThreadLocal<IDictionary<string, WeakReference<State>>> _states = new ThreadLocal<IDictionary<string, WeakReference<State>>>(DictionaryConstructor<string, WeakReference<State>>);
 
         // TODO: due to a Mono bug, this needs to be a function rather than a lambda
-        private static IDictionary<T, U> DictionaryConstructor<T, U>() => new Dictionary<T, U>();
+        private static IDictionary<TKey, TValue> DictionaryConstructor<TKey, TValue>() => new Dictionary<TKey, TValue>();
 
         /// <summary>
         /// Factory for obtaining a <see cref="Realm"/> instance for this thread.
@@ -162,6 +163,8 @@ namespace Realms
         /// <param name="configuration">A <see cref="RealmConfigurationBase"/> which supplies the realm path.</param>
         public static void DeleteRealm(RealmConfigurationBase configuration)
         {
+            Argument.NotNull(configuration, nameof(configuration));
+
             var fullpath = configuration.DatabasePath;
             if (IsRealmOpen(fullpath))
             {
@@ -295,7 +298,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Handler type used by <see cref="RealmChanged"/>
+        /// Handler type used by <see cref="RealmChanged"/>.
         /// </summary>
         /// <param name="sender">The <see cref="Realm"/> which has changed.</param>
         /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
@@ -455,7 +458,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
             }
 
-            result._SetOwner(this, objectHandle, metadata);
+            result.SetOwner(this, objectHandle, metadata);
             result.OnManaged();
             return result;
         }
@@ -463,7 +466,7 @@ namespace Realms
         internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret._SetOwner(this, objectHandle, metadata);
+            ret.SetOwner(this, objectHandle, metadata);
             ret.OnManaged();
             return ret;
         }
@@ -481,7 +484,6 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
-            var resultsPtr = IntPtr.Zero;
             if (optionalSortDescriptorBuilder == null)
             {
                 return builtQuery.CreateResults(SharedRealmHandle);
@@ -512,10 +514,12 @@ namespace Realms
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
         /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c></returns>
-        public T Add<T>(T obj, bool update = false) where T : RealmObject
+        /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c>.</returns>
+        public T Add<T>(T obj, bool update = false)
+            where T : RealmObject
         {
             ThrowIfDisposed();
+            Argument.NotNull(obj, nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
             AddInternal(obj, typeof(T), update);
@@ -580,7 +584,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
             }
 
-            obj._SetOwner(this, objectHandle, metadata);
+            obj.SetOwner(this, objectHandle, metadata);
 
             // If an object is newly created, we don't need to invoke setters of properties with default values.
             metadata.Helper.CopyToRealm(obj, update, isNew);
@@ -638,6 +642,7 @@ namespace Realms
         public void Write(Action action)
         {
             ThrowIfDisposed();
+            Argument.NotNull(action, nameof(action));
 
             using (var transaction = BeginWrite())
             {
@@ -690,7 +695,7 @@ namespace Realms
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (AsyncHelper.HasValidContext)
             {
-                async Task doWorkAsync()
+                async Task DoWorkAsync()
                 {
                     await Task.Run(() =>
                     {
@@ -704,7 +709,8 @@ namespace Realms
                     // TODO: figure out why this assertion fails in `AsyncTests.AsyncWrite_ShouldExecuteOnWorkerThread`
                     // System.Diagnostics.Debug.Assert(didRefresh, "Expected RefreshAsync to return true.");
                 }
-                return doWorkAsync();
+
+                return DoWorkAsync();
             }
             else
             {
@@ -754,12 +760,12 @@ namespace Realms
 
             var tcs = new TaskCompletionSource<bool>();
 
-            RealmChanged += handler;
+            RealmChanged += Handler;
             return tcs.Task;
 
-            void handler(object sender, EventArgs e)
+            void Handler(object sender, EventArgs e)
             {
-                ((Realm)sender).RealmChanged -= handler;
+                ((Realm)sender).RealmChanged -= Handler;
                 tcs.TrySetResult(true);
             }
         }
@@ -769,7 +775,8 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this <see cref="Realm"/>.</returns>
-        public IQueryable<T> All<T>() where T : RealmObject
+        public IQueryable<T> All<T>()
+            where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -810,7 +817,9 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(long? primaryKey) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        public T Find<T>(long? primaryKey)
+            where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -832,7 +841,9 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(string primaryKey) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        public T Find<T>(string primaryKey)
+            where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -857,6 +868,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
         public RealmObject Find(string className, long? primaryKey)
         {
             ThrowIfDisposed();
@@ -879,6 +891,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
         public RealmObject Find(string className, string primaryKey)
         {
             ThrowIfDisposed();
@@ -906,8 +919,12 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="RealmObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
-        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
+            where T : RealmObject
         {
+            Argument.NotNull(reference, nameof(reference));
+
             var objectPtr = SharedRealmHandle.ResolveReference(reference);
             var objectHandle = new ObjectHandle(SharedRealmHandle, objectPtr);
 
@@ -929,8 +946,11 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
         /// if the list's parent object has been deleted after the reference was created.
         /// </returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The List instance will own its handle.")]
         public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
+            Argument.NotNull(reference, nameof(reference));
+
             var listPtr = SharedRealmHandle.ResolveReference(reference);
             var listHandle = new ListHandle(SharedRealmHandle, listPtr);
             if (!listHandle.IsValid)
@@ -948,8 +968,12 @@ namespace Realms
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IQueryable{T}"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
-        public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Query instance will own its handle.")]
+        public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
+            where T : RealmObject
         {
+            Argument.NotNull(reference, nameof(reference));
+
             var resultsPtr = SharedRealmHandle.ResolveReference(reference);
             var resultsHandle = new ResultsHandle(SharedRealmHandle, resultsPtr);
             return new RealmResults<T>(this, reference.Metadata, resultsHandle);
@@ -988,7 +1012,8 @@ namespace Realms
         /// If <c>range</c> is not the result of <see cref="All{T}"/> or subsequent LINQ filtering.
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
-        public void RemoveRange<T>(IQueryable<T> range) where T : RealmObject
+        public void RemoveRange<T>(IQueryable<T> range)
+            where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -1009,7 +1034,8 @@ namespace Realms
         /// <exception cref="ArgumentException">
         /// If the type T is not part of the limited set of classes in this Realm's <see cref="Schema"/>.
         /// </exception>
-        public void RemoveAll<T>() where T : RealmObject
+        public void RemoveAll<T>()
+            where T : RealmObject
         {
             ThrowIfDisposed();
 
@@ -1046,9 +1072,10 @@ namespace Realms
 
             foreach (var metadata in Metadata.Values)
             {
-                var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle);
-                resultsHandle.Clear(SharedRealmHandle);
-                resultsHandle.Close();
+                using (var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle))
+                {
+                    resultsHandle.Clear(SharedRealmHandle);
+                }
             }
         }
 
@@ -1065,6 +1092,8 @@ namespace Realms
         /// <param name="config">Configuration, specifying the path and optionally the encryption key for the copy.</param>
         public void WriteCopy(RealmConfigurationBase config)
         {
+            Argument.NotNull(config, nameof(config));
+
             SharedRealmHandle.WriteCopy(config.DatabasePath, config.EncryptionKey);
         }
 

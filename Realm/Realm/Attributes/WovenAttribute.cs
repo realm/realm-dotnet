@@ -17,22 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Realms.Native
+namespace Realms
 {
     /// <summary>
-    /// Our own copy of MonoPInvokeCallbackAttribute to avoid the Xamarin.iOS dependency.
+    /// An attribute that indicates that a class has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Used not only in Mono, but Mono depends on name.")]
-    internal class MonoPInvokeCallbackAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class)]
+    public class WovenAttribute : Attribute
     {
-        public MonoPInvokeCallbackAttribute(Type type)
-        {
-            Type = type;
-        }
+        internal Type HelperType { get; private set; }
 
-        public Type Type { get; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WovenAttribute"/> class.
+        /// </summary>
+        /// <param name="helperType">The type of the generated RealmObjectHelper for that class.</param>
+        public WovenAttribute(Type helperType)
+        {
+            HelperType = helperType;
+        }
     }
 }

@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Native;
-using Realms.Server.Native;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Realms.Native;
+using Realms.Server.Native;
 
 namespace Realms.Server
 {

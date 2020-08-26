@@ -16,19 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Helpers;
-using Realms.Schema;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Realms.Helpers;
+using Realms.Schema;
 
 namespace Realms
 {
-    internal interface IQueryableCollection
-    {
-        QueryHandle CreateQuery();
-    }
-
     internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection
     {
         private readonly ResultsHandle _handle;
@@ -91,5 +86,17 @@ namespace Realms
         }
 
         #endregion IList members
+    }
+
+    /// <summary>
+    /// IQueryableCollection exposes a method to create QueryHandle without forcing the caller to infer the type of the objects contained in the results.
+    /// </summary>
+    internal interface IQueryableCollection
+    {
+        /// <summary>
+        /// Creates a query handle for the results.
+        /// </summary>
+        /// <returns>The query handle.</returns>
+        QueryHandle CreateQuery();
     }
 }

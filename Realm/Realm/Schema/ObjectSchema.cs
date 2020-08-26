@@ -87,6 +87,7 @@ namespace Realms.Schema
         /// <inheritdoc/>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>

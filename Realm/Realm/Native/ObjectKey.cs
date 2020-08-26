@@ -30,7 +30,7 @@ namespace Realms.Native
 
         public override bool Equals(object obj)
         {
-            switch(obj)
+            switch (obj)
             {
                 case ObjectKey other:
                     return value.Equals(other.value);

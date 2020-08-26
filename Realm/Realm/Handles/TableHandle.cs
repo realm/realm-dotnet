@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -25,10 +24,11 @@ namespace Realms
 {
     internal class TableHandle : RealmHandle
     {
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr tableHandle, out NativeException ex);
 
@@ -53,6 +53,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_null_primarykey", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_object_for_null_primarykey(TableHandle handle, SharedRealmHandle realmHandle, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         [Preserve]

@@ -24,6 +24,11 @@ namespace Realms
 {
     internal static class InteropConfig
     {
+        /// <summary>
+        /// Name of the DLL used in native declarations, constant varying per-platform.
+        /// </summary>
+        public const string DLL_NAME = "realm-wrappers";
+
         private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
         {
             try
@@ -68,6 +73,7 @@ namespace Realms
             {
                 throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
             }
+
             var folder = Path.Combine(currentDirectory, "Documents");
             Directory.CreateDirectory(folder);
             return folder;
@@ -84,6 +90,7 @@ namespace Realms
                     using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
                     {
                     }
+
                     return true;
                 }
                 catch
@@ -92,11 +99,6 @@ namespace Realms
                 }
             }
         });
-
-        /// <summary>
-        /// Name of the DLL used in native declarations, constant varying per-platform.
-        /// </summary>
-        public const string DLL_NAME = "realm-wrappers";
 
         private static string _customStorageFolder;
         public static string DefaultStorageFolder

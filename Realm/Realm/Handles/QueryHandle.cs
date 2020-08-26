@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -29,15 +28,16 @@ namespace Realms
     // so these handles always represent a qeury object that should be released when not used anymore
     // the C# binding methods on query simply return self to add the . nottation again
     // A query will be a child of whatever root its creator has as root (queries are usually created by tableviews and tables)
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented")]
     internal class QueryHandle : RealmHandle
     {
         // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
         internal delegate void Operation<T>(QueryHandle queryPtr, ColumnKey columnKey, T value);
 
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void binary_equal(QueryHandle queryPtr, ColumnKey columnKey, IntPtr buffer, IntPtr bufferLength, out NativeException ex);
 
@@ -200,9 +200,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm,
-                [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
-                [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedPropertyIndices,
+                [MarshalAs(UnmanagedType.LPArray), In] SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
+                [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] flattenedPropertyIndices,
                 out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public QueryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
@@ -294,6 +297,7 @@ namespace Realms
             {
                 NativeMethods.string_like(this, columnKey, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             }
+
             nativeException.ThrowIfNecessary();
         }
 

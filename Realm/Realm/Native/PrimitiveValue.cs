@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Helpers;
 using Realms.Schema;
@@ -25,7 +24,6 @@ using Realms.Schema;
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Explicit)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct PrimitiveValue
     {
         [FieldOffset(0)]

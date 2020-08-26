@@ -21,22 +21,26 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Collection object.
-    // We need to mirror this same relationship here.
     internal class NotificationTokenHandle : RealmHandle
     {
-        private readonly NotifiableObjectHandleBase _notifiableHandle;
+        private static class NativeMethods
+        {
+#pragma warning disable IDE1006 // Naming Styles
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+        }
 
         public NotificationTokenHandle(NotifiableObjectHandleBase root, IntPtr handle) : base(root, handle)
         {
-            // We save this because RealmHandle doesn't support a parent chain like
-            // NotificationToken -> List -> Realm
-            _notifiableHandle = root;
         }
 
         protected override void Unbind()
         {
-            var managedObjectHandle = _notifiableHandle.DestroyNotificationToken(handle);
+            var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var nativeException);
+            nativeException.ThrowIfNecessary();
             GCHandle.FromIntPtr(managedObjectHandle).Free();
         }
     }

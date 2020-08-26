@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,22 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Realms.Native
+namespace Realms
 {
     /// <summary>
-    /// Our own copy of MonoPInvokeCallbackAttribute to avoid the Xamarin.iOS dependency.
+    /// An attribute that indicates that a property has been woven. It is applied automatically by the RealmWeaver and should not be used manually.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Used not only in Mono, but Mono depends on name.")]
-    internal class MonoPInvokeCallbackAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public class WovenPropertyAttribute : Attribute
     {
-        public MonoPInvokeCallbackAttribute(Type type)
-        {
-            Type = type;
-        }
-
-        public Type Type { get; }
     }
 }

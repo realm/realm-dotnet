@@ -25,7 +25,8 @@ using System.Runtime.InteropServices;
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MarshaledVector<T> where T : struct
+    internal struct MarshaledVector<T>
+        where T : struct
     {
         private IntPtr items;
         private IntPtr count;

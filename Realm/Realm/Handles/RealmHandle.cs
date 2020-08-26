@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
@@ -42,7 +41,7 @@ using System.Runtime.InteropServices;
 /*
  * 3) GC.KeepAlive behavior - P/Invoke vs. finalizer thread ---- (HandleRef)
  * 4) Enforcement of the above via the type system - Don't use IntPtr anymore.
- *  
+ *
  * see http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
  */
 
@@ -91,8 +90,13 @@ namespace Realms
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
-        // I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be,
-        // but I think that is an internal comment to msft developers
+        //// I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be,
+        //// but I think that is an internal comment to msft developers
+
+        private readonly object _unbindListLock = new object(); // used to serialize calls to unbind between finalizer threads
+
+        // list of owned handles that should be unbound as soon as possible by a user thread
+        private readonly List<RealmHandle> _unbindList; // set only once, to a list if we are a root.
 
         // goes to true when we don't expect more calls from user threads on this handle
         // is set when we dispose a handle
@@ -100,11 +104,6 @@ namespace Realms
         // as there are none left than can access the root class (and its owned classes)
         // it is important that children always have a reference path to their root for this to work
         private bool _noMoreUserThread;
-
-        private readonly object _unbindListLock = new object(); // used to serialize calls to unbind between finalizer threads
-
-        private readonly List<RealmHandle> _unbindList; // set only once, to a list if we are a root.
-        // list of owned handles that should be unbound as soon as possible by a user thread
 
         // this object is set to the root/owner if it is a child, or null if this object is itself a root/owner
         // root and handle should be set atomically using RuntimeHelpers.PrepareConstrainedRegions();
@@ -119,14 +118,15 @@ namespace Realms
         // in general, you can pass on root when You are not root Yourself, otherwise pass on null
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         protected RealmHandle(RealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
         {
             SetHandle(handle);
 
             // We can only have a single root
             root = root?.Root ?? root;
-            if (root == null) // if we are a root object, we need a list for our children and Root is already null
+
+            // if we are a root object, we need a list for our children and Root is already null
+            if (root == null)
             {
                 _unbindList = GetUnbindList();
             }
@@ -208,7 +208,6 @@ namespace Realms
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
         // see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
         // and http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ReleaseHandle()
         {
             // Invalid handles might occur if we throw in construction of one, after root is set, but before the handle has been acquired.
@@ -231,20 +230,23 @@ namespace Realms
                     lock (_unbindListLock)
                     {
                         _noMoreUserThread = true; // note:resurrecting a root object will not work unless you set this to false again first
-                        RequestUnbind(this); // this call could interleave with calls from finalizing children in other threads
+
+                        // this call could interleave with calls from finalizing children in other threads
                         // but they or we will wait because of the unbindlistlock taken above
+                        RequestUnbind(this);
                     }
                 }
                 else
                 {
                     // as a child object we wil ask our root to unbind us (testing nomoreuserthread to determine if it can be done at once or we will just have to be put in an unbindlist)
-                    Root.RequestUnbind(this); // ask our root to unbind us (if it is itself finalizing) or put us into the unbind list (if it is still running)
+                    // ask our root to unbind us (if it is itself finalizing) or put us into the unbind list (if it is still running)
                     // note that the this instance cannot and will never be aroot itself bc root != null
+                    Root.RequestUnbind(this);
                 }
 
                 return true;
             }
-            catch (Exception) // okay to catch general exception here, we do really not wish to leak any exceptions right now
+            catch (Exception)
             {
                 // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
                 return false;
@@ -254,7 +256,8 @@ namespace Realms
         // only call inside a lock on UnbindListLock
         private void UnbindLockedList()
         {
-            if (_unbindList.Count > 0) // put in here in order to save time otherwise spent looping and clearing an empty list
+            // put in here in order to save time otherwise spent looping and clearing an empty list
+            if (_unbindList.Count > 0)
             {
                 foreach (var realmHandle in _unbindList)
                 {
@@ -270,11 +273,6 @@ namespace Realms
             return base.ToString() + handle.ToInt64().ToString("x8", CultureInfo.InvariantCulture);
         }
 
-        public void Close()
-        {
-            Dispose(true);
-        }
-
         /// <summary>
         /// Called by children to this root, when they would like to
         /// be unbound, but are (possibly) running in a finalizer thread
@@ -283,7 +281,8 @@ namespace Realms
         /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound.</param>
         private void RequestUnbind(RealmHandle handleToUnbind)
         {
-            lock (_unbindListLock) // You can lock a lock several times inside the same thread. The top-level-lock is the one that counts
+            // You can lock a lock several times inside the same thread. The top-level-lock is the one that counts
+            lock (_unbindListLock)
             {
                 // first let's see if we should go to the list or not
                 if (_noMoreUserThread)

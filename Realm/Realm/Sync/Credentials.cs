@@ -68,7 +68,7 @@ namespace Realms.Sync
         /// <param name="identityProvider">Provider used to verify the credentials.</param>
         /// <param name="userIdentifier">String identifying the user. Usually a username of id.</param>
         /// <param name="userInfo">Data describing the user further or null if the user does not have any extra data. The data will be serialized to JSON, so all values must be mappable to a valid JSON data type.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials Custom(string identityProvider, string userIdentifier,
             IDictionary<string, object> userInfo)
         {
@@ -84,7 +84,7 @@ namespace Realms.Sync
         /// Creates <see cref="Credentials"/> based on a Facebook login.
         /// </summary>
         /// <param name="facebookToken">A Facebook authentication token, obtained by logging into Facebook.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials Facebook(string facebookToken)
         {
             Argument.NotNull(facebookToken, nameof(facebookToken));
@@ -100,7 +100,7 @@ namespace Realms.Sync
         /// Creates <see cref="Credentials"/> based on a Google login.
         /// </summary>
         /// <param name="googleToken">A Google authentication token, obtained by logging into Google.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials Google(string googleToken)
         {
             Argument.NotNull(googleToken, nameof(googleToken));
@@ -118,7 +118,7 @@ namespace Realms.Sync
         /// <param name="username">The username of the user.</param>
         /// <param name="password">The user's password.</param>
         /// <param name="createUser"><c>true</c> if the user should be created, <c>false</c> otherwise. It is not possible to create a user twice when logging in, so this flag should only be set to true the first time a user logs in.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials UsernamePassword(string username, string password, bool? createUser = null)
         {
             var userInfo = new Dictionary<string, object> { [Keys.Password] = password };
@@ -141,7 +141,7 @@ namespace Realms.Sync
         /// in with the Anonymous credentials, use <see cref="User.Current"/> or <see cref="User.AllLoggedIn"/>.
         /// </summary>
         /// <returns>
-        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.
         /// </returns>
         public static Credentials Anonymous()
         {
@@ -157,7 +157,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="value">The nickname of the user.</param>
         /// <returns>
-        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>
+        /// An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.
         /// </returns>
         [Obsolete("The Nickname auth provider is insecure and will be removed in a future version. Please use UsernamePassword or Anonymous instead.")]
         public static Credentials Nickname(string value)
@@ -173,7 +173,7 @@ namespace Realms.Sync
         /// Creates <see cref="Credentials"/> based on an Active Directory login.
         /// </summary>
         /// <param name="adToken">An access token, obtained by logging into Azure Active Directory.</param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials AzureAD(string adToken)
         {
             Argument.NotNull(adToken, nameof(adToken));
@@ -193,7 +193,7 @@ namespace Realms.Sync
         /// The name of the jwt provider in ROS. By default, it will be jwt, unless explicitly overridden
         /// by the ROS configuration.
         /// </param>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials JWT(string token, string providerName = Provider.JWT)
         {
             Argument.NotNull(token, nameof(token));
@@ -229,7 +229,7 @@ namespace Realms.Sync
         /// <para/>
         /// ROS must be configured with <c>refreshTokenValidators</c> for this user to ever be able to sync with it.
         /// </remarks>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/></returns>
+        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
         public static Credentials CustomRefreshToken(string token, string userId, bool isAdmin = false)
         {
             Argument.NotNull(token, nameof(token));

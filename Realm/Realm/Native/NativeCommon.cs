@@ -18,7 +18,6 @@
 
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -28,7 +27,6 @@ using Realms.Native;
 
 namespace Realms
 {
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
     internal static class NativeCommon
     {
 #if DEBUG

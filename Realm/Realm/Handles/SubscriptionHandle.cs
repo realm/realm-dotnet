@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Realms.Exceptions;
 
 namespace Realms.Sync
@@ -31,6 +30,9 @@ namespace Realms.Sync
 
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr handle);
 
@@ -53,11 +55,11 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(SubscriptionHandle subscription, IntPtr managedSubscriptionHandle, SubscriptionCallbackDelegate callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy_notification_token", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_unsubscribe", CallingConvention = CallingConvention.Cdecl)]
             public static extern void unsubscribe(SubscriptionHandle subscription, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         [Preserve]
@@ -67,7 +69,7 @@ namespace Realms.Sync
 
         public static SubscriptionHandle Create(ResultsHandle results, string name, long? timeToLive, bool update, string[] inclusions)
         {
-            var nativeInclusions = new Native.StringValue[0];
+            var nativeInclusions = Array.Empty<Native.StringValue>();
             if (inclusions != null)
             {
                 nativeInclusions = inclusions.Select(i => new Native.StringValue { Value = i }).ToArray();
@@ -110,13 +112,6 @@ namespace Realms.Sync
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var ex);
             ex.ThrowIfNecessary();
             return new SubscriptionTokenHandle(this, result);
-        }
-
-        public IntPtr DestroyNotificationToken(IntPtr token)
-        {
-            var result = NativeMethods.destroy_notificationtoken(token, out var ex);
-            ex.ThrowIfNecessary();
-            return result;
         }
 
         public void Unsubscribe()

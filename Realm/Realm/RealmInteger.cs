@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Helpers;
 
 namespace Realms
@@ -44,7 +45,8 @@ namespace Realms
         IComparable<RealmInteger<T>>,
         IComparable<T>,
         IConvertible,
-        IFormattable
+        IFormattable,
+        IEquatable<RealmInteger<T>>
         where T : struct, IComparable<T>, IFormattable
     {
         private readonly T _value;
@@ -127,6 +129,12 @@ namespace Realms
         }
 
         /// <inheritdoc />
+        public bool Equals(RealmInteger<T> other)
+        {
+            return _value.CompareTo(other._value) == 0;
+        }
+
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return _value.GetHashCode();
@@ -160,38 +168,55 @@ namespace Realms
 
         private IConvertible ConvertibleValue => (IConvertible)_value;
 
+        /// <inheritdoc/>
         TypeCode IConvertible.GetTypeCode() => ConvertibleValue.GetTypeCode();
 
+        /// <inheritdoc/>
         bool IConvertible.ToBoolean(IFormatProvider provider) => ConvertibleValue.ToBoolean(provider);
 
+        /// <inheritdoc/>
         byte IConvertible.ToByte(IFormatProvider provider) => ConvertibleValue.ToByte(provider);
 
+        /// <inheritdoc/>
         char IConvertible.ToChar(IFormatProvider provider) => ConvertibleValue.ToChar(provider);
 
+        /// <inheritdoc/>
         DateTime IConvertible.ToDateTime(IFormatProvider provider) => ConvertibleValue.ToDateTime(provider);
 
+        /// <inheritdoc/>
         decimal IConvertible.ToDecimal(IFormatProvider provider) => ConvertibleValue.ToDecimal(provider);
 
+        /// <inheritdoc/>
         double IConvertible.ToDouble(IFormatProvider provider) => ConvertibleValue.ToDouble(provider);
 
+        /// <inheritdoc/>
         short IConvertible.ToInt16(IFormatProvider provider) => ConvertibleValue.ToInt16(provider);
 
+        /// <inheritdoc/>
         int IConvertible.ToInt32(IFormatProvider provider) => ConvertibleValue.ToInt32(provider);
 
+        /// <inheritdoc/>
         long IConvertible.ToInt64(IFormatProvider provider) => ConvertibleValue.ToInt64(provider);
 
+        /// <inheritdoc/>
         sbyte IConvertible.ToSByte(IFormatProvider provider) => ConvertibleValue.ToSByte(provider);
 
+        /// <inheritdoc/>
         float IConvertible.ToSingle(IFormatProvider provider) => ConvertibleValue.ToSingle(provider);
 
+        /// <inheritdoc/>
         string IConvertible.ToString(IFormatProvider provider) => ConvertibleValue.ToString(provider);
 
+        /// <inheritdoc/>
         object IConvertible.ToType(Type conversionType, IFormatProvider provider) => ConvertibleValue.ToType(conversionType, provider);
 
+        /// <inheritdoc/>
         ushort IConvertible.ToUInt16(IFormatProvider provider) => ConvertibleValue.ToUInt16(provider);
 
+        /// <inheritdoc/>
         uint IConvertible.ToUInt32(IFormatProvider provider) => ConvertibleValue.ToUInt32(provider);
 
+        /// <inheritdoc/>
         ulong IConvertible.ToUInt64(IFormatProvider provider) => ConvertibleValue.ToUInt64(provider);
 
         #endregion
@@ -205,40 +230,56 @@ namespace Realms
 
         #region Operators
 
-        /// <inheritdoc />
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Argument is required for proper operator overloading.")]
         public static RealmInteger<T> operator ++(RealmInteger<T> source)
         {
             throw new NotSupportedException("++ is not supported, use Increment instead.");
         }
 
-        /// <inheritdoc />
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Argument is required for proper operator overloading.")]
         public static RealmInteger<T> operator --(RealmInteger<T> source)
         {
             throw new NotSupportedException("++ is not supported, use Decrement instead.");
         }
 
-        /// <inheritdoc />
         public static implicit operator T(RealmInteger<T> i)
         {
             return i._value;
         }
 
-        /// <inheritdoc />
         public static implicit operator RealmInteger<T>(T i)
         {
             return new RealmInteger<T>(i);
         }
 
-        /// <inheritdoc />
         public static bool operator ==(RealmInteger<T> first, RealmInteger<T> second)
         {
             return first.Equals(second);
         }
 
-        /// <inheritdoc />
         public static bool operator !=(RealmInteger<T> first, RealmInteger<T> second)
         {
             return !(first == second);
+        }
+
+        public static bool operator <(RealmInteger<T> left, RealmInteger<T> right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(RealmInteger<T> left, RealmInteger<T> right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(RealmInteger<T> left, RealmInteger<T> right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(RealmInteger<T> left, RealmInteger<T> right)
+        {
+            return left.CompareTo(right) >= 0;
         }
 
         #endregion

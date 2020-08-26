@@ -35,60 +35,61 @@ namespace Realms.Helpers
             return GenericOperator<TFrom, TResult>.Convert(value);
         }
 
-        private static class GenericOperator<T, U>
+        private static class GenericOperator<T1, T2>
         {
-            private static readonly Lazy<Func<T, U, T>> _add;
-            private static readonly Lazy<Func<T, U>> _convert;
+            private static readonly Lazy<Func<T1, T2, T1>> _add;
+            private static readonly Lazy<Func<T1, T2>> _convert;
 
-            public static Func<T, U, T> Add => _add.Value;
+            public static Func<T1, T2, T1> Add => _add.Value;
 
-            public static Func<T, U> Convert => _convert.Value;
+            public static Func<T1, T2> Convert => _convert.Value;
 
             static GenericOperator()
             {
-                _add = new Lazy<Func<T, U, T>>(CreateAdd);
-                _convert = new Lazy<Func<T, U>>(CreateConvert);
+                _add = new Lazy<Func<T1, T2, T1>>(CreateAdd);
+                _convert = new Lazy<Func<T1, T2>>(CreateConvert);
             }
 
-            private static Func<T, U, T> CreateAdd()
+            private static Func<T1, T2, T1> CreateAdd()
             {
-                var lhs = Expression.Parameter(typeof(T), "lhs");
-                var rhs = Expression.Parameter(typeof(U), "rhs");
+                var lhs = Expression.Parameter(typeof(T1), "lhs");
+                var rhs = Expression.Parameter(typeof(T2), "rhs");
                 try
                 {
-                    if (typeof(T) == typeof(byte))
+                    if (typeof(T1) == typeof(byte))
                     {
                         // Add is not defined for byte...
                         var addExpression = Expression.Add(Expression.Convert(lhs, typeof(int)), Expression.Convert(rhs, typeof(int)));
-                        return Expression.Lambda<Func<T, U, T>>(Expression.Convert(addExpression, typeof(byte)), lhs, rhs).Compile();
+                        return Expression.Lambda<Func<T1, T2, T1>>(Expression.Convert(addExpression, typeof(byte)), lhs, rhs).Compile();
                     }
-                    return Expression.Lambda<Func<T, U, T>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
+
+                    return Expression.Lambda<Func<T1, T2, T1>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
                 }
                 catch (Exception ex)
                 {
                     var message = ex.Message;
-                    return delegate { throw new InvalidOperationException(message); };
+                    return (_, __) => { throw new InvalidOperationException(message); };
                 }
             }
 
-            private static Func<T, U> CreateConvert()
+            private static Func<T1, T2> CreateConvert()
             {
-                var input = Expression.Parameter(typeof(T), "input");
+                var input = Expression.Parameter(typeof(T1), "input");
                 try
                 {
                     Expression convertFrom = input;
-                    var typeOfT = typeof(T);
-                    var isTNullable = false;
-                    if (typeOfT.IsClosedGeneric(typeof(Nullable<>), out var arguments))
+                    var typeOfT1 = typeof(T1);
+                    var isT1Nullable = false;
+                    if (typeOfT1.IsClosedGeneric(typeof(Nullable<>), out var arguments))
                     {
-                        typeOfT = arguments.Single();
-                        isTNullable = true;
+                        typeOfT1 = arguments.Single();
+                        isT1Nullable = true;
                     }
 
-                    if (typeOfT.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
+                    if (typeOfT1.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
                     {
                         var intermediateType = arguments.Single();
-                        if (isTNullable)
+                        if (isT1Nullable)
                         {
                             intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
                         }
@@ -96,18 +97,18 @@ namespace Realms.Helpers
                         convertFrom = Expression.Convert(input, intermediateType);
                     }
 
-                    var typeOfU = typeof(U);
-                    var isUNullable = false;
-                    if (typeOfU.IsClosedGeneric(typeof(Nullable<>), out arguments))
+                    var typeOfT2 = typeof(T2);
+                    var isT2Nullable = false;
+                    if (typeOfT2.IsClosedGeneric(typeof(Nullable<>), out arguments))
                     {
-                        typeOfU = arguments.Single();
-                        isUNullable = true;
+                        typeOfT2 = arguments.Single();
+                        isT2Nullable = true;
                     }
 
-                    if (typeOfU.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
+                    if (typeOfT2.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
                     {
                         var intermediateType = arguments.Single();
-                        if (isUNullable)
+                        if (isT2Nullable)
                         {
                             intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
                         }
@@ -115,12 +116,12 @@ namespace Realms.Helpers
                         convertFrom = Expression.Convert(input, intermediateType);
                     }
 
-                    return Expression.Lambda<Func<T, U>>(Expression.Convert(convertFrom, typeof(U)), input).Compile();
+                    return Expression.Lambda<Func<T1, T2>>(Expression.Convert(convertFrom, typeof(T2)), input).Compile();
                 }
                 catch (Exception ex)
                 {
                     var msg = ex.Message; // avoid capture of ex itself
-                    return delegate { throw new InvalidOperationException(msg); };
+                    return _ => { throw new InvalidOperationException(msg); };
                 }
             }
         }

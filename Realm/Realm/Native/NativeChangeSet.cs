@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Native;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms.Server.Native
 {

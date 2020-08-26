@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
+using Realms.Helpers;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Sync.Testing
@@ -40,6 +40,9 @@ namespace Realms.Sync.Testing
         /// </remarks>
         public static void SimulateError(this Session session, ErrorCode errorCode, string message, bool isFatal = false)
         {
+            Argument.NotNull(session, nameof(session));
+            Argument.NotNull(message, nameof(message));
+
             session.Handle.ReportErrorForTesting((int)errorCode, message, isFatal);
         }
     }

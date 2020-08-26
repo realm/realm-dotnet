@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -47,6 +48,7 @@ namespace Realms.Sync
         /// <returns>The privileges which the current user has for the current Realm.</returns>
         public static RealmPrivileges GetPrivileges(this Realm realm)
         {
+            Argument.NotNull(realm, nameof(realm));
             return realm.SharedRealmHandle.GetPrivileges();
         }
 
@@ -67,7 +69,8 @@ namespace Realms.Sync
         /// <typeparam name="T">The <see cref="RealmObject"/> inheritor to get the privileges for.</typeparam>
         /// <param name="realm">The Realm whose privileges are inspected.</param>
         /// <returns>The privileges which the current user has for the given class.</returns>
-        public static ClassPrivileges GetPrivileges<T>(this Realm realm) where T : RealmObject
+        public static ClassPrivileges GetPrivileges<T>(this Realm realm)
+            where T : RealmObject
         {
             return realm.GetPrivileges(typeof(T).GetTypeInfo().GetMappedOrOriginalName());
         }
@@ -91,6 +94,9 @@ namespace Realms.Sync
         /// <returns>The privileges which the current user has for the given class.</returns>
         public static ClassPrivileges GetPrivileges(this Realm realm, string className)
         {
+            Argument.NotNull(realm, nameof(realm));
+            Argument.NotNull(className, nameof(className));
+
             return realm.SharedRealmHandle.GetPrivileges(className);
         }
 
@@ -118,6 +124,9 @@ namespace Realms.Sync
         /// <returns>The privileges which the current user has for the given object.</returns>
         public static ObjectPrivileges GetPrivileges(this Realm realm, RealmObject obj)
         {
+            Argument.NotNull(realm, nameof(realm));
+            Argument.NotNull(obj, nameof(obj));
+
             return realm.SharedRealmHandle.GetPrivileges(obj.ObjectHandle);
         }
 
@@ -133,6 +142,8 @@ namespace Realms.Sync
         /// <param name="user">The user to add.</param>
         public static void Add(this IList<PermissionUser> users, User user)
         {
+            Argument.NotNull(user, nameof(user));
+
             if (!(users is RealmList<PermissionUser> realmUsers))
             {
                 throw new ArgumentException($"{nameof(Add)} may only be called on managed lists.", nameof(users));

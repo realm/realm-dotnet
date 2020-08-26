@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -140,6 +141,7 @@ namespace Realms.Sync
             get => _userAgent;
             set
             {
+                Argument.NotNull(value, nameof(value));
                 SharedRealmHandleExtensions.SetUserAgent(value);
                 _userAgent = value;
             }
@@ -147,6 +149,7 @@ namespace Realms.Sync
 
         internal SyncConfigurationBase(Uri serverUri, User user = null, string optionalPath = null)
         {
+            Argument.NotNull(serverUri, nameof(serverUri));
             Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
                 "The user must be explicitly specified when the number of logged-in users is not 1.",
                 nameof(user));
@@ -227,6 +230,7 @@ namespace Realms.Sync
             return new Realm(srHandle, this, schema);
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Realm instance will own its handle")]
         internal override async Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken)
         {
             var configuration = new Realms.Native.Configuration

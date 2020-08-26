@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Linq;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -65,6 +66,8 @@ namespace Realms.Sync
         /// </returns>
         public static PermissionUser Get(Realm realm, string identity)
         {
+            Argument.NotNull(realm, nameof(realm));
+
             var user = realm.Find<PermissionUser>(identity);
             if (user != null)
             {

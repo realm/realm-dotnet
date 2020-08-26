@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Realms.Native
+namespace Realms.Sync
 {
-    /// <summary>
-    /// Our own copy of MonoPInvokeCallbackAttribute to avoid the Xamarin.iOS dependency.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Used not only in Mono, but Mono depends on name.")]
-    internal class MonoPInvokeCallbackAttribute : Attribute
+    internal class UserIdCondition : PermissionCondition
     {
-        public MonoPInvokeCallbackAttribute(Type type)
+        public new string UserId { get; }
+
+        public UserIdCondition(string userId)
         {
-            Type = type;
+            UserId = userId;
         }
 
-        public Type Type { get; }
+        internal override object ToJsonObject()
+        {
+            return new
+            {
+                userId = UserId
+            };
+        }
     }
 }
