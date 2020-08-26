@@ -98,8 +98,11 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
-        public static readonly bool Is64BitProcess = IntPtr.Size == 8;
-
-        public static string DefaultStorageFolder => _defaultStorageFolder.Value;
+        private static string _customStorageFolder;
+        public static string DefaultStorageFolder
+        {
+            get => _customStorageFolder ?? _defaultStorageFolder.Value;
+            set => _customStorageFolder = value;
+        }
     }
 }

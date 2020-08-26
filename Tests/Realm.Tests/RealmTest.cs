@@ -28,6 +28,12 @@ namespace Realms.Tests
 
         protected virtual bool OverrideDefaultConfig => true;
 
+        static RealmTest()
+        {
+            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"realm-tests-${System.Diagnostics.Process.GetCurrentProcess().Id}");
+            Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
+        }
+
         [SetUp]
         public void SetUp()
         {
@@ -54,7 +60,7 @@ namespace Realms.Tests
             {
                 CustomTearDown();
 
-                NativeCommon.reset_for_testing();
+                Realms.Sync.SharedRealmHandleExtensions.ResetForTesting();
                 _isSetup = false;
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             }

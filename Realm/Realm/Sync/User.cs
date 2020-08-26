@@ -46,7 +46,7 @@ namespace Realms.Sync
         {
             get
             {
-                SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
 
                 if (SyncUserHandle.TryGetCurrentUser(out var userHandle))
                 {
@@ -65,7 +65,7 @@ namespace Realms.Sync
         {
             get
             {
-                SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
 
                 return SyncUserHandle.GetAllLoggedInUsers()
                                      .Select(handle => new User(handle))
@@ -85,7 +85,7 @@ namespace Realms.Sync
             Argument.NotNull(serverUri, nameof(serverUri));
             Argument.Ensure(serverUri.Scheme.StartsWith("http"), "Unexpected protocol for login url. Expected http:// or https://.", nameof(serverUri));
 
-            SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
 
             if (credentials.IdentityProvider == Credentials.Provider.AdminToken)
             {
@@ -112,7 +112,7 @@ namespace Realms.Sync
         /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
         public static User GetLoggedInUser(string identity, Uri serverUri)
         {
-            SharedRealmHandleExtensions.DoInitialFileSystemConfiguration();
+            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
 
             if (SyncUserHandle.TryGetLoggedInUser(identity, serverUri.AbsoluteUri, out var userHandle))
             {
