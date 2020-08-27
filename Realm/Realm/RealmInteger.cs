@@ -40,9 +40,9 @@ namespace Realms
     /// </typeparam>
     /// <seealso href="https://realm.io/docs/realm-object-server/#counters"/>
     [Preserve(AllMembers = true, Conditional = false)]
+    [SuppressMessage("Design", "CA1066:Implement IEquatable when overriding Object.Equals", Justification = "We already implement IEquatable<T> and RealmInteger<T> implicitly converts to T.")]
     public struct RealmInteger<T> :
         IEquatable<T>,
-        IEquatable<RealmInteger<T>>,
         IComparable<RealmInteger<T>>,
         IComparable<T>,
         IConvertible,
@@ -123,15 +123,9 @@ namespace Realms
         }
 
         /// <inheritdoc />
-        bool IEquatable<T>.Equals(T other)
+        public bool Equals(T other)
         {
             return CompareTo(other) == 0;
-        }
-
-        /// <inheritdoc />
-        bool IEquatable<RealmInteger<T>>.Equals(RealmInteger<T> other)
-        {
-            return _value.CompareTo(other._value) == 0;
         }
 
         /// <inheritdoc />
