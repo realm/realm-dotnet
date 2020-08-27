@@ -32,11 +32,10 @@ namespace Realms.Tests.Database
         private static readonly Random _random = new Random();
         private Lazy<Realm> _lazyRealm;
 
-        private Realm _realm => _lazyRealm.Value;
-
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
         // That's why we make sure we open the Realm in the test method by accessing it lazily.
+        private Realm _realm => _lazyRealm.Value;
 
         [SetUp]
         public void SetUp()
@@ -283,7 +282,7 @@ namespace Realms.Tests.Database
         public static IEnumerable<object> ByteArrayTestValues()
         {
             yield return new object[] { null };
-            yield return new object[] { new byte[][] { new byte[0] } };
+            yield return new object[] { new byte[][] { Array.Empty<byte>() } };
             yield return new object[] { new byte[][] { null } };
             yield return new object[] { new byte[][] { new byte[] { 0 } } };
             yield return new object[] { new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } } };
@@ -548,7 +547,7 @@ namespace Realms.Tests.Database
 
             if (toAdd == null)
             {
-                toAdd = new T[0];
+                toAdd = Array.Empty<T>();
             }
 
             var notifications = new List<ChangeSet>();
@@ -911,7 +910,7 @@ namespace Realms.Tests.Database
             {
                 if (toAdd == null)
                 {
-                    toAdd = new T[0];
+                    toAdd = Array.Empty<T>();
                 }
 
                 var listsObject = new ListsObject();

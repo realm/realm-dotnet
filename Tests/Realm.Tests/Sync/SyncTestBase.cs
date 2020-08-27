@@ -100,10 +100,7 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        /// <summary>
-        /// Waits for upload and immediately disposes of the managed handle to ensure the Realm can be safely deleted.
-        /// </summary>
-        protected async Task WaitForUploadAsync(Realm realm)
+        protected static async Task WaitForUploadAsync(Realm realm)
         {
             var session = realm.GetSession();
             await session.WaitForUploadAsync();
@@ -117,7 +114,7 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)
         {
             Realm result;
             if (openAsync)

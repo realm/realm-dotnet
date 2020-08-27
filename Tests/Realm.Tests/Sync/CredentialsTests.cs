@@ -343,6 +343,8 @@ namespace Realms.Tests.Sync
             });
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
         [Test]
         public void UserLogin_WhenNickname_LogsUserIn()
         {
@@ -387,6 +389,8 @@ namespace Realms.Tests.Sync
                 Assert.That(first.Identity, Is.EqualTo(second.Identity));
             });
         }
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
         #region CustomRefreshTokenTests
 

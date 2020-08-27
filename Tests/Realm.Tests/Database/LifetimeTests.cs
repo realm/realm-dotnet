@@ -17,9 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -90,11 +88,10 @@ namespace Realms.Tests.Database
         {
             TestHelpers.IgnoreOnWindows("GC blocks on Windows");
 
-            TestHelpers.RunAsyncTest(async delegate
+            TestHelpers.RunAsyncTest(async () =>
             {
                 var realm = GetWeakRealm();
-                Func<Transaction> transactionFactory = () => ((Realm)realm.Target).BeginWrite();
-                var transaction = transactionFactory();
+                var transaction = CreateTransaction();
 
                 await System.Threading.Tasks.Task.Yield();
 
@@ -106,6 +103,8 @@ namespace Realms.Tests.Database
 
                 // TearDown
                 ((Realm)realm.Target).Dispose();
+
+                Transaction CreateTransaction() => ((Realm)realm.Target).BeginWrite();
             });
         }
     }

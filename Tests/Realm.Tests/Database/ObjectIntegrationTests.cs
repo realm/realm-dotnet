@@ -22,15 +22,14 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
-        [Test, Explicit("Manual test for debugging")]
+        [Test, TestExplicit("Manual test for debugging")]
         public void SimpleTest()
         {
             MakeThreePeople();

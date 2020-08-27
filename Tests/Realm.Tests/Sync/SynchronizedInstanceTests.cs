@@ -211,12 +211,13 @@ namespace Realms.Tests.Sync
             {
                 var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
                 await PopulateData(config);
+
                 // Update config to make sure we're not opening the same Realm file.
                 config = new FullSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "1");
 
                 using (var cts = new CancellationTokenSource())
                 {
-                    var _ = Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         await Task.Delay(1);
                         cts.Cancel();
@@ -313,6 +314,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var config = await GetClientResyncConfig();
+
                 // Let's delete anything local.
                 Realm.DeleteRealm(config);
                 Exception ex = null;

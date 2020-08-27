@@ -21,9 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -134,7 +132,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(ex.Message, Is.EqualTo(message));
                 });
-            });        
+            });
         }
 
         [Test]
@@ -166,16 +164,16 @@ namespace Realms.Tests.Database
 
                 Assert.That(obj.StringValue, Is.Null);
 
-                var changeTiming = await measureTiming(_realm.RefreshAsync);
+                var changeTiming = await MeasureTiming(_realm.RefreshAsync);
 
                 Assert.That(obj.StringValue, Is.EqualTo("123"));
 
                 // Make sure when there are no changes RefreshAsync completes quickly
-                var idleTiming = await measureTiming(_realm.RefreshAsync);
+                var idleTiming = await MeasureTiming(_realm.RefreshAsync);
 
                 Assert.That(changeTiming, Is.GreaterThan(idleTiming));
 
-                async Task<long> measureTiming(Func<Task> func)
+                async Task<long> MeasureTiming(Func<Task> func)
                 {
                     var sw = new Stopwatch();
                     sw.Start();

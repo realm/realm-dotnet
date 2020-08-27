@@ -18,7 +18,6 @@
 
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -84,7 +83,6 @@ namespace Realms.Tests.Database
         }
 
         // The following test cases exercise both Convert and Member RHS expressions
-
         [TestCase("Peter", 1)]
         [TestCase("Zach", 0)]
         [TestCase("John", 2)]

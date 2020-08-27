@@ -42,11 +42,11 @@ namespace Realms
     [Preserve(AllMembers = true, Conditional = false)]
     public struct RealmInteger<T> :
         IEquatable<T>,
+        IEquatable<RealmInteger<T>>,
         IComparable<RealmInteger<T>>,
         IComparable<T>,
         IConvertible,
-        IFormattable,
-        IEquatable<RealmInteger<T>>
+        IFormattable
         where T : struct, IComparable<T>, IFormattable
     {
         private readonly T _value;
@@ -123,13 +123,13 @@ namespace Realms
         }
 
         /// <inheritdoc />
-        public bool Equals(T other)
+        bool IEquatable<T>.Equals(T other)
         {
             return CompareTo(other) == 0;
         }
 
         /// <inheritdoc />
-        public bool Equals(RealmInteger<T> other)
+        bool IEquatable<RealmInteger<T>>.Equals(RealmInteger<T> other)
         {
             return _value.CompareTo(other._value) == 0;
         }

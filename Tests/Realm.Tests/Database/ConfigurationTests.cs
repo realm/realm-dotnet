@@ -17,16 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
     [TestFixture, Preserve(AllMembers = true)]
     public class ConfigurationTests : RealmTest
     {
@@ -205,7 +203,7 @@ namespace Realms.Tests.Database
             Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
-        [Test, Explicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
+        [Test, TestExplicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
         public void ReadOnlyRealmsWillNotAutoMigrate()
         {
             // Arrange
@@ -270,7 +268,6 @@ namespace Realms.Tests.Database
 namespace Foo
 {
     [Realms.Explicit]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {
         public int IntValue { get; set; }
@@ -280,7 +277,6 @@ namespace Foo
 namespace Bar
 {
     [Realms.Explicit]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DuplicateClass : RealmObject
     {
         public string StringValue { get; set; }
