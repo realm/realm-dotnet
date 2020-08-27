@@ -139,12 +139,12 @@ stage('Package') {
       def props = [ Configuration: configuration, PackageOutputPath: "${env.WORKSPACE}/Realm/packages", VersionSuffix: versionSuffix]
       dir('Realm.Fody') {
         msbuild target: 'Pack', properties: props, restore: true
-        recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, id: 'Fody'
       }
       dir('Realm') {
         msbuild target: 'Pack', properties: props, restore: true
-        recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, id: 'Realm'
       }
+
+      recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, filters: [includePackage("Realm.Fody")]
 
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
