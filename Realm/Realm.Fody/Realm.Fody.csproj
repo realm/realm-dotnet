@@ -8,7 +8,6 @@
     <Title>Realm.Fody</Title>
     <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1591</NoWarn>
     <LangVersion>8.0</LangVersion>
