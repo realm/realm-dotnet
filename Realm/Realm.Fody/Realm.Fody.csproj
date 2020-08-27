@@ -7,7 +7,8 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <Title>Realm.Fody</Title>
     <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
-    <CodeAnalysisRuleSet>$(SolutionDir)global.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1591</NoWarn>
     <LangVersion>8.0</LangVersion>
@@ -31,7 +32,7 @@
     </TfmSpecificPackageFile>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="$(SolutionDir)stylecop.json" />
+    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props" />
 </Project>

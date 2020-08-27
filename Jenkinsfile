@@ -35,113 +35,115 @@ stage('Checkout') {
   }
 }
 
-stage('Build wrappers') {
-  def jobs = [
-    'iOS': {
-      rlmNode('osx') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          sh "./build-ios.sh --configuration=${configuration}"
-        }
-        stash includes: 'wrappers/build/**', name: 'ios-wrappers'
-      }
-    },
-    'macOS': {
-      rlmNode('osx') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
-        }
-        stash includes: 'wrappers/build/**', name: 'macos-wrappers'
-      }
-    },
-    'Linux': {
-      rlmNode('docker') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f centos.Dockerfile").inside() {
-            sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh"
-          }
-        }
-        stash includes: 'wrappers/build/**', name: 'linux-wrappers'
-      }
-    }
-  ]
+// stage('Build wrappers') {
+//   def jobs = [
+//     'iOS': {
+//       rlmNode('osx') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           sh "./build-ios.sh --configuration=${configuration}"
+//         }
+//         stash includes: 'wrappers/build/**', name: 'ios-wrappers'
+//       }
+//     },
+//     'macOS': {
+//       rlmNode('osx') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
+//         }
+//         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
+//       }
+//     },
+//     'Linux': {
+//       rlmNode('docker') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f centos.Dockerfile").inside() {
+//             sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh"
+//           }
+//         }
+//         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
+//       }
+//     }
+//   ]
 
-  for(abi in AndroidABIs) {
-    def localAbi = abi
-    jobs["Android ${localAbi}"] = {
-      rlmNode('docker') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f android.Dockerfile').inside() {
-            sh "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}"
-          }
-        }
-        stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
-      }
-    }
-  }
+//   for(abi in AndroidABIs) {
+//     def localAbi = abi
+//     jobs["Android ${localAbi}"] = {
+//       rlmNode('docker') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f android.Dockerfile').inside() {
+//             sh "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}"
+//           }
+//         }
+//         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
+//       }
+//     }
+//   }
 
-  for(platform in WindowsPlatforms) {
-    def localPlatform = platform
-    jobs["Windows ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
-        }
-        stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
-          archiveArtifacts 'wrappers/build/**/*.pdb'
-        }
-      }
-    }
-  }
+//   for(platform in WindowsPlatforms) {
+//     def localPlatform = platform
+//     jobs["Windows ${localPlatform}"] = {
+//       rlmNode('windows-vs2017') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
+//         }
+//         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
+//         if (env.BRANCH_NAME == 'master') {
+//           archiveArtifacts 'wrappers/build/**/*.pdb'
+//         }
+//       }
+//     }
+//   }
 
-  for(platform in WindowsUniversalPlatforms) {
-    def localPlatform = platform
-    jobs["WindowsUniversal ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
-        unstash 'dotnet-wrappers-source'
-        dir('wrappers') {
-          powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
-        }
-        stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
-          archiveArtifacts 'wrappers/build/**/*.pdb'
-        }
-      }
-    }
-  }
+//   for(platform in WindowsUniversalPlatforms) {
+//     def localPlatform = platform
+//     jobs["WindowsUniversal ${localPlatform}"] = {
+//       rlmNode('windows-vs2017') {
+//         unstash 'dotnet-wrappers-source'
+//         dir('wrappers') {
+//           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
+//         }
+//         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
+//         if (env.BRANCH_NAME == 'master') {
+//           archiveArtifacts 'wrappers/build/**/*.pdb'
+//         }
+//       }
+//     }
+//   }
 
-  parallel jobs
-}
+//   parallel jobs
+// }
 
 packageVersion = ''
 stage('Package') {
   rlmNode('windows && dotnet') {
-    unstash 'dotnet-source'
-    unstash 'ios-wrappers'
-    unstash 'macos-wrappers'
-    unstash 'linux-wrappers'
-    for(abi in AndroidABIs) {
-      unstash "android-wrappers-${abi}"
-    }
-    for(platform in WindowsPlatforms) {
-      unstash "windows-wrappers-${platform}"
-    }
-    for(platform in WindowsUniversalPlatforms) {
-      unstash "windowsuniversal-wrappers-${platform}"
-    }
+    // unstash 'dotnet-source'
+    // unstash 'ios-wrappers'
+    // unstash 'macos-wrappers'
+    // unstash 'linux-wrappers'
+    // for(abi in AndroidABIs) {
+    //   unstash "android-wrappers-${abi}"
+    // }
+    // for(platform in WindowsPlatforms) {
+    //   unstash "windows-wrappers-${platform}"
+    // }
+    // for(platform in WindowsUniversalPlatforms) {
+    //   unstash "windowsuniversal-wrappers-${platform}"
+    // }
 
     dir('Realm') {
       def props = [ Configuration: configuration, PackageOutputPath: "${env.WORKSPACE}/Realm/packages", VersionSuffix: versionSuffix]
       dir('Realm.Fody') {
         msbuild target: 'Pack', properties: props, restore: true
+        recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, id: 'Fody'
       }
       dir('Realm') {
         msbuild target: 'Pack', properties: props, restore: true
+        recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, id: 'Realm'
       }
 
       dir('packages') {
