@@ -37,7 +37,9 @@ namespace Realms.Sync
         private static readonly NativeMethods.LogMessageCallback _logCallback;
 
         // This is int, because Interlocked.Exchange cannot work with narrower types such as bool.
-        private static int _fileSystemConfigured;
+        private static int _metadataConfigured;
+
+        public static bool IsMetadataConfigured => _metadataConfigured == 1;
 
         private static class NativeMethods
         {
@@ -158,7 +160,7 @@ namespace Realms.Sync
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
-            DoInitialFileSystemConfiguration();
+            DoInitialMetadataConfiguration();
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
@@ -170,7 +172,7 @@ namespace Realms.Sync
 
         public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
         {
-            DoInitialFileSystemConfiguration();
+            DoInitialMetadataConfiguration();
 
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
@@ -182,7 +184,7 @@ namespace Realms.Sync
 
         public static string GetRealmPath(User user, Uri serverUri)
         {
-            DoInitialFileSystemConfiguration();
+            DoInitialMetadataConfiguration();
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
             {
                 isNull = false;
@@ -191,9 +193,9 @@ namespace Realms.Sync
         }
 
         // Configure the SyncMetadataManager with default values if it hasn't been configured already
-        public static void DoInitialFileSystemConfiguration()
+        public static void DoInitialMetadataConfiguration()
         {
-            if (Interlocked.Exchange(ref _fileSystemConfigured, 1) == 0)
+            if (Interlocked.Exchange(ref _metadataConfigured, 1) == 0)
             {
                 Configure(null, null, false);
             }
@@ -208,8 +210,8 @@ namespace Realms.Sync
         public static unsafe void Configure(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)
         {
             // mark the file system as configured in case this is called directly
-            // so that it isn't reconfigured with default values in DoInitialFileSystemConfiguration
-            Interlocked.Exchange(ref _fileSystemConfigured, 1);
+            // so that it isn't reconfigured with default values in DoInitialMetadataConfiguration
+            Interlocked.Exchange(ref _metadataConfigured, 1);
 
             RealmException.AddOverrider(RealmExceptionCodes.RealmIncompatibleSyncedFile, (message, path) => new IncompatibleSyncedFileException(message, path));
 
@@ -264,10 +266,10 @@ namespace Realms.Sync
             }
         }
 
-        public static void ResetForTesting(UserPersistenceMode? userPersistenceMode = null)
+        public static void ResetForTesting()
         {
             NativeCommon.reset_for_testing();
-            Configure(userPersistenceMode, null, false);
+            _metadataConfigured = 0;
         }
 
         public static bool ImmediatelyRunFileActions(string path)
@@ -285,7 +287,7 @@ namespace Realms.Sync
 
         public static SessionHandle GetSession(string path, SyncConfiguration configuration, byte[] encryptionKey)
         {
-            DoInitialFileSystemConfiguration();
+            DoInitialMetadataConfiguration();
 
             var result = NativeMethods.get_session(path, (IntPtr)path.Length, configuration, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();

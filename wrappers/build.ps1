@@ -32,7 +32,7 @@ if (!(Get-Module -ListAvailable -Name VSSetup)) {
     Install-Module -Name VSSetup -Scope CurrentUser -Force
 }
 
-$vs = Get-VSSetupInstance | Select-VSSetupInstance -Latest -Require Microsoft.VisualStudio.Component.VC.CMake.Project
+$vs = Get-VSSetupInstance | Select-VSSetupInstance -Product * -Latest -Require Microsoft.VisualStudio.Component.VC.CMake.Project
 
 # Work-around for Visual Studio 16.0 and CMake 3.13
 $Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"

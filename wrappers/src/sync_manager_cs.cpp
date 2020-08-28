@@ -150,9 +150,11 @@ REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, siz
 
         if (mode) {
             config.metadata_mode = *mode;
-#if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR
         } else {
+#if REALM_PLATFORM_APPLE && !TARGET_OS_SIMULATOR
             config.metadata_mode = SyncManager::MetadataMode::Encryption;
+#else
+            config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
 #endif
         }
 

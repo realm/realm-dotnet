@@ -23,9 +23,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -655,8 +653,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        // A test to verify https://github.com/realm/realm-dotnet/issues/1689 is fixed.
-        [Test]
+        [Test(Description = "A test to verify https://github.com/realm/realm-dotnet/issues/1689 is fixed")]
         public void SubscribeForNotifications_InvokedWithInitialCallback()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -738,6 +735,42 @@ namespace Realms.Tests.Database
                 Assert.That(changes.NewModifiedIndices, Is.EquivalentTo(new int[] { 0 }));
                 Assert.That(query.ElementAt(changes.NewModifiedIndices[0]).Equals(toModify));
             }
+        }
+
+        [Test(Description = "A test to verify https://github.com/realm/realm-dotnet/issues/1971 is fixed")]
+        public void List_WhenParentIsDeleted_RaisesReset()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var person = new Person();
+                _realm.Write(() => _realm.Add(person));
+
+                var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
+
+                person.Friends.AsRealmCollection().CollectionChanged += eventHelper.OnEvent;
+
+                _realm.Write(() =>
+                {
+                    person.Friends.Add(new Person());
+                });
+
+                var changeEvent = await eventHelper.GetNextEventAsync();
+
+                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+                Assert.That(changeEvent.Args.NewStartingIndex, Is.EqualTo(0));
+
+                _realm.Write(() =>
+                {
+                    person.Friends.Add(new Person());
+                    _realm.Remove(person);
+                });
+
+                changeEvent = await eventHelper.GetNextEventAsync();
+
+                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+                Assert.That(changeEvent.Sender.IsValid, Is.False);
+                Assert.That(changeEvent.Sender.Count, Is.Zero);
+            });
         }
 
         public static IEnumerable<TestCaseData> CollectionChangedTestCases()
