@@ -101,6 +101,7 @@ namespace Realms
         });
 
         private static string _customStorageFolder;
+
         public static string DefaultStorageFolder
         {
             get => _customStorageFolder ?? _defaultStorageFolder.Value;
