@@ -150,7 +150,8 @@ stage('Package') {
         ignoreFailedBuilds: true,
         filters: [
           excludeFile(".*/wrappers/.*"), // warnings produced by building the wrappers dll
-          excludeFile(".*zlib.lib.*") // warning due to linking zlib without debug info
+          excludeFile(".*zlib.lib.*"), // warning due to linking zlib without debug info
+          excludeFile(".*Microsoft.Build.Tasks.Git.targets.*") // warning due to sourcelink not finding objectstore
         ]
       )
 
