@@ -151,6 +151,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_to_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr to_results(ListHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(ListHandle results, [MarshalAs(UnmanagedType.LPWStr)]string query_buf, IntPtr query_len, out NativeException ex);
         }
 
         public override bool IsValid
@@ -369,12 +375,22 @@ namespace Realms
             var ptr = NativeMethods.snapshot(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(Root ?? this, ptr);
+            return new ResultsHandle(this, ptr);
+        }
+
+        public ResultsHandle ToResults()
+        {
+            var ptr = NativeMethods.to_results(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(this, ptr);
         }
 
         public override ResultsHandle GetFilteredResults(string query)
         {
-            throw new NotImplementedException("Lists can't be filtered yet.");
+            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, out var ex);
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(this, ptr);
         }
     }
 }

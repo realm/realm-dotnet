@@ -277,6 +277,79 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void AsRealmQueryable_WhenListIsOfObjects_RaisesNotifications()
+        {
+            // This fails same as Filter_ReturnsCorrectElementAtResult.
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.Dogs.AsRealmQueryable().Where(d => d.Age >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => joe.Dogs.Add(new Dog { Age = i }));
+                _realm.Refresh();
+
+                if (i > 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 5));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    var foo = oldDogs.ToArray();
+                    var bar = oldDogs.ElementAt(changeSet.InsertedIndices[0]);
+                    var baz = oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age;
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void Filter_ReturnsCorrectElementAtResult()
+        {
+            var joe = new Owner
+            {
+                Name = "Joe"
+            };
+
+            _realm.Write(() => _realm.Add(joe));
+
+            var oldDogs = joe.Dogs.Filter("Age >= 5");
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    joe.Dogs.Add(new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                // This fails for some unknown reason - oldDogs.ElementAt(1) returns
+                // the dog at index 0. See https://realmio.slack.com/archives/C033Z3VGD/p1508878866000267
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+
+        [Test]
         public void Set_WhenIndexIsNegative_ShouldThrow()
         {
             var container = new ContainerObject();
