@@ -144,7 +144,15 @@ stage('Package') {
         msbuild target: 'Pack', properties: props, restore: true
       }
 
-      recordIssues tool: msBuild(), ignoreQualityGate: false, ignoreFailedBuilds: true, filters: [includePackage("Realm.Fody")]
+      recordIssues (
+        tool: msBuild(),
+        ignoreQualityGate: false,
+        ignoreFailedBuilds: true,
+        filters: [
+          excludeFile(".*/wrappers/.*"), // warnings produced by building the wrappers dll
+          excludeFile(".*zlib.lib.*") // warning due to linking zlib without debug info
+        ]
+      )
 
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
