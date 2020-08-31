@@ -87,14 +87,14 @@ private:
 
 extern "C" {
 
-REALM_EXPORT void realm_install_eventloop_callbacks(GetContextT* get, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on_context)
+REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on_context)
 {
     Scheduler::set_default_factory([=]() -> std::unique_ptr<Scheduler> {
         void* context = get();
         if (context == nullptr) {
             return nullptr;
         }
-        
+
         return std::make_unique<SynchronizationContextScheduler>(context, post, release, is_on_context);
     });
 }
