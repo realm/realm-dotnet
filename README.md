@@ -38,21 +38,14 @@ We highly recommend [using our pre-built binaries via NuGet](https://realm.io/do
 
 Prerequisites:
 
-* Visual Studio Community or above.
-* Building Xamarin iOS apps also requires Xcode 8.1.
-
-We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
-
-* Xamarin iOS version 10.3.1.8
-* Xamarin Android version 7.0.2.42
-* Xamarin Studio version 6.1.4
+* Visual Studio 2019 Community or above.
+* Building iOS/macOS apps also requires Xcode 8.1 or above.
 
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
 1. Download and build the native libraries using the instructions in `wrappers/README.md`
 1. Open the `Realm.sln` in `Visual Studio`
-1. Build `RealmWeaver.Fody` and `Realm.BuildTasks`
-1. Build `Realm` and `Realm.Sync`
+1. Build `Realm.Fody` and `Realm`
 1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.

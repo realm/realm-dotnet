@@ -17,21 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class Cities : RealmObject
     {
         public string Name { get; set; }
     }
 
     [TestFixture, Preserve(AllMembers = true)]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class SortingTests : PeopleTestsBase
     {
         protected override void CustomSetUp()

@@ -50,7 +50,7 @@ namespace Realms.Helpers
                     throw new ArgumentException("The path can only contain properties", nameof(node));
                 }
 
-                this.Path.Add(node.Member.Name);
+                Path.Add(node.Member.Name);
                 return base.VisitMember(node);
             }
         }

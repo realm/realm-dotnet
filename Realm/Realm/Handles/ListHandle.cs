@@ -26,6 +26,8 @@ namespace Realms
     {
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+
             #region add
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_object", CallingConvention = CallingConvention.Cdecl)]
@@ -151,6 +153,8 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_snapshot", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
         }
 
         public override bool IsValid

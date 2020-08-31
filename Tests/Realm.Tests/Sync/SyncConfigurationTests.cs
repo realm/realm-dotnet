@@ -20,7 +20,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Tests.Database;
@@ -222,8 +221,8 @@ namespace Realms.Tests.Sync
                 var log = logBuilder.ToString();
 
                 Assert.That(log, Does.Contain($"[{logLevel}]"));
-                Assert.That(log, Does.Not.Contain($"[{(logLevel - 1)}]"));
-           });
+                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
+            });
         }
     }
 }

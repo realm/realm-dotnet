@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Native;
@@ -59,8 +58,7 @@ namespace Realms
                 in_memory = true
             };
 
-            var srPtr = IntPtr.Zero;
-            srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+            var srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
             return new Realm(new SharedRealmHandle(srPtr), this, schema);
         }
 

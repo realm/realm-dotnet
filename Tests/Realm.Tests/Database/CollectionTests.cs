@@ -431,7 +431,7 @@ namespace Realms.Tests.Database
                             },
                             new Dog
                             {
-                                Name = $"Dog {2 * i + 1}",
+                                Name = $"Dog {(2 * i) + 1}",
                                 Vaccinated = ((2 * i) + 1) % 5 == 0
                             }
                         }
@@ -465,7 +465,7 @@ namespace Realms.Tests.Database
 
                     _realm.Add(new Owner
                     {
-                        Name = $"Person {(2 * i + 1) % 5}",
+                        Name = $"Person {((2 * i) + 1) % 5}",
                         Dogs = { dog }
                     });
                 }
@@ -496,7 +496,7 @@ namespace Realms.Tests.Database
 
                     _realm.Add(new Owner
                     {
-                        Name = $"Person {(2 * i + 1) % 5}",
+                        Name = $"Person {((2 * i) + 1) % 5}",
                         Dogs = { dog }
                     });
                 }
@@ -527,7 +527,7 @@ namespace Realms.Tests.Database
 
             var notificationsCount = 0;
 
-            using (var token = objects.SubscribeForNotifications(callbackHandler))
+            using (var token = objects.SubscribeForNotifications(CallbackHandler))
             {
                 PopulateAObjects(2);
                 Assert.That(notificationsCount, Is.EqualTo(1));
@@ -544,7 +544,7 @@ namespace Realms.Tests.Database
 
             Assert.That(objects.Count(), Is.EqualTo(4));
 
-            void callbackHandler(IRealmCollection<A> sender, ChangeSet changes, Exception error)
+            void CallbackHandler(IRealmCollection<A> sender, ChangeSet changes, Exception error)
             {
                 if (changes != null)
                 {

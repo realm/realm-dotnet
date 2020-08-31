@@ -16,14 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Realms.Sync
 {
     /// <summary>
     /// A class describing the condition based on which permissions will be applied.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public abstract class PermissionCondition
     {
         /// <summary>
@@ -75,47 +72,5 @@ namespace Realms.Sync
         }
 
         internal abstract object ToJsonObject();
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    internal class UserIdCondition : PermissionCondition
-    {
-        public new string UserId { get; }
-
-        public UserIdCondition(string userId)
-        {
-            UserId = userId;
-        }
-
-        internal override object ToJsonObject()
-        {
-            return new
-            {
-                userId = UserId
-            };
-        }
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    internal class KeyValueCondition : PermissionCondition
-    {
-        public string Key { get; }
-
-        public string Value { get; }
-
-        public KeyValueCondition(string key, string value)
-        {
-            Key = key;
-            Value = value;
-        }
-
-        internal override object ToJsonObject()
-        {
-            return new
-            {
-                metadataKey = Key,
-                metadataValue = Value,
-            };
-        }
     }
 }

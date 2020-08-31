@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
@@ -29,9 +28,11 @@ namespace Realms
 {
     internal class SharedRealmHandle : RealmHandle
     {
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void NotifyRealmCallback(IntPtr stateHandle);
 
@@ -75,7 +76,7 @@ namespace Realms
             public static extern bool refresh(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength, out NativeException ex);
+            public static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string tableName, IntPtr tableNameLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -127,6 +128,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool has_changed(SharedRealmHandle sharedRealm);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         static SharedRealmHandle()
@@ -273,6 +277,7 @@ namespace Realms
                 default:
                     throw new NotSupportedException();
             }
+
             nativeException.ThrowIfNecessary();
 
             reference.Handle.Close();

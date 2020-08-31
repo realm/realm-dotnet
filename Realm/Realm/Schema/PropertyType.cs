@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Realms.Schema
 {
@@ -24,6 +25,9 @@ namespace Realms.Schema
     /// An enum, containing the possible property types.
     /// </summary>
     [Flags]
+    [SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "Would be a breaking change to rename.")]
+    [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is by design - the enum represents types.")]
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "The native values are duplicated.")]
     public enum PropertyType : byte
     {
         /// <summary>

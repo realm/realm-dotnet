@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -95,7 +94,7 @@ namespace Realms.Tests.Database
 
             // Assert
             var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
-            var prevB = new DateTimeOffset();
+            var prevB = default(DateTimeOffset);
             foreach (var t in sortedTurings)
             {
                 Assert.That(t.Birthday, Is.GreaterThan(prevB));

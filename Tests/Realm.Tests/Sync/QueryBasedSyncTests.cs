@@ -353,7 +353,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(query.Count(), Is.EqualTo(0));
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
@@ -379,7 +379,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(query.Count(), Is.EqualTo(0));
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
@@ -403,7 +403,7 @@ namespace Realms.Tests.Sync
 
                     await realm.UnsubscribeAsync("query");
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
             });

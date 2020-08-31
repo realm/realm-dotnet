@@ -100,7 +100,7 @@ namespace Realms
         /// Gets or sets a number, indicating the version of the schema. Can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
-        public ulong SchemaVersion { get; set; } = 0;
+        public ulong SchemaVersion { get; set; }
 
         private byte[] _encryptionKey;
 

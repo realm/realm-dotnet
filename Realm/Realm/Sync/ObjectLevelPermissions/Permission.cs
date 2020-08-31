@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Sync
@@ -146,7 +147,8 @@ namespace Realms.Sync
         /// A <see cref="Permission"/> instance that can be used to inspect or modify the class
         /// permissions of that <see cref="PermissionRole"/>.
         /// </returns>
-        public static Permission Get<T>(PermissionRole role, Realm realm) where T : RealmObject
+        public static Permission Get<T>(PermissionRole role, Realm realm)
+            where T : RealmObject
         {
             return Get(role, ClassPermission.Get<T>(realm).Permissions);
         }
@@ -200,6 +202,8 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(PermissionRole role, RealmObject obj)
         {
+            Argument.NotNull(obj, nameof(obj));
+
             var permissionType = typeof(Permission).GetTypeInfo().GetMappedOrOriginalName();
             var prop = obj.ObjectSchema.FirstOrDefault(o => o.Type == (PropertyType.Array | PropertyType.Object) && o.ObjectType == permissionType);
             if (prop.Name == null)
@@ -258,7 +262,8 @@ namespace Realms.Sync
         /// A <see cref="Permission"/> instance that can be used to inspect or modify the class
         /// permissions of that <see cref="PermissionRole"/>.
         /// </returns>
-        public static Permission Get<T>(string roleName, Realm realm) where T : RealmObject
+        public static Permission Get<T>(string roleName, Realm realm)
+            where T : RealmObject
         {
             return Get(PermissionRole.Get(realm, roleName), ClassPermission.Get<T>(realm).Permissions);
         }
@@ -318,6 +323,7 @@ namespace Realms.Sync
         /// </returns>
         public static Permission Get(string roleName, RealmObject obj)
         {
+            Argument.NotNull(obj, nameof(obj));
             return Get(PermissionRole.Get(obj.Realm, roleName), obj);
         }
 

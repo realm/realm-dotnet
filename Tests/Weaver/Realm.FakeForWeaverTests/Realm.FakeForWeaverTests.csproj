@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Realm\Realm\Attributes\Attributes.cs" Link="Attributes\Attributes.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\BacklinkAttribute.cs" Link="Attributes\BacklinkAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\IgnoredAttribute.cs" Link="Attributes\IgnoredAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\IndexedAttribute.cs" Link="Attributes\IndexedAttribute.cs" />
@@ -15,6 +14,18 @@
     <Compile Include="..\..\..\Realm\Realm\Attributes\PrimaryKeyAttribute.cs" Link="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\RequiredAttribute.cs" Link="Attributes\RequiredAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\ExplicitAttribute.cs">
+      <Link>Attributes\ExplicitAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAssemblyAttribute.cs">
+      <Link>Attributes\WovenAssemblyAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAttribute.cs">
+      <Link>Attributes\WovenAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenPropertyAttribute.cs">
+      <Link>Attributes\WovenPropertyAttribute.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup Label="References">

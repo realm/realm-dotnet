@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
@@ -79,7 +78,9 @@ namespace Realms.Tests.Database
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
             var dogNames = new List<string>();
-            foreach (var dog in tim.Dogs)  // using foreach here is deliberately testing that syntax
+
+            // using foreach here is deliberately testing that syntax
+            foreach (var dog in tim.Dogs)
             {
                 dogNames.Add(dog.Name);
             }
@@ -132,7 +133,7 @@ namespace Realms.Tests.Database
         public void TimAddsADogLater()
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
                 var dog3 = _realm.All<Dog>().Where(p => p.Name == "Maggie Mongrel").First();
@@ -141,7 +142,7 @@ namespace Realms.Tests.Database
             }
 
             var tim2 = _realm.All<Owner>().First(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
         }
 
@@ -149,7 +150,7 @@ namespace Realms.Tests.Database
         public void TimAddsADogByInsert()
         {
             var tim = _realm.All<Owner>().Single(p => p.Name == "Tim");  // use Single for a change
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
                 var dog3 = _realm.All<Dog>().First(p => p.Name == "Maggie Mongrel");
@@ -158,7 +159,7 @@ namespace Realms.Tests.Database
             }
 
             var tim2 = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
         }
@@ -167,7 +168,7 @@ namespace Realms.Tests.Database
         public void TimLosesHisDogsByOrder()
         {
             var tim = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
                 tim.Dogs.RemoveAt(0);
@@ -175,7 +176,7 @@ namespace Realms.Tests.Database
             }
 
             var tim2 = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
             using (var trans = _realm.BeginWrite())
             {
@@ -184,15 +185,15 @@ namespace Realms.Tests.Database
             }
 
             var tim3 = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
-            Assert.That(tim3.Dogs.Count(), Is.EqualTo(0)); // reloaded object has same empty related set
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
+            Assert.That(tim3.Dogs.Count, Is.EqualTo(0)); // reloaded object has same empty related set
         }
 
         [Test]
         public void TimLosesHisDogsInOneClear()
         {
             var tim = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
                 tim.Dogs.Clear();
@@ -200,7 +201,7 @@ namespace Realms.Tests.Database
             }
 
             var tim2 = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -208,7 +209,7 @@ namespace Realms.Tests.Database
         {
             var bilbo = _realm.All<Dog>().First(p => p.Name == "Bilbo Fleabaggins");
             var tim = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
                 tim.Dogs.Remove(bilbo);
@@ -216,7 +217,7 @@ namespace Realms.Tests.Database
             }
 
             var tim2 = _realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
+            Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
         }
 
@@ -231,7 +232,7 @@ namespace Realms.Tests.Database
         public void DaniHasNoDogs()
         {
             var dani = _realm.All<Owner>().Where(p => p.Name == "Dani").Single();
-            Assert.That(dani.Dogs.Count(), Is.EqualTo(0));  // ToMany relationships always return a _realmList
+            Assert.That(dani.Dogs.Count, Is.EqualTo(0));  // ToMany relationships always return a _realmList
             var dogsIterated = 0;
             foreach (var d in dani.Dogs)
             {
@@ -771,7 +772,8 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                foreach (var r in delP.Reports.ToList()) // use ToList to get static list so can remove items
+                // use ToList to get static list so can remove items
+                foreach (var r in delP.Reports.ToList())
                 {
                     _realm.Remove(r); // removes from the _realm, and updates delP.Reports so can't just iterate that
                 }

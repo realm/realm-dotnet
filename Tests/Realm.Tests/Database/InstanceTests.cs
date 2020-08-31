@@ -168,7 +168,7 @@ namespace Realms.Tests.Database
         {
             // Arrange
             var databasePath = Path.GetTempFileName();
-            using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None))     // Lock the file
+            using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None)) // Lock the file
             {
                 // Act and assert
                 Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));

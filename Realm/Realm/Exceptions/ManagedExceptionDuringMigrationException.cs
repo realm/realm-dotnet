@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Realms.Exceptions
 {
+    [SuppressMessage("Design", "CA1064:Exceptions should be public", Justification = "Always caught internally and never propagated to the user.")]
     internal class ManagedExceptionDuringMigrationException : Exception
     {
         public ManagedExceptionDuringMigrationException(string message) : base(message)

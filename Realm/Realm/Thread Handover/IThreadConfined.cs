@@ -18,14 +18,29 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// An interface representing a thread confined object.
+    /// </summary>
     internal interface IThreadConfined
     {
+        /// <summary>
+        /// Gets a value indicating whether the object is managed.
+        /// </summary>
         bool IsManaged { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the object is still valid (i.e. its Realm isn't closed and the object isn't deleted).
+        /// </summary>
         bool IsValid { get; }
 
+        /// <summary>
+        /// Gets a value representing the object's metadata.
+        /// </summary>
         RealmObject.Metadata Metadata { get; }
 
+        /// <summary>
+        /// Gets a value representing the native handle for that object.
+        /// </summary>
         IThreadConfinedHandle Handle { get; }
     }
 }

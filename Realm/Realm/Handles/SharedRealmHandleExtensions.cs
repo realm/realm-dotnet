@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -43,6 +44,9 @@ namespace Realms.Sync
 
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync(Configuration configuration, SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
@@ -130,6 +134,9 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_enable_session_multiplexing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void enable_session_multiplexing(out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         static unsafe SharedRealmHandleExtensions()
@@ -391,6 +398,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The task awaiter will own the ThreadSafeReference handle.")]
         private static unsafe void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, int error_code, byte* messageBuffer, IntPtr messageLength)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);

@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Sync;
@@ -72,8 +71,8 @@ namespace Realms.Tests.Sync
 
         public static object[] MergeTestCases =
         {
-            new object[] { typeof(PrimaryKeyInt64Object), (long)0, new Func<dynamic, bool>(i => Int64ValueChecker(i, 0)) },
-            new object[] { typeof(PrimaryKeyInt64Object), (long)1, new Func<dynamic, bool>(i => Int64ValueChecker(i, 1)) },
+            new object[] { typeof(PrimaryKeyInt64Object), 0L, new Func<dynamic, bool>(i => Int64ValueChecker(i, 0)) },
+            new object[] { typeof(PrimaryKeyInt64Object), 1L, new Func<dynamic, bool>(i => Int64ValueChecker(i, 1)) },
             new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)null, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, null)) },
             new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)0, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, 0)) },
             new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)1, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, 1)) },

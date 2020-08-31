@@ -18,7 +18,6 @@
 
 using System.Reflection;
 using NUnit.Framework;
-using Realms;
 using Realms.Schema;
 
 namespace Realms.Tests.Database

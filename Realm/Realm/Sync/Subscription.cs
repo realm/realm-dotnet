@@ -29,16 +29,21 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    /// <summary>
+    /// A subscription without the generic parameter.
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "The file contains all subscriptions.")]
     internal interface ISubscription
     {
+        /// <summary>
+        /// Reloads the state of the subscription.
+        /// </summary>
         void ReloadState();
     }
 
     /// <summary>
     /// A set of extension methods exposing query-based sync related functionality over collections.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public static class Subscription
     {
         internal static readonly SubscriptionHandle.SubscriptionCallbackDelegate SubscriptionCallback;
@@ -52,7 +57,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query. 
+        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query.
         /// </summary>
         /// <typeparam name="T">The type of the objects making up the query.</typeparam>
         /// <param name="query">
@@ -77,7 +82,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query. 
+        /// For Realms using query-based synchronization, fetches and synchronizes the objects that match the query.
         /// </summary>
         /// <typeparam name="T">The type of the objects making up the query.</typeparam>
         /// <param name="query">
@@ -248,7 +253,7 @@ namespace Realms.Sync
     /// Subscriptions are created by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions, Expression{Func{T, IQueryable}}[])"/>.
     /// </summary>
     /// <typeparam name="T">The type of the objects that make up the subscription query.</typeparam>
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Makes sense to have all subscriptions in the same file.")]
     public class Subscription<T> : INotifyPropertyChanged, ISubscription
     {
         internal readonly SubscriptionHandle Handle;
@@ -309,6 +314,7 @@ namespace Realms.Sync
             return _syncTcs.Task;
         }
 
+        /// <inheritdoc/>
         void ISubscription.ReloadState()
         {
             if (Handle.IsClosed)

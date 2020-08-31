@@ -25,11 +25,10 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Sync
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
 #pragma warning disable CS0618 // Don't complain about SimulateProgress
 
     [TestFixture, Preserve(AllMembers = true)]
@@ -137,8 +136,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Explicit("Fails with obscure error.")]
-        [Test]
+        [Test, TestExplicit("Fails with obscure error.")]
         public void Session_Error_WhenInvalidRefreshToken()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -170,8 +168,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Explicit("Fails with obscure error.")]
-        [Test]
+        [Test, TestExplicit("Fails with obscure error.")]
         public void Session_Error_WhenInvalidAccessToken()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -227,6 +224,7 @@ namespace Realms.Tests.Sync
                         realm.Add(new HugeSyncObject(ObjectSize));
                     });
                 }
+
                 var token = observable.Subscribe(p =>
                 {
                     try

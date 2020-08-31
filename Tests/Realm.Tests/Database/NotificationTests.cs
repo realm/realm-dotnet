@@ -49,11 +49,10 @@ namespace Realms.Tests.Database
 
         private Lazy<Realm> _lazyRealm;
 
-        private Realm _realm => _lazyRealm.Value;
-
         // We capture the current SynchronizationContext when opening a Realm.
         // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
         // That's why we make sure we open the Realm in the test method by accessing it lazily.
+        private Realm _realm => _lazyRealm.Value;
 
         [SetUp]
         public void SetUp()
@@ -104,9 +103,9 @@ namespace Realms.Tests.Database
         {
             var query = _realm.All<Person>();
             ChangeSet changes = null;
-            NotificationCallbackDelegate<Person> cb = (s, c, e) => changes = c;
+            void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e) => changes = c;
 
-            using (query.SubscribeForNotifications(cb))
+            using (query.SubscribeForNotifications(OnNotification))
             {
                 _realm.Write(() => _realm.Add(new Person()));
 
@@ -122,9 +121,9 @@ namespace Realms.Tests.Database
             var container = new OrderedContainer();
             _realm.Write(() => _realm.Add(container));
             ChangeSet changes = null;
-            NotificationCallbackDelegate<OrderedObject> cb = (s, c, e) => changes = c;
+            void OnNotification(IRealmCollection<OrderedObject> s, ChangeSet c, Exception e) => changes = c;
 
-            using (container.Items.SubscribeForNotifications(cb))
+            using (container.Items.SubscribeForNotifications(OnNotification))
             {
                 _realm.Write(() => container.Items.Add(new OrderedObject()));
 
@@ -629,7 +628,7 @@ namespace Realms.Tests.Database
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
                 var query = _realm.All<Person>();
-                NotificationCallbackDelegate<Person> cb = (s, c, e) =>
+                void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e)
                 {
                     if (e != null)
                     {
@@ -639,9 +638,9 @@ namespace Realms.Tests.Database
                     {
                         tcs.TrySetResult(c);
                     }
-                };
+                }
 
-                using (query.SubscribeForNotifications(cb))
+                using (query.SubscribeForNotifications(OnNotification))
                 {
                     _realm.Write(() => _realm.Add(new Person()));
 
@@ -660,7 +659,7 @@ namespace Realms.Tests.Database
             {
                 var initCalls = 0;
                 var updateCalls = 0;
-                void helper(IRealmCollection<Person> _, ChangeSet changes, Exception __)
+                void OnNotification(IRealmCollection<Person> _, ChangeSet changes, Exception __)
                 {
                     if (changes == null)
                     {
@@ -675,13 +674,13 @@ namespace Realms.Tests.Database
                 var d = new Person();
                 _realm.Write(() => _realm.Add(d));
 
-                using (d.Friends.SubscribeForNotifications(helper))
-                using (d.Friends.SubscribeForNotifications(helper))
+                using (d.Friends.SubscribeForNotifications(OnNotification))
+                using (d.Friends.SubscribeForNotifications(OnNotification))
                 {
                     await Task.Delay(100);
                     Assert.That(initCalls, Is.EqualTo(2));
 
-                    using (d.Friends.SubscribeForNotifications(helper))
+                    using (d.Friends.SubscribeForNotifications(OnNotification))
                     {
                         await Task.Delay(100);
                         Assert.That(initCalls, Is.EqualTo(3));
@@ -727,7 +726,7 @@ namespace Realms.Tests.Database
                 _realm.Refresh();
                 Assert.That(changes, Is.Not.Null);
                 Assert.That(changes.DeletedIndices, Is.EquivalentTo(new int[] { 0 }));
-                
+
                 // Modified should be in the old collection
                 Assert.That(changes.ModifiedIndices, Is.EquivalentTo(new int[] { 1 }));
 
@@ -775,8 +774,8 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
-            yield return new TestCaseData(new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 }, 0);
-            yield return new TestCaseData(new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1, 2, 3 }, 0);
+            yield return new TestCaseData(Array.Empty<int>(), NotifyCollectionChangedAction.Add, new int[] { 1 }, 0);
+            yield return new TestCaseData(Array.Empty<int>(), NotifyCollectionChangedAction.Add, new int[] { 1, 2, 3 }, 0);
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Remove, new int[] { 1, 2, 3 }, 0);
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Remove, new int[] { 2 }, 1);
             yield return new TestCaseData(new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Remove, new int[] { 1 }, 0);

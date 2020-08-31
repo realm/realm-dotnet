@@ -23,18 +23,26 @@ namespace Realms.Sync
 {
     internal class SubscriptionTokenHandle : RealmHandle
     {
-        private readonly SubscriptionHandle _subscriptionHandle;
+        private static class NativeMethods
+        {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscription_destroy_notification_token", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
+        }
 
         public SubscriptionTokenHandle(SubscriptionHandle root, IntPtr handle) : base(root, handle)
         {
-            // We save this because RealmHandle doesn't support a parent chain like
-            // SubscriptionToken -> Subscription -> Realm
-            _subscriptionHandle = root;
         }
 
         protected override void Unbind()
         {
-            var managedObjectHandle = _subscriptionHandle.DestroyNotificationToken(handle);
+            var managedObjectHandle = NativeMethods.destroy_notificationtoken(handle, out var ex);
+            ex.ThrowIfNecessary();
             GCHandle.FromIntPtr(managedObjectHandle).Free();
         }
     }

@@ -16,19 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Native;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
     internal class ObjectHandle : NotifiableObjectHandleBase
     {
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool get_is_valid(ObjectHandle objectHandle, out NativeException ex);
@@ -145,6 +146,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
+
+#pragma warning restore SA1121 // Use built-in type alias
+#pragma warning restore IDE1006 // Naming Styles
         }
 
         public bool IsValid
@@ -165,7 +169,7 @@ namespace Realms
         public override bool Equals(object obj)
         {
             // If parameter is null, return false.
-            if (ReferenceEquals(obj, null))
+            if (obj is null)
             {
                 return false;
             }
@@ -176,8 +180,7 @@ namespace Realms
                 return true;
             }
 
-            var otherHandle = obj as ObjectHandle;
-            if (ReferenceEquals(otherHandle, null))
+            if (!(obj is ObjectHandle otherHandle))
             {
                 return false;
             }
@@ -493,7 +496,9 @@ namespace Realms
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
-        public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType)
+            where T : RealmObject
         {
             if (TryGetLink(propertyIndex, out var objectHandle))
             {

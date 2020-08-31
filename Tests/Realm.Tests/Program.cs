@@ -21,7 +21,7 @@ using NUnitLite;
 
 namespace Realms.Tests
 {
-    public class Program
+    public sealed class Program
     {
         public static int Main(string[] args)
         {

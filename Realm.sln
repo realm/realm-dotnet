@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CHANGELOG.md = CHANGELOG.md
 		Directory.build.props = Directory.build.props
 		global.json = global.json
+		global.ruleset = global.ruleset
+		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm.Fody", "Realm\Realm.Fody\Realm.Fody.csproj", "{CDAB5FEE-CC5D-4EFA-807F-F1B974047BE7}"

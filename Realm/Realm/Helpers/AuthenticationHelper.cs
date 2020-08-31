@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -233,6 +234,7 @@ namespace Realms.Sync
                 });
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Session handle is disposed after the session is refreshed.")]
         private static void OnTimerCallback(object state)
         {
             var data = (TokenRefreshData)state;
@@ -266,21 +268,25 @@ namespace Realms.Sync
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
         public static async Task<JObject> MakeAuthRequestAsync(HttpMethod method, Uri uri, IDictionary<string, object> body = null, string authHeader = null)
         {
-            var request = new HttpRequestMessage(method, uri);
-            if (body != null)
+            HttpResponseMessage response;
+            using (var request = new HttpRequestMessage(method, uri))
             {
-                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                if (body != null)
+                {
+                    request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                }
+
+                request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
+                request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
+
+                if (!string.IsNullOrEmpty(authHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Authorization", authHeader);
+                }
+
+                response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             }
 
-            request.Headers.Accept.ParseAdd(_applicationJsonUtf8MediaType.MediaType);
-            request.Headers.Accept.ParseAdd(_applicationProblemJsonUtf8MediaType.MediaType);
-
-            if (!string.IsNullOrEmpty(authHeader))
-            {
-                request.Headers.TryAddWithoutValidation("Authorization", authHeader);
-            }
-
-            var response = await _client.Value.SendAsync(request).ConfigureAwait(continueOnCapturedContext: false);
             if (response.IsSuccessStatusCode && response.Content.Headers.ContentType.Equals(_applicationJsonUtf8MediaType))
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
