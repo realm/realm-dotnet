@@ -20,7 +20,6 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -136,6 +135,7 @@ namespace Realms.Tests.Database
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
                 oldSchema.Add(person.Build());
             }
+
             using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true }, oldSchema.Build()))
             {
                 realm.Write(() =>
@@ -151,6 +151,7 @@ namespace Realms.Tests.Database
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
                 newSchema.Add(person.Build());
             }
+
             using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
             {
                 Assert.That(realm.All("Person"), Is.Empty);

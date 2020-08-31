@@ -99,11 +99,9 @@ namespace RealmWeaver
                 var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
                 scope.Connect();
                 var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
-                using (var searcher = new ManagementObjectSearcher(scope, query))
-                {
-                    var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
-                    return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
-                }
+                using var searcher = new ManagementObjectSearcher(scope, query);
+                var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
+                return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
             }
 
             // Assume OS X if not Windows.
@@ -159,14 +157,6 @@ namespace RealmWeaver
             return payload;
         }
 
-        private static string SHA256Hash(byte[] bytes)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                return BitConverter.ToString(sha256.ComputeHash(bytes));
-            }
-        }
-
         private void ComputeTargetOSNameAndVersion(out string name, out string version)
         {
             version = "UNKNOWN";
@@ -206,6 +196,12 @@ namespace RealmWeaver
             }
         }
 
+        private static string SHA256Hash(byte[] bytes)
+        {
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            return BitConverter.ToString(sha256.ComputeHash(bytes));
+        }
+
         private static void ComputeHostOSNameAndVersion(out string name, out string version)
         {
             switch (Environment.OSVersion.Platform)
@@ -222,8 +218,8 @@ namespace RealmWeaver
                     name = "windows";
                     break;
                 default:
-                    name = "osx";  // proved "windows" detected so default to "osx" for now
-                                   //                    name = Environment.OSVersion.Platform.ToString();
+                    name = "osx";  //// proved "windows" detected so default to "osx" for now
+                                   //// name = Environment.OSVersion.Platform.ToString();
                     break;
             }
 

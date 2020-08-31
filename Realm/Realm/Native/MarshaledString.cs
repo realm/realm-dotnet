@@ -23,8 +23,12 @@ namespace Realms.Native
 {
     internal unsafe struct MarshaledString
     {
+#pragma warning disable CS0649
+
         private byte* _buffer;
         private IntPtr _length;
+
+#pragma warning restore CS0649
 
         public override string ToString()
         {

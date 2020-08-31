@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using Realms;
 using Realms.Weaving;
 
 namespace Realms.Tests.Database
@@ -65,7 +64,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyByteObject), (byte)5)]
         [TestCase(typeof(PrimaryKeyInt16Object), (short)13)]
         [TestCase(typeof(PrimaryKeyInt32Object), 42)]
-        [TestCase(typeof(PrimaryKeyInt64Object), (long)76)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 76L)]
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
@@ -88,7 +87,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyByteObject), (byte)5)]
         [TestCase(typeof(PrimaryKeyInt16Object), (short)13)]
         [TestCase(typeof(PrimaryKeyInt32Object), 42)]
-        [TestCase(typeof(PrimaryKeyInt64Object), (long)76)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 76L)]
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassNotManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {

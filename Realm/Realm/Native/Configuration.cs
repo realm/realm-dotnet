@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
@@ -31,7 +30,6 @@ namespace Realms.Native
     internal delegate bool ShouldCompactCallback(IntPtr config, ulong totalSize, ulong dataSize);
 
     [StructLayout(LayoutKind.Sequential)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct Configuration
     {
         [MarshalAs(UnmanagedType.LPWStr)]

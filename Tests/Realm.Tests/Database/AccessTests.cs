@@ -18,7 +18,6 @@
 
 using System;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -51,7 +50,7 @@ namespace Realms.Tests.Database
             new object[] { "DoubleProperty", 123.123 },
             new object[] { "BooleanProperty", true },
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
-            new object[] { "ByteArrayProperty", new byte[0] },
+            new object[] { "ByteArrayProperty", Array.Empty<byte>() },
             new object[] { "StringProperty", "hello" },
             new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }
         };
@@ -88,7 +87,7 @@ namespace Realms.Tests.Database
             new object[] { "NullableDoubleProperty", 123.123 },
             new object[] { "NullableBooleanProperty", true },
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
-            new object[] { "ByteArrayProperty", new byte[0] },
+            new object[] { "ByteArrayProperty", Array.Empty<byte>() },
             new object[] { "StringProperty", "hello" },
             new object[] { "StringProperty", string.Empty },
             new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }

@@ -52,7 +52,7 @@ namespace Realms.Sync
         /// avoid general overhead from logging and to keep volume down.
         /// </summary>
         Info,
-        
+
         /// <summary>
         /// Log errors and warnings.
         /// </summary>

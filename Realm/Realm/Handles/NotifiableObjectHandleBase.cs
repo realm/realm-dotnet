@@ -42,24 +42,11 @@ namespace Realms
             public MarshaledVector<IntPtr> Properties;
         }
 
-        private static class NativeMethods
-        {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
-        }
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotificationCallbackDelegate(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
 
         protected NotifiableObjectHandleBase(RealmHandle root, IntPtr handle) : base(root, handle)
         {
-        }
-
-        public IntPtr DestroyNotificationToken(IntPtr token)
-        {
-            var result = NativeMethods.destroy_notificationtoken(token, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
         }
 
         public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback);

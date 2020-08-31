@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Realms.Native
 {
@@ -24,6 +25,7 @@ namespace Realms.Native
     /// Our own copy of MonoPInvokeCallbackAttribute to avoid the Xamarin.iOS dependency.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "Used not only in Mono, but Mono depends on name.")]
     internal class MonoPInvokeCallbackAttribute : Attribute
     {
         public MonoPInvokeCallbackAttribute(Type type)

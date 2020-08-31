@@ -23,7 +23,6 @@ using System.Linq;
 
 namespace Realms.Tests.Database
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class AllTypesObject : RealmObject
     {
         public char CharProperty { get; set; }
@@ -70,7 +69,6 @@ namespace Realms.Tests.Database
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ListsObject : RealmObject
     {
         public IList<char> CharList { get; }
@@ -130,7 +128,6 @@ namespace Realms.Tests.Database
         public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class CounterObject : RealmObject
     {
         [PrimaryKey]
@@ -155,7 +152,6 @@ namespace Realms.Tests.Database
         public override string ToString() => Id.ToString();
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IntPrimaryKeyWithValueObject : RealmObject
     {
         [PrimaryKey]
@@ -164,42 +160,36 @@ namespace Realms.Tests.Database
         public string StringValue { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
         public char CharProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         public byte ByteProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         public short Int16Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         public int Int32Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         public long Int64Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
@@ -208,7 +198,6 @@ namespace Realms.Tests.Database
         public string Value { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RequiredPrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
@@ -218,48 +207,44 @@ namespace Realms.Tests.Database
         public string Value { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
         public char? CharProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
         public byte? ByteProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
         public short? Int16Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
         public int? Int32Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
         public long? Int64Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ClassWithUnqueryableMembers : RealmObject
     {
         public string RealPropertyToSatisfyWeaver { get; set; }
 
+        [SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This is intentionally a public field.")]
         public string PublicField;
 
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance method.")]
         public string PublicMethod()
         {
             return null;
@@ -268,8 +253,10 @@ namespace Realms.Tests.Database
         [Ignored]
         public string IgnoredProperty { get; set; }
 
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance property.")]
         public string NonAutomaticProperty => null;
 
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance property.")]
         public string PropertyWithOnlyGet
         {
             get
@@ -288,13 +275,11 @@ namespace Realms.Tests.Database
         public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class UnqueryableBacklinks : RealmObject
     {
         public ClassWithUnqueryableMembers Parent { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Dog : RealmObject
     {
         public string Name { get; set; }
@@ -307,7 +292,6 @@ namespace Realms.Tests.Database
         public IQueryable<Owner> Owners { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Owner : RealmObject
     {
         public string Name { get; set; }
@@ -319,7 +303,6 @@ namespace Realms.Tests.Database
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)
     // results in the correct backlink count being calculated
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Walker : RealmObject
     {
         public string Name { get; set; }
@@ -329,26 +312,22 @@ namespace Realms.Tests.Database
         public IList<Dog> Dogs { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RequiredStringObject : RealmObject
     {
         [Required]
         public string String { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ContainerObject : RealmObject
     {
         public IList<IntPropertyObject> Items { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IntPropertyObject : RealmObject
     {
         public int Int { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RecursiveBacklinksObject : RealmObject
     {
         public int Id { get; set; }
@@ -359,7 +338,6 @@ namespace Realms.Tests.Database
         public IQueryable<RecursiveBacklinksObject> Children { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RemappedPropertiesObject : RealmObject
     {
         [PrimaryKey]
@@ -370,7 +348,6 @@ namespace Realms.Tests.Database
         public string Name { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [MapTo("__RemappedTypeObject")]
     public class RemappedTypeObject : RealmObject
     {

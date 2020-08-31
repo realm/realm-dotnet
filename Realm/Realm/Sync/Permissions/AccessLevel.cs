@@ -37,7 +37,7 @@ namespace Realms.Sync
         /// </summary>
         /// <remarks>
         /// Users who have read-only access to a Realm should open the Realm using
-        /// <see cref="Realm.GetInstanceAsync(RealmConfigurationBase)"/> Attempting to directly open the Realm is
+        /// <see cref="Realm.GetInstanceAsync(RealmConfigurationBase, System.Threading.CancellationToken)"/> Attempting to directly open the Realm is
         /// an error; in this case the Realm must be deleted and re-opened.
         /// </remarks>
         Read,

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -64,6 +65,8 @@ namespace Realms.Sync
         /// </returns>
         public static PermissionRole Get(Realm realm, string roleName)
         {
+            Argument.NotNull(realm, nameof(realm));
+
             var role = realm.Find<PermissionRole>(roleName);
             if (role == null)
             {

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -42,6 +43,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
         /// <exception cref="RealmException">Thrown if there are more than one users logged in.</exception>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public static User Current
         {
             get
@@ -110,8 +112,12 @@ namespace Realms.Sync
         /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
         /// <param name="identity">The identity of the user.</param>
         /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public static User GetLoggedInUser(string identity, Uri serverUri)
         {
+            Argument.NotNull(identity, nameof(identity));
+            Argument.NotNull(serverUri, nameof(serverUri));
+
             SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
 
             if (SyncUserHandle.TryGetLoggedInUser(identity, serverUri.AbsoluteUri, out var userHandle))
@@ -132,7 +138,11 @@ namespace Realms.Sync
         public string RefreshToken
         {
             get => Handle.GetRefreshToken();
-            set => Handle.SetRefreshToken(value);
+            set
+            {
+                Argument.NotNull(value, nameof(value));
+                Handle.SetRefreshToken(value);
+            }
         }
 
         /// <summary>
@@ -418,10 +428,12 @@ namespace Realms.Sync
         /// <param name="realmPath">The Realm path whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
         /// <param name="accessLevel">
         /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
+        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />.
         /// </param>
         public async Task ApplyPermissionsAsync(PermissionCondition condition, string realmPath, AccessLevel accessLevel)
         {
+            Argument.NotNull(condition, nameof(condition));
+
             if (string.IsNullOrEmpty(realmPath))
             {
                 throw new ArgumentNullException(nameof(realmPath));
@@ -445,7 +457,7 @@ namespace Realms.Sync
         /// <param name="realmPath">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
         /// <param name="accessLevel">
         /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />
+        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />.
         /// </param>
         /// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
         public async Task<string> OfferPermissionsAsync(string realmPath, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
@@ -504,7 +516,12 @@ namespace Realms.Sync
         /// </returns>
         /// <param name="offer">The offer that should be invalidated.</param>
         [Obsolete("Use InvalidateOfferAsync(string) by passing the offer.Token instead.")]
-        public Task InvalidateOfferAsync(PermissionOffer offer) => InvalidateOfferAsync(offer.Token);
+        public Task InvalidateOfferAsync(PermissionOffer offer)
+        {
+            Argument.NotNull(offer, nameof(offer));
+
+            return InvalidateOfferAsync(offer.Token);
+        }
 
         /// <summary>
         /// Invalidates a permission offer by its token.

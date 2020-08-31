@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -164,6 +165,7 @@ namespace Realms
             return chain;
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (node.Method.DeclaringType == typeof(Queryable))
@@ -255,7 +257,9 @@ namespace Realms
                                     return Expression.Constant(singleNullItemList);
                                 }
                 */
-                if (node.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
+
+                // same as unsorted First with extra checks
+                if (node.Method.Name.StartsWith(nameof(Queryable.Single)))
                 {
                     RecurseToWhereOrRunLambda(node);
                     using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
@@ -333,7 +337,7 @@ namespace Realms
 
                     if (node.Method.Name == nameof(Queryable.ElementAt))
                     {
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException("index");
                     }
 
                     Debug.Assert(node.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
@@ -485,7 +489,7 @@ namespace Realms
             }
 
             // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
-            // string.Contains overload that accepts comparison. 
+            // string.Contains overload that accepts comparison.
             stringArgumentIndex = 0;
             var parameters = method.GetParameters();
             return method.DeclaringType == typeof(string) &&
@@ -579,12 +583,14 @@ namespace Realms
 
         protected override Expression VisitBinary(BinaryExpression node)
         {
-            if (node.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
+            if (node.NodeType == ExpressionType.AndAlso)
             {
+                // Boolean And with short-circuit
                 VisitCombination(node, (qh) => { /* noop -- AND is the default combinator */ });
             }
-            else if (node.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
+            else if (node.NodeType == ExpressionType.OrElse)
             {
+                // Boolean Or with short-circuit
                 VisitCombination(node, qh => qh.Or());
             }
             else
@@ -672,9 +678,10 @@ namespace Realms
                     {
                         fixed (byte* bufferPtr = (byte[])value)
                         {
-                            queryHandle.BinaryEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                            queryHandle.BinaryEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
                         }
                     }
+
                     break;
                 case RealmObject obj:
                     queryHandle.ObjectEqual(columnKey, obj.ObjectHandle);
@@ -715,9 +722,10 @@ namespace Realms
                     {
                         fixed (byte* bufferPtr = (byte[])value)
                         {
-                            queryHandle.BinaryNotEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
+                            queryHandle.BinaryNotEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
                         }
                     }
+
                     break;
                 case RealmObject obj:
                     queryHandle.Not();
@@ -870,7 +878,7 @@ namespace Realms
             {
                 if (name == null ||
                     memberExpression.Expression.NodeType != ExpressionType.Parameter ||
-                    !(memberExpression.Member is PropertyInfo pi) ||
+                    !(memberExpression.Member is PropertyInfo) ||
                     !_metadata.Schema.TryFindProperty(name, out var property) ||
                     property.Type.HasFlag(PropertyType.Array))
                 {

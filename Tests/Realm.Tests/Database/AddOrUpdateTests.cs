@@ -371,8 +371,8 @@ namespace Realms.Tests.Database
                 }
             });
 
-            Assert.That(first.ListValue.Count(), Is.EqualTo(2));  // did the Add keep adding dups?
-            Assert.That(_realm.Find<PrimaryKeyWithPKList>(1).ListValue.Count(), Is.EqualTo(2));
+            Assert.That(first.ListValue.Count, Is.EqualTo(2));  // did the Add keep adding dups?
+            Assert.That(_realm.Find<PrimaryKeyWithPKList>(1).ListValue.Count, Is.EqualTo(2));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child"));
             Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("secondChild"));
         }
@@ -587,7 +587,6 @@ namespace Realms.Tests.Database
                 Name = "Kate",
                 Parent = parent,
             };
-
 
             _realm.Write(() =>
             {
@@ -841,16 +840,16 @@ namespace Realms.Tests.Database
         [Test]
         public void AddOrUpdate_WhenObjectHasNonEmptyList_ShouldNotThrow()
         {
-            // This test verifies that updating an object that has PK and non-empty list will not throw an exception.
-            // The reason it *could* throw is a limitation on core in table.cpp: Table::check_lists_are_empty.
-            // The comment states:
-            //     FIXME: Due to a limitation in Sync, it is not legal to change the primary
-            //     key of a row that contains lists (including linklists) after those lists
-            //     have been populated. This limitation may be lifted in the future, but for
-            //     now it is necessary to ensure that all lists are empty before setting a
-            //     primary key (by way of set_int_unique() or set_string_unique() or set_null_unique()).
-            //
-            // So if we set the Primary Key unnecessarily in the .NET binding, we could trigger that case.
+            /* This test verifies that updating an object that has PK and non-empty list will not throw an exception.
+             * The reason it *could* throw is a limitation on core in table.cpp: Table::check_lists_are_empty.
+             * The comment states:
+             *     FIXME: Due to a limitation in Sync, it is not legal to change the primary
+             *     key of a row that contains lists (including linklists) after those lists
+             *     have been populated. This limitation may be lifted in the future, but for
+             *     now it is necessary to ensure that all lists are empty before setting a
+             *     primary key (by way of set_int_unique() or set_string_unique() or set_null_unique()).
+             *
+             * So if we set the Primary Key unnecessarily in the .NET binding, we could trigger that case. */
 
             var first = new PrimaryKeyWithPKList
             {
@@ -917,7 +916,6 @@ namespace Realms.Tests.Database
             };
 
             // second.listValue is null, because the getter is never invoked.
-
             _realm.Write(() => _realm.Add(second, update: true));
 
             Assert.That(first.ListValue, Is.EquivalentTo(second.ListValue));

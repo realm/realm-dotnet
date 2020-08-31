@@ -24,8 +24,16 @@ namespace Realms
 {
     internal static class NotificationsHelper
     {
+        /// <summary>
+        /// INotifiable represents a reactive object (e.g. RealmObject/Collection).
+        /// </summary>
         internal interface INotifiable
         {
+            /// <summary>
+            /// Method called when there are changes to report for that object.
+            /// </summary>
+            /// <param name="changes">The changes that occurred.</param>
+            /// <param name="exception">An exception if one occurred.</param>
             void NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception);
         }
 

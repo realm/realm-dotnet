@@ -32,7 +32,7 @@ namespace Realms.Sync
     /// Query-based Synchronization docs.
     /// </seealso>
     /// <seealso cref="FullSyncConfiguration"/>
-    /// <see cref="Subscription.Subscribe"/>
+    /// <see cref="Subscription.Subscribe{T}(System.Linq.IQueryable{T}, string)"/>
     public class QueryBasedSyncConfiguration : SyncConfigurationBase
     {
         internal override bool IsFullSync => false;

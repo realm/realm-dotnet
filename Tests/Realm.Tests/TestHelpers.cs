@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -133,6 +132,7 @@ namespace Realms.Tests
                 Assert.Ignore(message);
                 return true;
             }
+
             return false;
         }
 
@@ -154,15 +154,16 @@ namespace Realms.Tests
             Argument.NotNull(unsubscribe, nameof(unsubscribe));
 
             var tcs = new TaskCompletionSource<TEventArgs>();
-            EventHandler<TEventArgs> handler = null;
-            handler = (sender, args) =>
-            {
-                unsubscribe(handler);
-                tcs.TrySetResult(args);
-            };
+
             subscribe(handler);
 
             return tcs.Task;
+
+            void handler(object sender, TEventArgs args)
+            {
+                unsubscribe(handler);
+                tcs.TrySetResult(args);
+            }
         }
 
         public static async Task WaitForConditionAsync(Func<bool> testFunc, int retryPeriod = 100, int timeout = 10000)

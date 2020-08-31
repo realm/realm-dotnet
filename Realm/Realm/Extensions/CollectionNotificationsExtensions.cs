@@ -39,7 +39,8 @@ namespace Realms
         /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
+        public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results)
+            where T : RealmObject
         {
             var collection = results as IRealmCollection<T>;
             if (collection == null)
@@ -61,7 +62,8 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
+        public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
+            where T : RealmObject
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -76,6 +78,8 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list)
         {
+            Argument.NotNull(list, nameof(list));
+
             var collection = list as IRealmCollection<T>;
             if (collection == null)
             {
@@ -96,10 +100,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback)
-        {
-            return list.AsRealmCollection().SubscribeForNotifications(callback);
-        }
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
 
         /// <summary>
         /// Move the specified item to a new position within the list.
@@ -115,6 +116,7 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index)
         {
+            Argument.NotNull(list, nameof(list));
             var from = list.IndexOf(item);
             list.Move(from, index);
         }
@@ -133,6 +135,7 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, int from, int to)
         {
+            Argument.NotNull(list, nameof(list));
             if (list is RealmList<T> realmList)
             {
                 realmList.Move(from, to);
