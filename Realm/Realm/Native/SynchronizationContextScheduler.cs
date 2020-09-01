@@ -31,7 +31,7 @@ namespace Realms
         private delegate IntPtr get_context();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void post_on_context(IntPtr context, ContextPostHandler callback, IntPtr user_data);
+        private delegate void post_on_context(IntPtr context, IntPtr function_ptr);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void release_context(IntPtr context);
@@ -40,8 +40,8 @@ namespace Realms
         [return: MarshalAs(UnmanagedType.I1)]
         private delegate bool is_on_context(IntPtr context, IntPtr targetContext);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void ContextPostHandler(IntPtr user_data);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_scheduler_invoke_function", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void scheduler_invoke_function(IntPtr function_ptr);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_scheduler_callbacks", CallingConvention = CallingConvention.Cdecl)]
         private static extern void install_scheduler_callbacks(get_context get, post_on_context post, release_context release, is_on_context is_on);
@@ -58,13 +58,13 @@ namespace Realms
                 _context = context;
             }
 
-            internal void Post(ContextPostHandler callback, IntPtr user_data)
+            internal void Post(IntPtr function_ptr)
             {
                 _context.Post(_ =>
                 {
                     if (!_isReleased)
                     {
-                        callback(user_data);
+                        scheduler_invoke_function(function_ptr);
                     }
                 }, null);
             }
@@ -92,12 +92,12 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(post_on_context))]
-        private static void PostOnSynchronizationContext(IntPtr context, ContextPostHandler callback, IntPtr user_data)
+        private static void PostOnSynchronizationContext(IntPtr context, IntPtr user_data)
         {
             if (context != IntPtr.Zero)
             {
                 var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target;
-                scheduler.Post(callback, user_data);
+                scheduler.Post(user_data);
             }
         }
 

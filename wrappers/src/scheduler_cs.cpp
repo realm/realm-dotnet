@@ -25,7 +25,7 @@ using namespace realm::util;
 
 using GetContextT = void*();
 using IsOnContextT = bool(void* context, void* target_context);
-using PostOnContextT = void(void* context, void(*handler)(void* user_data), void* user_data);
+using PostOnContextT = void(void* context, void* user_data);
 using ReleaseContextT = void(void* context);
 
 struct SynchronizationContextScheduler : public Scheduler {
@@ -62,7 +62,7 @@ public:
 
     void notify() override
     {
-        m_post(m_context, &handle, new std::function<void()>(m_callback));
+        m_post(m_context, new std::function<void()>(m_callback));
     }
 
     ~SynchronizationContextScheduler()
@@ -70,13 +70,6 @@ public:
         m_release(m_context);
     }
 private:
-    static void handle(void* user_data)
-    {
-        auto& func = *reinterpret_cast<std::function<void()>*>(user_data);
-        func();
-        delete &func;
-    }
-
     void* m_context;
 
     PostOnContextT* m_post;
@@ -117,6 +110,13 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
 
         return std::make_unique<ThreadScheduler>();
     });
+}
+
+REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr)
+{
+    auto& func = *reinterpret_cast<std::function<void()>*>(function_ptr);
+    func();
+    delete& func;
 }
 
 }
