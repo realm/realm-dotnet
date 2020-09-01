@@ -127,12 +127,6 @@ namespace Realms.Tests.Sync
                 var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
 
-                var bobTcs = new TaskCompletionSource<object>();
-                bobsObjects.AsRealmCollection().CollectionChanged += (sender, e) =>
-                {
-                    bobTcs.TrySetResult(null);
-                };
-
                 aliceRealm.Write(() =>
                 {
                     aliceRealm.Add(new IntPrimaryKeyWithValueObject
@@ -142,7 +136,8 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await bobTcs.Task.Timeout(1000);
+                await aliceRealm.GetSession().WaitForUploadAsync();
+                await bobRealm.GetSession().WaitForDownloadAsync();
 
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
 

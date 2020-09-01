@@ -80,31 +80,5 @@ namespace Realms.Tests.Server
             await SyncTestHelpers.WaitForUploadAsync(realm);
             return (realm, user.Identity);
         }
-
-        protected static Task<bool> EnsureChangesAsync<T>(IList<IChangeDetails> changeDetails, int expectedCount, Func<IChangeSetDetails, bool> testFunc)
-        {
-            return TestHelpers.EnsureAsync(() =>
-            {
-                if (changeDetails.Count != expectedCount)
-                {
-                    return false;
-                }
-
-                var changes = changeDetails.Last().Changes;
-
-                if (changes.Count != 1)
-                {
-                    return false;
-                }
-
-                var change = changes.Single();
-                if (change.Key != typeof(T).Name)
-                {
-                    return false;
-                }
-
-                return testFunc(change.Value);
-            }, 100, 100);
-        }
     }
 }

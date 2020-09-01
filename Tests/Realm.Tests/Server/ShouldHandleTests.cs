@@ -57,19 +57,11 @@ namespace Realms.Tests.Server
                     // ROS may contain other Realms and it takes some time to go over all.
                     // This will check if we've received ShouldHandle prompt for all expected ones
                     // every 100 ms for 10 seconds.
-                    var containsExpected = await TestHelpers.EnsureAsync(() => expectedPaths.All(paths.Contains),
-                                                                         retryDelay: 100,
-                                                                         attempts: 100); // 10 seconds
-
-                    Assert.True(containsExpected);
+                    await TestHelpers.WaitForConditionAsync(() => expectedPaths.All(paths.Contains));
 
                     var (_, userId5) = await CreateRandomRealmAsync("newlyaddedrealm");
 
-                    var containsNewRealm = await TestHelpers.EnsureAsync(() => paths.Contains($"/{userId5}/newlyaddedrealm"),
-                                                                         retryDelay: 100,
-                                                                         attempts: 100); // 10 seconds
-
-                    Assert.True(containsNewRealm);
+                    await TestHelpers.WaitForConditionAsync(() => paths.Contains($"/{userId5}/newlyaddedrealm"));
                 }
             }, timeout: 30000);
         }

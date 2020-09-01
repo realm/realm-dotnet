@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -66,7 +66,7 @@ REALM_EXPORT Object* table_add_empty_object(TableRef& table, SharedRealm& realm,
 {
     return handle_errors(ex, [&]() {
         realm->verify_in_write();
-        
+
         Obj obj = table->create_object();
         const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
         auto& object_schema = *realm->schema().find(object_name);
@@ -78,7 +78,7 @@ REALM_EXPORT Results* table_create_results(TableRef& table, SharedRealm& realm, 
 {
     return handle_errors(ex, [&]() {
         realm->verify_thread();
-        
+
         return new Results(realm, table);
     });
 }
@@ -115,7 +115,7 @@ REALM_EXPORT Object* table_get_object_for_int_primarykey(TableRef& table, Shared
 {
     return get_object_for_primarykey(table, realm, value, ex);
 }
-    
+
 REALM_EXPORT Object* table_get_object_for_null_primarykey(TableRef& table, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return get_object_for_primarykey(table, realm, null{}, ex);
