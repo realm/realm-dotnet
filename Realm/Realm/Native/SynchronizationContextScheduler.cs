@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Helpers;
 using Realms.Native;
 
 namespace Realms
@@ -37,7 +37,7 @@ namespace Realms
         private delegate void release_context(IntPtr context);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.U1)]
+        [return: MarshalAs(UnmanagedType.I1)]
         private delegate bool is_on_context(IntPtr context, IntPtr targetContext);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -48,19 +48,19 @@ namespace Realms
 
         private class Scheduler
         {
-            internal SynchronizationContext Context { get; private set; }
-
             private volatile bool _isReleased;
+            private SynchronizationContext _context;
 
             internal Scheduler(SynchronizationContext context)
             {
-                Debug.Assert(context != null, "The SynchronizationContext Scheduler implementation always needs a SynchronizationContext");
-                Context = context;
+                Argument.NotNull(context, nameof(context));
+
+                _context = context;
             }
 
             internal void Post(ContextPostHandler callback, IntPtr user_data)
             {
-                Context.Post(_ =>
+                _context.Post(_ =>
                 {
                     if (!_isReleased)
                     {
@@ -69,13 +69,13 @@ namespace Realms
                 }, null);
             }
 
-            internal bool IsOnContext(SynchronizationContext context) => Context == context;
+            internal bool IsOnContext(Scheduler other) => (other?._context ?? SynchronizationContext.Current) == _context;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()
             {
                 _isReleased = true;
-                Context = null;
+                _context = null;
             }
         }
 
@@ -118,14 +118,13 @@ namespace Realms
             if (context != IntPtr.Zero)
             {
                 var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target;
-                SynchronizationContext target = SynchronizationContext.Current;
+                Scheduler targetScheduler = null;
                 if (targetContext != IntPtr.Zero)
                 {
-                    var targetScheduler = (Scheduler)GCHandle.FromIntPtr(targetContext).Target;
-                    target = targetScheduler.Context;
+                    targetScheduler = (Scheduler)GCHandle.FromIntPtr(targetContext).Target;
                 }
 
-                return scheduler.IsOnContext(target);
+                return scheduler.IsOnContext(targetScheduler);
             }
 
             return false;

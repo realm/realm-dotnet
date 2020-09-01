@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <functional>
 #include "util/scheduler.hpp"
 #include "realm_export_decls.hpp"
+#include <thread>
 
 using namespace realm::util;
 
@@ -85,17 +86,36 @@ private:
     std::function<void()> m_callback;
 };
 
+struct ThreadScheduler : public Scheduler {
+public:
+    ThreadScheduler() = default;
+
+    bool is_on_thread() const noexcept override { return m_id == std::this_thread::get_id(); }
+    bool is_same_as(const Scheduler* other) const noexcept override
+    {
+        auto o = dynamic_cast<const ThreadScheduler*>(other);
+        return (o && (o->m_id == m_id));
+    }
+    bool can_deliver_notifications() const noexcept override { return false; }
+
+    void set_notify_callback(std::function<void()>) override { }
+    void notify() override { }
+
+private:
+    std::thread::id m_id = std::this_thread::get_id();
+};
+
 extern "C" {
 
 REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnContextT* post, ReleaseContextT* release, IsOnContextT* is_on_context)
 {
     Scheduler::set_default_factory([=]() -> std::unique_ptr<Scheduler> {
         void* context = get();
-        if (context == nullptr) {
-            return nullptr;
+        if (context) {
+            return std::make_unique<SynchronizationContextScheduler>(context, post, release, is_on_context);
         }
 
-        return std::make_unique<SynchronizationContextScheduler>(context, post, release, is_on_context);
+        return std::make_unique<ThreadScheduler>();
     });
 }
 
