@@ -175,6 +175,7 @@ namespace Realms.Tests
         {
             var value = producer();
             var success = tester(value);
+            var timeout = retryDelay * attempts;
             while (!success && attempts > 0)
             {
                 await Task.Delay(retryDelay);
@@ -185,7 +186,7 @@ namespace Realms.Tests
 
             if (!success)
             {
-                throw new TimeoutException($"Failed to meet condition after {attempts * retryDelay} ms.");
+                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
             }
 
             return value;

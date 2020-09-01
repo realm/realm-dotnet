@@ -49,7 +49,7 @@ struct MarshaledChangeNotification {
     StringData path_on_disk = {};
 
     SharedRealm* previous = nullptr;
-    SharedRealm* current;
+    SharedRealm* current = nullptr;
 
     MarshaledVector<MarshaledChangeSet> changesets;
 };

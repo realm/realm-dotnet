@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using Realms.Native;
 
 namespace Realms.Server
 {
@@ -33,11 +34,11 @@ namespace Realms.Server
 
         public ISet<string> ChangedProperties => _changedProperties.Value;
 
-        internal ModificationDetails(Func<dynamic> previous, Func<dynamic> current, Func<ISet<string>> changedProperties)
+        internal ModificationDetails(Func<dynamic> previous, Func<dynamic> current, ColumnKey[] changedColumns, Func<ColumnKey[], ISet<string>> changedProperties)
         {
             _previous = new Lazy<dynamic>(previous);
             _current = new Lazy<dynamic>(current);
-            _changedProperties = new Lazy<ISet<string>>(changedProperties);
+            _changedProperties = new Lazy<ISet<string>>(() => changedProperties(changedColumns));
         }
     }
 }
