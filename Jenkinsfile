@@ -386,7 +386,7 @@ def msbuild(Map args = [:]) {
 
 def reportTests(spec) {
   xunit(
-    [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
+    step: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
     thresholds: [ failed(unstableThreshold: '1') ]
   )
 }
