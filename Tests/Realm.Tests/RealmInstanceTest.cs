@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.IO;
 
 namespace Realms.Tests
@@ -25,11 +26,13 @@ namespace Realms.Tests
     {
         protected RealmConfiguration _configuration = new RealmConfiguration(Path.GetTempFileName());
 
-        protected Realm _realm;
+        private Lazy<Realm> _lazyRealm;
+
+        protected Realm _realm => _lazyRealm.Value;
 
         protected override void CustomSetUp()
         {
-            _realm = Realm.GetInstance(_configuration);
+            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_configuration));
             base.CustomSetUp();
         }
 

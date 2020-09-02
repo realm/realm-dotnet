@@ -166,32 +166,30 @@ namespace Realms.Tests
             }
         }
 
-        public static async Task WaitForConditionAsync(Func<bool> testFunc, int retryPeriod = 100, int timeout = 10000)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100)
         {
-            for (var i = 0; i < timeout / retryPeriod; i++)
-            {
-                if (testFunc())
-                {
-                    return;
-                }
-
-                await Task.Delay(retryPeriod);
-            }
-
-            throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts);
         }
 
-        public static async Task<bool> EnsureAsync(Func<bool> testFunc, int retryDelay, int attempts)
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100)
         {
-            var success = testFunc();
+            var value = producer();
+            var success = tester(value);
+            var timeout = retryDelay * attempts;
             while (!success && attempts > 0)
             {
                 await Task.Delay(retryDelay);
-                success = testFunc();
+                value = producer();
+                success = tester(value);
                 attempts--;
             }
 
-            return success;
+            if (!success)
+            {
+                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+            }
+
+            return value;
         }
 
         public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000)

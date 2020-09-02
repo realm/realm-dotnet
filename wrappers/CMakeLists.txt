@@ -266,15 +266,9 @@ set(PEGTL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/object-store/external/pegt
 add_subdirectory(src/object-store/src)
 add_subdirectory(src)
 
-# force Object Store to use the generic EventLoopSignal implementation
+# force Object Store to use the generic Scheduler implementation
 target_compile_definitions(realm-object-store PUBLIC
   REALM_USE_CF=0
   REALM_USE_ALOOPER=0
   REALM_USE_UV=0
 )
-
-if(APPLE OR ANDROID)
-  # force Object Store to use the generic EventLoopSignal implementation instead of the system one
-  # path is relative to object-store/src where add_library(realm-object-store) is called
-  target_sources(realm-object-store PRIVATE util/generic/event_loop_signal.cpp)
-endif()

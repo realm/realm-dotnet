@@ -39,19 +39,14 @@ internal static class TaskExtensions
         });
     }
 
-    public static Task Timeout(this Task task, int millisecondTimeout)
+    public static async Task Timeout(this Task task, int millisecondTimeout)
     {
-        return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
+        var completed = await Task.WhenAny(task, Task.Delay(millisecondTimeout));
+        if (completed != task)
         {
-            if (t.Result != task)
-            {
-                throw new TimeoutException("The operation has timed out.");
-            }
+            throw new TimeoutException("The operation has timed out.");
+        }
 
-            if (task.IsFaulted)
-            {
-                throw task.Exception.InnerException;
-            }
-        });
+        await completed;
     }
 }

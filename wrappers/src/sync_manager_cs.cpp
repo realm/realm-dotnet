@@ -123,6 +123,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config->custom_partial_sync_identifier = partial_sync_identifier.to_string();
     }
     
+    config.cache = configuration.enable_cache;
+
     return config;
 }
     

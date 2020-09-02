@@ -120,18 +120,14 @@ namespace Realms.Tests.Sync
 
                 AddDummyData(aliceRealm, singleTransaction);
 
+                await WaitForUploadAsync(aliceRealm);
+
                 var bobConfig = new FullSyncConfiguration(realmUri, bob, Guid.NewGuid().ToString());
                 var bobRealm = await GetRealmAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
                 var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
-
-                var bobTcs = new TaskCompletionSource<object>();
-                bobsObjects.AsRealmCollection().CollectionChanged += (sender, e) =>
-                {
-                    bobTcs.TrySetResult(null);
-                };
 
                 aliceRealm.Write(() =>
                 {
@@ -142,7 +138,10 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await bobTcs.Task.Timeout(1000);
+                await WaitForUploadAsync(aliceRealm);
+                await WaitForDownloadAsync(bobRealm);
+
+                await bobRealm.RefreshAsync();
 
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
 

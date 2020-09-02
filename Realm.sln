@@ -11,9 +11,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Realm", "Realm\Realm\Realm.csproj", "{C0DB0E07-4FBC-44D1-8E84-A074497385C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D10BE048-9C20-4B8B-BE5B-48CC55F8BB07}"
-	ProjectSection(SolutionItems) = preProject
-		Tests\Settings.StyleCop = Tests\Settings.StyleCop
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.UWP", "Tests\Tests.UWP\Tests.UWP.csproj", "{159A55AF-9531-4107-8444-CA9C96107EF5}"
 	ProjectSection(ProjectDependencies) = postProject

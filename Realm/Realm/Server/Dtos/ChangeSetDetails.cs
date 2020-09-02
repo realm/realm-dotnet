@@ -50,7 +50,8 @@ namespace Realms.Server
             Deletions = deletions.Select(objKey => previous.MakeObject(previousMetadata, objKey)).ToArray();
             Modifications = modifications.Select(m => new ModificationDetails(() => previous.MakeObject(previousMetadata, m.obj),
                                                                               () => current.MakeObject(currentMetadata, m.obj),
-                                                                              () => new HashSet<string>(m.changed_columns.AsEnumerable().Select(currentMetadata.Table.GetColumnName))))
+                                                                              m.changed_columns.AsEnumerable().ToArray(),
+                                                                              (colKeys) => new HashSet<string>(colKeys.Select(currentMetadata.Table.GetColumnName))))
                                          .ToArray();
         }
     }

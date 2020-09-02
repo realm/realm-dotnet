@@ -21,9 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -182,7 +180,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ThreadReference_WhenResolvedWithDifferentConfiguration_ShouldFail()
+        public void ThreadReference_WhenResolvedWithDifferentConfiguration_ShouldReturnNull()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
@@ -195,8 +193,8 @@ namespace Realms.Tests.Database
                     {
                         using (var otherRealm = Realm.GetInstance(config))
                         {
-                            Assert.That(() => otherRealm.ResolveReference(objReference),
-                                        Throws.InstanceOf<RealmException>().And.Message.Contains("different configuration"));
+                            var otherObj = otherRealm.ResolveReference(objReference);
+                            Assert.That(otherObj, Is.Null);
                         }
                     }
                     finally
@@ -208,7 +206,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ThreadSafeReference_WhenTargetRealmInTransaction_ShouldFail()
+        public void ThreadSafeReference_WhenTargetRealmInTransaction_ShouldSucceed()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
@@ -220,8 +218,11 @@ namespace Realms.Tests.Database
                     {
                         otherRealm.Write(() =>
                         {
-                            Assert.That(() => otherRealm.ResolveReference(objReference),
-                                        Throws.InstanceOf<RealmException>().And.Message.Contains("write transaction"));
+                            var otherObj = otherRealm.ResolveReference(objReference);
+
+                            Assert.That(otherObj.IsManaged);
+                            Assert.That(otherObj.IsValid);
+                            Assert.That(otherObj.Int, Is.EqualTo(12));
                         });
                     }
                 });
@@ -229,13 +230,29 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void ObjectReference_WhenSourceRealmInTransaction_ShouldFail()
+        public void ObjectReference_WhenSourceRealmInTransaction_ShouldSucceed()
         {
-            _realm.Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                var obj = _realm.Add(new IntPropertyObject());
+                ThreadSafeReference.Object<IntPropertyObject> objRef = null;
 
-                Assert.That(() => ThreadSafeReference.Create(obj), Throws.InstanceOf<RealmInvalidTransactionException>());
+                _realm.Write(() =>
+                {
+                    var obj = _realm.Add(new IntPropertyObject { Int = 123 });
+                    objRef = ThreadSafeReference.Create(obj);
+                });
+
+                await Task.Run(() =>
+                {
+                    using (var otherRealm = Realm.GetInstance(_realm.Config))
+                    {
+                        var otherObj = otherRealm.ResolveReference(objRef);
+
+                        Assert.That(otherObj.IsManaged);
+                        Assert.That(otherObj.IsValid);
+                        Assert.That(otherObj.Int, Is.EqualTo(123));
+                    }
+                });
             });
         }
 
