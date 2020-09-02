@@ -120,6 +120,8 @@ namespace Realms.Tests.Sync
 
                 AddDummyData(aliceRealm, singleTransaction);
 
+                await WaitForUploadAsync(aliceRealm);
+
                 var bobConfig = new FullSyncConfiguration(realmUri, bob, Guid.NewGuid().ToString());
                 var bobRealm = await GetRealmAsync(bobConfig);
 
@@ -136,8 +138,10 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await aliceRealm.GetSession().WaitForUploadAsync();
-                await bobRealm.GetSession().WaitForDownloadAsync();
+                await WaitForUploadAsync(aliceRealm);
+                await WaitForDownloadAsync(bobRealm);
+
+                await bobRealm.RefreshAsync();
 
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
 
