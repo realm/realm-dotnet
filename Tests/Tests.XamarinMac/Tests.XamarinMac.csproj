@@ -64,6 +64,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -96,6 +97,13 @@
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None">
+      <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>
