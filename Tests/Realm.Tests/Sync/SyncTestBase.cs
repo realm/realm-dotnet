@@ -107,6 +107,13 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
+        protected static async Task WaitForDownloadAsync(Realm realm)
+        {
+            var session = realm.GetSession();
+            await session.WaitForDownloadAsync();
+            session.CloseHandle();
+        }
+
         protected Realm GetRealm(RealmConfigurationBase config)
         {
             var result = Realm.GetInstance(config);

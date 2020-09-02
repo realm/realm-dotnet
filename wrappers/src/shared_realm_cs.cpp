@@ -124,6 +124,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             
         }
         
+        config.cache = configuration.enable_cache;
+
         auto realm = Realm::get_shared_realm(config);
         if (!configuration.read_only)
             realm->refresh();

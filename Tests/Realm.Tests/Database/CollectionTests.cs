@@ -159,10 +159,11 @@ namespace Realms.Tests.Database
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
             config.IsReadOnly = true;
 
-            _realm = Realm.GetInstance(config);
-
-            var readonlyContainer = _realm.All<ContainerObject>().Single();
-            Assert.That(readonlyContainer.Items.IsReadOnly);
+            using (var readonlyRealm = Realm.GetInstance(config))
+            {
+                var readonlyContainer = readonlyRealm.All<ContainerObject>().Single();
+                Assert.That(readonlyContainer.Items.IsReadOnly);
+            }
         }
 
         [Test]

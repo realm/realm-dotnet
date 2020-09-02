@@ -86,7 +86,7 @@ namespace Realms
                 set_debug_logger(logger);
 #endif
 
-                SynchronizationContextEventLoopSignal.Install();
+                SynchronizationContextScheduler.Install();
             }
         }
     }
