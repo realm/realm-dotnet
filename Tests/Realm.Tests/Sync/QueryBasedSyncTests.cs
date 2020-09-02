@@ -27,7 +27,7 @@ using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true)]
+    [TestFixture(Explicit = true, Description = "This causes a race condition in OS resulting in Access to invalidated Results objects."), Preserve(AllMembers = true)]
     public class QueryBasedSyncTests : SyncTestBase
     {
         [TestCase(true)]
