@@ -38,28 +38,32 @@ namespace Realms.Tests
             CleanupOnTearDown(obj.Realm);
         }
 
-        protected T Freeze<T>(T obj) where T : RealmObject
+        protected T Freeze<T>(T obj)
+            where T : RealmObject
         {
             var result = obj.Freeze();
             CleanupOnTearDown(result.Realm);
             return result;
         }
 
-        protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection) where T : RealmObject
+        protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection)
+            where T : RealmObject
         {
             var result = collection.Freeze();
             CleanupOnTearDown(result.Realm);
             return result;
         }
 
-        protected IList<T> Freeze<T>(IList<T> list) where T : RealmObject
+        protected IList<T> Freeze<T>(IList<T> list)
+            where T : RealmObject
         {
             var result = list.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);
             return result;
         }
 
-        protected IQueryable<T> Freeze<T>(IQueryable<T> query) where T : RealmObject
+        protected IQueryable<T> Freeze<T>(IQueryable<T> query)
+            where T : RealmObject
         {
             var result = query.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);
