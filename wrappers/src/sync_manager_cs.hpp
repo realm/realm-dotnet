@@ -33,14 +33,6 @@ namespace realm {
         uint16_t* url;
         size_t url_len;
 
-        bool client_validate_ssl;
-
-        uint16_t* trusted_ca_path;
-        size_t trusted_ca_path_len;
-
-        bool is_partial;
-        uint16_t* partial_sync_identifier;
-        size_t partial_sync_identifier_len;
         realm::ClientResyncMode client_resync_mode;
     };
 }

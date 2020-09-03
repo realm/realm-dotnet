@@ -48,22 +48,19 @@ namespace Realms.Sync
 #pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Configuration configuration, SyncConfiguration sync_configuration,
+            public static extern IntPtr open_with_sync(Configuration configuration, Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration,
+            public static extern IntPtr open_with_sync_async(Configuration configuration, Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
                 byte[] encryptionKey,
                 IntPtr task_completion_source,
                 out NativeException ex);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void RefreshAccessTokenCallbackDelegate(IntPtr session_handle_ptr);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
@@ -91,7 +88,7 @@ namespace Realms.Sync
             public static extern void install_syncmanager_callbacks(OpenRealmCallback open_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncsession_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(RefreshAccessTokenCallbackDelegate refresh_callback, SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
@@ -104,7 +101,7 @@ namespace Realms.Sync
             public static extern void reconnect();
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_session", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
+            public static extern IntPtr get_session([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, Native.SyncConfiguration configuration, byte[] encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe void set_log_level(LogLevel* level, out NativeException exception);
@@ -118,23 +115,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_set_log_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_log_callback(LogMessageCallback callback, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_realm_privileges", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern byte get_realm_privileges(SharedRealmHandle handle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_class_privileges", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern byte get_class_privileges(SharedRealmHandle handle,
-                                                           [MarshalAs(UnmanagedType.LPWStr)] string class_name, IntPtr class_name_len,
-                                                           out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_get_object_privileges", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern byte get_object_privileges(SharedRealmHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_enable_session_multiplexing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void enable_session_multiplexing(out NativeException ex);
-
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
         }
@@ -143,17 +123,15 @@ namespace Realms.Sync
         {
             NativeCommon.Initialize();
 
-            NativeMethods.RefreshAccessTokenCallbackDelegate refresh = RefreshAccessTokenCallback;
             NativeMethods.SessionErrorCallback error = HandleSessionError;
             NativeMethods.SessionProgressCallback progress = HandleSessionProgress;
             NativeMethods.SessionWaitCallback wait = HandleSessionWaitCallback;
 
-            GCHandle.Alloc(refresh);
             GCHandle.Alloc(error);
             GCHandle.Alloc(progress);
             GCHandle.Alloc(wait);
 
-            NativeMethods.install_syncsession_callbacks(refresh, error, progress, wait);
+            NativeMethods.install_syncsession_callbacks(error, progress, wait);
 
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
 
@@ -165,7 +143,7 @@ namespace Realms.Sync
             GCHandle.Alloc(_logCallback);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             DoInitialMetadataConfiguration();
 
@@ -177,7 +155,7 @@ namespace Realms.Sync
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
         {
             DoInitialMetadataConfiguration();
 
@@ -208,12 +186,6 @@ namespace Realms.Sync
             }
         }
 
-        public static void EnableSessionMultiplexing()
-        {
-            NativeMethods.enable_session_multiplexing(out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
         public static unsafe void Configure(UserPersistenceMode? userPersistenceMode, byte[] encryptionKey, bool resetMetadataOnError, string basePath = null)
         {
             // mark the file system as configured in case this is called directly
@@ -235,7 +207,7 @@ namespace Realms.Sync
                 modePtr = &mode;
             }
 
-            var userAgent = SyncConfigurationBase.GetSDKUserAgent();
+            var userAgent = SyncConfiguration.GetSDKUserAgent();
             NativeMethods.configure(
                 basePath, (IntPtr)basePath.Length,
                 userAgent, (IntPtr)userAgent.Length,
@@ -266,7 +238,7 @@ namespace Realms.Sync
 
         public static void InstallLogCallback()
         {
-            if (SyncConfigurationBase.CustomLogger != null)
+            if (SyncConfiguration.CustomLogger != null)
             {
                 NativeMethods.set_log_callback(_logCallback, out var ex);
                 ex.ThrowIfNecessary();
@@ -292,7 +264,7 @@ namespace Realms.Sync
             NativeMethods.reconnect();
         }
 
-        public static SessionHandle GetSession(string path, SyncConfiguration configuration, byte[] encryptionKey)
+        public static SessionHandle GetSession(string path, Native.SyncConfiguration configuration, byte[] encryptionKey)
         {
             DoInitialMetadataConfiguration();
 
@@ -300,35 +272,6 @@ namespace Realms.Sync
             nativeException.ThrowIfNecessary();
 
             return new SessionHandle(result);
-        }
-
-        public static RealmPrivileges GetPrivileges(this SharedRealmHandle handle)
-        {
-            var result = NativeMethods.get_realm_privileges(handle, out var ex);
-            ex.ThrowIfNecessary();
-            return (RealmPrivileges)result;
-        }
-
-        public static ClassPrivileges GetPrivileges(this SharedRealmHandle handle, string className)
-        {
-            var result = NativeMethods.get_class_privileges(handle, className, (IntPtr)className.Length, out var ex);
-            ex.ThrowIfNecessary();
-            return (ClassPrivileges)result;
-        }
-
-        public static ObjectPrivileges GetPrivileges(this SharedRealmHandle handle, ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.get_object_privileges(handle, objectHandle, out var ex);
-            ex.ThrowIfNecessary();
-            return (ObjectPrivileges)result;
-        }
-
-        [MonoPInvokeCallback(typeof(NativeMethods.RefreshAccessTokenCallbackDelegate))]
-        private static void RefreshAccessTokenCallback(IntPtr sessionHandlePtr)
-        {
-            var handle = new SessionHandle(sessionHandlePtr);
-            var session = new Session(handle);
-            AuthenticationHelper.RefreshAccessTokenAsync(session).ContinueWith(_ => session.CloseHandle());
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
@@ -422,14 +365,14 @@ namespace Realms.Sync
             try
             {
                 var message = Encoding.UTF8.GetString(messageBuffer, (int)messageLength);
-                SyncConfigurationBase.CustomLogger?.Invoke(message, level);
+                SyncConfiguration.CustomLogger?.Invoke(message, level);
             }
             catch (Exception ex)
             {
                 var errorMessage = $"An error occurred while trying to log a message: {ex}";
                 try
                 {
-                    SyncConfigurationBase.CustomLogger(errorMessage, LogLevel.Error);
+                    SyncConfiguration.CustomLogger(errorMessage, LogLevel.Error);
                 }
                 catch
                 {

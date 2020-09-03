@@ -56,8 +56,8 @@ namespace Realms.Tests.Sync
                 Directory.CreateDirectory(defaultFolder);
             }
 
-            SyncConfigurationBase.UserAgent = GetType().Name;
-            SyncConfigurationBase.Initialize(UserPersistenceMode.NotEncrypted, null, false, defaultFolder);
+            SyncConfiguration.UserAgent = GetType().Name;
+            SyncConfiguration.Initialize(UserPersistenceMode.NotEncrypted, null, false, defaultFolder);
         }
 
         protected override void CustomTearDown()
