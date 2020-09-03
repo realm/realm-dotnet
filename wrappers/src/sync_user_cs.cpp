@@ -32,21 +32,6 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 extern "C" {
 
-REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, size_t identity_len,
-                                                 const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
-                                                 const uint16_t* refresh_token_buf, size_t refresh_token_len,
-                                                 NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        Utf16StringAccessor identity(identity_buf, identity_len);
-        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
-        Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
-
-        auto user = SyncManager::shared().get_user({identity, auth_server_url}, refresh_token);
-        return new SharedSyncUser(user);
-    });
-}
-
 REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {
@@ -62,7 +47,7 @@ REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marsha
 REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> size_t {
-        auto users = SyncManager::shared().all_logged_in_users();
+        auto users = SyncManager::shared().all_users();
         if (users.size() > buffer_length) {
             return users.size();
         }
@@ -76,31 +61,6 @@ REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t bu
         }
 
         return users.size();
-    });
-}
-
-REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_buf, size_t identity_len, const uint16_t* auth_server_url_buf, size_t auth_server_url_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> SharedSyncUser* {
-        Utf16StringAccessor identity(identity_buf, identity_len);
-        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
-
-        if (auto user = SyncManager::shared().get_existing_logged_in_user({identity, auth_server_url})) {
-            new SharedSyncUser(std::move(user));
-        }
-
-        return nullptr;
-    });
-}
-
-REALM_EXPORT SharedSyncSession* realm_syncuser_get_session(SharedSyncUser& user, const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> SharedSyncSession* {
-        Utf16StringAccessor path(path_buf, path_len);
-        if (auto session = user->session_for_on_disk_path(path)) {
-            return new SharedSyncSession(std::move(session));
-        }
-        return nullptr;
     });
 }
 
@@ -124,14 +84,6 @@ REALM_EXPORT size_t realm_syncuser_get_refresh_token(SharedSyncUser& user, uint1
     return handle_errors(ex, [&] {
         std::string refresh_token(user->refresh_token());
         return stringdata_to_csharpstringbuffer(refresh_token, buffer, buffer_length);
-    });
-}
-
-REALM_EXPORT size_t realm_syncuser_get_server_url(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        const std::string& server_url(user->server_url());
-        return stringdata_to_csharpstringbuffer(server_url, buffer, buffer_length);
     });
 }
 
