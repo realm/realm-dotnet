@@ -202,7 +202,7 @@ stage('Test') {
           }
         }
 
-        reportTests 'temp/TestResults.macOS.xml'
+        junit 'temp/TestResults.macOS.xml'
       }
     },
     'Xamarin Android': {
@@ -284,7 +284,7 @@ stage('Test') {
               '''
             }
 
-            reportTests 'TestResults.Windows.xml'
+            junit 'TestResults.Windows.xml'
           }
         }
       }
@@ -340,7 +340,7 @@ def NetCoreTest(String nodeName) {
         bat script
       }
 
-      reportTests 'TestResults.NetCore.xml'
+      junit 'TestResults.NetCore.xml'
     }
   }
 }
@@ -387,7 +387,7 @@ def msbuild(Map args = [:]) {
 def reportTests(spec) {
   xunit(
     tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
-    thresholds: [ failed(unstableThreshold: '1') ]
+    thresholds: [ failed(unstableThreshold: '0') ]
   )
 }
 

@@ -49,6 +49,12 @@ namespace Realms.Tests.XamarinMac
 
             if (MainClass.Headless)
             {
+                var resultPath = MainClass.NUnitArgs.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", "");
+                if (!string.IsNullOrEmpty(resultPath))
+                {
+                    TestHelpers.TransformTestResults(resultPath);
+                }
+
                 NSApplication.SharedApplication.Terminate(this);
             }
         }
