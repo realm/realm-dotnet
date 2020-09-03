@@ -21,6 +21,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
+using System.Xml.Xsl;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
@@ -208,6 +211,20 @@ namespace Realms.Tests
             catch (T ex)
             {
                 exceptionAsserts?.Invoke(ex);
+            }
+        }
+
+        public static void TransformTestResults(string resultPath)
+        {
+            CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+            var transformFile = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
+
+            var xpathDocument = new XPathDocument(resultPath);
+            var transform = new XslCompiledTransform();
+            transform.Load(transformFile);
+            using (var writer = new XmlTextWriter(resultPath, null))
+            {
+                transform.Transform(xpathDocument, null, writer);
             }
         }
     }
