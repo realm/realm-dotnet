@@ -31,12 +31,7 @@ namespace Realms.Sync
             public static extern IntPtr get_sync_user([MarshalAs(UnmanagedType.LPWStr)] string identity, IntPtr identity_len,
                                                       [MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len,
                                                       [MarshalAs(UnmanagedType.LPWStr)] string refresh_token, IntPtr refresh_token_len,
-                                                      [MarshalAs(UnmanagedType.I1)] bool is_admin, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_admintoken_user", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_admintoken_user([MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len,
-                                                            [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
-                                                            out NativeException ex);
+                                                      out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_identity", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_identity(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
@@ -44,18 +39,11 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_refresh_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_refresh_token(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_set_refresh_token", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_refresh_token(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string refresh_token, IntPtr refresh_token_len, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_server_url", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_server_url(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern UserState get_state(SyncUserHandle user, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_is_admin", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_is_admin(SyncUserHandle user);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_log_out", CallingConvention = CallingConvention.Cdecl)]
             public static extern void log_out(SyncUserHandle user, out NativeException ex);
@@ -106,12 +94,6 @@ namespace Realms.Sync
             });
         }
 
-        public void SetRefreshToken(string token)
-        {
-            NativeMethods.set_refresh_token(this, token, (IntPtr)token.Length, out var ex);
-            ex.ThrowIfNecessary();
-        }
-
         public string GetServerUrl()
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
@@ -126,11 +108,6 @@ namespace Realms.Sync
             var result = NativeMethods.get_state(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
-        }
-
-        public bool GetIsAdmin()
-        {
-            return NativeMethods.get_is_admin(this);
         }
 
         public bool TryGetSession(string path, out SessionHandle handle)
@@ -154,22 +131,12 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
-        public static SyncUserHandle GetSyncUser(string identity, string authServerUrl, string refreshToken, bool isAdmin)
+        public static SyncUserHandle GetSyncUser(string identity, string authServerUrl, string refreshToken)
         {
             var userPtr = NativeMethods.get_sync_user(identity, (IntPtr)identity.Length,
                                                       authServerUrl, (IntPtr)authServerUrl.Length,
                                                       refreshToken, (IntPtr)refreshToken.Length,
-                                                      isAdmin, out var ex);
-            ex.ThrowIfNecessary();
-
-            return new SyncUserHandle(userPtr);
-        }
-
-        public static SyncUserHandle GetAdminTokenUser(string authServerUrl, string token)
-        {
-            var userPtr = NativeMethods.get_admintoken_user(authServerUrl, (IntPtr)authServerUrl.Length,
-                                                            token, (IntPtr)token.Length,
-                                                            out var ex);
+                                                      out var ex);
             ex.ThrowIfNecessary();
 
             return new SyncUserHandle(userPtr);

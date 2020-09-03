@@ -31,11 +31,6 @@ namespace Realms.Sync
         public string Identity { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating whether the user is a Realm Object Server administrator user. Equivalent to <see cref="User.IsAdmin"/>.
-        /// </summary>
-        public bool IsAdmin { get; internal set; }
-
-        /// <summary>
         /// Gets a collection of all the user accounts associated with the user.
         /// </summary>
         public IEnumerable<AccountInfo> Accounts { get; internal set; }

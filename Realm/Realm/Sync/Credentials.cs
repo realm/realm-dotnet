@@ -32,8 +32,6 @@ namespace Realms.Sync
         {
             public const string Debug = "debug";
 
-            public const string AdminToken = "adminToken";
-
             public const string Facebook = "facebook";
 
             public const string Google = "google";
@@ -47,8 +45,6 @@ namespace Realms.Sync
             public const string Anonymous = "anonymous";
 
             public const string Nickname = "nickname";
-
-            public const string CustomRefreshToken = "customRefreshToken";
         }
 
         internal static class Keys
@@ -58,8 +54,6 @@ namespace Realms.Sync
             internal const string Password = "password";
 
             internal const string Identity = "identity";
-
-            internal const string IsAdmin = "is_admin";
         }
 
         /// <summary>
@@ -201,57 +195,6 @@ namespace Realms.Sync
             return new Credentials
             {
                 IdentityProvider = providerName,
-                Token = token
-            };
-        }
-
-        /// <summary>
-        /// Creates a <see cref="Credentials"/> based on a custom Refresh token.
-        /// </summary>
-        /// <param name="token">A Json Web Token, obtained by a 3rd party source that will be used instead of the ROS-issued refresh tokens.</param>
-        /// <param name="userId">
-        /// The identity of the user. This value is used for client side validation only as the server will compute its own
-        /// value based on the <c>userIdFieldName</c> configuration. It is still important for proper functioning of the system
-        /// that these values match.
-        /// </param>
-        /// <param name="isAdmin">
-        /// A value indicating whether the user is an admin. This value is used for client side validation only as the server
-        /// will compute its own value based on the <c>isAdminQuery</c> configuration. It is still important for proper
-        /// functioning of the system that these values match.</param>
-        /// <remarks>
-        /// Unlike other <see cref="Credentials"/> methods, users logged in via the CustomRefreshToken API will not go through the regular
-        /// login flow (since we already have a refresh token). Instead, the provided token will be used at any point when we need to exchange
-        /// the refresh token for an access token, e.g. when opening a Realm file. If the refresh token is invalid or expired, the user instance
-        /// will still be valid and they'll be able to create/open Realms, but those will never be synchronized with ROS. If the token is then updated
-        /// with a new valid one, existing changes will be synchronized with the server as usual.
-        /// <para/>
-        /// To update a refresh token, just set <see cref="User.RefreshToken"/> to the new updated value.
-        /// <para/>
-        /// ROS must be configured with <c>refreshTokenValidators</c> for this user to ever be able to sync with it.
-        /// </remarks>
-        /// <returns>An instance of <see cref="Credentials"/> that can be used in <see cref="User.LoginAsync"/>.</returns>
-        public static Credentials CustomRefreshToken(string token, string userId, bool isAdmin = false)
-        {
-            Argument.NotNull(token, nameof(token));
-            Argument.NotNull(userId, nameof(userId));
-
-            return new Credentials
-            {
-                IdentityProvider = Provider.CustomRefreshToken,
-                Token = token,
-                UserInfo = new Dictionary<string, object>
-                {
-                    [Keys.IsAdmin] = isAdmin,
-                    [Keys.Identity] = userId
-                }
-            };
-        }
-
-        internal static Credentials AdminToken(string token)
-        {
-            return new Credentials
-            {
-                IdentityProvider = Provider.AdminToken,
                 Token = token
             };
         }

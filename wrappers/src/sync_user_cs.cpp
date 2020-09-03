@@ -35,7 +35,7 @@ extern "C" {
 REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, size_t identity_len,
                                                  const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
                                                  const uint16_t* refresh_token_buf, size_t refresh_token_len,
-                                                 bool is_admin, NativeException::Marshallable& ex)
+                                                 NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor identity(identity_buf, identity_len);
@@ -43,31 +43,10 @@ REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, s
         Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
 
         auto user = SyncManager::shared().get_user({identity, auth_server_url}, refresh_token);
-        user->set_is_admin(is_admin);
         return new SharedSyncUser(user);
     });
 }
 
-REALM_EXPORT SharedSyncUser* realm_get_admintoken_user(const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
-                                                       const uint16_t* token_buf, size_t token_len,
-                                                       NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        Utf16StringAccessor auth_server_url(auth_server_url_buf, auth_server_url_len);
-        Utf16StringAccessor token(token_buf, token_len);
-        
-        return new SharedSyncUser(SyncManager::shared().get_admin_token_user(auth_server_url, token));
-    });
-}
-    
-REALM_EXPORT void realm_syncuser_set_refresh_token(SharedSyncUser& user, const uint16_t* token_buf, size_t token_len, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&] {
-        Utf16StringAccessor token(token_buf, token_len);
-        user->update_refresh_token(token);
-    });
-}
-    
 REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {
@@ -75,11 +54,11 @@ REALM_EXPORT SharedSyncUser* realm_get_current_sync_user(NativeException::Marsha
         if (ptr == nullptr) {
             return nullptr;
         }
-        
+
         return new SharedSyncUser(std::move(ptr));
     });
 }
-    
+
 REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> size_t {
@@ -87,19 +66,19 @@ REALM_EXPORT size_t realm_get_logged_in_users(SharedSyncUser** buffer, size_t bu
         if (users.size() > buffer_length) {
             return users.size();
         }
-        
+
         if (users.size() <= 0) {
             return 0;
         }
-        
+
         for (size_t i = 0; i < users.size(); i++) {
             buffer[i] = new SharedSyncUser(users.at(i));
         }
-        
+
         return users.size();
     });
 }
-    
+
 REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_buf, size_t identity_len, const uint16_t* auth_server_url_buf, size_t auth_server_url_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncUser* {
@@ -109,11 +88,11 @@ REALM_EXPORT SharedSyncUser* realm_get_logged_in_user(const uint16_t* identity_b
         if (auto user = SyncManager::shared().get_existing_logged_in_user({identity, auth_server_url})) {
             new SharedSyncUser(std::move(user));
         }
-        
+
         return nullptr;
     });
 }
-    
+
 REALM_EXPORT SharedSyncSession* realm_syncuser_get_session(SharedSyncUser& user, const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> SharedSyncSession* {
@@ -155,19 +134,14 @@ REALM_EXPORT size_t realm_syncuser_get_server_url(SharedSyncUser& user, uint16_t
         return stringdata_to_csharpstringbuffer(server_url, buffer, buffer_length);
     });
 }
-    
+
 REALM_EXPORT SyncUser::State realm_syncuser_get_state(SharedSyncUser& user, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         return user->state();
     });
 }
-    
-REALM_EXPORT bool realm_syncuser_get_is_admin(SharedSyncUser& user)
-{
-    return user->is_admin();
-}
-    
+
 REALM_EXPORT void realm_syncuser_destroy(SharedSyncUser* user)
 {
     delete user;

@@ -46,9 +46,9 @@ namespace Realms.Sync
         public SessionState State => Handle.GetState();
 
         /// <summary>
-        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to the Realm Object Server.
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
         /// </summary>
-        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>
+        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
 

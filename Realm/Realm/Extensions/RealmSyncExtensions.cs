@@ -32,13 +32,13 @@ namespace Realms.Sync
         /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
         /// <returns>The <see cref="Session"/> that is responsible for synchronizing with a Realm Object Server instance.</returns>
-        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfigurationBase"/> object.</param>
+        /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <c>realm</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfigurationBase"/> object.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfiguration"/> object.</exception>
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
-            Argument.Ensure(realm.Config is SyncConfigurationBase, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             return new Session(realm.Config.DatabasePath);
         }

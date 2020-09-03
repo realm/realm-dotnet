@@ -33,7 +33,7 @@ struct PrimitiveValue
     realm::PropertyType type;
     bool has_value;
     char padding[6];
-    
+
     union {
         bool bool_value;
         int64_t int_value;
@@ -41,7 +41,7 @@ struct PrimitiveValue
         double double_value;
     } value;
 };
-    
+
 struct StringValue
 {
     const char* value;
@@ -67,7 +67,7 @@ struct MarshaledVector
     {
     }
 };
-    
+
 template<typename Collection>
 void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
@@ -75,7 +75,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
         const size_t count = collection.size();
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from Collection", ndx, count);
-        
+
         value.has_value = true;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
@@ -84,7 +84,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
                 value.value.bool_value = collection.template get<bool>(ndx);
                 break;
             case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
-                auto result = collection.template get<Optional<bool>>(ndx);
+                auto result = collection.template get<util::Optional<bool>>(ndx);
                 value.has_value = !!result;
                 value.value.bool_value = result.value_or(false);
                 break;
@@ -93,7 +93,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
                 value.value.int_value = collection.template get<int64_t>(ndx);
                 break;
             case realm::PropertyType::Int | realm::PropertyType::Nullable: {
-                auto result = collection.template get<Optional<int64_t>>(ndx);
+                auto result = collection.template get<util::Optional<int64_t>>(ndx);
                 value.has_value = !!result;
                 value.value.int_value = result.value_or(0);
                 break;
@@ -102,7 +102,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
                 value.value.float_value = collection.template get<float>(ndx);
                 break;
             case realm::PropertyType::Float | realm::PropertyType::Nullable: {
-                auto result = collection.template get<Optional<float>>(ndx);
+                auto result = collection.template get<util::Optional<float>>(ndx);
                 value.has_value = !!result;
                 value.value.float_value = result.value_or((float)0);
                 break;
@@ -111,7 +111,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
                 value.value.double_value = collection.template get<double>(ndx);
                 break;
             case realm::PropertyType::Double | realm::PropertyType::Nullable: {
-                auto result = collection.template get<Optional<double>>(ndx);
+                auto result = collection.template get<util::Optional<double>>(ndx);
                 value.has_value = !!result;
                 value.value.double_value = result.value_or((double)0);
                 break;
@@ -131,7 +131,7 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
 #pragma GCC diagnostic pop
     });
 }
-    
+
 template<typename T, typename Collection>
 inline T get(Collection& collection, size_t ndx, NativeException::Marshallable& ex)
 {
@@ -139,11 +139,11 @@ inline T get(Collection& collection, size_t ndx, NativeException::Marshallable& 
         const size_t count = collection.size();
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-        
+
         return collection.template get<T>(ndx);
     });
 }
-    
+
 class Utf16StringAccessor {
 public:
     Utf16StringAccessor(const uint16_t* csbuffer, size_t csbufsize);
@@ -162,7 +162,7 @@ public:
     {
         return std::string(m_data.get(), m_size);
     }
-    
+
     const char* data() const { return m_data.get();  }
     size_t size() const { return m_size;  }
 
@@ -172,16 +172,16 @@ private:
     std::size_t m_size;
 };
 
-size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words 
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words
 
 template<typename Collection>
 size_t collection_get_string(Collection& collection, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
 {
     auto result = get<StringData>(collection, ndx, ex);
-    
+
     if ((*is_null = result.is_null()))
         return 0;
-    
+
     return stringdata_to_csharpstringbuffer(result, value, value_len);
 }
 
@@ -189,16 +189,16 @@ template<typename Collection>
 size_t collection_get_binary(Collection& collection, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
 {
     auto result = get<BinaryData>(collection, ndx, ex);
-    
+
     if ((*is_null = result.is_null()))
         return 0;
-    
+
     const size_t data_size = result.size();
     if (data_size <= buffer_size)
         std::copy(result.data(), result.data() + data_size, return_buffer);
-    
+
     return data_size;
 }
-    
+
 } // namespace binding
 } // namespace realm
