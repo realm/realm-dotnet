@@ -775,6 +775,204 @@ namespace Realms.Tests.Database
             }
         }
 
+        [Test]
+        public void Freeze_FreezesTheRealm()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                realm.Write(() =>
+                {
+                    var dog = realm.Add(new Dog
+                    {
+                        Name = "Charlie"
+                    });
+
+                    realm.Add(new Owner
+                    {
+                        Name = "George",
+                        TopDog = dog,
+                        Dogs = { dog }
+                    });
+                });
+
+                using (var frozenRealm = realm.Freeze())
+                {
+                    Assert.That(frozenRealm.IsFrozen);
+
+                    var query = frozenRealm.All<Owner>();
+                    Assert.That(query.AsRealmCollection().IsFrozen);
+
+                    var owner = query.Single();
+                    Assert.That(owner.IsFrozen);
+                    Assert.That(owner.TopDog.IsFrozen);
+                    Assert.That(owner.Dogs.AsRealmCollection().IsFrozen);
+                    Assert.That(owner.Dogs[0].IsFrozen);
+                }
+            }
+        }
+
+        [Test]
+        public void FrozenRealm_DoesntUpdate()
+        {
+            using (var realm = Realm.GetInstance())
+            {
+                Owner george = null;
+                realm.Write(() =>
+                {
+                    var dog = realm.Add(new Dog
+                    {
+                        Name = "Charlie"
+                    });
+
+                    george = realm.Add(new Owner
+                    {
+                        Name = "George",
+                        TopDog = dog,
+                        Dogs = { dog }
+                    });
+                });
+
+                using (var frozenRealm = realm.Freeze())
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new Owner
+                        {
+                            Name = "Peter"
+                        });
+
+                        george.Name = "George Jr.";
+                    });
+
+                    var owners = frozenRealm.All<Owner>();
+                    Assert.That(owners.Count(), Is.EqualTo(1));
+
+                    var frozenGeorge = owners.Single();
+                    Assert.That(frozenGeorge.Name, Is.EqualTo("George"));
+                }
+            }
+        }
+
+        [Test]
+        public void FrozenRealm_CannotWrite()
+        {
+            using (var realm = Realm.GetInstance())
+            using (var frozenRealm = realm.Freeze())
+            {
+                Assert.Throws<RealmFrozenException>(() => frozenRealm.Write(() => { }));
+                Assert.Throws<RealmFrozenException>(() => frozenRealm.BeginWrite());
+            }
+        }
+
+        [Test]
+        public void FrozenRealm_CannotSubscribeForNotifications()
+        {
+            using (var realm = Realm.GetInstance())
+            using (var frozenRealm = realm.Freeze())
+            {
+                Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged += (_, __) => { });
+                Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged -= (_, __) => { });
+            }
+        }
+
+        [Test]
+        public void FrozenRealms_CanBeUsedAcrossThreads()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                using (var realm = Realm.GetInstance())
+                {
+                    realm.Write(() =>
+                    {
+                        var dog = realm.Add(new Dog
+                        {
+                            Name = "Charlie"
+                        });
+
+                        realm.Add(new Owner
+                        {
+                            Name = "George",
+                            TopDog = dog,
+                            Dogs = { dog }
+                        });
+                    });
+
+                    using (var frozenRealm = realm.Freeze())
+                    {
+                        var georgeOnThreadOne = frozenRealm.All<Owner>().Single();
+                        var georgeOnThreadTwo = await Task.Run(() =>
+                        {
+                            var bgGeorge = frozenRealm.All<Owner>().Single();
+                            Assert.That(bgGeorge.Name, Is.EqualTo("George"));
+                            Assert.That(georgeOnThreadOne.IsValid);
+                            Assert.That(georgeOnThreadOne.Name, Is.EqualTo("George"));
+                            return bgGeorge;
+                        });
+
+                        Assert.That(georgeOnThreadTwo.IsValid);
+                        Assert.That(georgeOnThreadOne.Name, Is.EqualTo(georgeOnThreadTwo.Name));
+                    }
+                }
+            });
+        }
+
+        [Test]
+        public void FrozenRealms_GetGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                WeakReference frozenRealmRef = null;
+                using (var realm = Realm.GetInstance())
+                {
+                    new Action(() =>
+                    {
+                        var frozenRealm = realm.Freeze();
+                        frozenRealmRef = new WeakReference(frozenRealm);
+                    })();
+                }
+
+                while (frozenRealmRef.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                // This will throw on Windows if the Realm wasn't really disposed
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            });
+        }
+
+        [Test]
+        public void Realm_Freeze_WhenFrozen_ReturnsSameInstance()
+        {
+            var realm = GetRealm();
+            var frozenRealm = realm.Freeze();
+            Assert.That(ReferenceEquals(realm, frozenRealm), Is.False);
+
+            // Freezing a frozen realm should do nothing
+            var deepFrozenRealm = frozenRealm.Freeze();
+            Assert.That(ReferenceEquals(deepFrozenRealm, frozenRealm));
+
+            // Freezing the same Realm again should return a new instance
+            var anotherFrozenRealm = realm.Freeze();
+
+            Assert.That(ReferenceEquals(realm, anotherFrozenRealm), Is.False);
+            Assert.That(ReferenceEquals(frozenRealm, anotherFrozenRealm), Is.False);
+        }
+
+        [Test]
+        public void Realm_HittingMaxNumberOfVersions_Throws()
+        {
+            var config = new RealmConfiguration(Path.GetTempFileName())
+            {
+                MaxNumberOfActiveVersions = 1
+            };
+            var realm = GetRealm(config);
+
+            Assert.Throws<RealmInvalidTransactionException>(() => realm.Write(() => { }), "Number of active versions (2) in the Realm exceeded the limit of 1");
+        }
+
         private static void AddDummyData(Realm realm)
         {
             for (var i = 0; i < 1000; i++)

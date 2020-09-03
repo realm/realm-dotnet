@@ -321,9 +321,9 @@ REALM_EXPORT size_t list_get_binary(List& list, size_t ndx, char* return_buffer,
 REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-		if (list.get_realm() != object_ptr.realm()) {
-			throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
-		}
+        if (list.get_realm() != object_ptr.realm()) {
+            throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+        }
 
         return list.find(object_ptr.obj());
     });
@@ -457,6 +457,20 @@ REALM_EXPORT Results* list_snapshot(const List& list, NativeException::Marshalla
 {
     return handle_errors(ex, [&]() {
         return new Results(list.snapshot());
+    });
+}
+
+REALM_EXPORT bool list_get_is_frozen(const List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return list.is_frozen();
+    });
+}
+
+REALM_EXPORT List* list_freeze(const List& list, const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new List(list.freeze(realm));
     });
 }
 

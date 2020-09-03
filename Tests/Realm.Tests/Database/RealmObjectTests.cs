@@ -19,8 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms;
+using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
@@ -199,6 +200,209 @@ namespace Realms.Tests.Database
             {
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
+        }
+
+        [Test]
+        public void RealmObject_Freeze_FreezesInPlace()
+        {
+            var obj = new Owner
+            {
+                Name = "Peter",
+                TopDog = new Dog
+                {
+                    Name = "Doggo"
+                }
+            };
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.IsManaged);
+
+            FreezeInPlace(obj);
+
+            Assert.That(obj.IsManaged);
+            Assert.That(obj.IsValid);
+            Assert.That(obj.IsFrozen);
+            Assert.That(obj.Realm.IsFrozen);
+            Assert.That(obj.Dogs.AsRealmCollection().IsFrozen);
+            Assert.That(obj.TopDog.IsFrozen);
+        }
+
+        [Test]
+        public void FrozenObject_GetsGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                WeakReference objRef = null;
+                new Action(() =>
+                {
+                    var owner = new Owner();
+                    _realm.Write(() =>
+                    {
+                        _realm.Add(owner);
+                    });
+                    owner.FreezeInPlace();
+                    objRef = new WeakReference(owner);
+                })();
+
+                while (objRef.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            });
+        }
+
+        [Test]
+        public void RealmObject_FreezeInPlace_WhenObjectIsUnmanaged_Throws()
+        {
+            var owner = new Owner();
+            Assert.Throws<RealmException>(() => owner.FreezeInPlace(), "Unmanaged objects cannot be frozen.");
+        }
+
+        [Test]
+        public void RealmObject_Freeze_WhenObjectIsUnmanaged_Throws()
+        {
+            var owner = new Owner();
+            Assert.Throws<RealmException>(() => owner.Freeze(), "Unmanaged objects cannot be frozen.");
+        }
+
+        [Test]
+        public void RealmObject_FreezeInPlace_WhenFrozen_DoesNothing()
+        {
+            var obj = new Owner();
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+            FreezeInPlace(obj);
+
+            var frozenRealm = obj.Realm;
+
+            FreezeInPlace(obj);
+            Assert.That(object.ReferenceEquals(frozenRealm, obj.Realm));
+        }
+
+        [Test]
+        public void RealmObject_Freeze_WhenFrozen_ReturnsSameInstance()
+        {
+            var obj = new Owner();
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            var frozenObj = Freeze(obj);
+            Assert.That(ReferenceEquals(frozenObj, obj), Is.False);
+
+            var deepFrozenObj = Freeze(frozenObj);
+            Assert.That(ReferenceEquals(frozenObj, deepFrozenObj));
+        }
+
+        [Test]
+        public void RealmObject_Freeze_DoesntModifyOriginal()
+        {
+            var obj = new Owner();
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            var frozenObj = Freeze(obj);
+            Assert.That(frozenObj.IsFrozen);
+            Assert.That(frozenObj.IsValid);
+            Assert.That(obj.IsFrozen, Is.False);
+            Assert.That(obj.IsValid);
+        }
+
+        [Test]
+        public void RealmObject_WhenFrozen_FailsToSubscribeToNotifications()
+        {
+            var obj = new Owner();
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            FreezeInPlace(obj);
+
+            Assert.Throws<RealmFrozenException>(() => obj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObject since it never changes.");
+        }
+
+        [Test]
+        public void FrozenObject_DoesntChange()
+        {
+            var livePeter = new Owner
+            {
+                Name = "Peter",
+                TopDog = new Dog
+                {
+                    Name = "Doggo"
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(livePeter);
+            });
+
+            var frozenPeter = Freeze(livePeter);
+
+            Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
+
+            _realm.Write(() =>
+            {
+                livePeter.Name = "Peter II";
+                livePeter.TopDog.Name = "Dogsimus";
+            });
+
+            Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
+            Assert.That(frozenPeter.TopDog.Name, Is.EqualTo("Doggo"));
+
+            var frozenPeter2 = Freeze(livePeter);
+
+            _realm.Write(() =>
+            {
+                livePeter.Name = "Peter III";
+                livePeter.TopDog.Name = "Doggosaurus";
+            });
+
+            Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
+            Assert.That(frozenPeter.TopDog.Name, Is.EqualTo("Doggo"));
+
+            Assert.That(frozenPeter2.Name, Is.EqualTo("Peter II"));
+            Assert.That(frozenPeter2.TopDog.Name, Is.EqualTo("Dogsimus"));
+        }
+
+        [Test]
+        public void FrozenObject_DoesntGetDeleted()
+        {
+            var peter = new Owner
+            {
+                Name = "Peter"
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(peter);
+            });
+
+            FreezeInPlace(peter);
+
+            _realm.Write(() =>
+            {
+                _realm.RemoveAll<Owner>();
+            });
+
+            Assert.That(_realm.All<Owner>(), Is.Empty);
+            Assert.That(peter.IsValid);
+            Assert.That(peter.Name, Is.EqualTo("Peter"));
         }
 
         [Serializable]

@@ -129,6 +129,13 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool has_changed(SharedRealmHandle sharedRealm);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_frozen(SharedRealmHandle sharedRealm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_freeze", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr freeze(SharedRealmHandle sharedRealm, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
         }
@@ -176,6 +183,16 @@ namespace Realms
         {
             NativeMethods.close_realm(this, out var nativeException);
             nativeException.ThrowIfNecessary();
+        }
+
+        public bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
         }
 
         public void SetManagedStateHandle(IntPtr managedStateHandle)
@@ -330,6 +347,13 @@ namespace Realms
         public bool HasChanged()
         {
             return NativeMethods.has_changed(this);
+        }
+
+        public SharedRealmHandle Freeze()
+        {
+            var result = NativeMethods.freeze(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new SharedRealmHandle(result);
         }
 
         private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -643,6 +644,284 @@ namespace Realms.Tests.Database
             {
                 Realm.DeleteRealm(config);
             }
+        }
+
+        [Test]
+        public void List_Freeze_ReturnsAFrozenCopy()
+        {
+            var obj = new Owner
+            {
+                Name = "Peter",
+                Dogs =
+                {
+                    new Dog { Name = "Alpha" },
+                    new Dog { Name = "Beta" }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            Assert.That(obj.IsManaged);
+
+            var frozenDogs = Freeze(obj.Dogs);
+
+            Assert.That(obj.IsManaged);
+            Assert.That(obj.IsValid);
+            Assert.That(obj.IsFrozen, Is.False);
+            Assert.That(obj.Dogs.AsRealmCollection().IsFrozen, Is.False);
+            Assert.That(obj.Realm.IsFrozen, Is.False);
+
+            Assert.That(frozenDogs.AsRealmCollection().IsFrozen);
+            Assert.That(frozenDogs.AsRealmCollection().IsValid);
+            Assert.That(frozenDogs.AsRealmCollection().Realm.IsFrozen);
+            Assert.That(frozenDogs[0].IsFrozen);
+            Assert.That(frozenDogs[0].IsValid);
+            Assert.That(frozenDogs[1].IsFrozen);
+            Assert.That(frozenDogs[1].IsValid);
+        }
+
+        [Test]
+        public void FrozenList_GetsGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                WeakReference listRef = null;
+                new Action(() =>
+                {
+                    var owner = new Owner
+                    {
+                        Dogs = { new Dog { Name = "Lasse" } }
+                    };
+                    _realm.Write(() =>
+                    {
+                        _realm.Add(owner);
+                    });
+
+                    listRef = new WeakReference(owner.Dogs.Freeze());
+                })();
+
+                while (listRef.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            });
+        }
+
+        [Test]
+        public void Query_Freeze_ReturnsAFrozenCopy()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "Alpha" });
+                _realm.Add(new Dog { Name = "Beta" });
+                _realm.Add(new Dog { Name = "Betazaurus" });
+            });
+
+            var query = _realm.All<Dog>().Where(d => d.Name.StartsWith("B"));
+            var frozenQuery = Freeze(query);
+
+            Assert.That(query.AsRealmCollection().IsValid);
+            Assert.That(query.AsRealmCollection().IsFrozen, Is.False);
+
+            Assert.That(frozenQuery.AsRealmCollection().IsFrozen);
+            Assert.That(frozenQuery.AsRealmCollection().IsValid);
+            Assert.That(frozenQuery.AsRealmCollection().Realm.IsFrozen);
+            Assert.That(frozenQuery.First().IsFrozen);
+            Assert.That(frozenQuery.First().IsValid);
+            Assert.That(frozenQuery.Last().IsFrozen);
+            Assert.That(frozenQuery.Last().IsValid);
+        }
+
+        [Test]
+        public void FrozenQuery_GetsGarbageCollected()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                WeakReference queryRef = null;
+                new Action(() =>
+                {
+                    _realm.Write(() =>
+                    {
+                        _realm.Add(new Dog { Name = "Lasse" });
+                    });
+
+                    queryRef = new WeakReference(_realm.All<Dog>());
+                })();
+
+                while (queryRef.IsAlive)
+                {
+                    await Task.Yield();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                // This will throw on Windows if the Realm object wasn't really GC-ed and its Realm - closed
+                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            });
+        }
+
+        [Test]
+        public void List_Freeze_WhenUnmanaged_Throws()
+        {
+            var list = new List<Owner>();
+            Assert.Throws<RealmException>(() => list.Freeze(), "Unmanaged lists cannot be frozen.");
+        }
+
+        [Test]
+        public void Query_Freeze_WhenUnmanaged_Throws()
+        {
+            var query = new List<Owner>().AsQueryable();
+            Assert.Throws<RealmException>(() => query.Freeze(), "Unmanaged queries cannot be frozen.");
+        }
+
+        [Test]
+        public void List_Freeze_WhenFrozen_ReturnsSameInstance()
+        {
+            var obj = new Owner();
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            var frozenList = Freeze(obj.Dogs);
+            Assert.That(ReferenceEquals(frozenList, obj.Dogs), Is.False);
+
+            var deepFrozenList = Freeze(frozenList);
+            Assert.That(ReferenceEquals(frozenList, deepFrozenList));
+        }
+
+        [Test]
+        public void Query_Freeze_WhenFrozen_ReturnsSameInstance()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Owner());
+            });
+
+            var query = _realm.All<Owner>();
+
+            var frozenQuery = Freeze(query);
+            Assert.That(ReferenceEquals(frozenQuery, query), Is.False);
+
+            var deepFrozenQuery = Freeze(frozenQuery);
+            Assert.That(ReferenceEquals(frozenQuery, deepFrozenQuery));
+        }
+
+        [Test]
+        public void FrozenList_DoesntChange()
+        {
+            var obj = new Owner
+            {
+                Dogs =
+                {
+                    new Dog { Name = "Rex" },
+                    new Dog { Name = "Luthor" }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(obj);
+            });
+
+            var frozenList = obj.Dogs.Freeze();
+            Assert.That(frozenList.Count, Is.EqualTo(2));
+
+            _realm.Write(() =>
+            {
+                obj.Dogs[0].Name = "Lex";
+                obj.Dogs.Insert(1, new Dog());
+            });
+
+            Assert.That(frozenList.Count, Is.EqualTo(2));
+            Assert.That(frozenList[0].Name, Is.EqualTo("Rex"));
+            Assert.That(frozenList[1].Name, Is.EqualTo("Luthor"));
+        }
+
+        [Test]
+        public void FrozenQuery_WhenOrderedWithLINQ_DoesntChange()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "C" });
+                _realm.Add(new Dog { Name = "A" });
+                _realm.Add(new Dog { Name = "E" });
+            });
+
+            var frozenQuery = _realm.All<Dog>().OrderBy(d => d.Name).Freeze();
+            Assert.That(frozenQuery.Count(), Is.EqualTo(3));
+            Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
+            Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
+            Assert.That(frozenQuery.ElementAt(2).Name, Is.EqualTo("E"));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "D" });
+                _realm.Add(new Dog { Name = "B" });
+            });
+
+            Assert.That(frozenQuery.Count(), Is.EqualTo(3));
+            Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
+            Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
+            Assert.That(frozenQuery.ElementAt(2).Name, Is.EqualTo("E"));
+        }
+
+        [Test]
+        public void FrozenQuery_WhenOrderedWithString_DoesntChange()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "C" });
+                _realm.Add(new Dog { Name = "A" });
+                _realm.Add(new Dog { Name = "E" });
+            });
+
+            var frozenQuery = _realm.All<Dog>().Filter("TRUEPREDICATE SORT(Name ASC)").Freeze();
+            Assert.That(frozenQuery.Count(), Is.EqualTo(3));
+            Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
+            Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
+            Assert.That(frozenQuery.ElementAt(2).Name, Is.EqualTo("E"));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "D" });
+                _realm.Add(new Dog { Name = "B" });
+            });
+
+            Assert.That(frozenQuery.Count(), Is.EqualTo(3));
+            Assert.That(frozenQuery.ElementAt(0).Name, Is.EqualTo("A"));
+            Assert.That(frozenQuery.ElementAt(1).Name, Is.EqualTo("C"));
+            Assert.That(frozenQuery.ElementAt(2).Name, Is.EqualTo("E"));
+        }
+
+        [Test]
+        public void FrozenQuery_WhenFiltered_DoesntChange()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "Rex" });
+                _realm.Add(new Dog { Name = "Roger" });
+                _realm.Add(new Dog { Name = "Lasse" });
+            });
+
+            var frozenQuery = _realm.All<Dog>().Where(d => d.Name.StartsWith("R")).Freeze();
+            Assert.That(frozenQuery.Count(), Is.EqualTo(2));
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new Dog { Name = "Randy" });
+            });
+
+            Assert.That(frozenQuery.Count(), Is.EqualTo(2));
+            Assert.That(frozenQuery.ToArray().FirstOrDefault(d => d.Name == "Randy"), Is.Null);
         }
 
         private void PopulateAObjects(params int[] values)
