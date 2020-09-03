@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-//////////////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////////////
 
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
@@ -68,7 +68,7 @@ REALM_EXPORT Object* results_get_object(Results& results, size_t ndx, NativeExce
     return handle_errors(ex, [&]() {
         try {
             results.get_realm()->verify_thread();
-            
+
             return new Object(results.get_realm(), results.get_object_schema(), results.get(ndx));
         }
         catch (std::out_of_range) {
@@ -76,7 +76,7 @@ REALM_EXPORT Object* results_get_object(Results& results, size_t ndx, NativeExce
         }
     });
 }
-    
+
 REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     collection_get_primitive(results, ndx, value, ex);
@@ -98,9 +98,9 @@ REALM_EXPORT void results_clear(Results& results, SharedRealm& realm, NativeExce
         if (results.get_realm() != realm) {
             throw ObjectManagedByAnotherRealmException("Can only delete results from the Realm they belong to.");
         }
-        
+
         results.get_realm()->verify_in_write();
-      
+
         results.clear();
     });
 }
@@ -109,7 +109,7 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
 {
     return handle_errors(ex, [&]() {
         results.get_realm()->verify_thread();
-        
+
         return results.size();
     });
 }
@@ -122,35 +122,42 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
         });
     });
 }
-    
+
 REALM_EXPORT Query* results_get_query(Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Query(results.get_query());
     });
 }
-    
+
+REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& results, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new DescriptorOrdering(results.get_descriptor_ordering());
+    });
+}
+
 REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
         auto query = results.get_query();
         auto const &realm = results.get_realm();
-        
+
         parser::ParserResult result = parser::parse(query_string.to_string());
-        
+
         parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
-        
+
         query_builder::NoArguments no_args;
         query_builder::apply_predicate(query, result.predicate, no_args, mapping);
-        
+
         DescriptorOrdering ordering;
         query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
         return new Results(realm, std::move(query), std::move(ordering));
     });
 }
-    
+
 REALM_EXPORT bool results_get_is_valid(const Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -164,7 +171,7 @@ REALM_EXPORT ThreadSafeReference* results_get_thread_safe_reference(const Result
         return new ThreadSafeReference(results);
     });
 }
-    
+
 REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

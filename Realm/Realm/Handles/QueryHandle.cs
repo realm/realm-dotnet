@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -196,13 +196,7 @@ namespace Realms
             public static extern IntPtr count(QueryHandle QueryHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm,
-                [MarshalAs(UnmanagedType.LPArray), In] SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
-                [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] flattenedPropertyIndices,
-                out NativeException ex);
+            public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -549,17 +543,9 @@ namespace Realms
             return (int)result;
         }
 
-        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm)
+        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor)
         {
-            var result = NativeMethods.create_results(this, sharedRealm, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new ResultsHandle(sharedRealm, result);
-        }
-
-        public ResultsHandle CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
-        {
-            var marshaledValues = sortDescriptorBuilder.Flatten();
-            var result = NativeMethods.create_sorted_results(this, sharedRealm, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out var nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);
         }

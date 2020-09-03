@@ -47,6 +47,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void delete_pointer(void* pointer);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void delete_pointer(IntPtr pointer);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void reset_for_testing();
 

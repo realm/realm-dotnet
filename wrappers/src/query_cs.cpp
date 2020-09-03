@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #include <realm.hpp>
 #include "marshalling.hpp"
 #include "error_handling.hpp"
@@ -24,7 +24,6 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "marshalable_sort_clause.hpp"
 #include "object_accessor.hpp"
 
 
@@ -106,7 +105,7 @@ REALM_EXPORT void query_string_ends_with(Query& query, ColKey column_key, uint16
         query.ends_with(column_key, str, case_sensitive);
     });
 }
-    
+
 REALM_EXPORT void query_string_equal(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -122,7 +121,7 @@ REALM_EXPORT void query_string_not_equal(Query& query, ColKey column_key, uint16
         query.not_equal(column_key, str, case_sensitive);
     });
 }
-    
+
 REALM_EXPORT void query_string_like(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -228,7 +227,7 @@ REALM_EXPORT void query_long_greater_equal(Query& query, ColKey column_key, int6
         query.greater_equal(column_key, value);
     });
 }
-    
+
     REALM_EXPORT void query_float_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -368,16 +367,16 @@ REALM_EXPORT void query_binary_not_equal(Query& query, ColKey column_key, char* 
         query.not_equal(column_key, BinaryData(buffer, buffer_length));
     });
 }
-    
+
 REALM_EXPORT void query_object_equal(Query& query, ColKey column_key, Object& object, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         query.links_to(column_key, object.obj().get_key());
     });
 }
-    
-REALM_EXPORT void query_null_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)   
-{   
+
+REALM_EXPORT void query_null_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)
+{
     handle_errors(ex, [&]() {
         if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
             query.and_query(query.get_table()->column<Link>(column_key).is_null());
@@ -386,10 +385,10 @@ REALM_EXPORT void query_null_equal(Query& query, ColKey column_key, NativeExcept
             query.equal(column_key, null());
         }
     });
-}   
-    
-REALM_EXPORT void query_null_not_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)   
-{   
+}
+
+REALM_EXPORT void query_null_not_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)
+{
     handle_errors(ex, [&]() {
         if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
             query.and_query(query.get_table()->column<Link>(column_key).is_not_null());
@@ -397,34 +396,13 @@ REALM_EXPORT void query_null_not_equal(Query& query, ColKey column_key, NativeEx
         else {
             query.not_equal(column_key, null());
         }
-    });   
-}
-
-REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Results(realm, query);
     });
 }
 
-REALM_EXPORT Results* query_create_sorted_results(Query& query, SharedRealm& realm, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_property_indices, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_results(Query& query, SharedRealm& realm, DescriptorOrdering& descriptor, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        std::vector<std::vector<ColKey>> column_indices;
-        std::vector<bool> ascending;
-
-        const std::string object_name(ObjectStore::object_type_for_table_name(query.get_table()->get_name()));
-        unflatten_sort_clauses(sort_clauses, clause_count, flattened_property_indices, column_indices, ascending, realm->schema(), object_name);
-
-        DescriptorOrdering ordering;
-        ordering.append_sort({column_indices, ascending});
-        Results result(realm, query, std::move(ordering));
-
-#if REALM_DEBUG
-        result.evaluate_query_if_needed(false);
-#endif
-
-        return new Results(std::move(result));
+        return new Results(realm, query, descriptor);
     });
 }
 

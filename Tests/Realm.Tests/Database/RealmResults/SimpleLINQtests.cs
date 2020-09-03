@@ -1027,6 +1027,26 @@ namespace Realms.Tests.Database
             Assert.That(expectedDef, Is.Null);
         }
 
+        [Test]
+        public void ElementAt_SortedViaLINQ()
+        {
+            var query = _realm.All<Person>().OrderByDescending(p => p.FirstName).ThenBy(p => p.LastName);
+            var arr = query.ToArray();
+            Assert.That(query.ElementAt(0).FullName, Is.EqualTo(arr[0].FullName));
+            Assert.That(query.ElementAt(1).FullName, Is.EqualTo(arr[1].FullName));
+            Assert.That(query.ElementAt(2).FullName, Is.EqualTo(arr[2].FullName));
+        }
+
+        [Test]
+        public void ElementAt_SortedViaStringQuery()
+        {
+            var query = _realm.All<Person>().Filter("TRUEPREDICATE SORT(FirstName DESC, LastName ASC)");
+            var arr = query.ToArray();
+            Assert.That(query.ElementAt(0).FullName, Is.EqualTo(arr[0].FullName));
+            Assert.That(query.ElementAt(1).FullName, Is.EqualTo(arr[1].FullName));
+            Assert.That(query.ElementAt(2).FullName, Is.EqualTo(arr[2].FullName));
+        }
+
         // note that DefaultIfEmpty returns a collection of one item
         [Test, TestExplicit("Currently broken and hard to implement")]
         public void DefaultIfEmptyReturnsDefault()
