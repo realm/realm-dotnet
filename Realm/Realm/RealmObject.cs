@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -29,7 +30,9 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
+using Realms.Weaving;
 
 namespace Realms
 {
@@ -205,77 +208,77 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetString(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetString(_metadata.ColumnKeys[propertyName]);
         }
 
         protected char GetCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
+            return (char)_objectHandle.GetInt64(_metadata.ColumnKeys[propertyName]);
         }
 
         protected char? GetNullableCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
+            return (char?)_objectHandle.GetNullableInt64(_metadata.ColumnKeys[propertyName]);
         }
 
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetSingle(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetSingle(_metadata.ColumnKeys[propertyName]);
         }
 
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableSingle(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableSingle(_metadata.ColumnKeys[propertyName]);
         }
 
         protected double GetDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetDouble(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetDouble(_metadata.ColumnKeys[propertyName]);
         }
 
         protected double? GetNullableDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableDouble(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableDouble(_metadata.ColumnKeys[propertyName]);
         }
 
         protected bool GetBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetBoolean(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetBoolean(_metadata.ColumnKeys[propertyName]);
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableBoolean(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableBoolean(_metadata.ColumnKeys[propertyName]);
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetDateTimeOffset(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetDateTimeOffset(_metadata.ColumnKeys[propertyName]);
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableDateTimeOffset(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableDateTimeOffset(_metadata.ColumnKeys[propertyName]);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -283,7 +286,7 @@ namespace Realms
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+            return _objectHandle.GetList<T>(_realm, _metadata.ColumnKeys[propertyName], property.ObjectType);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
@@ -292,7 +295,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            if (_objectHandle.TryGetLink(_metadata.PropertyIndices[propertyName], out var objectHandle))
+            if (_objectHandle.TryGetLink(_metadata.ColumnKeys[propertyName], out var objectHandle))
             {
                 _metadata.Schema.TryFindProperty(propertyName, out var property);
                 return (T)_realm.MakeObject(_realm.Metadata[property.ObjectType], objectHandle);
@@ -305,7 +308,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetByteArray(_metadata.ColumnKeys[propertyName]);
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -313,7 +316,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
+            var resultsHandle = _objectHandle.GetBacklinks(_metadata.ComputedProperties[propertyName]);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
@@ -329,20 +332,20 @@ namespace Realms
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = Operator.Convert<long, T>(_objectHandle.GetInt64(propertyIndex));
-            return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
+            var columnKey = _metadata.ColumnKeys[propertyName];
+            var result = Operator.Convert<long, T>(_objectHandle.GetInt64(columnKey));
+            return new RealmInteger<T>(result, ObjectHandle, columnKey);
         }
 
         protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetNullableInt64(propertyIndex);
+            var columnKey = _metadata.ColumnKeys[propertyName];
+            var result = _objectHandle.GetNullableInt64(columnKey);
 
             if (result.HasValue)
             {
-                return new RealmInteger<T>(Operator.Convert<long, T>(result.Value), ObjectHandle, propertyIndex);
+                return new RealmInteger<T>(Operator.Convert<long, T>(result.Value), ObjectHandle, columnKey);
             }
 
             return null;
@@ -356,98 +359,98 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetString(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetStringValueUnique(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetStringUnique(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetStringUnique(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetCharValue(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetCharValueUnique(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableCharValueUnique(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64Unique(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetSingleValue(string propertyName, float value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetSingle(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetSingle(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableSingle(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableSingle(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetDoubleValue(string propertyName, double value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetDouble(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetDouble(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableDouble(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableDouble(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetBooleanValue(string propertyName, bool value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetBoolean(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetBoolean(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableBoolean(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableBoolean(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetDateTimeOffset(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetDateTimeOffset(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableDateTimeOffset(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableDateTimeOffset(_metadata.ColumnKeys[propertyName], value);
         }
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
@@ -459,7 +462,7 @@ namespace Realms
 
             if (value == null)
             {
-                _objectHandle.ClearLink(_metadata.PropertyIndices[propertyName]);
+                _objectHandle.ClearLink(_metadata.ColumnKeys[propertyName]);
             }
             else
             {
@@ -468,7 +471,7 @@ namespace Realms
                     _realm.Add(value);
                 }
 
-                _objectHandle.SetLink(_metadata.PropertyIndices[propertyName], value.ObjectHandle);
+                _objectHandle.SetLink(_metadata.ColumnKeys[propertyName], value.ObjectHandle);
             }
         }
 
@@ -476,7 +479,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetByteArray(_metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
@@ -484,7 +487,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
+            _objectHandle.SetInt64(_metadata.ColumnKeys[propertyName], value.ToLong());
         }
 
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
@@ -492,7 +495,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
+            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value.ToLong());
         }
 
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
@@ -500,7 +503,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value.ToLong());
+            _objectHandle.SetInt64Unique(_metadata.ColumnKeys[propertyName], value.ToLong());
         }
 
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
@@ -508,7 +511,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value.ToLong());
+            _objectHandle.SetNullableInt64Unique(_metadata.ColumnKeys[propertyName], value.ToLong());
         }
 
         #endregion
@@ -524,9 +527,9 @@ namespace Realms
         public IQueryable<dynamic> GetBacklinks(string objectType, string property)
         {
             Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
-            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
+            Argument.Ensure(relatedMeta.ColumnKeys.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
+            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.ColumnKeys[property]);
             return new RealmResults<RealmObject>(Realm, relatedMeta, resultsHandle);
         }
 
@@ -700,13 +703,24 @@ namespace Realms
 
         internal class Metadata
         {
-            internal TableHandle Table;
+            internal readonly TableHandle Table;
 
-            internal Weaving.IRealmObjectHelper Helper;
+            internal readonly IRealmObjectHelper Helper;
 
-            internal Dictionary<string, IntPtr> PropertyIndices;
+            internal readonly IReadOnlyDictionary<string, ColumnKey> ColumnKeys;
 
-            internal ObjectSchema Schema;
+            internal readonly IReadOnlyDictionary<string, IntPtr> ComputedProperties;
+
+            internal readonly ObjectSchema Schema;
+
+            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, ColumnKey> properties, IDictionary<string, IntPtr> computedProperties, ObjectSchema schema)
+            {
+                Table = table;
+                Helper = helper;
+                ColumnKeys = properties.ToImmutableDictionary();
+                ComputedProperties = computedProperties.ToImmutableDictionary();
+                Schema = schema;
+            }
         }
     }
 }

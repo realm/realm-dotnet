@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms.Dynamic
@@ -55,7 +56,7 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                Expression.Constant(_metadata.PropertyIndices[property.Name])
+                Expression.Constant(_metadata.ColumnKeys[property.Name])
             };
 
             MethodInfo getter = null;
@@ -132,7 +133,7 @@ namespace Realms.Dynamic
                     case PropertyType.LinkingObjects:
                         // ObjectHandle.GetBacklinks has only one argument.
                         arguments.Clear();
-                        arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                        arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
                         getter = GetGetMethod(DummyHandle.GetBacklinks);
                         break;
                 }
@@ -238,7 +239,7 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                Expression.Constant(_metadata.PropertyIndices[property.Name])
+                Expression.Constant(_metadata.ColumnKeys[property.Name])
             };
 
             MethodInfo setter = null;
@@ -369,12 +370,14 @@ namespace Realms.Dynamic
             return convertedExpression;
         }
 
+        private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, TResult> @delegate) => @delegate.GetMethodInfo();
+
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, ColumnKey, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }
