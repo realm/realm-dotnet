@@ -118,11 +118,11 @@ namespace Realms
                 throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
             }
 
-            var propertyChain = TraverseSort(body);
-            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, propertyChain, ascending);
+            var columnChain = TraverseSort(body);
+            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, columnChain, ascending);
         }
 
-        private IEnumerable<ColumnKey> TraverseSort(MemberExpression expression)
+        private ColumnKey[] TraverseSort(MemberExpression expression)
         {
             var chain = new List<ColumnKey>();
 
