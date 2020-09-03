@@ -82,17 +82,11 @@ REALM_EXPORT Results* table_create_results(TableRef& table, SharedRealm& realm, 
     });
 }
 
-REALM_EXPORT size_t table_get_name(TableRef& table, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
+REALM_EXPORT void table_get_column_key(TableRef& table, uint16_t* column_name, size_t column_name_len, ColKey& key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return stringdata_to_csharpstringbuffer(table->get_name(), string_buffer, buffer_size);
-    });
-}
-
-REALM_EXPORT size_t table_get_column_name(TableRef& table, const ColKey column_key, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return stringdata_to_csharpstringbuffer(table->get_column_name(column_key), string_buffer, buffer_size);
+        Utf16StringAccessor str(column_name, column_name_len);
+        key = table->get_column_key(str);
     });
 }
 

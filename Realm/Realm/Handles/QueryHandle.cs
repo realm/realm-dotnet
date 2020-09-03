@@ -173,10 +173,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_null_not_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void null_not_equal(QueryHandle queryPtr, ColumnKey columnKey, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_column_key(QueryHandle queryPtr,
-                        [MarshalAs(UnmanagedType.LPWStr)] string columnName, IntPtr columnNameLen, out ColumnKey key, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_not", CallingConvention = CallingConvention.Cdecl)]
             public static extern void not(QueryHandle queryHandle, out NativeException ex);
 
@@ -505,13 +501,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public ColumnKey GetColumnKey(string columnName)
-        {
-            NativeMethods.get_column_key(this, columnName, (IntPtr)columnName.Length, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
         public void Not()
         {
             NativeMethods.not(this, out var nativeException);
@@ -543,9 +532,17 @@ namespace Realms
             return (int)result;
         }
 
-        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor)
+        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm)
         {
-            var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ResultsHandle(sharedRealm, result);
+        }
+
+        public ResultsHandle CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
+        {
+            var (columnKeys, sortClauses) = sortDescriptorBuilder.Flatten();
+            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortClauses, (IntPtr)sortClauses.Length, columnKeys, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);
         }

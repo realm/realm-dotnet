@@ -103,8 +103,9 @@ namespace Realms.Tests.Sync
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
         {
-            var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty);
-            return Task.FromResult(new User(handle));
+            // V10TODO: find another way to get fake users
+            // var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty);
+            return Task.FromResult(new User(null));
         }
 
         public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)

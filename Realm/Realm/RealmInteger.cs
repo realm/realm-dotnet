@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms
 {
@@ -51,7 +52,7 @@ namespace Realms
     {
         private readonly T _value;
         private readonly ObjectHandle _objectHandle;
-        private readonly IntPtr _propertyIndex;
+        private readonly ColumnKey _columnKey;
 
         private bool IsManaged => _objectHandle != null;
 
@@ -59,14 +60,14 @@ namespace Realms
         {
             _value = value;
             _objectHandle = null;
-            _propertyIndex = IntPtr.Zero;
+            _columnKey = default;
         }
 
-        internal RealmInteger(T value, ObjectHandle objectHandle, IntPtr propertyIndex)
+        internal RealmInteger(T value, ObjectHandle objectHandle, ColumnKey columnKey)
         {
             _value = value;
             _objectHandle = objectHandle;
-            _propertyIndex = propertyIndex;
+            _columnKey = columnKey;
         }
 
         /// <summary>
@@ -96,9 +97,9 @@ namespace Realms
         {
             if (IsManaged)
             {
-                _objectHandle.AddInt64(_propertyIndex, value.ToLong());
-                var result = Operator.Convert<long, T>(_objectHandle.GetInt64(_propertyIndex));
-                return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
+                _objectHandle.AddInt64(_columnKey, value.ToLong());
+                var result = Operator.Convert<long, T>(_objectHandle.GetInt64(_columnKey));
+                return new RealmInteger<T>(result, _objectHandle, _columnKey);
             }
 
             throw new NotSupportedException("Increment should only be called on RealmInteger properties of managed objects.");

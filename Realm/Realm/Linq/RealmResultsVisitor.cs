@@ -122,9 +122,9 @@ namespace Realms
             _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, propertyChain, ascending);
         }
 
-        private IntPtr[] TraverseSort(MemberExpression expression)
+        private IEnumerable<ColumnKey> TraverseSort(MemberExpression expression)
         {
-            var chain = new List<IntPtr>();
+            var chain = new List<ColumnKey>();
 
             while (expression != null)
             {
@@ -136,7 +136,7 @@ namespace Realms
                 }
 
                 var columnName = GetColumnName(expression);
-                if (!metadata.PropertyIndices.TryGetValue(columnName, out var index))
+                if (!metadata.ColumnKeys.TryGetValue(columnName, out var index))
                 {
                     throw new NotSupportedException($"The property {columnName} is not a persisted property on {type.Name} so sorting by it is not allowed.");
                 }
@@ -362,7 +362,7 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = _coreQueryHandle.GetColumnKey(columnName);
+                    var columnKey = _metadata.ColumnKeys[columnName];
 
                     _coreQueryHandle.GroupBegin();
                     _coreQueryHandle.NullEqual(columnKey);
@@ -401,7 +401,7 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = _coreQueryHandle.GetColumnKey(columnName);
+                    var columnKey = _metadata.ColumnKeys[columnName];
 
                     if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
@@ -619,9 +619,9 @@ namespace Realms
             return node;
         }
 
-        private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
 
             switch (value)
             {
@@ -664,9 +664,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
             switch (value)
             {
                 case null:
@@ -709,9 +709,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
@@ -727,9 +727,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
@@ -745,9 +745,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
@@ -763,9 +763,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = queryHandle.GetColumnKey(columnName);
+            var columnKey = _metadata.ColumnKeys[columnName];
             switch (value)
             {
                 case DateTimeOffset date:

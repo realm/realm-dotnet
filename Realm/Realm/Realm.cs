@@ -288,22 +288,21 @@ namespace Realms
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
 
-            var initPropertyMap = new Dictionary<string, IntPtr>(schema.Count);
-            var persistedProperties = -1;
-            var computedProperties = -1;
+            var initPropertyMap = new Dictionary<string, ColumnKey>(schema.Count);
+            var computedProperiesMap = new Dictionary<string, IntPtr>();
             foreach (var prop in schema)
             {
-                var index = prop.Type.IsComputed() ? ++computedProperties : ++persistedProperties;
-                initPropertyMap[prop.Name] = (IntPtr)index;
+                if (prop.Type.IsComputed())
+                {
+                    computedProperiesMap[prop.Name] = (IntPtr)computedProperiesMap.Count;
+                }
+                else
+                {
+                    initPropertyMap[prop.Name] = table.GetColumnKey(prop.Name);
+                }
             }
 
-            return new RealmObject.Metadata
-            {
-                Table = table,
-                Helper = helper,
-                PropertyIndices = initPropertyMap,
-                Schema = schema
-            };
+            return new RealmObject.Metadata(table, helper, initPropertyMap, computedProperiesMap, schema);
         }
 
         /// <summary>
