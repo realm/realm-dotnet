@@ -76,9 +76,6 @@ endif()
 include(CompilerFlags)
 
 set(REALM_ENABLE_SYNC ON)
-if(NOT ANDROID)
-  set(REALM_ENABLE_SERVER ON)
-endif()
 
 if(APPLE)
   find_package(Threads)

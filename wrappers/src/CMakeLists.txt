@@ -31,17 +31,10 @@ if(REALM_ENABLE_SYNC)
         sync_manager_cs.cpp
         sync_session_cs.cpp
         sync_user_cs.cpp
-        subscription_cs.cpp
     )
 
     list(APPEND HEADERS
         sync_session_cs.hpp
-    )
-endif()
-
-if(REALM_ENABLE_SERVER)
-    list(APPEND SOURCES
-        global_notifier_cs.cpp
     )
 endif()
 
