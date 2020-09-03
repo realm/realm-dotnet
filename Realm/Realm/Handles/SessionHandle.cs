@@ -29,9 +29,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_uri", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_uri(SessionHandle session, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern SessionState get_state(SessionHandle session, out NativeException ex);
 
@@ -92,15 +89,6 @@ namespace Realms.Sync
 
             handle = new SyncUserHandle(ptr);
             return true;
-        }
-
-        public string GetServerUri()
-        {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                isNull = false;
-                return NativeMethods.get_uri(this, buffer, length, out ex);
-            });
         }
 
         public SessionState GetState()

@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -119,9 +118,8 @@ namespace Realms.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
-        /// <param name="serverUri">
-        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
-        /// If a relative Uri is provided, it will be resolved using the user's <see cref="User.ServerUri"/> as baseUri.
+        /// <param name="partition">
+        /// V10TODO: document this.
         /// </param>
         /// <param name="user">
         /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
@@ -129,24 +127,13 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(Uri serverUri, User user = null, string optionalPath = null)
+        public SyncConfiguration(object partition, User user = null, string optionalPath = null)
         {
-            Argument.NotNull(serverUri, nameof(serverUri));
             Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
                 "The user must be explicitly specified when the number of logged-in users is not 1.",
                 nameof(user));
 
             User = user ?? User.Current;
-            if (!serverUri.IsAbsoluteUri)
-            {
-                ServerUri = User.GetUriForRealm(serverUri);
-            }
-            else
-            {
-                Argument.Ensure(serverUri.Scheme.StartsWith("realm"), "Unexpected protocol for server url. Expected realm:// or realms://.", nameof(serverUri));
-                ServerUri = serverUri;
-            }
-
             DatabasePath = GetPathToRealm(optionalPath ?? SharedRealmHandleExtensions.GetRealmPath(User, ServerUri));
         }
 

@@ -90,25 +90,25 @@ REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeEx
                 list.add(value.value.bool_value);
                 break;
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.add(value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                list.add(value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
                 break;
             case realm::PropertyType::Int:
                 list.add(value.value.int_value);
                 break;
             case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.add(value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                list.add(value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
                 break;
             case realm::PropertyType::Float:
                 list.add(value.value.float_value);
                 break;
             case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.add(value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                list.add(value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
                 break;
             case realm::PropertyType::Double:
                 list.add(value.value.double_value);
                 break;
             case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.add(value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                list.add(value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
                 break;
             case realm::PropertyType::Date:
                 list.add(from_ticks(value.value.int_value));
@@ -164,25 +164,25 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
                 list.set(list_ndx, value.value.bool_value);
                 break;
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
                 break;
             case realm::PropertyType::Int:
                 list.set(list_ndx, value.value.int_value);
                 break;
             case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
                 break;
             case realm::PropertyType::Float:
                 list.set(list_ndx, value.value.float_value);
                 break;
             case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
                 break;
             case realm::PropertyType::Double:
                 list.set(list_ndx, value.value.double_value);
                 break;
             case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
                 break;
             case realm::PropertyType::Date:
                 list.set(list_ndx, from_ticks(value.value.int_value));
@@ -238,25 +238,25 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveVa
                 list.insert(list_ndx, value.value.bool_value);
                 break;
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                list.insert(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
                 break;
             case realm::PropertyType::Int:
                 list.insert(list_ndx, value.value.int_value);
                 break;
             case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                list.insert(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
                 break;
             case realm::PropertyType::Float:
                 list.insert(list_ndx, value.value.float_value);
                 break;
             case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                list.insert(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
                 break;
             case realm::PropertyType::Double:
                 list.insert(list_ndx, value.value.double_value);
                 break;
             case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                list.insert(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
                 break;
             case realm::PropertyType::Date:
                 list.insert(list_ndx, from_ticks(value.value.int_value));
@@ -338,19 +338,19 @@ REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, Nativ
             case realm::PropertyType::Bool:
                 return list.find(value.value.bool_value);
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? Optional<bool>(value.value.bool_value) : Optional<bool>(none));
+                return list.find(value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
             case realm::PropertyType::Int:
                 return list.find(value.value.int_value);
             case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? Optional<int64_t>(value.value.int_value) : Optional<int64_t>(none));
+                return list.find(value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
             case realm::PropertyType::Float:
                 return list.find(value.value.float_value);
             case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? Optional<float>(value.value.float_value) : Optional<float>(none));
+                return list.find(value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
             case realm::PropertyType::Double:
                 return list.find(value.value.double_value);
             case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? Optional<double>(value.value.double_value) : Optional<double>(none));
+                return list.find(value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
             case realm::PropertyType::Date:
                 return list.find(from_ticks(value.value.int_value));
             case realm::PropertyType::Date | realm::PropertyType::Nullable:

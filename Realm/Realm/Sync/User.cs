@@ -84,33 +84,8 @@ namespace Realms.Sync
             Argument.NotNull(serverUri, nameof(serverUri));
             Argument.Ensure(serverUri.Scheme.StartsWith("http"), "Unexpected protocol for login url. Expected http:// or https://.", nameof(serverUri));
 
-            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-            var result = await AuthenticationHelper.LoginAsync(credentials, serverUri);
-            var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUri.AbsoluteUri, result.RefreshToken);
-            return new User(handle);
-        }
-
-        /// <summary>
-        /// Gets a logged in user with a specified identity.
-        /// </summary>
-        /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
-        /// <param name="identity">The identity of the user.</param>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public static User GetLoggedInUser(string identity, Uri serverUri)
-        {
-            Argument.NotNull(identity, nameof(identity));
-            Argument.NotNull(serverUri, nameof(serverUri));
-
-            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-            if (SyncUserHandle.TryGetLoggedInUser(identity, serverUri.AbsoluteUri, out var userHandle))
-            {
-                return new User(userHandle);
-            }
-
-            return null;
+            // V10TODO: do the native login
+            return new User(null);
         }
 
         #endregion static
@@ -131,24 +106,6 @@ namespace Realms.Sync
         public string Identity => Handle.GetIdentity();
 
         /// <summary>
-        /// Gets the server URI that was used for authentication.
-        /// </summary>
-        /// <value>The <see cref="Uri"/> used to connect to the authentication service.</value>
-        public Uri ServerUri
-        {
-            get
-            {
-                var serverUrl = Handle.GetServerUrl();
-                if (string.IsNullOrEmpty(serverUrl))
-                {
-                    return null;
-                }
-
-                return new Uri(serverUrl);
-            }
-        }
-
-        /// <summary>
         /// Gets the current state of the user.
         /// </summary>
         /// <value>A value indicating whether the user is active, logged out, or an error has occurred.</value>
@@ -161,48 +118,16 @@ namespace Realms.Sync
             Handle = handle;
         }
 
-        internal static User Create(IntPtr userPtr)
-        {
-            var userHandle = new SyncUserHandle(userPtr);
-            return new User(userHandle);
-        }
-
-        internal Uri GetUriForRealm(string path)
-        {
-            if (!path.StartsWith("/"))
-            {
-                path = $"/{path}";
-            }
-
-            return GetUriForRealm(new Uri(path, UriKind.Relative));
-        }
-
-        internal Uri GetUriForRealm(Uri uri)
-        {
-            Argument.Ensure(!uri.IsAbsoluteUri, "The passed Uri must be relative", nameof(uri));
-            var uriBuilder = new UriBuilder(new Uri(ServerUri, uri));
-            uriBuilder.Scheme = uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ? "realms" : "realm";
-            return uriBuilder.Uri;
-        }
-
         /// <summary>
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
         /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
-        public async Task LogOutAsync()
+        public Task LogOutAsync()
         {
-            var uri = ServerUri;
-            var refreshToken = RefreshToken;
             Handle.LogOut();
 
-            try
-            {
-                await AuthenticationHelper.LogOutAsync(uri, refreshToken);
-            }
-            catch (Exception ex)
-            {
-                ErrorMessages.OutputError($"An error has occurred while logging the user out: {ex.Message}. The user is still logged out locally, but their refresh token may not have been revoked yet.");
-            }
+            // V10TODO: native logout must be async
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

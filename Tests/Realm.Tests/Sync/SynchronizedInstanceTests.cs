@@ -105,7 +105,7 @@ namespace Realms.Tests.Sync
 
         [TestCase(true)]
         [TestCase(false)]
-        [Ignore("TODO: Configure server for read-only permissions")]
+        [Ignore("V10TODO: Configure server for read-only permissions")]
         public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
         {
             SyncTestHelpers.RunRosTestAsync(async () =>

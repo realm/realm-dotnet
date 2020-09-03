@@ -84,14 +84,6 @@ REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSess
     });
 }
 
-REALM_EXPORT size_t realm_syncsession_get_uri(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        std::string uri(session->full_realm_url().value_or(session->config().realm_url()));
-        return stringdata_to_csharpstringbuffer(uri, buffer, buffer_length);
-    });
-}
-
 REALM_EXPORT size_t realm_syncsession_get_path(const SharedSyncSession& session, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
