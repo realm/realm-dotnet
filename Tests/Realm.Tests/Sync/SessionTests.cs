@@ -41,7 +41,7 @@ namespace Realms.Tests.Sync
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var serverUri = new Uri("realm://localhost:9080/foobar");
-                var config = new FullSyncConfiguration(serverUri, user);
+                var config = new SyncConfiguration(serverUri, user);
 
                 using (var realm = GetRealm(config))
                 {
@@ -100,7 +100,7 @@ namespace Realms.Tests.Sync
                     Assert.That(error.ErrorCode, Is.EqualTo(code));
 
                     var errorSession = result.Item1;
-                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfigurationBase)realm.Config).ServerUri));
+                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
                 }
             });
         }

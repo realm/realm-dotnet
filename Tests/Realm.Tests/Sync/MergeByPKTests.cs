@@ -102,7 +102,7 @@ namespace Realms.Tests.Sync
         {
             var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
             var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
-            var configuration = new FullSyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
+            var configuration = new SyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { objectType }
             };

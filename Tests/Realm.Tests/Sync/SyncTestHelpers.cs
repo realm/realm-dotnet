@@ -94,23 +94,23 @@ namespace Realms.Tests.Sync
             return User.LoginAsync(credentials, AuthServerUri);
         }
 
-        public static async Task<FullSyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
+        public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             var user = await GetFakeUserAsync(userId);
             var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
-            return new FullSyncConfiguration(serverUri, user, optionalPath);
+            return new SyncConfiguration(serverUri, user, optionalPath);
         }
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
         {
-            var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty, isAdmin: true);
+            var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty);
             return Task.FromResult(new User(handle));
         }
 
-        public static async Task<FullSyncConfiguration> GetIntegrationConfigAsync(string path)
+        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
         {
             var user = await GetUserAsync();
-            return new FullSyncConfiguration(RealmUri($"~/{path}"), user);
+            return new SyncConfiguration(RealmUri($"~/{path}"), user);
         }
 
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)

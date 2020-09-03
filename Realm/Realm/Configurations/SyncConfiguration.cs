@@ -30,58 +30,24 @@ using Realms.Schema;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
+    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
     /// Realm Object Server.
     /// </summary>
     /// <seealso cref="User.LoginAsync"/>
     /// <seealso cref="Credentials"/>
-    /// <seealso cref="FullSyncConfiguration"/>
-    /// <seealso cref="QueryBasedSyncConfiguration"/>
-    public abstract class SyncConfigurationBase : RealmConfigurationBase
+    public class SyncConfiguration : RealmConfigurationBase
     {
-        internal abstract bool IsFullSync { get; }
-
         /// <summary>
-        /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfigurationBase"/>.
+        /// Gets the <see cref="Uri"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
         /// <value>The <see cref="Uri"/> where the Realm Object Server is hosted.</value>
         public Uri ServerUri { get; }
 
         /// <summary>
-        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfigurationBase"/>.
+        /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
         /// <value>The <see cref="User"/> whose <see cref="Realm"/>s will be synced.</value>
         public User User { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether SSL certificate validation is enabled for the connection associated
-        /// with this configuration value.
-        /// </summary>
-        /// <value><c>true</c> if SSL validation is enabled; otherwise, <c>false</c>. Default value is <c>true</c>.</value>
-        public bool EnableSSLValidation { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets the path to the trusted root certificate(s) authority (CA) in PEM format, that should
-        /// be used to validate the TLS connections to the Realm Object Server.
-        /// </summary>
-        /// <value>The path to the certificate.</value>
-        /// <remarks>
-        /// The file will be copied at runtime into the internal storage.
-        /// <br/>
-        /// It is recommended to include only the root CA you trust, and not the entire list of root CA as this file
-        /// will be loaded at runtime. It is your responsibility to download and verify the correct PEM for the root CA
-        /// you trust.
-        /// <br/>
-        /// This property is ignored on Apple platforms - you should use the KeyChain API to install your certificate
-        /// instead.
-        /// </remarks>
-        /// <seealso href="https://www.openssl.org/docs/man1.0.2/ssl/SSL_CTX_load_verify_locations.html">
-        /// OpenSSL documentation for SSL_CTX_load_verify_locations.
-        /// </seealso>
-        /// <seealso href="https://ccadb-public.secure.force.com/mozilla/IncludedCACertificateReport">
-        /// Mozilla Included CA Certificate List
-        /// </seealso>
-        public string TrustedCAPath { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is invoked when download progress is made when using <see cref="Realm.GetInstanceAsync"/>.
@@ -91,7 +57,10 @@ namespace Realms.Sync
         /// </summary>
         public Action<SyncProgress> OnProgress { get; set; }
 
-        internal abstract ClientResyncMode ResyncMode { get; }
+        /// <summary>
+        /// Gets or sets a value controlling the behavior in case of a Client Resync. Default is <see cref="ClientResyncMode.RecoverLocalRealm"/>.
+        /// </summary>
+        public ClientResyncMode ClientResyncMode { get; set; } = ClientResyncMode.RecoverLocalRealm;
 
         /// <summary>
         /// Gets or sets a value indicating how detailed the sync client's logs will be.
@@ -147,7 +116,20 @@ namespace Realms.Sync
             }
         }
 
-        internal SyncConfigurationBase(Uri serverUri, User user = null, string optionalPath = null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
+        /// </summary>
+        /// <param name="serverUri">
+        /// A unique <see cref="Uri"/> that identifies the Realm. In URIs, <c>~</c> can be used as a placeholder for a user Id.
+        /// If a relative Uri is provided, it will be resolved using the user's <see cref="User.ServerUri"/> as baseUri.
+        /// </param>
+        /// <param name="user">
+        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// </param>
+        /// <param name="optionalPath">
+        /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
+        /// </param>
+        public SyncConfiguration(Uri serverUri, User user = null, string optionalPath = null)
         {
             Argument.NotNull(serverUri, nameof(serverUri));
             Argument.Ensure(user != null || User.AllLoggedIn.Length == 1,
@@ -193,23 +175,6 @@ namespace Realms.Sync
             }
 
             SharedRealmHandleExtensions.Configure(mode, encryptionKey, resetOnError, basePath);
-        }
-
-        /// <summary>
-        /// Enable multiplexing multiple sync sessions over a single connection.
-        /// </summary>
-        /// <remarks>
-        /// When having a lot of synchronized realms open, or when using <see cref="Realms.Server.Notifier"/>
-        /// the system might run out of file descriptors because of all the open sockets to the server.
-        /// Session multiplexing is designed to alleviate that, but it might not work with a server configured with fail-over.
-        /// Only use if you're seeing errors about reaching the file descriptor limit and you know you are using many sync sessions.
-        /// <para>
-        /// Only call this method before opening any synchronized realms.
-        /// </para>
-        /// </remarks>
-        public static void EnableSessionMultiplexing()
-        {
-            SharedRealmHandleExtensions.EnableSessionMultiplexing();
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -285,27 +250,17 @@ namespace Realms.Sync
 
         internal Native.SyncConfiguration ToNative()
         {
-            if (!string.IsNullOrEmpty(TrustedCAPath) &&
-                !File.Exists(TrustedCAPath))
-            {
-                throw new FileNotFoundException($"{nameof(TrustedCAPath)} has been specified, but the file was not found.", TrustedCAPath);
-            }
-
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString(),
-                client_validate_ssl = EnableSSLValidation,
-                TrustedCAPath = TrustedCAPath,
-                is_partial = !IsFullSync,
-                PartialSyncIdentifier = null,
-                client_resync_mode = ResyncMode,
+                client_resync_mode = ClientResyncMode,
             };
         }
 
         internal static string GetSDKUserAgent()
         {
-            var version = typeof(SyncConfigurationBase).GetTypeInfo().Assembly.GetName().Version;
+            var version = typeof(SyncConfiguration).GetTypeInfo().Assembly.GetName().Version;
             return $"RealmDotNet/{version} ({RuntimeInformation.FrameworkDescription})";
         }
     }

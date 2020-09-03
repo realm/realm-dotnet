@@ -38,78 +38,8 @@ namespace Realms.Sync
         private static readonly string AppId = string.Empty; // FIXME
         private static readonly Lazy<HttpClient> _client = new Lazy<HttpClient>(() => new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
 
-        private static readonly ConcurrentDictionary<string, Timer> _tokenRefreshTimers = new ConcurrentDictionary<string, Timer>();
-        private static readonly DateTimeOffset _date_1970 = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
         private static readonly MediaTypeHeaderValue _applicationJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         private static readonly MediaTypeHeaderValue _applicationProblemJsonUtf8MediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
-
-        private static readonly HashSet<HttpStatusCode> _connectivityStatusCodes = new HashSet<HttpStatusCode>
-        {
-            HttpStatusCode.NotFound,
-            HttpStatusCode.BadGateway,
-            HttpStatusCode.ServiceUnavailable,
-            HttpStatusCode.GatewayTimeout,
-            HttpStatusCode.RequestTimeout,
-        };
-
-        public static async Task RefreshAccessTokenAsync(Session session, bool reportErrors = true)
-        {
-            var user = session.User;
-            if (user == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var json = new Dictionary<string, object>
-                {
-                    ["data"] = user.RefreshToken,
-                    ["path"] = session.ServerUri.AbsolutePath,
-                    ["provider"] = "realm",
-                    ["app_id"] = AppId
-                };
-
-                var result = await MakeAuthRequestAsync(HttpMethod.Post, new Uri(user.ServerUri, "auth"), json)
-                                        .ConfigureAwait(continueOnCapturedContext: false);
-
-                var syncWorker = result["sync_worker"];
-                if (syncWorker != null)
-                {
-                    session.Handle.SetUrlPrefix(syncWorker["path"].Value<string>());
-                }
-
-                var accessToken = result["access_token"];
-                var token_data = accessToken["token_data"];
-
-                session.Handle.SetMultiplexIdentifier(token_data["sync_label"].Value<string>());
-
-                session.Handle.RefreshAccessToken(accessToken["token"].Value<string>(), token_data["path"].Value<string>());
-                ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, _date_1970.AddSeconds(accessToken["token_data"]["expires"].Value<long>()));
-            }
-            catch (HttpException ex) when (_connectivityStatusCodes.Contains(ex.StatusCode))
-            {
-                // 30 seconds is an arbitrarily chosen value, consider rationalizing it.
-                ScheduleTokenRefresh(user.Identity, user.ServerUri, session.Path, DateTimeOffset.UtcNow.AddSeconds(30));
-            }
-            catch (Exception ex)
-            {
-                if (reportErrors)
-                {
-                    var sessionException = new SessionException("An error has occurred while refreshing the access token.",
-                                                                ErrorCode.BadUserAuthentication,
-                                                                ex);
-
-                    Session.RaiseError(session, sessionException);
-                }
-            }
-            finally
-            {
-                // session.User creates a new user each time, so it's safe to dispose the handle here.
-                // It won't actually corrupt the state of the session.
-                user.Handle.Dispose();
-            }
-        }
 
         // Returns a Tuple<userId, refreshToken>
         public static async Task<UserLoginData> LoginAsync(Credentials credentials, Uri serverUrl)
@@ -123,59 +53,7 @@ namespace Realms.Sync
             {
                 RefreshToken = refreshToken["token"].Value<string>(),
                 UserId = refreshToken["token_data"]["identity"].Value<string>(),
-                IsAdmin = refreshToken["token_data"]["is_admin"].Value<bool>()
             };
-        }
-
-        public static Task ChangePasswordAsync(User user, string password, string otherUserId = null)
-        {
-            var json = new Dictionary<string, object>
-            {
-                ["data"] = new Dictionary<string, object>
-                {
-                    ["new_password"] = password
-                }
-            };
-
-            if (otherUserId != null)
-            {
-                json["user_id"] = otherUserId;
-            }
-
-            return MakeAuthRequestAsync(HttpMethod.Put, new Uri(user.ServerUri, "auth/password"), json, user.RefreshToken);
-        }
-
-        public static async Task<UserInfo> RetrieveInfoForUserAsync(User user, string provider, string providerId)
-        {
-            var uri = new Uri(user.ServerUri, $"/auth/users/{provider}/{providerId}");
-            try
-            {
-                var response = await MakeAuthRequestAsync(HttpMethod.Get, uri, authHeader: user.RefreshToken)
-                                        .ConfigureAwait(continueOnCapturedContext: false);
-
-                var accounts = response["accounts"].Children<JObject>()
-                                                   .Select(j => new AccountInfo
-                                                   {
-                                                       Provider = j["provider"].Value<string>(),
-                                                       ProviderUserIdentity = j["provider_id"].Value<string>()
-                                                   })
-                                                   .ToArray();
-
-                var metadata = response["metadata"].Children<JObject>()
-                                                   .ToDictionary(j => j["key"].Value<string>(), j => j["value"].Value<string>());
-
-                return new UserInfo
-                {
-                    Identity = response["user_id"].Value<string>(),
-                    IsAdmin = response["is_admin"].Value<bool>(),
-                    Accounts = accounts,
-                    Metadata = metadata
-                };
-            }
-            catch (HttpException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
         }
 
         public static async Task LogOutAsync(Uri serverUri, string refreshToken)
@@ -187,82 +65,6 @@ namespace Realms.Sync
             };
 
             await MakeAuthRequestAsync(HttpMethod.Post, uri, body, refreshToken).ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        public static Task UpdateAccountAsync(Uri serverUri, string action, string email = null, IDictionary<string, string> data = null)
-        {
-            data = data ?? new Dictionary<string, string>();
-            data["action"] = action;
-
-            var body = new Dictionary<string, object>
-            {
-                ["data"] = data
-            };
-
-            if (!string.IsNullOrEmpty(email))
-            {
-                body["provider_id"] = email;
-            }
-
-            var updateUri = new Uri(serverUri, "auth/password/updateAccount");
-
-            return MakeAuthRequestAsync(HttpMethod.Post, updateUri, body);
-        }
-
-        private static void ScheduleTokenRefresh(string userId, Uri authServerUrl, string path, DateTimeOffset expireDate)
-        {
-            var dueTime = expireDate.AddSeconds(-10) - DateTimeOffset.UtcNow;
-            var timerState = new TokenRefreshData
-            {
-                RealmPath = path,
-                UserId = userId,
-                ServerUrl = authServerUrl
-            };
-
-            if (dueTime < TimeSpan.Zero)
-            {
-                OnTimerCallback(timerState);
-            }
-
-            _tokenRefreshTimers.AddOrUpdate(
-                path,
-                p => new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1)),
-                (p, old) =>
-                {
-                    old.Dispose();
-                    return new Timer(OnTimerCallback, timerState, dueTime, TimeSpan.FromMilliseconds(-1));
-                });
-        }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Session handle is disposed after the session is refreshed.")]
-        private static void OnTimerCallback(object state)
-        {
-            var data = (TokenRefreshData)state;
-
-            try
-            {
-                var user = User.GetLoggedInUser(data.UserId, data.ServerUrl);
-                if (user != null &&
-                    user.Handle.TryGetSession(data.RealmPath, out var sessionHandle))
-                {
-                    var session = new Session(sessionHandle);
-                    RefreshAccessTokenAsync(session, reportErrors: false).ContinueWith(_ =>
-                    {
-                        user.Handle.Close();
-                        session.CloseHandle();
-                    });
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                if (_tokenRefreshTimers.TryRemove(data.RealmPath, out var timer))
-                {
-                    timer.Dispose();
-                }
-            }
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
@@ -334,8 +136,6 @@ namespace Realms.Sync
             public string UserId { get; set; }
 
             public string RefreshToken { get; set; }
-
-            public bool IsAdmin { get; set; }
         }
     }
 }
