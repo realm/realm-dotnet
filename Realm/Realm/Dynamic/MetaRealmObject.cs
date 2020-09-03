@@ -54,15 +54,17 @@ namespace Realms.Dynamic
                 return base.BindGetMember(binder);
             }
 
-            var arguments = new List<Expression>
-            {
-                Expression.Constant(_metadata.ColumnKeys[property.Name])
-            };
-
+            var arguments = new List<Expression>();
             MethodInfo getter = null;
-            if (property.Type.IsArray())
+            if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Constant(_metadata.ComputedProperties[property.Name]));
+                getter = GetGetMethod(DummyHandle.GetBacklinks);
+            }
+            else if (property.Type.IsArray())
+            {
+                arguments.Add(Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 switch (property.Type.UnderlyingType())
                 {
@@ -88,7 +90,7 @@ namespace Realms.Dynamic
                         }
 
                         break;
-                    case Schema.PropertyType.Float:
+                    case PropertyType.Float:
                         if (property.Type.IsNullable())
                         {
                             getter = GetGetMethod(DummyHandle.GetList<float?>);
@@ -130,16 +132,11 @@ namespace Realms.Dynamic
                     case PropertyType.Object:
                         getter = GetGetMethod(DummyHandle.GetList<DynamicRealmObject>);
                         break;
-                    case PropertyType.LinkingObjects:
-                        // ObjectHandle.GetBacklinks has only one argument.
-                        arguments.Clear();
-                        arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
-                        getter = GetGetMethod(DummyHandle.GetBacklinks);
-                        break;
                 }
             }
             else
             {
+                arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
                 switch (property.Type.UnderlyingType())
                 {
                     case PropertyType.Int:
