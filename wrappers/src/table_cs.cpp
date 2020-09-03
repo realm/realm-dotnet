@@ -82,14 +82,6 @@ REALM_EXPORT Results* table_create_results(TableRef& table, SharedRealm& realm, 
     });
 }
 
-REALM_EXPORT void table_get_column_key(TableRef& table, uint16_t* column_name, size_t column_name_len, ColKey& key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor str(column_name, column_name_len);
-        key = table->get_column_key(str);
-    });
-}
-
 REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKey object_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
