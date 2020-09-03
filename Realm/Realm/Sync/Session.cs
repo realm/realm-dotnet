@@ -34,12 +34,6 @@ namespace Realms.Sync
         public static event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
-        /// </summary>
-        /// <value>The <see cref="Uri"/> where the Realm Object Server resides.</value>
-        public Uri ServerUri => new Uri(Handle.GetServerUri());
-
-        /// <summary>
         /// Gets the session’s current state.
         /// </summary>
         /// <value>An enum value indicating the state of the session.</value>

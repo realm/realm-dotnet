@@ -107,14 +107,6 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config->realm_encryption_key = key;
     }
 
-#if !REALM_PLATFORM_APPLE
-    if (sync_configuration.trusted_ca_path) {
-        Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
-        config.sync_config->ssl_trust_certificate_path = trusted_ca_path.to_string();
-    }
-#endif
-
-    config.sync_config->client_validate_ssl = sync_configuration.client_validate_ssl;
     config.cache = configuration.enable_cache;
 
     return config;
@@ -158,7 +150,8 @@ REALM_EXPORT void realm_syncmanager_configure(const uint16_t* base_path_buf, siz
 
         config.reset_metadata_on_error = reset_on_error;
 
-        SyncManager::shared().configure(std::move(config));
+        // V10TODO: create a proper app config
+        SyncManager::shared().configure(std::move(config), realm::app::App::Config());
     });
 }
 
@@ -260,14 +253,6 @@ REALM_EXPORT std::shared_ptr<SyncSession>* realm_syncmanager_get_session(uint16_
             config.realm_encryption_key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
         }
 
-#if !REALM_PLATFORM_APPLE
-        if (sync_configuration.trusted_ca_path) {
-            Utf16StringAccessor trusted_ca_path(sync_configuration.trusted_ca_path, sync_configuration.trusted_ca_path_len);
-            config.ssl_trust_certificate_path = trusted_ca_path.to_string();
-        }
-#endif
-
-        config.client_validate_ssl = sync_configuration.client_validate_ssl;
         return new std::shared_ptr<SyncSession>(SyncManager::shared().get_session(path, config)->external_reference());
     });
 }

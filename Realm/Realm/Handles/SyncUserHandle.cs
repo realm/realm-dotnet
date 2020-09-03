@@ -27,20 +27,11 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_sync_user", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_sync_user([MarshalAs(UnmanagedType.LPWStr)] string identity, IntPtr identity_len,
-                                                      [MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len,
-                                                      [MarshalAs(UnmanagedType.LPWStr)] string refresh_token, IntPtr refresh_token_len,
-                                                      out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_identity", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_identity(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_refresh_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_refresh_token(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_server_url", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_server_url(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern UserState get_state(SyncUserHandle user, out NativeException ex);
@@ -56,14 +47,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_get_logged_in_user", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_logged_in_user([MarshalAs(UnmanagedType.LPWStr)] string identity, IntPtr identity_len,
-                                                           [MarshalAs(UnmanagedType.LPWStr)] string auth_server_url, IntPtr auth_server_url_len,
-                                                           out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_session", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_session(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
         }
 
         static SyncUserHandle()
@@ -94,15 +77,6 @@ namespace Realms.Sync
             });
         }
 
-        public string GetServerUrl()
-        {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                isNull = false;
-                return NativeMethods.get_server_url(this, buffer, length, out ex);
-            });
-        }
-
         public UserState GetState()
         {
             var result = NativeMethods.get_state(this, out var ex);
@@ -110,36 +84,10 @@ namespace Realms.Sync
             return result;
         }
 
-        public bool TryGetSession(string path, out SessionHandle handle)
-        {
-            var result = NativeMethods.get_session(this, path, (IntPtr)path.Length, out var ex);
-            ex.ThrowIfNecessary();
-
-            if (result == IntPtr.Zero)
-            {
-                handle = null;
-                return false;
-            }
-
-            handle = new SessionHandle(result);
-            return true;
-        }
-
         public void LogOut()
         {
             NativeMethods.log_out(this, out var ex);
             ex.ThrowIfNecessary();
-        }
-
-        public static SyncUserHandle GetSyncUser(string identity, string authServerUrl, string refreshToken)
-        {
-            var userPtr = NativeMethods.get_sync_user(identity, (IntPtr)identity.Length,
-                                                      authServerUrl, (IntPtr)authServerUrl.Length,
-                                                      refreshToken, (IntPtr)refreshToken.Length,
-                                                      out var ex);
-            ex.ThrowIfNecessary();
-
-            return new SyncUserHandle(userPtr);
         }
 
         public static bool TryGetCurrentUser(out SyncUserHandle handle)
@@ -161,23 +109,6 @@ namespace Realms.Sync
         {
             return MarshalHelpers.GetCollection<IntPtr>(NativeMethods.get_logged_in_users, bufferSize: 8)
                                  .Select(h => new SyncUserHandle(h));
-        }
-
-        public static bool TryGetLoggedInUser(string identity, string authServerUrl, out SyncUserHandle handle)
-        {
-            var userPtr = NativeMethods.get_logged_in_user(identity, (IntPtr)identity.Length,
-                                                           authServerUrl, (IntPtr)authServerUrl.Length,
-                                                           out var ex);
-            ex.ThrowIfNecessary();
-
-            if (userPtr == IntPtr.Zero)
-            {
-                handle = null;
-                return false;
-            }
-
-            handle = new SyncUserHandle(userPtr);
-            return true;
         }
 
         protected override void Unbind()

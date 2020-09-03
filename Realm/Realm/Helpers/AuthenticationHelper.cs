@@ -17,15 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -54,17 +49,6 @@ namespace Realms.Sync
                 RefreshToken = refreshToken["token"].Value<string>(),
                 UserId = refreshToken["token_data"]["identity"].Value<string>(),
             };
-        }
-
-        public static async Task LogOutAsync(Uri serverUri, string refreshToken)
-        {
-            var uri = new Uri(serverUri, "/auth/revoke");
-            var body = new Dictionary<string, object>
-            {
-                ["token"] = refreshToken
-            };
-
-            await MakeAuthRequestAsync(HttpMethod.Post, uri, body, refreshToken).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         // Due to https://bugzilla.xamarin.com/show_bug.cgi?id=20082 we can't use dynamic deserialization.
