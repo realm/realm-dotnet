@@ -48,7 +48,6 @@ namespace Realms.Tests.Sync
                     var session = GetSession(realm);
 
                     Assert.That(session.User, Is.EqualTo(user));
-                    Assert.That(session.ServerUri, Is.EqualTo(serverUri));
                 }
             });
         }
@@ -100,7 +99,6 @@ namespace Realms.Tests.Sync
                     Assert.That(error.ErrorCode, Is.EqualTo(code));
 
                     var errorSession = result.Item1;
-                    Assert.That(errorSession.ServerUri, Is.EqualTo(((SyncConfiguration)realm.Config).ServerUri));
                 }
             });
         }

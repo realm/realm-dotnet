@@ -44,16 +44,6 @@ REALM_EXPORT size_t query_count(Query& query, NativeException::Marshallable& ex)
     });
 }
 
-//convert from columnName to column_key returns -1 if the string is not a column name
-//assuming that the get_table() does not return anything that must be deleted
-REALM_EXPORT void query_get_column_key(Query& query, uint16_t* column_name, size_t column_name_len, ColKey& key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor str(column_name, column_name_len);
-        key = query.get_table()->get_column_key(str);
-    });
-}
-
 REALM_EXPORT void query_not(Query& query, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

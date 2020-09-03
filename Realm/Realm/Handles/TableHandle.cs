@@ -35,11 +35,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_name", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_name(TableHandle handle, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_column_name(TableHandle table, ColumnKey column_key, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_key", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_column_key(TableHandle table,
+                [MarshalAs(UnmanagedType.LPWStr)] string columnName, IntPtr columnNameLen, out ColumnKey key, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_object(TableHandle table, SharedRealmHandle realm, ObjectKey objectKey, out NativeException ex);
@@ -89,22 +87,11 @@ namespace Realms
             return new ObjectHandle(realmHandle, result);
         }
 
-        public string GetName()
+        public ColumnKey GetColumnKey(string columnName)
         {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                isNull = false;
-                return NativeMethods.get_name(this, buffer, length, out ex);
-            });
-        }
-
-        public string GetColumnName(ColumnKey columnKey)
-        {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-            {
-                isNull = false;
-                return NativeMethods.get_column_name(this, columnKey, buffer, length, out ex);
-            });
+            NativeMethods.get_column_key(this, columnName, (IntPtr)columnName.Length, out var result, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
 
         public bool TryFind(SharedRealmHandle realmHandle, string id, out ObjectHandle objectHandle)
