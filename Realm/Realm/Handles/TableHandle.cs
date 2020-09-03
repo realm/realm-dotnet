@@ -35,10 +35,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_column_key(TableHandle table,
-                [MarshalAs(UnmanagedType.LPWStr)] string columnName, IntPtr columnNameLen, out ColumnKey key, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_object(TableHandle table, SharedRealmHandle realm, ObjectKey objectKey, out NativeException ex);
 
@@ -85,13 +81,6 @@ namespace Realms
             }
 
             return new ObjectHandle(realmHandle, result);
-        }
-
-        public ColumnKey GetColumnKey(string columnName)
-        {
-            NativeMethods.get_column_key(this, columnName, (IntPtr)columnName.Length, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
         }
 
         public bool TryFind(SharedRealmHandle realmHandle, string id, out ObjectHandle objectHandle)
