@@ -19,9 +19,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.XPath;
-using System.Xml.Xsl;
 using AppKit;
 using NUnitLite;
 
