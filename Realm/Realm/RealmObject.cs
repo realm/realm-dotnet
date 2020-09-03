@@ -711,11 +711,11 @@ namespace Realms
 
             internal readonly ObjectSchema Schema;
 
-            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, ColumnKey> properties, IDictionary<string, IntPtr> computedProperties, ObjectSchema schema)
+            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, ColumnKey> columnKeys, IDictionary<string, IntPtr> computedProperties, ObjectSchema schema)
             {
                 Table = table;
                 Helper = helper;
-                ColumnKeys = properties.ToImmutableDictionary();
+                ColumnKeys = columnKeys.ToImmutableDictionary();
                 ComputedProperties = computedProperties.ToImmutableDictionary();
                 Schema = schema;
             }

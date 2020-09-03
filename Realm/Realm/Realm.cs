@@ -270,7 +270,7 @@ namespace Realms
 
         private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var table = SharedRealmHandle.GetTable(schema.Name);
+            var (tableHandle, columnKeys) = SharedRealmHandle.GetTableInfo(schema.Name, schema.Count(p => !p.Type.IsComputed()));
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.IsDynamic)
@@ -288,8 +288,11 @@ namespace Realms
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
 
-            var initPropertyMap = new Dictionary<string, ColumnKey>(schema.Count);
+            var columnKeysDict = new Dictionary<string, ColumnKey>(schema.Count);
             var computedProperiesMap = new Dictionary<string, IntPtr>();
+
+            // We're taking advantage of the fact OS keeps property indices aligned
+            // with the property indices in ObjectSchema
             foreach (var prop in schema)
             {
                 if (prop.Type.IsComputed())
@@ -298,11 +301,11 @@ namespace Realms
                 }
                 else
                 {
-                    initPropertyMap[prop.Name] = table.GetColumnKey(prop.Name);
+                    columnKeysDict[prop.Name] = columnKeys[columnKeysDict.Count];
                 }
             }
 
-            return new RealmObject.Metadata(table, helper, initPropertyMap, computedProperiesMap, schema);
+            return new RealmObject.Metadata(tableHandle, helper, columnKeysDict, computedProperiesMap, schema);
         }
 
         /// <summary>
