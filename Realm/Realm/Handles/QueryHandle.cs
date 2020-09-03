@@ -532,17 +532,9 @@ namespace Realms
             return (int)result;
         }
 
-        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm)
+        public ResultsHandle CreateResults(SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor)
         {
-            var result = NativeMethods.create_results(this, sharedRealm, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new ResultsHandle(sharedRealm, result);
-        }
-
-        public ResultsHandle CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
-        {
-            var (columnKeys, sortClauses) = sortDescriptorBuilder.Flatten();
-            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortClauses, (IntPtr)sortClauses.Length, columnKeys, out var nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);
         }
