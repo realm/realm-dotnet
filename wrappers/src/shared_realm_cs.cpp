@@ -78,6 +78,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         Realm::Config config;
         config.path = pathStr.to_string();
         config.in_memory = configuration.in_memory;
+        config.max_number_of_active_versions = configuration.max_number_of_active_versions;
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
         if (encryption_key )
@@ -121,7 +122,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.should_compact_on_launch_function = [&configuration](uint64_t total_bytes, uint64_t used_bytes) {
                 return configuration.should_compact_callback(configuration.managed_should_compact_delegate, total_bytes, used_bytes);
             };
-            
         }
         
         config.cache = configuration.enable_cache;
@@ -377,6 +377,21 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
 REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
 {
     return TestHelper::has_changed(realm);
+}
+
+REALM_EXPORT bool shared_realm_get_is_frozen(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return realm->is_frozen();
+    });
+}
+
+REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto frozen_realm = realm->freeze();
+        return new SharedRealm{ frozen_realm };
+    });
 }
 
 }

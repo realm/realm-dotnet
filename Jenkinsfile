@@ -176,19 +176,15 @@ stage('Test') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
+        sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
                   properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
-            stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests'
+            runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
         }
-      }
-      rlmNode('xamarin.ios') {
-        unstash 'ios-tests'
 
-        sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
         junit 'temp/TestResults.iOS.xml'
       }
     },
@@ -197,21 +193,16 @@ stage('Test') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
+        sh 'mkdir -p temp'
         dir('Tests/Tests.XamarinMac') {
           msbuild restore: true,
                   properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
-          dir("bin/${configuration}") {
-            stash includes: 'Tests.XamarinMac.app/**/*', name: 'macos-tests'
+          dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
+            sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
           }
         }
-      }
-      rlmNode('osx') {
-        unstash 'macos-tests'
 
-        dir("Tests.XamarinMac.app/Contents") {
-          sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/TestResults.macOS.xml"
-        }
-        reportTests 'TestResults.macOS.xml'
+        reportTests 'temp/TestResults.macOS.xml'
       }
     },
     'Xamarin Android': {
@@ -394,7 +385,10 @@ def msbuild(Map args = [:]) {
 }
 
 def reportTests(spec) {
-  xunit([NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)])
+  xunit(
+    tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
+    thresholds: [ failed(unstableThreshold: '1') ]
+  )
 }
 
 // Required due to JENKINS-27421

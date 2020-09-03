@@ -63,5 +63,7 @@ namespace Realms.Native
 
         [MarshalAs(UnmanagedType.I1)]
         internal bool enable_cache;
+
+        internal ulong max_number_of_active_versions;
     }
 }

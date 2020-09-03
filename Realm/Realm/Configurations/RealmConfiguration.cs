@@ -125,14 +125,9 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = new Configuration
-            {
-                Path = DatabasePath,
-                read_only = IsReadOnly,
-                delete_if_migration_needed = ShouldDeleteIfMigrationNeeded,
-                schema_version = SchemaVersion,
-                enable_cache = EnableCache
-            };
+            var configuration = CreateConfiguration();
+            configuration.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
+            configuration.read_only = IsReadOnly;
 
             Migration migration = null;
             if (MigrationCallback != null)

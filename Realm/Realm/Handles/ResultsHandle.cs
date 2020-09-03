@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -81,6 +81,13 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_frozen(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -215,6 +222,23 @@ namespace Realms
             var result = NativeMethods.find_object(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
+        }
+
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public ResultsHandle Freeze(SharedRealmHandle frozenRealmHandle)
+        {
+            var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ResultsHandle(frozenRealmHandle, result);
         }
     }
 }

@@ -108,9 +108,14 @@ namespace Realms
 
         public bool IsValid => Handle.Value.IsValid;
 
+        public bool IsFrozen => Handle.Value.IsFrozen;
+
+        public Realm Realm { get; }
+
+        public abstract IRealmCollection<T> Freeze();
+
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
-        internal readonly Realm Realm;
         internal readonly Lazy<CollectionHandleBase> Handle;
 
         internal RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)

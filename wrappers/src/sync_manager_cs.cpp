@@ -91,6 +91,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     }
     
     config.schema_version = configuration.schema_version;
+    config.max_number_of_active_versions = configuration.max_number_of_active_versions;
     
     std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
     

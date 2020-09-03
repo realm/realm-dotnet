@@ -37,7 +37,7 @@ namespace Realms
     /// A Realm instance (also referred to as a Realm) represents a Realm database.
     /// </summary>
     /// <remarks>
-    /// <b>Warning</b>: Realm instances are not thread safe and can not be shared across threads.
+    /// <b>Warning</b>: Non-frozen Realm instances are not thread safe and can not be shared across threads.
     /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm.
     /// </remarks>
     public class Realm : IDisposable
@@ -213,6 +213,14 @@ namespace Realms
         }
 
         /// <summary>
+        /// Gets a value indicating whether this Realm is frozen. Frozen Realms are immutable
+        /// and will not update when writes are made to the database. Unlike live Realms, frozen
+        /// Realms can be used across threads.
+        /// </summary>
+        /// <see cref="Freeze"/>
+        public bool IsFrozen { get; }
+
+        /// <summary>
         /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
         /// </summary>
         /// <value>The Schema of the Realm.</value>
@@ -257,6 +265,7 @@ namespace Realms
             SharedRealmHandle = sharedRealmHandle;
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
+            IsFrozen = SharedRealmHandle.IsFrozen;
         }
 
         private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
@@ -304,14 +313,30 @@ namespace Realms
         /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
+        private event RealmChangedEventHandler _realmChanged;
+
         /// <summary>
         /// Triggered when a Realm has changed (i.e. a <see cref="Transaction"/> was committed).
         /// </summary>
-        public event RealmChangedEventHandler RealmChanged;
+        public event RealmChangedEventHandler RealmChanged
+        {
+            add
+            {
+                ThrowIfFrozen("It is not possible to add/remove a change listener to a frozen Realm since it never changes.");
+                _realmChanged += value;
+            }
+
+            remove
+            {
+                ThrowIfFrozen("It is not possible to add/remove a change listener to a frozen Realm since it never changes.");
+                _realmChanged -= value;
+            }
+        }
 
         private void NotifyChanged(EventArgs e)
         {
-            RealmChanged?.Invoke(this, e);
+            _realmChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -353,11 +378,45 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Returns a frozen (immutable) snapshot of this Realm.
+        /// <para/>
+        /// A frozen Realm is an immutable snapshot view of a particular version of a
+        /// Realm's data. Unlike normal <see cref="Realm"/> instances, it does not live-update to
+        /// reflect writes made to the Realm, and can be accessed from any thread. Writing
+        /// to a frozen Realm is not allowed, and attempting to begin a write transaction
+        /// will throw an exception.
+        /// <para/>
+        /// All objects and collections read from a frozen Realm will also be frozen.
+        /// <para/>
+        /// Note: Keeping a large number of frozen Realms with different versions alive can have a negative impact on the filesize
+        /// of the underlying database. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <returns>A frozen <see cref="Realm"/> instance.</returns>
+        public Realm Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var handle = SharedRealmHandle.Freeze();
+            return new Realm(handle, Config, Schema);
+        }
+
         private void ThrowIfDisposed()
         {
             if (IsClosed)
             {
                 throw new ObjectDisposedException(typeof(Realm).FullName, "Cannot access a closed Realm.");
+            }
+        }
+
+        private void ThrowIfFrozen(string message)
+        {
+            if (IsFrozen)
+            {
+                throw new RealmFrozenException(message);
             }
         }
 
@@ -610,6 +669,7 @@ namespace Realms
         public Transaction BeginWrite()
         {
             ThrowIfDisposed();
+            ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
             return new Transaction(this);
         }
