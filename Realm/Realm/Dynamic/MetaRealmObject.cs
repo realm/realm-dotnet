@@ -144,7 +144,7 @@ namespace Realms.Dynamic
                 {
                     case PropertyType.Int:
                     case PropertyType.Bool:
-                    case Schema.PropertyType.Float:
+                    case PropertyType.Float:
                     case PropertyType.Double:
                     case PropertyType.Date:
                         arguments.Add(Expression.Constant(property.Type));
@@ -277,20 +277,24 @@ namespace Realms.Dynamic
             return convertedExpression;
         }
 
+        // GetString(colKey)
+        // GetByteArray(colKey)
         private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, TResult> @delegate) => @delegate.GetMethodInfo();
 
         // GetPrimitive(colKey, propertyType)
         private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, PropertyType, TResult> @delegate) => @delegate.GetMethodInfo();
 
+        // GetBacklinks(propertyIndex)
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
-
-        // SetXXXUnique(colKey, isNullable, value)
-        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, bool, TValue> @delegate) => @delegate.GetMethodInfo();
-
+        // GetList(realm, colKey, objectType)
+        // GetObject(realm, colKey, objectType)
         private static MethodInfo GetGetMethod<TResult>(Func<Realm, ColumnKey, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
+        // SetXXX(colKey)
+        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
+
+        // SetObject(realm, colKey)
         private static MethodInfo GetSetMethod<TValue>(Action<Realm, ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }
