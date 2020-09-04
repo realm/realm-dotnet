@@ -18,7 +18,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -717,8 +717,8 @@ namespace Realms
             {
                 Table = table;
                 Helper = helper;
-                ColumnKeys = columnKeys.ToImmutableDictionary();
-                ComputedProperties = computedProperties.ToImmutableDictionary();
+                ColumnKeys = new ReadOnlyDictionary<string, ColumnKey>(columnKeys);
+                ComputedProperties = new ReadOnlyDictionary<string, IntPtr>(computedProperties);
                 Schema = schema;
             }
         }
