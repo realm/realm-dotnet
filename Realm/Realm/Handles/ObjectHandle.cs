@@ -44,11 +44,8 @@ namespace Realms
             public static extern void set_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Int64 get_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_nullable_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, out Int64 retVal, out NativeException ex);
+            public static extern bool get_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Int64 retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ObjectHandle handle, ColumnKey columnKey,
@@ -74,15 +71,11 @@ namespace Realms
             public static extern void set_null(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_bool(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.U1)] bool value, out NativeException ex);
+            public static extern void set_bool(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_bool", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_bool(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_nullable_bool(ObjectHandle handle, ColumnKey columnKey, out IntPtr retVal, out NativeException ex);
+            public static extern bool get_bool(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, [MarshalAs(UnmanagedType.I1)] out bool retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_int64(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
@@ -91,31 +84,22 @@ namespace Realms
             public static extern void add_int64(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_int64", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Int64 get_int64(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_nullable_int64(ObjectHandle handle, ColumnKey columnKey, out Int64 retVal, out NativeException ex);
+            public static extern bool get_int64(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Int64 retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_float", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_float(ObjectHandle handle, ColumnKey columnKey, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_float", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Single get_float(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_float", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_nullable_float(ObjectHandle handle, ColumnKey columnKey, out Single retVal, out NativeException ex);
+            public static extern bool get_float(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Single retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_double", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_double(ObjectHandle handle, ColumnKey columnKey, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_double", CallingConvention = CallingConvention.Cdecl)]
-            public static extern Double get_double(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_nullable_double(ObjectHandle handle, ColumnKey columnKey, out Double retVal, out NativeException ex);
+            public static extern bool get_double(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Double retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_binary(ObjectHandle handle, ColumnKey columnKey,
@@ -238,14 +222,14 @@ namespace Realms
 
         public DateTimeOffset GetDateTimeOffset(ColumnKey columnKey)
         {
-            var ticks = NativeMethods.get_timestamp_ticks(this, columnKey, out var nativeException);
+            _ = NativeMethods.get_timestamp_ticks(this, columnKey, false, out var ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
 
         public DateTimeOffset? GetNullableDateTimeOffset(ColumnKey columnKey)
         {
-            var hasValue = NativeMethods.get_nullable_timestamp_ticks(this, columnKey, out var ticks, out var nativeException);
+            var hasValue = NativeMethods.get_timestamp_ticks(this, columnKey, true, out var ticks, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
@@ -340,16 +324,16 @@ namespace Realms
 
         public bool GetBoolean(ColumnKey columnKey)
         {
-            var result = NativeMethods.get_bool(this, columnKey, out var nativeException);
+            _ = NativeMethods.get_bool(this, columnKey, false, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public bool? GetNullableBoolean(ColumnKey columnKey)
         {
-            var hasValue = NativeMethods.get_nullable_bool(this, columnKey, out var value, out var nativeException);
+            var hasValue = NativeMethods.get_bool(this, columnKey, true, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return hasValue ? MarshalHelpers.IntPtrToBool(value) : (bool?)null;
+            return hasValue ? value : (bool?)null;
         }
 
         public void SetInt64(ColumnKey columnKey, long value)
@@ -397,14 +381,14 @@ namespace Realms
 
         public long GetInt64(ColumnKey columnKey)
         {
-            var result = NativeMethods.get_int64(this, columnKey, out var nativeException);
+            _ = NativeMethods.get_int64(this, columnKey, false, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public long? GetNullableInt64(ColumnKey columnKey)
         {
-            var hasValue = NativeMethods.get_nullable_int64(this, columnKey, out var value, out var nativeException);
+            var hasValue = NativeMethods.get_int64(this, columnKey, true, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (long?)null;
         }
@@ -432,14 +416,14 @@ namespace Realms
 
         public float GetSingle(ColumnKey columnKey)
         {
-            var result = NativeMethods.get_float(this, columnKey, out var nativeException);
+            _ = NativeMethods.get_float(this, columnKey, false, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public float? GetNullableSingle(ColumnKey columnKey)
         {
-            var hasValue = NativeMethods.get_nullable_float(this, columnKey, out var value, out var nativeException);
+            var hasValue = NativeMethods.get_float(this, columnKey, true, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (float?)null;
         }
@@ -467,14 +451,14 @@ namespace Realms
 
         public double GetDouble(ColumnKey columnKey)
         {
-            var result = NativeMethods.get_double(this, columnKey, out var nativeException);
+            _ = NativeMethods.get_double(this, columnKey, false, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         public double? GetNullableDouble(ColumnKey columnKey)
         {
-            var hasValue = NativeMethods.get_nullable_double(this, columnKey, out var value, out var nativeException);
+            var hasValue = NativeMethods.get_double(this, columnKey, true, out var value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (double?)null;
         }
