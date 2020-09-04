@@ -215,70 +215,70 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char)_objectHandle.GetInt64(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Int).Get<char>();
         }
 
         protected char? GetNullableCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char?)_objectHandle.GetNullableInt64(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Int | PropertyType.Nullable).Get<char?>();
         }
 
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetSingle(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Float).Get<float>();
         }
 
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableSingle(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Float | PropertyType.Nullable).Get<float?>();
         }
 
         protected double GetDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetDouble(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Double).Get<double>();
         }
 
         protected double? GetNullableDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableDouble(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Double | PropertyType.Nullable).Get<double?>();
         }
 
         protected bool GetBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetBoolean(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Bool).Get<bool>();
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableBoolean(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Bool | PropertyType.Nullable).Get<bool?>();
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetDateTimeOffset(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Date).Get<DateTimeOffset>();
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetNullableDateTimeOffset(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Date | PropertyType.Nullable).Get<DateTimeOffset?>();
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -333,7 +333,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = Operator.Convert<long, T>(_objectHandle.GetInt64(columnKey));
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).Get<T>();
             return new RealmInteger<T>(result, ObjectHandle, columnKey);
         }
 
@@ -341,11 +341,11 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetNullableInt64(columnKey);
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int | PropertyType.Nullable).Get<T?>();
 
             if (result.HasValue)
             {
-                return new RealmInteger<T>(Operator.Convert<long, T>(result.Value), ObjectHandle, columnKey);
+                return new RealmInteger<T>(result.Value, ObjectHandle, columnKey);
             }
 
             return null;
@@ -373,84 +373,84 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
         }
 
         protected void SetCharValueUnique(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetInt64Unique(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
         }
 
         protected void SetNullableCharValueUnique(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64Unique(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
         }
 
         protected void SetSingleValue(string propertyName, float value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetSingle(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Float));
         }
 
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableSingle(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableFloat));
         }
 
         protected void SetDoubleValue(string propertyName, double value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetDouble(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Double));
         }
 
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableDouble(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableDouble));
         }
 
         protected void SetBooleanValue(string propertyName, bool value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetBoolean(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Bool));
         }
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableBoolean(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableBool));
         }
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetDateTimeOffset(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Date));
         }
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableDateTimeOffset(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableDate));
         }
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
@@ -487,7 +487,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetInt64(_metadata.ColumnKeys[propertyName], value.ToLong());
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
         }
 
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
@@ -495,15 +495,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64(_metadata.ColumnKeys[propertyName], value.ToLong());
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
         }
 
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
             where T : struct, IComparable<T>, IFormattable
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetInt64Unique(_metadata.ColumnKeys[propertyName], value.ToLong());
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
         }
 
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
@@ -511,7 +510,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetNullableInt64Unique(_metadata.ColumnKeys[propertyName], value.ToLong());
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
         }
 
         #endregion

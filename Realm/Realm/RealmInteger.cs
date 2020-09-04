@@ -98,7 +98,7 @@ namespace Realms
             if (IsManaged)
             {
                 _objectHandle.AddInt64(_columnKey, value.ToLong());
-                var result = Operator.Convert<long, T>(_objectHandle.GetInt64(_columnKey));
+                var result = _objectHandle.GetPrimitive(_columnKey, Schema.PropertyType.Int).Get<T>();
                 return new RealmInteger<T>(result, _objectHandle, _columnKey);
             }
 

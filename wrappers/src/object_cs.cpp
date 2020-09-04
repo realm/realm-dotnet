@@ -42,27 +42,6 @@ inline T object_get(const Object& object, ColKey column_key, NativeException::Ma
 }
 
 template <typename T>
-inline bool object_get(const Object& object, ColKey column_key, bool is_nullable, T& ret_value, NativeException::Marshallable& ex)
-{
-    if (!is_nullable) {
-        ret_value = object_get<T>(object, column_key, ex);
-        return true;
-    }
-
-    return handle_errors(ex, [&]() {
-        verify_can_get(object);
-
-        auto result = object.obj().get<util::Optional<T>>(column_key);
-        if (!result) {
-            return false;
-        }
-
-        ret_value = *result;
-        return true;
-    });
-}
-
-template <typename T>
 inline void object_set(Object& object, ColKey column_key, const T& value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -116,24 +95,110 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT bool object_get_bool(const Object& object, ColKey column_key, bool is_nullable, bool& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_primitive(const Object& object, ColKey column_key, PrimitiveValue& value, NativeException::Marshallable& ex)
     {
-        return object_get<bool>(object, column_key, is_nullable, ret_value, ex);
+        handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            value.has_value = true;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+            switch (value.type) {
+            case realm::PropertyType::Bool:
+                value.value.bool_value = object.obj().get<bool>(column_key);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<util::Optional<bool>>(column_key);
+                value.has_value = !!result;
+                value.value.bool_value = result.value_or(false);
+                break;
+            }
+            case realm::PropertyType::Int:
+                value.value.int_value = object.obj().get<int64_t>(column_key);
+                break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<util::Optional<int64_t>>(column_key);
+                value.has_value = !!result;
+                value.value.int_value = result.value_or(0);
+                break;
+            }
+            case realm::PropertyType::Float:
+                value.value.float_value = object.obj().get<float>(column_key);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<util::Optional<float>>(column_key);
+                value.has_value = !!result;
+                value.value.float_value = result.value_or((float)0);
+                break;
+            }
+            case realm::PropertyType::Double:
+                value.value.double_value = object.obj().get<double>(column_key);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<util::Optional<double>>(column_key);
+                value.has_value = !!result;
+                value.value.double_value = result.value_or((double)0);
+                break;
+            }
+            case realm::PropertyType::Date:
+                value.value.int_value = to_ticks(object.obj().get<Timestamp>(column_key));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<Timestamp>(column_key);
+                value.has_value = !result.is_null();
+                value.value.int_value = result.is_null() ? 0 : to_ticks(result);
+                break;
+            }
+            default:
+                REALM_UNREACHABLE();
+            }
+#pragma GCC diagnostic pop
+            });
     }
 
-    REALM_EXPORT bool object_get_int64(const Object& object, ColKey column_key, bool is_nullable, int64_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_primitive(const Object& object, ColKey column_key, PrimitiveValue& value, NativeException::Marshallable& ex)
     {
-        return object_get<int64_t>(object, column_key, is_nullable, ret_value, ex);
-    }
+        handle_errors(ex, [&]() {
+            verify_can_set(object);
 
-    REALM_EXPORT bool object_get_float(const Object& object, ColKey column_key, bool is_nullable, float& ret_value, NativeException::Marshallable& ex)
-    {
-        return object_get<float>(object, column_key, is_nullable, ret_value, ex);
-    }
-
-    REALM_EXPORT bool object_get_double(const Object& object, ColKey column_key, bool is_nullable, double& ret_value, NativeException::Marshallable& ex)
-    {
-        return object_get<double>(object, column_key, is_nullable, ret_value, ex);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+            switch (value.type) {
+            case realm::PropertyType::Bool:
+                object.obj().set(column_key, value.value.bool_value);
+                break;
+            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+                object.obj().set(column_key, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
+                break;
+            case realm::PropertyType::Int:
+                object.obj().set(column_key, value.value.int_value);
+                break;
+            case realm::PropertyType::Int | realm::PropertyType::Nullable:
+                object.obj().set(column_key, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
+                break;
+            case realm::PropertyType::Float:
+                object.obj().set(column_key, value.value.float_value);
+                break;
+            case realm::PropertyType::Float | realm::PropertyType::Nullable:
+                object.obj().set(column_key, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
+                break;
+            case realm::PropertyType::Double:
+                object.obj().set(column_key, value.value.double_value);
+                break;
+            case realm::PropertyType::Double | realm::PropertyType::Nullable:
+                object.obj().set(column_key, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
+                break;
+            case realm::PropertyType::Date:
+                object.obj().set(column_key, from_ticks(value.value.int_value));
+                break;
+            case realm::PropertyType::Date | realm::PropertyType::Nullable:
+                object.obj().set(column_key, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            default:
+                REALM_UNREACHABLE();
+            }
+#pragma GCC diagnostic pop
+            });
     }
 
     REALM_EXPORT size_t object_get_string(const Object& object, ColKey column_key, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
@@ -167,17 +232,6 @@ extern "C" {
         }
 
         return data_size;
-    }
-
-    REALM_EXPORT bool object_get_timestamp_ticks(const Object& object, ColKey column_key, bool is_nullable, int64_t& ret_value, NativeException::Marshallable& ex)
-    {
-        Timestamp field_data = object_get<Timestamp>(object, column_key, ex);
-        if (ex.type != RealmErrorType::NoError || field_data.is_null()) {
-            return false;
-        }
- 
-        ret_value = to_ticks(field_data);
-        return true;
     }
 
     REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
@@ -238,26 +292,6 @@ extern "C" {
             object.obj().set_null(column_key);
         });
     }
-    
-    REALM_EXPORT void object_set_bool(Object& object, ColKey column_key, bool value, NativeException::Marshallable& ex)
-    {
-        return object_set<bool>(object, column_key, value, ex);
-    }
-
-    REALM_EXPORT void object_set_int64(Object& object, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-    {
-        return object_set<int64_t>(object, column_key, value, ex);
-    }
-    
-    REALM_EXPORT void object_set_float(Object& object, ColKey column_key, float value, NativeException::Marshallable& ex)
-    {
-        return object_set<float>(object, column_key, value, ex);
-    }
-
-    REALM_EXPORT void object_set_double(Object& object, ColKey column_key, double value, NativeException::Marshallable& ex)
-    {
-        return object_set<double>(object, column_key, value, ex);
-    }
 
     REALM_EXPORT void object_set_string(Object& object, ColKey column_key, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
     {
@@ -268,11 +302,6 @@ extern "C" {
     REALM_EXPORT void object_set_binary(Object& object, ColKey column_key, char* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return object_set<BinaryData>(object, column_key, BinaryData(value, value_len), ex);
-    }
-
-    REALM_EXPORT void object_set_timestamp_ticks(Object& object, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-    {
-        return object_set<Timestamp>(object, column_key, from_ticks(value), ex);
     }
 
     REALM_EXPORT void object_remove(Object& object, SharedRealm& realm, NativeException::Marshallable& ex)

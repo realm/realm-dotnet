@@ -93,6 +93,31 @@ namespace Realms.Schema
         /// <summary>
         /// Metadata flags.
         /// </summary>
-        Flags = Nullable | Array
+        Flags = Nullable | Array,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Int | PropertyType.Nullable.
+        /// </summary>
+        NullableInt = Int | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Bool | PropertyType.Nullable.
+        /// </summary>
+        NullableBool = Bool | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Float | PropertyType.Nullable.
+        /// </summary>
+        NullableFloat = Float | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Double | PropertyType.Nullable.
+        /// </summary>
+        NullableDouble = Double | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Date | PropertyType.Nullable.
+        /// </summary>
+        NullableDate = Date | Nullable,
     }
 }
