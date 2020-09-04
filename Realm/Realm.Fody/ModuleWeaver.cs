@@ -54,17 +54,21 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
         { StringTypeName, "String" },
-        { CharTypeName, "Char" },
-        { SingleTypeName, "Single" },
-        { DoubleTypeName, "Double" },
-        { BooleanTypeName, "Boolean" },
-        { DateTimeOffsetTypeName, "DateTimeOffset" },
         { ByteArrayTypeName, "ByteArray" },
-        { NullableCharTypeName, "NullableChar" },
-        { NullableSingleTypeName, "NullableSingle" },
-        { NullableDoubleTypeName, "NullableDouble" },
-        { NullableBooleanTypeName, "NullableBoolean" },
-        { NullableDateTimeOffsetTypeName, "NullableDateTimeOffset" }
+    };
+
+    private static readonly Dictionary<string, string> _primitiveValueTypes = new Dictionary<string, string>
+    {
+        { CharTypeName, "Int" },
+        { SingleTypeName, "Float" },
+        { DoubleTypeName, "Double" },
+        { BooleanTypeName, "Bool" },
+        { DateTimeOffsetTypeName, "Date" },
+        { NullableCharTypeName, "Int" },
+        { NullableSingleTypeName, "Float" },
+        { NullableDoubleTypeName, "Double" },
+        { NullableBooleanTypeName, "Bool" },
+        { NullableDateTimeOffsetTypeName, "Date" },
     };
 
     private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
@@ -347,6 +351,29 @@ Analytics payload
             ReplaceGetter(prop, columnName, realmAccessors.Getter);
             ReplaceSetter(prop, backingField, columnName, realmAccessors.Setter);
         }
+        else if (_primitiveValueTypes.TryGetValue(prop.PropertyType.FullName, out var propertyType))
+        {
+            if (prop.SetMethod == null)
+            {
+                return WeaveResult.Skipped();
+            }
+
+            var suffix = isPrimaryKey ? "Unique" : string.Empty;
+            var typeId = $"{prop.PropertyType.FullName}{suffix}";
+
+            if (!methodTable.TryGetValue(typeId, out var accessors))
+            {
+                var getter = new GenericInstanceMethod(_references.RealmObject_GetPrimitiveValue) { GenericArguments = { prop.PropertyType } };
+                var setter = new GenericInstanceMethod(isPrimaryKey ? _references.RealmObject_SetPrimitiveValueUnique : _references.RealmObject_SetPrimitiveValue)
+                {
+                    GenericArguments = { prop.PropertyType }
+                };
+                methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
+            }
+
+            ReplaceGetter(prop, columnName, accessors.Getter);
+            ReplaceSetter(prop, backingField, columnName, accessors.Setter, _references.GetPropertyTypeField(propertyType));
+        }
         else if (_realmIntegerBackedTypes.Contains(prop.PropertyType.FullName))
         {
             // If the property is automatic but doesn't have a setter, we should still ignore it.
@@ -425,7 +452,8 @@ Analytics payload
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject) &&
                 !_realmIntegerBackedTypes.Contains(elementType.FullName) &&
-                !_typeTable.ContainsKey(elementType.FullName))
+                !_typeTable.ContainsKey(elementType.FullName) &&
+                !_primitiveValueTypes.ContainsKey(elementType.FullName))
             {
                 return WeaveResult.Error($"{type.Name}.{prop.Name} is an IList but its generic type is {elementType.Name} which is not supported by Realm.");
             }
@@ -529,8 +557,9 @@ Analytics payload
             var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObject)
             {
                 HasThis = true,
-                Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
+                Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) },
             };
+
             var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObject)
             {
                 HasThis = true,
@@ -767,7 +796,7 @@ Analytics payload
         Debug.Write("[get list] ");
     }
 
-    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
+    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, FieldReference propertyTypeRef = null)
     {
         //// A synthesized property setter looks like this:
         ////   0: ldarg.0
@@ -829,6 +858,11 @@ Analytics payload
         il.Append(managedSetStart);
         il.Append(il.Create(OpCodes.Ldstr, columnName));
         il.Append(il.Create(OpCodes.Ldarg_1));
+        if (propertyTypeRef != null)
+        {
+            il.Append(il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+        }
+
         il.Append(il.Create(OpCodes.Call, setValueReference));
         il.Append(il.Create(OpCodes.Ret));
 

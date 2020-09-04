@@ -95,6 +95,11 @@ namespace RealmWeaver
                 return (type.StartsWith("Nullable") ? "Nullable" : string.Empty) + "RealmInteger";
             }
 
+            if (_primitiveValueTypes.Contains(type))
+            {
+                return "Primitive";
+            }
+
             return type;
         }
 
@@ -110,6 +115,20 @@ namespace RealmWeaver
             "NullableInt16",
             "NullableInt32",
             "NullableInt64"
+        };
+
+        private static readonly IEnumerable<string> _primitiveValueTypes = new[]
+        {
+            "Char",
+            "Single",
+            "Double",
+            "Boolean",
+            "DateTimeOffset",
+            "NullableChar",
+            "NullableSingle",
+            "NullableDouble",
+            "NullableBoolean",
+            "NullableDateTimeOffset",
         };
 
         public enum PropertyChangedWeaver
@@ -610,7 +629,7 @@ namespace RealmWeaver
                                            return new[]
                                            {
                                                "IsManaged",
-                                               $"RealmObject.SetNullable{GetCoreMethodName(p.Name)}Value(propertyName = \"{p.Name}\", value = )"
+                                               $"RealmObject.Set{GetCoreMethodName(p.Name)}Value(propertyName = \"{p.Name}\", value = )"
                                            };
                                        })
                                        .ToList();

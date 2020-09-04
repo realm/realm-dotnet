@@ -101,6 +101,12 @@ namespace RealmWeaver
 
         public MethodReference RealmObject_GetBacklinks { get; private set; }
 
+        public MethodReference RealmObject_GetPrimitiveValue { get; private set; }
+
+        public MethodReference RealmObject_SetPrimitiveValue { get; private set; }
+
+        public MethodReference RealmObject_SetPrimitiveValueUnique { get; private set; }
+
         public TypeReference IRealmObjectHelper { get; private set; }
 
         public TypeReference PreserveAttribute { get; private set; }
@@ -128,6 +134,8 @@ namespace RealmWeaver
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
         public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
+
+        public TypeReference RealmSchema_PropertyType { get; private set; }
 
         protected ModuleDefinition Module { get; }
 
@@ -239,6 +247,7 @@ namespace RealmWeaver
         {
             Realm = new TypeReference("Realms", "Realm", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
+            RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
 
             {
                 RealmIntegerOfT = new TypeReference("Realms", "RealmInteger`1", Module, realmAssembly)
@@ -311,6 +320,33 @@ namespace RealmWeaver
                 RealmObject_GetBacklinks.Parameters.Add(new ParameterDefinition(Types.StringReference));
             }
 
+            {
+                RealmObject_GetPrimitiveValue = new MethodReference("GetPrimitiveValue", Types.VoidReference, RealmObject) { HasThis = true };
+                var T = new GenericParameter(RealmObject_GetPrimitiveValue);
+                RealmObject_GetPrimitiveValue.ReturnType = T;
+                RealmObject_GetPrimitiveValue.GenericParameters.Add(T);
+                RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+            }
+
+            {
+                RealmObject_SetPrimitiveValue = new MethodReference("SetPrimitiveValue", Types.VoidReference, RealmObject) { HasThis = true };
+                var T = new GenericParameter(RealmObject_SetPrimitiveValue);
+                RealmObject_SetPrimitiveValue.GenericParameters.Add(T);
+                RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(T));
+                RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
+            }
+
+            {
+                RealmObject_SetPrimitiveValueUnique = new MethodReference("SetPrimitiveValueUnique", Types.VoidReference, RealmObject) { HasThis = true };
+                var T = new GenericParameter(RealmObject_SetPrimitiveValueUnique);
+                RealmObject_SetPrimitiveValueUnique.GenericParameters.Add(T);
+                RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(T));
+                RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
+            }
+
+
             IRealmObjectHelper = new TypeReference("Realms.Weaving", "IRealmObjectHelper", Module, realmAssembly);
 
             PreserveAttribute = new TypeReference("Realms", "PreserveAttribute", Module, realmAssembly);
@@ -371,6 +407,11 @@ namespace RealmWeaver
             }
 
             return assembly;
+        }
+
+        public FieldReference GetPropertyTypeField(string name)
+        {
+            return new FieldReference(name, RealmSchema_PropertyType, RealmSchema_PropertyType);
         }
 
         public GenericParameter GetRealmIntegerGenericParameter(IGenericParameterProvider owner)
