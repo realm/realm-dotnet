@@ -209,11 +209,11 @@ namespace Realms
             return _objectHandle.GetString(_metadata.ColumnKeys[propertyName]);
         }
 
-        protected T GetPrimitiveValue<T>(string propertyName)
+        protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], PropertyType.Int).Get<T>();
+            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], propertyType).Get<T>();
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -276,7 +276,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int | PropertyType.Nullable).Get<T?>();
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).Get<T?>();
 
             if (result.HasValue)
             {

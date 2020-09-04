@@ -326,6 +326,7 @@ namespace RealmWeaver
                 RealmObject_GetPrimitiveValue.ReturnType = T;
                 RealmObject_GetPrimitiveValue.GenericParameters.Add(T);
                 RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
             }
 
             {

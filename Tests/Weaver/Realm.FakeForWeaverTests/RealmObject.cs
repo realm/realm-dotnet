@@ -79,7 +79,7 @@ namespace Realms
         }
 
 
-        protected T GetPrimitiveValue<T>(string propertyName)
+        protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
             return default(T);

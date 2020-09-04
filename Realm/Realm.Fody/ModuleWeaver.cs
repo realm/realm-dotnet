@@ -64,11 +64,11 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         { DoubleTypeName, "Double" },
         { BooleanTypeName, "Bool" },
         { DateTimeOffsetTypeName, "Date" },
-        { NullableCharTypeName, "Int" },
-        { NullableSingleTypeName, "Float" },
-        { NullableDoubleTypeName, "Double" },
-        { NullableBooleanTypeName, "Bool" },
-        { NullableDateTimeOffsetTypeName, "Date" },
+        { NullableCharTypeName, "NullableInt" },
+        { NullableSingleTypeName, "NullableFloat" },
+        { NullableDoubleTypeName, "NullableDouble" },
+        { NullableBooleanTypeName, "NullableBool" },
+        { NullableDateTimeOffsetTypeName, "NullableDate" },
     };
 
     private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
@@ -371,8 +371,9 @@ Analytics payload
                 methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
             }
 
-            ReplaceGetter(prop, columnName, accessors.Getter);
-            ReplaceSetter(prop, backingField, columnName, accessors.Setter, _references.GetPropertyTypeField(propertyType));
+            var propertyTypeRef = _references.GetPropertyTypeField(propertyType);
+            ReplaceGetter(prop, columnName, accessors.Getter, propertyTypeRef);
+            ReplaceSetter(prop, backingField, columnName, accessors.Setter, propertyTypeRef);
         }
         else if (_realmIntegerBackedTypes.Contains(prop.PropertyType.FullName))
         {
@@ -576,7 +577,7 @@ Analytics payload
         return realmAccessors;
     }
 
-    private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
+    private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, FieldReference propertyTypeRef = null)
     {
         //// A synthesized property getter looks like this:
         ////   0: ldarg.0
@@ -605,6 +606,11 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
+        if (propertyTypeRef != null)
+        {
+            il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+        }
+
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
