@@ -38,6 +38,9 @@ namespace Realms.Dynamic
         private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
+        private static readonly MethodInfo PrimitiveValueGetMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Get), BindingFlags.Public | BindingFlags.Instance);
+        private static readonly MethodInfo CreatePrimitiveMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Create), BindingFlags.Public | BindingFlags.Static);
+
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
         public MetaRealmObject(Expression expression, DynamicRealmObject value)
@@ -140,65 +143,18 @@ namespace Realms.Dynamic
                 switch (property.Type.UnderlyingType())
                 {
                     case PropertyType.Int:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetNullableInt64);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetInt64);
-                        }
-
-                        break;
                     case PropertyType.Bool:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetNullableBoolean);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetBoolean);
-                        }
-
-                        break;
                     case Schema.PropertyType.Float:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetNullableSingle);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSingle);
-                        }
-
-                        break;
                     case PropertyType.Double:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetNullableDouble);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetDouble);
-                        }
-
+                    case PropertyType.Date:
+                        arguments.Add(Expression.Constant(property.Type));
+                        getter = GetGetMethod(DummyHandle.GetPrimitive);
                         break;
                     case PropertyType.String:
                         getter = GetGetMethod(DummyHandle.GetString);
                         break;
                     case PropertyType.Data:
                         getter = GetGetMethod(DummyHandle.GetByteArray);
-                        break;
-                    case PropertyType.Date:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetNullableDateTimeOffset);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetDateTimeOffset);
-                        }
-
                         break;
                     case PropertyType.Object:
                         arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
@@ -215,6 +171,11 @@ namespace Realms.Dynamic
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
                 expression = Expression.Call(self, RealmObjectGetBacklinksForHandleMethod, Expression.Constant(binder.Name), expression);
+            }
+
+            if (expression.Type == typeof(PrimitiveValue))
+            {
+                expression = Expression.Call(expression, PrimitiveValueGetMethod.MakeGenericMethod(property.PropertyInfo.PropertyType));
             }
 
             if (binder.ReturnType != expression.Type)
@@ -242,57 +203,23 @@ namespace Realms.Dynamic
             MethodInfo setter = null;
             Type argumentType = null;
 
+            var valueExpression = value.Expression;
             switch (property.Type.UnderlyingType())
             {
                 case PropertyType.Int:
-                    argumentType = typeof(long);
-                    if (property.Type.IsNullable())
-                    {
-                        setter = GetSetMethod<long?>(DummyHandle.SetNullableInt64);
-                    }
-                    else if (property.IsPrimaryKey)
-                    {
-                        setter = GetSetMethod<long>(DummyHandle.SetInt64Unique);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<long>(DummyHandle.SetInt64);
-                    }
-
-                    break;
                 case PropertyType.Bool:
-                    argumentType = typeof(bool);
-                    if (property.Type.IsNullable())
-                    {
-                        setter = GetSetMethod<bool?>(DummyHandle.SetNullableBoolean);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<bool>(DummyHandle.SetBoolean);
-                    }
-
-                    break;
                 case PropertyType.Float:
-                    argumentType = typeof(float);
-                    if (property.Type.IsNullable())
-                    {
-                        setter = GetSetMethod<float?>(DummyHandle.SetNullableSingle);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<float>(DummyHandle.SetSingle);
-                    }
-
-                    break;
                 case PropertyType.Double:
-                    argumentType = typeof(double);
-                    if (property.Type.IsNullable())
+                case PropertyType.Date:
+                    argumentType = typeof(PrimitiveValue);
+                    valueExpression = Expression.Call(CreatePrimitiveMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type) });
+                    if (property.IsPrimaryKey)
                     {
-                        setter = GetSetMethod<double?>(DummyHandle.SetNullableDouble);
+                        setter = GetSetMethod<PrimitiveValue>(DummyHandle.SetPrimitiveUnique);
                     }
                     else
                     {
-                        setter = GetSetMethod<double>(DummyHandle.SetDouble);
+                        setter = GetSetMethod<PrimitiveValue>(DummyHandle.SetPrimitive);
                     }
 
                     break;
@@ -312,18 +239,6 @@ namespace Realms.Dynamic
                     argumentType = typeof(byte[]);
                     setter = GetSetMethod<byte[]>(DummyHandle.SetByteArray);
                     break;
-                case PropertyType.Date:
-                    argumentType = typeof(DateTimeOffset);
-                    if (property.Type.IsNullable())
-                    {
-                        setter = GetSetMethod<DateTimeOffset?>(DummyHandle.SetNullableDateTimeOffset);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<DateTimeOffset>(DummyHandle.SetDateTimeOffset);
-                    }
-
-                    break;
                 case PropertyType.Object:
                     argumentType = typeof(RealmObject);
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
@@ -331,12 +246,6 @@ namespace Realms.Dynamic
                     break;
             }
 
-            if (property.Type.IsNullable() && argumentType.GetTypeInfo().IsValueType)
-            {
-                argumentType = typeof(Nullable<>).MakeGenericType(argumentType);
-            }
-
-            var valueExpression = value.Expression;
             if (valueExpression.Type != argumentType)
             {
                 valueExpression = Expression.Convert(valueExpression, argumentType);
@@ -369,9 +278,15 @@ namespace Realms.Dynamic
 
         private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, TResult> @delegate) => @delegate.GetMethodInfo();
 
+        // GetPrimitive(colKey, propertyType)
+        private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, PropertyType, TResult> @delegate) => @delegate.GetMethodInfo();
+
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
         private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
+
+        // SetXXXUnique(colKey, isNullable, value)
+        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, bool, TValue> @delegate) => @delegate.GetMethodInfo();
 
         private static MethodInfo GetGetMethod<TResult>(Func<Realm, ColumnKey, string, TResult> @delegate) => @delegate.GetMethodInfo();
 

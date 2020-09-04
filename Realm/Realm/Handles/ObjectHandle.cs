@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -40,12 +41,13 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr objectHandle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_primitive(ObjectHandle handle, ColumnKey columnKey, ref PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_timestamp_ticks(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Int64 retVal, out NativeException ex);
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_primitive(ObjectHandle handle, ColumnKey columnKey, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ObjectHandle handle, ColumnKey columnKey,
@@ -70,36 +72,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_null(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_bool", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_bool(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_bool", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_bool(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, [MarshalAs(UnmanagedType.I1)] out bool retVal, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_int64", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_int64(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_int64(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_int64", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_int64(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Int64 retVal, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_float", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_float(ObjectHandle handle, ColumnKey columnKey, Single value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_float", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_float(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Single retVal, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_double", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_double(ObjectHandle handle, ColumnKey columnKey, Double value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_double", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool get_double(ObjectHandle handle, ColumnKey columnKey, [MarshalAs(UnmanagedType.I1)] bool is_nullable, out Double retVal, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_binary(ObjectHandle handle, ColumnKey columnKey,
@@ -197,41 +171,21 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public void SetDateTimeOffset(ColumnKey columnKey, DateTimeOffset value)
+        public PrimitiveValue GetPrimitive(ColumnKey columnKey, PropertyType type)
         {
-            var ticks = value.ToUniversalTime().Ticks;
-            NativeMethods.set_timestamp_ticks(this, columnKey, ticks, out var nativeException);
+            var result = new PrimitiveValue { type = type };
+
+            NativeMethods.get_primitive(this, columnKey, ref result, out var nativeException);
             nativeException.ThrowIfNecessary();
+
+            return result;
         }
 
-        public void SetNullableDateTimeOffset(ColumnKey columnKey, DateTimeOffset? value)
+        public unsafe void SetPrimitive(ColumnKey columnKey, PrimitiveValue value)
         {
-            NativeException nativeException;
-            if (value.HasValue)
-            {
-                var ticks = value.Value.ToUniversalTime().Ticks;
-                NativeMethods.set_timestamp_ticks(this, columnKey, ticks, out nativeException);
-            }
-            else
-            {
-                NativeMethods.set_null(this, columnKey, out nativeException);
-            }
-
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.set_primitive(this, columnKey, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
-        }
-
-        public DateTimeOffset GetDateTimeOffset(ColumnKey columnKey)
-        {
-            _ = NativeMethods.get_timestamp_ticks(this, columnKey, false, out var ticks, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new DateTimeOffset(ticks, TimeSpan.Zero);
-        }
-
-        public DateTimeOffset? GetNullableDateTimeOffset(ColumnKey columnKey)
-        {
-            var hasValue = NativeMethods.get_timestamp_ticks(this, columnKey, true, out var ticks, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
 
         public void SetString(ColumnKey columnKey, string value)
@@ -301,166 +255,18 @@ namespace Realms
             return result;
         }
 
-        public void SetBoolean(ColumnKey columnKey, bool value)
-        {
-            NativeMethods.set_bool(this, columnKey, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void SetNullableBoolean(ColumnKey columnKey, bool? value)
-        {
-            NativeException nativeException;
-            if (value.HasValue)
-            {
-                NativeMethods.set_bool(this, columnKey, value.Value, out nativeException);
-            }
-            else
-            {
-                NativeMethods.set_null(this, columnKey, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
-        }
-
-        public bool GetBoolean(ColumnKey columnKey)
-        {
-            _ = NativeMethods.get_bool(this, columnKey, false, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public bool? GetNullableBoolean(ColumnKey columnKey)
-        {
-            var hasValue = NativeMethods.get_bool(this, columnKey, true, out var value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return hasValue ? value : (bool?)null;
-        }
-
-        public void SetInt64(ColumnKey columnKey, long value)
-        {
-            NativeMethods.set_int64(this, columnKey, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
         public void AddInt64(ColumnKey columnKey, long value)
         {
             NativeMethods.add_int64(this, columnKey, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void SetNullableInt64(ColumnKey columnKey, long? value)
+        public void SetPrimitiveUnique(ColumnKey columnKey, PrimitiveValue value)
         {
-            NativeException nativeException;
-            if (value.HasValue)
-            {
-                NativeMethods.set_int64(this, columnKey, value.Value, out nativeException);
-            }
-            else
-            {
-                NativeMethods.set_null(this, columnKey, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void SetInt64Unique(ColumnKey columnKey, long value)
-        {
-            if (GetInt64(columnKey) != value)
+            if (!GetPrimitive(columnKey, value.type).Equals(value))
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
-        }
-
-        public void SetNullableInt64Unique(ColumnKey columnKey, long? value)
-        {
-            if (GetNullableInt64(columnKey) != value)
-            {
-                throw new InvalidOperationException("Once set, primary key properties may not be modified.");
-            }
-        }
-
-        public long GetInt64(ColumnKey columnKey)
-        {
-            _ = NativeMethods.get_int64(this, columnKey, false, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public long? GetNullableInt64(ColumnKey columnKey)
-        {
-            var hasValue = NativeMethods.get_int64(this, columnKey, true, out var value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return hasValue ? value : (long?)null;
-        }
-
-        public void SetSingle(ColumnKey columnKey, float value)
-        {
-            NativeMethods.set_float(this, columnKey, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void SetNullableSingle(ColumnKey columnKey, float? value)
-        {
-            NativeException nativeException;
-            if (value.HasValue)
-            {
-                NativeMethods.set_float(this, columnKey, value.Value, out nativeException);
-            }
-            else
-            {
-                NativeMethods.set_null(this, columnKey, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
-        }
-
-        public float GetSingle(ColumnKey columnKey)
-        {
-            _ = NativeMethods.get_float(this, columnKey, false, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public float? GetNullableSingle(ColumnKey columnKey)
-        {
-            var hasValue = NativeMethods.get_float(this, columnKey, true, out var value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return hasValue ? value : (float?)null;
-        }
-
-        public void SetDouble(ColumnKey columnKey, double value)
-        {
-            NativeMethods.set_double(this, columnKey, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void SetNullableDouble(ColumnKey columnKey, double? value)
-        {
-            NativeException nativeException;
-            if (value.HasValue)
-            {
-                NativeMethods.set_double(this, columnKey, value.Value, out nativeException);
-            }
-            else
-            {
-                NativeMethods.set_null(this, columnKey, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
-        }
-
-        public double GetDouble(ColumnKey columnKey)
-        {
-            _ = NativeMethods.get_double(this, columnKey, false, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public double? GetNullableDouble(ColumnKey columnKey)
-        {
-            var hasValue = NativeMethods.get_double(this, columnKey, true, out var value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return hasValue ? value : (double?)null;
         }
 
         public unsafe void SetByteArray(ColumnKey columnKey, byte[] value)
