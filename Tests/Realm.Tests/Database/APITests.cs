@@ -22,9 +22,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
