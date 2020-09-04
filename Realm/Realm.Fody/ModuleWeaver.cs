@@ -40,6 +40,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string SingleTypeName = "System.Single";
     internal const string DoubleTypeName = "System.Double";
     internal const string BooleanTypeName = "System.Boolean";
+    internal const string DecimalTypeName = "System.Decimal";
+    internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
     internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
     internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
     internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
@@ -49,6 +51,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string NullableSingleTypeName = "System.Nullable`1<System.Single>";
     internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
     internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
+    internal const string NullableDecimalTypeName = "System.Nullable`1<System.Decimal>";
+    internal const string NullableDecimal128TypeName = "System.Nullable`1<MongoDB.Bson.Decimal128>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
@@ -63,12 +67,16 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         { SingleTypeName, "Float" },
         { DoubleTypeName, "Double" },
         { BooleanTypeName, "Bool" },
+        { DecimalTypeName, "Decimal" },
+        { Decimal128TypeName, "Decimal" },
         { DateTimeOffsetTypeName, "Date" },
         { NullableCharTypeName, "NullableInt" },
         { NullableSingleTypeName, "NullableFloat" },
         { NullableDoubleTypeName, "NullableDouble" },
         { NullableBooleanTypeName, "NullableBool" },
         { NullableDateTimeOffsetTypeName, "NullableDate" },
+        { NullableDecimalTypeName, "NullableDecimal" },
+        { NullableDecimal128TypeName, "NullableDecimal" },
     };
 
     private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
@@ -1024,11 +1032,6 @@ Analytics payload
             copyToRealm.Body.Variables.Add(new VariableDefinition(realmObjectType));
 
             byte currentStloc = 1;
-            if (properties.Any(p => p.Property.IsDateTimeOffset()))
-            {
-                copyToRealm.Body.Variables.Add(new VariableDefinition(_references.System_DateTimeOffset));
-                currentStloc++;
-            }
 
             foreach (var prop in properties.Where(p => p.Property.IsIList()))
             {
@@ -1062,7 +1065,9 @@ Analytics payload
                     var shouldSetAlways = property.IsNullable() || // The property is nullable - those should be set explicitly to null
                                           property.IsRequired() || // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
-                                          property.PropertyType.IsRealmInteger(out _, out _); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.IsDecimal() ||
+                                          property.IsDecimal128();
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!skipDefaults || castInstance.field != default(fieldType))

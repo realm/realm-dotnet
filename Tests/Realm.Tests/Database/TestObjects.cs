@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using MongoDB.Bson;
 
 namespace Realms.Tests.Database
 {
@@ -42,6 +43,10 @@ namespace Realms.Tests.Database
         public bool BooleanProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
 
         [Required]
         public string RequiredStringProperty { get; set; }
@@ -67,6 +72,11 @@ namespace Realms.Tests.Database
         public bool? NullableBooleanProperty { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
     }
 
     public class ListsObject : RealmObject

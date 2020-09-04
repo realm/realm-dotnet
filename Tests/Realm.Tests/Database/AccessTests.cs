@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -52,7 +53,9 @@ namespace Realms.Tests.Database
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
             new object[] { "ByteArrayProperty", Array.Empty<byte>() },
             new object[] { "StringProperty", "hello" },
-            new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }
+            new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
+            new object[] { "DecimalProperty", 123.456M },
+            new object[] { "Decimal128Property", new Decimal128(564.42343424323) },
         };
 
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
@@ -86,6 +89,8 @@ namespace Realms.Tests.Database
             new object[] { "NullableSingleProperty", 123.123f },
             new object[] { "NullableDoubleProperty", 123.123 },
             new object[] { "NullableBooleanProperty", true },
+            new object[] { "NullableDecimalProperty", 123.456M },
+            new object[] { "NullableDecimal128Property", new Decimal128(123.456) },
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
             new object[] { "ByteArrayProperty", Array.Empty<byte>() },
             new object[] { "StringProperty", "hello" },
@@ -151,6 +156,8 @@ namespace Realms.Tests.Database
             Assert.That(obj.Int16Property, Is.EqualTo(default(short)));
             Assert.That(obj.Int32Property, Is.EqualTo(default(int)));
             Assert.That(obj.Int64Property, Is.EqualTo(default(long)));
+            Assert.That(obj.DecimalProperty, Is.EqualTo(default(decimal)));
+            Assert.That(obj.Decimal128Property, Is.EqualTo(default(Decimal128)));
             Assert.That(obj.NullableBooleanProperty, Is.EqualTo(default(bool?)));
             Assert.That(obj.NullableByteProperty, Is.EqualTo(default(byte?)));
             Assert.That(obj.NullableCharProperty, Is.EqualTo(default(char?)));
@@ -160,6 +167,8 @@ namespace Realms.Tests.Database
             Assert.That(obj.NullableInt16Property, Is.EqualTo(default(short?)));
             Assert.That(obj.NullableInt32Property, Is.EqualTo(default(int?)));
             Assert.That(obj.NullableInt64Property, Is.EqualTo(default(long?)));
+            Assert.That(obj.NullableDecimalProperty, Is.EqualTo(default(decimal?)));
+            Assert.That(obj.NullableDecimal128Property, Is.EqualTo(default(Decimal128?)));
         }
     }
 }

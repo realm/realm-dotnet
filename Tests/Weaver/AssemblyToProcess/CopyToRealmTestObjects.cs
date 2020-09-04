@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using MongoDB.Bson;
 using Realms;
 
 namespace AssemblyToProcess
@@ -53,6 +54,18 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class DecimalProperty : RealmObject
+    {
+        public decimal Decimal { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Decimal128Property : RealmObject
+    {
+        public Decimal128 Decimal128 { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NullableProperties : RealmObject
     {
         public char? Char { get; set; }
@@ -70,6 +83,10 @@ namespace AssemblyToProcess
         public double? Double { get; set; }
 
         public DateTimeOffset? DateTimeOffset { get; set; }
+
+        public decimal? Decimal { get; set; }
+
+        public Decimal128? Decimal128 { get; set; }
 
         public bool? Boolean { get; set; }
     }

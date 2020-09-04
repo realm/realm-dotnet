@@ -27,7 +27,6 @@
 #include <object_accessor.hpp>
 #include <thread_safe_reference.hpp>
 
-
 using namespace realm;
 using namespace realm::binding;
 
@@ -149,6 +148,19 @@ extern "C" {
                 value.value.int_value = result.is_null() ? 0 : to_ticks(result);
                 break;
             }
+            case realm::PropertyType::Decimal: {
+                auto result = object.obj().get<Decimal128>(column_key).raw();
+                value.value.low_bytes = result->w[0];
+                value.value2.high_bytes = result->w[1];
+                break;
+            }
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<Decimal128>(column_key);
+                value.has_value = !result.is_null();
+                value.value.low_bytes = result.is_null() ? 0 : result.raw()->w[0];
+                value.value2.high_bytes = result.is_null() ? 0 : result.raw()->w[1];
+                break;
+            }
             default:
                 REALM_UNREACHABLE();
             }
@@ -194,6 +206,16 @@ extern "C" {
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 object.obj().set(column_key, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
                 break;
+            case realm::PropertyType::Decimal: {
+                auto decimal = Decimal128(Decimal128::Bid128{ value.value.low_bytes, value.value2.high_bytes });
+                object.obj().set(column_key, decimal);
+                break;
+            }
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
+                auto decimal = value.has_value ? Decimal128(Decimal128::Bid128{ value.value.low_bytes, value.value2.high_bytes }) : Decimal128(null());
+                object.obj().set(column_key, decimal);
+                break;
+            }
             default:
                 REALM_UNREACHABLE();
             }

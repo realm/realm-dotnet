@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using MongoDB.Bson;
 using Realms;
 
 namespace AssemblyToProcess
@@ -39,6 +40,10 @@ namespace AssemblyToProcess
         public float SingleProperty { get; set; }
 
         public double DoubleProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
 
         public bool BooleanProperty { get; set; }
 
@@ -61,6 +66,10 @@ namespace AssemblyToProcess
         public double? NullableDoubleProperty { get; set; }
 
         public bool? NullableBooleanProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
 

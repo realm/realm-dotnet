@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using MongoDB.Bson;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -76,6 +77,12 @@ namespace Realms.Schema
                 case Type _ when type == typeof(double):
                     return PropertyType.Double | nullabilityModifier;
 
+                case Type _ when type == typeof(decimal) || type == typeof(Decimal128):
+                    return PropertyType.Decimal | nullabilityModifier;
+
+                case Type _ when type == typeof(ObjectId):
+                    return PropertyType.ObjectId | nullabilityModifier;
+
                 case Type _ when type == typeof(RealmObject) || type.GetTypeInfo().BaseType == typeof(RealmObject):
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
@@ -96,7 +103,7 @@ namespace Realms.Schema
             }
         }
 
-        public static bool IsComputed(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.LinkingObjects);
+        public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 

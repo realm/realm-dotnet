@@ -39,7 +39,13 @@ struct PrimitiveValue
         int64_t int_value;
         float float_value;
         double double_value;
+        uint64_t low_bytes;
     } value;
+
+    union {
+        uint64_t high_bytes;
+        uint32_t object_id_remainder;
+    } value2;
 };
 
 struct StringValue
