@@ -42,8 +42,13 @@ inline T object_get(const Object& object, ColKey column_key, NativeException::Ma
 }
 
 template <typename T>
-inline bool object_get_nullable(const Object& object, ColKey column_key, T& ret_value, NativeException::Marshallable& ex)
+inline bool object_get(const Object& object, ColKey column_key, bool is_nullable, T& ret_value, NativeException::Marshallable& ex)
 {
+    if (!is_nullable) {
+        ret_value = object_get<T>(object, column_key, ex);
+        return true;
+    }
+
     return handle_errors(ex, [&]() {
         verify_can_get(object);
 
@@ -111,44 +116,24 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT bool object_get_bool(const Object& object, ColKey column_key, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_bool(const Object& object, ColKey column_key, bool is_nullable, bool& ret_value, NativeException::Marshallable& ex)
     {
-        return object_get<bool>(object, column_key, ex);
+        return object_get<bool>(object, column_key, is_nullable, ret_value, ex);
     }
 
-    REALM_EXPORT bool object_get_nullable_bool(const Object& object, ColKey column_key, bool& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_int64(const Object& object, ColKey column_key, bool is_nullable, int64_t& ret_value, NativeException::Marshallable& ex)
     {
-        return object_get_nullable<bool>(object, column_key, ret_value, ex);
+        return object_get<int64_t>(object, column_key, is_nullable, ret_value, ex);
     }
 
-    REALM_EXPORT int64_t object_get_int64(const Object& object, ColKey column_key, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_float(const Object& object, ColKey column_key, bool is_nullable, float& ret_value, NativeException::Marshallable& ex)
     {
-        return object_get<int64_t>(object, column_key, ex);
+        return object_get<float>(object, column_key, is_nullable, ret_value, ex);
     }
 
-    REALM_EXPORT bool object_get_nullable_int64(const Object& object, ColKey column_key, int64_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_double(const Object& object, ColKey column_key, bool is_nullable, double& ret_value, NativeException::Marshallable& ex)
     {
-        return object_get_nullable<int64_t>(object, column_key, ret_value, ex);
-    }
-
-    REALM_EXPORT float object_get_float(const Object& object, ColKey column_key, NativeException::Marshallable& ex)
-    {
-        return object_get<float>(object, column_key, ex);
-    }
-
-    REALM_EXPORT bool object_get_nullable_float(const Object& object, ColKey column_key, float& ret_value, NativeException::Marshallable& ex)
-    {
-        return object_get_nullable<float>(object, column_key, ret_value, ex);
-    }
-
-    REALM_EXPORT double object_get_double(const Object& object, ColKey column_key, NativeException::Marshallable& ex)
-    {
-        return object_get<double>(object, column_key, ex);
-    }
-
-    REALM_EXPORT bool object_get_nullable_double(const Object& object, ColKey column_key, double& ret_value, NativeException::Marshallable& ex)
-    {
-        return object_get_nullable<double>(object, column_key, ret_value, ex);
+        return object_get<double>(object, column_key, is_nullable, ret_value, ex);
     }
 
     REALM_EXPORT size_t object_get_string(const Object& object, ColKey column_key, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
@@ -184,19 +169,10 @@ extern "C" {
         return data_size;
     }
 
-    REALM_EXPORT int64_t object_get_timestamp_ticks(const Object& object, ColKey column_key, NativeException::Marshallable& ex)
-    {
-        return to_ticks(object_get<Timestamp>(object, column_key, ex));
-    }
-
-    REALM_EXPORT bool object_get_nullable_timestamp_ticks(const Object& object, ColKey column_key, int64_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_timestamp_ticks(const Object& object, ColKey column_key, bool is_nullable, int64_t& ret_value, NativeException::Marshallable& ex)
     {
         Timestamp field_data = object_get<Timestamp>(object, column_key, ex);
-        if (ex.type != RealmErrorType::NoError) {
-            return false;
-        }
-
-        if (field_data.is_null()) {
+        if (ex.type != RealmErrorType::NoError || field_data.is_null()) {
             return false;
         }
  
