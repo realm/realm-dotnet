@@ -67,14 +67,17 @@ namespace Realms.Tests.Database
             _mode = mode;
         }
 
-        protected override void CustomSetUp()
+        protected override RealmConfiguration CreateConfiguration(string path)
         {
-            _configuration = new RealmConfiguration(_configuration.DatabasePath)
+            return new RealmConfiguration(path)
             {
                 ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
                 IsDynamic = _mode == DynamicTestObjectType.DynamicRealmObject
             };
+        }
 
+        protected override void CustomSetUp()
+        {
             base.CustomSetUp();
 
             _realm.Write(() =>

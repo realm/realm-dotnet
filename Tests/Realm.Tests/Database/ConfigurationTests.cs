@@ -26,24 +26,9 @@ using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ConfigurationTests : RealmTest
+    public class ConfigurationTests : RealmInstanceTest
     {
-        private RealmConfiguration _configuration;
-
         protected override bool OverrideDefaultConfig => false;
-
-        protected override void CustomSetUp()
-        {
-            base.CustomSetUp();
-            _configuration = new RealmConfiguration(Path.GetTempFileName());
-        }
-
-        protected override void CustomTearDown()
-        {
-            base.CustomTearDown();
-
-            Realm.DeleteRealm(_configuration);
-        }
 
         [Test]
         public void DefaultConfigurationShouldHaveValidPath()

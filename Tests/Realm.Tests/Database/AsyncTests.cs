@@ -26,32 +26,8 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AsyncTests : RealmTest
+    public class AsyncTests : RealmInstanceTest
     {
-        private Lazy<Realm> _lazyRealm;
-
-        private Realm _realm => _lazyRealm.Value;
-
-        // We capture the current SynchronizationContext when opening a Realm.
-        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
-        // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        protected override void CustomSetUp()
-        {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance());
-            base.CustomSetUp();
-        }
-
-        protected override void CustomTearDown()
-        {
-            if (_lazyRealm.IsValueCreated)
-            {
-                _realm.Dispose();
-                Realm.DeleteRealm(_realm.Config);
-            }
-
-            base.CustomTearDown();
-        }
-
         [Test]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {

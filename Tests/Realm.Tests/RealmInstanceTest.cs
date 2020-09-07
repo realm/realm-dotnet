@@ -38,6 +38,8 @@ namespace Realms.Tests
             CleanupOnTearDown(obj.Realm);
         }
 
+        protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
+
         protected T Freeze<T>(T obj)
             where T : RealmObject
         {
@@ -72,7 +74,7 @@ namespace Realms.Tests
 
         protected override void CustomSetUp()
         {
-            _configuration = new RealmConfiguration(Path.GetTempFileName());
+            _configuration = CreateConfiguration(Path.GetTempFileName());
             _lazyRealm = new Lazy<Realm>(() => GetRealm(_configuration));
             base.CustomSetUp();
         }
