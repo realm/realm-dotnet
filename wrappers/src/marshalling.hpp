@@ -48,6 +48,13 @@ struct PrimitiveValue
     } value2;
 };
 
+inline realm::Decimal128 to_decimal(PrimitiveValue primitive)
+{
+    REALM_ASSERT(primitive.type == realm::PropertyType::Decimal || primitive.type == (realm::PropertyType::Decimal | realm::PropertyType::Nullable));
+
+    return realm::Decimal128(realm::Decimal128::Bid128{ primitive.value.low_bytes, primitive.value2.high_bytes });
+}
+
 struct StringValue
 {
     const char* value;

@@ -207,12 +207,11 @@ extern "C" {
                 object.obj().set(column_key, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
                 break;
             case realm::PropertyType::Decimal: {
-                auto decimal = Decimal128(Decimal128::Bid128{ value.value.low_bytes, value.value2.high_bytes });
-                object.obj().set(column_key, decimal);
+                object.obj().set(column_key, to_decimal(value));
                 break;
             }
             case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
-                auto decimal = value.has_value ? Decimal128(Decimal128::Bid128{ value.value.low_bytes, value.value2.high_bytes }) : Decimal128(null());
+                auto decimal = value.has_value ? to_decimal(value) : Decimal128(null());
                 object.obj().set(column_key, decimal);
                 break;
             }

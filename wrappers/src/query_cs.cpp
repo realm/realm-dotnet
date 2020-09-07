@@ -150,6 +150,10 @@ REALM_EXPORT void query_primitive_equal(Query& query, ColKey column_key, Primiti
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.equal(column_key, from_ticks(primitive.value.int_value));
             break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.equal(column_key, to_decimal(primitive));
+            break;
         default:
             REALM_UNREACHABLE();
         }
@@ -187,6 +191,10 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, ColKey column_key, Pri
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.not_equal(column_key, from_ticks(primitive.value.int_value));
             break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.not_equal(column_key, to_decimal(primitive));
+            break;
         default:
             REALM_UNREACHABLE();
         }
@@ -222,6 +230,10 @@ REALM_EXPORT void query_primitive_less(Query& query, ColKey column_key, Primitiv
         case realm::PropertyType::Date:
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.less(column_key, from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.less(column_key, to_decimal(primitive));
             break;
         default:
             REALM_UNREACHABLE();
@@ -259,6 +271,10 @@ REALM_EXPORT void query_primitive_less_equal(Query& query, ColKey column_key, Pr
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.less_equal(column_key, from_ticks(primitive.value.int_value));
             break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.less_equal(column_key, to_decimal(primitive));
+            break;
         default:
             REALM_UNREACHABLE();
         }
@@ -295,6 +311,10 @@ REALM_EXPORT void query_primitive_greater(Query& query, ColKey column_key, Primi
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.greater(column_key, from_ticks(primitive.value.int_value));
             break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.greater(column_key, to_decimal(primitive));
+            break;
         default:
             REALM_UNREACHABLE();
         }
@@ -330,6 +350,10 @@ REALM_EXPORT void query_primitive_greater_equal(Query& query, ColKey column_key,
         case realm::PropertyType::Date:
         case realm::PropertyType::Date | realm::PropertyType::Nullable:
             query.greater_equal(column_key, from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.greater_equal(column_key, to_decimal(primitive));
             break;
         default:
             REALM_UNREACHABLE();

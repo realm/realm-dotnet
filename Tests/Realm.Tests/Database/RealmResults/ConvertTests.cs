@@ -18,8 +18,8 @@
 
 using System;
 using System.Linq;
+using MongoDB.Bson;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -31,6 +31,8 @@ namespace Realms.Tests.Database
         private const long LongOne = 1;
         private const float FloatOne = 1;
         private const double DoubleOne = 1;
+        private const decimal DecimalOne = 1;
+        private static readonly Decimal128 Decimal128One = 1;
 
         private static readonly int? NullableOne = 1;
         private static readonly int? NullableZero = 0;
@@ -66,7 +68,11 @@ namespace Realms.Tests.Database
                     NullableInt64Property = 1,
                     NullableSingleProperty = 1,
                     SingleProperty = 1,
-                    RequiredStringProperty = string.Empty
+                    RequiredStringProperty = string.Empty,
+                    DecimalProperty = 1,
+                    Decimal128Property = 1,
+                    NullableDecimalProperty = 1,
+                    NullableDecimal128Property = 1,
                 });
 
                 _realm.Add(new CounterObject());
@@ -113,6 +119,14 @@ namespace Realms.Tests.Database
         public void Equal_WhenUsingBroaderType_Single()
         {
             var singleQuery = _realm.All<AllTypesObject>().Where(o => o.SingleProperty == DoubleOne).ToArray();
+            Assert.That(singleQuery.Length, Is.EqualTo(1));
+            Assert.That(singleQuery[0].DoubleProperty, Is.EqualTo(DoubleOne));
+        }
+
+        [Test]
+        public void Equal_WhenUsingBroaderType_Decimal()
+        {
+            var singleQuery = _realm.All<AllTypesObject>().Where(o => o.DecimalProperty == Decimal128One).ToArray();
             Assert.That(singleQuery.Length, Is.EqualTo(1));
             Assert.That(singleQuery[0].DoubleProperty, Is.EqualTo(DoubleOne));
         }
@@ -170,7 +184,31 @@ namespace Realms.Tests.Database
         {
             var doubleQuery = _realm.All<AllTypesObject>().Where(o => o.DoubleProperty == FloatOne).ToArray();
             Assert.That(doubleQuery.Length, Is.EqualTo(1));
-            Assert.That(doubleQuery[0].SingleProperty, Is.EqualTo(FloatOne));
+            Assert.That(doubleQuery[0].DoubleProperty, Is.EqualTo(1.0));
+        }
+
+        [Test]
+        public void Equal_WhenUsingNarrowerType_Decimal()
+        {
+            var decimalQuery = _realm.All<AllTypesObject>().Where(o => o.DecimalProperty == ByteOne).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].DecimalProperty, Is.EqualTo(DecimalOne));
+        }
+
+        [Test]
+        public void Equal_WhenUsingNarrowerType_Decimal128()
+        {
+            var decimalByDecimalQuery = _realm.All<AllTypesObject>().Where(o => o.Decimal128Property == DecimalOne).ToArray();
+            Assert.That(decimalByDecimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalByDecimalQuery[0].Decimal128Property, Is.EqualTo(Decimal128One));
+
+            var decimalByLongQuery = _realm.All<AllTypesObject>().Where(o => o.Decimal128Property == LongOne).ToArray();
+            Assert.That(decimalByLongQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalByLongQuery[0].Decimal128Property, Is.EqualTo(Decimal128One));
+
+            var decimalByByteQuery = _realm.All<AllTypesObject>().Where(o => o.Decimal128Property == ByteOne).ToArray();
+            Assert.That(decimalByByteQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalByByteQuery[0].Decimal128Property, Is.EqualTo(Decimal128One));
         }
 
         [Test]
@@ -255,6 +293,46 @@ namespace Realms.Tests.Database
             doubleQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDoubleProperty != null).ToArray();
             Assert.That(doubleQuery.Length, Is.EqualTo(1));
             Assert.That(doubleQuery[0].NullableDoubleProperty, Is.EqualTo(1.0));
+        }
+
+        [Test]
+        public void Equal_WhenPropertyIsNullable_Decimal()
+        {
+            var decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimalProperty == DecimalOne).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimalProperty, Is.EqualTo(1));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimalProperty == LongOne).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimalProperty, Is.EqualTo(1));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimalProperty == Decimal128One).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimalProperty, Is.EqualTo(1));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimalProperty != null).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimalProperty, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Equal_WhenPropertyIsNullable_Decimal128()
+        {
+            var decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimal128Property == Decimal128One).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimal128Property, Is.EqualTo(Decimal128One));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimal128Property == DecimalOne).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimal128Property, Is.EqualTo(Decimal128One));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimal128Property == LongOne).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimal128Property, Is.EqualTo(Decimal128One));
+
+            decimalQuery = _realm.All<AllTypesObject>().Where(o => o.NullableDecimal128Property != null).ToArray();
+            Assert.That(decimalQuery.Length, Is.EqualTo(1));
+            Assert.That(decimalQuery[0].NullableDecimal128Property, Is.EqualTo(Decimal128One));
         }
 
         [Test]
@@ -397,6 +475,25 @@ namespace Realms.Tests.Database
             Assert.That(doubleQuery.Length, Is.EqualTo(1));
             Assert.That(doubleQuery[0].DoubleProperty, Is.EqualTo(doubleValue));
         }
+
+        [Test]
+        public void Equal_WhenVariableIsNullable_Decimal()
+        {
+            decimal? decimalValue = 1M;
+            var doubleQuery = _realm.All<AllTypesObject>().Where(o => o.DecimalProperty == decimalValue).ToArray();
+            Assert.That(doubleQuery.Length, Is.EqualTo(1));
+            Assert.That(doubleQuery[0].DecimalProperty, Is.EqualTo(decimalValue));
+        }
+
+        [Test]
+        public void Equal_WhenVariableIsNullable_Decimal128()
+        {
+            Decimal128? decimalValue = 1;
+            var doubleQuery = _realm.All<AllTypesObject>().Where(o => o.Decimal128Property == decimalValue).ToArray();
+            Assert.That(doubleQuery.Length, Is.EqualTo(1));
+            Assert.That(doubleQuery[0].Decimal128Property, Is.EqualTo(decimalValue));
+        }
+
 
         [Test]
         public void Equal_WhenVariableIsNullable_Int16()

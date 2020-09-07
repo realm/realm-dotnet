@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using MongoDB.Bson;
 using Realms.Native;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -807,6 +808,20 @@ namespace Realms
             else if (columnType == typeof(double))
             {
                 action(columnKey, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
+            }
+            else if (columnType == typeof(Decimal128))
+            {
+                // This is needed, because Convert.ChangeType will throw if value is Decimal128
+                if (!(value is Decimal128 decimalValue))
+                {
+                    decimalValue = (Decimal128)Convert.ChangeType(value, typeof(Decimal128));
+                }
+
+                action(columnKey, PrimitiveValue.Create(decimalValue, PropertyType.Decimal));
+            }
+            else if (columnType == typeof(decimal))
+            {
+                action(columnKey, PrimitiveValue.Create((decimal)Convert.ChangeType(value, typeof(decimal)), PropertyType.Decimal));
             }
             else
             {

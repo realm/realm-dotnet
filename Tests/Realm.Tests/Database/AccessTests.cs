@@ -55,7 +55,17 @@ namespace Realms.Tests.Database
             new object[] { "StringProperty", "hello" },
             new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
             new object[] { "DecimalProperty", 123.456M },
+            new object[] { "DecimalProperty", decimal.MinValue },
+            new object[] { "DecimalProperty", decimal.MaxValue },
+            new object[] { "DecimalProperty", decimal.One },
+            new object[] { "DecimalProperty", decimal.MinusOne },
+            new object[] { "DecimalProperty", decimal.Zero },
             new object[] { "Decimal128Property", new Decimal128(564.42343424323) },
+            new object[] { "Decimal128Property", new Decimal128(decimal.MinValue) },
+            new object[] { "Decimal128Property", new Decimal128(decimal.MaxValue) },
+            new object[] { "Decimal128Property", Decimal128.MinValue },
+            new object[] { "Decimal128Property", Decimal128.MaxValue },
+            new object[] { "Decimal128Property", Decimal128.Zero },
         };
 
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]

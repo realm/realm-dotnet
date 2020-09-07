@@ -76,7 +76,13 @@ namespace Realms.Tests.Database
         public decimal? NullableDecimalProperty { get; set; }
 
         public Decimal128? NullableDecimal128Property { get; set; }
+    }
 
+    public class DecimalsObject : RealmObject
+    {
+        public decimal DecimalValue { get; set; }
+
+        public Decimal128 Decimal128Value { get; set; }
     }
 
     public class ListsObject : RealmObject
