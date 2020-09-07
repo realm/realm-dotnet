@@ -86,7 +86,7 @@ stage('Build wrappers') {
   for(platform in WindowsPlatforms) {
     def localPlatform = platform
     jobs["Windows ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
+      rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
@@ -102,7 +102,7 @@ stage('Build wrappers') {
   for(platform in WindowsUniversalPlatforms) {
     def localPlatform = platform
     jobs["WindowsUniversal ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
+      rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
