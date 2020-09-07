@@ -1,4 +1,4 @@
-vNext(TBD)
+5.0.0 (2020-09-07)
 ------------------
 
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
