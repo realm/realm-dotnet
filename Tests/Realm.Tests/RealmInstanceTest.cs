@@ -26,7 +26,7 @@ namespace Realms.Tests
     [Preserve(AllMembers = true)]
     public abstract class RealmInstanceTest : RealmTest
     {
-        protected RealmConfiguration _configuration = new RealmConfiguration(Path.GetTempFileName());
+        protected RealmConfiguration _configuration;
 
         private Lazy<Realm> _lazyRealm;
 
@@ -72,6 +72,7 @@ namespace Realms.Tests
 
         protected override void CustomSetUp()
         {
+            _configuration = new RealmConfiguration(Path.GetTempFileName());
             _lazyRealm = new Lazy<Realm>(() => GetRealm(_configuration));
             base.CustomSetUp();
         }
