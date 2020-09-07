@@ -47,7 +47,7 @@ using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
 
 namespace realm {
 namespace binding {
-    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference<Realm>* ref, int32_t error_code, const char* message, size_t message_len);
+    void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len);
         
     class SyncLogger : public util::RootLogger {
     public:
@@ -91,6 +91,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     }
     
     config.schema_version = configuration.schema_version;
+    config.max_number_of_active_versions = configuration.max_number_of_active_versions;
     
     std::string realm_url(Utf16StringAccessor(sync_configuration.url, sync_configuration.url_len));
     
@@ -123,6 +124,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         config.sync_config->custom_partial_sync_identifier = partial_sync_identifier.to_string();
     }
     
+    config.cache = configuration.enable_cache;
+
     return config;
 }
     
@@ -201,7 +204,7 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
         auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
         
         auto task = Realm::get_synchronized_realm(config);
-        task->start([task_completion_source](ThreadSafeReference<Realm> ref, std::exception_ptr error) {
+        task->start([task_completion_source](ThreadSafeReference ref, std::exception_ptr error) {
             if (error) {
                 try {
                     std::rethrow_exception(error);
@@ -210,7 +213,7 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
                     s_open_realm_callback(task_completion_source, nullptr, ec.value(), ec.message().c_str(), ec.message().length());
                 }
             } else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference<Realm>(std::move(ref)), 0, nullptr, 0);
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), 0, nullptr, 0);
             }
         });
         
@@ -304,7 +307,7 @@ REALM_EXPORT uint8_t realm_syncmanager_get_class_privileges(SharedRealm& sharedR
 REALM_EXPORT uint8_t realm_syncmanager_get_object_privileges(SharedRealm& sharedRealm, Object& object, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return static_cast<uint8_t>(sharedRealm->get_privileges(object.row()));
+        return static_cast<uint8_t>(sharedRealm->get_privileges(object.obj()));
     });
 }
 

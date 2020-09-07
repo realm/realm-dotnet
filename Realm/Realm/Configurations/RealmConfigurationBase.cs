@@ -100,7 +100,7 @@ namespace Realms
         /// Gets or sets a number, indicating the version of the schema. Can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
-        public ulong SchemaVersion { get; set; } = 0;
+        public ulong SchemaVersion { get; set; }
 
         private byte[] _encryptionKey;
 
@@ -126,6 +126,12 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of active versions allowed before an exception is thrown.
+        /// </summary>
+        /// <seealso cref="Realm.Freeze"/>
+        public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
+
         internal RealmConfigurationBase()
         {
         }
@@ -143,5 +149,16 @@ namespace Realms
         internal abstract Realm CreateRealm(RealmSchema schema);
 
         internal abstract Task<Realm> CreateRealmAsync(RealmSchema schema, CancellationToken cancellationToken);
+
+        internal Native.Configuration CreateConfiguration()
+        {
+            return new Native.Configuration
+            {
+                Path = DatabasePath,
+                schema_version = SchemaVersion,
+                enable_cache = EnableCache,
+                max_number_of_active_versions = MaxNumberOfActiveVersions
+            };
+        }
     }
 }

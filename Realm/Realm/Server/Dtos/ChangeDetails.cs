@@ -49,10 +49,9 @@ namespace Realms.Server
                                     previous: PreviousRealm,
                                     current: CurrentRealm,
                                     className: x.ClassName,
-                                    insertions: x.insertions.AsEnumerable().Select(i => (int)i).ToArray(),
-                                    modifications: x.previous_modifications.AsEnumerable().Select(i => (int)i).ToArray(),
-                                    currentModifications: x.current_modifications.AsEnumerable().Select(i => (int)i).ToArray(),
-                                    deletions: x.deletions.AsEnumerable().Select(i => (int)i).ToArray()));
+                                    insertions: x.insertions.AsEnumerable(),
+                                    modifications: x.modifications.AsEnumerable(),
+                                    deletions: x.deletions.AsEnumerable()));
         }
     }
 }

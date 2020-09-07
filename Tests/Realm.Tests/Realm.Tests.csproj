@@ -1,22 +1,31 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp20;monoandroid81;xamarin.ios10;xamarin.mac20</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp20;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
+    <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
     <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="NUnitLite" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
-    <PackageReference Include="StyleCop.MSBuild" Version="6.0.0" Condition="'$(MSBuildRuntimeType)' != 'Core'" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Reactive" Version="4.1.6" />
   </ItemGroup>
 
@@ -72,5 +81,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="EmbeddedResources\trusted_ca.pem" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
 </Project>

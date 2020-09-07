@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
@@ -68,14 +67,17 @@ namespace Realms.Tests.Database
             _mode = mode;
         }
 
-        protected override void CustomSetUp()
+        protected override RealmConfiguration CreateConfiguration(string path)
         {
-            _configuration = new RealmConfiguration(_configuration.DatabasePath)
+            return new RealmConfiguration(path)
             {
                 ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) },
                 IsDynamic = _mode == DynamicTestObjectType.DynamicRealmObject
             };
+        }
 
+        protected override void CustomSetUp()
+        {
             base.CustomSetUp();
 
             _realm.Write(() =>
@@ -116,7 +118,9 @@ namespace Realms.Tests.Database
         {
             var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             var dogNames = new List<string>();
-            foreach (var dog in tim.Dogs)  // using foreach here is deliberately testing that syntax
+
+            //// using foreach here is deliberately testing that syntax
+            foreach (var dog in tim.Dogs)
             {
                 dogNames.Add(dog.Name);
             }

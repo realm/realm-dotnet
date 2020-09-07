@@ -22,7 +22,7 @@ using System.Linq;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A set of options provided to <see cref="Subscription.Subscribe"/>
+    /// A set of options provided to <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions, System.Linq.Expressions.Expression{Func{T, IQueryable}}[])"/>
     /// to control the behavior of the subscription.
     /// </summary>
     public class SubscriptionOptions

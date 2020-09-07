@@ -23,7 +23,8 @@ using System.Runtime.InteropServices;
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PtrTo<T> where T : struct
+    internal unsafe struct PtrTo<T>
+        where T : struct
     {
         private void* ptr;
 

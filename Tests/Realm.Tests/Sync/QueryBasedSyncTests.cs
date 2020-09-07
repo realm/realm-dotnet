@@ -20,16 +20,14 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
-using Realms;
 using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture, Preserve(AllMembers = true)]
+    [TestFixture(Explicit = true, Description = "This causes a race condition in OS resulting in Access to invalidated Results objects."), Preserve(AllMembers = true)]
     public class QueryBasedSyncTests : SyncTestBase
     {
         [TestCase(true)]
@@ -229,7 +227,7 @@ namespace Realms.Tests.Sync
                     var updatedSub = realm.All<ObjectA>()
                                           .Where(o => o.IntValue < 3)
                                           .Subscribe(new SubscriptionOptions { Name = "foo", ShouldUpdate = true });
-                                          
+
                     await updatedSub.WaitForSynchronizationAsync().Timeout(2000);
                     Assert.That(subscription.Results.Count(), Is.EqualTo(3));
 
@@ -355,7 +353,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(query.Count(), Is.EqualTo(0));
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
@@ -381,7 +379,7 @@ namespace Realms.Tests.Sync
 
                     Assert.That(subscription.State, Is.EqualTo(SubscriptionState.Invalidated));
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(query.Count(), Is.EqualTo(0));
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
@@ -405,7 +403,7 @@ namespace Realms.Tests.Sync
 
                     await realm.UnsubscribeAsync("query");
 
-                    await TestHelpers.WaitForConditionAsync(() => query.Count() == 0);
+                    await TestHelpers.WaitForConditionAsync(() => !query.Any());
                     Assert.That(subscription.Results.Count(), Is.EqualTo(0));
                 }
             });
@@ -495,7 +493,7 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetQueryBasedRealm(bool openAsync, [CallerMemberName] string realmPath = null)
         {
-            var user = await SyncTestHelpers.GetUserAsync();
+            var user = await SyncTestHelpers.GetUserAsync().Timeout(5000);
             var config = new QueryBasedSyncConfiguration(SyncTestHelpers.RealmUri($"~/{realmPath}_{openAsync}"), user, Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(ObjectA), typeof(ObjectB), typeof(ObjectC) }
@@ -526,7 +524,7 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                await SyncTestHelpers.WaitForUploadAsync(original);
+                await SyncTestHelpers.WaitForUploadAsync(original).Timeout(5000);
             }
 
             try

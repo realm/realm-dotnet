@@ -27,6 +27,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Xml.Serialization;
 using Realms.DataBinding;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Schema;
 
@@ -52,6 +53,7 @@ namespace Realms
         private NotificationTokenHandle _notificationToken;
 
         [field: NonSerialized, XmlIgnore]
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
         /// <inheritdoc />
@@ -100,6 +102,14 @@ namespace Realms
         public bool IsValid => _objectHandle?.IsValid != false;
 
         /// <summary>
+        /// Gets a value indicating whether this object is frozen. Frozen objects are immutable
+        /// and will not update when writes are made to the Realm. Unlike live objects, frozen
+        /// objects can be used across threads.
+        /// </summary>
+        /// <seealso cref="FreezeInPlace"/>
+        public bool IsFrozen => _objectHandle?.IsFrozen == true;
+
+        /// <summary>
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
@@ -119,17 +129,61 @@ namespace Realms
         /// </remarks>
         public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
 
-        Metadata IThreadConfined.Metadata => ObjectMetadata;
+        /// <summary>
+        /// Freezes this object in place. The frozen object can be accessed from any thread.
+        /// <para/>
+        /// Freezing a RealmObject also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// original object is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
+        /// object will be closed as well.
+        /// <para/>
+        /// Frozen objects can be queried as normal, but trying to mutate it in any way or attempting to register a listener will
+        /// throw a <see cref="RealmFrozenException"/>.
+        /// <para/>
+        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
+        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(T)"/>
+        public void FreezeInPlace()
+        {
+            if (IsFrozen)
+            {
+                return;
+            }
 
-        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
+            UnsubscribeFromNotifications();
+            _propertyChanged = null;
+            var oldHandle = _objectHandle;
+            (_realm, _objectHandle) = FreezeImpl();
+            oldHandle.Dispose();
+        }
+
+        internal (Realm FrozenRealm, ObjectHandle FrozenHandle) FreezeImpl()
+        {
+            if (!IsManaged)
+            {
+                throw new RealmException("Unmanaged objects cannot be frozen.");
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = _objectHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return (frozenRealm, frozenHandle);
+        }
 
         /// <inheritdoc/>
+        Metadata IThreadConfined.Metadata => ObjectMetadata;
+
+        /// <inheritdoc/>
+        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="RealmObject"/> class.
+        /// </summary>
         ~RealmObject()
         {
             UnsubscribeFromNotifications();
         }
 
-        internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        internal void SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
@@ -141,9 +195,10 @@ namespace Realms
             }
         }
 
+#pragma warning disable SA1600 // Elements should be documented
+
         #region Getters
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected string GetStringValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -151,7 +206,6 @@ namespace Realms
             return _objectHandle.GetString(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected char GetCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -159,7 +213,6 @@ namespace Realms
             return (char)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected char? GetNullableCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -167,7 +220,6 @@ namespace Realms
             return (char?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -175,7 +227,6 @@ namespace Realms
             return _objectHandle.GetSingle(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -183,7 +234,6 @@ namespace Realms
             return _objectHandle.GetNullableSingle(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected double GetDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -191,7 +241,6 @@ namespace Realms
             return _objectHandle.GetDouble(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected double? GetNullableDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -199,7 +248,6 @@ namespace Realms
             return _objectHandle.GetNullableDouble(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected bool GetBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -207,7 +255,6 @@ namespace Realms
             return _objectHandle.GetBoolean(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -215,7 +262,6 @@ namespace Realms
             return _objectHandle.GetNullableBoolean(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -223,7 +269,6 @@ namespace Realms
             return _objectHandle.GetDateTimeOffset(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -231,7 +276,6 @@ namespace Realms
             return _objectHandle.GetNullableDateTimeOffset(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected internal IList<T> GetListValue<T>(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -240,8 +284,9 @@ namespace Realms
             return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected T GetObjectValue<T>(string propertyName) where T : RealmObject
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        protected T GetObjectValue<T>(string propertyName)
+            where T : RealmObject
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
@@ -254,7 +299,6 @@ namespace Realms
             return null;
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected byte[] GetByteArrayValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -262,8 +306,8 @@ namespace Realms
             return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected IQueryable<T> GetBacklinks<T>(string propertyName) where T : RealmObject
+        protected IQueryable<T> GetBacklinks<T>(string propertyName)
+            where T : RealmObject
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
@@ -271,7 +315,8 @@ namespace Realms
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
-        internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle) where T : RealmObject
+        internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
+            where T : RealmObject
         {
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
@@ -279,7 +324,6 @@ namespace Realms
             return new RealmResults<T>(_realm, relatedMeta, resultsHandle);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
@@ -288,7 +332,6 @@ namespace Realms
             return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
@@ -307,7 +350,6 @@ namespace Realms
 
         #region Setters
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetStringValue(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -315,7 +357,6 @@ namespace Realms
             _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetStringValueUnique(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -323,7 +364,6 @@ namespace Realms
             _objectHandle.SetStringUnique(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetCharValue(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -331,7 +371,6 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetCharValueUnique(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -339,7 +378,6 @@ namespace Realms
             _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableCharValue(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -347,7 +385,6 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableCharValueUnique(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -355,7 +392,6 @@ namespace Realms
             _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetSingleValue(string propertyName, float value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -363,7 +399,6 @@ namespace Realms
             _objectHandle.SetSingle(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -371,7 +406,6 @@ namespace Realms
             _objectHandle.SetNullableSingle(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetDoubleValue(string propertyName, double value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -379,7 +413,6 @@ namespace Realms
             _objectHandle.SetDouble(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -387,7 +420,6 @@ namespace Realms
             _objectHandle.SetNullableDouble(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetBooleanValue(string propertyName, bool value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -395,7 +427,6 @@ namespace Realms
             _objectHandle.SetBoolean(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -403,7 +434,6 @@ namespace Realms
             _objectHandle.SetNullableBoolean(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -411,7 +441,6 @@ namespace Realms
             _objectHandle.SetDateTimeOffset(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -421,8 +450,8 @@ namespace Realms
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
         // most other properties handled with woven type-specific setters above
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
-        protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
+        protected void SetObjectValue<T>(string propertyName, T value)
+            where T : RealmObject
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
@@ -441,7 +470,6 @@ namespace Realms
             }
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -449,7 +477,6 @@ namespace Realms
             _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
             where T : struct, IComparable<T>, IFormattable
         {
@@ -458,7 +485,6 @@ namespace Realms
             _objectHandle.SetInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
             where T : struct, IComparable<T>, IFormattable
         {
@@ -467,7 +493,6 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value.ToLong());
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
             where T : struct, IComparable<T>, IFormattable
         {
@@ -476,7 +501,6 @@ namespace Realms
             _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value.ToLong());
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
             where T : struct, IComparable<T>, IFormattable
         {
@@ -486,6 +510,8 @@ namespace Realms
         }
 
         #endregion
+
+#pragma warning restore SA1600 // Elements should be documented
 
         /// <summary>
         /// Returns all the objects that link to this object in the specified relationship.
@@ -498,7 +524,7 @@ namespace Realms
             Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
             Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
-            var resultsHandle = ObjectHandle.GetBacklinksForType(objectType, property);
+            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
             return new RealmResults<RealmObject>(Realm, relatedMeta, resultsHandle);
         }
 
@@ -506,7 +532,7 @@ namespace Realms
         public override bool Equals(object obj)
         {
             // If parameter is null, return false.
-            if (ReferenceEquals(obj, null))
+            if (obj is null)
             {
                 return false;
             }
@@ -518,13 +544,18 @@ namespace Realms
             }
 
             // If run-time types are not exactly the same, return false.
-            if (GetType() != obj.GetType())
+            if (!(obj is RealmObject robj))
             {
                 return false;
             }
 
             // standalone objects cannot participate in the same store check
-            if (!IsManaged)
+            if (!IsManaged || !robj.IsManaged)
+            {
+                return false;
+            }
+
+            if (ObjectSchema.Name != robj.ObjectSchema.Name)
             {
                 return false;
             }
@@ -532,7 +563,7 @@ namespace Realms
             // Return true if the fields match.
             // Note that the base class is not invoked because it is
             // System.Object, which defines Equals as reference equality.
-            return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
+            return ObjectHandle.Equals(robj.ObjectHandle);
         }
 
         /// <summary>
@@ -592,6 +623,11 @@ namespace Realms
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
+            if (IsFrozen)
+            {
+                throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObject since it never changes.");
+            }
+
             _realm.ExecuteOutsideTransaction(() =>
             {
                 if (ObjectHandle.IsValid)
@@ -608,6 +644,7 @@ namespace Realms
             _notificationToken = null;
         }
 
+        /// <inheritdoc/>
         void NotificationsHelper.INotifiable.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();

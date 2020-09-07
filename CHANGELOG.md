@@ -1,17 +1,27 @@
 vNext(TBD)
 ------------------
 
+NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
+
 ### Enhancements
-* None
+* Added the notion of "frozen objects" - these are objects, queries, lists, or Realms that have been "frozen" at a specific version. This allows you to access the data from any thread, but it will never change. All frozen objects can be accessed and queried as normal, but attempting to mutate them or add change listeners will throw an exception. (Issue [#1945](https://github.com/realm/realm-dotnet/issues/1945))
+  * Added `Realm.Freeze()`, `RealmObject.Freeze()`, `RealmObject.FreezeInPlace()`, `IQueryable<RealmObject>.Freeze()`, `IList<T>.Freeze()`, and `IRealmCollection<T>.Freeze()`. These methods will produce the frozen version of the instance on which they are called.
+  * Added `Realm.IsFrozen`, `RealmObject.IsFrozen`, and `IRealmCollection<T>.IsFrozen`, which returns whether or not the data is frozen.
+  * Added `RealmConfigurationBase.MaxNumberOfActiveVersions`. Setting this will cause Realm to throw an exception if too many versions of the Realm data are live at the same time. Having too many versions can dramatically increase the filesize of the Realm.
+* Add support for `SynchronizationContext`-confined Realms. Rather than being bound to a specific thread, queue-confined Realms are bound to a `SynchronizationContext`, regardless of whether it dispatches work on the same or a different thread. Opening a Realm when `SynchronizationContext.Current` is null - most notably `Task.Run(...)` - will still confine the Realm to the thread on which it was opened.
+* Storing large binary blobs in Realm files no longer forces the file to be at least 8x the size of the largest blob.
+* Reduce the size of transaction logs stored inside the Realm file, reducing file size growth from large transactions.
+* String primary keys no longer require a separate index, improving insertion and deletion performance without hurting lookup performance.
 
 ### Fixed
 * Fixed `Access to invalidated List object` being thrown when adding objects to a list while at the same time deleting the object containing the list. (Issue [#1971](https://github.com/realm/realm-dotnet/issues/1971))
+* Fixed incorrect results being returned when using `.ElementAt()` on a query where a string filter with a sort clause was applied. (PR [#2002](https://github.com/realm/realm-dotnet/pull/2002))
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 
 ### Internal
-* Using Sync 4.9.5 and Core 5.23.8.
+* Using Sync 5.0.21 and Core 6.0.24.
 
 4.3.0 (2020-02-05)
 ------------------

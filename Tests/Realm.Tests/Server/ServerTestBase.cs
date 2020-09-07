@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using Realms.Server;
 using Realms.Sync;
 using Realms.Tests.Sync;
@@ -80,32 +79,6 @@ namespace Realms.Tests.Server
             var realm = GetRealm(config);
             await SyncTestHelpers.WaitForUploadAsync(realm);
             return (realm, user.Identity);
-        }
-
-        protected Task<bool> EnsureChangesAsync<T>(IList<IChangeDetails> changeDetails, int expectedCount, Func<IChangeSetDetails, bool> testFunc)
-        {
-            return TestHelpers.EnsureAsync(() =>
-            {
-                if (changeDetails.Count != expectedCount)
-                {
-                    return false;
-                }
-
-                var changes = changeDetails.Last().Changes;
-
-                if (changes.Count != 1)
-                {
-                    return false;
-                }
-
-                var change = changes.Single();
-                if (change.Key != typeof(T).Name)
-                {
-                    return false;
-                }
-
-                return testFunc(change.Value);
-            }, 100, 100);
         }
     }
 }

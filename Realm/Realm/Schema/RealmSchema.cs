@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 
 namespace Realms.Schema
 {
@@ -49,6 +50,8 @@ namespace Realms.Schema
         /// <exception cref="NotSupportedException">Thrown if the schema has already materialized.</exception>
         public static void AddDefaultTypes(IEnumerable<Type> types)
         {
+            Argument.NotNull(types, nameof(types));
+
             foreach (var type in types)
             {
                 if (_defaultTypes.Add(type) &&
@@ -97,6 +100,7 @@ namespace Realms.Schema
             return _objects.Values.GetEnumerator();
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

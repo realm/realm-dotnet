@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_ERROR_TYPE_HPP
-#define REALM_ERROR_TYPE_HPP
+#pragma once
 
 namespace realm {
 
@@ -77,6 +76,7 @@ namespace realm {
         
         RealmFeatureUnavailable = 26,
         
+        // deprecated: sync 1.x migration related
         RealmIncompatibleSyncedFile = 27,
         
         RealmDotNetExceptionDuringMigration = 30,
@@ -89,5 +89,3 @@ namespace realm {
     };
 
 }   // namespace realm
-
-#endif /* defined(REALM_ERROR_TYPE_HPP) */

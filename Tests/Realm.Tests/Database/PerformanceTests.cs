@@ -19,17 +19,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
     [TestFixture, Preserve(AllMembers = true)]
     public class PerformanceTests : RealmInstanceTest
     {
-        [TestCase(1000000, 100), Explicit]
+        [TestCase(1000000, 100), TestExplicit]
         public void BindingPerformanceTest(int totalRecs, int recsPerTrans)
         {
             Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction -------------");
@@ -63,7 +61,7 @@ namespace Realms.Tests.Database
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
-        [TestCase(1000000, 1000), Explicit]
+        [TestCase(1000000, 1000), TestExplicit]
         public void BindingCreateObjectPerformanceTest(int totalRecs, int recsPerTrans)
         {
             Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction: CreateObject -------------");
@@ -91,7 +89,7 @@ namespace Realms.Tests.Database
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
-        [TestCase(1000000), Explicit]
+        [TestCase(1000000), TestExplicit]
         public void BindingSetValuePerformanceTest(int count)
         {
             Console.WriteLine($"Binding-based performance check for {count:n} entries: Set value -------------");
@@ -119,7 +117,7 @@ namespace Realms.Tests.Database
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", (count / 1000) / sw.Elapsed.TotalSeconds);
         }
 
-        [TestCase(100000), Explicit]
+        [TestCase(100000), TestExplicit]
         public void ManageSmallObjectPerformanceTest(int count)
         {
             var objects = new List<MiniPerson>();
@@ -161,7 +159,7 @@ namespace Realms.Tests.Database
             Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
         }
 
-        [TestCase(100000), Explicit]
+        [TestCase(100000), TestExplicit]
         public void ManageLargeObjectPerformanceTest(int count)
         {
             var objects = new List<Person>();
@@ -204,7 +202,6 @@ namespace Realms.Tests.Database
         }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class MiniPerson : RealmObject
     {
         public string Name { get; set; }

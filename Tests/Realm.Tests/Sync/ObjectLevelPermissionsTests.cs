@@ -20,9 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -363,7 +361,6 @@ namespace Realms.Tests.Sync
                     // C should now be able to create objects
                     // Why does my subscription timeout?
                     // var subscription = await SubscribeToObjectsAsync(realm);
-
                     await SyncTestHelpers.WaitForSyncAsync(realm);
                     AssertRealmPrivileges(realm, RealmPrivileges.Read | RealmPrivileges.Update | RealmPrivileges.ModifySchema | RealmPrivileges.SetPermissions);
                     AssertClassPrivileges(realm, ClassPrivileges.Read | ClassPrivileges.Subscribe | ClassPrivileges.Update | ClassPrivileges.Create);

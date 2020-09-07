@@ -11,7 +11,7 @@ def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 String versionSuffix = ''
 
 stage('Checkout') {
-  nodeWithCleanup('macos && dotnet') {
+  rlmNode('docker') {
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -38,7 +38,7 @@ stage('Checkout') {
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
-      nodeWithCleanup('osx') {
+      rlmNode('osx') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "./build-ios.sh --configuration=${configuration}"
@@ -47,7 +47,7 @@ stage('Build wrappers') {
       }
     },
     'macOS': {
-      nodeWithCleanup('osx') {
+      rlmNode('osx') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
@@ -56,7 +56,7 @@ stage('Build wrappers') {
       }
     },
     'Linux': {
-      nodeWithCleanup('docker') {
+      rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f centos.Dockerfile").inside() {
@@ -71,7 +71,7 @@ stage('Build wrappers') {
   for(abi in AndroidABIs) {
     def localAbi = abi
     jobs["Android ${localAbi}"] = {
-      nodeWithCleanup('docker') {
+      rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f android.Dockerfile').inside() {
@@ -86,7 +86,7 @@ stage('Build wrappers') {
   for(platform in WindowsPlatforms) {
     def localPlatform = platform
     jobs["Windows ${localPlatform}"] = {
-      nodeWithCleanup('windows') {
+      rlmNode('windows-vs2017') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
@@ -102,7 +102,7 @@ stage('Build wrappers') {
   for(platform in WindowsUniversalPlatforms) {
     def localPlatform = platform
     jobs["WindowsUniversal ${localPlatform}"] = {
-      nodeWithCleanup('windows') {
+      rlmNode('windows-vs2017') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
@@ -120,7 +120,7 @@ stage('Build wrappers') {
 
 packageVersion = ''
 stage('Package') {
-  nodeWithCleanup('windows && dotnet') {
+  rlmNode('windows && dotnet') {
     unstash 'dotnet-source'
     unstash 'ios-wrappers'
     unstash 'macos-wrappers'
@@ -144,6 +144,17 @@ stage('Package') {
         msbuild target: 'Pack', properties: props, restore: true
       }
 
+      recordIssues (
+        tool: msBuild(),
+        ignoreQualityGate: false,
+        ignoreFailedBuilds: true,
+        filters: [
+          excludeFile(".*/wrappers/.*"), // warnings produced by building the wrappers dll
+          excludeFile(".*zlib.lib.*"), // warning due to linking zlib without debug info
+          excludeFile(".*Microsoft.Build.Tasks.Git.targets.*") // warning due to sourcelink not finding objectstore
+        ]
+      )
+
       dir('packages') {
         stash includes: '*.nupkg', name: 'packages'
         archiveArtifacts '*.nupkg'
@@ -161,50 +172,41 @@ stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     'Xamarin iOS': {
-      nodeWithCleanup('xamarin.ios') {
+      rlmNode('xamarin.ios') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
+        sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
                   properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
-            stash includes: 'Tests.iOS.app/**/*', name: 'ios-tests'
+            runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
         }
-      }
-      nodeWithCleanup('xamarin.ios') {
-        unstash 'ios-tests'
 
-        sh 'mkdir -p temp'
-        runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
         junit 'temp/TestResults.iOS.xml'
       }
     },
     'Xamarin macOS': {
-      nodeWithCleanup('xamarin.mac') {
+      rlmNode('xamarin.mac') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
+        sh 'mkdir -p temp'
         dir('Tests/Tests.XamarinMac') {
           msbuild restore: true,
                   properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
-          dir("bin/${configuration}") {
-            stash includes: 'Tests.XamarinMac.app/**/*', name: 'macos-tests'
+          dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
+            sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
           }
         }
-      }
-      nodeWithCleanup('osx || macos') {
-        unstash 'macos-tests'
 
-        dir("Tests.XamarinMac.app/Contents") {
-          sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/TestResults.macOS.xml"
-        }
-        reportTests 'TestResults.macOS.xml'
+        junit 'temp/TestResults.macOS.xml'
       }
     },
     'Xamarin Android': {
-      nodeWithCleanup('windows && xamarin.android') {
+      rlmNode('windows && xamarin.android') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -217,7 +219,7 @@ stage('Test') {
         }
       }
       // The android tests fail on CI due to a CompilerServices.Unsafe issue. Uncomment when resolved
-      // nodeWithCleanup('android-hub') {
+      // rlmNode('android-hub') {
       //   unstash 'android-tests'
 
       //   lock("${env.NODE_NAME}-android") {
@@ -267,7 +269,7 @@ stage('Test') {
       // }
     },
     '.NET Framework Windows': {
-      nodeWithCleanup('cph-windows-02 && dotnet') {
+      rlmNode('windows && dotnet') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -282,16 +284,16 @@ stage('Test') {
               '''
             }
 
-            reportTests 'TestResults.Windows.xml'
+            junit 'TestResults.Windows.xml'
           }
         }
       }
     },
     '.NET Core macOS': NetCoreTest('dotnet && macos'),
     '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('dotnet && cph-windows-02'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet'),
     'Weaver': {
-      nodeWithCleanup('dotnet && windows') {
+      rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
         dir('Tests/Weaver/Realm.Fody.Tests') {
           bat "dotnet run -f netcoreapp2.0 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
@@ -308,7 +310,7 @@ stage('Test') {
 
 def NetCoreTest(String nodeName) {
   return {
-    nodeWithCleanup(nodeName) {
+    rlmNode(nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
@@ -338,28 +340,7 @@ def NetCoreTest(String nodeName) {
         bat script
       }
 
-      reportTests 'TestResults.NetCore.xml'
-    }
-  }
-}
-
-def nodeWithCleanup(String label, Closure steps) {
-  node(label) {
-    echo "Running job on ${env.NODE_NAME}"
-
-    // compute a shorter workspace name by removing the UUID at the end
-    def terminus = env.WORKSPACE.lastIndexOf('-')
-    def at = env.WORKSPACE.lastIndexOf('@')
-    def workspace = env.WORKSPACE.substring(0, terminus)
-    if (at > 0)
-      workspace += env.WORKSPACE.drop(at)
-
-    ws(workspace) {
-      try {
-        steps()
-      } finally {
-        deleteDir()
-      }
+      junit 'TestResults.NetCore.xml'
     }
   }
 }
@@ -404,7 +385,10 @@ def msbuild(Map args = [:]) {
 }
 
 def reportTests(spec) {
-  xunit([NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)])
+  xunit(
+    tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
+    thresholds: [ failed(unstableThreshold: '0') ]
+  )
 }
 
 // Required due to JENKINS-27421

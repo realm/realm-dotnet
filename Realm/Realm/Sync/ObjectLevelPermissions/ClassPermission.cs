@@ -18,6 +18,7 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -61,7 +62,8 @@ namespace Realms.Sync
         /// A <c>ClassPermission</c> instance that allows you to manipulate the permissions
         /// for this class.
         /// </returns>
-        public static ClassPermission Get<T>(Realm realm) where T : RealmObject
+        public static ClassPermission Get<T>(Realm realm)
+            where T : RealmObject
         {
             return Get(realm, typeof(T).GetTypeInfo().GetMappedOrOriginalName());
         }
@@ -81,6 +83,8 @@ namespace Realms.Sync
         /// </returns>
         public static ClassPermission Get(Realm realm, string className)
         {
+            Argument.NotNull(realm, nameof(realm));
+
             return realm.Find<ClassPermission>(className);
         }
 

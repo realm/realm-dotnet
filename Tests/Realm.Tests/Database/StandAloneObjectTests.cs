@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -86,7 +84,6 @@ namespace Realms.Tests.Database
         public void RealmObject_WhenManaged_ShouldNotThrow()
         {
             // This is a test to ensure that our weaver is generating valid IL regardless of property configurations
-
             using (var realm = Realm.GetInstance())
             {
                 Assert.DoesNotThrow(() => realm.Write(() =>

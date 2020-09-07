@@ -31,7 +31,7 @@ using Realms.Schema;
 namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
@@ -47,8 +47,10 @@ namespace Realms
         private NotificationTokenHandle _notificationToken;
         private bool _deliveredInitialNotification;
 
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event NotifyCollectionChangedEventHandler _collectionChanged;
 
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event PropertyChangedEventHandler _propertyChanged;
 
         public event NotifyCollectionChangedEventHandler CollectionChanged
@@ -106,9 +108,14 @@ namespace Realms
 
         public bool IsValid => Handle.Value.IsValid;
 
+        public bool IsFrozen => Handle.Value.IsFrozen;
+
+        public Realm Realm { get; }
+
+        public abstract IRealmCollection<T> Freeze();
+
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
-        internal readonly Realm Realm;
         internal readonly Lazy<CollectionHandleBase> Handle;
 
         internal RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)
@@ -172,6 +179,8 @@ namespace Realms
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
         {
+            Argument.NotNull(callback, nameof(callback));
+
             if (_callbacks.Count == 0)
             {
                 SubscribeForNotifications();
@@ -265,7 +274,7 @@ namespace Realms
                     return;
                 }
 
-                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default(T), out var removedItems, out var removedStartIndex);
+                var raiseRemoved = TryGetConsecutive(change.DeletedIndices, _ => default, out var removedItems, out var removedStartIndex);
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
@@ -327,6 +336,7 @@ namespace Realms
             return false;
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is called when subscribing to events and the dispose token is retained by the collection.")]
         private void UpdateCollectionChangedSubscriptionIfNecessary(bool isSubscribed)
         {
             if (_collectionChanged == null && _propertyChanged == null)
@@ -409,19 +419,16 @@ namespace Realms
 
         public void CopyTo(Array array, int index)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException();
-            }
+            Argument.NotNull(array, nameof(array));
 
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             if (index + Count > array.Length)
             {
-                throw new ArgumentException();
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
             }
 
             var list = (IList)array;

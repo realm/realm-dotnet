@@ -97,7 +97,7 @@ namespace Realms.Tests.Sync
         public static async Task<FullSyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             var user = await GetFakeUserAsync(userId);
-            var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid().ToString()}");
+            var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
             return new FullSyncConfiguration(serverUri, user, optionalPath);
         }
 
@@ -113,7 +113,8 @@ namespace Realms.Tests.Sync
             return new FullSyncConfiguration(RealmUri($"~/{path}"), user);
         }
 
-        public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message) where T : Exception
+        public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)
+            where T : Exception
         {
             var tcs = new TaskCompletionSource<Tuple<Session, T>>();
             EventHandler<ErrorEventArgs> handler = null;
@@ -129,6 +130,7 @@ namespace Realms.Tests.Sync
                 {
                     tcs.TrySetException(ex);
                 }
+
                 Session.Error -= handler;
             });
 

@@ -16,23 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Runtime.InteropServices;
-using System.Text;
+using Realms.Native;
 
 namespace Realms.Server.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct NativeChangeSet
+    internal struct NativeChangeSet
     {
-        public byte* class_name_buf;
-        public IntPtr class_name_len;
+        public MarshaledString class_name;
 
-        public MarshaledVector<IntPtr> deletions;
-        public MarshaledVector<IntPtr> insertions;
-        public MarshaledVector<IntPtr> previous_modifications;
-        public MarshaledVector<IntPtr> current_modifications;
+        public MarshaledVector<ObjectKey> deletions;
+        public MarshaledVector<ObjectKey> insertions;
+        public MarshaledVector<NativeModificationDetails> modifications;
 
-        public string ClassName => Encoding.UTF8.GetString(class_name_buf, (int)class_name_len);
+        public string ClassName => class_name.ToString();
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct NativeModificationDetails
+    {
+        public ObjectKey obj;
+
+        public MarshaledVector<ColumnKey> changed_columns;
     }
 }

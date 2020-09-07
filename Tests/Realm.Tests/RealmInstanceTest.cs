@@ -16,28 +16,67 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Realms.Tests
 {
     [Preserve(AllMembers = true)]
     public abstract class RealmInstanceTest : RealmTest
     {
-        protected RealmConfiguration _configuration = new RealmConfiguration(Path.GetTempFileName());
+        protected RealmConfiguration _configuration;
 
-        protected Realm _realm;
+        private Lazy<Realm> _lazyRealm;
+
+        protected Realm _realm => _lazyRealm.Value;
+
+        protected void FreezeInPlace(RealmObject obj)
+        {
+            obj.FreezeInPlace();
+            CleanupOnTearDown(obj.Realm);
+        }
+
+        protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
+
+        protected T Freeze<T>(T obj)
+            where T : RealmObject
+        {
+            var result = obj.Freeze();
+            CleanupOnTearDown(result.Realm);
+            return result;
+        }
+
+        protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection)
+            where T : RealmObject
+        {
+            var result = collection.Freeze();
+            CleanupOnTearDown(result.Realm);
+            return result;
+        }
+
+        protected IList<T> Freeze<T>(IList<T> list)
+            where T : RealmObject
+        {
+            var result = list.Freeze();
+            CleanupOnTearDown(result.AsRealmCollection().Realm);
+            return result;
+        }
+
+        protected IQueryable<T> Freeze<T>(IQueryable<T> query)
+            where T : RealmObject
+        {
+            var result = query.Freeze();
+            CleanupOnTearDown(result.AsRealmCollection().Realm);
+            return result;
+        }
 
         protected override void CustomSetUp()
         {
-            _realm = Realm.GetInstance(_configuration);
+            _configuration = CreateConfiguration(Path.GetTempFileName());
+            _lazyRealm = new Lazy<Realm>(() => GetRealm(_configuration));
             base.CustomSetUp();
-        }
-
-        protected override void CustomTearDown()
-        {
-            _realm.Dispose();
-            Realm.DeleteRealm(_realm.Config);
-            base.CustomTearDown();
         }
     }
 }

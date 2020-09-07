@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 
@@ -24,6 +25,8 @@ namespace Realms.Tests
     [Preserve(AllMembers = true)]
     public abstract class RealmTest
     {
+        private readonly List<Realm> _realms = new List<Realm>();
+
         private bool _isSetup;
 
         protected virtual bool OverrideDefaultConfig => true;
@@ -53,6 +56,11 @@ namespace Realms.Tests
         {
         }
 
+        protected void CleanupOnTearDown(Realm realm)
+        {
+            _realms.Add(realm);
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -68,6 +76,24 @@ namespace Realms.Tests
 
         protected virtual void CustomTearDown()
         {
+            foreach (var realm in _realms)
+            {
+                try
+                {
+                    realm.Dispose();
+                    Realm.DeleteRealm(realm.Config);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        protected Realm GetRealm(RealmConfigurationBase config = null)
+        {
+            var result = Realm.GetInstance(config ?? RealmConfiguration.DefaultConfiguration);
+            CleanupOnTearDown(result);
+            return result;
         }
     }
 }

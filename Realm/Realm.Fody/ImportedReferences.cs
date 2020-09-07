@@ -16,23 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma warning disable SA1306
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Versioning;
 using Mono.Cecil;
 
 namespace RealmWeaver
 {
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:FieldNamesMustBeginWithLowerCaseLetter")]
     internal abstract class ImportedReferences
     {
-        protected ModuleDefinition Module { get; }
-
-        protected Fody.TypeSystem Types { get; }
-
         public FrameworkName Framework { get; }
 
         public TypeReference IEnumerableOfT { get; }
@@ -136,6 +128,10 @@ namespace RealmWeaver
         public MethodReference PropertyChanged_DoNotNotifyAttribute_Constructor { get; private set; }
 
         public MethodReference RealmSchema_AddDefaultTypes { get; private set; }
+
+        protected ModuleDefinition Module { get; }
+
+        protected Fody.TypeSystem Types { get; }
 
         protected ImportedReferences(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName)
         {
@@ -477,7 +473,6 @@ namespace RealmWeaver
                 case "Xamarin.Mac":
                     references = new NETFramework(module, weaver.TypeSystem, frameworkName);
                     break;
-
                 case ".NETStandard":
                     if (frameworkName.Version >= new Version(2, 0))
                     {
@@ -487,14 +482,13 @@ namespace RealmWeaver
                     {
                         references = new NETPortable(module, weaver.TypeSystem, frameworkName);
                     }
-                    break;
 
+                    break;
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
                     references = new NETPortable(module, weaver.TypeSystem, frameworkName);
                     break;
-
                 default:
                     throw new Exception($"Unsupported target framework: {frameworkName}");
             }

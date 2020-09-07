@@ -22,7 +22,7 @@ using System.Reflection;
 
 namespace Realms.DataBinding
 {
-    internal class RealmObjectTypeDelegator : System.Reflection.TypeDelegator
+    internal class RealmObjectTypeDelegator : TypeDelegator
     {
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
         private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();

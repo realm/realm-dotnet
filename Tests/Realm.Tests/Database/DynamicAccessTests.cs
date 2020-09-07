@@ -20,21 +20,19 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAccessTests : RealmInstanceTest
     {
-        protected override void CustomSetUp()
+        protected override RealmConfiguration CreateConfiguration(string path)
         {
-            _configuration = new RealmConfiguration(_configuration.DatabasePath)
+            return new RealmConfiguration(path)
             {
                 ObjectClasses = new[] { typeof(AllTypesObject) },
                 IsDynamic = true
             };
-            base.CustomSetUp();
         }
 
         [Test]

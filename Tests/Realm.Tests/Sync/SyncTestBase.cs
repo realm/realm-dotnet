@@ -28,7 +28,6 @@ namespace Realms.Tests.Sync
     public abstract class SyncTestBase : RealmTest
     {
         private readonly List<Session> _sessions = new List<Session>();
-        private readonly List<Realm> _realms = new List<Realm>();
 
         protected override void CustomSetUp()
         {
@@ -65,18 +64,6 @@ namespace Realms.Tests.Sync
         {
             base.CustomTearDown();
 
-            foreach (var realm in _realms)
-            {
-                try
-                {
-                    realm.Dispose();
-                    Realm.DeleteRealm(realm.Config);
-                }
-                catch
-                {
-                }
-            }
-
             foreach (var session in _sessions)
             {
                 session?.CloseHandle();
@@ -88,11 +75,6 @@ namespace Realms.Tests.Sync
             _sessions.Add(session);
         }
 
-        protected void CleanupOnTearDown(Realm realm)
-        {
-            _realms.Add(realm);
-        }
-
         protected Session GetSession(Realm realm)
         {
             var result = realm.GetSession();
@@ -100,24 +82,21 @@ namespace Realms.Tests.Sync
             return result;
         }
 
-        /// <summary>
-        /// Waits for upload and immediately disposes of the managed handle to ensure the Realm can be safely deleted.
-        /// </summary>
-        protected async Task WaitForUploadAsync(Realm realm)
+        protected static async Task WaitForUploadAsync(Realm realm)
         {
             var session = realm.GetSession();
             await session.WaitForUploadAsync();
             session.CloseHandle();
         }
 
-        protected Realm GetRealm(RealmConfigurationBase config)
+        protected static async Task WaitForDownloadAsync(Realm realm)
         {
-            var result = Realm.GetInstance(config);
-            CleanupOnTearDown(result);
-            return result;
+            var session = realm.GetSession();
+            await session.WaitForDownloadAsync();
+            session.CloseHandle();
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)
         {
             Realm result;
             if (openAsync)

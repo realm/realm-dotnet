@@ -18,18 +18,16 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
+using Realms.Native;
 
 namespace Realms.Server.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct NativeChangeDetails
+    internal struct NativeChangeDetails
     {
-        public byte* path_buf;
-        public IntPtr path_len;
+        public MarshaledString path;
 
-        public byte* path_on_disk_buf;
-        public IntPtr path_on_disk_len;
+        public MarshaledString path_on_disk;
 
         public IntPtr previous_realm;
 
@@ -37,8 +35,8 @@ namespace Realms.Server.Native
 
         public MarshaledVector<NativeChangeSet> change_sets;
 
-        public string Path => Encoding.UTF8.GetString(path_buf, (int)path_len);
+        public string Path => path.ToString();
 
-        public string PathOnDisk => Encoding.UTF8.GetString(path_on_disk_buf, (int)path_on_disk_len);
+        public string PathOnDisk => path_on_disk.ToString();
     }
 }

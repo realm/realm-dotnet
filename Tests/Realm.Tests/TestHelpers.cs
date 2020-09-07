@@ -19,9 +19,11 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.XPath;
+using System.Xml.Xsl;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
@@ -133,6 +135,7 @@ namespace Realms.Tests
                 Assert.Ignore(message);
                 return true;
             }
+
             return false;
         }
 
@@ -154,43 +157,42 @@ namespace Realms.Tests
             Argument.NotNull(unsubscribe, nameof(unsubscribe));
 
             var tcs = new TaskCompletionSource<TEventArgs>();
-            EventHandler<TEventArgs> handler = null;
-            handler = (sender, args) =>
-            {
-                unsubscribe(handler);
-                tcs.TrySetResult(args);
-            };
+
             subscribe(handler);
 
             return tcs.Task;
-        }
 
-        public static async Task WaitForConditionAsync(Func<bool> testFunc, int retryPeriod = 100, int timeout = 10000)
-        {
-            for (var i = 0; i < timeout / retryPeriod; i++)
+            void handler(object sender, TEventArgs args)
             {
-                if (testFunc())
-                {
-                    return;
-                }
-
-                await Task.Delay(retryPeriod);
+                unsubscribe(handler);
+                tcs.TrySetResult(args);
             }
-
-            throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
         }
 
-        public static async Task<bool> EnsureAsync(Func<bool> testFunc, int retryDelay, int attempts)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100)
         {
-            var success = testFunc();
+            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts);
+        }
+
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100)
+        {
+            var value = producer();
+            var success = tester(value);
+            var timeout = retryDelay * attempts;
             while (!success && attempts > 0)
             {
                 await Task.Delay(retryDelay);
-                success = testFunc();
+                value = producer();
+                success = tester(value);
                 attempts--;
             }
 
-            return success;
+            if (!success)
+            {
+                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+            }
+
+            return value;
         }
 
         public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000)
@@ -209,6 +211,20 @@ namespace Realms.Tests
             catch (T ex)
             {
                 exceptionAsserts?.Invoke(ex);
+            }
+        }
+
+        public static void TransformTestResults(string resultPath)
+        {
+            CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
+            var transformFile = RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
+
+            var xpathDocument = new XPathDocument(resultPath);
+            var transform = new XslCompiledTransform();
+            transform.Load(transformFile);
+            using (var writer = new XmlTextWriter(resultPath, null))
+            {
+                transform.Transform(xpathDocument, null, writer);
             }
         }
     }

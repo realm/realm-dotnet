@@ -18,8 +18,15 @@
 
 namespace Realms
 {
+    /// <summary>
+    /// A comon interface, implemented by all handles for thread confined objects.
+    /// </summary>
     internal interface IThreadConfinedHandle
     {
+        /// <summary>
+        /// Creates a handle for the thread safe version of that object.
+        /// </summary>
+        /// <returns>A thread safe handle which can then be used to obtain a thread confined version of the object.</returns>
         ThreadSafeReferenceHandle GetThreadSafeReference();
     }
 }

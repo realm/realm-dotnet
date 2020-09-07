@@ -17,16 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
-    using ExplicitAttribute = NUnit.Framework.ExplicitAttribute;
-
     [TestFixture, Preserve(AllMembers = true)]
     internal class SimpleLINQtests : PeopleTestsBase
     {
@@ -40,14 +38,14 @@ namespace Realms.Tests.Database
         public void CreateList()
         {
             var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
-            Assert.That(s0.Count(), Is.EqualTo(1));
+            Assert.That(s0.Count, Is.EqualTo(1));
             Assert.That(s0[0].Score, Is.EqualTo(42.42f));
 
             var s1 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ToList();
             Assert.That(s1[0].Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Where(p => p.Longitude < 0).ToList();
-            Assert.That(s2.Count(), Is.EqualTo(2));
+            Assert.That(s2.Count, Is.EqualTo(2));
             Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
             Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.net"));
 
@@ -278,7 +276,7 @@ namespace Realms.Tests.Database
         {
             var deadbeef = new byte[] { 0xde, 0xad, 0xbe, 0xef };
             var cafebabe = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
-            var empty = new byte[0];
+            var empty = Array.Empty<byte>();
 
             var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == cafebabe);
             Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(cafebabe));
@@ -295,7 +293,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:FieldNamesMustBeginWithLowerCaseLetter")]
         public void SearchComparingChar()
         {
             _realm.Write(() =>
@@ -1030,16 +1027,36 @@ namespace Realms.Tests.Database
             Assert.That(expectedDef, Is.Null);
         }
 
+        [Test]
+        public void ElementAt_SortedViaLINQ()
+        {
+            var query = _realm.All<Person>().OrderByDescending(p => p.FirstName).ThenBy(p => p.LastName);
+            var arr = query.ToArray();
+            Assert.That(query.ElementAt(0).FullName, Is.EqualTo(arr[0].FullName));
+            Assert.That(query.ElementAt(1).FullName, Is.EqualTo(arr[1].FullName));
+            Assert.That(query.ElementAt(2).FullName, Is.EqualTo(arr[2].FullName));
+        }
+
+        [Test]
+        public void ElementAt_SortedViaStringQuery()
+        {
+            var query = _realm.All<Person>().Filter("TRUEPREDICATE SORT(FirstName DESC, LastName ASC)");
+            var arr = query.ToArray();
+            Assert.That(query.ElementAt(0).FullName, Is.EqualTo(arr[0].FullName));
+            Assert.That(query.ElementAt(1).FullName, Is.EqualTo(arr[1].FullName));
+            Assert.That(query.ElementAt(2).FullName, Is.EqualTo(arr[2].FullName));
+        }
+
         // note that DefaultIfEmpty returns a collection of one item
-        [Test, Explicit("Currently broken and hard to implement")]
+        [Test, TestExplicit("Currently broken and hard to implement")]
         public void DefaultIfEmptyReturnsDefault()
         {
             /*
              * This is comprehensively broken and awkward to fix in our current architecture.
-             * Looking at the test code below, the Count is invoked on a RealmResults and directly 
+             * Looking at the test code below, the Count is invoked on a RealmResults and directly
              * invokes its query handle, which of course has zero elements.
              * One posible approach is to toggle the RealmResults into a special state where
-             * it acts as a generator for a single null pointer.* 
+             * it acts as a generator for a single null pointer.*
              */
             var expectCollectionOfOne = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
             Assert.That(expectCollectionOfOne.Count(), Is.EqualTo(1));

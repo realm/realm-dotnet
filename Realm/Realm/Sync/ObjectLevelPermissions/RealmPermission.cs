@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -34,6 +36,7 @@ namespace Realms.Sync
     {
         [MapTo("id")]
         [PrimaryKey]
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Having the correct schema is required for offline access.")]
         private int Id { get; set; }
 
         /// <summary>
@@ -53,6 +56,8 @@ namespace Realms.Sync
         /// </returns>
         public static RealmPermission Get(Realm realm)
         {
+            Argument.NotNull(realm, nameof(realm));
+
             return realm.Find<RealmPermission>(0);
         }
 

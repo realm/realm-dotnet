@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,19 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Helpers;
-using Realms.Schema;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Realms.Helpers;
+using Realms.Schema;
 
 namespace Realms
 {
-    internal interface IQueryableCollection
-    {
-        QueryHandle CreateQuery();
-    }
-
     internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection
     {
         private readonly ResultsHandle _handle;
@@ -53,7 +48,21 @@ namespace Realms
             _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
         }
 
-        public QueryHandle CreateQuery() => ResultsHandle.CreateQuery();
+        public QueryHandle GetQuery() => ResultsHandle.GetQuery();
+
+        public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
+
+        public override IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = ResultsHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return new RealmResults<T>(frozenRealm, Metadata, frozenHandle);
+        }
 
         internal override CollectionHandleBase CreateHandle()
         {
@@ -65,9 +74,7 @@ namespace Realms
             // do all the LINQ expression evaluation to build a query
             var qv = ((RealmResultsProvider)Provider).MakeVisitor();
             qv.Visit(Expression);
-            var queryHandle = qv.CoreQueryHandle; // grab out the built query definition
-            var sortHandle = qv.OptionalSortDescriptorBuilder;
-            return Realm.MakeResultsForQuery(queryHandle, sortHandle);
+            return qv.MakeResultsForQuery();
         }
 
         #region IList members
@@ -91,5 +98,23 @@ namespace Realms
         }
 
         #endregion IList members
+    }
+
+    /// <summary>
+    /// IQueryableCollection exposes a method to create QueryHandle without forcing the caller to infer the type of the objects contained in the results.
+    /// </summary>
+    internal interface IQueryableCollection
+    {
+        /// <summary>
+        /// Creates a query handle for the results.
+        /// </summary>
+        /// <returns>The query handle.</returns>
+        QueryHandle GetQuery();
+
+        /// <summary>
+        /// Creates a sort descriptor handle for the results.
+        /// </summary>
+        /// <returns>The sort descriptor handle.</returns>
+        SortDescriptorHandle GetSortDescriptor();
     }
 }

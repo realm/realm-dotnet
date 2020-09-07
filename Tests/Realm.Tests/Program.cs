@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Linq;
 using System.Reflection;
 using NUnitLite;
 
 namespace Realms.Tests
 {
-    public class Program
+    public sealed class Program
     {
         public static int Main(string[] args)
         {
@@ -29,6 +30,13 @@ namespace Realms.Tests
             var arguments = Sync.SyncTestHelpers.ExtractRosSettings(args);
 
             autorun.Execute(arguments);
+
+            var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
+            if (!string.IsNullOrEmpty(resultPath))
+            {
+                TestHelpers.TransformTestResults(resultPath);
+            }
+
             return 0;
         }
     }

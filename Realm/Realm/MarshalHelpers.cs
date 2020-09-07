@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 
@@ -59,7 +58,8 @@ namespace Realms
                     throw new RealmInvalidDatabaseException("Corrupted string data");
                 }
 
-                if (bytesRead > bufferSize) // need a bigger buffer
+                // need a bigger buffer
+                if (bytesRead > bufferSize)
                 {
                     bufferSize = bytesRead;
 
@@ -69,7 +69,9 @@ namespace Realms
                     // try to read with big buffer
                     bytesRead = (int)getter(stringGetBuffer, (IntPtr)bufferSize, out isNull, out nativeException);
                     nativeException.ThrowIfNecessary();
-                    if (bytesRead == -1) // bad UTF-8 in full string
+
+                    // bad UTF-8 in full string
+                    if (bytesRead == -1)
                     {
                         throw new RealmInvalidDatabaseException("Corrupted string data");
                     }
@@ -85,7 +87,8 @@ namespace Realms
             }
         }
 
-        public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex) where T : struct;
+        public delegate IntPtr NativeCollectionGetter<T>(T[] buffer, IntPtr bufferLength, out NativeException ex)
+            where T : struct;
 
         public static unsafe byte[] GetByteArray(NativeCollectionGetter getter, int size = 0)
         {
@@ -99,6 +102,7 @@ namespace Realms
             {
                 actualSize = (int)getter((IntPtr)buffer, (IntPtr)size, out isNull, out nativeException);
             }
+
             nativeException.ThrowIfNecessary();
 
             if (isNull)
@@ -131,13 +135,15 @@ namespace Realms
             {
                 fixed (byte* buffer = bytes)
                 {
-                    setter((IntPtr)buffer, (IntPtr)bytes.LongCount(), true, out nativeException);
+                    setter((IntPtr)buffer, (IntPtr)bytes.Length, true, out nativeException);
                 }
             }
+
             nativeException.ThrowIfNecessary();
         }
 
-        public static T[] GetCollection<T>(NativeCollectionGetter<T> getter, int bufferSize) where T : struct
+        public static T[] GetCollection<T>(NativeCollectionGetter<T> getter, int bufferSize)
+            where T : struct
         {
             var buffer = new T[bufferSize];
 

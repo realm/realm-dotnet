@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -136,6 +137,7 @@ namespace Realms.Server
                 GC.SuppressFinalize(this);
             }
 
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Impl will own the AsyncContextThread.")]
             internal static Task<INotifier> StartAsync(NotifierConfiguration config)
             {
                 Directory.CreateDirectory(config.WorkingDirectory);

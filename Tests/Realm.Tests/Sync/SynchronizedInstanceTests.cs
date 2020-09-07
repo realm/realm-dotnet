@@ -120,18 +120,14 @@ namespace Realms.Tests.Sync
 
                 AddDummyData(aliceRealm, singleTransaction);
 
+                await WaitForUploadAsync(aliceRealm);
+
                 var bobConfig = new FullSyncConfiguration(realmUri, bob, Guid.NewGuid().ToString());
                 var bobRealm = await GetRealmAsync(bobConfig);
 
                 var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
                 var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
-
-                var bobTcs = new TaskCompletionSource<object>();
-                bobsObjects.AsRealmCollection().CollectionChanged += (sender, e) =>
-                {
-                    bobTcs.TrySetResult(null);
-                };
 
                 aliceRealm.Write(() =>
                 {
@@ -142,7 +138,10 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await bobTcs.Task.Timeout(1000);
+                await WaitForUploadAsync(aliceRealm);
+                await WaitForDownloadAsync(bobRealm);
+
+                await bobRealm.RefreshAsync();
 
                 Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
 
@@ -211,12 +210,13 @@ namespace Realms.Tests.Sync
             {
                 var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
                 await PopulateData(config);
+
                 // Update config to make sure we're not opening the same Realm file.
                 config = new FullSyncConfiguration(config.ServerUri, config.User, config.DatabasePath + "1");
 
                 using (var cts = new CancellationTokenSource())
                 {
-                    var _ = Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         await Task.Delay(1);
                         cts.Cancel();
@@ -313,6 +313,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunRosTestAsync(async () =>
             {
                 var config = await GetClientResyncConfig();
+
                 // Let's delete anything local.
                 Realm.DeleteRealm(config);
                 Exception ex = null;

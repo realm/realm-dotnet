@@ -26,7 +26,7 @@ namespace Realms.Sync
     /// <summary>
     /// A managed Realm object representing a subscription. Subscriptions are used by Query-based Realms to define which
     /// data should be available on the device. It is the persisted version of a <see cref="Subscription{T}"/> created by
-    /// calling <see cref="Subscription.Subscribe"/>.
+    /// calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions, System.Linq.Expressions.Expression{Func{T, IQueryable}}[])"/>.
     /// </summary>
     [MapTo("__ResultSets")]
     [Explicit]
@@ -65,7 +65,7 @@ namespace Realms.Sync
         /// <remarks>
         /// In this context,
         /// "updated" means that the subscription was resubscribed to or some property
-        /// was updated by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions)"/>.
+        /// was updated by calling <see cref="Subscription.Subscribe{T}(IQueryable{T}, SubscriptionOptions, System.Linq.Expressions.Expression{Func{T, IQueryable}}[])"/>.
         /// The field is NOT updated whenever the results of the query changes.
         /// </remarks>
         /// <value>The last updated date of the subscription.</value>

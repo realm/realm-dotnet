@@ -16,18 +16,57 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm.hpp>
+#include "object_cs.hpp"
+#include "timestamp_helpers.hpp"
+#include "notifications_cs.hpp"
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "object_accessor.hpp"
-#include "timestamp_helpers.hpp"
-#include "object_cs.hpp"
-#include "object-store/src/thread_safe_reference.hpp"
-#include "notifications_cs.hpp"
+
+#include <realm.hpp>
+#include <object_accessor.hpp>
+#include <thread_safe_reference.hpp>
+
 
 using namespace realm;
 using namespace realm::binding;
+
+template <typename T>
+inline T object_get(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        verify_can_get(object);
+
+        const ColKey column_key = get_column_key(object, property_ndx);
+        return object.obj().get<T>(column_key);
+    });
+}
+
+template <typename T>
+inline bool object_get_nullable(const Object& object, size_t property_ndx, T& ret_value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        verify_can_get(object);
+
+        auto result = object.obj().get<util::Optional<T>>(get_column_key(object, property_ndx));
+        if (!result) {
+            return false;
+        }
+
+        ret_value = *result;
+        return true;
+    });
+}
+
+template <typename T>
+inline void object_set(Object& object, size_t property_ndx, const T& value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        verify_can_set(object);
+
+        object.obj().set<T>(get_column_key(object, property_ndx), value);
+    });
+}
 
 extern "C" {
     REALM_EXPORT bool object_get_is_valid(const Object& object, NativeException::Marshallable& ex)
@@ -42,30 +81,26 @@ extern "C" {
         delete object;
     }
 
-    REALM_EXPORT size_t object_get_row_index(const Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_key(const Object& object, ObjKey& key, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            if (!object.is_valid())
-                throw RowDetachedException();
-            return object.row().get_index();
+            key = object.obj().get_key();
         });
     }
-
 
     REALM_EXPORT Object* object_get_link(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() -> Object* {
             verify_can_get(object);
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            const size_t link_row_ndx = object.row().get_link(column_ndx);
-            if (link_row_ndx == realm::npos)
+            const ColKey column_key = get_column_key(object, property_ndx);
+            const Obj link_obj = object.obj().get_linked_object(column_key);
+            if (!link_obj)
                 return nullptr;
 
-            auto target_table_ptr = object.row().get_table()->get_link_target(column_ndx);
-            const std::string target_name(ObjectStore::object_type_for_table_name(target_table_ptr->get_name()));
+            const std::string target_name(ObjectStore::object_type_for_table_name(link_obj.get_table()->get_name()));
             auto& target_schema = *object.realm()->schema().find(target_name);
-            return new Object(object.realm(), target_schema, Row((*target_table_ptr)[link_row_ndx]));
+            return new Object(object.realm(), target_schema, link_obj);
         });
     }
 
@@ -74,163 +109,102 @@ extern "C" {
         return handle_errors(ex, [&]() -> List* {
             verify_can_get(object);
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return new List(object.realm(), *object.row().get_table(), column_ndx, object.row().get_index());
+            const ColKey column_key = get_column_key(object, property_ndx);
+            return new List(object.realm(), object.obj(), column_key);
         });
     }
 
-    REALM_EXPORT size_t object_get_bool(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_bool(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return bool_to_size_t(object.row().get_bool(column_ndx));
-        });
+        return object_get<bool>(object, property_ndx, ex);
     }
 
-    // Return value is a boolean indicating whether result has a value (i.e. is not null). If true (1), ret_value will contain the actual value.
-    REALM_EXPORT size_t object_get_nullable_bool(const Object& object, size_t property_ndx, size_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_nullable_bool(const Object& object, size_t property_ndx, bool& ret_value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().is_null(column_ndx))
-                return 0;
-
-            ret_value = bool_to_size_t(object.row().get_bool(column_ndx));
-            return 1;
-        });
+        return object_get_nullable<bool>(object, property_ndx, ret_value, ex);
     }
 
     REALM_EXPORT int64_t object_get_int64(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return object.row().get_int(column_ndx);
-        });
+        return object_get<int64_t>(object, property_ndx, ex);
     }
 
-    REALM_EXPORT size_t object_get_nullable_int64(const Object& object, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_nullable_int64(const Object& object, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().is_null(column_ndx))
-                return 0;
-
-            ret_value = object.row().get_int(column_ndx);
-            return 1;
-        });
+        return object_get_nullable<int64_t>(object, property_ndx, ret_value, ex);
     }
 
     REALM_EXPORT float object_get_float(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return object.row().get_float(column_ndx);
-        });
+        return object_get<float>(object, property_ndx, ex);
     }
 
-    REALM_EXPORT size_t object_get_nullable_float(const Object& object, size_t property_ndx, float& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_nullable_float(const Object& object, size_t property_ndx, float& ret_value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().is_null(column_ndx))
-                return 0;
-
-            ret_value = object.row().get_float(column_ndx);
-            return 1;
-        });
+        return object_get_nullable<float>(object, property_ndx, ret_value, ex);
     }
 
     REALM_EXPORT double object_get_double(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return object.row().get_double(column_ndx);
-        });
+        return object_get<double>(object, property_ndx, ex);
     }
 
-    REALM_EXPORT size_t object_get_nullable_double(const Object& object, size_t property_ndx, double& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_nullable_double(const Object& object, size_t property_ndx, double& ret_value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().is_null(column_ndx))
-                return 0;
-
-            ret_value = object.row().get_double(column_ndx);
-            return 1;
-        });
+        return object_get_nullable<double>(object, property_ndx, ret_value, ex);
     }
 
-    REALM_EXPORT size_t object_get_string(const Object& object, size_t property_ndx, uint16_t * datatochsarp, size_t bufsize, bool* is_null, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t object_get_string(const Object& object, size_t property_ndx, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() -> size_t {
-            verify_can_get(object);
+        StringData field_data = object_get<StringData>(object, property_ndx, ex);
+        if (ex.type != RealmErrorType::NoError) {
+            return -1;
+        }
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            const StringData fielddata(object.row().get_string(column_ndx));
-            if ((*is_null = fielddata.is_null()))
-                return 0;
+        if ((is_null = field_data.is_null())) {
+            return 0;
+        }
 
-            return stringdata_to_csharpstringbuffer(fielddata, datatochsarp, bufsize);
-        });
+        return stringdata_to_csharpstringbuffer(field_data, string_buffer, buffer_size);
     }
 
-    REALM_EXPORT size_t object_get_binary(const Object& object, size_t property_ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t object_get_binary(const Object& object, size_t property_ndx, char* return_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
+        BinaryData field_data = object_get<BinaryData>(object, property_ndx, ex);
+        if (ex.type != RealmErrorType::NoError) {
+            return -1;
+        }
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            const BinaryData fielddata = object.row().get_binary(column_ndx);
+        if ((is_null = field_data.is_null())) {
+            return 0;
+        }
 
-            if ((*is_null = fielddata.is_null()))
-                return (size_t)0;
+        const size_t data_size = field_data.size();
+        if (data_size <= buffer_size) {
+            std::copy(field_data.data(), field_data.data() + data_size, return_buffer);
+        }
 
-            const size_t data_size = fielddata.size();
-            if (data_size <= buffer_size)
-                std::copy(fielddata.data(), fielddata.data() + data_size, return_buffer);
-
-            return data_size;
-        });
+        return data_size;
     }
 
     REALM_EXPORT int64_t object_get_timestamp_ticks(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            return to_ticks(object.row().get_timestamp(column_ndx));
-        });
+        return to_ticks(object_get<Timestamp>(object, property_ndx, ex));
     }
 
-    REALM_EXPORT size_t object_get_nullable_timestamp_ticks(const Object& object, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
+    REALM_EXPORT bool object_get_nullable_timestamp_ticks(const Object& object, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_get(object);
+        Timestamp field_data = object_get<Timestamp>(object, property_ndx, ex);
+        if (ex.type != RealmErrorType::NoError) {
+            return false;
+        }
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().is_null(column_ndx))
-                return 0;
-
-            ret_value = to_ticks(object.row().get_timestamp(column_ndx));
-            return 1;
-        });
+        if (field_data.is_null()) {
+            return false;
+        }
+ 
+        ret_value = to_ticks(field_data);
+        return true;
     }
 
     REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
@@ -238,56 +212,44 @@ extern "C" {
         return handle_errors(ex, [&] {
             verify_can_get(object);
             const Property& prop = object.get_object_schema().computed_properties[property_ndx];
-            REALM_ASSERT_DEBUG(prop.type == PropertyType::LinkingObjects);
+            REALM_ASSERT(prop.type == PropertyType::LinkingObjects);
 
             const ObjectSchema& relationship = *object.realm()->schema().find(prop.object_type);
-            const TableRef table = ObjectStore::table_for_object_type(object.realm()->read_group(), relationship.name);
             const Property& link = *relationship.property_for_name(prop.link_origin_property_name);
 
-            TableView backlink_view = object.row().get_table()->get_backlink_view(object.row().get_index(), table.get(), link.table_column);
-            return new Results(object.realm(), backlink_view);
+            TableRef table = object.realm()->read_group().get_table(relationship.table_key);
+            const ColKey column = link.column_key;
+
+            TableView backlink_view = object.obj().get_backlink_view(table, column);
+            return new Results(object.realm(), std::move(backlink_view));
         });
     }
 
-    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, uint16_t* type_buf, size_t type_len, uint16_t* property_buf, size_t property_len, NativeException::Marshallable& ex)
+    REALM_EXPORT Results* object_get_backlinks_for_type(Object& object, TableRef& source_table, size_t source_property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             verify_can_get(object);
-            Utf16StringAccessor type(type_buf, type_len);
-            Utf16StringAccessor property(property_buf, property_len);
             
-            // type and property are validated by C#
-            auto target_object_schema = object.realm()->schema().find(type);
-            auto link_property = target_object_schema->property_for_name(property);
+            const ObjectSchema& source_object_schema = *object.realm()->schema().find(ObjectStore::object_type_for_table_name(source_table->get_name()));
+            const Property& source_property = source_object_schema.persisted_properties[source_property_ndx];
         
-            if (link_property->object_type != object.get_object_schema().name) {
-                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", type.to_string(), property.to_string(), object.get_object_schema().name));
+            if (source_property.object_type != object.get_object_schema().name) {
+                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
         
-            auto table = ObjectStore::table_for_object_type(object.realm()->read_group(), target_object_schema->name);
-            auto tv = object.row().get_table()->get_backlink_view(object.row().get_index(), table.get(), link_property->table_column);
-            return new Results(object.realm(), std::move(tv));
+            TableView backlink_view = object.obj().get_backlink_view(source_table, source_property.column_key);
+            return new Results(object.realm(), std::move(backlink_view));
         });
     }
     
     REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_link(column_ndx, target_object.row().get_index());
-        });
+        return object_set<ObjKey>(object, property_ndx, target_object.obj().get_key(), ex);
     }
 
     REALM_EXPORT void object_clear_link(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().nullify_link(column_ndx);
-        });
+        return object_set<ObjKey>(object, property_ndx, null_key, ex);
     }
 
     REALM_EXPORT void object_set_null(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
@@ -295,84 +257,51 @@ extern "C" {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
 
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            if (!object.row().get_table()->is_nullable(column_ndx))
+            const ColKey column_key = get_column_key(object, property_ndx);
+            if (!object.obj().get_table()->is_nullable(column_key))
                 throw std::invalid_argument("Column is not nullable");
 
-            object.row().set_null(column_ndx);
+            object.obj().set_null(column_key);
         });
     }
     
-    REALM_EXPORT void object_set_bool(Object& object, size_t property_ndx, size_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_bool(Object& object, size_t property_ndx, bool value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_bool(column_ndx, size_t_to_bool(value));
-        });
+        return object_set<bool>(object, property_ndx, value, ex);
     }
 
     REALM_EXPORT void object_set_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_int(column_ndx, value);
-        });
+        return object_set<int64_t>(object, property_ndx, value, ex);
     }
     
     REALM_EXPORT void object_set_float(Object& object, size_t property_ndx, float value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_float(column_ndx, value);
-        });
+        return object_set<float>(object, property_ndx, value, ex);
     }
 
     REALM_EXPORT void object_set_double(Object& object, size_t property_ndx, double value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_double(column_ndx, value);
-        });
+        return object_set<double>(object, property_ndx, value, ex);
     }
 
     REALM_EXPORT void object_set_string(Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            Utf16StringAccessor str(value, value_len);
-            object.row().set_string(column_ndx, str);
-        });
+        Utf16StringAccessor str(value, value_len);
+        return object_set<StringData>(object, property_ndx, str, ex);
     }
     
     REALM_EXPORT void object_set_binary(Object& object, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_binary(column_ndx, BinaryData(value, value_len));
-        });
+        return object_set<BinaryData>(object, property_ndx, BinaryData(value, value_len), ex);
     }
 
     REALM_EXPORT void object_set_timestamp_ticks(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() {
-            verify_can_set(object);
-
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().set_timestamp(column_ndx, from_ticks(value));
-        });
+        return object_set<Timestamp>(object, property_ndx, from_ticks(value), ex);
     }
 
-    REALM_EXPORT void object_remove_row(Object& object, SharedRealm& realm, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_remove(Object& object, SharedRealm& realm, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             if (object.realm() != realm) {
@@ -381,8 +310,7 @@ extern "C" {
 
             verify_can_set(object);
 
-            auto const row_index = object.row().get_index();
-            object.row().get_table()->move_last_over(row_index);
+            object.obj().get_table()->remove_object(object.obj().get_key());
         });
     }
 
@@ -391,14 +319,15 @@ extern "C" {
         return handle_errors(ex, [&]() {
             return object.is_valid() &&
                 other_object.is_valid() &&
-                object.row().get_index() == other_object.row().get_index();
+                (*object.obj().get_table()).get_key() == (*other_object.obj().get_table()).get_key() &&
+                object.obj().get_key() == other_object.obj().get_key();
         });
     }
 
-    REALM_EXPORT ThreadSafeReference<Object>* object_get_thread_safe_reference(const Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT ThreadSafeReference* object_get_thread_safe_reference(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return new ThreadSafeReference<Object>{ object.realm()->obtain_thread_safe_reference(object) };
+            return new ThreadSafeReference(object);
         });
     }
 
@@ -411,30 +340,44 @@ extern "C" {
         });
     }
 
-	REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
-	{
-		return handle_errors(ex, [=]() {
-			return subscribe_for_notifications(managed_object, callback, [object](CollectionChangeCallback callback) {
-				return object->add_notification_callback(callback);
-			}, new ObjectSchema(object->get_object_schema()));
-		});
-	}
+    REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return subscribe_for_notifications(managed_object, callback, [object](CollectionChangeCallback callback) {
+                return object->add_notification_callback(callback);
+            }, new ObjectSchema(object->get_object_schema()));
+        });
+    }
     
     REALM_EXPORT void object_add_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
             
-            const size_t column_ndx = get_column_index(object, property_ndx);
-            object.row().add_int(column_ndx, value);
+            const ColKey column_key = get_column_key(object, property_ndx);
+            object.obj().add_int(column_key, value);
         });
     }
 
     REALM_EXPORT size_t object_get_backlink_count(Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return object.row().get_backlink_count();
+            return object.obj().get_backlink_count();
         });
     }
-    
+
+    REALM_EXPORT bool object_get_is_frozen(const Object& object, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return object.is_frozen();
+        });
+    }
+
+    REALM_EXPORT Object* object_freeze(const Object& object, const SharedRealm& realm, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new Object(object.freeze(realm));
+        });
+    }
+
 }   // extern "C"

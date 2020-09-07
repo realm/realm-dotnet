@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -51,16 +49,10 @@ namespace Realms
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            var configuration = new Configuration
-            {
-                Path = DatabasePath,
-                schema_version = SchemaVersion,
-                enable_cache = EnableCache,
-                in_memory = true
-            };
+            var configuration = CreateConfiguration();
+            configuration.in_memory = true;
 
-            var srPtr = IntPtr.Zero;
-            srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
+            var srPtr = SharedRealmHandle.Open(configuration, schema, EncryptionKey);
             return new Realm(new SharedRealmHandle(srPtr), this, schema);
         }
 

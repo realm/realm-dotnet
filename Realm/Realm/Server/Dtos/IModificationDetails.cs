@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+
 namespace Realms.Server
 {
     /// <summary>
@@ -25,31 +27,20 @@ namespace Realms.Server
     public interface IModificationDetails
     {
         /// <summary>
-        /// Gets the index of the modified object in the collection before the change. If the
-        /// object has been inserted, it will return -1.
-        /// </summary>
-        /// <value>An integer index.</value>
-        int PreviousIndex { get; }
-
-        /// <summary>
-        /// Gets the index of the modified object in the collection after the change. If the
-        /// object has been deleted, it will return -1.
-        /// </summary>
-        /// <value>An integer index.</value>
-        int CurrentIndex { get; }
-
-        /// <summary>
-        /// Gets the object as it was before the change. If the object has been inserted, it will
-        /// return <c>null</c>.
+        /// Gets the object as it was before the change.
         /// </summary>
         /// <value>A <see cref="RealmObject"/> instance.</value>
         dynamic PreviousObject { get; }
 
         /// <summary>
-        /// Gets the object as it is after the change. If the object has been deleted, it will
-        /// return <c>null</c>.
+        /// Gets the object as it is after the change.
         /// </summary>
         /// <value>A <see cref="RealmObject"/> instance.</value>
         dynamic CurrentObject { get; }
+
+        /// <summary>
+        /// Gets the names of the properties that were changed.
+        /// </summary>
+        ISet<string> ChangedProperties { get; }
     }
 }

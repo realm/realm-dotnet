@@ -15,9 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #include <realm.hpp>
-#include <realm/lang_bind_helper.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
@@ -25,123 +24,106 @@
 #include <memory>
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "marshalable_sort_clause.hpp"
 #include "object_accessor.hpp"
 #include "schema.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
+template <typename T>
+Object* get_object_for_primarykey(TableRef& table, SharedRealm& realm, const T& value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> Object* {
+        realm->verify_thread();
+
+        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        auto& object_schema = *realm->schema().find(object_name);
+        if (object_schema.primary_key.empty()) {
+            const std::string name(table->get_name());
+            throw MissingPrimaryKeyException(name);
+        }
+
+        const ColKey column_key = object_schema.primary_key_property()->column_key;
+        const ObjKey obj_key = table->find_first(column_key, value);
+        if (!obj_key)
+            return nullptr;
+
+        return new Object(realm, object_schema, table->get_object(obj_key));
+        });
+}
 
 extern "C" {
 
-REALM_EXPORT void table_unbind(const Table* table_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void table_destroy(TableRef* table, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        LangBindHelper::unbind_table_ptr(table_ptr);
+        delete table;
     });
 }
 
-REALM_EXPORT Object* table_add_empty_object(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_add_empty_object(TableRef& table, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        realm->get()->verify_in_write();
-        
-        size_t row_ndx = table_ptr->add_empty_row(1);
-        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
-        auto& object_schema = *realm->get()->schema().find(object_name);
-        return new Object(*realm, object_schema, Row((*table_ptr)[row_ndx]));
+        realm->verify_in_write();
+
+        Obj obj = table->create_object();
+        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        auto& object_schema = *realm->schema().find(object_name);
+        return new Object(realm, object_schema, obj);
     });
 }
 
-REALM_EXPORT int64_t table_count_all(Table* table_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Results* table_create_results(TableRef& table, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return table_ptr->size();
+        realm->verify_thread();
+
+        return new Results(realm, table);
     });
 }
 
-REALM_EXPORT size_t table_get_column_index(Table* table_ptr, uint16_t *  column_name, size_t column_name_len, NativeException::Marshallable& ex)
+REALM_EXPORT size_t table_get_name(TableRef& table, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Utf16StringAccessor str = Utf16StringAccessor(column_name, column_name_len);
-        return table_ptr->get_column_index(str);
+        return stringdata_to_csharpstringbuffer(table->get_name(), string_buffer, buffer_size);
     });
 }
 
-REALM_EXPORT size_t tableview_get_column_index(TableView* tableView_ptr, uint16_t *  column_name, size_t column_name_len, NativeException::Marshallable& ex)
+REALM_EXPORT size_t table_get_column_name(TableRef& table, const ColKey column_key, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Utf16StringAccessor str = Utf16StringAccessor(column_name, column_name_len);
-        return tableView_ptr->get_column_index(str);
+        return stringdata_to_csharpstringbuffer(table->get_column_name(column_key), string_buffer, buffer_size);
     });
 }
 
-REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKey object_key, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-        realm->get()->verify_thread();
-        
-        return new Results(*realm, *table_ptr);
-    });
-}
+    return handle_errors(ex, [&]() -> Object* {
+        realm->verify_thread();
 
-REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm* realm, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        std::vector<std::vector<size_t>> column_indices;
-        std::vector<bool> ascending;
-
-        auto& properties = realm->get()->schema().find(table_ptr->get_name())->persisted_properties;
-        unflatten_sort_clauses(sort_clauses, clause_count, flattened_column_indices, column_indices, ascending, properties);
-
-        DescriptorOrdering ordering;
-        ordering.append_sort({*table_ptr, column_indices, ascending});
-        return new Results(*realm, table_ptr->where(), std::move(ordering));
-    });
-}
-    
-Object* object_for_primarykey(Table* table_ptr, SharedRealm* realm, std::function<size_t(size_t, Table*)> finder, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> Object*{
-        realm->get()->verify_thread();
-        
-        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
-        auto& object_schema = *realm->get()->schema().find(object_name);
-        if (object_schema.primary_key.empty()) {
-            const std::string name(table_ptr->get_name());
-            throw MissingPrimaryKeyException(name);
-        }
-        
-        const size_t column_index = object_schema.primary_key_property()->table_column;
-        const size_t row_ndx = finder(column_index, table_ptr);
-        if (row_ndx == not_found)
+        Obj obj = table->get_object(object_key);
+        if (!obj) {
             return nullptr;
-        
-        return new Object(*realm, object_schema, Row(table_ptr->get(row_ndx)));
+        }
+
+        return new Object(realm, obj);
     });
 }
 
-REALM_EXPORT Object* object_for_int_primarykey(Table* table_ptr, SharedRealm* realm, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object_for_int_primarykey(TableRef& table, SharedRealm& realm, int64_t value, NativeException::Marshallable& ex)
 {
-    return object_for_primarykey(table_ptr, realm, [=](size_t column_index, Table* table) {
-        return table->find_first_int(column_index, value);
-    }, ex);
-}
-    
-REALM_EXPORT Object* object_for_null_primarykey(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
-{
-    return object_for_primarykey(table_ptr, realm, [=](size_t column_index, Table* table) {
-        return table->find_first_null(column_index);
-    }, ex);
+    return get_object_for_primarykey(table, realm, value, ex);
 }
 
-REALM_EXPORT Object* object_for_string_primarykey(Table* table_ptr, SharedRealm* realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object_for_null_primarykey(TableRef& table, SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return get_object_for_primarykey(table, realm, null{}, ex);
+}
+
+REALM_EXPORT Object* table_get_object_for_string_primarykey(TableRef& table, SharedRealm& realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
     Utf16StringAccessor str(value, value_len);
-    return object_for_primarykey(table_ptr, realm, [&](size_t column_index, Table* table) {
-        return table->find_first_string(column_index, str);
-    }, ex);
+    return get_object_for_primarykey(table, realm, StringData(str), ex);
 }
 
 }   // extern "C"

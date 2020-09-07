@@ -19,14 +19,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 
-[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
 public partial class ModuleWeaver : Fody.BaseModuleWeaver
 {
     private const MethodAttributes DefaultMethodAttributes = MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot;
@@ -126,15 +125,15 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
             }
             else
             {
-                LogErrorPoint($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
+                WriteError($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
             }
         }
     }
 
     public override void Execute()
     {
-        // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-        // Debugger.Launch();
+        //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
+        //// Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FileName);
 
@@ -145,25 +144,25 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
         if (_references.WovenAssemblyAttribute == null)
         {
-            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it doesn't reference Realm.");
+            WriteInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             return;
         }
 
         var isWoven = ModuleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
         if (isWoven)
         {
-            LogInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it has already been processed.");
+            WriteInfo($"Not weaving assembly '{ModuleDefinition.Assembly.Name}' because it has already been processed.");
             return;
         }
 
-        var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
+        var submitAnalytics = Task.Run(() =>
         {
             var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
             try
             {
                 var payload = analytics.SubmitAnalytics();
 #if DEBUG
-                LogDebug($@"
+                WriteDebug($@"
 ----------------------------------
 Analytics payload
 {payload}
@@ -172,7 +171,7 @@ Analytics payload
             }
             catch (Exception e)
             {
-                LogDebug("Error submitting analytics: " + e.Message);
+                WriteDebug("Error submitting analytics: " + e.Message);
             }
         });
 
@@ -188,7 +187,7 @@ Analytics payload
             }
             catch (Exception e)
             {
-                LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                WriteError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
             }
         }
 
@@ -202,7 +201,7 @@ Analytics payload
 
     private void WeaveType(TypeDefinition type, Dictionary<string, Accessors> methodTable)
     {
-        LogDebug("Weaving " + type.Name);
+        WriteDebug("Weaving " + type.Name);
 
         var persistedProperties = new List<WeaveResult>();
         foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
@@ -220,13 +219,13 @@ Analytics payload
                     if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
                     {
                         // We only want one error point, so even though there may be more problems, we only log the first one.
-                        LogErrorPoint(weaveResult.ErrorMessage, sequencePoint);
+                        WriteError(weaveResult.ErrorMessage, sequencePoint);
                     }
                     else
                     {
                         if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
                         {
-                            LogWarningPoint(weaveResult.WarningMessage, sequencePoint);
+                            WriteWarning(weaveResult.WarningMessage, sequencePoint);
                         }
 
                         var realmAttributeNames = prop.CustomAttributes
@@ -237,7 +236,7 @@ Analytics payload
 
                         if (realmAttributeNames.Any())
                         {
-                            LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                            WriteError($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
                         }
                     }
                 }
@@ -245,7 +244,7 @@ Analytics payload
             catch (Exception e)
             {
                 var sequencePoint = prop.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                LogErrorPoint(
+                WriteError(
                     $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                     sequencePoint);
             }
@@ -253,13 +252,13 @@ Analytics payload
 
         if (!persistedProperties.Any())
         {
-            LogError($"Class {type.Name} is a RealmObject but has no persisted properties.");
+            WriteError($"Class {type.Name} is a RealmObject but has no persisted properties.");
             return;
         }
 
         if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
         {
-            LogError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
+            WriteError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
             return;
         }
 
@@ -269,7 +268,7 @@ Analytics payload
         {
             var nonDefaultConstructor = type.GetConstructors().First();
             var sequencePoint = nonDefaultConstructor.DebugInformation.SequencePoints.FirstOrDefault();
-            LogErrorPoint($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
+            WriteError($"Class {type.Name} must have a public constructor that takes no parameters.", sequencePoint);
             return;
         }
 
@@ -279,7 +278,7 @@ Analytics payload
         preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(ModuleDefinition.TypeSystem.Boolean, true)); // AllMembers
         preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(ModuleDefinition.TypeSystem.Boolean, false)); // Conditional
         type.CustomAttributes.Add(preserveAttribute);
-        LogDebug($"Added [Preserve] to {type.Name} and its constructor.");
+        WriteDebug($"Added [Preserve] to {type.Name} and its constructor.");
 
         var wovenAttribute = new CustomAttribute(_references.WovenAttribute_Constructor);
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
@@ -390,6 +389,7 @@ Analytics payload
                 {
                     returnType = _references.System_NullableOfT.MakeGenericInstanceType(returnType);
                 }
+
                 genericGetter.ReturnType = returnType;
 
                 var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
@@ -409,6 +409,7 @@ Analytics payload
                 {
                     parameterType = _references.System_NullableOfT.MakeGenericInstanceType(parameterType);
                 }
+
                 genericSetter.Parameters.Add(new ParameterDefinition(parameterType));
 
                 var getter = new GenericInstanceMethod(genericGetter) { GenericArguments = { integerType } };
@@ -510,7 +511,7 @@ Analytics payload
 
         var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
         var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
-        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
+        WriteDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
         return WeaveResult.Success(prop, backingField, isPrimaryKey);
     }
 
@@ -548,24 +549,24 @@ Analytics payload
 
     private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
-        // A synthesized property getter looks like this:
-        //   0: ldarg.0
-        //   1: ldfld <backingField>
-        //   2: ret
-        // We want to change it so it looks like this:
-        //   0: ldarg.0
-        //   1: call Realms.RealmObject.get_IsManaged
-        //   2: brfalse.s 7
-        //   3: ldarg.0
-        //   4: ldstr <columnName>
-        //   5: call Realms.RealmObject.GetValue<T>
-        //   6: ret
-        //   7: ldarg.0
-        //   8: ldfld <backingField>
-        //   9: ret
-        // This is roughly equivalent to:
-        //   if (!base.IsManaged) return this.<backingField>;
-        //   return base.GetValue<T>(<columnName>);
+        //// A synthesized property getter looks like this:
+        ////   0: ldarg.0
+        ////   1: ldfld <backingField>
+        ////   2: ret
+        //// We want to change it so it looks like this:
+        ////   0: ldarg.0
+        ////   1: call Realms.RealmObject.get_IsManaged
+        ////   2: brfalse.s 7
+        ////   3: ldarg.0
+        ////   4: ldstr <columnName>
+        ////   5: call Realms.RealmObject.GetValue<T>
+        ////   6: ret
+        ////   7: ldarg.0
+        ////   8: ldfld <backingField>
+        ////   9: ret
+        //// This is roughly equivalent to:
+        ////   if (!base.IsManaged) return this.<backingField>;
+        ////   return base.GetValue<T>(<columnName>);
 
         var start = prop.GetMethod.Body.Instructions.First();
         var il = prop.GetMethod.Body.GetILProcessor();
@@ -594,7 +595,7 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
 
-        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        if (!prop.PropertyType.IsRealmInteger(out _, out _))
         {
             var convert = _references.RealmIntegerOfT_ConvertToT.MakeHostInstanceGeneric(integerType);
             if (isNullable)
@@ -657,22 +658,21 @@ Analytics payload
     //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
     private void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, MethodReference listConstructor)
     {
-        // A synthesized property getter looks like this:
-        //   0: ldarg.0  // load the this pointer
-        //   1: ldfld <backingField>
-        //   2: ret
-        // We want to change it so it looks somewhat like this, in C#
-        /*
-            if (<backingField> == null)
-            {
-               if (IsManaged)
-                     <backingField> = GetListObject<T>(<columnName>);
-               else
-                     <backingField> = new List<T>();
-            }
-            // original auto-generated getter starts here
-            return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
-        */
+        //// A synthesized property getter looks like this:
+        ////   0: ldarg.0  // load the this pointer
+        ////   1: ldfld <backingField>
+        ////   2: ret
+        //// We want to change it so it looks somewhat like this, in C#
+        ////
+        ////  if (<backingField> == null)
+        ////  {
+        ////     if (IsManaged)
+        ////           <backingField> = GetListObject<T>(<columnName>);
+        ////     else
+        ////           <backingField> = new List<T>();
+        ////  }
+        ////  // original auto-generated getter starts here
+        ////  return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
 
         var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
         var il = prop.GetMethod.Body.GetILProcessor();
@@ -688,13 +688,12 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));  // [ this, this -> this,  isManaged ]
 
         // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
-
         var labelElse = il.Create(OpCodes.Nop);  // [this]
         il.InsertBefore(start, labelElse); // else
         il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor)); // [this ->  this, listRef ]
         il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  // [this, listRef -> ]
-        // fall through to start to read it back from backing field and return
 
+        // fall through to start to read it back from backing field and return
         // if block before else now gets inserted
         il.InsertBefore(labelElse, il.Create(OpCodes.Brfalse_S, labelElse));  // [this,  isManaged -> this]
         il.InsertBefore(labelElse, il.Create(OpCodes.Ldarg_0)); // this for call [ this -> this, this ]
@@ -708,7 +707,6 @@ Analytics payload
 
         // Let Cecil optimize things for us.
         // TODO prop.SetMethod.Body.OptimizeMacros();
-
         Debug.Write("[get list] ");
     }
 
@@ -718,22 +716,21 @@ Analytics payload
     //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
     private void ReplaceBacklinksGetter(PropertyDefinition prop, FieldReference backingField, string columnName, TypeReference elementType)
     {
-        // A synthesized property getter looks like this:
-        //   0: ldarg.0  // load the this pointer
-        //   1: ldfld <backingField>
-        //   2: ret
-        // We want to change it so it looks somewhat like this, in C#
-        /*
-            if (<backingField> == null)
-            {
-               if (IsManaged)
-                     <backingField> = GetBacklinks<T>(<columnName>);
-               else
-                     <backingField> = new Enumerable.Empty<T>.AsQueryable();
-            }
-            // original auto-generated getter starts here
-            return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
-        */
+        //// A synthesized property getter looks like this:
+        ////   0: ldarg.0  // load the this pointer
+        ////   1: ldfld <backingField>
+        ////   2: ret
+        //// We want to change it so it looks somewhat like this, in C#
+        ////
+        ////  if (<backingField> == null)
+        ////  {
+        ////     if (IsManaged)
+        ////           <backingField> = GetBacklinks<T>(<columnName>);
+        ////     else
+        ////           <backingField> = new Enumerable.Empty<T>.AsQueryable();
+        ////  }
+        ////  // original auto-generated getter starts here
+        ////  return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
 
         var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
         var il = prop.GetMethod.Body.GetILProcessor();
@@ -747,14 +744,13 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));  // [ this, this -> this,  isManaged ]
 
         // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
-
         var labelElse = il.Create(OpCodes.Nop);  // [this]
         il.InsertBefore(start, labelElse); // else
         il.InsertBefore(start, il.Create(OpCodes.Call, new GenericInstanceMethod(_references.System_Linq_Enumerable_Empty) { GenericArguments = { elementType } })); // [this, enumerable]
         il.InsertBefore(start, il.Create(OpCodes.Call, new GenericInstanceMethod(_references.System_Linq_Queryable_AsQueryable) { GenericArguments = { elementType } })); // [this, queryable]
         il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  // [this, queryable -> ]
-        // fall through to start to read it back from backing field and return
 
+        // fall through to start to read it back from backing field and return
         // if block before else now gets inserted
         il.InsertBefore(labelElse, il.Create(OpCodes.Brfalse_S, labelElse));  // [this,  isManaged -> this]
         il.InsertBefore(labelElse, il.Create(OpCodes.Ldarg_0)); // this for call [ this -> this, this ]
@@ -768,7 +764,6 @@ Analytics payload
 
         // Let Cecil optimize things for us.
         // TODO prop.SetMethod.Body.OptimizeMacros();
-
         Debug.Write("[get list] ");
     }
 
@@ -877,7 +872,7 @@ Analytics payload
         var callSetter = il.Create(OpCodes.Call, setValueReference);
         il.Append(callSetter);
 
-        if (!prop.PropertyType.IsRealmInteger(out var _, out var __))
+        if (!prop.PropertyType.IsRealmInteger(out _, out _))
         {
             var convert = _references.RealmIntegerOfT_ConvertFromT.MakeHostInstanceGeneric(integerType);
             if (isNullable)
@@ -1024,10 +1019,10 @@ Analytics payload
                     Instruction addPlaceholder = null;
 
                     // We can skip setting properties that have their default values unless:
-                    var shouldSetAlways = property.IsNullable() ||     // The property is nullable - those should be set explicitly to null
-                                          property.IsRequired() ||     // Needed for validating that the property is not null (string)
+                    var shouldSetAlways = property.IsNullable() || // The property is nullable - those should be set explicitly to null
+                                          property.IsRequired() || // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
-                                          property.PropertyType.IsRealmInteger(out var _, out var __); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.PropertyType.IsRealmInteger(out _, out _); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!skipDefaults || castInstance.field != default(fieldType))
@@ -1209,7 +1204,7 @@ Analytics payload
                 else
                 {
                     var sequencePoint = property.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                    LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
+                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
             }
 
@@ -1318,17 +1313,17 @@ Analytics payload
             return new WeaveResult();
         }
 
-        public readonly string ErrorMessage;
+        public string ErrorMessage { get; }
 
-        public readonly string WarningMessage;
+        public string WarningMessage { get; }
 
-        public bool Woven;
+        public bool Woven { get; }
 
-        public readonly PropertyDefinition Property;
+        public PropertyDefinition Property { get; }
 
-        public readonly FieldReference Field;
+        public FieldReference Field { get; }
 
-        public readonly bool IsPrimaryKey;
+        public bool IsPrimaryKey { get; }
 
         private WeaveResult(PropertyDefinition property, FieldReference field, bool isPrimaryKey)
         {

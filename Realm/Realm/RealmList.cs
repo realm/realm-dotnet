@@ -44,7 +44,7 @@ namespace Realms
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
@@ -78,7 +78,7 @@ namespace Realms
             {
                 if (index < 0)
                 {
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 Execute(value, obj =>
@@ -123,19 +123,16 @@ namespace Realms
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException();
-            }
+            Argument.NotNull(array, nameof(array));
 
             if (arrayIndex < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             if (arrayIndex + Count > array.Length)
             {
-                throw new ArgumentException();
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {arrayIndex + Count}, available: {array.Length}", nameof(array));
             }
 
             foreach (var obj in this)
@@ -173,7 +170,7 @@ namespace Realms
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             Execute(item, obj =>
@@ -206,7 +203,7 @@ namespace Realms
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             _listHandle.Erase((IntPtr)index);
@@ -235,6 +232,18 @@ namespace Realms
             }
 
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
+        }
+
+        public override IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
+            return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);

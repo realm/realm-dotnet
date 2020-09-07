@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Server;
@@ -34,11 +36,19 @@ namespace Realms.Tests.Server
             {
                 var (realm, userId) = await CreateRandomRealmAsync("modifications");
 
-                var changeDetails = new List<IChangeDetails>();
+                var changeDetails = new List<ChangeInfo>();
                 var handler = new ProxyingHandler(path => path == $"/{userId}/modifications",
                                                   details =>
                                                   {
-                                                      changeDetails.Add(details);
+                                                      var lastChange = details.Changes.Single();
+                                                      Assert.That(lastChange.Key, Is.EqualTo(nameof(IntPropertyObject)));
+
+                                                      changeDetails.Add(new ChangeInfo
+                                                      {
+                                                          Insertions = lastChange.Value.Insertions.Select(o => (int)o.Int).ToArray(),
+                                                          Modifications = lastChange.Value.Modifications.Select(o => ((int)o.CurrentObject.Int, (int)o.PreviousObject.Int, o.ChangedProperties.ToArray())).ToArray(),
+                                                          Deletions = lastChange.Value.Deletions.Select(o => (int)o.Int).ToArray()
+                                                      });
                                                       return Task.CompletedTask;
                                                   });
 
@@ -50,44 +60,56 @@ namespace Realms.Tests.Server
                     var obj = new IntPropertyObject { Int = 3 };
                     realm.Write(() => realm.Add(obj));
 
-                    var containsInsertion = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 1, change =>
-                    {
-                        return change.Insertions.Length == 1 &&
-                               change.Deletions.Length == 0 &&
-                               change.Modifications.Length == 0 &&
-                               change.Insertions[0].CurrentIndex == 0 &&
-                               change.Insertions[0].PreviousIndex == -1;
-                    });
+                    var insertChange = await WaitForChangeAsync(changeDetails, 1);
+                    Assert.That(insertChange.Modifications.Length, Is.Zero);
+                    Assert.That(insertChange.Deletions.Length, Is.Zero);
 
-                    Assert.True(containsInsertion);
+                    Assert.That(insertChange.Insertions.Length, Is.EqualTo(1));
+                    Assert.That(insertChange.Insertions.Single(), Is.EqualTo(obj.Int));
 
                     realm.Write(() => obj.Int = 4);
 
-                    var containsModification = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 2, change =>
-                    {
-                        return change.Insertions.Length == 0 &&
-                               change.Deletions.Length == 0 &&
-                               change.Modifications.Length == 1 &&
-                               change.Modifications[0].CurrentIndex == 0 &&
-                               change.Modifications[0].PreviousIndex == 0;
-                    });
+                    var modifyChange = await WaitForChangeAsync(changeDetails, 2);
+                    Assert.That(modifyChange.Insertions.Length, Is.Zero);
+                    Assert.That(modifyChange.Deletions.Length, Is.Zero);
 
-                    Assert.True(containsModification);
+                    Assert.That(modifyChange.Modifications.Length, Is.EqualTo(1));
+                    Assert.That(modifyChange.Modifications.Single().PreviousValue, Is.EqualTo(insertChange.Insertions.Single()));
+                    Assert.That(modifyChange.Modifications.Single().CurrentValue, Is.EqualTo(obj.Int));
+                    Assert.That(modifyChange.Modifications.Single().ModifiedProperties, Is.EquivalentTo(new[] { nameof(IntPropertyObject.Int) }));
 
                     realm.Write(() => realm.Remove(obj));
 
-                    var containsDeletion = await EnsureChangesAsync<IntPropertyObject>(changeDetails, 3, change =>
-                    {
-                        return change.Insertions.Length == 0 &&
-                               change.Deletions.Length == 1 &&
-                               change.Modifications.Length == 0 &&
-                               change.Deletions[0].CurrentIndex == -1 &&
-                               change.Deletions[0].PreviousIndex == 0;
-                    });
+                    var deleteChange = await WaitForChangeAsync(changeDetails, 3);
+                    Assert.That(deleteChange.Insertions.Length, Is.Zero);
+                    Assert.That(deleteChange.Modifications.Length, Is.Zero);
 
-                    Assert.True(containsDeletion);
+                    Assert.That(deleteChange.Deletions.Length, Is.EqualTo(1));
+                    Assert.That(deleteChange.Deletions.Single(), Is.EqualTo(modifyChange.Modifications.Single().CurrentValue));
                 }
             }, timeout: 1000000);
+        }
+
+        private static Task<ChangeInfo> WaitForChangeAsync(IList<ChangeInfo> changeDetails, int expectedCount)
+        {
+            return TestHelpers.WaitForConditionAsync(() =>
+            {
+                if (changeDetails.Count != expectedCount)
+                {
+                    return null;
+                }
+
+                return changeDetails.Last();
+            }, c => c != null);
+        }
+
+        private class ChangeInfo
+        {
+            public int[] Insertions { get; set; }
+
+            public (int CurrentValue, int PreviousValue, string[] ModifiedProperties)[] Modifications { get; set; }
+
+            public int[] Deletions { get; set; }
         }
     }
 }

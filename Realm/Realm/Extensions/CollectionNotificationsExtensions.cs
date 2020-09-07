@@ -35,19 +35,21 @@ namespace Realms
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which
         /// implements <see cref="INotifyCollectionChanged"/>.
         /// </summary>
-        /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
+        /// <param name="query">The <see cref="IQueryable{T}" /> to observe for changes.</param>
         /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
-        public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> results) where T : RealmObject
+        public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
+            where T : RealmObject
         {
-            var collection = results as IRealmCollection<T>;
-            if (collection == null)
+            Argument.NotNull(query, nameof(query));
+
+            if (query is IRealmCollection<T> collection)
             {
-                throw new ArgumentException($"{nameof(results)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(results));
+                return collection;
             }
 
-            return collection;
+            throw new ArgumentException($"{nameof(query)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(query));
         }
 
         /// <summary>
@@ -61,7 +63,8 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback) where T : RealmObject
+        public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
+            where T : RealmObject
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -76,13 +79,14 @@ namespace Realms
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IList<T> list)
         {
-            var collection = list as IRealmCollection<T>;
-            if (collection == null)
+            Argument.NotNull(list, nameof(list));
+
+            if (list is IRealmCollection<T> collection)
             {
-                throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
+                return collection;
             }
 
-            return collection;
+            throw new ArgumentException($"{nameof(list)} must be an instance of IRealmCollection<{typeof(T).Name}>.", nameof(list));
         }
 
         /// <summary>
@@ -96,10 +100,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback)
-        {
-            return list.AsRealmCollection().SubscribeForNotifications(callback);
-        }
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
 
         /// <summary>
         /// Move the specified item to a new position within the list.
@@ -115,6 +116,8 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, T item, int index)
         {
+            Argument.NotNull(list, nameof(list));
+
             var from = list.IndexOf(item);
             list.Move(from, index);
         }
@@ -133,6 +136,8 @@ namespace Realms
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is less than 0 or greater than <see cref="ICollection{T}.Count"/> - 1.</exception>
         public static void Move<T>(this IList<T> list, int from, int to)
         {
+            Argument.NotNull(list, nameof(list));
+
             if (list is RealmList<T> realmList)
             {
                 realmList.Move(from, to);
@@ -151,7 +156,7 @@ namespace Realms
         /// supports SORT and DISTINCT clauses in addition to filtering.
         /// </summary>
         /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
-        /// <param name="results">
+        /// <param name="query">
         /// A Queryable collection, obtained by calling <see cref="Realm.All{T}"/>.
         /// </param>
         /// <param name="predicate">The predicate that will be applied.</param>
@@ -174,9 +179,9 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> results, string predicate)
+        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate)
         {
-            var realmResults = Argument.EnsureType<RealmResults<T>>(results, $"{nameof(results)} must be a query obtained by calling Realm.All.", nameof(results));
+            var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate);
         }
     }

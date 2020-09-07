@@ -17,21 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
+using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Database
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class Cities : RealmObject
     {
         public string Name { get; set; }
     }
 
     [TestFixture, Preserve(AllMembers = true)]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class SortingTests : PeopleTestsBase
     {
         protected override void CustomSetUp()
@@ -179,18 +176,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void SortExceptionsForInvalidSortCode()
+        public void OrderBy_OverAComplexExpression_Throws()
         {
             Assert.Throws<NotSupportedException>(() => _realm.All<Person>().OrderBy(p => p.Latitude > 100).ToList(),
                 "If you use an expression other than simple property specifier it throws.");
+        }
 
-            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting)
-                .OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList(),
-                "Should catch using more than one OrderBy");
+        [Test, TestExplicit("Blocked on https://github.com/realm/realm-core/issues/3884")]
+        public void OrderBy_WhenCalledConsequently_ReplacesOrdering()
+        {
+            // TODO: verify ordering is replaced once https://github.com/realm/realm-core/issues/3884 is resolved
+            _ = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList();
 
-            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting)
-                .OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList(),
-                "Should catch using both OrderBy and OrderByDescending");
+            _ = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList();
         }
 
         [Test]

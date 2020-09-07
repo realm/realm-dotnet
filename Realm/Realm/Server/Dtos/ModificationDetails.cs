@@ -17,28 +17,28 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using Realms.Native;
 
 namespace Realms.Server
 {
     internal class ModificationDetails : IModificationDetails
     {
-        private readonly Func<int, dynamic> _previousGetter;
-        private readonly Func<int, dynamic> _currentGetter;
+        private readonly Lazy<dynamic> _previous;
+        private readonly Lazy<dynamic> _current;
+        private readonly Lazy<ISet<string>> _changedProperties;
 
-        public int PreviousIndex { get; }
+        public dynamic PreviousObject => _previous.Value;
 
-        public int CurrentIndex { get; }
+        public dynamic CurrentObject => _current.Value;
 
-        public dynamic PreviousObject => _previousGetter(PreviousIndex);
+        public ISet<string> ChangedProperties => _changedProperties.Value;
 
-        public dynamic CurrentObject => _currentGetter(CurrentIndex);
-
-        internal ModificationDetails(int previousIndex, int currentIndex, Func<int, dynamic> previousGetter, Func<int, dynamic> currentGetter)
+        internal ModificationDetails(Func<dynamic> previous, Func<dynamic> current, ColumnKey[] changedColumns, Func<ColumnKey[], ISet<string>> changedProperties)
         {
-            PreviousIndex = previousIndex;
-            CurrentIndex = currentIndex;
-            _previousGetter = previousGetter;
-            _currentGetter = currentGetter;
+            _previous = new Lazy<dynamic>(previous);
+            _current = new Lazy<dynamic>(current);
+            _changedProperties = new Lazy<ISet<string>>(() => changedProperties(changedColumns));
         }
     }
 }

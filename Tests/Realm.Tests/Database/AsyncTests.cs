@@ -21,39 +21,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AsyncTests : RealmTest
+    public class AsyncTests : RealmInstanceTest
     {
-        private Lazy<Realm> _lazyRealm;
-
-        private Realm _realm => _lazyRealm.Value;
-
-        // We capture the current SynchronizationContext when opening a Realm.
-        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
-        // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        protected override void CustomSetUp()
-        {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance());
-            base.CustomSetUp();
-        }
-
-        protected override void CustomTearDown()
-        {
-            if (_lazyRealm.IsValueCreated)
-            {
-                _realm.Dispose();
-                Realm.DeleteRealm(_realm.Config);
-            }
-
-            base.CustomTearDown();
-        }
-
         [Test]
         public void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
@@ -134,7 +108,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(ex.Message, Is.EqualTo(message));
                 });
-            });        
+            });
         }
 
         [Test]
@@ -166,16 +140,16 @@ namespace Realms.Tests.Database
 
                 Assert.That(obj.StringValue, Is.Null);
 
-                var changeTiming = await measureTiming(_realm.RefreshAsync);
+                var changeTiming = await MeasureTiming(_realm.RefreshAsync);
 
                 Assert.That(obj.StringValue, Is.EqualTo("123"));
 
                 // Make sure when there are no changes RefreshAsync completes quickly
-                var idleTiming = await measureTiming(_realm.RefreshAsync);
+                var idleTiming = await MeasureTiming(_realm.RefreshAsync);
 
                 Assert.That(changeTiming, Is.GreaterThan(idleTiming));
 
-                async Task<long> measureTiming(Func<Task> func)
+                async Task<long> MeasureTiming(Func<Task> func)
                 {
                     var sw = new Stopwatch();
                     sw.Start();

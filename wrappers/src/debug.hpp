@@ -15,8 +15,8 @@
 // limitations under the License.
 //
 //////////////////////////////////////////////////////////////////////////// 
-#ifndef DEBUG_HPP
-#define DEBUG_HPP
+
+#pragma once
 
 #include <string>
 
@@ -27,5 +27,3 @@ void debug_log(std::string message);
 #endif
 
 } // namespace realm
-
-#endif // DEBUG_HPP

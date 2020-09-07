@@ -1,13 +1,14 @@
 set(SOURCES
     debug.cpp
     error_handling.cpp
-    event_loop_signal_cs.cpp
     list_cs.cpp
     marshalling.cpp
     object_cs.cpp
     query_cs.cpp
+    sort_descriptor_cs.cpp
     realm-csharp.cpp
     results_cs.cpp
+    scheduler_cs.cpp
     schema_cs.cpp
     shared_realm_cs.cpp
     table_cs.cpp
@@ -16,7 +17,6 @@ set(SOURCES
 set(HEADERS
     debug.hpp
     error_handling.hpp
-    marshalable_sort_clause.hpp
     marshalling.hpp
     object_cs.hpp
     realm_error_type.hpp

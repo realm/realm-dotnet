@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -26,8 +26,12 @@ namespace Realms
     {
         private static class NativeMethods
         {
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr resultsHandle);
@@ -73,10 +77,23 @@ namespace Realms
             public static extern IntPtr snapshot(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)]string query_buf, IntPtr query_len, out NativeException ex);
+            public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_descriptor_ordering", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_sort_descriptor(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool get_is_frozen(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr freeze(ResultsHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public override bool IsValid
@@ -141,12 +158,20 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public QueryHandle CreateQuery()
+        public QueryHandle GetQuery()
         {
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new QueryHandle(Root ?? this, result);
+        }
+
+        public SortDescriptorHandle GetSortDescriptor()
+        {
+            var result = NativeMethods.get_sort_descriptor(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new SortDescriptorHandle(Root ?? this, result);
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
@@ -159,7 +184,7 @@ namespace Realms
         public override bool Equals(object obj)
         {
             // If parameter is null, return false.
-            if (ReferenceEquals(obj, null))
+            if (obj is null)
             {
                 return false;
             }
@@ -170,9 +195,14 @@ namespace Realms
                 return true;
             }
 
-            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)obj, out var nativeException);
+            if (!(obj is ResultsHandle resultsHandle))
+            {
+                return false;
+            }
+
+            var result = NativeMethods.is_same_internal_results(this, resultsHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return result != IntPtr.Zero;
+            return result;
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()
@@ -203,6 +233,23 @@ namespace Realms
             var result = NativeMethods.find_object(this, objectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
+        }
+
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public ResultsHandle Freeze(SharedRealmHandle frozenRealmHandle)
+        {
+            var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ResultsHandle(frozenRealmHandle, result);
         }
     }
 }
