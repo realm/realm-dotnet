@@ -19,8 +19,8 @@
 namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when trying to subscribe to changes or modify a frozen <see cref="Realm"/>, <see cref="RealmObject"/>, or
-    /// <see cref="IRealmCollection{T}"/>.
+    /// Exception thrown when trying to subscribe to changes or modify a frozen <see cref="Realm"/>, <see cref="RealmObject"/>,
+    /// <see cref="EmbeddedObject"/>, or <see cref="IRealmCollection{T}"/>.
     /// </summary>
     public class RealmFrozenException : RealmException
     {

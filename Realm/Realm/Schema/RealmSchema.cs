@@ -32,9 +32,9 @@ namespace Realms.Schema
     /// dynamically, by evaluating a Realm from disk.
     /// </summary>
     /// <remarks>
-    /// By default this will be all the <see cref="RealmObject"/>s in all your assemblies unless you restrict with
-    /// <see cref="RealmConfigurationBase.ObjectClasses"/>. Just because a given class <em>may</em> be stored in a
-    /// Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
+    /// By default this will be all the <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s in all your assemblies
+    /// unless you restrict with <see cref="RealmConfigurationBase.ObjectClasses"/>. Just because a given class <em>may</em>
+    /// be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
@@ -156,7 +156,9 @@ namespace Realms.Schema
             for (var i = 0; i < nativeSchema.objects_len; i++)
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
-                var builder = new ObjectSchema.Builder(objectSchema.name);
+
+                // V10TODO: read isEmbedded from OS schema
+                var builder = new ObjectSchema.Builder(objectSchema.name, isEmbedded: false);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {

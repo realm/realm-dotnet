@@ -44,7 +44,7 @@ namespace Realms
     {
         internal readonly ThreadSafeReferenceHandle Handle;
 
-        internal readonly RealmObject.Metadata Metadata;
+        internal readonly RealmObjectBase.Metadata Metadata;
 
         internal readonly Type ReferenceType;
 
@@ -79,10 +79,10 @@ namespace Realms
         /// The thread-confined <see cref="IQueryable{T}"/> to create a thread-safe reference to. It must be a collection,
         /// obtained by calling <see cref="Realm.All"/> or a subsequent LINQ query.
         /// </param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the query.</typeparam>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> contained in the query.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <c>Realm.ResolveReference(ThreadSafeReference.Query)</c> on a different thread.</returns>
         public static Query<T> Create<T>(IQueryable<T> value)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             return new Query<T>(value);
         }
@@ -90,11 +90,11 @@ namespace Realms
         /// <summary>
         /// Initializes a new instance of the <see cref="Object{T}"/> class.
         /// </summary>
-        /// <param name="value">The thread-confined <see cref="RealmObject"/> to create a thread-safe reference to.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
+        /// <param name="value">The thread-confined <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> to create a thread-safe reference to.</param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <c>Realm.ResolveReference(ThreadSafeReference.Object)</c> on a different thread.</returns>
         public static Object<T> Create<T>(T value)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             return new Object<T>(value);
         }
@@ -104,7 +104,7 @@ namespace Realms
         /// </summary>
         /// <param name="value">
         /// The thread-confined <see cref="IList{T}"/> to create a thread-safe reference to. It must be a collection
-        /// representing to-many relationship as a property of a <see cref="RealmObject"/>.
+        /// that is a managed property of a <see cref="RealmObject"/> or a <see cref="EmbeddedObject"/>.
         /// </param>
         /// <typeparam name="T">The type of the objects contained in the list.</typeparam>
         /// <returns>A <see cref="ThreadSafeReference"/> that can be passed to <c>Realm.ResolveReference(ThreadSafeReference.List)</c> on a different thread.</returns>
@@ -132,9 +132,9 @@ namespace Realms
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
         /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/> contained in the query.</typeparam>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> contained in the query.</typeparam>
         public class Query<T> : ThreadSafeReference
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             internal Query(IQueryable<T> value) : base((RealmResults<T>)value, Type.Query)
             {
@@ -142,7 +142,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// A reference to a <see cref="RealmObject"/> intended to be passed between threads.
+        /// A reference to a <see cref="RealmObject"/> or an <see cref="EmbeddedObject"/> intended to be passed between threads.
         /// <para/>
         /// To resolve a thread-safe reference on a target <see cref="Realm"/> on a different thread, pass it to
         /// <c>Realm.ResolveReference(ThreadSafeReference.Object)</c>.
@@ -156,11 +156,11 @@ namespace Realms
         /// Prefer short-lived <see cref="ThreadSafeReference"/>s as the data for the version of the source Realm
         /// will be retained until all references have been resolved or deallocated.
         /// </remarks>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "A nested class with generic argument is unlikely to be confused with System.Object.")]
         [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is intentional as ThreadSafeReference.Object represents an object.")]
         public class Object<T> : ThreadSafeReference
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             internal Object(T value) : base(value, Type.Object)
             {

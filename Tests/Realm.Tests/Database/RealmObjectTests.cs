@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
                 text = System.Text.Encoding.UTF8.GetString(stream.ToArray());
             }
 
-            foreach (var field in typeof(RealmObject).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            foreach (var field in typeof(RealmObjectBase).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
             {
                 Assert.That(text, Does.Not.Contains(field.Name));
             }
@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
 
             FreezeInPlace(obj);
 
-            Assert.Throws<RealmFrozenException>(() => obj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObject since it never changes.");
+            Assert.Throws<RealmFrozenException>(() => obj.PropertyChanged += (_, __) => { }, "It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
         }
 
         [Test]

@@ -131,7 +131,7 @@ namespace Realms.Tests.Database
 
             var oldSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
                 oldSchema.Add(person.Build());
             }
@@ -147,7 +147,7 @@ namespace Realms.Tests.Database
 
             var newSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
                 newSchema.Add(person.Build());
             }

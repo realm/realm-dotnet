@@ -25,7 +25,7 @@ namespace Realms
     /// </summary>
     /// <example>
     /// <code>
-    /// class Dog : RealmObject
+    /// class Dog : RealmObjectB
     /// {
     ///     // One to many relationship with Person.Dogs
     ///     public Person Owner { get; set; }

@@ -24,15 +24,15 @@ namespace Realms.Weaving
     public interface IRealmObjectHelper
     {
         /// <summary>
-        /// Creates an instance of a RealmObject.
+        /// Creates an instance of a RealmObjectBase.
         /// </summary>
-        /// <returns>The RealmObject.</returns>
+        /// <returns>The RealmObjectBase.</returns>
         RealmObject CreateInstance();
 
         /// <summary>
-        /// A strongly typed, optimized method to add a RealmObject to the realm.
+        /// A strongly typed, optimized method to add a RealmObjectBase to the realm.
         /// </summary>
-        /// <param name="instance">The RealmObject to add.</param>
+        /// <param name="instance">The RealmObjectBase to add.</param>
         /// <param name="update">If set to <c>true</c>, update the existing value (if any). Otherwise, try to add and throw if an object with the same primary key already exists.</param>
         /// <param name="skipDefaults">
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
@@ -41,10 +41,10 @@ namespace Realms.Weaving
         void CopyToRealm(RealmObject instance, bool update, bool skipDefaults);
 
         /// <summary>
-        /// Tries the get primary key value from a RealmObject.
+        /// Tries the get primary key value from a RealmObjectBase.
         /// </summary>
         /// <returns><c>true</c>, if the class has primary key, <c>false</c> otherwise.</returns>
-        /// <param name="instance">The RealmObject instance.</param>
+        /// <param name="instance">The RealmObjectBase instance.</param>
         /// <param name="value">The value of the primary key.</param>
         bool TryGetPrimaryKeyValue(RealmObject instance, out object value);
     }

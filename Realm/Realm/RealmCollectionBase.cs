@@ -38,10 +38,11 @@ namespace Realms
           IThreadConfined
     {
         protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);
+        protected static readonly bool _isEmbedded = typeof(T).IsAssignableFrom(typeof(EmbeddedObject));
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 
-        internal readonly RealmObject.Metadata Metadata;
+        internal readonly RealmObjectBase.Metadata Metadata;
 
         private NotificationTokenHandle _notificationToken;
         private bool _deliveredInitialNotification;
@@ -101,7 +102,7 @@ namespace Realms
 
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
-        RealmObject.Metadata IThreadConfined.Metadata => Metadata;
+        RealmObjectBase.Metadata IThreadConfined.Metadata => Metadata;
 
         public bool IsManaged => Realm != null;
 
@@ -117,7 +118,7 @@ namespace Realms
 
         internal readonly Lazy<CollectionHandleBase> Handle;
 
-        internal RealmCollectionBase(Realm realm, RealmObject.Metadata metadata)
+        internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(CreateHandle);
@@ -148,7 +149,13 @@ namespace Realms
                             throw new ArgumentOutOfRangeException(nameof(index));
                         }
 
-                        return Operator.Convert<RealmObject, T>(Realm.MakeObject(Metadata, objectHandle));
+                        var result = Realm.MakeObject(Metadata, objectHandle);
+                        if (_isEmbedded)
+                        {
+                            return Operator.Convert<EmbeddedObject, T>((EmbeddedObject)result);
+                        }
+
+                        return Operator.Convert<RealmObject, T>((RealmObject)result);
 
                     case PropertyType.String:
                     case PropertyType.String | PropertyType.Nullable:

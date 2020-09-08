@@ -22,9 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -159,7 +157,7 @@ namespace Realms.Tests.Database
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObject FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             if (isIntegerPK)
             {
@@ -239,7 +237,7 @@ namespace Realms.Tests.Database
             Assert.That(foundObj, Is.Null);
         }
 
-        private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
@@ -261,7 +259,7 @@ namespace Realms.Tests.Database
                 castPKValue = (string)primaryKeyValue;
             }
 
-            return (RealmObject)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
+            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
         }
 
         [Test]

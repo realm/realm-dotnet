@@ -37,11 +37,7 @@ namespace Realms
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal
     /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
-    /// <remarks>Although originally used in declarations, whilst that still compiles,
-    /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is
-    /// implemented with a faster binding.
-    /// </remarks>
-    /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is contained by the list.</typeparam>
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
@@ -51,7 +47,7 @@ namespace Realms
         private readonly Realm _realm;
         private readonly ListHandle _listHandle;
 
-        internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
+        internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
             _realm = realm;
             _listHandle = adoptedList;
@@ -148,7 +144,7 @@ namespace Realms
                 case PropertyType.Object | PropertyType.Nullable:
                     Argument.NotNull(value, nameof(value));
 
-                    var obj = Operator.Convert<T, RealmObject>(value);
+                    var obj = Operator.Convert<T, RealmObjectBase>(value);
                     if (!obj.IsManaged)
                     {
                         throw new ArgumentException("Value does not belong to a realm", nameof(value));
@@ -209,11 +205,20 @@ namespace Realms
             _listHandle.Erase((IntPtr)index);
         }
 
-        private void AddObjectToRealmIfNeeded(RealmObject obj)
+        private void AddObjectToRealmIfNeeded(RealmObjectBase obj)
         {
             if (!obj.IsManaged)
             {
-                _realm.Add(obj);
+                switch (obj)
+                {
+                    case RealmObject realmObj:
+                        _realm.Add(realmObj);
+                        break;
+                    case EmbeddedObject embeddedObj:
+                        throw new NotImplementedException("Implement me");
+                    default:
+                        throw new NotSupportedException($"Tried to add an object of type {obj.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
+                }
             }
         }
 
@@ -249,7 +254,7 @@ namespace Realms
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
         private static void Execute(T item,
-            Action<RealmObject> objectHandler,
+            Action<RealmObjectBase> objectHandler,
             Action<PrimitiveValue> primitiveHandler,
             Action<string> stringHandler,
             Action<byte[]> binaryHandler)
@@ -257,7 +262,7 @@ namespace Realms
             switch (_argumentType)
             {
                 case PropertyType.Object | PropertyType.Nullable:
-                    objectHandler(Operator.Convert<T, RealmObject>(item));
+                    objectHandler(Operator.Convert<T, RealmObjectBase>(item));
                     break;
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:

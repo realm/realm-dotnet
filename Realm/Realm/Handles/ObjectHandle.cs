@@ -303,9 +303,9 @@ namespace Realms
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T GetObject<T>(Realm realm, ColumnKey columnKey, string objectType)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             if (TryGetLink(columnKey, out var objectHandle))
             {
@@ -315,7 +315,7 @@ namespace Realms
             return null;
         }
 
-        public void SetObject(Realm realm, ColumnKey columnKey, RealmObject @object)
+        public void SetObject(Realm realm, ColumnKey columnKey, RealmObjectBase @object)
         {
             if (@object == null)
             {
@@ -325,7 +325,16 @@ namespace Realms
             {
                 if (!@object.IsManaged)
                 {
-                    realm.Add(@object);
+                    switch (@object)
+                    {
+                        case RealmObject realmObj:
+                            realm.Add(realmObj);
+                            break;
+                        case EmbeddedObject embeddedObj:
+                            throw new NotImplementedException("Implement me");
+                        default:
+                            throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
+                    }
                 }
 
                 SetLink(columnKey, @object.ObjectHandle);

@@ -196,7 +196,7 @@ namespace Realms
         private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
-        internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
+        internal readonly Dictionary<string, RealmObjectBase.Metadata> Metadata;
 
         /// <summary>
         /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
@@ -268,7 +268,7 @@ namespace Realms
             IsFrozen = SharedRealmHandle.IsFrozen;
         }
 
-        private RealmObject.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
+        private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
             var (tableHandle, columnKeys) = SharedRealmHandle.GetTableInfo(schema.Name, schema.Count(p => !p.Type.IsComputed()));
             Weaving.IRealmObjectHelper helper;
@@ -278,7 +278,7 @@ namespace Realms
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
                 {
-                    throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
+                    throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObjectBase but has not been woven.");
                 }
 
                 helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
@@ -305,7 +305,7 @@ namespace Realms
                 }
             }
 
-            return new RealmObject.Metadata(tableHandle, helper, columnKeysDict, computedProperiesMap, schema);
+            return new RealmObjectBase.Metadata(tableHandle, helper, columnKeysDict, computedProperiesMap, schema);
         }
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace Realms
             return CreateObject(className, primaryKey, out var _);
         }
 
-        private RealmObject CreateObject(string className, object primaryKey, out RealmObject.Metadata metadata)
+        private RealmObjectBase CreateObject(string className, object primaryKey, out RealmObjectBase.Metadata metadata)
         {
             Argument.Ensure(Metadata.TryGetValue(className, out metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
 
@@ -527,7 +527,7 @@ namespace Realms
             return result;
         }
 
-        internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
+        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
             ret.SetOwner(this, objectHandle, metadata);
@@ -535,7 +535,7 @@ namespace Realms
             return ret;
         }
 
-        internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectKey objectKey)
+        internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectKey objectKey)
         {
             var objectHandle = metadata.Table.Get(SharedRealmHandle, objectKey);
             if (objectHandle != null)
@@ -604,6 +604,11 @@ namespace Realms
 
             AddInternal(obj, obj?.GetType(), update);
             return obj;
+        }
+
+        internal EmbeddedObject Add(EmbeddedObject obj, RealmObjectBase parent)
+        {
+            throw new NotImplementedException("Implement me :( ");
         }
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
@@ -712,7 +717,7 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s are thread-affine, so capturing any such objects in
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
         /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
         /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
@@ -854,6 +859,7 @@ namespace Realms
             ThrowIfDisposed();
 
             Argument.Ensure(Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
+            Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
 
             return new RealmResults<RealmObject>(this, metadata);
         }
@@ -872,7 +878,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T Find<T>(long? primaryKey)
             where T : RealmObject
         {
@@ -896,7 +902,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T Find<T>(string primaryKey)
             where T : RealmObject
         {
@@ -923,7 +929,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public RealmObject Find(string className, long? primaryKey)
         {
             ThrowIfDisposed();
@@ -931,7 +937,7 @@ namespace Realms
             var metadata = Metadata[className];
             if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return MakeObject(metadata, objectHandle);
+                return (RealmObject)MakeObject(metadata, objectHandle);
             }
 
             return null;
@@ -946,7 +952,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public RealmObject Find(string className, string primaryKey)
         {
             ThrowIfDisposed();
@@ -954,7 +960,7 @@ namespace Realms
             var metadata = Metadata[className];
             if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
-                return MakeObject(metadata, objectHandle);
+                return (RealmObject)MakeObject(metadata, objectHandle);
             }
 
             return null;
@@ -968,15 +974,15 @@ namespace Realms
         /// Returns the same object as the one referenced when the <see cref="ThreadSafeReference.Object{T}"/> was first created,
         /// but resolved for the current Realm for this thread.
         /// </summary>
-        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="RealmObject"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the reference.</typeparam>
         /// <returns>
-        /// A thread-confined instance of the original <see cref="RealmObject"/> resolved for the current thread or <c>null</c>
+        /// A thread-confined instance of the original <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1025,7 +1031,7 @@ namespace Realms
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Query instance will own its handle.")]
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1045,7 +1051,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>obj</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
-        public void Remove(RealmObject obj)
+        public void Remove(RealmObjectBase obj)
         {
             ThrowIfDisposed();
 
@@ -1068,7 +1074,7 @@ namespace Realms
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             ThrowIfDisposed();
 

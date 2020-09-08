@@ -33,7 +33,7 @@ namespace Realms
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private readonly Realm _realm;
-        private readonly RealmObject.Metadata _metadata;
+        private readonly RealmObjectBase.Metadata _metadata;
 
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         private SortDescriptorHandle _sortDescriptor;
@@ -78,7 +78,7 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, RealmObject.Metadata metadata)
+        internal RealmResultsVisitor(Realm realm, RealmObjectBase.Metadata metadata)
         {
             _realm = realm;
             _metadata = metadata;
@@ -151,7 +151,7 @@ namespace Realms
             return chain.ToArray();
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (node.Method.DeclaringType == typeof(Queryable))
@@ -359,7 +359,7 @@ namespace Realms
                     member = node.Arguments.SingleOrDefault() as MemberExpression;
                     if (member == null)
                     {
-                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a RealmObject member");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a RealmObjectBase member");
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
@@ -398,7 +398,7 @@ namespace Realms
 
                     if (member == null)
                     {
-                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked on a RealmObject member");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked on a RealmObjectBase member");
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
@@ -587,9 +587,9 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression. \nUnable to process '{node.Right}'.");
                 }
 
-                if (rightValue is RealmObject obj && (!obj.IsManaged || !obj.IsValid))
+                if (rightValue is RealmObjectBase obj && (!obj.IsManaged || !obj.IsValid))
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObject. \nUnable to process '{node.Right}'.");
+                    throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase. \nUnable to process '{node.Right}'.");
                 }
 
                 switch (node.NodeType)
@@ -641,7 +641,7 @@ namespace Realms
                 case byte[] buffer:
                     if (buffer.Length == 0)
                     {
-                        // see RealmObject.SetByteArrayValue
+                        // see RealmObjectBase.SetByteArrayValue
                         queryHandle.BinaryEqual(columnKey, (IntPtr)0x1, IntPtr.Zero);
                         return;
                     }
@@ -655,7 +655,7 @@ namespace Realms
                     }
 
                     break;
-                case RealmObject obj:
+                case RealmObjectBase obj:
                     queryHandle.ObjectEqual(columnKey, obj.ObjectHandle);
                     break;
                 default:
@@ -685,7 +685,7 @@ namespace Realms
                 case byte[] buffer:
                     if (buffer.Length == 0)
                     {
-                        // see RealmObject.SetByteArrayValue
+                        // see RealmObjectBase.SetByteArrayValue
                         queryHandle.BinaryNotEqual(columnKey, (IntPtr)0x1, IntPtr.Zero);
                         return;
                     }
@@ -699,7 +699,7 @@ namespace Realms
                     }
 
                     break;
-                case RealmObject obj:
+                case RealmObjectBase obj:
                     queryHandle.Not();
                     queryHandle.ObjectEqual(columnKey, obj.ObjectHandle);
                     break;

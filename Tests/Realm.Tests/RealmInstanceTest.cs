@@ -32,7 +32,7 @@ namespace Realms.Tests
 
         protected Realm _realm => _lazyRealm.Value;
 
-        protected void FreezeInPlace(RealmObject obj)
+        protected void FreezeInPlace(RealmObjectBase obj)
         {
             obj.FreezeInPlace();
             CleanupOnTearDown(obj.Realm);
@@ -41,7 +41,7 @@ namespace Realms.Tests
         protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
 
         protected T Freeze<T>(T obj)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             var result = obj.Freeze();
             CleanupOnTearDown(result.Realm);
@@ -49,7 +49,7 @@ namespace Realms.Tests
         }
 
         protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             var result = collection.Freeze();
             CleanupOnTearDown(result.Realm);
@@ -57,7 +57,7 @@ namespace Realms.Tests
         }
 
         protected IList<T> Freeze<T>(IList<T> list)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             var result = list.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);
@@ -65,7 +65,7 @@ namespace Realms.Tests
         }
 
         protected IQueryable<T> Freeze<T>(IQueryable<T> query)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             var result = query.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);

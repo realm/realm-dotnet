@@ -31,11 +31,11 @@ namespace Realms.Dynamic
         private const BindingFlags PrivateBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
         private readonly Realm _realm;
-        private readonly RealmObject.Metadata _metadata;
+        private readonly RealmObjectBase.Metadata _metadata;
 
-        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetField("_realm", PrivateBindingFlags);
-        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetField("_objectHandle", PrivateBindingFlags);
-        private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
+        private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObjectBase).GetField("_realm", PrivateBindingFlags);
+        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObjectBase).GetField("_objectHandle", PrivateBindingFlags);
+        private static readonly MethodInfo RealmObjectGetBacklinksForHandleMethod = typeof(RealmObjectBase).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly MethodInfo PrimitiveValueGetMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Get), BindingFlags.Public | BindingFlags.Instance);
@@ -245,9 +245,9 @@ namespace Realms.Dynamic
                     setter = GetSetMethod<byte[]>(DummyHandle.SetByteArray);
                     break;
                 case PropertyType.Object:
-                    argumentType = typeof(RealmObject);
+                    argumentType = typeof(RealmObjectBase);
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
-                    setter = GetSetMethod<RealmObject>(DummyHandle.SetObject);
+                    setter = GetSetMethod<RealmObjectBase>(DummyHandle.SetObject);
                     break;
             }
 

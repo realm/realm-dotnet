@@ -36,7 +36,7 @@ namespace Realms
         /// <summary>
         /// Gets a value representing the object's metadata.
         /// </summary>
-        RealmObject.Metadata Metadata { get; }
+        RealmObjectBase.Metadata Metadata { get; }
 
         /// <summary>
         /// Gets a value representing the native handle for that object.

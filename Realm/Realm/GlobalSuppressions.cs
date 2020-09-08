@@ -20,5 +20,5 @@
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Will be a breaking change to rename.", Scope = "type", Target = "~T:Realms.Schema.Property")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._collectionChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._propertyChanged")]
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObject._propertyChanged")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObjectBase._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.Realm._realmChanged")]

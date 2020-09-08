@@ -27,9 +27,9 @@ namespace Realms
     internal class RealmResultsProvider : IQueryProvider
     {
         private readonly Realm _realm;
-        private readonly RealmObject.Metadata _metadata;
+        private readonly RealmObjectBase.Metadata _metadata;
 
-        internal RealmResultsProvider(Realm realm, RealmObject.Metadata metadata)
+        internal RealmResultsProvider(Realm realm, RealmObjectBase.Metadata metadata)
         {
             _realm = realm;
             _metadata = metadata;
