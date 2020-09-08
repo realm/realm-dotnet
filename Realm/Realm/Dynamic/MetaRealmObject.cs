@@ -246,7 +246,7 @@ namespace Realms.Dynamic
                     break;
                 case PropertyType.Object:
                     argumentType = typeof(RealmObjectBase);
-                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Constant(GetLimitedSelf()));
                     setter = GetSetMethod<RealmObjectBase>(DummyHandle.SetObject);
                     break;
             }
@@ -298,7 +298,7 @@ namespace Realms.Dynamic
         // SetXXX(colKey)
         private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
 
-        // SetObject(realm, colKey)
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
+        // SetObject(this, colKey)
+        private static MethodInfo GetSetMethod<TValue>(Action<RealmObjectBase, ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }

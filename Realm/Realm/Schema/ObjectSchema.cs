@@ -110,10 +110,9 @@ namespace Realms.Schema
         {
             Argument.NotNull(type, nameof(type));
 
-            // V10TODO: allow embedded
-            Argument.Ensure(type.BaseType == typeof(RealmObject), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
+            Argument.Ensure(type.BaseType == typeof(RealmObject) || type.BaseType == typeof(EmbeddedObject), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
 
-            var builder = new Builder(type.GetMappedOrOriginalName(), isEmbedded: type.IsAssignableFrom(typeof(EmbeddedObject)));
+            var builder = new Builder(type.GetMappedOrOriginalName(), isEmbedded: type.BaseType == typeof(EmbeddedObject));
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
                 var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();

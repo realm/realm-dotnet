@@ -63,6 +63,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_embedded_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
 
@@ -315,29 +318,36 @@ namespace Realms
             return null;
         }
 
-        public void SetObject(Realm realm, ColumnKey columnKey, RealmObjectBase @object)
+        public void SetObject(RealmObjectBase parent, ColumnKey columnKey, RealmObjectBase @object)
         {
             if (@object == null)
             {
                 ClearLink(columnKey);
             }
-            else
+            else if (@object is RealmObject realmObj)
             {
-                if (!@object.IsManaged)
+                if (!realmObj.IsManaged)
                 {
-                    switch (@object)
-                    {
-                        case RealmObject realmObj:
-                            realm.Add(realmObj);
-                            break;
-                        case EmbeddedObject embeddedObj:
-                            throw new NotImplementedException("Implement me");
-                        default:
-                            throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
-                    }
+                    parent.Realm.Add(realmObj);
                 }
 
-                SetLink(columnKey, @object.ObjectHandle);
+                SetLink(columnKey, realmObj.ObjectHandle);
+            }
+            else if (@object is EmbeddedObject embeddedObj)
+            {
+                if (embeddedObj.IsManaged)
+                {
+                    throw new NotSupportedException("Can't link to an embedded object that is already managed.");
+                }
+
+                var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);
+                ex.ThrowIfNecessary();
+                var handle = new ObjectHandle(parent.Realm.SharedRealmHandle, objPtr);
+                parent.Realm.ManageEmbedded(embeddedObj, handle);
+            }
+            else
+            {
+                throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
             }
         }
 

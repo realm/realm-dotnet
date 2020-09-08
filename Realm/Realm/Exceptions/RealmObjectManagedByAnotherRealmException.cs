@@ -19,7 +19,7 @@
 namespace Realms.Exceptions
 {
     /// <summary>
-    /// Exception thrown when you're trying to use <see cref="Realm.Add"/> but the object is already managed by a
+    /// Exception thrown when you're trying to use <see cref="Realm.Add{T}(T, bool)"/> but the object is already managed by a
     /// different <see cref="Realm"/>.
     /// </summary>
     public class RealmObjectManagedByAnotherRealmException : RealmException

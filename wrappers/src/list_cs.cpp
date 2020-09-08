@@ -143,6 +143,13 @@ REALM_EXPORT void list_add_binary(List& list, char* value, size_t value_len, boo
         add(list, BinaryData(), ex);
     }
 }
+
+REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(list.get_realm(), list.add_embedded());
+    });
+}
     
 REALM_EXPORT void list_set_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
@@ -217,6 +224,13 @@ REALM_EXPORT void list_set_binary(List& list, size_t list_ndx, char* value, size
         set(list, list_ndx, BinaryData(), ex);
     }
 }
+
+REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(list.get_realm(), list.set_embedded(list_ndx));
+    });
+}
     
 REALM_EXPORT void list_insert_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
@@ -290,6 +304,13 @@ REALM_EXPORT void list_insert_binary(List& list, size_t list_ndx, char* value, s
     else {
         insert(list, list_ndx, BinaryData(), ex);
     }
+}
+
+REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(list.get_realm(), list.insert_embedded(list_ndx));
+    });
 }
 
 REALM_EXPORT Object* list_get_object(List& list, size_t ndx, NativeException::Marshallable& ex)

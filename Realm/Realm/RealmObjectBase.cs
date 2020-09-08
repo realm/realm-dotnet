@@ -329,29 +329,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            if (value == null)
-            {
-                _objectHandle.ClearLink(_metadata.ColumnKeys[propertyName]);
-            }
-            else
-            {
-                if (!value.IsManaged)
-                {
-                    switch (value)
-                    {
-                        case RealmObject topLevel:
-                            _realm.Add(topLevel);
-                            break;
-                        case EmbeddedObject embedded:
-                            _realm.Add(embedded, this);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Tried to add an object of type {typeof(T).FullName} which does not inherit from RealmObject or EmbeddedObject");
-                    }
-                }
-
-                _objectHandle.SetLink(_metadata.ColumnKeys[propertyName], value.ObjectHandle);
-            }
+            _objectHandle.SetObject(this, _metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetByteArrayValue(string propertyName, byte[] value)

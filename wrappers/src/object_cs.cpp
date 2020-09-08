@@ -297,6 +297,15 @@ extern "C" {
         return object_set<ObjKey>(object, column_key, target_object.obj().get_key(), ex);
     }
 
+    REALM_EXPORT Object* object_create_embedded(Object& parent, ColKey column_key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_set(parent);
+
+            return new Object(parent.realm(), parent.obj().create_and_set_linked_object(column_key));
+        });
+    }
+
     REALM_EXPORT void object_clear_link(Object& object, ColKey column_key, NativeException::Marshallable& ex)
     {
         return object_set<ObjKey>(object, column_key, null_key, ex);

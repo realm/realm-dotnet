@@ -606,25 +606,25 @@ namespace Realms
             return obj;
         }
 
-        internal EmbeddedObject Add(EmbeddedObject obj, RealmObjectBase parent)
+        internal void ManageEmbedded(EmbeddedObject obj, ObjectHandle handle)
         {
-            throw new NotImplementedException("Implement me :( ");
+            var objectType = obj.GetType();
+            var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
+            Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
+
+            obj.SetOwner(this, handle, metadata);
+
+            // If an object is newly created, we don't need to invoke setters of properties with default values.
+            metadata.Helper.CopyToRealm(obj, update: false, skipDefaults: true);
+            obj.OnManaged();
         }
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
-            Argument.NotNull(obj, nameof(obj));
             Argument.NotNull(objectType, nameof(objectType));
-
-            if (obj.IsManaged)
+            if (!ShouldAddNewObject(obj))
             {
-                if (IsSameInstance(obj.Realm))
-                {
-                    // Already managed by this realm, so nothing to do.
-                    return;
-                }
-
-                throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
+                return;
             }
 
             var objectName = objectType.GetTypeInfo().GetMappedOrOriginalName();
@@ -648,6 +648,24 @@ namespace Realms
             // If an object is newly created, we don't need to invoke setters of properties with default values.
             metadata.Helper.CopyToRealm(obj, update, isNew);
             obj.OnManaged();
+        }
+
+        private bool ShouldAddNewObject(RealmObjectBase obj)
+        {
+            Argument.NotNull(obj, nameof(obj));
+
+            if (obj.IsManaged)
+            {
+                if (IsSameInstance(obj.Realm))
+                {
+                    // Already managed by this realm, so nothing to do.
+                    return false;
+                }
+
+                throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
+            }
+
+            return true;
         }
 
         /// <summary>

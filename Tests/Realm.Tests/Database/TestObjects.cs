@@ -396,4 +396,87 @@ namespace Realms.Tests.Database
         [Required]
         public IList<string> Strings { get; }
     }
+
+    public class ObjectWithEmbeddedProperties : RealmObject
+    {
+        public EmbeddedAllTypesObject AllTypesObject { get; set; }
+
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+
+        public RecursiveEmbeddedObject RecursiveObject { get; set; }
+    }
+
+    public class EmbeddedAllTypesObject : EmbeddedObject
+    {
+        public char CharProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public short Int16Property { get; set; }
+
+        public int Int32Property { get; set; }
+
+        public long Int64Property { get; set; }
+
+        public float SingleProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public bool BooleanProperty { get; set; }
+
+        public string StringProperty { get; set; }
+
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public char? NullableCharProperty { get; set; }
+
+        public byte? NullableByteProperty { get; set; }
+
+        public short? NullableInt16Property { get; set; }
+
+        public int? NullableInt32Property { get; set; }
+
+        public long? NullableInt64Property { get; set; }
+
+        public float? NullableSingleProperty { get; set; }
+
+        public double? NullableDoubleProperty { get; set; }
+
+        public bool? NullableBooleanProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmInteger<byte>? NullableByteCounterProperty { get; set; }
+
+        public RealmInteger<short>? NullableInt16CounterProperty { get; set; }
+
+        public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
+
+        public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+    }
+
+    public class RecursiveEmbeddedObject : EmbeddedObject
+    {
+        public string String { get; set; }
+
+        public RecursiveEmbeddedObject Child { get; set; }
+
+        public IList<RecursiveEmbeddedObject> Children { get; }
+    }
 }

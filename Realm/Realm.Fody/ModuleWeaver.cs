@@ -1086,7 +1086,7 @@ Analytics payload
                     // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
                     // instruction later on.
                     Instruction skipDefaultsPlaceholder = null;
-                    if (property.IsDescendantOf(_references.RealmObjectBase))
+                    if (property.PropertyType.Resolve().IsRealmObjectInheritor(_references))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -1206,7 +1206,7 @@ Analytics payload
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
 
-                    if (elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
+                    if (elementType.Resolve().IsRealmObjectInheritor(_references))
                     {
                         // castInstance.Realm.Add(list[i], update)
                         il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
