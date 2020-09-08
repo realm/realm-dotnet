@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -74,6 +75,14 @@ namespace Realms
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this collection belongs to.</value>
         Realm Realm { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Schema.ObjectSchema"/>, describing the persisted properties of the
+        /// <see cref="RealmObject"/>s contained in the collection. If the collection contains
+        /// primitive values, <c>ObjectSchema</c> will be <c>null</c>.
+        /// </summary>
+        /// <value>The ObjectSchema of the object or contained objects.</value>
+        ObjectSchema ObjectSchema { get; }
 
         /// <summary>
         /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed

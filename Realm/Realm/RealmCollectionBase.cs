@@ -35,7 +35,6 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : NotificationsHelper.INotifiable,
           IRealmCollection<T>,
-          ISchemaSource,
           IThreadConfined
     {
         protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);

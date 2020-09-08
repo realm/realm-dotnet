@@ -41,7 +41,7 @@ namespace Realms
     /// </summary>
     [Preserve(AllMembers = true, Conditional = false)]
     [Serializable]
-    public class RealmObject : INotifyPropertyChanged, ISchemaSource, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
+    public class RealmObject : INotifyPropertyChanged, IThreadConfined, NotificationsHelper.INotifiable, IReflectableType
     {
         [NonSerialized, XmlIgnore]
         private Realm _realm;
