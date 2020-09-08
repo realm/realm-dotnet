@@ -25,12 +25,12 @@ namespace Realms.Dynamic
     {
         internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
 
-        public void CopyToRealm(RealmObject instance, bool update, bool setPrimaryKey)
+        public void CopyToRealm(RealmObjectBase instance, bool update, bool setPrimaryKey)
         {
             throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
         }
 
-        public RealmObject CreateInstance()
+        public RealmObjectBase CreateInstance()
         {
             return new DynamicRealmObject();
         }

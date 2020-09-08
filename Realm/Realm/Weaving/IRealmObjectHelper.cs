@@ -27,7 +27,7 @@ namespace Realms.Weaving
         /// Creates an instance of a RealmObjectBase.
         /// </summary>
         /// <returns>The RealmObjectBase.</returns>
-        RealmObject CreateInstance();
+        RealmObjectBase CreateInstance();
 
         /// <summary>
         /// A strongly typed, optimized method to add a RealmObjectBase to the realm.
@@ -38,7 +38,7 @@ namespace Realms.Weaving
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void CopyToRealm(RealmObject instance, bool update, bool skipDefaults);
+        void CopyToRealm(RealmObjectBase instance, bool update, bool skipDefaults);
 
         /// <summary>
         /// Tries the get primary key value from a RealmObjectBase.

@@ -45,8 +45,9 @@ struct SchemaObject
     const char* name;
     int properties_start;
     int properties_end;
+    bool is_embedded;
     
-    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
+    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&, bool);
 };
 
 struct SchemaForMarshaling
@@ -70,10 +71,11 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
     };
 }
 
-REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties)
+REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties, bool is_embedded)
 {
     SchemaObject ret;
     ret.name = object.name.c_str();
+    ret.is_embedded = is_embedded;
     
     ret.properties_start = static_cast<int>(properties.size());
     for (const auto& property : object.persisted_properties) {

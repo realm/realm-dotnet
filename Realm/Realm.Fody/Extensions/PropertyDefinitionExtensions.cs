@@ -24,7 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
+using RealmWeaver;
 using static ModuleWeaver;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -123,21 +123,21 @@ internal static class PropertyDefinitionExtensions
             .SingleOrDefault();
     }
 
-    internal static bool IsPrimaryKey(this PropertyDefinition property)
+    internal static bool IsPrimaryKey(this PropertyDefinition property, ImportedReferences references)
     {
-        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Primary key properties only make sense on RealmObject classes");
+        Debug.Assert(property.DeclaringType.IsValidRealmObjectBaseInheritor(references), "Primary key properties only make sense on RealmObject/EmbeddedObject classes");
         return property.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
     }
 
-    internal static bool IsRequired(this PropertyDefinition property)
+    internal static bool IsRequired(this PropertyDefinition property, ImportedReferences references)
     {
-        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Required properties only make sense on RealmObject classes");
+        Debug.Assert(property.DeclaringType.IsValidRealmObjectBaseInheritor(references), "Required properties only make sense on RealmObject/EmbeddedObject classes");
         return property.CustomAttributes.Any(a => a.AttributeType.Name == "RequiredAttribute");
     }
 
-    internal static bool IsIndexable(this PropertyDefinition property)
+    internal static bool IsIndexable(this PropertyDefinition property, ImportedReferences references)
     {
-        Debug.Assert(property.DeclaringType.BaseType.Name == "RealmObject", "Required properties only make sense on RealmObject classes");
+        Debug.Assert(property.DeclaringType.IsValidRealmObjectBaseInheritor(references), "Required properties only make sense on RealmObject/EmbeddedObject classes");
         var propertyType = property.PropertyType;
         if (propertyType.IsRealmInteger(out var isNullable, out var backingType))
         {
@@ -151,6 +151,12 @@ internal static class PropertyDefinitionExtensions
 
         return _indexableTypes.Contains(propertyType.FullName);
     }
+
+    public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) => type.BaseType.IsSameAs(references.EmbeddedObject);
+
+    public static bool IsRealmObjectInheritor(this TypeDefinition type, ImportedReferences references) => type.BaseType.IsSameAs(references.RealmObject);
+
+    public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) => type.IsEmbeddedObjectInheritor(references) || type.IsRealmObjectInheritor(references);
 
     public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
     {

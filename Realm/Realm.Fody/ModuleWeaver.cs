@@ -125,13 +125,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
     private IEnumerable<TypeDefinition> GetMatchingTypes()
     {
-        foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject)))
+        foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject) || t.IsDescendedFrom(_references.EmbeddedObject)))
         {
             if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
             {
                 continue;
             }
-            else if (type.BaseType.IsSameAs(_references.RealmObject))
+            else if (type.IsValidRealmObjectBaseInheritor(_references))
             {
                 yield return type;
             }
@@ -268,6 +268,13 @@ Analytics payload
             return;
         }
 
+        var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
+        if (type.IsEmbeddedObjectInheritor(_references) && pkProperty != null)
+        {
+            WriteError($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.");
+            return;
+        }
+
         if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
         {
             WriteError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
@@ -309,18 +316,18 @@ Analytics payload
 
         var backingField = prop.GetBackingField();
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-        if (isIndexed && !prop.IsIndexable())
+        if (isIndexed && !prop.IsIndexable(_references))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
         }
 
-        var isPrimaryKey = prop.IsPrimaryKey();
+        var isPrimaryKey = prop.IsPrimaryKey(_references);
         if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
         }
 
-        var isRequired = prop.IsRequired();
+        var isRequired = prop.IsRequired(_references);
         if (isRequired &&
             !prop.IsIList(typeof(string)) &&
             !prop.IsNullable() &&
@@ -332,9 +339,9 @@ Analytics payload
 
         if (!prop.IsAutomatic())
         {
-            if (prop.PropertyType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+            if (prop.PropertyType.Resolve().IsValidRealmObjectBaseInheritor(_references))
             {
-                return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
+                return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
             }
 
             return WeaveResult.Skipped();
@@ -411,7 +418,7 @@ Analytics payload
             var typeId = $"{prefix}{integerType.FullName}{suffix}";
             if (!methodTable.TryGetValue(typeId, out var accessors))
             {
-                var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+                var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
                 {
                     HasThis = true,
                     Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
@@ -428,7 +435,7 @@ Analytics payload
 
                 genericGetter.ReturnType = returnType;
 
-                var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+                var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
                 {
                     HasThis = true,
                     Parameters =
@@ -459,7 +466,7 @@ Analytics payload
         else if (prop.IsIList())
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject) &&
+            if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
                 !_realmIntegerBackedTypes.Contains(elementType.FullName) &&
                 !_typeTable.ContainsKey(elementType.FullName) &&
                 !_primitiveValueTypes.ContainsKey(elementType.FullName))
@@ -484,7 +491,7 @@ Analytics payload
                               new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
                               concreteListConstructor);
         }
-        else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+        else if (prop.PropertyType.Resolve().IsValidRealmObjectBaseInheritor(_references))
         {
             // with casting in the _realmObject methods, should just work
             ReplaceGetter(prop, columnName,
@@ -563,13 +570,13 @@ Analytics payload
 
         if (!methodTable.TryGetValue(typeId, out var realmAccessors))
         {
-            var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObject)
+            var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObjectBase)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) },
             };
 
-            var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+            var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
             {
                 HasThis = true,
                 Parameters =
@@ -974,7 +981,7 @@ Analytics payload
 
         helperType.Interfaces.Add(new InterfaceImplementation(_references.IRealmObjectHelper));
 
-        var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObject);
+        var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObjectBase);
         {
             var il = createInstance.Body.GetILProcessor();
             il.Emit(OpCodes.Newobj, objectConstructor);
@@ -1020,7 +1027,7 @@ Analytics payload
                 }
             */
 
-            var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObject);
+            var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObjectBase);
             copyToRealm.Parameters.Add(instanceParameter);
 
             var updateParameter = new ParameterDefinition("update", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
@@ -1044,7 +1051,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey()))
+            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey(_references)))
             {
                 var property = prop.Property;
                 var field = prop.Field;
@@ -1063,7 +1070,7 @@ Analytics payload
 
                     // We can skip setting properties that have their default values unless:
                     var shouldSetAlways = property.IsNullable() || // The property is nullable - those should be set explicitly to null
-                                          property.IsRequired() || // Needed for validating that the property is not null (string)
+                                          property.IsRequired(_references) || // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
                                           property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                           property.IsDecimal() ||
@@ -1079,7 +1086,7 @@ Analytics payload
                     // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
                     // instruction later on.
                     Instruction skipDefaultsPlaceholder = null;
-                    if (property.IsDescendantOf(_references.RealmObject))
+                    if (property.IsDescendantOf(_references.RealmObjectBase))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -1123,7 +1130,7 @@ Analytics payload
                     var setEndPoint = il.Create(OpCodes.Nop);
                     il.Append(setEndPoint);
 
-                    if (property.IsDescendantOf(_references.RealmObject))
+                    if (property.IsDescendantOf(_references.RealmObjectBase))
                     {
                         if (addPlaceholder != null)
                         {
@@ -1199,7 +1206,7 @@ Analytics payload
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
 
-                    if (elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+                    if (elementType.Resolve().IsValidRealmObjectBaseInheritor(_references))
                     {
                         // castInstance.Realm.Add(list[i], update)
                         il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
