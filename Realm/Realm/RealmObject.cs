@@ -373,84 +373,84 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value));
         }
 
         protected void SetCharValueUnique(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value));
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value));
         }
 
         protected void SetNullableCharValueUnique(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value));
         }
 
         protected void SetSingleValue(string propertyName, float value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Float));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Float(value));
         }
 
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableFloat));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableFloat(value));
         }
 
         protected void SetDoubleValue(string propertyName, double value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Double));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Double(value));
         }
 
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableDouble));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableDouble(value));
         }
 
         protected void SetBooleanValue(string propertyName, bool value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Bool));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Bool(value));
         }
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableBool));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableBool(value));
         }
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Date));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Date(value));
         }
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableDate));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableDate(value));
         }
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
@@ -487,7 +487,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
@@ -495,14 +495,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value.ToLong()));
         }
 
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
             where T : struct, IComparable<T>, IFormattable
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
@@ -510,7 +510,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value.ToLong()));
         }
 
         #endregion
