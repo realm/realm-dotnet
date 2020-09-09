@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -67,6 +68,23 @@ namespace Realms
             }
         }
 
+        protected void SetPrimitiveValue<T>(string propertyName, T value, PropertyType propertyType)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetPrimitiveValueUnique<T>(string propertyName, T value, PropertyType propertyType)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+
+        protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return default(T);
+        }
+
         protected string GetStringValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -79,126 +97,6 @@ namespace Realms
         }
 
         protected void SetStringValueUnique(string propertyName, string value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected char GetCharValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return char.MinValue;
-        }
-
-        protected void SetCharValue(string propertyName, char value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetCharValueUnique(string propertyName, char value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableCharValueUnique(string propertyName, char? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected float GetSingleValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetSingleValue(string propertyName, float value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected double GetDoubleValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetDoubleValue(string propertyName, double value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected bool GetBooleanValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return false;
-        }
-
-        protected void SetBooleanValue(string propertyName, bool value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return DateTimeOffset.MinValue;
-        }
-
-        protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return DateTimeOffset.MinValue;
-        }
-
-        protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected char? GetNullableCharValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return char.MinValue;
-        }
-
-        protected void SetNullableCharValue(string propertyName, char? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected float? GetNullableSingleValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableSingleValue(string propertyName, float? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected double? GetNullableDoubleValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return 0;
-        }
-
-        protected void SetNullableDoubleValue(string propertyName, double? value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected bool? GetNullableBooleanValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return false;
-        }
-
-        protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }

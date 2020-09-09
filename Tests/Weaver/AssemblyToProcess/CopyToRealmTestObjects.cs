@@ -57,13 +57,13 @@ namespace AssemblyToProcess
     {
         public char? Char { get; set; }
 
-        public byte? Byte { get; set; }
+        public byte? NullableByte { get; set; }
 
-        public short? Int16 { get; set; }
+        public short? NullableInt16 { get; set; }
 
-        public int? Int32 { get; set; }
+        public int? NullableInt32 { get; set; }
 
-        public long? Int64 { get; set; }
+        public long? NullableInt64 { get; set; }
 
         public float? Single { get; set; }
 
