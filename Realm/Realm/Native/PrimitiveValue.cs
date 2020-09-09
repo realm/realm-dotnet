@@ -120,7 +120,7 @@ namespace Realms.Native
             int_value = value.GetValueOrDefault().ToUniversalTime().Ticks
         };
 
-        public static PrimitiveValue Generic<T>(T value, PropertyType type)
+        public static PrimitiveValue Create<T>(T value, PropertyType type)
         {
             var result = new PrimitiveValue
             {

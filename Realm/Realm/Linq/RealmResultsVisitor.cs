@@ -632,10 +632,10 @@ namespace Realms
                     queryHandle.StringEqual(columnKey, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.BoolEqual(columnKey, boolValue);
+                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset dateValue:
-                    queryHandle.TimestampTicksEqual(columnKey, dateValue);
+                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Date(dateValue));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
@@ -659,7 +659,7 @@ namespace Realms
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericEqualMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveEqual);
                     break;
             }
         }
@@ -676,10 +676,10 @@ namespace Realms
                     queryHandle.StringNotEqual(columnKey, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.BoolNotEqual(columnKey, boolValue);
+                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset date:
-                    queryHandle.TimestampTicksNotEqual(columnKey, date);
+                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
@@ -704,7 +704,7 @@ namespace Realms
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericNotEqualMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveNotEqual);
                     break;
             }
         }
@@ -715,14 +715,14 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.TimestampTicksLess(columnKey, date);
+                    queryHandle.PrimitiveLess(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericLessMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveLess);
                     break;
             }
         }
@@ -733,14 +733,14 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.TimestampTicksLessEqual(columnKey, date);
+                    queryHandle.PrimitiveLessEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericLessEqualMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveLessEqual);
                     break;
             }
         }
@@ -751,14 +751,14 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.TimestampTicksGreater(columnKey, date);
+                    queryHandle.PrimitiveGreater(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericGreaterMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveGreater);
                     break;
             }
         }
@@ -769,19 +769,19 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.TimestampTicksGreaterEqual(columnKey, date);
+                    queryHandle.PrimitiveGreaterEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.NumericGreaterEqualMethods);
+                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveGreaterEqual);
                     break;
             }
         }
 
-        private static void AddQueryForConvertibleTypes(ColumnKey columnKey, object value, Type columnType, QueryHandle.NumericQueryMethods queryMethods)
+        private static void AddQueryForConvertibleTypes(ColumnKey columnKey, object value, Type columnType, Action<ColumnKey, PrimitiveValue> action)
         {
             if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
@@ -792,24 +792,21 @@ namespace Realms
                 columnType == typeof(short) ||
                 columnType == typeof(char) ||
                 columnType == typeof(int) ||
+                columnType == typeof(long) ||
                 columnType == typeof(RealmInteger<byte>) ||
                 columnType == typeof(RealmInteger<short>) ||
-                columnType == typeof(RealmInteger<int>))
+                columnType == typeof(RealmInteger<int>) ||
+                columnType == typeof(RealmInteger<long>))
             {
-                queryMethods.Int(columnKey, (int)Convert.ChangeType(value, typeof(int)));
-            }
-            else if (columnType == typeof(long) ||
-                     columnType == typeof(RealmInteger<long>))
-            {
-                queryMethods.Long(columnKey, (long)Convert.ChangeType(value, typeof(long)));
+                action(columnKey, PrimitiveValue.Int((long)Convert.ChangeType(value, typeof(long))));
             }
             else if (columnType == typeof(float))
             {
-                queryMethods.Float(columnKey, (float)Convert.ChangeType(value, typeof(float)));
+                action(columnKey, PrimitiveValue.Float((float)Convert.ChangeType(value, typeof(float))));
             }
             else if (columnType == typeof(double))
             {
-                queryMethods.Double(columnKey, (double)Convert.ChangeType(value, typeof(double)));
+                action(columnKey, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
             }
             else
             {
