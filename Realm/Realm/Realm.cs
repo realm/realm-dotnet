@@ -866,6 +866,20 @@ namespace Realms
             return new RealmResults<T>(this, metadata);
         }
 
+        // This should only be used for tests
+        internal IQueryable<T> AllEmbedded<T>()
+            where T : EmbeddedObject
+        {
+            ThrowIfDisposed();
+
+            var type = typeof(T);
+            Argument.Ensure(
+                Metadata.TryGetValue(type.GetTypeInfo().GetMappedOrOriginalName(), out var metadata) && metadata.Schema.Type.AsType() == type,
+                $"The class {type.Name} is not in the limited set of classes for this realm", nameof(T));
+
+            return new RealmResults<T>(this, metadata);
+        }
+
         /// <summary>
         /// Get a view of all the objects of a particular type.
         /// </summary>

@@ -399,6 +399,9 @@ namespace Realms.Tests.Database
 
     public class ObjectWithEmbeddedProperties : RealmObject
     {
+        [PrimaryKey]
+        public int PrimaryKey { get; set; }
+
         public EmbeddedAllTypesObject AllTypesObject { get; set; }
 
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }

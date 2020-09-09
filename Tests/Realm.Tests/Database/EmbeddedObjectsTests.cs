@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -451,6 +452,163 @@ namespace Realms.Tests.Database
             Assert.That(parent.RecursiveObject.Child.Child.IsManaged);
             Assert.That(parent.RecursiveObject.Child.Child.String, Is.EqualTo("c"));
             Assert.That(parent.RecursiveObject.Child.Child.Child, Is.Null);
+        }
+
+        [Test]
+        public void EmbeddedParent_AddOrUpdate_DeletesOldChild()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                PrimaryKey = 123,
+                AllTypesObject = new EmbeddedAllTypesObject { StringProperty = "A" }
+            };
+
+            var firstChild = parent.AllTypesObject;
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(firstChild.IsValid);
+            Assert.That(firstChild.IsManaged);
+
+            var updatingParent = new ObjectWithEmbeddedProperties
+            {
+                PrimaryKey = 123,
+                AllTypesObject = new EmbeddedAllTypesObject { StringProperty = "B" }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(updatingParent, update: true);
+            });
+
+            Assert.That(firstChild.IsValid, Is.False);
+            Assert.That(firstChild.IsManaged);
+
+            Assert.That(updatingParent.AllTypesObject.StringProperty, Is.EqualTo("B"));
+            Assert.That(parent.AllTypesObject.StringProperty, Is.EqualTo("B"));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenDeleted_IsRemovedFromParent()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                AllTypesObject = new EmbeddedAllTypesObject(),
+                ListOfAllTypesObjects =
+                {
+                    new EmbeddedAllTypesObject(),
+                    new EmbeddedAllTypesObject { StringProperty = "this will survive" }
+                }
+            };
+
+            _realm.Write(() =>
+                    {
+                        _realm.Add(parent);
+                    });
+
+            var directLink = parent.AllTypesObject;
+            var listLink = parent.ListOfAllTypesObjects[0];
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(directLink);
+                _realm.Remove(listLink);
+            });
+
+            Assert.That(parent.AllTypesObject, Is.Null);
+            Assert.That(parent.ListOfAllTypesObjects.Count, Is.EqualTo(1));
+            Assert.That(parent.ListOfAllTypesObjects[0].StringProperty, Is.EqualTo("this will survive"));
+        }
+
+        [Test]
+        public void EmbeddedParent_AddOrUpdate_DeletesOldChildren()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                PrimaryKey = 123,
+                ListOfAllTypesObjects =
+                {
+                    new EmbeddedAllTypesObject { StringProperty = "A" }
+                }
+            };
+
+            var firstChild = parent.ListOfAllTypesObjects[0];
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent, update: true);
+            });
+
+            Assert.That(firstChild.IsValid);
+            Assert.That(firstChild.IsManaged);
+
+            var updatingParent = new ObjectWithEmbeddedProperties
+            {
+                PrimaryKey = 123,
+                ListOfAllTypesObjects =
+                {
+                    new EmbeddedAllTypesObject { StringProperty = "B" }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(updatingParent, update: true);
+            });
+
+            Assert.That(firstChild.IsValid, Is.False);
+            Assert.That(firstChild.IsManaged);
+
+            Assert.That(parent.ListOfAllTypesObjects.Single().StringProperty, Is.EqualTo("B"));
+            Assert.That(updatingParent.ListOfAllTypesObjects.Single().StringProperty, Is.EqualTo("B"));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenDeleted_DeletesDependentTree()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new RecursiveEmbeddedObject
+                {
+                    Child = new RecursiveEmbeddedObject
+                    {
+                        Children =
+                        {
+                            new RecursiveEmbeddedObject()
+                        }
+                    },
+                    Children =
+                    {
+                        new RecursiveEmbeddedObject
+                        {
+                            Child = new RecursiveEmbeddedObject()
+                        }
+                    }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            var previousEmbedded = _realm.AllEmbedded<RecursiveEmbeddedObject>().ToArray();
+            Assert.That(previousEmbedded.Length, Is.EqualTo(5));
+
+            _realm.Write(() =>
+            {
+                parent.RecursiveObject = new RecursiveEmbeddedObject();
+            });
+
+            foreach (var previous in previousEmbedded)
+            {
+                Assert.That(previous.IsValid, Is.False);
+            }
+
+            Assert.That(_realm.AllEmbedded<RecursiveEmbeddedObject>().Count(), Is.EqualTo(1));
         }
 
         private static EmbeddedAllTypesObject CreateEmbeddedAllTypesObject()
