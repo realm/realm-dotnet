@@ -158,6 +158,10 @@ internal static class PropertyDefinitionExtensions
 
     public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) => type.IsEmbeddedObjectInheritor(references) || type.IsRealmObjectInheritor(references);
 
+    public static bool ContainsRealmObject(this PropertyDefinition property, ImportedReferences references) => property.PropertyType.Resolve().IsRealmObjectInheritor(references);
+
+    public static bool ContainsEmbeddedObject(this PropertyDefinition property, ImportedReferences references) => property.PropertyType.Resolve().IsEmbeddedObjectInheritor(references);
+
     public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
     {
         var nullableMatch = NullableRegex.Match(type.FullName);

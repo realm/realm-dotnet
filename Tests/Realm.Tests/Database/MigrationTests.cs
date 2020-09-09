@@ -78,7 +78,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = migration.OldRealm.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -140,7 +140,7 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    dynamic person = realm.CreateObject("Person", null);
+                    dynamic person = realm.DynamicApi.CreateObject("Person", null);
                     person.Name = "Foo";
                 });
             }
@@ -154,7 +154,7 @@ namespace Realms.Tests.Database
 
             using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
             {
-                Assert.That(realm.All("Person"), Is.Empty);
+                Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
             }
         }
     }

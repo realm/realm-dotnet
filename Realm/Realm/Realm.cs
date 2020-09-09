@@ -26,6 +26,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
@@ -199,6 +200,11 @@ namespace Realms
         internal readonly Dictionary<string, RealmObjectBase.Metadata> Metadata;
 
         /// <summary>
+        /// Gets an object encompassing the dynamic API for this Realm instance.
+        /// </summary>
+        public Dynamic DynamicApi { get; }
+
+        /// <summary>
         /// Gets a value indicating whether there is an active <see cref="Transaction"/> is in transaction.
         /// </summary>
         /// <value><c>true</c> if is in transaction; otherwise, <c>false</c>.</value>
@@ -266,6 +272,7 @@ namespace Realms
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
+            DynamicApi = new Dynamic(this);
         }
 
         private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
@@ -285,7 +292,7 @@ namespace Realms
             }
             else
             {
-                helper = Dynamic.DynamicRealmObjectHelper.Instance;
+                helper = DynamicRealmObjectHelper.Instance(schema.IsEmbedded);
             }
 
             var columnKeysDict = new Dictionary<string, ColumnKey>(schema.Count);
@@ -466,65 +473,6 @@ namespace Realms
             ThrowIfDisposed();
 
             return (int)((long)SharedRealmHandle.DangerousGetHandle() % int.MaxValue);
-        }
-
-        /// <summary>
-        /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
-        /// </summary>
-        /// <returns>A dynamically-accessed Realm object.</returns>
-        /// <param name="className">The type of object to create as defined in the schema.</param>
-        /// <param name="primaryKey">
-        /// The primary key of object to be created. If the object doesn't have primary key defined, this argument
-        /// is ignored.
-        /// </param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// If you pass <c>null</c> for an object with string primary key.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// If you pass <c>primaryKey</c> with type that is different from the type, defined in the schema.
-        /// </exception>
-        /// <remarks>
-        /// <para>
-        /// <b>WARNING:</b> if the dynamic object has a PrimaryKey then that must be the <b>first property set</b>
-        /// otherwise other property changes may be lost.
-        /// </para>
-        /// <para>
-        /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
-        /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
-        /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
-        /// object will be an instance of a user-defined class.
-        /// </para>
-        /// </remarks>
-        public dynamic CreateObject(string className, object primaryKey)
-        {
-            ThrowIfDisposed();
-
-            return CreateObject(className, primaryKey, out var _);
-        }
-
-        private RealmObjectBase CreateObject(string className, object primaryKey, out RealmObjectBase.Metadata metadata)
-        {
-            Argument.Ensure(Metadata.TryGetValue(className, out metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
-
-            var result = metadata.Helper.CreateInstance();
-
-            ObjectHandle objectHandle;
-            var pkProperty = metadata.Schema.PrimaryKeyProperty;
-            if (pkProperty.HasValue)
-            {
-                objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
-            }
-            else
-            {
-                objectHandle = SharedRealmHandle.CreateObject(metadata.Table);
-            }
-
-            result.SetOwner(this, objectHandle, metadata);
-            result.OnManaged();
-            return result;
         }
 
         internal RealmObjectBase MakeObject(RealmObjectBase.Metadata metadata, ObjectHandle objectHandle)
@@ -880,22 +828,6 @@ namespace Realms
             return new RealmResults<T>(this, metadata);
         }
 
-        /// <summary>
-        /// Get a view of all the objects of a particular type.
-        /// </summary>
-        /// <param name="className">The type of the objects as defined in the schema.</param>
-        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public IQueryable<dynamic> All(string className)
-        {
-            ThrowIfDisposed();
-
-            Argument.Ensure(Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
-            Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
-
-            return new RealmResults<RealmObject>(this, metadata);
-        }
-
         #region Quick Find using primary key
 
         /// <summary>
@@ -944,55 +876,6 @@ namespace Realms
             if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
-        /// </summary>
-        /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="primaryKey">
-        /// Primary key to be matched exactly, same as an == search.
-        /// An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.
-        /// </param>
-        /// <returns><c>null</c> or an object matching the primary key.</returns>
-        /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
-        /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        public RealmObject Find(string className, long? primaryKey)
-        {
-            ThrowIfDisposed();
-
-            var metadata = Metadata[className];
-            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
-            {
-                return (RealmObject)MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
-        /// </summary>
-        /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
-        /// <returns><c>null</c> or an object matching the primary key.</returns>
-        /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
-        /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        public RealmObject Find(string className, string primaryKey)
-        {
-            ThrowIfDisposed();
-
-            var metadata = Metadata[className];
-            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
-            {
-                return (RealmObject)MakeObject(metadata, objectHandle);
             }
 
             return null;
@@ -1133,24 +1016,6 @@ namespace Realms
             ThrowIfDisposed();
 
             RemoveRange(All<T>());
-        }
-
-        /// <summary>
-        /// Remove all objects of a type from the Realm.
-        /// </summary>
-        /// <param name="className">Type of the objects to remove as defined in the schema.</param>
-        /// <exception cref="RealmInvalidTransactionException">
-        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="ArgumentException">
-        /// If you pass <c>className</c> that does not belong to this Realm's schema.
-        /// </exception>
-        public void RemoveAll(string className)
-        {
-            ThrowIfDisposed();
-
-            var query = (RealmResults<RealmObject>)All(className);
-            query.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>
@@ -1301,6 +1166,180 @@ namespace Realms
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// A class that exposes the dynamic API for a <see cref="Realm"/> instance.
+        /// </summary>
+        public class Dynamic
+        {
+            private readonly Realm _realm;
+
+            internal Dynamic(Realm realm)
+            {
+                _realm = realm;
+            }
+
+            /// <summary>
+            /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// </summary>
+            /// <returns>A dynamically-accessed Realm object.</returns>
+            /// <param name="className">The type of object to create as defined in the schema.</param>
+            /// <param name="primaryKey">
+            /// The primary key of object to be created. If the object doesn't have primary key defined, this argument
+            /// is ignored.
+            /// </param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentNullException">
+            /// If you pass <c>null</c> for an object with string primary key.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If you pass <c>primaryKey</c> with type that is different from the type, defined in the schema.
+            /// </exception>
+            /// <remarks>
+            /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
+            /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
+            /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
+            /// object will be an instance of a user-defined class.
+            /// </remarks>
+            public dynamic CreateObject(string className, object primaryKey)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
+
+                var result = metadata.Helper.CreateInstance();
+
+                ObjectHandle objectHandle;
+                var pkProperty = metadata.Schema.PrimaryKeyProperty;
+                if (pkProperty.HasValue)
+                {
+                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.Table, className, update: false, isNew: out var _);
+                }
+                else
+                {
+                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.Table);
+                }
+
+                result.SetOwner(_realm, objectHandle, metadata);
+                result.OnManaged();
+                return result;
+            }
+
+            /// <summary>
+            /// Factory for a managed embedded object in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Embedded objects need to be owned immediately which is why they can only be created for a specific property.
+            /// </summary>
+            /// <param name="parent">
+            /// The parent <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> that will own the newly created
+            /// embedded object.
+            /// </param>
+            /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
+            /// <returns>A dynamically-accessed embedded object.</returns>
+            public dynamic CreateEmbeddedObjectForProperty(RealmObjectBase parent, string propertyName)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.NotNull(parent, nameof(parent));
+                Argument.Ensure(parent.IsManaged && parent.IsValid, "The object passed as parent must be managed and valid to create an embedded object.", nameof(parent));
+                Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
+                Argument.Ensure(parent.ObjectMetadata.Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
+                Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
+                Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
+
+                var obj = metadata.Helper.CreateInstance();
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.ColumnKeys[propertyName]);
+
+                obj.SetOwner(_realm, handle, metadata);
+                obj.OnManaged();
+
+                return obj;
+            }
+
+            /// <summary>
+            /// Get a view of all the objects of a particular type.
+            /// </summary>
+            /// <param name="className">The type of the objects as defined in the schema.</param>
+            /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+            /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
+            public IQueryable<dynamic> All(string className)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
+                Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
+
+                return new RealmResults<RealmObject>(_realm, metadata);
+            }
+
+            /// <summary>
+            /// Remove all objects of a type from the Realm.
+            /// </summary>
+            /// <param name="className">Type of the objects to remove as defined in the schema.</param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If you pass <c>className</c> that does not belong to this Realm's schema.
+            /// </exception>
+            public void RemoveAll(string className)
+            {
+                _realm.ThrowIfDisposed();
+
+                var query = (RealmResults<RealmObject>)All(className);
+                query.ResultsHandle.Clear(_realm.SharedRealmHandle);
+            }
+
+            /// <summary>
+            /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+            /// </summary>
+            /// <param name="className">Name of class in dynamic situation.</param>
+            /// <param name="primaryKey">
+            /// Primary key to be matched exactly, same as an == search.
+            /// An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.
+            /// </param>
+            /// <returns><c>null</c> or an object matching the primary key.</returns>
+            /// <exception cref="RealmClassLacksPrimaryKeyException">
+            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// </exception>
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
+            public RealmObject Find(string className, long? primaryKey)
+            {
+                _realm.ThrowIfDisposed();
+
+                var metadata = _realm.Metadata[className];
+                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
+                {
+                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
+                }
+
+                return null;
+            }
+
+            /// <summary>
+            /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+            /// </summary>
+            /// <param name="className">Name of class in dynamic situation.</param>
+            /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+            /// <returns><c>null</c> or an object matching the primary key.</returns>
+            /// <exception cref="RealmClassLacksPrimaryKeyException">
+            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// </exception>
+            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
+            public RealmObject Find(string className, string primaryKey)
+            {
+                _realm.ThrowIfDisposed();
+
+                var metadata = _realm.Metadata[className];
+                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
+                {
+                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
+                }
+
+                return null;
             }
         }
     }

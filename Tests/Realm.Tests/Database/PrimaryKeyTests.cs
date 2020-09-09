@@ -113,11 +113,11 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
+            _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
 
             Assert.That(() =>
             {
-                _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
+                _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -171,10 +171,10 @@ namespace Realms.Tests.Database
                     castPKValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return _realm.Find(type.Name, castPKValue);
+                return _realm.DynamicApi.Find(type.Name, castPKValue);
             }
 
-            return _realm.Find(type.Name, (string)primaryKeyValue);
+            return _realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
@@ -271,7 +271,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ExceptionIfNoDynamicPrimaryKeyDeclared()
         {
-            Assert.That(() => _realm.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.DynamicApi.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]

@@ -513,9 +513,9 @@ namespace Realms.Tests.Database
 
                 Assert.That(() => realm.Add(new Person()), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.DynamicApi.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.DynamicApi.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
@@ -717,7 +717,7 @@ namespace Realms.Tests.Database
                     Assert.That(hasExpectedProp);
                     Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-                    var ato = dynamicRealm.All(nameof(AllTypesObject)).Single();
+                    var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
                     Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
                 }
             }

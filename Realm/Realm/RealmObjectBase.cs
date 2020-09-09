@@ -329,7 +329,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetObject(this, _metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetObject(this.Realm, _metadata.ColumnKeys[propertyName], value);
         }
 
         protected void SetByteArrayValue(string propertyName, byte[] value)

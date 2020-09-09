@@ -319,7 +319,7 @@ namespace Realms
             return null;
         }
 
-        public void SetObject(RealmObjectBase parent, ColumnKey columnKey, RealmObjectBase @object)
+        public void SetObject(Realm realm, ColumnKey columnKey, RealmObjectBase @object)
         {
             if (@object == null)
             {
@@ -329,7 +329,7 @@ namespace Realms
             {
                 if (!realmObj.IsManaged)
                 {
-                    parent.Realm.Add(realmObj);
+                    realm.Add(realmObj);
                 }
 
                 SetLink(columnKey, realmObj.ObjectHandle);
@@ -341,15 +341,20 @@ namespace Realms
                     throw new RealmException("Can't link to an embedded object that is already managed.");
                 }
 
-                var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);
-                ex.ThrowIfNecessary();
-                var handle = new ObjectHandle(parent.Realm.SharedRealmHandle, objPtr);
-                parent.Realm.ManageEmbedded(embeddedObj, handle);
+                var handle = CreateEmbeddedObjectForProperty(columnKey);
+                realm.ManageEmbedded(embeddedObj, handle);
             }
             else
             {
                 throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
             }
+        }
+
+        public ObjectHandle CreateEmbeddedObjectForProperty(ColumnKey columnKey)
+        {
+            var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);
+            ex.ThrowIfNecessary();
+            return new ObjectHandle(Root, objPtr);
         }
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)

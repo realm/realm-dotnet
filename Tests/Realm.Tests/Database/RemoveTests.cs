@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -127,7 +126,7 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
 
             // Act
-            _realm.Write(() => _realm.RemoveAll(nameof(Person)));
+            _realm.Write(() => _realm.DynamicApi.RemoveAll(nameof(Person)));
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));

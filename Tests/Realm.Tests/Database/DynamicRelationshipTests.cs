@@ -21,8 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
-// NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
-// unlike the Cocoa definitions, we use Pascal casing for properties
 namespace Realms.Tests.Database
 {
     [Preserve(AllMembers = true)]
@@ -82,25 +80,25 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                var o1 = _realm.CreateObject("DynamicOwner", null);
+                var o1 = _realm.DynamicApi.CreateObject("DynamicOwner", null);
                 o1.Name = "Tim";
 
-                var d1 = _realm.CreateObject("DynamicDog", null);
+                var d1 = _realm.DynamicApi.CreateObject("DynamicDog", null);
                 d1.Name = "Bilbo Fleabaggins";
                 d1.Color = "Black";
                 o1.TopDog = d1;  // set a one-one relationship
                 o1.Dogs.Add(d1);
 
-                var d2 = _realm.CreateObject("DynamicDog", null);
+                var d2 = _realm.DynamicApi.CreateObject("DynamicDog", null);
                 d2.Name = "Earl Yippington III";
                 d2.Color = "White";
                 o1.Dogs.Add(d2);
 
                 // lonely people and dogs
-                var o2 = _realm.CreateObject("DynamicOwner", null);
+                var o2 = _realm.DynamicApi.CreateObject("DynamicOwner", null);
                 o2.Name = "Dani";  // the dog-less
 
-                var d3 = _realm.CreateObject("DynamicDog", null);  // will remain unassigned
+                var d3 = _realm.DynamicApi.CreateObject("DynamicDog", null);  // will remain unassigned
                 d3.Name = "Maggie Mongrel";
                 d3.Color = "Grey";
             });
@@ -109,14 +107,14 @@ namespace Realms.Tests.Database
         [Test]
         public void TimHasATopDog()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.TopDog.Name, Is.EqualTo("Bilbo Fleabaggins"));
         }
 
         [Test]
         public void TimHasTwoIterableDogs()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             var dogNames = new List<string>();
 
             //// using foreach here is deliberately testing that syntax
@@ -134,7 +132,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimHasTwoIterableDogsListed()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             var dogNames = new List<string>();
             var dogList = Enumerable.ToList<dynamic>(tim.Dogs);  // this used to crash - issue 299
             foreach (var dog in dogList)
@@ -148,30 +146,30 @@ namespace Realms.Tests.Database
         [Test]
         public void TimRetiredHisTopDog()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             using (var trans = _realm.BeginWrite())
             {
                 tim.TopDog = null;
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
 
         [Test]
         public void TimAddsADogLater()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
-                var dog3 = _realm.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
+                var dog3 = _realm.DynamicApi.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
                 tim.Dogs.Add(dog3);
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
         }
@@ -179,16 +177,16 @@ namespace Realms.Tests.Database
         [Test]
         public void TimAddsADogByInsert()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");  // use Single for a change
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");  // use Single for a change
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
-                var dog3 = _realm.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
+                var dog3 = _realm.DynamicApi.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
                 tim.Dogs.Insert(1, dog3);
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
@@ -197,7 +195,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimLosesHisDogsByOrder()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -205,7 +203,7 @@ namespace Realms.Tests.Database
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
             using (var trans = _realm.BeginWrite())
@@ -214,7 +212,7 @@ namespace Realms.Tests.Database
                 trans.Commit();
             }
 
-            var tim3 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim3 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
             Assert.That(tim3.Dogs.Count, Is.EqualTo(0)); // reloaded object has same empty related set
         }
@@ -222,7 +220,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TimLosesHisDogsInOneClear()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -230,15 +228,15 @@ namespace Realms.Tests.Database
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void TimLosesBilbo()
         {
-            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -246,7 +244,7 @@ namespace Realms.Tests.Database
                 trans.Commit();
             }
 
-            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
         }
@@ -254,14 +252,14 @@ namespace Realms.Tests.Database
         [Test]
         public void DaniHasNoTopDog()
         {
-            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.That(dani.TopDog, Is.Null);
         }
 
         [Test]
         public void DaniHasNoDogs()
         {
-            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.That(dani.Dogs.Count, Is.EqualTo(0));  // ToMany relationships always return a RealmList
             var dogsIterated = 0;
             foreach (var d in dani.Dogs)
@@ -275,9 +273,9 @@ namespace Realms.Tests.Database
         [Test]
         public void TestExceptionsFromEmptyListOutOfRange()
         {
-            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
-            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(1, bilbo));
@@ -287,7 +285,7 @@ namespace Realms.Tests.Database
         [Test]
         public void TestExceptionsFromIteratingEmptyList()
         {
-            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             var iter = dani.Dogs.GetEnumerator();
             Assert.IsNotNull(iter);
             var movedOnToFirstItem = iter.MoveNext();
@@ -299,9 +297,9 @@ namespace Realms.Tests.Database
         [Test]
         public void TestExceptionsFromTimsDogsOutOfRange()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
-            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.DynamicApi.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
@@ -311,14 +309,14 @@ namespace Realms.Tests.Database
         [Test]
         public void Backlinks()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
             foreach (var dog in tim.Dogs)
             {
                 Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim }));
             }
 
-            var dani = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
-            var maggie = _realm.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
+            var maggie = _realm.DynamicApi.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
             Assert.That(maggie.Owners, Is.Empty);
 
             _realm.Write(() => dani.Dogs.Add(maggie));
@@ -328,13 +326,13 @@ namespace Realms.Tests.Database
         [Test]
         public void DynamicBacklinks()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(o => o.Name == "Tim");
             var topOwners = tim.TopDog.GetBacklinks("DynamicOwner", "TopDog");
 
             Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
 
-            var dani = _realm.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
-            var maggie = _realm.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
+            var dani = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(o => o.Name == "Dani");
+            var maggie = _realm.DynamicApi.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
             Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.Empty);
 
             _realm.Write(() => dani.TopDog = maggie);
@@ -344,7 +342,7 @@ namespace Realms.Tests.Database
         [Test]
         public void PrimitiveList()
         {
-            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.DynamicApi.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
 
             Assert.That(tim.Tags.Count, Is.EqualTo(0));
 

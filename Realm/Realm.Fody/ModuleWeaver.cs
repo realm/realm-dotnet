@@ -339,7 +339,7 @@ Analytics payload
 
         if (!prop.IsAutomatic())
         {
-            if (prop.PropertyType.Resolve().IsValidRealmObjectBaseInheritor(_references))
+            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
                 return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
             }
@@ -491,7 +491,7 @@ Analytics payload
                               new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
                               concreteListConstructor);
         }
-        else if (prop.PropertyType.Resolve().IsValidRealmObjectBaseInheritor(_references))
+        else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
         {
             // with casting in the _realmObject methods, should just work
             ReplaceGetter(prop, columnName,
@@ -1086,7 +1086,7 @@ Analytics payload
                     // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
                     // instruction later on.
                     Instruction skipDefaultsPlaceholder = null;
-                    if (property.PropertyType.Resolve().IsRealmObjectInheritor(_references))
+                    if (property.ContainsRealmObject(_references))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -1130,7 +1130,7 @@ Analytics payload
                     var setEndPoint = il.Create(OpCodes.Nop);
                     il.Append(setEndPoint);
 
-                    if (property.IsDescendantOf(_references.RealmObjectBase))
+                    if (property.ContainsRealmObject(_references))
                     {
                         if (addPlaceholder != null)
                         {
