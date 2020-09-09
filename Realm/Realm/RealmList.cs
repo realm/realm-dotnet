@@ -162,7 +162,7 @@ namespace Realms
                 case PropertyType.Data | PropertyType.Nullable:
                     return _listHandle.Find(Operator.Convert<T, byte[]>(value));
                 default:
-                    return _listHandle.Find(PrimitiveValue.Generic(value, _argumentType));
+                    return _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
             }
         }
 
@@ -268,7 +268,7 @@ namespace Realms
                     binaryHandler(Operator.Convert<T, byte[]>(item));
                     break;
                 default:
-                    primitiveHandler(PrimitiveValue.Generic(item, _argumentType));
+                    primitiveHandler(PrimitiveValue.Create(item, _argumentType));
                     break;
             }
         }

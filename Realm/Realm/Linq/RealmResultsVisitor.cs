@@ -632,10 +632,10 @@ namespace Realms
                     queryHandle.StringEqual(columnKey, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Create(boolValue, PropertyType.Bool));
+                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset dateValue:
-                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Create(dateValue, PropertyType.Date));
+                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Date(dateValue));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
@@ -676,10 +676,10 @@ namespace Realms
                     queryHandle.StringNotEqual(columnKey, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Create(boolValue, PropertyType.Bool));
+                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Create(date, PropertyType.Date));
+                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
@@ -715,7 +715,7 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveLess(columnKey, PrimitiveValue.Create(date, PropertyType.Date));
+                    queryHandle.PrimitiveLess(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
@@ -733,7 +733,7 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveLessEqual(columnKey, PrimitiveValue.Create(date, PropertyType.Date));
+                    queryHandle.PrimitiveLessEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
@@ -751,7 +751,7 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveGreater(columnKey, PrimitiveValue.Create(date, PropertyType.Date));
+                    queryHandle.PrimitiveGreater(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
@@ -769,7 +769,7 @@ namespace Realms
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveGreaterEqual(columnKey, PrimitiveValue.Create(date, PropertyType.Date));
+                    queryHandle.PrimitiveGreaterEqual(columnKey, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
@@ -798,15 +798,15 @@ namespace Realms
                 columnType == typeof(RealmInteger<int>) ||
                 columnType == typeof(RealmInteger<long>))
             {
-                action(columnKey, PrimitiveValue.Create((long)Convert.ChangeType(value, typeof(long)), PropertyType.Int));
+                action(columnKey, PrimitiveValue.Int((long)Convert.ChangeType(value, typeof(long))));
             }
             else if (columnType == typeof(float))
             {
-                action(columnKey, PrimitiveValue.Create((float)Convert.ChangeType(value, typeof(float)), PropertyType.Float));
+                action(columnKey, PrimitiveValue.Float((float)Convert.ChangeType(value, typeof(float))));
             }
             else if (columnType == typeof(double))
             {
-                action(columnKey, PrimitiveValue.Create((double)Convert.ChangeType(value, typeof(double)), PropertyType.Double));
+                action(columnKey, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
             }
             else
             {
