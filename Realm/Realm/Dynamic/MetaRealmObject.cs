@@ -39,7 +39,7 @@ namespace Realms.Dynamic
                                                                                               .MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly MethodInfo PrimitiveValueGetMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Get), BindingFlags.Public | BindingFlags.Instance);
-        private static readonly MethodInfo CreatePrimitiveMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Create), BindingFlags.Public | BindingFlags.Static);
+        private static readonly MethodInfo CreatePrimitiveMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Generic), BindingFlags.Public | BindingFlags.Static);
 
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
@@ -206,6 +206,7 @@ namespace Realms.Dynamic
             var valueExpression = value.Expression;
             switch (property.Type.UnderlyingType())
             {
+                // V10TODO: split these into individual cases to avoid calling the generic method
                 case PropertyType.Int:
                 case PropertyType.Bool:
                 case PropertyType.Float:

@@ -47,7 +47,80 @@ namespace Realms.Native
         [FieldOffset(8)]
         internal double double_value;
 
-        public static PrimitiveValue Create<T>(T value, PropertyType type)
+        public static PrimitiveValue Bool(bool value)
+        {
+            return new PrimitiveValue
+            {
+                type = PropertyType.Bool,
+                has_value = true,
+                bool_value = value
+            };
+        }
+
+        public static PrimitiveValue NullableBool(bool? value) => new PrimitiveValue
+        {
+            type = PropertyType.NullableBool,
+            has_value = value.HasValue,
+            bool_value = value.GetValueOrDefault()
+        };
+
+        public static PrimitiveValue Int(long value) => new PrimitiveValue
+        {
+            type = PropertyType.Int,
+            has_value = true,
+            int_value = value
+        };
+
+        public static PrimitiveValue NullableInt(long? value) => new PrimitiveValue
+        {
+            type = PropertyType.NullableInt,
+            has_value = value.HasValue,
+            int_value = value.GetValueOrDefault()
+        };
+
+        public static PrimitiveValue Float(float value) => new PrimitiveValue
+        {
+            type = PropertyType.Float,
+            has_value = true,
+            float_value = value
+        };
+
+        public static PrimitiveValue NullableFloat(float? value) => new PrimitiveValue
+        {
+            type = PropertyType.NullableFloat,
+            has_value = value.HasValue,
+            float_value = value.GetValueOrDefault()
+        };
+
+        public static PrimitiveValue Double(double value) => new PrimitiveValue
+        {
+            type = PropertyType.Double,
+            has_value = true,
+            double_value = value
+        };
+
+        public static PrimitiveValue NullableDouble(double? value) => new PrimitiveValue
+        {
+            type = PropertyType.NullableDouble,
+            has_value = value.HasValue,
+            double_value = value.GetValueOrDefault()
+        };
+
+        public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
+        {
+            type = PropertyType.Date,
+            has_value = true,
+            int_value = value.ToUniversalTime().Ticks
+        };
+
+        public static PrimitiveValue NullableDate(DateTimeOffset? value) => new PrimitiveValue
+        {
+            type = PropertyType.NullableDate,
+            has_value = value.HasValue,
+            int_value = value.GetValueOrDefault().ToUniversalTime().Ticks
+        };
+
+        public static PrimitiveValue Generic<T>(T value, PropertyType type)
         {
             var result = new PrimitiveValue
             {
