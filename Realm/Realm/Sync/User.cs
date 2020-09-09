@@ -390,7 +390,11 @@ namespace Realms.Sync
             return Equals(obj as User);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Determines whether this instance and another <see cref="User"/> instance are equal by comparing their identities.
+        /// </summary>
+        /// <param name="other">The <see cref="User"/> instance to compare with.</param>
+        /// <returns>true if the two instances are equal; false otherwise.</returns>
         public bool Equals(User other)
         {
             return Identity.Equals(other?.Identity);
