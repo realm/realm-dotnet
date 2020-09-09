@@ -110,9 +110,9 @@ namespace Realms.Schema
         {
             Argument.NotNull(type, nameof(type));
 
-            Argument.Ensure(type.BaseType == typeof(RealmObject) || type.BaseType == typeof(EmbeddedObject), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
+            Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject", nameof(type));
 
-            var builder = new Builder(type.GetMappedOrOriginalName(), isEmbedded: type.BaseType == typeof(EmbeddedObject));
+            var builder = new Builder(type.GetMappedOrOriginalName(), type.IsEmbeddedObject());
             foreach (var property in type.DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
             {
                 var isPrimaryKey = property.HasCustomAttribute<PrimaryKeyAttribute>();

@@ -25,6 +25,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
@@ -77,14 +78,12 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                Execute(value, obj =>
-                {
-                    AddObjectToRealmIfNeeded(obj);
-                    _listHandle.Set(index, obj.ObjectHandle);
-                },
-                v => _listHandle.Set(index, v),
-                v => _listHandle.Set(index, v),
-                v => _listHandle.Set(index, v));
+                Execute(value,
+                    obj => _listHandle.Set(index, obj.ObjectHandle),
+                    () => _listHandle.SetEmbedded(index),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v));
             }
         }
 
@@ -94,14 +93,12 @@ namespace Realms
 
         public void Add(T item)
         {
-            Execute(item, obj =>
-            {
-                AddObjectToRealmIfNeeded(obj);
-                _listHandle.Add(obj.ObjectHandle);
-            },
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add);
+            Execute(item,
+                obj => _listHandle.Add(obj.ObjectHandle),
+                () => _listHandle.AddEmbedded(),
+                _listHandle.Add,
+                _listHandle.Add,
+                _listHandle.Add);
         }
 
         public override int Add(object value)
@@ -169,14 +166,12 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            Execute(item, obj =>
-            {
-                AddObjectToRealmIfNeeded(obj);
-                _listHandle.Insert(index, obj.ObjectHandle);
-            },
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value));
+            Execute(item,
+                obj => _listHandle.Insert(index, obj.ObjectHandle),
+                () => _listHandle.InsertEmbedded(index),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -203,23 +198,6 @@ namespace Realms
             }
 
             _listHandle.Erase((IntPtr)index);
-        }
-
-        private void AddObjectToRealmIfNeeded(RealmObjectBase obj)
-        {
-            if (!obj.IsManaged)
-            {
-                switch (obj)
-                {
-                    case RealmObject realmObj:
-                        _realm.Add(realmObj);
-                        break;
-                    case EmbeddedObject embeddedObj:
-                        throw new NotImplementedException("Implement me");
-                    default:
-                        throw new NotSupportedException($"Tried to add an object of type {obj.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
-                }
-            }
         }
 
         #endregion
@@ -253,8 +231,9 @@ namespace Realms
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
-        private static void Execute(T item,
-            Action<RealmObjectBase> objectHandler,
+        private void Execute(T item,
+            Action<RealmObject> objectHandler,
+            Func<ObjectHandle> embeddedHandler,
             Action<PrimitiveValue> primitiveHandler,
             Action<string> stringHandler,
             Action<byte[]> binaryHandler)
@@ -262,7 +241,31 @@ namespace Realms
             switch (_argumentType)
             {
                 case PropertyType.Object | PropertyType.Nullable:
-                    objectHandler(Operator.Convert<T, RealmObjectBase>(item));
+                    switch (item)
+                    {
+                        case null:
+                            throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
+                        case RealmObject realmObj:
+                            if (!realmObj.IsManaged)
+                            {
+                                _realm.Add(realmObj);
+                            }
+
+                            objectHandler(realmObj);
+                            break;
+                        case EmbeddedObject embeddedObj:
+                            if (embeddedObj.IsManaged)
+                            {
+                                throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
+                            }
+
+                            var handle = embeddedHandler();
+                            Realm.ManageEmbedded(embeddedObj, handle);
+                            break;
+                        default:
+                            throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
+                    }
+
                     break;
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:

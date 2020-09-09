@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
 
@@ -301,7 +302,7 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, ColumnKey columnKey, string objectType)
         {
-            var listHandle = new ListHandle(Root ?? this, GetLinklist(columnKey));
+            var listHandle = new ListHandle(Root, GetLinklist(columnKey));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, metadata);
         }
@@ -337,7 +338,7 @@ namespace Realms
             {
                 if (embeddedObj.IsManaged)
                 {
-                    throw new NotSupportedException("Can't link to an embedded object that is already managed.");
+                    throw new RealmException("Can't link to an embedded object that is already managed.");
                 }
 
                 var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);

@@ -38,7 +38,7 @@ namespace Realms
           IThreadConfined
     {
         protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);
-        protected static readonly bool _isEmbedded = typeof(T).IsAssignableFrom(typeof(EmbeddedObject));
+        protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
 

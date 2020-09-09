@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using MongoDB.Bson;
 using Realms.Helpers;
 
@@ -83,8 +82,7 @@ namespace Realms.Schema
                 case Type _ when type == typeof(ObjectId):
                     return PropertyType.ObjectId | nullabilityModifier;
 
-                case Type _ when type == typeof(RealmObject) || type.GetTypeInfo().BaseType == typeof(RealmObject) ||
-                                 type == typeof(EmbeddedObject) || type.GetTypeInfo().BaseType == typeof(EmbeddedObject):
+                case Type _ when type.IsRealmObject() || type.IsEmbeddedObject():
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
 
