@@ -361,7 +361,10 @@ namespace Realms
         /// <value><c>true</c> if closed, <c>false</c> otherwise.</value>
         public bool IsClosed => SharedRealmHandle.IsClosed;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Disposes the current instance and closes the native Realm if this is the last remaining
+        /// instance holding a reference to it.
+        /// </summary>
         public void Dispose()
         {
             if (!IsClosed)

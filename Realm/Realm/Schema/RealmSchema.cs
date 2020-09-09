@@ -94,13 +94,19 @@ namespace Realms.Schema
             return obj;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<ObjectSchema> GetEnumerator()
         {
             return _objects.Values.GetEnumerator();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

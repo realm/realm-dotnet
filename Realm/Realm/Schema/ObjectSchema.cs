@@ -84,10 +84,16 @@ namespace Realms.Schema
         /// <param name="property"><see cref="Property"/> returned only if found matching Name.</param>
         public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>

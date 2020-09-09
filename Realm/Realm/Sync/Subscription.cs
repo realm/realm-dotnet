@@ -261,7 +261,9 @@ namespace Realms.Sync
 
         private readonly TaskCompletionSource<object> _syncTcs = new TaskCompletionSource<object>();
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
