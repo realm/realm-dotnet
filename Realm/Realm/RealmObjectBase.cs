@@ -272,7 +272,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).Get<T>();
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).ToIntegral<T>();
             return new RealmInteger<T>(result, ObjectHandle, columnKey);
         }
 
@@ -280,7 +280,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).Get<T?>();
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).ToNullableIntegral<T?>();
 
             if (result.HasValue)
             {
@@ -344,7 +344,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
@@ -352,14 +352,15 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
         }
 
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
             where T : struct, IComparable<T>, IFormattable
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.Int));
+
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
@@ -367,7 +368,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, PropertyType.NullableInt));
+            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
         }
 
         #endregion
