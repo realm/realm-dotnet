@@ -4,6 +4,7 @@
     <RootNamespace>Realms</RootNamespace>
     <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>8.0</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Title>Realm</Title>
     <ReleaseNotes>https://realm.io/docs/dotnet/latest/api/CHANGELOG.html</ReleaseNotes>

@@ -270,7 +270,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).Get<T>();
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).ToIntegral<T>();
             return new RealmInteger<T>(result, ObjectHandle, columnKey);
         }
 
@@ -278,7 +278,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).Get<T?>();
+            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).ToNullableIntegral<T?>();
 
             if (result.HasValue)
             {

@@ -817,11 +817,11 @@ namespace Realms
                     decimalValue = (Decimal128)Convert.ChangeType(value, typeof(Decimal128));
                 }
 
-                action(columnKey, PrimitiveValue.Create(decimalValue, PropertyType.Decimal));
+                action(columnKey, PrimitiveValue.Decimal(decimalValue));
             }
             else if (columnType == typeof(decimal))
             {
-                action(columnKey, PrimitiveValue.Create((decimal)Convert.ChangeType(value, typeof(decimal)), PropertyType.Decimal));
+                action(columnKey, PrimitiveValue.Decimal((decimal)Convert.ChangeType(value, typeof(decimal))));
             }
             else
             {
