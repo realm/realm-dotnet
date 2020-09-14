@@ -48,24 +48,16 @@ namespace Realms
 
         private class Scheduler
         {
+            private readonly int _managedThreadId;
             private volatile bool _isReleased;
             private SynchronizationContext _context;
-            private int _managedThreadId;
 
             internal Scheduler(SynchronizationContext context)
             {
                 Argument.NotNull(context, nameof(context));
 
                 _context = context;
-
-                if (context.GetType().FullName == "System.Windows.Threading.DispatcherSynchronizationContext")
-                {
-                    _managedThreadId = Environment.CurrentManagedThreadId;
-                }
-                else
-                {
-                    _managedThreadId = -1;
-                }
+                _managedThreadId = GetThreadIdForContext(context);
             }
 
             internal void Post(IntPtr function_ptr)
@@ -81,12 +73,13 @@ namespace Realms
 
             internal bool IsOnContext(Scheduler other)
             {
-                if ((other?._context ?? SynchronizationContext.Current) == _context)
+                var targetContext = other?._context ?? SynchronizationContext.Current;
+                if (targetContext == _context)
                 {
                     return true;
                 }
 
-                return _managedThreadId != -1 && (other?._managedThreadId ?? Environment.CurrentManagedThreadId) == _managedThreadId;
+                return _managedThreadId != -1 && (other?._managedThreadId ?? GetThreadIdForContext(targetContext)) == _managedThreadId;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -94,6 +87,16 @@ namespace Realms
             {
                 _isReleased = true;
                 _context = null;
+            }
+
+            private static int GetThreadIdForContext(SynchronizationContext context)
+            {
+                if (context.GetType().FullName == "System.Windows.Threading.DispatcherSynchronizationContext")
+                {
+                    return Environment.CurrentManagedThreadId;
+                }
+
+                return -1;
             }
         }
 
