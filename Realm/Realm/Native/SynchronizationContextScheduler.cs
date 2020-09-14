@@ -50,12 +50,22 @@ namespace Realms
         {
             private volatile bool _isReleased;
             private SynchronizationContext _context;
+            private int _managedThreadId;
 
             internal Scheduler(SynchronizationContext context)
             {
                 Argument.NotNull(context, nameof(context));
 
                 _context = context;
+
+                if (context.GetType().FullName == "System.Windows.Threading.DispatcherSynchronizationContext")
+                {
+                    _managedThreadId = Environment.CurrentManagedThreadId;
+                }
+                else
+                {
+                    _managedThreadId = -1;
+                }
             }
 
             internal void Post(IntPtr function_ptr)
@@ -69,7 +79,15 @@ namespace Realms
                 }, null);
             }
 
-            internal bool IsOnContext(Scheduler other) => (other?._context ?? SynchronizationContext.Current) == _context;
+            internal bool IsOnContext(Scheduler other)
+            {
+                if ((other?._context ?? SynchronizationContext.Current) == _context)
+                {
+                    return true;
+                }
+
+                return _managedThreadId != -1 && (other?._managedThreadId ?? Environment.CurrentManagedThreadId) == _managedThreadId;
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()
