@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -48,7 +49,6 @@ namespace Realms
 
         private class Scheduler
         {
-            private readonly int _managedThreadId;
             private volatile bool _isReleased;
             private SynchronizationContext _context;
 
@@ -57,7 +57,6 @@ namespace Realms
                 Argument.NotNull(context, nameof(context));
 
                 _context = context;
-                _managedThreadId = GetThreadIdForContext(context);
             }
 
             internal void Post(IntPtr function_ptr)
@@ -71,32 +70,13 @@ namespace Realms
                 }, null);
             }
 
-            internal bool IsOnContext(Scheduler other)
-            {
-                var targetContext = other?._context ?? SynchronizationContext.Current;
-                if (targetContext == _context)
-                {
-                    return true;
-                }
-
-                return _managedThreadId != -1 && (other?._managedThreadId ?? GetThreadIdForContext(targetContext)) == _managedThreadId;
-            }
+            internal bool IsOnContext(Scheduler other) => _context.IsSameAs(other?._context ?? SynchronizationContext.Current);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()
             {
                 _isReleased = true;
                 _context = null;
-            }
-
-            private static int GetThreadIdForContext(SynchronizationContext context)
-            {
-                if (context.GetType().FullName == "System.Windows.Threading.DispatcherSynchronizationContext")
-                {
-                    return Environment.CurrentManagedThreadId;
-                }
-
-                return -1;
             }
         }
 
