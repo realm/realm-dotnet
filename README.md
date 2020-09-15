@@ -29,8 +29,15 @@ The API reference is located at [realm.io/docs/dotnet/latest/api](https://realm.
 ## Nightly builds
 
 If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use the preview releases published after every
-commit to the [realm-nightly](https://www.myget.org/feed/Packages/realm-nightly) MyGet feed. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume)
-for instructions on adding custom sources to the NuGet Package Manager. The source URL you need to specify is `https://www.myget.org/F/realm-nightly/api/v3/index.json`.
+commit to the [GitHub packages](https://github.com/realm/realm-dotnet/packages) NuGet feed. To consume the packages, you have two options:
+1. Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/consume) for instructions on adding custom sources to the NuGet Package Manager.
+    - The source URL you need to specify is `https://nuget.pkg.github.com/realm/index.json`. 
+    - For `username`, specify your GitHub username
+    - For password, specify an access token with the `read:packages` scope.
+  
+    There is an [ongoing thread](https://github.community/t/download-from-github-package-registry-without-authentication/) with the GitHub team to 
+    streamline this by not requiring authentication for public packages, but as of Sept. 2020, this is still needed.
+1. Download the package locally and [install it](https://stackoverflow.com/questions/10240029/how-do-i-install-a-nuget-package-nupkg-file-locally).
 
 ## Building Realm
 
