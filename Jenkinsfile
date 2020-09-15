@@ -121,7 +121,7 @@ stage('Checkout') {
 packageVersion = ''
 stage('Package') {
   rlmNode('windows && dotnet') {
-    // unstash 'dotnet-source'
+    unstash 'dotnet-source'
     // unstash 'ios-wrappers'
     // unstash 'macos-wrappers'
     // unstash 'linux-wrappers'
