@@ -160,7 +160,8 @@ stage('Package') {
         archiveArtifacts '*.nupkg'
 
         // extract the package version from the weaver package because it has the most definite name
-        getVersion();
+        packageVersion = getVersion();
+        echo "Inferred version is ${packageVersion}"
 
         if (env.CHANGE_BRANCH != 'master') {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
@@ -406,9 +407,8 @@ List<List<?>> mapToList(Map map) {
 }
 
 @NonCPS
-void getVersion() {
+String getVersion() {
   def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
   def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
-  packageVersion = match[0][1]
-  echo "inferred version is ${packageVersion}"
+  return match[0][1]
 }
