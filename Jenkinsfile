@@ -160,13 +160,15 @@ stage('Package') {
         archiveArtifacts '*.nupkg'
 
         // extract the package version from the weaver package because it has the most definite name
-        packageVersion = getVersion();
+        def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
+        packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
         if (env.CHANGE_BRANCH != 'master') {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
             echo "Publishing Realm.Fody.${packageVersion} to github packages"
             bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
+            bat "dotnet nuget update source github -s https://nuget.pkg.github.com/realm/index.json -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
             bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -s \"github\""
           }
         }
@@ -407,8 +409,6 @@ List<List<?>> mapToList(Map map) {
 }
 
 @NonCPS
-String getVersion() {
-  def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
-  def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
-  return match[0][1]
+String getVersion(String name) {
+  return (name =~ /Realm.Fody.(.+).nupkg/)[0][1]
 }
