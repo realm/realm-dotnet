@@ -410,4 +410,5 @@ void getVersion() {
   def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
   def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
   packageVersion = match[0][1]
+  echo "inferred version is ${packageVersion}"
 }
