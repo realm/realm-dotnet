@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -69,7 +70,7 @@ namespace Realms
                 }, null);
             }
 
-            internal bool IsOnContext(Scheduler other) => (other?._context ?? SynchronizationContext.Current) == _context;
+            internal bool IsOnContext(Scheduler other) => _context.IsSameAs(other?._context ?? SynchronizationContext.Current);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()

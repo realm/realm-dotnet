@@ -164,7 +164,7 @@ stage('Package') {
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
-        if (env.CHANGE_BRANCH == 'master') {
+        if (env.BRANCH_NAME == 'master') {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
             echo "Publishing Realm.Fody.${packageVersion} to github packages"
             bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
