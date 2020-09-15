@@ -1,4 +1,20 @@
-5.0.1 (2020-09-10)
+## 5.0.2 (TBD)
+------------------
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+
+### Internal
+* Using Sync 5.0.21 and Core 6.0.24.
+* Added prerelease nuget feed via [GitHub packages](https://github.com/features/packages). ([#2028](https://github.com/realm/realm-dotnet/pull/2028))
+
+## 5.0.1 (2020-09-10)
 ------------------
 
 NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to version 10 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
@@ -24,7 +40,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Internal
 * Using Sync 5.0.21 and Core 6.0.24.
 
-4.3.0 (2020-02-05)
+## 4.3.0 (2020-02-05)
 ------------------
 
 ### Enhancements
@@ -47,7 +63,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Internal
 * Upgraded Sync from 4.7.5 to 4.9.5 and Core from 5.23.3 to 5.23.8.
 
-4.2.0 (2019-10-07)
+## 4.2.0 (2019-10-07)
 ------------------
 
 ### Enhancements
@@ -69,7 +85,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Upgraded Sync from 4.7.0 to 4.7.1.
 * Implemented direct access to sync workers on Cloud, bypassing the Sync Proxy: the binding will override the sync session's url prefix if the token refresh response for a realm contains a sync worker path field.
 
-4.1.0 (2019-08-06)
+## 4.1.0 (2019-08-06)
 ------------------
 
 ### Breaking Changes
@@ -92,7 +108,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Internal
 * Upgraded Sync from 4.5.1 to 4.7.0 and Core 5.20.0 to 5.23.1.
 
-4.0.1 (2019-06-27)
+## 4.0.1 (2019-06-27)
 ------------------
 
 ### Fixed
@@ -102,7 +118,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
   ([Issue 1870](https://github.com/realm/realm-dotnet/issues/1870), since 4.0.0)
 * Fixed an issue that would cause iOS apps to crash on device upon launching. ([Issue 1871](https://github.com/realm/realm-dotnet/issues/1871), since 4.0.0)
 
-4.0.0 (2019-06-13)
+## 4.0.0 (2019-06-13)
 ------------------
 
 ### Breaking Changes
@@ -181,7 +197,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 ### Internal
 * Upgraded Sync from 3.14.11 to 4.5.1 and Core 5.12.7 to 5.20.0.
 
-3.4.0 (2019-01-09)
+## 3.4.0 (2019-01-09)
 ------------------
 
 **NOTE!!! You will need to upgrade your Realm Object Server to at least version 3.11.0 or use Realm Cloud. If you try to connect to a ROS v3.10.x or previous, you will see an error like `Wrong protocol version in Sync HTTP request, client protocol version = 25, server protocol version = 24`.**
@@ -210,7 +226,7 @@ The sync protocol version has been bumped to version 25. The server is backwards
 * Upgraded Sync from 3.9.2 to 3.14.11 and Core from 5.8.0 to 5.12.7.
 
 
-3.3.0 (2018-11-08)
+## 3.3.0 (2018-11-08)
 ------------------
 
 ### Enhancements
@@ -226,14 +242,14 @@ The sync protocol version has been bumped to version 25. The server is backwards
 * File format: Generates Realms with format v9 (Reads and upgrades all previous formats)
 
 
-3.2.1 (2018-09-27)
+## 3.2.1 (2018-09-27)
 ------------------
 
 ### Bug fixes
 - Fixed a bug that would typically result in exceptions with a message like `An unknown error has occurred. State: *some-number-larger than 127*`
 when subscribing to queries. ([dotnet-private#128](https://github.com/realm/realm-dotnet-private/issues/128), since `3.0.0`)
 
-3.2.0 (2018-08-04)
+## 3.2.0 (2018-08-04)
 ------------------
 
 ### Enhancements
@@ -247,7 +263,7 @@ for most certificates. Notably, it will now work out of the box for Realm Cloud 
 a meaningful exception will now be thrown rather than an obscure ArgumentNullException.
 - Added `ShouldCompactOnLaunch` to the PCL version of the library. ([dotnet-private#125](https://github.com/realm/realm-dotnet-private/issues/125))
 
-3.1.0 (2018-07-04)
+## 3.1.0 (2018-07-04)
 ------------------
 
 ### Enhancements
@@ -273,7 +289,7 @@ If you were using a `SyncConfiguration` with `IsPartial = true`, then change you
 - Removed the `IList` compliance for Realm collections. This will prevent automatic updates of ListViews
 databound to Realm collections in UWP projects.
 
-3.0.0 (2018-04-16)
+## 3.0.0 (2018-04-16)
 ------------------
 
 ### Enhancements
@@ -324,7 +340,7 @@ currently logged in user and the `serverUri` value will default to `realm://MY-S
 has been renamed to `serverUri` for consistency. ([#1721](https://github.com/realm/realm-dotnet/pull/1721))
 
 
-2.2.0 (2017-03-22)
+## 2.2.0 (2017-03-22)
 ------------------
 
 ### Enhancements
@@ -341,7 +357,7 @@ has been renamed to `serverUri` for consistency. ([#1721](https://github.com/rea
 ### Breaking Changes
 - `SyncConfiguration.SetFeatureToken` is deprecated and no longer necessary in order to use Sync on Linux or server-side features. ([#1703](https://github.com/realm/realm-dotnet/pull/1703))
 
-2.1.0 (2017-11-13)
+## 2.1.0 (2017-11-13)
 ------------------
 
 ### Enhancements
@@ -353,7 +369,7 @@ has been renamed to `serverUri` for consistency. ([#1721](https://github.com/rea
 - Calling `Realm.DeleteRealm` on a synchronized Realm will now properly delete the `realm.management` folder. ([#1621](https://github.com/realm/realm-dotnet/pull/1621))
 - Fixed a crash when accessing primitive list properties on objects in realms opened with a dynamic schema (e.g. in migrations). ([#1629](https://github.com/realm/realm-dotnet/pull/1629))
 
-2.0.0 (2017-10-17)
+## 2.0.0 (2017-10-17)
 ------------------
 
 ### Enhancements
@@ -394,7 +410,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 - `Realm.CreateObject(string className)` now has additional parameter `object primaryKey`. You *must* pass that when creating a new object using the dynamic API. If the object you're creating doesn't have primary key declared, pass `null`. ([#1381](https://github.com/realm/realm-dotnet/pull/1381))
 - `AcceptPermissionOfferAsync` now returns the relative rather than the absolute url of the Realm the user has been granted permissions to. ([#1595](https://github.com/realm/realm-dotnet/pull/1595))
 
-1.6.0 (2017-08-14)
+## 1.6.0 (2017-08-14)
 ------------------
 
 ### Enhancements
@@ -415,7 +431,7 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
 
 ### Breaking Changes
 
-1.5.0 (2017-06-20)
+## 1.5.0 (2017-06-20)
 ------------------
 
 ### Enhancements
@@ -452,14 +468,14 @@ add as many subscriptions to a synced Realm as necessary. ([#1580](https://githu
   - `IRealmCollection<T>.ObjectSchema`
 - `Realm.DeleteRealm` now throws an exception if called while an instance of that Realm is still open.
 
-1.4.0 (2017-05-19)
+## 1.4.0 (2017-05-19)
 ------------------
 
 ### Enhancements
 - Expose `RealmObject.OnManaged` virtual method that can be used for init purposes, since the constructor is run before the object has knowledge of its Realm. (#1383)
 - Expose `Realm.GetInstanceAsync` API to asynchronously open a synchronized Realm. It will download all remote content available at the time the operation began on a background thread and then return a usable Realm. It is also the only supported way of opening Realms for which the user has only read permissions.
 
-1.3.0 (2017-05-16)
+## 1.3.0 (2017-05-16)
 ------------------
 
 ### Universal Windows Platform
@@ -479,7 +495,7 @@ Introducing Realm Mobile Database for Universal Windows Platform (UWP). With UWP
 - Fixed a crash when reconnecting to Object Server (#1380)
 - Fixed a crash on some Android 7.x devices when opening a realm (#1380)
 
-1.2.1 (2017-05-01)
+## 1.2.1 (2017-05-01)
 ------------------
 
 ### Bug fixes
@@ -489,7 +505,7 @@ Introducing Realm Mobile Database for Universal Windows Platform (UWP). With UWP
 - Expose `IRealmCollection.IsValid` to indicate whether the realm collection is valid to use. (#1344)
 - Update the Fody reference which adds support for building with Mono 5. (#1364)
 
-1.2.0 (2017-04-04)
+## 1.2.0 (2017-04-04)
 ------------------
 
 Realm is now being distributed as a .NET Standard 1.4 library as this is a requirement for supporting UWP. While internally that is a rather big move, applications using it should not be affected. After the upgrade, you'll see a number of new NuGet dependencies being added - those are reference assemblies, already part of mscorlib, so will not affect your application's size or performance. Additionally, we're releasing a new platform specific DataBinding package that contains helper methods that enable two-way databinding scenarios by automatically creating transactions when setting a property.
@@ -518,14 +534,14 @@ Files written with this version cannot be read by earlier versions of Realm. Thi
 - The layout of the .lock file has changed, which may affect scenarios where different processes attempt to write to the same Realm file at the same time. (#1296)
 - `PropertyChanged` notifications use a new, more reliable, mechanism, that behaves slightly differently from the old one. Notifications will be sent only after a transaction is committed (making it consistent with the way collection notifications are handled). To make sure that your UI is promptly updated, you should avoid keeping long lived transactions around. (#1316)
 
-1.1.1 (2017-03-15)
+## 1.1.1 (2017-03-15)
 ------------------
 
 ### Bug fixes
 
 - Resolved an issue that prevented compiling for iOS on Visual Studio. (#1277)
 
-1.1.0 (2017-03-03)
+## 1.1.0 (2017-03-03)
 ------------------
 
 ### Enhancements
@@ -538,7 +554,7 @@ This is a preparation release for adding UWP support. We have removed all platfo
 
 please file an issue and explain your solution setup.
 
-1.0.4 (2017-02-21)
+## 1.0.4 (2017-02-21)
 ------------------
 
 ### Bug fixes
@@ -546,7 +562,7 @@ please file an issue and explain your solution setup.
 - The `Realm` NuGet package no longer clobbers the path to Win32 native binaries in `Realm.Database`. (#1239)
 - Fixed a bug where garbage collecting an object with `PropertyChanged` subscribers would cause crashes. (#1237)
 
-1.0.3 (2017-02-14)
+## 1.0.3 (2017-02-14)
 ------------------
 ### Out of Beta!
 After about a year and a half of hard work, we are proud to call this a 1.0 release. There is still work to do, but Realm Xamarin is now being used by thousands of developers and has proven reliable.
@@ -569,12 +585,12 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
  - Queries on backlink properties should no longer produce unexpected results. (#1177)
 
 
-0.82.1 (2017-01-27)
+## 0.82.1 (2017-01-27)
 -------------------
 ### Bug fixes
 - Addressed an issue where obtaining a Realm instance, reading an object, then obtaining another instance on the same thread would cause the object to become invalid and crash the application upon accessing any of its members.
 
-0.82.0 (2017-01-23)
+## 0.82.0 (2017-01-23)
 -------------------
 ### Breaking Changes
 - Moved all exceptions under the `Realms.Exceptions` namespace. (#1075)
@@ -596,7 +612,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
 - Add some missing methods to the PCL reference assembly. (#1093)
 - Disposed realms will not throw `ObjectDisposedException` when trying to access their members. Additionally, disposing a realm will not invalidate other instances on the same thread. (#1063)
 
-0.81.0 (2016-12-14)
+## 0.81.0 (2016-12-14)
 -------------------
 ### Breaking Changes
 * The `IQueryable<T>.ToNotifyCollectionChanged` extension methods that accept parameters are now deprecated. There is a new parameterless one that you should use instead. If you want to handle errors, you can do so by subscribing to the `Realm.OnError` event. (#938)
@@ -626,7 +642,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
 * Subscribing to `PropertyChanged` on a RealmObject and modifying an instance of the same object on a different thread will now properly raise the event. (#909)
 * Using `Insert` to insert items at the end of an `IList` property will no longer throw an exception. (#978)
 
-0.80.0 (2016-10-27)
+## 0.80.0 (2016-10-27)
 -------------------
 ### Breaking Changes
 * This version updates the file format. Older versions will not be able to open files created with this version. (#846)
@@ -664,7 +680,7 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
 
     **NOTE**: Currently only `Ordinal` and `OrdinalIgnoreCase` comparisons are supported. Trying to pass in a different one will result in runtime error. If no argument is supplied, `Ordinal` will be used.
 
-0.78.1 (2016-09-15)
+## 0.78.1 (2016-09-15)
 -------------------
 ### Bug fixes
 * `Realm.ObjectForPrimaryKey()` now returns null if it failed to find an object (#833).
@@ -673,8 +689,9 @@ Realm Xamarin is no longer iOS and Android only. You can now use it to write .NE
 Uses core 1.5.1
 
 
-0.78.0 (2016-09-09)
+## 0.78.0 (2016-09-09)
 -------------------
+
 ### Breaking Changes
 * The term `ObjectId` has been replaced with `PrimaryKey` in order to align with the other SDKs. This affects the `[ObjectId]` attribute used to decorate a property.
 
@@ -699,8 +716,9 @@ Uses core 1.5.1
 Uses core 1.5.1
 
 
-0.77.2 (2016-08-11)
+## 0.77.2 (2016-08-11)
 -------------------
+
 ### Enhancements
 * Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 * Better exception messages will helo diagnose _EmptySchema_ problems (#739)
@@ -717,7 +735,7 @@ Uses core 1.5.1
 Uses core 1.4.2
 
 
-0.77.1 (2016-07-25)
+## 0.77.1 (2016-07-25)
 -------------------
 ### Minor Changes
 * Fixed a bug weaving pure PCL projects, released in v0.77.0 (#715)
@@ -727,7 +745,7 @@ Uses core 1.4.2
 Uses core 1.4.0
 
 
-0.77.0 (2016-07-18)
+## 0.77.0 (2016-07-18)
 -------------------
 **Broken Version** - will not build PCL projects
 
@@ -749,7 +767,7 @@ Uses core 1.4.0
 Uses core 1.4.0
 
 
-0.76.1 (2016-06-15)
+## 0.76.1 (2016-06-15)
 -------------------
 
 ### Minor Changes
@@ -765,7 +783,7 @@ It groups all characters that look visually identical, that is, it puts a, Ã , Ã
 
 Uses core 1.1.2
 
-0.76.0 (2016-06-09)
+## 0.76.0 (2016-06-09)
 -------------------
 
 ### Major Changes
@@ -778,7 +796,7 @@ Uses core 1.1.2
 * Calling `.Equals()` on standalone objects no longer throws. (Issue #587)
 
 
-0.75.0 (2016-06-02)
+## 0.75.0 (2016-06-02)
 -------------------
 
 ### Breaking Changes
@@ -799,7 +817,7 @@ Uses core 1.1.2
 * The Fody weaver is now discoverable at non-default nuget repository paths.
 
 
-0.74.1 Released (2016-05-10)
+## 0.74.1 Released (2016-05-10)
 -------------------
 ### Minor Fixes
 * Realms now refresh properly on Android when modified in other threads/processes.
@@ -810,7 +828,7 @@ Uses core 1.1.2
 * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.
 * `RealmResults<T>` now implements `INotifyCollectionChanged` by raising the `CollectionChanged` event with `NotifyCollectionChangedAction.Reset` when its underlying table or query result is changed by a write transaction.
 
-0.74.0 Private Beta (2016-04-02)
+## 0.74.0 Private Beta (2016-04-02)
 -------------------
 
 ### Major Changes
@@ -836,7 +854,7 @@ Uses core 1.1.2
 * `Realm.Refresh()` makes sure the realm is updated with changes from other threads.
 
 
-0.73.0 Private Beta (2016-02-26)
+## 0.73.0 Private Beta (2016-02-26)
 -------------------
 ### Major Changes
 * `RealmConfiguration.EncryptionKey` added so files can be encrypted and existing encrypted files from other Realm sources opened (assuming you have the key)
@@ -847,12 +865,12 @@ Uses core 1.1.2
 * Update to Core v0.96.2 and matching ObjectStore (issue #393)
 
 
-0.72.1 Private Beta (2016-02-15)
+## 0.72.1 Private Beta (2016-02-15)
 -------------------
 No functional changes. Just added library builds for Android 64bit targets `x86_64` and `arm64-v8a`.
 
 
-0.72.0 Private Beta (2016-02-13)
+## 0.72.0 Private Beta (2016-02-13)
 -------------------
 
 Uses Realm core 0.96.0
@@ -861,7 +879,7 @@ Uses Realm core 0.96.0
 
 * Added support for PCL so you can now use the NuGet in your PCL GUI or viewmodel libraries.
 
-0.71.1 Private Beta (2016-01-29)
+## 0.71.1 Private Beta (2016-01-29)
 -------------------
 ### Minor Fixes
 
@@ -873,7 +891,7 @@ Building IOS apps targeting the simulator sometimes got an error like:
 This was fixed by removing a redundant simulator library included in NuGet
 
 
-0.71.0 Private Beta (2016-01-25)
+## 0.71.0 Private Beta (2016-01-25)
 -------------------
 
 Uses Realm core 0.95.6.
@@ -914,7 +932,7 @@ Now supporting:
 * Bug that caused a linker error for iPhone simulator fixed (#375)
 
 
-0.70.0 First Private Beta (2015-12-08)
+## 0.70.0 First Private Beta (2015-12-08)
 --------------------------
 Requires installation from private copy of NuGet download.
 
