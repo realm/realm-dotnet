@@ -160,9 +160,7 @@ stage('Package') {
         archiveArtifacts '*.nupkg'
 
         // extract the package version from the weaver package because it has the most definite name
-        def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
-        def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
-        packageVersion = match[0][1]
+        getVersion();
 
         if (env.CHANGE_BRANCH != 'master') {
           withCredentials([string(credentialsId: 'github-packages-token', variable: 'GITHUB_PACKAGES_TOKEN')]) {
@@ -405,4 +403,11 @@ List<List<?>> mapToList(Map map) {
   return map.collect { it ->
     [it.key, it.value]
   }
+}
+
+@NonCPS
+void getVersion() {
+  def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
+  def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
+  packageVersion = match[0][1]
 }
