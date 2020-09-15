@@ -164,7 +164,7 @@ stage('Package') {
 
         if (env.CHANGE_BRANCH != 'master') {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
-            echo "Publishing ${Realm.Fody}.${packageVersion} to github packages"
+            echo "Publishing Realm.Fody.${packageVersion} to github packages"
             bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD}"
             bat "dotnet nuget push \"Realm.Fody.${packageVersion}.nupkg\" -source \"github\""
           }
