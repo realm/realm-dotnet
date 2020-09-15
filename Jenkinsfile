@@ -163,6 +163,14 @@ stage('Package') {
         def packages = findFiles(glob: 'Realm.Fody.*.nupkg')
         def match = (packages[0].name =~ /Realm.Fody.(.+).nupkg/)
         packageVersion = match[0][1]
+
+        if (env.CHANGE_BRANCH != 'master') {
+          withCredentials([string(credentialsId: 'github-packages-token', variable: 'GITHUB_PACKAGES_TOKEN')]) {
+            echo "Publishing ${packageId}.${version} to myget"
+            bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u realm-ci -p ${env.GITHUB_PACKAGES_TOKEN}"
+            bat "dotnet nuget push \"Realm.Fody.${version}.nupkg\" -source \"github\""
+          }
+        }
       }
     }
   }
