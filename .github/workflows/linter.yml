@@ -46,4 +46,5 @@ jobs:
         env:
           VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: master
+          FILTER_REGEX_INCLUDE: .*Realm/.*
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
