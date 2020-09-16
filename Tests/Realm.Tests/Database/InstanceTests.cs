@@ -689,7 +689,7 @@ namespace Realms.Tests.Database
         {
             var config = new RealmConfiguration(Path.GetTempFileName())
             {
-                ObjectClasses = new[] { typeof(AllTypesObject) }
+                ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(RecursiveEmbeddedObject) }
             };
 
             try
@@ -702,23 +702,43 @@ namespace Realms.Tests.Database
                         Int32Property = 42,
                         RequiredStringProperty = "This is required!"
                     }));
+
+                    realm.Write(() => realm.Add(new ObjectWithEmbeddedProperties
+                    {
+                        AllTypesObject = new EmbeddedAllTypesObject
+                        {
+                            Int32Property = 24,
+                            StringProperty = "This is not required!"
+                        }
+                    }));
                 }
 
                 config.IsDynamic = true;
 
                 using (var dynamicRealm = Realm.GetInstance(config))
                 {
-                    Assert.That(dynamicRealm.Schema.Count == 1);
+                    Assert.That(dynamicRealm.Schema.Count == 4);
 
-                    var objectSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
-                    Assert.That(objectSchema, Is.Not.Null);
+                    var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+                    Assert.That(allTypesSchema, Is.Not.Null);
+                    Assert.That(allTypesSchema.IsEmbedded, Is.False);
 
-                    var hasExpectedProp = objectSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
+                    var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
                     Assert.That(hasExpectedProp);
                     Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
                     var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
                     Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+
+                    var embeddedAllTypesSchema = dynamicRealm.Schema.Find(nameof(EmbeddedAllTypesObject));
+                    Assert.That(embeddedAllTypesSchema, Is.Not.Null);
+                    Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
+
+                    Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
+                    Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
+
+                    var embeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
+                    Assert.That(embeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
                 }
             }
             finally

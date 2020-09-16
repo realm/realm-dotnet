@@ -157,8 +157,7 @@ namespace Realms.Schema
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                // V10TODO: read isEmbedded from OS schema
-                var builder = new ObjectSchema.Builder(objectSchema.name, isEmbedded: false);
+                var builder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {
