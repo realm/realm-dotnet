@@ -19,12 +19,19 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using MongoDB.Bson;
 
 namespace Realms.Helpers
 {
     // Heavily based on http://www.yoda.arachsys.com/csharp/miscutil/index.html
     internal static class Operator
     {
+        [Preserve]
+        static Operator()
+        {
+            _ = (decimal)new Decimal128(123);
+        }
+
         public static T Add<T>(T first, T second)
         {
             return GenericOperator<T, T>.Add(first, second);
