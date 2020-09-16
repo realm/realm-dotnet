@@ -44,7 +44,6 @@ struct PrimitiveValue
 
     union {
         uint64_t high_bytes;
-        uint32_t object_id_remainder;
     } value2;
 };
 

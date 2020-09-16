@@ -54,9 +54,6 @@ namespace Realms.Native
         [FieldOffset(16)]
         private ulong high_bits;
 
-        [FieldOffset(16)]
-        private uint object_id_remainder;
-
         public static PrimitiveValue Bool(bool value)
         {
             return new PrimitiveValue
