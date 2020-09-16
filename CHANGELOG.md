@@ -6,6 +6,7 @@
 
 ### Fixed
 * Fixed an issue that would cause using Realm on the main thread in WPF applications to throw an exception with a message "Realm accessed from the incorrect thread". (Issue [#2026](https://github.com/realm/realm-dotnet/issues/2026))
+* Fixed an issue that could cause an exception with the message "Opening Realm files of format version 0 is not supported by this version of Realm" when opening an encrypted Realm. (Core upgrade)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
