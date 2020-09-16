@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 
 namespace Realms.Dynamic
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Ignored]
     public class DynamicEmbeddedObject : EmbeddedObject, IDynamicMetaObjectProvider

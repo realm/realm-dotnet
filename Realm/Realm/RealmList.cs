@@ -46,17 +46,18 @@ namespace Realms
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
     {
         private readonly Realm _realm;
-        private readonly ListHandle _listHandle;
+
+        internal readonly ListHandle ListHandle;
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
             _realm = realm;
-            _listHandle = adoptedList;
+            ListHandle = adoptedList;
         }
 
         internal override CollectionHandleBase CreateHandle()
         {
-            return _listHandle;
+            return ListHandle;
         }
 
         #region implementing IList properties
@@ -79,11 +80,11 @@ namespace Realms
                 }
 
                 Execute(value,
-                    obj => _listHandle.Set(index, obj.ObjectHandle),
-                    () => _listHandle.SetEmbedded(index),
-                    v => _listHandle.Set(index, v),
-                    v => _listHandle.Set(index, v),
-                    v => _listHandle.Set(index, v));
+                    obj => ListHandle.Set(index, obj.ObjectHandle),
+                    () => ListHandle.SetEmbedded(index),
+                    v => ListHandle.Set(index, v),
+                    v => ListHandle.Set(index, v),
+                    v => ListHandle.Set(index, v));
             }
         }
 
@@ -94,11 +95,11 @@ namespace Realms
         public void Add(T item)
         {
             Execute(item,
-                obj => _listHandle.Add(obj.ObjectHandle),
-                () => _listHandle.AddEmbedded(),
-                _listHandle.Add,
-                _listHandle.Add,
-                _listHandle.Add);
+                obj => ListHandle.Add(obj.ObjectHandle),
+                () => ListHandle.AddEmbedded(),
+                ListHandle.Add,
+                ListHandle.Add,
+                ListHandle.Add);
         }
 
         public override int Add(object value)
@@ -109,7 +110,7 @@ namespace Realms
 
         public override void Clear()
         {
-            _listHandle.Clear();
+            ListHandle.Clear();
         }
 
         public bool Contains(T item) => Contains((object)item);
@@ -147,15 +148,15 @@ namespace Realms
                         throw new ArgumentException("Value does not belong to a realm", nameof(value));
                     }
 
-                    return _listHandle.Find(obj.ObjectHandle);
+                    return ListHandle.Find(obj.ObjectHandle);
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, string>(value));
+                    return ListHandle.Find(Operator.Convert<T, string>(value));
                 case PropertyType.Data:
                 case PropertyType.Data | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, byte[]>(value));
+                    return ListHandle.Find(Operator.Convert<T, byte[]>(value));
                 default:
-                    return _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
+                    return ListHandle.Find(PrimitiveValue.Create(value, _argumentType));
             }
         }
 
@@ -167,11 +168,11 @@ namespace Realms
             }
 
             Execute(item,
-                obj => _listHandle.Insert(index, obj.ObjectHandle),
-                () => _listHandle.InsertEmbedded(index),
-                value => _listHandle.Insert(index, value),
-                value => _listHandle.Insert(index, value),
-                value => _listHandle.Insert(index, value));
+                obj => ListHandle.Insert(index, obj.ObjectHandle),
+                () => ListHandle.InsertEmbedded(index),
+                value => ListHandle.Insert(index, value),
+                value => ListHandle.Insert(index, value),
+                value => ListHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -197,7 +198,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            _listHandle.Erase((IntPtr)index);
+            ListHandle.Erase((IntPtr)index);
         }
 
         #endregion
@@ -214,7 +215,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(sourceIndex));
             }
 
-            _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
+            ListHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
         public override IRealmCollection<T> Freeze()
@@ -225,7 +226,7 @@ namespace Realms
             }
 
             var frozenRealm = Realm.Freeze();
-            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
+            var frozenHandle = ListHandle.Freeze(frozenRealm.SharedRealmHandle);
             return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
         }
 

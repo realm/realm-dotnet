@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -44,6 +45,32 @@ namespace Realms.Dynamic
             }
 
             return new DynamicMetaObject(expression, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
+        }
+
+        public override DynamicMetaObject BindSetIndex(SetIndexBinder binder, DynamicMetaObject[] indexes, DynamicMetaObject value)
+        {
+            if (Value is IRealmCollection<EmbeddedObject>)
+            {
+                throw new NotSupportedException("Can't set embedded objects directly. Instead use Realm.DynamicApi.SetEmbeddedObjectInList.");
+            }
+
+            return base.BindSetIndex(binder, indexes, value);
+        }
+
+        public override DynamicMetaObject BindInvokeMember(InvokeMemberBinder binder, DynamicMetaObject[] args)
+        {
+            if (Value is IRealmCollection<EmbeddedObject>)
+            {
+                switch (binder.Name)
+                {
+                    case "Add":
+                        throw new NotSupportedException("Can't add embedded objects directly. Instead use Realm.DynamicApi.AddEmbeddedObjectToList.");
+                    case "Insert":
+                        throw new NotSupportedException("Can't insert embedded objects directly. Instead use Realm.DynamicApi.InsertEmbeddedObjectInList.");
+                }
+            }
+
+            return base.BindInvokeMember(binder, args);
         }
     }
 }

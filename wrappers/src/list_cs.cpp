@@ -161,7 +161,7 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
     handle_errors(ex, [&]() {
         const size_t count = list.size();
         if (list_ndx >= count) {
-            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+            throw IndexOutOfRangeException("Set into RealmList", list_ndx, count);
         }
 
 #pragma GCC diagnostic push
@@ -228,6 +228,11 @@ REALM_EXPORT void list_set_binary(List& list, size_t list_ndx, char* value, size
 REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        const size_t count = list.size();
+        if (list_ndx >= count) {
+            throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
+        }
+
         return new Object(list.get_realm(), list.set_embedded(list_ndx));
     });
 }
@@ -309,6 +314,11 @@ REALM_EXPORT void list_insert_binary(List& list, size_t list_ndx, char* value, s
 REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        const size_t count = list.size();
+        if (list_ndx > count) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        }
+
         return new Object(list.get_realm(), list.insert_embedded(list_ndx));
     });
 }

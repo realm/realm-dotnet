@@ -472,6 +472,9 @@ namespace Realms.Tests.Database
         public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
 
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        [Backlink(nameof(ObjectWithEmbeddedProperties.AllTypesObject))]
+        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
     }
 
     public class RecursiveEmbeddedObject : EmbeddedObject

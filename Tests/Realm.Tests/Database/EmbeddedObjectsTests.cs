@@ -96,7 +96,8 @@ namespace Realms.Tests.Database
 
             var copy = CreateEmbeddedAllTypesObject();
 
-            var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(p => !p.HasCustomAttribute<BacklinkAttribute>());
 
             foreach (var prop in properties)
             {
@@ -609,6 +610,56 @@ namespace Realms.Tests.Database
             }
 
             Assert.That(_realm.AllEmbedded<RecursiveEmbeddedObject>().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void StaticBacklinks()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                AllTypesObject = CreateEmbeddedAllTypesObject()
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent.AllTypesObject.ContainersObjects.Count(), Is.EqualTo(1));
+            Assert.That(parent.AllTypesObject.ContainersObjects.Single(), Is.EqualTo(parent));
+        }
+
+        [Test]
+        public void DynamicBacklinks()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new RecursiveEmbeddedObject
+                {
+                    String = "level 1",
+                    Child = new RecursiveEmbeddedObject
+                    {
+                        String = "level 2"
+                    }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            var topLevelBacklinks = parent.RecursiveObject.GetBacklinks(nameof(ObjectWithEmbeddedProperties), nameof(ObjectWithEmbeddedProperties.RecursiveObject));
+            Assert.That(topLevelBacklinks.Count(), Is.EqualTo(1));
+            Assert.That(topLevelBacklinks.Single(), Is.EqualTo(parent));
+
+            var secondLevelBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(RecursiveEmbeddedObject), nameof(RecursiveEmbeddedObject.Child));
+            Assert.That(secondLevelBacklinks.Count(), Is.EqualTo(1));
+            Assert.That(secondLevelBacklinks.Single(), Is.EqualTo(parent.RecursiveObject));
+
+            // This should be empty because no objects link to it via .Children
+            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(RecursiveEmbeddedObject), nameof(RecursiveEmbeddedObject.Children));
+            Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
 
         private static EmbeddedAllTypesObject CreateEmbeddedAllTypesObject()
