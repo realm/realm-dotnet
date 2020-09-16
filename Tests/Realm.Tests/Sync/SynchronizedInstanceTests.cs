@@ -32,6 +32,7 @@ using Realms.Tests.Database;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class SynchronizedInstanceTests : SyncTestBase
     {
         private const int OneMegabyte = 1024 * 1024;

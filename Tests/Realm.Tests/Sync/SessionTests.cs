@@ -32,6 +32,7 @@ namespace Realms.Tests.Sync
 #pragma warning disable CS0618 // Don't complain about SimulateProgress
 
     [TestFixture, Preserve(AllMembers = true)]
+    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class SessionTests : SyncTestBase
     {
         [Test]

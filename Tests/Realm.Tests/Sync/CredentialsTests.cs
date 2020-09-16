@@ -27,6 +27,7 @@ using Realms.Sync.Exceptions;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class CredentialsTests : SyncTestBase
     {
         [Test]
