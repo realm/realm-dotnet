@@ -22,6 +22,7 @@ using Realms.Sync;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
+    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class MetadataTests : RealmTest
     {
         [Test]
