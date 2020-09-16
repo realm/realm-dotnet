@@ -38,7 +38,7 @@ stage('Checkout') {
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
-      rlmNode('macos-catalina') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "./build-ios.sh --configuration=${configuration}"
@@ -47,7 +47,7 @@ stage('Build wrappers') {
       }
     },
     'macOS': {
-      rlmNode('macos-catalina') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
@@ -289,7 +289,7 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('dotnet && macos-catalina'),
+    '.NET Core macOS': NetCoreTest('dotnet && macos'),
     '.NET Core Linux': NetCoreTest('docker'),
     '.NET Core Windows': NetCoreTest('windows && dotnet'),
     'Weaver': {
