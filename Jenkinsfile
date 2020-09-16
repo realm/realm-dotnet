@@ -38,7 +38,7 @@ stage('Checkout') {
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
-      rlmNode('osx') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "./build-ios.sh --configuration=${configuration}"
@@ -47,7 +47,7 @@ stage('Build wrappers') {
       }
     },
     'macOS': {
-      rlmNode('osx') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
