@@ -94,6 +94,16 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.FullName == DoubleTypeName;
     }
 
+    internal static bool IsDecimal(this PropertyDefinition property)
+    {
+        return property.PropertyType.FullName == DecimalTypeName;
+    }
+
+    internal static bool IsDecimal128(this PropertyDefinition property)
+    {
+        return property.PropertyType.FullName == Decimal128TypeName;
+    }
+
     internal static bool IsString(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == StringTypeName;

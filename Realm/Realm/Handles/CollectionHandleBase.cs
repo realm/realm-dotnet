@@ -50,7 +50,7 @@ namespace Realms
         {
             var result = new PrimitiveValue
             {
-                type = type
+                Type = type
             };
 
             GetPrimitiveAtIndexCore((IntPtr)index, ref result, out var nativeException);

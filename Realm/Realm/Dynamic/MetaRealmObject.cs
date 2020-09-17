@@ -147,6 +147,8 @@ namespace Realms.Dynamic
                     case PropertyType.Float:
                     case PropertyType.Double:
                     case PropertyType.Date:
+                    case PropertyType.Decimal:
+                    case PropertyType.ObjectId:
                         arguments.Add(Expression.Constant(property.Type));
                         getter = GetGetMethod(DummyHandle.GetPrimitive);
                         break;
@@ -212,6 +214,8 @@ namespace Realms.Dynamic
                 case PropertyType.Float:
                 case PropertyType.Double:
                 case PropertyType.Date:
+                case PropertyType.Decimal:
+                case PropertyType.ObjectId:
                     argumentType = typeof(PrimitiveValue);
                     valueExpression = Expression.Call(CreatePrimitiveMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type) });
                     if (property.IsPrimaryKey)

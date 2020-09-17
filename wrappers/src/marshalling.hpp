@@ -30,16 +30,16 @@ namespace binding {
 
 struct PrimitiveValue
 {
-    realm::PropertyType type;
-    bool has_value;
-    char padding[6];
-
     union {
         bool bool_value;
         int64_t int_value;
         float float_value;
         double double_value;
+        realm::Decimal128::Bid128 decimal_bits;
     } value;
+
+    realm::PropertyType type;
+    bool has_value;
 };
 
 struct StringValue
