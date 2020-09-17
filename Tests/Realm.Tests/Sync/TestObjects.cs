@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
-
 namespace Realms.Tests.Sync
 {
     public class HugeSyncObject : RealmObject

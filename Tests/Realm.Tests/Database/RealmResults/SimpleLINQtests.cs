@@ -574,7 +574,7 @@ namespace Realms.Tests.Database
             var rex = new Dog { Name = "Rex" };
             Assert.That(
                 () => _realm.All<Owner>().Where(o => o.TopDog == rex).ToArray(),
-                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObject"));
+                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObjectBase"));
         }
 
         [Test]
@@ -597,7 +597,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => _realm.All<Owner>().Where(o => o.TopDog == rex).ToArray(),
-                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObject"));
+                Throws.TypeOf<NotSupportedException>().And.Message.Contains("should be a managed RealmObjectBase"));
         }
 
         [Test]

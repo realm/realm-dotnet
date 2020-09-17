@@ -25,7 +25,15 @@ using Realms.Schema;
 
 namespace Realms
 {
-    public class RealmObject : INotifyPropertyChanged
+    public class RealmObject : RealmObjectBase
+    {
+    }
+
+    public class EmbeddedObject : RealmObjectBase
+    {
+    }
+
+    public abstract class RealmObjectBase : INotifyPropertyChanged
     {
         public List<string> LogList = new List<string>();
 

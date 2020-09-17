@@ -22,9 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -115,11 +113,11 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
         public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
         {
-            _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
+            _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
 
             Assert.That(() =>
             {
-                _realm.Write(() => _realm.CreateObject(type.Name, primaryKeyValue));
+                _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -159,7 +157,7 @@ namespace Realms.Tests.Database
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObject FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             if (isIntegerPK)
             {
@@ -173,10 +171,10 @@ namespace Realms.Tests.Database
                     castPKValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return _realm.Find(type.Name, castPKValue);
+                return _realm.DynamicApi.Find(type.Name, castPKValue);
             }
 
-            return _realm.Find(type.Name, (string)primaryKeyValue);
+            return _realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
@@ -239,7 +237,7 @@ namespace Realms.Tests.Database
             Assert.That(foundObj, Is.Null);
         }
 
-        private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
@@ -261,7 +259,7 @@ namespace Realms.Tests.Database
                 castPKValue = (string)primaryKeyValue;
             }
 
-            return (RealmObject)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
+            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
         }
 
         [Test]
@@ -273,7 +271,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ExceptionIfNoDynamicPrimaryKeyDeclared()
         {
-            Assert.That(() => _realm.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.DynamicApi.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]

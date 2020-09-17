@@ -22,7 +22,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
 
 namespace Realms.Tests.Database
@@ -815,7 +814,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
 
             Assert.That(notifiedPropertyNames.Count, Is.EqualTo(1));
-            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(RealmObject.IsValid)));
+            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(RealmObjectBase.IsValid)));
             Assert.That(person.IsValid, Is.False);
         }
 

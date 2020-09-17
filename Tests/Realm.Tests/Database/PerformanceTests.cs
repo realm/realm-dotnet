@@ -40,7 +40,7 @@ namespace Realms.Tests.Database
             {
                 using (var trans = _realm.BeginWrite())
                 {
-                    var hangOntoObjectsUntilCommit = new List<RealmObject>();
+                    var hangOntoObjectsUntilCommit = new List<RealmObjectBase>();
                     for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
                     {
                         var p = _realm.Add(new Person
@@ -72,7 +72,7 @@ namespace Realms.Tests.Database
             {
                 using (var trans = _realm.BeginWrite())
                 {
-                    var hangOntoObjectsUntilCommit = new List<RealmObject>();
+                    var hangOntoObjectsUntilCommit = new List<RealmObjectBase>();
                     for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
                     {
                         var p = _realm.Add(new Person());

@@ -63,7 +63,7 @@ namespace Realms.Tests.Sync
                 using (var realm = await GetSyncedRealm(objectType))
                 {
                     await SyncTestHelpers.WaitForDownloadAsync(realm);
-                    var allObjects = realm.All(objectType.Name).ToArray();
+                    var allObjects = realm.DynamicApi.All(objectType.Name).ToArray();
 
                     Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
                 }

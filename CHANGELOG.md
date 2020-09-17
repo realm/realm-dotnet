@@ -7,9 +7,92 @@ v10 (TBD)
 * We no longer support Realm Cloud (legacy), but instead the new "MongoDB Realm" Cloud. MongoDB Realm is a serverless platform that enables developers to quickly build applications without having to set up server infrastructure. MongoDB Realm is built on top of MongoDB Atlas, automatically integrating the connection to your database. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
 * Remove support for Query-based sync, including the configuration parameters and the RLMSyncSubscription and SyncSubscription types. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
 * Remove everything related to sync permissions, including both the path-based permission system and the object-level privileges for query-based sync. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Moved all API for dynamic access on the `Realm` class to `Realm.DynamicApi`:
+  * `Realm.CreateObject(string className, object primaryKey)` is now `Realm.DynamicApi.CreateObject(string className, object primaryKey)`.
+  * `Realm.All(string className)` is now `Realm.DynamicApi.All(string className)`.
+  * `Realm.RemoveAll(string className)` is now `Realm.DynamicApi.RemoveAll(string className)`.
+  * `Realm.Find(string className, long? primaryKey)` is now `Realm.DynamicApi.Find(string className, long? primaryKey)`.
+  * `Realm.Find(string className, string primaryKey)` is now `Realm.DynamicApi.Find(string className, string primaryKey)`.
 
 ### Enhancements
 * Add support for the Decimal128 data type. This is a 128-bit IEEE 754 decimal floating point number. Properties of this type can be declared either as `MongoDB.Bson.Decimal128` type or the built-in `decimal` type. Note that .NET's built-in decimal is 96-bit, so it cannot represent the full range of numbers, representable by `Decimal128`. (PR [#2014](https://github.com/realm/realm-dotnet/pull/2014))
+* Add support for embedded objects. Embedded objects are objects which are owned by a single parent object, and are deleted when that parent object is deleted or their parent no longer references them. Embedded objects are declared by subclassing `EmbeddedObject` instead of `RealmObject`. Reassigning an embedded object is not allowed and neither is linking to it from multiple parents. Querying for embedded objects directly is also disallowed as they should be viewed as complex structures belonging to their parents as opposed to standalone objects. A trivial example is:
+
+  ```csharp
+  public class Address : EmbeddedObject
+  {
+      public string Street { get; set; }
+
+      public string City { get; set; }
+  }
+
+  public class Person : RealmObject
+  {
+      public string Name { get; set; }
+
+      // Address is an embedded object - you reference it as usual
+      public Address Address { get; set; }
+  }
+
+  public class Company : RealmObject
+  {
+      public string PhoneNumber { get; set; }
+
+      // Embedded objects can be contained in lists too
+      public IList<Address> OfficeAddresses { get; }
+  }
+  ```
+
+* Added new dynamic methods for instantiating embedded objects:
+  * `Realm.DynamicApi.CreateEmbeddedObjectForProperty` should be used to create an embedded object and assign it to a parent's property. For example:
+
+    ```csharp
+    // static API
+    var person = new Person();
+    person.Address = new Address
+    {
+        City = "New York"
+    };
+
+    // dynamic API
+    var dynamicPerson = realm.DynamicApi.CreateObject("Person");
+    var address = realm.DynamicApi.CreateEmbeddedObjectForProperty(dynamicPerson, "Address")
+    address.City = "New York";
+    ```
+
+  * `Realm.DynamicApi.AddEmbeddedObjectToList` should be used to create an embedded object and add it to a parent's list property.
+  * `Realm.DynamicApi.InsertEmbeddedObjectInList` should be used to create an embedded object and insert it in a parent's list property at a specified index.
+  * `Realm.DynamicApi.SetEmbeddedObjectInList` should be used to create an embedded object and set it at an index in a parent's list property.
+
+    ```csharp
+    // static API
+    var company = new Company();
+    company.OfficeAddresses.Add(new Address
+    {
+        City = "New York"
+    });
+
+    company.OfficeAddresses.Insert(0, new Address
+    {
+        City = "Palo Alto"
+    });
+
+    company.OfficeAddresses[1] = new Address
+    {
+        City = "New Jersey"
+    };
+
+    // dynamic API
+    var dynamicCompany = realm.DynamicApi.CreateObject("Company");
+    var officeToAdd = realm.DynamicApi.AddEmbeddedObjectToList(dynamicCompany.OfficeAddresses)  ;
+    officeToAdd.City = "New York";
+
+    var officeToInsert = realm.DynamicApi.InsertEmbeddedObjectInList(dynamicCompany.  OfficeAddresses, 0);
+    officeToInsert.City = "Palo Alto";
+
+    var officeToSet = realm.DynamicApi.SetEmbeddedObjectInList(dynamicCompany.  OfficeAddresses, 1);
+    officeToSet.City = "New Jersey";
+    ```
 
 ### Fixed
 

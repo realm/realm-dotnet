@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
 
@@ -62,6 +63,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_embedded_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
@@ -298,14 +302,14 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, ColumnKey columnKey, string objectType)
         {
-            var listHandle = new ListHandle(Root ?? this, GetLinklist(columnKey));
+            var listHandle = new ListHandle(Root, GetLinklist(columnKey));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObject instance will own its handle.")]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T GetObject<T>(Realm realm, ColumnKey columnKey, string objectType)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             if (TryGetLink(columnKey, out var objectHandle))
             {
@@ -315,21 +319,42 @@ namespace Realms
             return null;
         }
 
-        public void SetObject(Realm realm, ColumnKey columnKey, RealmObject @object)
+        public void SetObject(Realm realm, ColumnKey columnKey, RealmObjectBase @object)
         {
             if (@object == null)
             {
                 ClearLink(columnKey);
             }
-            else
+            else if (@object is RealmObject realmObj)
             {
-                if (!@object.IsManaged)
+                if (!realmObj.IsManaged)
                 {
-                    realm.Add(@object);
+                    realm.Add(realmObj);
                 }
 
-                SetLink(columnKey, @object.ObjectHandle);
+                SetLink(columnKey, realmObj.ObjectHandle);
             }
+            else if (@object is EmbeddedObject embeddedObj)
+            {
+                if (embeddedObj.IsManaged)
+                {
+                    throw new RealmException("Can't link to an embedded object that is already managed.");
+                }
+
+                var handle = CreateEmbeddedObjectForProperty(columnKey);
+                realm.ManageEmbedded(embeddedObj, handle);
+            }
+            else
+            {
+                throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
+            }
+        }
+
+        public ObjectHandle CreateEmbeddedObjectForProperty(ColumnKey columnKey)
+        {
+            var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);
+            ex.ThrowIfNecessary();
+            return new ObjectHandle(Root, objPtr);
         }
 
         public ResultsHandle GetBacklinks(IntPtr propertyIndex)

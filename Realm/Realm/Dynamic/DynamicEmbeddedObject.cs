@@ -16,21 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms.Schema;
+using System.ComponentModel;
+using System.Dynamic;
+using System.Linq.Expressions;
 
-namespace Realms
+namespace Realms.Dynamic
 {
-    /// <summary>
-    /// An object describing its properties in terms of a <see cref="ObjectSchema"/>.
-    /// </summary>
-    public interface ISchemaSource
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Ignored]
+    public class DynamicEmbeddedObject : EmbeddedObject, IDynamicMetaObjectProvider
     {
-        /// <summary>
-        /// Gets the <see cref="ObjectSchema"/>, describing the persisted properties of the object. If the object is a
-        /// single <see cref="RealmObject"/>, the schema will describe the object itself. If it is a collection, it will
-        /// describe the contained objects.
-        /// </summary>
-        /// <value>The ObjectSchema of the object or contained objects.</value>
-        ObjectSchema ObjectSchema { get; }
+        public DynamicMetaObject GetMetaObject(Expression parameter)
+        {
+            return new MetaRealmObject(parameter, this);
+        }
     }
 }

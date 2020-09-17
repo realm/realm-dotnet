@@ -44,5 +44,9 @@ namespace Realms
             => member.CustomAttributes.Any(a => a.AttributeType == typeof(T));
 
         public static string GetMappedOrOriginalName(this MemberInfo member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
+
+        public static bool IsEmbeddedObject(this Type type) => type == typeof(EmbeddedObject) || type.BaseType == typeof(EmbeddedObject);
+
+        public static bool IsRealmObject(this Type type) => type == typeof(RealmObject) || type.BaseType == typeof(RealmObject);
     }
 }

@@ -33,6 +33,13 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class EmbeddedWithPrimaryKey : EmbeddedObject
+    {
+        [PrimaryKey]
+        public int NotAllowed { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IndexedProperties : RealmObject
     {
         // These should be allowed:

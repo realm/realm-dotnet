@@ -36,13 +36,13 @@ namespace Realms
 
         public IQueryProvider Provider { get; }
 
-        internal RealmResults(Realm realm, RealmObject.Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
+        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
         {
             Provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
         }
 
-        internal RealmResults(Realm realm, RealmObject.Metadata metadata, ResultsHandle handle = null)
+        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata, ResultsHandle handle = null)
             : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
             _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
@@ -88,7 +88,7 @@ namespace Realms
                 throw new NotSupportedException("IndexOf on non-object results is not supported.");
             }
 
-            var obj = Operator.Convert<T, RealmObject>(value);
+            var obj = Operator.Convert<T, RealmObjectBase>(value);
             if (!obj.IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));

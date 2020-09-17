@@ -406,7 +406,8 @@ namespace Realms
                     {
                         name = @object.Name,
                         properties_start = start,
-                        properties_end = properties.Count
+                        properties_end = properties.Count,
+                        is_embedded = @object.IsEmbedded,
                     };
                 }).ToArray();
                 Properties = properties.ToArray();

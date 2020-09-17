@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -31,13 +32,13 @@ namespace Realms
     /// or <c>null</c> if an has error occurred.</param>
     /// <param name="error">An exception that might have occurred while asynchronously monitoring a
     /// <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors have occurred.</param>
-    /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
     public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObjectBase resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.
     /// </summary>
-    /// <typeparam name="T">Type of the <see cref="RealmObject"/> which is being returned.</typeparam>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         /// <summary>
@@ -74,6 +75,14 @@ namespace Realms
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this collection belongs to.</value>
         Realm Realm { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Schema.ObjectSchema"/>, describing the persisted properties of the
+        /// <see cref="RealmObject"/>s or <see cref="EmbeddedObject"/>s contained in the collection. If the collection contains
+        /// primitive values, <c>ObjectSchema</c> will be <c>null</c>.
+        /// </summary>
+        /// <value>The ObjectSchema of the object or contained objects.</value>
+        ObjectSchema ObjectSchema { get; }
 
         /// <summary>
         /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed
