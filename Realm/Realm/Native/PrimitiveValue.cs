@@ -25,34 +25,31 @@ using Realms.Schema;
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Explicit)]
-    internal struct PrimitiveValue
+    internal unsafe struct PrimitiveValue
     {
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.U1)]
-        public PropertyType Type;
-
-        [FieldOffset(1)]
-        [MarshalAs(UnmanagedType.I1)]
-        private bool has_value;
-
-        [FieldOffset(8)]
         [MarshalAs(UnmanagedType.I1)]
         private bool bool_value;
 
-        [FieldOffset(8)]
+        [FieldOffset(0)]
         private long int_value;
 
-        [FieldOffset(8)]
+        [FieldOffset(0)]
         private float float_value;
 
-        [FieldOffset(8)]
+        [FieldOffset(0)]
         private double double_value;
 
-        [FieldOffset(8)]
-        private ulong low_bits;
+        [FieldOffset(0)]
+        private fixed ulong decimal_bits[2];
 
         [FieldOffset(16)]
-        private ulong high_bits;
+        [MarshalAs(UnmanagedType.U1)]
+        public PropertyType Type;
+
+        [FieldOffset(17)]
+        [MarshalAs(UnmanagedType.I1)]
+        private bool has_value;
 
         public static PrimitiveValue Bool(bool value)
         {
@@ -127,21 +124,36 @@ namespace Realms.Native
             int_value = value.GetValueOrDefault().ToUniversalTime().Ticks
         };
 
-        public static PrimitiveValue Decimal(Decimal128 value) => new PrimitiveValue
+        public static PrimitiveValue Decimal(Decimal128 value)
         {
-            Type = PropertyType.Decimal,
-            has_value = true,
-            high_bits = value.GetIEEEHighBits(),
-            low_bits = value.GetIEEELowBits()
-        };
+            var result = new PrimitiveValue
+            {
+                Type = PropertyType.Decimal,
+                has_value = true
+            };
 
-        public static PrimitiveValue NullableDecimal(Decimal128? value) => new PrimitiveValue
+            result.decimal_bits[0] = value.GetIEEELowBits();
+            result.decimal_bits[1] = value.GetIEEEHighBits();
+
+            return result;
+        }
+
+        public static PrimitiveValue NullableDecimal(Decimal128? value)
         {
-            Type = PropertyType.NullableDecimal,
-            has_value = value.HasValue,
-            high_bits = value.GetValueOrDefault().GetIEEEHighBits(),
-            low_bits = value.GetValueOrDefault().GetIEEELowBits()
-        };
+            var result = new PrimitiveValue
+            {
+                Type = PropertyType.NullableDecimal,
+                has_value = value.HasValue
+            };
+
+            if (value.HasValue)
+            {
+                result.decimal_bits[0] = value.Value.GetIEEELowBits();
+                result.decimal_bits[1] = value.Value.GetIEEEHighBits();
+            }
+
+            return result;
+        }
 
         public static PrimitiveValue ObjectId(ObjectId value) => throw new NotImplementedException();
 
@@ -193,9 +205,9 @@ namespace Realms.Native
 
         public DateTimeOffset? ToNullableDate() => has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
 
-        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(high_bits, low_bits);
+        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
-        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(high_bits, low_bits) : (Decimal128?)null;
+        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
 
         public ObjectId ToObjectId() => throw new NotImplementedException();
 

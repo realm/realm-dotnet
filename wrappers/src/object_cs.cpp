@@ -150,16 +150,14 @@ extern "C" {
             }
             case realm::PropertyType::Decimal: {
                 auto result = object.obj().get<Decimal128>(column_key);
-                value.value.low_bytes = result.raw()->w[0];
-                value.value2.high_bytes = result.raw()->w[1];
+                value.value.decimal_bits = *result.raw();
                 break;
             }
             case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
                 auto result = object.obj().get<Decimal128>(column_key);
                 value.has_value = !result.is_null();
                 if (value.has_value) {
-                    value.value.low_bytes = result.raw()->w[0];
-                    value.value2.high_bytes = result.raw()->w[1];
+                    value.value.decimal_bits = *result.raw();
                 }
                 break;
             }
@@ -209,11 +207,11 @@ extern "C" {
                 object.obj().set(column_key, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
                 break;
             case realm::PropertyType::Decimal: {
-                object.obj().set(column_key, to_decimal(value));
+                object.obj().set(column_key, realm::Decimal128(value.value.decimal_bits));
                 break;
             }
             case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
-                auto decimal = value.has_value ? to_decimal(value) : Decimal128(null());
+                auto decimal = value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null());
                 object.obj().set(column_key, decimal);
                 break;
             }

@@ -152,7 +152,7 @@ REALM_EXPORT void query_primitive_equal(Query& query, ColKey column_key, Primiti
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.equal(column_key, to_decimal(primitive));
+            query.equal(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();
@@ -193,7 +193,7 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, ColKey column_key, Pri
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.not_equal(column_key, to_decimal(primitive));
+            query.not_equal(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();
@@ -233,7 +233,7 @@ REALM_EXPORT void query_primitive_less(Query& query, ColKey column_key, Primitiv
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.less(column_key, to_decimal(primitive));
+            query.less(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();
@@ -273,7 +273,7 @@ REALM_EXPORT void query_primitive_less_equal(Query& query, ColKey column_key, Pr
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.less_equal(column_key, to_decimal(primitive));
+            query.less_equal(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();
@@ -313,7 +313,7 @@ REALM_EXPORT void query_primitive_greater(Query& query, ColKey column_key, Primi
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.greater(column_key, to_decimal(primitive));
+            query.greater(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();
@@ -353,7 +353,7 @@ REALM_EXPORT void query_primitive_greater_equal(Query& query, ColKey column_key,
             break;
         case realm::PropertyType::Decimal:
         case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-            query.greater_equal(column_key, to_decimal(primitive));
+            query.greater_equal(column_key, realm::Decimal128(primitive.value.decimal_bits));
             break;
         default:
             REALM_UNREACHABLE();

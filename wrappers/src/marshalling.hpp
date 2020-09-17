@@ -30,29 +30,17 @@ namespace binding {
 
 struct PrimitiveValue
 {
-    realm::PropertyType type;
-    bool has_value;
-    char padding[6];
-
     union {
         bool bool_value;
         int64_t int_value;
         float float_value;
         double double_value;
-        uint64_t low_bytes;
+        realm::Decimal128::Bid128 decimal_bits;
     } value;
 
-    union {
-        uint64_t high_bytes;
-    } value2;
+    realm::PropertyType type;
+    bool has_value;
 };
-
-inline realm::Decimal128 to_decimal(PrimitiveValue primitive)
-{
-    REALM_ASSERT(primitive.type == realm::PropertyType::Decimal || primitive.type == (realm::PropertyType::Decimal | realm::PropertyType::Nullable));
-
-    return realm::Decimal128(realm::Decimal128::Bid128{ primitive.value.low_bytes, primitive.value2.high_bytes });
-}
 
 struct StringValue
 {
