@@ -149,18 +149,17 @@ extern "C" {
                 break;
             }
             case realm::PropertyType::Decimal: {
-                auto result = *object.obj().get<Decimal128>(column_key).raw();
-                value.value.low_bytes = result.w[0];
-                value.value2.high_bytes = result.w[1];
+                auto result = object.obj().get<Decimal128>(column_key);
+                value.value.low_bytes = result.raw()->w[0];
+                value.value2.high_bytes = result.raw()->w[1];
                 break;
             }
             case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
                 auto result = object.obj().get<Decimal128>(column_key);
                 value.has_value = !result.is_null();
                 if (value.has_value) {
-                    auto dec = *result.raw();
-                    value.value.low_bytes = dec.w[0];
-                    value.value2.high_bytes = dec.w[1];
+                    value.value.low_bytes = result.raw()->w[0];
+                    value.value2.high_bytes = result.raw()->w[1];
                 }
                 break;
             }
