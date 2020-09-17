@@ -27,7 +27,6 @@
 #include <object_accessor.hpp>
 #include <thread_safe_reference.hpp>
 
-
 using namespace realm;
 using namespace realm::binding;
 
@@ -149,6 +148,19 @@ extern "C" {
                 value.value.int_value = result.is_null() ? 0 : to_ticks(result);
                 break;
             }
+            case realm::PropertyType::Decimal: {
+                auto result = object.obj().get<Decimal128>(column_key);
+                value.value.decimal_bits = *result.raw();
+                break;
+            }
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<Decimal128>(column_key);
+                value.has_value = !result.is_null();
+                if (value.has_value) {
+                    value.value.decimal_bits = *result.raw();
+                }
+                break;
+            }
             default:
                 REALM_UNREACHABLE();
             }
@@ -194,6 +206,15 @@ extern "C" {
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 object.obj().set(column_key, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
                 break;
+            case realm::PropertyType::Decimal: {
+                object.obj().set(column_key, realm::Decimal128(value.value.decimal_bits));
+                break;
+            }
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
+                auto decimal = value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null());
+                object.obj().set(column_key, decimal);
+                break;
+            }
             default:
                 REALM_UNREACHABLE();
             }
@@ -256,21 +277,21 @@ extern "C" {
     {
         return handle_errors(ex, [&] {
             verify_can_get(object);
-            
+
             const ObjectSchema& source_object_schema = *object.realm()->schema().find(ObjectStore::object_type_for_table_name(source_table->get_name()));
             const Property& source_property = *std::find_if(source_object_schema.persisted_properties.begin(), source_object_schema.persisted_properties.end(), [&](Property p) {
                 return p.column_key == source_column_key;
             });
-        
+
             if (source_property.object_type != object.get_object_schema().name) {
                 throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
-        
+
             TableView backlink_view = object.obj().get_backlink_view(source_table, source_column_key);
             return new Results(object.realm(), std::move(backlink_view));
         });
     }
-    
+
     REALM_EXPORT void object_set_link(Object& object, ColKey column_key, const Object& target_object, NativeException::Marshallable& ex)
     {
         return object_set<ObjKey>(object, column_key, target_object.obj().get_key(), ex);
@@ -298,7 +319,7 @@ extern "C" {
         Utf16StringAccessor str(value, value_len);
         return object_set<StringData>(object, column_key, str, ex);
     }
-    
+
     REALM_EXPORT void object_set_binary(Object& object, ColKey column_key, char* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return object_set<BinaryData>(object, column_key, BinaryData(value, value_len), ex);
@@ -351,12 +372,12 @@ extern "C" {
             }, new ObjectSchema(object->get_object_schema()));
         });
     }
-    
+
     REALM_EXPORT void object_add_int64(Object& object, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
-            
+
             object.obj().add_int(column_key, value);
         });
     }

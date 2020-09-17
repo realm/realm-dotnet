@@ -173,7 +173,7 @@ namespace Realms
 
         public PrimitiveValue GetPrimitive(ColumnKey columnKey, PropertyType type)
         {
-            var result = new PrimitiveValue { type = type };
+            var result = new PrimitiveValue { Type = type };
 
             NativeMethods.get_primitive(this, columnKey, ref result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -263,7 +263,7 @@ namespace Realms
 
         public void SetPrimitiveUnique(ColumnKey columnKey, PrimitiveValue value)
         {
-            if (!GetPrimitive(columnKey, value.type).Equals(value))
+            if (!GetPrimitive(columnKey, value.Type).Equals(value))
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }

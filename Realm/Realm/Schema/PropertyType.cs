@@ -76,6 +76,16 @@ namespace Realms.Schema
         LinkingObjects = 8,
 
         /// <summary>
+        /// 96 bit ObjectID property.
+        /// </summary>
+        ObjectId = 10,
+
+        /// <summary>
+        /// 128 bit decimal property.
+        /// </summary>
+        Decimal = 11,
+
+        /// <summary>
         /// A required property. Can be combined with other values.
         /// </summary>
         Required = 0,
@@ -119,5 +129,15 @@ namespace Realms.Schema
         /// A shorthand for PropertyType.Date | PropertyType.Nullable.
         /// </summary>
         NullableDate = Date | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.ObjectId | PropertyType.Nullable.
+        /// </summary>
+        NullableObjectId = ObjectId | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Decimal | PropertyType.Nullable.
+        /// </summary>
+        NullableDecimal = Decimal | Nullable,
     }
 }

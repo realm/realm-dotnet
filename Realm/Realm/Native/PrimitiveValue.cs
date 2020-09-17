@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2017 Realm Inc.
 //
@@ -18,40 +18,49 @@
 
 using System;
 using System.Runtime.InteropServices;
+using MongoDB.Bson;
 using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Explicit)]
-    internal struct PrimitiveValue
+    internal unsafe struct PrimitiveValue
     {
         [FieldOffset(0)]
+        [MarshalAs(UnmanagedType.I1)]
+        private bool bool_value;
+
+        [FieldOffset(0)]
+        private long int_value;
+
+        [FieldOffset(0)]
+        private float float_value;
+
+        [FieldOffset(0)]
+        private double double_value;
+
+        [FieldOffset(0)]
+        private fixed ulong decimal_bits[2];
+
+        // Without this padding, .NET fails to marshal the decimal_bits array correctly and the second element is always 0.
+        [FieldOffset(8)]
+        [Obsolete("Don't use, please!")]
+        private long dontuse;
+
+        [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
-        internal PropertyType type;
+        public PropertyType Type;
 
-        [FieldOffset(1)]
+        [FieldOffset(17)]
         [MarshalAs(UnmanagedType.I1)]
-        internal bool has_value;
-
-        [FieldOffset(8)]
-        [MarshalAs(UnmanagedType.I1)]
-        internal bool bool_value;
-
-        [FieldOffset(8)]
-        internal long int_value;
-
-        [FieldOffset(8)]
-        internal float float_value;
-
-        [FieldOffset(8)]
-        internal double double_value;
+        private bool has_value;
 
         public static PrimitiveValue Bool(bool value)
         {
             return new PrimitiveValue
             {
-                type = PropertyType.Bool,
+                Type = PropertyType.Bool,
                 has_value = true,
                 bool_value = value
             };
@@ -59,151 +68,176 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableBool(bool? value) => new PrimitiveValue
         {
-            type = PropertyType.NullableBool,
+            Type = PropertyType.NullableBool,
             has_value = value.HasValue,
             bool_value = value.GetValueOrDefault()
         };
 
         public static PrimitiveValue Int(long value) => new PrimitiveValue
         {
-            type = PropertyType.Int,
+            Type = PropertyType.Int,
             has_value = true,
             int_value = value
         };
 
         public static PrimitiveValue NullableInt(long? value) => new PrimitiveValue
         {
-            type = PropertyType.NullableInt,
+            Type = PropertyType.NullableInt,
             has_value = value.HasValue,
             int_value = value.GetValueOrDefault()
         };
 
         public static PrimitiveValue Float(float value) => new PrimitiveValue
         {
-            type = PropertyType.Float,
+            Type = PropertyType.Float,
             has_value = true,
             float_value = value
         };
 
         public static PrimitiveValue NullableFloat(float? value) => new PrimitiveValue
         {
-            type = PropertyType.NullableFloat,
+            Type = PropertyType.NullableFloat,
             has_value = value.HasValue,
             float_value = value.GetValueOrDefault()
         };
 
         public static PrimitiveValue Double(double value) => new PrimitiveValue
         {
-            type = PropertyType.Double,
+            Type = PropertyType.Double,
             has_value = true,
             double_value = value
         };
 
         public static PrimitiveValue NullableDouble(double? value) => new PrimitiveValue
         {
-            type = PropertyType.NullableDouble,
+            Type = PropertyType.NullableDouble,
             has_value = value.HasValue,
             double_value = value.GetValueOrDefault()
         };
 
         public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
         {
-            type = PropertyType.Date,
+            Type = PropertyType.Date,
             has_value = true,
             int_value = value.ToUniversalTime().Ticks
         };
 
         public static PrimitiveValue NullableDate(DateTimeOffset? value) => new PrimitiveValue
         {
-            type = PropertyType.NullableDate,
+            Type = PropertyType.NullableDate,
             has_value = value.HasValue,
             int_value = value.GetValueOrDefault().ToUniversalTime().Ticks
         };
 
-        public static PrimitiveValue Create<T>(T value, PropertyType type)
+        public static PrimitiveValue Decimal(Decimal128 value)
         {
             var result = new PrimitiveValue
             {
-                type = type,
+                Type = PropertyType.Decimal,
                 has_value = true
             };
 
-            switch (type)
+            result.decimal_bits[0] = value.GetIEEELowBits();
+            result.decimal_bits[1] = value.GetIEEEHighBits();
+
+            return result;
+        }
+
+        public static PrimitiveValue NullableDecimal(Decimal128? value)
+        {
+            var result = new PrimitiveValue
             {
-                case PropertyType.Bool:
-                    result.bool_value = Operator.Convert<T, bool>(value);
-                    break;
-                case PropertyType.Bool | PropertyType.Nullable:
-                    var boolValue = Operator.Convert<T, bool?>(value);
-                    result.has_value = boolValue.HasValue;
-                    result.bool_value = boolValue.GetValueOrDefault();
-                    break;
-                case PropertyType.Int:
-                    result.int_value = Operator.Convert<T, long>(value);
-                    break;
-                case PropertyType.Int | PropertyType.Nullable:
-                    var longValue = Operator.Convert<T, long?>(value);
-                    result.has_value = longValue.HasValue;
-                    result.int_value = longValue.GetValueOrDefault();
-                    break;
-                case PropertyType.Float:
-                    result.float_value = Operator.Convert<T, float>(value);
-                    break;
-                case PropertyType.Float | PropertyType.Nullable:
-                    var floatValue = Operator.Convert<T, float?>(value);
-                    result.has_value = floatValue.HasValue;
-                    result.float_value = floatValue.GetValueOrDefault();
-                    break;
-                case PropertyType.Double:
-                    result.double_value = Operator.Convert<T, double>(value);
-                    break;
-                case PropertyType.Double | PropertyType.Nullable:
-                    var doubleValue = Operator.Convert<T, double?>(value);
-                    result.has_value = doubleValue.HasValue;
-                    result.double_value = doubleValue.GetValueOrDefault();
-                    break;
-                case PropertyType.Date:
-                    result.int_value = Operator.Convert<T, DateTimeOffset>(value).ToUniversalTime().Ticks;
-                    break;
-                case PropertyType.Date | PropertyType.Nullable:
-                    var dateValue = Operator.Convert<T, DateTimeOffset?>(value);
-                    result.has_value = dateValue.HasValue;
-                    result.int_value = dateValue.GetValueOrDefault().ToUniversalTime().Ticks;
-                    break;
-                default:
-                    throw new NotSupportedException($"PrimitiveType {type} is not supported.");
+                Type = PropertyType.NullableDecimal,
+                has_value = value.HasValue
+            };
+
+            if (value.HasValue)
+            {
+                result.decimal_bits[0] = value.Value.GetIEEELowBits();
+                result.decimal_bits[1] = value.Value.GetIEEEHighBits();
             }
 
             return result;
         }
 
+        public static PrimitiveValue ObjectId(ObjectId value) => throw new NotImplementedException();
+
+        public static PrimitiveValue NullableObjectId(ObjectId? value) => throw new NotImplementedException();
+
+        public static PrimitiveValue Create<T>(T value, PropertyType type)
+        {
+            return type switch
+            {
+                PropertyType.Bool => Bool(Operator.Convert<T, bool>(value)),
+                PropertyType.NullableBool => NullableBool(Operator.Convert<T, bool?>(value)),
+                PropertyType.Int => Int(Operator.Convert<T, long>(value)),
+                PropertyType.NullableInt => NullableInt(Operator.Convert<T, long?>(value)),
+                PropertyType.Float => Float(Operator.Convert<T, float>(value)),
+                PropertyType.NullableFloat => NullableFloat(Operator.Convert<T, float?>(value)),
+                PropertyType.Double => Double(Operator.Convert<T, double>(value)),
+                PropertyType.NullableDouble => NullableDouble(Operator.Convert<T, double?>(value)),
+                PropertyType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
+                PropertyType.NullableDate => NullableDate(Operator.Convert<T, DateTimeOffset?>(value)),
+                PropertyType.Decimal => Decimal(Operator.Convert<T, Decimal128>(value)),
+                PropertyType.NullableDecimal => NullableDecimal(Operator.Convert<T, Decimal128?>(value)),
+                PropertyType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
+                PropertyType.NullableObjectId => NullableObjectId(Operator.Convert<T, ObjectId?>(value)),
+                _ => throw new NotSupportedException($"PrimitiveType {type} is not supported."),
+            };
+        }
+
+        public bool ToBool() => bool_value;
+
+        public bool? ToNullableBool() => has_value ? bool_value : (bool?)null;
+
+        public long ToInt() => int_value;
+
+        public long? ToNullableInt() => has_value ? int_value : (long?)null;
+
+        public T ToIntegral<T>() => Operator.Convert<long, T>(int_value);
+
+        public T ToNullableIntegral<T>() => Operator.Convert<long?, T>(has_value ? int_value : (long?)null);
+
+        public float ToFloat() => float_value;
+
+        public float? ToNullableFloat() => has_value ? float_value : (float?)null;
+
+        public double ToDouble() => double_value;
+
+        public double? ToNullableDouble() => has_value ? double_value : (double?)null;
+
+        public DateTimeOffset ToDate() => new DateTimeOffset(int_value, TimeSpan.Zero);
+
+        public DateTimeOffset? ToNullableDate() => has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
+
+        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
+
+        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
+
+        public ObjectId ToObjectId() => throw new NotImplementedException();
+
+        public ObjectId? ToNullableObjectId() => has_value ? throw new NotImplementedException() : (ObjectId?)null;
+
         public T Get<T>()
         {
-            switch (type)
+            return Type switch
             {
-                case PropertyType.Bool:
-                    return Operator.Convert<bool, T>(bool_value);
-                case PropertyType.Bool | PropertyType.Nullable:
-                    return Operator.Convert<bool?, T>(has_value ? bool_value : (bool?)null);
-                case PropertyType.Int:
-                    return Operator.Convert<long, T>(int_value);
-                case PropertyType.Int | PropertyType.Nullable:
-                    return Operator.Convert<long?, T>(has_value ? int_value : (long?)null);
-                case PropertyType.Float:
-                    return Operator.Convert<float, T>(float_value);
-                case PropertyType.Float | PropertyType.Nullable:
-                    return Operator.Convert<float?, T>(has_value ? float_value : (float?)null);
-                case PropertyType.Double:
-                    return Operator.Convert<double, T>(double_value);
-                case PropertyType.Double | PropertyType.Nullable:
-                    return Operator.Convert<double?, T>(has_value ? double_value : (double?)null);
-                case PropertyType.Date:
-                    return Operator.Convert<DateTimeOffset, T>(new DateTimeOffset(int_value, TimeSpan.Zero));
-                case PropertyType.Date | PropertyType.Nullable:
-                    return Operator.Convert<DateTimeOffset?, T>(has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null);
-                default:
-                    throw new NotSupportedException($"PrimitiveType {type} is not supported.");
-            }
+                PropertyType.Bool => Operator.Convert<bool, T>(ToBool()),
+                PropertyType.NullableBool => Operator.Convert<bool?, T>(ToNullableBool()),
+                PropertyType.Int => ToIntegral<T>(),
+                PropertyType.NullableInt => ToNullableIntegral<T>(),
+                PropertyType.Float => Operator.Convert<float, T>(ToFloat()),
+                PropertyType.NullableFloat => Operator.Convert<float?, T>(ToNullableFloat()),
+                PropertyType.Double => Operator.Convert<double, T>(ToDouble()),
+                PropertyType.NullableDouble => Operator.Convert<double?, T>(ToNullableDouble()),
+                PropertyType.Date => Operator.Convert<DateTimeOffset, T>(ToDate()),
+                PropertyType.NullableDate => Operator.Convert<DateTimeOffset?, T>(ToNullableDate()),
+                PropertyType.Decimal => Operator.Convert<Decimal128, T>(ToDecimal()),
+                PropertyType.NullableDecimal => Operator.Convert<Decimal128?, T>(ToNullableDecimal()),
+                PropertyType.ObjectId => Operator.Convert<ObjectId, T>(ToObjectId()),
+                PropertyType.NullableObjectId => Operator.Convert<ObjectId?, T>(ToNullableObjectId()),
+                _ => throw new NotSupportedException($"PrimitiveType {Type} is not supported."),
+            };
         }
     }
 }

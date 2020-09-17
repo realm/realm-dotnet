@@ -47,10 +47,6 @@ namespace RealmWeaver
 
         public MethodReference System_Type_GetTypeFromHandle { get; }
 
-        public TypeReference System_DateTimeOffset { get; }
-
-        public MethodReference System_DateTimeOffset_op_Inequality { get; private set; }
-
         public abstract TypeReference System_Collections_Generic_ListOfT { get; }
 
         public MethodReference System_Collections_Generic_ListOfT_Constructor { get; private set; }
@@ -192,8 +188,6 @@ namespace RealmWeaver
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
 
-            System_DateTimeOffset = new TypeReference("System", "DateTimeOffset", Module, Module.TypeSystem.CoreLibrary, valueType: true);
-
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
             var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
             if (PropertyChanged_Fody != null)
@@ -218,11 +212,6 @@ namespace RealmWeaver
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(Types.Int32Reference) }
-            };
-
-            System_DateTimeOffset_op_Inequality = new MethodReference("op_Inequality", Types.BooleanReference, System_DateTimeOffset)
-            {
-                Parameters = { new ParameterDefinition(System_DateTimeOffset), new ParameterDefinition(System_DateTimeOffset) }
             };
 
             System_Collections_Generic_ListOfT_Constructor = new MethodReference(".ctor", Types.VoidReference, System_Collections_Generic_ListOfT) { HasThis = true };
@@ -346,7 +335,6 @@ namespace RealmWeaver
                 RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(T));
                 RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
             }
-
 
             IRealmObjectHelper = new TypeReference("Realms.Weaving", "IRealmObjectHelper", Module, realmAssembly);
 

@@ -1,4 +1,23 @@
 5.0.1 (2020-09-10)
+v10 (TBD)
+------------------
+
+### Breaking Changes
+* We no longer support Realm Cloud (legacy), but instead the new "MongoDB Realm" Cloud. MongoDB Realm is a serverless platform that enables developers to quickly build applications without having to set up server infrastructure. MongoDB Realm is built on top of MongoDB Atlas, automatically integrating the connection to your database. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Remove support for Query-based sync, including the configuration parameters and the RLMSyncSubscription and SyncSubscription types. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Remove everything related to sync permissions, including both the path-based permission system and the object-level privileges for query-based sync. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+
+### Enhancements
+* Add support for the Decimal128 data type. This is a 128-bit IEEE 754 decimal floating point number. Properties of this type can be declared either as `MongoDB.Bson.Decimal128` type or the built-in `decimal` type. Note that .NET's built-in decimal is 96-bit, so it cannot represent the full range of numbers, representable by `Decimal128`. (PR [#2014](https://github.com/realm/realm-dotnet/pull/2014))
+
+### Fixed
+
+### Compatibility
+
+### Internal
+
+
+vNext(TBD)
 ------------------
 
 NOTE: This version bumps the Realm file format to version 10. It is not possible to downgrade version 9 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.

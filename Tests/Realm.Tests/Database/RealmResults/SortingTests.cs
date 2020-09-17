@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using MongoDB.Bson;
 using NUnit.Framework;
 using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
@@ -327,6 +328,56 @@ namespace Realms.Tests.Database
             });
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
             Assert.That(sortedCities, Is.EqualTo(new[] { "A-Place", "A Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney", "Åby" }));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SortsByDecimal(bool ascending)
+        {
+            var data = new[] { 1.23M, 9.123M, 5.323423M, -123.324M, 9.123M, decimal.MinValue, decimal.Zero, decimal.MaxValue };
+            _realm.Write(() =>
+            {
+                foreach (var value in data)
+                {
+                    _realm.Add(new DecimalsObject { DecimalValue = value });
+                }
+            });
+
+            if (ascending)
+            {
+                var sortedDecimals = _realm.All<DecimalsObject>().OrderBy(d => d.DecimalValue).ToArray().Select(d => d.DecimalValue);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderBy(d => d)));
+            }
+            else
+            {
+                var sortedDecimals = _realm.All<DecimalsObject>().OrderByDescending(d => d.DecimalValue).ToArray().Select(d => d.DecimalValue);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderByDescending(d => d)));
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SortsByDecimal128(bool ascending)
+        {
+            var data = new Decimal128[] { 1.23M, 1, 94, 9.123M, 5.323423M, Decimal128.MinValue, Decimal128.MaxValue, Decimal128.Zero, -123.324M, 9.123M, decimal.MinValue, decimal.Zero, decimal.MaxValue };
+            _realm.Write(() =>
+            {
+                foreach (var value in data)
+                {
+                    _realm.Add(new DecimalsObject { Decimal128Value = value });
+                }
+            });
+
+            if (ascending)
+            {
+                var sortedDecimals = _realm.All<DecimalsObject>().OrderBy(d => d.Decimal128Value).ToArray().Select(d => d.Decimal128Value);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderBy(d => d)));
+            }
+            else
+            {
+                var sortedDecimals = _realm.All<DecimalsObject>().OrderByDescending(d => d.Decimal128Value).ToArray().Select(d => d.Decimal128Value);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderByDescending(d => d)));
+            }
         }
 
         private void MakeThreeLinkingObjects(
