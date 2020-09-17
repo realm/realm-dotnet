@@ -46,6 +46,9 @@ namespace Realms
             public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
                 [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
+
             #endregion
 
             #region set
@@ -66,6 +69,9 @@ namespace Realms
             public static extern void set_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
                 [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
+
             #endregion
 
             #region insert
@@ -85,6 +91,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
                 [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
             #endregion
 
@@ -232,6 +241,13 @@ namespace Realms
                 NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
         }
 
+        public ObjectHandle AddEmbedded()
+        {
+            var result = NativeMethods.add_embedded(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
+        }
+
         #endregion
 
         #region Set
@@ -263,6 +279,13 @@ namespace Realms
                 NativeMethods.set_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
         }
 
+        public ObjectHandle SetEmbedded(int targetIndex)
+        {
+            var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
+        }
+
         #endregion
 
         #region Insert
@@ -292,6 +315,13 @@ namespace Realms
         {
             MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
                 NativeMethods.insert_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
+        }
+
+        public ObjectHandle InsertEmbedded(int targetIndex)
+        {
+            var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
         }
 
         #endregion

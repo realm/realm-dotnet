@@ -23,15 +23,30 @@ namespace Realms.Dynamic
 {
     internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
-        internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
+        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(embedded: true);
+        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(embedded: false);
 
-        public void CopyToRealm(RealmObject instance, bool update, bool setPrimaryKey)
+        private readonly bool _embedded;
+
+        internal static DynamicRealmObjectHelper Instance(bool embedded) => embedded ? _embeddedInstance : _objectInstance;
+
+        private DynamicRealmObjectHelper(bool embedded)
+        {
+            _embedded = embedded;
+        }
+
+        public void CopyToRealm(RealmObjectBase instance, bool update, bool setPrimaryKey)
         {
             throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
         }
 
-        public RealmObject CreateInstance()
+        public RealmObjectBase CreateInstance()
         {
+            if (_embedded)
+            {
+                return new DynamicEmbeddedObject();
+            }
+
             return new DynamicRealmObject();
         }
 

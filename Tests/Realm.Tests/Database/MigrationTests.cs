@@ -78,7 +78,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = migration.OldRealm.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -131,7 +131,7 @@ namespace Realms.Tests.Database
 
             var oldSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
                 oldSchema.Add(person.Build());
             }
@@ -140,21 +140,21 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    dynamic person = realm.CreateObject("Person", null);
+                    dynamic person = realm.DynamicApi.CreateObject("Person", null);
                     person.Name = "Foo";
                 });
             }
 
             var newSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
                 newSchema.Add(person.Build());
             }
 
             using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
             {
-                Assert.That(realm.All("Person"), Is.Empty);
+                Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
             }
         }
     }

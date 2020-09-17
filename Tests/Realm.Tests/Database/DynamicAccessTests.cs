@@ -20,6 +20,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.CSharp.RuntimeBinder;
 using NUnit.Framework;
+using Realms.Dynamic;
 
 namespace Realms.Tests.Database
 {
@@ -41,8 +42,8 @@ namespace Realms.Tests.Database
             dynamic allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject", null);
-                Assert.That(allTypesObject, Is.InstanceOf<Realms.Dynamic.DynamicRealmObject>());
+                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
+                Assert.That(allTypesObject, Is.InstanceOf<DynamicRealmObject>());
 
                 allTypesObject.CharProperty = 'F';
                 allTypesObject.NullableCharProperty = 'o';
@@ -62,7 +63,7 @@ namespace Realms.Tests.Database
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject", null);
+                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
 
                 CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();
@@ -79,7 +80,7 @@ namespace Realms.Tests.Database
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
-                allTypesObject = _realm.CreateObject("AllTypesObject", null);
+                allTypesObject = _realm.DynamicApi.CreateObject("AllTypesObject", null);
 
                 CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();

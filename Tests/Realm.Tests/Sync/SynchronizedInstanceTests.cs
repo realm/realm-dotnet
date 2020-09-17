@@ -269,7 +269,7 @@ namespace Realms.Tests.Sync
                     Assert.That(hasExpectedProp);
                     Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-                    var ato = dynamicRealm.All(nameof(AllTypesObject)).Single();
+                    var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
                     Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
                 }
             });

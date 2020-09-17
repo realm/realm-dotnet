@@ -34,7 +34,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RealmList<Person>))]
         public void RealmCollectionContravariance(Type type)
         {
-            Assert.That(typeof(IRealmCollection<RealmObject>).IsAssignableFrom(type));
+            Assert.That(typeof(IRealmCollection<RealmObjectBase>).IsAssignableFrom(type));
         }
 
         [Test]

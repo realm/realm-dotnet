@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -21,10 +21,15 @@ using System;
 namespace Realms
 {
     /// <summary>
-    /// Base for any object that can be persisted in a <see cref="Realm"/>.
+    /// Base for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     [Serializable]
-    public class RealmObject : RealmObjectBase
+    public class EmbeddedObject : RealmObjectBase
     {
+        /// <summary>
+        /// Gets the parent of this <see cref="EmbeddedObject"/>. It can be either another
+        /// <see cref="EmbeddedObject"/> or a standalone <see cref="RealmObject"/>.
+        /// </summary>
+        public RealmObjectBase Parent { get; }
     }
 }

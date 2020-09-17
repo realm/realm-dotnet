@@ -546,6 +546,7 @@ namespace RealmWeaver
             var expectedErrors = new[]
             {
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
+                "Class EmbeddedWithPrimaryKey is an EmbeddedObject but has a primary key NotAllowed defined.",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
                 "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean.",
                 "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset.",

@@ -37,7 +37,7 @@ inline void insert(List& list, size_t list_ndx, T value, NativeException::Marsha
         if (list_ndx > count) {
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
-        
+
         list.insert(list_ndx, value);
     });
 }
@@ -50,7 +50,7 @@ inline void set(List& list, size_t list_ndx, T value, NativeException::Marshalla
         if (list_ndx >= count) {
             throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
         }
-        
+
         list.set(list_ndx, value);
     });
 }
@@ -72,14 +72,14 @@ inline size_t find(List& list, T value, NativeException::Marshallable& ex)
 }
 
 extern "C" {
-  
+
 REALM_EXPORT void list_add_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         list.add(object_ptr.obj());
     });
 }
-    
+
 REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -122,7 +122,7 @@ REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeEx
 #pragma GCC diagnostic pop
     });
 }
-    
+
 REALM_EXPORT void list_add_string(List& list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
     if (has_value) {
@@ -133,7 +133,7 @@ REALM_EXPORT void list_add_string(List& list, uint16_t* value, size_t value_len,
         add(list, StringData(), ex);
     }
 }
-    
+
 REALM_EXPORT void list_add_binary(List& list, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
     if (has_value) {
@@ -143,7 +143,14 @@ REALM_EXPORT void list_add_binary(List& list, char* value, size_t value_len, boo
         add(list, BinaryData(), ex);
     }
 }
-    
+
+REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Object(list.get_realm(), list.get_object_schema(), list.add_embedded());
+    });
+}
+
 REALM_EXPORT void list_set_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     set(list, list_ndx, object_ptr.obj(), ex);
@@ -154,7 +161,7 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
     handle_errors(ex, [&]() {
         const size_t count = list.size();
         if (list_ndx >= count) {
-            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+            throw IndexOutOfRangeException("Set into RealmList", list_ndx, count);
         }
 
 #pragma GCC diagnostic push
@@ -217,12 +224,24 @@ REALM_EXPORT void list_set_binary(List& list, size_t list_ndx, char* value, size
         set(list, list_ndx, BinaryData(), ex);
     }
 }
-    
+
+REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        const size_t count = list.size();
+        if (list_ndx >= count) {
+            throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
+        }
+
+        return new Object(list.get_realm(), list.get_object_schema(), list.set_embedded(list_ndx));
+    });
+}
+
 REALM_EXPORT void list_insert_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     insert(list, list_ndx, object_ptr.obj(), ex);
 }
-    
+
 REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -292,32 +311,44 @@ REALM_EXPORT void list_insert_binary(List& list, size_t list_ndx, char* value, s
     }
 }
 
+REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        const size_t count = list.size();
+        if (list_ndx > count) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        }
+
+        return new Object(list.get_realm(), list.get_object_schema(), list.insert_embedded(list_ndx));
+    });
+}
+
 REALM_EXPORT Object* list_get_object(List& list, size_t ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
         const size_t count = list.size();
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-        
+
         return new Object(list.get_realm(), list.get_object_schema(), list.get(ndx));
     });
 }
-    
+
 REALM_EXPORT void list_get_primitive(List& list, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     collection_get_primitive(list, ndx, value, ex);
 }
-    
+
 REALM_EXPORT size_t list_get_string(List& list, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
 {
     return collection_get_string(list, ndx, value, value_len, is_null, ex);
 }
-    
+
 REALM_EXPORT size_t list_get_binary(List& list, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
 {
     return collection_get_binary(list, ndx, return_buffer, buffer_size, is_null, ex);
 }
-    
+
 REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -328,7 +359,7 @@ REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, Nativ
         return list.find(object_ptr.obj());
     });
 }
-    
+
 REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -361,23 +392,23 @@ REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, Nativ
 #pragma GCC diagnostic pop
     });
 }
-    
+
 REALM_EXPORT size_t list_find_string(List& list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
     if (has_value) {
         Utf16StringAccessor str(value, value_len);
         return find(list, (StringData)str, ex);
     }
-    
+
     return find(list, StringData(), ex);
 }
-    
+
 REALM_EXPORT size_t list_find_binary(List& list, char* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
 {
     if (has_value) {
         return find(list, BinaryData(value, value_len), ex);
     }
-    
+
     return find(list, BinaryData(), ex);
 }
 
@@ -388,7 +419,7 @@ REALM_EXPORT void list_erase(List& list, size_t link_ndx, NativeException::Marsh
         const size_t count = list.size();
         if (link_ndx >= count)
             throw IndexOutOfRangeException("Erase item in RealmList", link_ndx, count);
-        
+
         list.remove(link_ndx);
     });
 }
@@ -406,12 +437,12 @@ REALM_EXPORT size_t list_size(List& list, NativeException::Marshallable& ex)
         return list.size();
     });
 }
-  
+
 REALM_EXPORT void list_destroy(List* list)
 {
     delete list;
 }
-    
+
 REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
@@ -420,17 +451,17 @@ REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(Lis
         });
     });
 }
-    
+
 REALM_EXPORT void list_move(List& list, size_t source_ndx, size_t dest_ndx, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         const size_t count = list.size();
-        
+
         // Indices are >= 0 validated by .NET
         if (dest_ndx >= count) {
             throw IndexOutOfRangeException("Move within RealmList", dest_ndx, count);
         }
-        
+
         if (source_ndx >= count) {
             throw IndexOutOfRangeException("Move within RealmList", source_ndx, count);
         }
@@ -438,7 +469,7 @@ REALM_EXPORT void list_move(List& list, size_t source_ndx, size_t dest_ndx, Nati
         list.move(source_ndx, dest_ndx);
     });
 }
-    
+
 REALM_EXPORT bool list_get_is_valid(const List& list, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

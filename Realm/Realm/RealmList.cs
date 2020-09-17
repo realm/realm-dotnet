@@ -25,6 +25,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Realms.Dynamic;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
@@ -37,21 +38,18 @@ namespace Realms
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal
     /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
-    /// <remarks>Although originally used in declarations, whilst that still compiles,
-    /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is
-    /// implemented with a faster binding.
-    /// </remarks>
-    /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is contained by the list.</typeparam>
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
     {
         private readonly Realm _realm;
+
         private readonly ListHandle _listHandle;
 
-        internal RealmList(Realm realm, ListHandle adoptedList, RealmObject.Metadata metadata) : base(realm, metadata)
+        internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
             _realm = realm;
             _listHandle = adoptedList;
@@ -61,6 +59,10 @@ namespace Realms
         {
             return _listHandle;
         }
+
+        ListHandle IRealmList.NativeHandle => _listHandle;
+
+        RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
 
         #region implementing IList properties
 
@@ -81,14 +83,12 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                Execute(value, obj =>
-                {
-                    AddObjectToRealmIfNeeded(obj);
-                    _listHandle.Set(index, obj.ObjectHandle);
-                },
-                v => _listHandle.Set(index, v),
-                v => _listHandle.Set(index, v),
-                v => _listHandle.Set(index, v));
+                Execute(value,
+                    obj => _listHandle.Set(index, obj.ObjectHandle),
+                    () => _listHandle.SetEmbedded(index),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v));
             }
         }
 
@@ -98,14 +98,12 @@ namespace Realms
 
         public void Add(T item)
         {
-            Execute(item, obj =>
-            {
-                AddObjectToRealmIfNeeded(obj);
-                _listHandle.Add(obj.ObjectHandle);
-            },
-            _listHandle.Add,
-            _listHandle.Add,
-            _listHandle.Add);
+            Execute(item,
+                obj => _listHandle.Add(obj.ObjectHandle),
+                () => _listHandle.AddEmbedded(),
+                _listHandle.Add,
+                _listHandle.Add,
+                _listHandle.Add);
         }
 
         public override int Add(object value)
@@ -148,7 +146,7 @@ namespace Realms
                 case PropertyType.Object | PropertyType.Nullable:
                     Argument.NotNull(value, nameof(value));
 
-                    var obj = Operator.Convert<T, RealmObject>(value);
+                    var obj = Operator.Convert<T, RealmObjectBase>(value);
                     if (!obj.IsManaged)
                     {
                         throw new ArgumentException("Value does not belong to a realm", nameof(value));
@@ -173,14 +171,12 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            Execute(item, obj =>
-            {
-                AddObjectToRealmIfNeeded(obj);
-                _listHandle.Insert(index, obj.ObjectHandle);
-            },
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value),
-            value => _listHandle.Insert(index, value));
+            Execute(item,
+                obj => _listHandle.Insert(index, obj.ObjectHandle),
+                () => _listHandle.InsertEmbedded(index),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -207,14 +203,6 @@ namespace Realms
             }
 
             _listHandle.Erase((IntPtr)index);
-        }
-
-        private void AddObjectToRealmIfNeeded(RealmObject obj)
-        {
-            if (!obj.IsManaged)
-            {
-                _realm.Add(obj);
-            }
         }
 
         #endregion
@@ -248,8 +236,9 @@ namespace Realms
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
-        private static void Execute(T item,
+        private void Execute(T item,
             Action<RealmObject> objectHandler,
+            Func<ObjectHandle> embeddedHandler,
             Action<PrimitiveValue> primitiveHandler,
             Action<string> stringHandler,
             Action<byte[]> binaryHandler)
@@ -257,7 +246,31 @@ namespace Realms
             switch (_argumentType)
             {
                 case PropertyType.Object | PropertyType.Nullable:
-                    objectHandler(Operator.Convert<T, RealmObject>(item));
+                    switch (item)
+                    {
+                        case null:
+                            throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
+                        case RealmObject realmObj:
+                            if (!realmObj.IsManaged)
+                            {
+                                _realm.Add(realmObj);
+                            }
+
+                            objectHandler(realmObj);
+                            break;
+                        case EmbeddedObject embeddedObj:
+                            if (embeddedObj.IsManaged)
+                            {
+                                throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
+                            }
+
+                            var handle = embeddedHandler();
+                            Realm.ManageEmbedded(embeddedObj, handle);
+                            break;
+                        default:
+                            throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
+                    }
+
                     break;
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
@@ -272,5 +285,21 @@ namespace Realms
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
+    /// </summary>
+    internal interface IRealmList
+    {
+        /// <summary>
+        /// Gets the native handle for that list.
+        /// </summary>
+        ListHandle NativeHandle { get; }
+
+        /// <summary>
+        /// Gets the metadata for the objects contained in the list.
+        /// </summary>
+        RealmObjectBase.Metadata Metadata { get; }
     }
 }

@@ -25,7 +25,7 @@ namespace Realms
     internal static class NotificationsHelper
     {
         /// <summary>
-        /// INotifiable represents a reactive object (e.g. RealmObject/Collection).
+        /// INotifiable represents a reactive object (e.g. RealmObjectBase/Collection).
         /// </summary>
         internal interface INotifiable
         {

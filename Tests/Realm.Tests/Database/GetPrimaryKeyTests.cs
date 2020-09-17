@@ -101,7 +101,7 @@ namespace Realms.Tests.Database
             Assert.That(pk, Is.EqualTo(pkValue));
         }
 
-        private static IRealmObjectHelper GetHelper(RealmObject obj)
+        private static IRealmObjectHelper GetHelper(RealmObjectBase obj)
         {
             return obj.ObjectMetadata.Helper;
         }

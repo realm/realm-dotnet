@@ -6,6 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>8.0</LangVersion>
     <Title>Realm</Title>
     <ReleaseNotes>https://realm.io/docs/dotnet/latest/api/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>

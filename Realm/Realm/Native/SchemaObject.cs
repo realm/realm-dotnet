@@ -30,5 +30,8 @@ namespace Realms.Native
 
         internal int properties_start;
         internal int properties_end;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_embedded;
     }
 }
