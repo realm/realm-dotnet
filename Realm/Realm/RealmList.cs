@@ -43,22 +43,26 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider
+    public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
     {
         private readonly Realm _realm;
 
-        internal readonly ListHandle ListHandle;
+        private readonly ListHandle _listHandle;
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
             _realm = realm;
-            ListHandle = adoptedList;
+            _listHandle = adoptedList;
         }
 
         internal override CollectionHandleBase CreateHandle()
         {
-            return ListHandle;
+            return _listHandle;
         }
+
+        ListHandle IRealmList.NativeHandle => _listHandle;
+
+        RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
 
         #region implementing IList properties
 
@@ -80,11 +84,11 @@ namespace Realms
                 }
 
                 Execute(value,
-                    obj => ListHandle.Set(index, obj.ObjectHandle),
-                    () => ListHandle.SetEmbedded(index),
-                    v => ListHandle.Set(index, v),
-                    v => ListHandle.Set(index, v),
-                    v => ListHandle.Set(index, v));
+                    obj => _listHandle.Set(index, obj.ObjectHandle),
+                    () => _listHandle.SetEmbedded(index),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v),
+                    v => _listHandle.Set(index, v));
             }
         }
 
@@ -95,11 +99,11 @@ namespace Realms
         public void Add(T item)
         {
             Execute(item,
-                obj => ListHandle.Add(obj.ObjectHandle),
-                () => ListHandle.AddEmbedded(),
-                ListHandle.Add,
-                ListHandle.Add,
-                ListHandle.Add);
+                obj => _listHandle.Add(obj.ObjectHandle),
+                () => _listHandle.AddEmbedded(),
+                _listHandle.Add,
+                _listHandle.Add,
+                _listHandle.Add);
         }
 
         public override int Add(object value)
@@ -110,7 +114,7 @@ namespace Realms
 
         public override void Clear()
         {
-            ListHandle.Clear();
+            _listHandle.Clear();
         }
 
         public bool Contains(T item) => Contains((object)item);
@@ -148,15 +152,15 @@ namespace Realms
                         throw new ArgumentException("Value does not belong to a realm", nameof(value));
                     }
 
-                    return ListHandle.Find(obj.ObjectHandle);
+                    return _listHandle.Find(obj.ObjectHandle);
                 case PropertyType.String:
                 case PropertyType.String | PropertyType.Nullable:
-                    return ListHandle.Find(Operator.Convert<T, string>(value));
+                    return _listHandle.Find(Operator.Convert<T, string>(value));
                 case PropertyType.Data:
                 case PropertyType.Data | PropertyType.Nullable:
-                    return ListHandle.Find(Operator.Convert<T, byte[]>(value));
+                    return _listHandle.Find(Operator.Convert<T, byte[]>(value));
                 default:
-                    return ListHandle.Find(PrimitiveValue.Create(value, _argumentType));
+                    return _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
             }
         }
 
@@ -168,11 +172,11 @@ namespace Realms
             }
 
             Execute(item,
-                obj => ListHandle.Insert(index, obj.ObjectHandle),
-                () => ListHandle.InsertEmbedded(index),
-                value => ListHandle.Insert(index, value),
-                value => ListHandle.Insert(index, value),
-                value => ListHandle.Insert(index, value));
+                obj => _listHandle.Insert(index, obj.ObjectHandle),
+                () => _listHandle.InsertEmbedded(index),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value),
+                value => _listHandle.Insert(index, value));
         }
 
         public override void Insert(int index, object value) => Insert(index, (T)value);
@@ -198,7 +202,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            ListHandle.Erase((IntPtr)index);
+            _listHandle.Erase((IntPtr)index);
         }
 
         #endregion
@@ -215,7 +219,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(sourceIndex));
             }
 
-            ListHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
+            _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
         public override IRealmCollection<T> Freeze()
@@ -226,7 +230,7 @@ namespace Realms
             }
 
             var frozenRealm = Realm.Freeze();
-            var frozenHandle = ListHandle.Freeze(frozenRealm.SharedRealmHandle);
+            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
             return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
         }
 
@@ -281,5 +285,21 @@ namespace Realms
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
+    /// </summary>
+    internal interface IRealmList
+    {
+        /// <summary>
+        /// Gets the native handle for that list.
+        /// </summary>
+        ListHandle NativeHandle { get; }
+
+        /// <summary>
+        /// Gets the metadata for the objects contained in the list.
+        /// </summary>
+        RealmObjectBase.Metadata Metadata { get; }
     }
 }

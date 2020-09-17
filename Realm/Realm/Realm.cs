@@ -1264,7 +1264,6 @@ namespace Realms
             /// <summary>
             /// Creates an embedded object and adds it to the specified list. This also assigns correct ownership of the newly created embedded object.
             /// </summary>
-            /// <typeparam name="T">Type of the objects, contained in the list. In most cases, this will be inferred by the runtime and there's no need to specify it explicitly.</typeparam>
             /// <param name="list">The list to which the object will be added.</param>
             /// <returns>The newly created object, after it has been added to the back of the list.</returns>
             /// <remarks>
@@ -1272,11 +1271,10 @@ namespace Realms
             /// <see cref="AddEmbeddedObjectToList"/>, <see cref="InsertEmbeddedObjectInList"/>, and <see cref="SetEmbeddedObjectInList"/> have to be used instead of
             /// <see cref="ICollection{T}.Add"/>, <see cref="IList{T}.Insert"/>, and <see cref="IList{T}.this[int]"/>.
             /// </remarks>
-            /// <seealso cref="InsertEmbeddedObjectInList{T}(IList{T}, int)"/>
-            /// <see cref="SetEmbeddedObjectInList{T}(IList{T}, int)"/>
+            /// <seealso cref="InsertEmbeddedObjectInList"/>
+            /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToList<T>(IList<T> list)
-                where T : EmbeddedObject
+            public dynamic AddEmbeddedObjectToList(IRealmCollection<EmbeddedObject> list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
             }
@@ -1284,7 +1282,6 @@ namespace Realms
             /// <summary>
             /// Creates an embedded object and inserts it in the specified list at the specified index. This also assigns correct ownership of the newly created embedded object.
             /// </summary>
-            /// <typeparam name="T">Type of the objects, contained in the list. In most cases, this will be inferred by the runtime and there's no need to specify it explicitly.</typeparam>
             /// <param name="list">The list in which the object will be inserted.</param>
             /// <param name="index">The index at which the object will be inserted.</param>
             /// <returns>The newly created object, after it has been inserted in the list.</returns>
@@ -1293,9 +1290,10 @@ namespace Realms
             /// <see cref="AddEmbeddedObjectToList"/>, <see cref="InsertEmbeddedObjectInList"/>, and <see cref="SetEmbeddedObjectInList"/> have to be used instead of
             /// <see cref="ICollection{T}.Add"/>, <see cref="IList{T}.Insert"/>, and <see cref="IList{T}.this[int]"/>.
             /// </remarks>
+            /// <seealso cref="InsertEmbeddedObjectInList"/>
+            /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic InsertEmbeddedObjectInList<T>(IList<T> list, int index)
-                where T : EmbeddedObject
+            public dynamic InsertEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
             {
                 if (index < 0)
                 {
@@ -1308,7 +1306,6 @@ namespace Realms
             /// <summary>
             /// Creates an embedded object and sets it in the specified list at the specified index. This also assigns correct ownership of the newly created embedded object.
             /// </summary>
-            /// <typeparam name="T">Type of the objects, contained in the list. In most cases, this will be inferred by the runtime and there's no need to specify it explicitly..</typeparam>
             /// <param name="list">The list in which the object will be set.</param>
             /// <param name="index">The index at which the object will be set.</param>
             /// <returns>The newly created object, after it has been set to the specified index in the list.</returns>
@@ -1320,9 +1317,10 @@ namespace Realms
             /// Setting an object at an index will remove the existing object from the list and unown it. Since unowned embedded objects are automatically deleted,
             /// the old object that the list contained at <paramref name="index"/> will get deleted when the transaction is committed.
             /// </remarks>
+            /// <seealso cref="InsertEmbeddedObjectInList"/>
+            /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInList<T>(IList<T> list, int index)
-                where T : EmbeddedObject
+            public dynamic SetEmbeddedObjectInList(IRealmCollection<EmbeddedObject> list, int index)
             {
                 if (index < 0)
                 {
@@ -1415,21 +1413,20 @@ namespace Realms
                 return null;
             }
 
-            private dynamic PerformEmbeddedListOperation<T>(IList<T> list, Func<ListHandle, ObjectHandle> getHandle)
-                where T : EmbeddedObject
+            private dynamic PerformEmbeddedListOperation(IRealmCollection<EmbeddedObject> list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
                 Argument.NotNull(list, nameof(list));
 
-                if (!(list is RealmList<T> realmList))
+                if (!(list is IRealmList realmList))
                 {
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
                 var obj = realmList.Metadata.Helper.CreateInstance();
 
-                obj.SetOwner(_realm, getHandle(realmList.ListHandle), realmList.Metadata);
+                obj.SetOwner(_realm, getHandle(realmList.NativeHandle), realmList.Metadata);
                 obj.OnManaged();
 
                 return obj;
