@@ -41,10 +41,12 @@ namespace Realms.Native
         private double double_value;
 
         [FieldOffset(0)]
-        private ulong decimal_low;
+        private fixed ulong decimal_bits[2];
 
+        // Without this padding, .NET fails to marshal the decimal_bits array correctly and the second element is always 0.
         [FieldOffset(8)]
-        private ulong decimal_high;
+        [Obsolete("Don't use, please!")]
+        private long dontuse;
 
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
@@ -135,8 +137,8 @@ namespace Realms.Native
                 has_value = true
             };
 
-            result.decimal_low = value.GetIEEELowBits();
-            result.decimal_high = value.GetIEEEHighBits();
+            result.decimal_bits[0] = value.GetIEEELowBits();
+            result.decimal_bits[1] = value.GetIEEEHighBits();
 
             return result;
         }
@@ -151,8 +153,8 @@ namespace Realms.Native
 
             if (value.HasValue)
             {
-                result.decimal_low = value.Value.GetIEEELowBits();
-                result.decimal_high = value.Value.GetIEEEHighBits();
+                result.decimal_bits[0] = value.Value.GetIEEELowBits();
+                result.decimal_bits[1] = value.Value.GetIEEEHighBits();
             }
 
             return result;
@@ -208,9 +210,9 @@ namespace Realms.Native
 
         public DateTimeOffset? ToNullableDate() => has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
 
-        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_high, decimal_low);
+        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
-        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_high, decimal_low) : (Decimal128?)null;
+        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
 
         public ObjectId ToObjectId() => throw new NotImplementedException();
 
