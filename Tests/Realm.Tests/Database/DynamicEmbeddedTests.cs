@@ -400,11 +400,11 @@ namespace Realms.Tests.Database
 
             Assert.That(addedSubTask.ParentTask.Count, Is.EqualTo(1));
             Assert.That(addedSubTask.ParentSubTask.Count, Is.EqualTo(0));
-            Assert.That(addedSubTask.ParentTask[0], Is.EqualTo(addedTask));
+            Assert.That(((IQueryable<RealmObject>)addedSubTask.ParentTask).Single(), Is.EqualTo(addedTask));
 
             Assert.That(addedSubSubTask.ParentTask.Count, Is.EqualTo(0));
             Assert.That(addedSubSubTask.ParentSubTask.Count, Is.EqualTo(1));
-            Assert.That(addedSubSubTask.ParentSubTask[0], Is.EqualTo(addedSubTask));
+            Assert.That(((IQueryable<EmbeddedObject>)addedSubSubTask.ParentSubTask).Single(), Is.EqualTo(addedSubTask));
         }
 
         [Test]
@@ -424,7 +424,7 @@ namespace Realms.Tests.Database
 
             var reportParents = addedReport.GetBacklinks(nameof(DynamicTask), nameof(CompletionReport));
             Assert.That(reportParents.Count, Is.EqualTo(1));
-            Assert.That(reportParents[0], Is.EqualTo(addedTask));
+            Assert.That(((IQueryable<RealmObject>)reportParents).Single(), Is.EqualTo(addedTask));
         }
     }
 }
