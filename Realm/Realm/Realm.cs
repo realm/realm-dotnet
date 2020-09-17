@@ -202,6 +202,7 @@ namespace Realms
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm instance.
         /// </summary>
+        [Preserve]
         public Dynamic DynamicApi { get; }
 
         /// <summary>
@@ -1172,6 +1173,7 @@ namespace Realms
         /// <summary>
         /// A class that exposes the dynamic API for a <see cref="Realm"/> instance.
         /// </summary>
+        [Preserve(AllMembers = true)]
         public class Dynamic
         {
             private readonly Realm _realm;
