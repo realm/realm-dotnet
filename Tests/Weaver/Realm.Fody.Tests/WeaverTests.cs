@@ -224,7 +224,7 @@ namespace RealmWeaver
             new object[] { "String", "str", null },
             new object[] { "Decimal", 123.456M, 0M },
             new object[] { "Decimal128", new Decimal128(123.456), new Decimal128() },
-            new object[] { "ObjectId", ObjectId.GenerateNewId() },
+            new object[] { "ObjectId", ObjectId.GenerateNewId(), default(ObjectId) },
             new object[] { "NullableChar", '0', null },
             new object[] { "NullableByte", (byte)100, null },
             new object[] { "NullableInt16", (short)100, null },

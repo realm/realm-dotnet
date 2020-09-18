@@ -168,22 +168,39 @@ namespace Realms.Tests.Database
 
         private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
-            var genericArgument = pkType switch
+            Type genericArgument;
+            switch (pkType)
             {
-                PKType.Int => typeof(long?),
-                PKType.String => typeof(string),
-                PKType.ObjectId => typeof(ObjectId?),
-                _ => throw new NotSupportedException()
-            };
+                case PKType.Int:
+                    genericArgument = typeof(long?);
+                    break;
+                case PKType.String:
+                    genericArgument = typeof(string);
+                    break;
+                case PKType.ObjectId:
+                    genericArgument = typeof(ObjectId?);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
 
-            object castPKValue = pkType switch
+            object castPKValue;
+            switch (pkType)
             {
-                PKType.Int => primaryKeyValue == null ? (long?)null : Convert.ToInt64(primaryKeyValue),
-                PKType.String => (string)primaryKeyValue,
-                PKType.ObjectId => (ObjectId?)primaryKeyValue,
-                _ => throw new NotSupportedException(),
-            };
+                case PKType.Int:
+                    castPKValue = primaryKeyValue == null ? (long?)null : Convert.ToInt64(primaryKeyValue);
+                    break;
+                case PKType.String:
+                    castPKValue = (string)primaryKeyValue;
+                    break;
+                case PKType.ObjectId:
+                    castPKValue = (ObjectId?)primaryKeyValue;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
 
             return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
         }
