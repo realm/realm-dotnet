@@ -209,12 +209,16 @@ namespace Realms.Tests.Database
         public void ExceptionIfNoPrimaryKeyDeclared()
         {
             Assert.That(() => _realm.Find<Person>("Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.Find<Person>(42), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.Find<Person>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]
         public void ExceptionIfNoDynamicPrimaryKeyDeclared()
         {
             Assert.That(() => _realm.DynamicApi.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.DynamicApi.Find("Person", 23), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.DynamicApi.Find("Person", ObjectId.GenerateNewId()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]
