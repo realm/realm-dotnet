@@ -227,6 +227,12 @@ namespace Realms.Tests.Database
         public string Value { get; set; }
     }
 
+    public class PrimaryKeyObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId StringProperty { get; set; }
+    }
+
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -255,6 +261,12 @@ namespace Realms.Tests.Database
     {
         [PrimaryKey]
         public long? Int64Property { get; set; }
+    }
+
+    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId? StringProperty { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject

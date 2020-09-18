@@ -111,11 +111,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         Int16TypeName,
         Int32TypeName,
         Int64TypeName,
+        ObjectIdTypeName,
         NullableCharTypeName,
         NullableByteTypeName,
         NullableInt16TypeName,
         NullableInt32TypeName,
         NullableInt64TypeName,
+        NullableObjectIdTypeName,
     };
 
     private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>

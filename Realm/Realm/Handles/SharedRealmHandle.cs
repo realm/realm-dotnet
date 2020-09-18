@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
@@ -107,9 +108,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_int_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, long key, [MarshalAs(UnmanagedType.I1)] bool has_value,
-                                                             [MarshalAs(UnmanagedType.I1)] bool is_nullable,
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_primitive_unique", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, IntPtr value,
                                                              [MarshalAs(UnmanagedType.I1)] bool update,
                                                              [MarshalAs(UnmanagedType.I1)] out bool is_new, out NativeException ex);
 
@@ -323,26 +325,48 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
+        public unsafe ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableHandle table, string parentType, bool update, out bool isNew)
         {
             if (primaryKey == null && !pkProperty.Type.IsNullable())
             {
                 throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
             }
 
-            switch (pkProperty.Type.UnderlyingType())
+            PrimitiveValue primitiveValue;
+
+            switch (pkProperty.Type)
             {
                 case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
                     var stringKey = (string)primaryKey;
-                    return CreateObjectWithPrimaryKey(table, stringKey, update, out isNew);
+                    var handle = NativeMethods.create_object_unique(this, table, stringKey, (IntPtr)(stringKey?.Length ?? 0), update, out isNew, out var nativeEx);
+                    nativeEx.ThrowIfNecessary();
+                    return new ObjectHandle(this, handle);
 
                 case PropertyType.Int:
-                    var longKey = primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey);
-                    return CreateObjectWithPrimaryKey(table, longKey, pkProperty.Type.IsNullable(), update, out isNew);
+                    primitiveValue = PrimitiveValue.Int(Convert.ToInt64(primaryKey));
+                    break;
+
+                case PropertyType.NullableInt:
+                    primitiveValue = PrimitiveValue.NullableInt(primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey));
+                    break;
+
+                case PropertyType.ObjectId:
+                    primitiveValue = PrimitiveValue.ObjectId((ObjectId)primaryKey);
+                    break;
+
+                case PropertyType.NullableObjectId:
+                    primitiveValue = PrimitiveValue.NullableObjectId(primaryKey == null ? (ObjectId?)null : (ObjectId)primaryKey);
+                    break;
 
                 default:
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
+
+            PrimitiveValue* valuePtr = &primitiveValue;
+            var result = NativeMethods.create_object_unique(this, table, new IntPtr(valuePtr), update, out isNew, out var ex);
+            ex.ThrowIfNecessary();
+            return new ObjectHandle(this, result);
         }
 
         public bool HasChanged()
@@ -355,20 +379,6 @@ namespace Realms
             var result = NativeMethods.freeze(this, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new SharedRealmHandle(result);
-        }
-
-        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, long? key, bool isNullable, bool update, out bool isNew)
-        {
-            var result = NativeMethods.create_object_unique(this, table, key ?? 0, key.HasValue, isNullable, update, out isNew, out var ex);
-            ex.ThrowIfNecessary();
-            return new ObjectHandle(this, result);
-        }
-
-        private ObjectHandle CreateObjectWithPrimaryKey(TableHandle table, string key, bool update, out bool isNew)
-        {
-            var result = NativeMethods.create_object_unique(this, table, key, (IntPtr)(key?.Length ?? 0), update, out isNew, out var ex);
-            ex.ThrowIfNecessary();
-            return new ObjectHandle(this, result);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]

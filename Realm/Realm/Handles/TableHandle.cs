@@ -42,11 +42,10 @@ namespace Realms
             public static extern IntPtr get_object_for_string_primarykey(TableHandle handle, SharedRealmHandle realmHandle,
                 [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_int_primarykey(TableHandle handle, SharedRealmHandle realmHandle, Int64 value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_null_primarykey", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_null_primarykey(TableHandle handle, SharedRealmHandle realmHandle, out NativeException ex);
+            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
+            // that causes incorrect marshalling of the struct.
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_primitive_primarykey", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object_for_primitive_primarykey(TableHandle handle, SharedRealmHandle realmHandle, IntPtr value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -85,49 +84,27 @@ namespace Realms
 
         public bool TryFind(SharedRealmHandle realmHandle, string id, out ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            IntPtr result;
-            if (id == null)
-            {
-                result = NativeMethods.get_object_for_null_primarykey(this, realmHandle, out nativeException);
-            }
-            else
-            {
-                result = NativeMethods.get_object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
-            }
-
-            nativeException.ThrowIfNecessary();
-            if (result == IntPtr.Zero)
-            {
-                objectHandle = null;
-                return false;
-            }
-
-            objectHandle = new ObjectHandle(realmHandle, result);
-            return true;
+            var result = NativeMethods.get_object_for_string_primarykey(this, realmHandle, id, (IntPtr)(id?.Length ?? 0), out var ex);
+            return TryFindCore(realmHandle, result, ex, out objectHandle);
         }
 
-        public bool TryFind(SharedRealmHandle realmHandle, long? id, out ObjectHandle objectHandle)
+        public unsafe bool TryFind(SharedRealmHandle realmHandle, PrimitiveValue id, out ObjectHandle objectHandle)
         {
-            NativeException nativeException;
-            IntPtr result;
-            if (id.HasValue)
-            {
-                result = NativeMethods.get_object_for_int_primarykey(this, realmHandle, id.Value, out nativeException);
-            }
-            else
-            {
-                result = NativeMethods.get_object_for_null_primarykey(this, realmHandle, out nativeException);
-            }
+            PrimitiveValue* valuePtr = &id;
+            var result = NativeMethods.get_object_for_primitive_primarykey(this, realmHandle, new IntPtr(valuePtr), out var ex);
+            return TryFindCore(realmHandle, result, ex, out objectHandle);
+        }
 
+        private static bool TryFindCore(SharedRealmHandle realmHandle, IntPtr objectPtr, NativeException nativeException, out ObjectHandle objectHandle)
+        {
             nativeException.ThrowIfNecessary();
-            if (result == IntPtr.Zero)
+            if (objectPtr == IntPtr.Zero)
             {
                 objectHandle = null;
                 return false;
             }
 
-            objectHandle = new ObjectHandle(realmHandle, result);
+            objectHandle = new ObjectHandle(realmHandle, objectPtr);
             return true;
         }
     }

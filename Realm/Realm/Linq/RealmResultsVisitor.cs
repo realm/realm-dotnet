@@ -823,6 +823,10 @@ namespace Realms
             {
                 action(columnKey, PrimitiveValue.Decimal((decimal)Convert.ChangeType(value, typeof(decimal))));
             }
+            else if (columnType == typeof(ObjectId))
+            {
+                action(columnKey, PrimitiveValue.ObjectId((ObjectId)Convert.ChangeType(value, typeof(ObjectId))));
+            }
             else
             {
                 throw new NotImplementedException();
@@ -837,20 +841,12 @@ namespace Realms
             }
 
             var comparison = (StringComparison)argument;
-            bool caseSensitive;
-            switch (comparison)
+            return comparison switch
             {
-                case StringComparison.Ordinal:
-                    caseSensitive = true;
-                    break;
-                case StringComparison.OrdinalIgnoreCase:
-                    caseSensitive = false;
-                    break;
-                default:
-                    throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}.");
-            }
-
-            return caseSensitive;
+                StringComparison.Ordinal => true,
+                StringComparison.OrdinalIgnoreCase => false,
+                _ => throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}."),
+            };
         }
 
         private string GetColumnName(MemberExpression memberExpression, ExpressionType? parentType = null)

@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -31,27 +32,42 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class PrimaryKeyTests : RealmInstanceTest
     {
-        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
-        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
-        public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        public enum PKType
+        {
+            Int,
+            String,
+            ObjectId,
+        }
+
+        public static object[] PKTestCases =
+        {
+            new object[] { typeof(PrimaryKeyCharObject), 'x', PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableCharObject), 'x', PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableCharObject), null, PKType.Int },
+            new object[] { typeof(PrimaryKeyByteObject), (byte)42, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableByteObject), (byte)42, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableByteObject), null, PKType.Int },
+            new object[] { typeof(PrimaryKeyInt16Object), (short)4242, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt16Object), (short)4242, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt16Object), null, PKType.Int },
+            new object[] { typeof(PrimaryKeyInt32Object), 42000042, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt32Object), 42000042, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt32Object), null, PKType.Int },
+            new object[] { typeof(PrimaryKeyInt64Object), 42000042L, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt64Object), 42000042L, PKType.Int },
+            new object[] { typeof(PrimaryKeyNullableInt64Object), null, PKType.Int },
+            new object[] { typeof(PrimaryKeyStringObject), "key", PKType.String },
+            new object[] { typeof(PrimaryKeyStringObject), null, PKType.String },
+            new object[] { typeof(PrimaryKeyStringObject), string.Empty, PKType.String },
+            new object[] { typeof(RequiredPrimaryKeyStringObject), "key", PKType.String },
+            new object[] { typeof(RequiredPrimaryKeyStringObject), string.Empty, PKType.String },
+            new object[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
+            new object[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
+            new object[] { typeof(PrimaryKeyNullableObjectIdObject), null, PKType.ObjectId },
+        };
+
+        [TestCaseSource(nameof(PKTestCases))]
+        public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
@@ -59,59 +75,21 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(obj));
 
-            var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
+            var foundObj = FindByPKDynamic(type, primaryKeyValue, pkType);
 
             Assert.That(foundObj, Is.Not.Null);
             Assert.That(pkProperty.GetValue(foundObj), Is.EqualTo(primaryKeyValue));
         }
 
-        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
-        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
-        public void FailToFindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        [TestCaseSource(nameof(PKTestCases))]
+        public void FailToFindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
         {
-            var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
+            var foundObj = FindByPKDynamic(type, primaryKeyValue, pkType);
             Assert.That(foundObj, Is.Null);
         }
 
-        [TestCase(typeof(PrimaryKeyCharObject), 'x')]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x')]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key")]
-        [TestCase(typeof(PrimaryKeyStringObject), null)]
-        [TestCase(typeof(PrimaryKeyStringObject), "")]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key")]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
-        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
+        [TestCaseSource(nameof(PKTestCases))]
+        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
         {
             _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
 
@@ -121,27 +99,8 @@ namespace Realms.Tests.Database
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        [TestCase(typeof(PrimaryKeyCharObject), 'x')]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x')]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key")]
-        [TestCase(typeof(PrimaryKeyStringObject), null)]
-        [TestCase(typeof(PrimaryKeyStringObject), "")]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key")]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "")]
-        public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
+        [TestCaseSource(nameof(PKTestCases))]
+        public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
         {
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             var first = (RealmObject)Activator.CreateInstance(type);
@@ -157,47 +116,36 @@ namespace Realms.Tests.Database
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
         {
-            if (isIntegerPK)
+            switch (pkType)
             {
-                long? castPKValue;
-                if (primaryKeyValue == null)
-                {
-                    castPKValue = null;
-                }
-                else
-                {
-                    castPKValue = Convert.ToInt64(primaryKeyValue);
-                }
+                case PKType.Int:
+                    long? castPKValue;
+                    if (primaryKeyValue == null)
+                    {
+                        castPKValue = null;
+                    }
+                    else
+                    {
+                        castPKValue = Convert.ToInt64(primaryKeyValue);
+                    }
 
-                return _realm.DynamicApi.Find(type.Name, castPKValue);
+                    return _realm.DynamicApi.Find(type.Name, castPKValue);
+
+                case PKType.String:
+                    return _realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
+
+                case PKType.ObjectId:
+                    return _realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
+
+                default:
+                    throw new NotSupportedException($"Unsupported pk type: {pkType}");
             }
-
-            return _realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
         }
 
-        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
-        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
-        public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        [TestCaseSource(nameof(PKTestCases))]
+        public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, PKType pkType)
         {
             var obj = (RealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
@@ -205,59 +153,37 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(obj));
 
-            var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
+            var foundObj = FindByPKGeneric(type, primaryKeyValue, pkType);
 
             Assert.That(foundObj, Is.Not.Null);
             Assert.That(pkProperty.GetValue(foundObj), Is.EqualTo(primaryKeyValue));
         }
 
-        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
-        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
-        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
-        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
-        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
-        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
-        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
-        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(PrimaryKeyStringObject), null, false)]
-        [TestCase(typeof(PrimaryKeyStringObject), "", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "key", false)]
-        [TestCase(typeof(RequiredPrimaryKeyStringObject), "", false)]
-        public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        [TestCaseSource(nameof(PKTestCases))]
+        public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, PKType pkType)
         {
-            var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
+            var foundObj = FindByPKGeneric(type, primaryKeyValue, pkType);
             Assert.That(foundObj, Is.Null);
         }
 
-        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
+        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
-            var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
+            var genericArgument = pkType switch
+            {
+                PKType.Int => typeof(long?),
+                PKType.String => typeof(string),
+                PKType.ObjectId => typeof(ObjectId?),
+                _ => throw new NotSupportedException()
+            };
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
 
-            object castPKValue;
-            if (isIntegerPK)
+            object castPKValue = pkType switch
             {
-                if (primaryKeyValue == null)
-                {
-                    castPKValue = (long?)null;
-                }
-                else
-                {
-                    castPKValue = Convert.ToInt64(primaryKeyValue);
-                }
-            }
-            else
-            {
-                castPKValue = (string)primaryKeyValue;
-            }
+                PKType.Int => primaryKeyValue == null ? (long?)null : Convert.ToInt64(primaryKeyValue),
+                PKType.String => (string)primaryKeyValue,
+                PKType.ObjectId => (ObjectId?)primaryKeyValue,
+                _ => throw new NotSupportedException(),
+            };
 
             return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
         }
