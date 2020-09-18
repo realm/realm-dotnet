@@ -241,7 +241,7 @@ extern "C" {
                 break;
             }
             case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
-                object.obj().set(column_key, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>(none));
+                object.obj().set(column_key, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
                 break;
             }
             default:

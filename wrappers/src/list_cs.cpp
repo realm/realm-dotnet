@@ -116,6 +116,18 @@ REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeEx
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 list.add(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
                 break;
+            case realm::PropertyType::Decimal:
+                list.add(realm::Decimal128(value.value.decimal_bits));
+                break;
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+                list.add(value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
+                break;
+            case realm::PropertyType::ObjectId:
+                list.add(to_object_id(value));
+                break;
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+                list.add(value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
+                break;
             default:
                 REALM_UNREACHABLE();
         }
@@ -171,31 +183,43 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
                 list.set(list_ndx, value.value.bool_value);
                 break;
             case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>());
                 break;
             case realm::PropertyType::Int:
                 list.set(list_ndx, value.value.int_value);
                 break;
             case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>());
                 break;
             case realm::PropertyType::Float:
                 list.set(list_ndx, value.value.float_value);
                 break;
             case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>());
                 break;
             case realm::PropertyType::Double:
                 list.set(list_ndx, value.value.double_value);
                 break;
             case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
+                list.set(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>());
                 break;
             case realm::PropertyType::Date:
                 list.set(list_ndx, from_ticks(value.value.int_value));
                 break;
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 list.set(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            case realm::PropertyType::Decimal:
+                list.set(list_ndx, realm::Decimal128(value.value.decimal_bits));
+                break;
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+                list.set(list_ndx, value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
+                break;
+            case realm::PropertyType::ObjectId:
+                list.set(list_ndx, to_object_id(value));
+                break;
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+                list.set(list_ndx, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
                 break;
             default:
                 REALM_UNREACHABLE();
@@ -282,6 +306,18 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveVa
                 break;
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 list.insert(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+                break;
+            case realm::PropertyType::Decimal:
+                list.insert(list_ndx, realm::Decimal128(value.value.decimal_bits));
+                break;
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+                list.insert(list_ndx, value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
+                break;
+            case realm::PropertyType::ObjectId:
+                list.insert(list_ndx, to_object_id(value));
+                break;
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+                list.insert(list_ndx, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
                 break;
             default:
                 REALM_UNREACHABLE();
@@ -386,6 +422,14 @@ REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, Nativ
                 return list.find(from_ticks(value.value.int_value));
             case realm::PropertyType::Date | realm::PropertyType::Nullable:
                 return list.find(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
+            case realm::PropertyType::Decimal:
+                return list.find(realm::Decimal128(value.value.decimal_bits));
+            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+                return list.find(value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
+            case realm::PropertyType::ObjectId:
+                return list.find(to_object_id(value));
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+                return list.find(value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
             default:
                 REALM_UNREACHABLE();
         }
