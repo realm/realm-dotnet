@@ -78,6 +78,8 @@ include(CompilerFlags)
 set(REALM_ENABLE_SYNC ON)
 
 if(APPLE)
+  set(CMAKE_XCODE_ATTRIBUTE_VALID_ARCHS[sdk=iphonesimulator*] "i386 x86_64")
+
   find_package(Threads)
   if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(platform ios)
