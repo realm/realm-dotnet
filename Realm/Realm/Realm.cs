@@ -279,7 +279,7 @@ namespace Realms
 
         private RealmObjectBase.Metadata CreateRealmObjectMetadata(ObjectSchema schema)
         {
-            var (tableHandle, columnKeys) = SharedRealmHandle.GetTableInfo(schema.Name, schema.Count(p => !p.Type.IsComputed()));
+            var tableHandle = SharedRealmHandle.GetTable(schema.Name);
             Weaving.IRealmObjectHelper helper;
 
             if (schema.Type != null && !Config.IsDynamic)
@@ -297,24 +297,19 @@ namespace Realms
                 helper = DynamicRealmObjectHelper.Instance(schema.IsEmbedded);
             }
 
-            var columnKeysDict = new Dictionary<string, ColumnKey>(schema.Count);
-            var computedProperiesMap = new Dictionary<string, IntPtr>();
+            var initPropertyMap = new Dictionary<string, IntPtr>(schema.Count);
+            var persistedProperties = -1;
+            var computedProperties = -1;
 
             // We're taking advantage of the fact OS keeps property indices aligned
             // with the property indices in ObjectSchema
             foreach (var prop in schema)
             {
-                if (prop.Type.IsComputed())
-                {
-                    computedProperiesMap[prop.Name] = (IntPtr)computedProperiesMap.Count;
-                }
-                else
-                {
-                    columnKeysDict[prop.Name] = columnKeys[columnKeysDict.Count];
-                }
+                var index = prop.Type.IsComputed() ? ++computedProperties : ++persistedProperties;
+                initPropertyMap[prop.Name] = (IntPtr)index;
             }
 
-            return new RealmObjectBase.Metadata(tableHandle, helper, columnKeysDict, computedProperiesMap, schema);
+            return new RealmObjectBase.Metadata(tableHandle, helper, initPropertyMap, schema);
         }
 
         /// <summary>
@@ -1278,7 +1273,7 @@ namespace Realms
                 Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
-                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.ColumnKeys[propertyName]);
+                var handle = parent.ObjectHandle.CreateEmbeddedObjectForProperty(parent.ObjectMetadata.PropertyIndices[propertyName]);
 
                 obj.SetOwner(_realm, handle, metadata);
                 obj.OnManaged();

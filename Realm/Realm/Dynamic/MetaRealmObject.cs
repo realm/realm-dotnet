@@ -66,13 +66,13 @@ namespace Realms.Dynamic
             MethodInfo getter = null;
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                arguments.Add(Expression.Constant(_metadata.ComputedProperties[property.Name]));
+                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 getter = GetGetMethod(DummyHandle.GetBacklinks);
             }
             else if (property.Type.IsArray())
             {
                 arguments.Add(Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
-                arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
+                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 switch (property.Type.UnderlyingType())
                 {
@@ -144,7 +144,7 @@ namespace Realms.Dynamic
             }
             else
             {
-                arguments.Add(Expression.Constant(_metadata.ColumnKeys[property.Name]));
+                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 switch (property.Type.UnderlyingType())
                 {
                     case PropertyType.Int:
@@ -186,7 +186,6 @@ namespace Realms.Dynamic
                 else
                 {
                     expression = Expression.Call(self, RealmObjectGetBacklinksForHandle_RealmObject, Expression.Constant(binder.Name), expression);
-
                 }
             }
 
@@ -214,7 +213,7 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                Expression.Constant(_metadata.ColumnKeys[property.Name])
+                Expression.Constant(_metadata.PropertyIndices[property.Name])
             };
 
             MethodInfo setter = null;
@@ -306,24 +305,22 @@ namespace Realms.Dynamic
             return metadata.Schema.IsEmbedded;
         }
 
-        // GetString(colKey)
-        // GetByteArray(colKey)
-        private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, TResult> @delegate) => @delegate.GetMethodInfo();
-
-        // GetPrimitive(colKey, propertyType)
-        private static MethodInfo GetGetMethod<TResult>(Func<ColumnKey, PropertyType, TResult> @delegate) => @delegate.GetMethodInfo();
-
+        // GetString(propertyIndex)
+        // GetByteArray(propertyIndex)
         // GetBacklinks(propertyIndex)
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        // GetList(realm, colKey, objectType)
-        // GetObject(realm, colKey, objectType)
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, ColumnKey, string, TResult> @delegate) => @delegate.GetMethodInfo();
+        // GetPrimitive(propertyIndex, propertyType)
+        private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, PropertyType, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        // SetXXX(colKey)
-        private static MethodInfo GetSetMethod<TValue>(Action<ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
+        // GetList(realm, propertyIndex, objectType)
+        // GetObject(realm, propertyIndex, objectType)
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        // SetObject(this, colKey)
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, ColumnKey, TValue> @delegate) => @delegate.GetMethodInfo();
+        // SetXXX(propertyIndex)
+        private static MethodInfo GetSetMethod<TValue>(Action<IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
+
+        // SetObject(this, propertyIndex)
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }

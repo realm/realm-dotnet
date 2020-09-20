@@ -18,15 +18,11 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Native;
 
 namespace Realms
 {
     internal class SortDescriptorHandle : RealmHandle
     {
-        // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
-        internal delegate void Operation<T>(QueryHandle queryPtr, ColumnKey columnKey, T value);
-
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_destroy", CallingConvention = CallingConvention.Cdecl)]
@@ -34,7 +30,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sort_descriptor_add_clause", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_clause(SortDescriptorHandle descriptor, TableHandle query, SharedRealmHandle realm,
-                [MarshalAs(UnmanagedType.LPArray), In] ColumnKey[] column_key_chain, IntPtr column_keys_count,
+                [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_index_chain, IntPtr column_keys_count,
                 [MarshalAs(UnmanagedType.U1)] bool ascending,
                 out NativeException ex);
         }
@@ -43,9 +39,9 @@ namespace Realms
         {
         }
 
-        public void AddClause(TableHandle table, SharedRealmHandle realm, ColumnKey[] columnKeyChain, bool ascending)
+        public void AddClause(TableHandle table, SharedRealmHandle realm, IntPtr[] propertyIndexChain, bool ascending)
         {
-            NativeMethods.add_clause(this, table, realm, columnKeyChain, (IntPtr)columnKeyChain.Length, ascending, out var nativeException);
+            NativeMethods.add_clause(this, table, realm, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

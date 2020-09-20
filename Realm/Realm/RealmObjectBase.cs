@@ -210,14 +210,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetString(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetString(_metadata.PropertyIndices[propertyName]);
         }
 
         protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetPrimitive(_metadata.ColumnKeys[propertyName], propertyType).Get<T>();
+            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName], propertyType).Get<T>();
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -225,7 +225,7 @@ namespace Realms
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetList<T>(_realm, _metadata.ColumnKeys[propertyName], property.ObjectType);
+            return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
@@ -234,7 +234,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            if (_objectHandle.TryGetLink(_metadata.ColumnKeys[propertyName], out var objectHandle))
+            if (_objectHandle.TryGetLink(_metadata.PropertyIndices[propertyName], out var objectHandle))
             {
                 _metadata.Schema.TryFindProperty(propertyName, out var property);
                 return (T)_realm.MakeObject(_realm.Metadata[property.ObjectType], objectHandle);
@@ -247,7 +247,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetByteArray(_metadata.ColumnKeys[propertyName]);
+            return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -255,7 +255,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var resultsHandle = _objectHandle.GetBacklinks(_metadata.ComputedProperties[propertyName]);
+            var resultsHandle = _objectHandle.GetBacklinks(_metadata.PropertyIndices[propertyName]);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
@@ -271,20 +271,20 @@ namespace Realms
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
-            var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.Int).ToIntegral<T>();
-            return new RealmInteger<T>(result, ObjectHandle, columnKey);
+            var propertyIndex = _metadata.PropertyIndices[propertyName];
+            var result = _objectHandle.GetPrimitive(propertyIndex, PropertyType.Int).ToIntegral<T>();
+            return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
         }
 
         protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
             where T : struct, IFormattable, IComparable<T>
         {
-            var columnKey = _metadata.ColumnKeys[propertyName];
-            var result = _objectHandle.GetPrimitive(columnKey, PropertyType.NullableInt).ToNullableIntegral<T?>();
+            var propertyIndex = _metadata.PropertyIndices[propertyName];
+            var result = _objectHandle.GetPrimitive(propertyIndex, PropertyType.NullableInt).ToNullableIntegral<T?>();
 
             if (result.HasValue)
             {
-                return new RealmInteger<T>(result.Value, ObjectHandle, columnKey);
+                return new RealmInteger<T>(result.Value, ObjectHandle, propertyIndex);
             }
 
             return null;
@@ -298,28 +298,28 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, propertyType));
+            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType));
         }
 
         protected void SetPrimitiveValueUnique<T>(string propertyName, T value, PropertyType propertyType)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Create(value, propertyType));
+            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType));
         }
 
         protected void SetStringValue(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetString(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetStringValueUnique(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetStringUnique(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetStringUnique(_metadata.PropertyIndices[propertyName], value);
         }
 
         // Originally a generic fallback, now used only for RealmObjectBase To-One relationship properties
@@ -329,14 +329,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetObject(this.Realm, _metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetObject(Realm, _metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetByteArray(_metadata.ColumnKeys[propertyName], value);
+            _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
@@ -344,7 +344,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
+            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
@@ -352,7 +352,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
+            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
         }
 
         protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
@@ -360,7 +360,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.Int(value.ToLong()));
+            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Int(value.ToLong()));
         }
 
         protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
@@ -368,7 +368,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.ColumnKeys[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
+            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
         }
 
         #endregion
@@ -384,9 +384,9 @@ namespace Realms
         public IQueryable<dynamic> GetBacklinks(string objectType, string property)
         {
             Argument.Ensure(Realm.Metadata.TryGetValue(objectType, out var relatedMeta), $"Could not find schema for type {objectType}", nameof(objectType));
-            Argument.Ensure(relatedMeta.ColumnKeys.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
+            Argument.Ensure(relatedMeta.PropertyIndices.ContainsKey(property), $"Type {objectType} does not contain property {property}", nameof(property));
 
-            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.ColumnKeys[property]);
+            var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
             if (relatedMeta.Schema.IsEmbedded)
             {
                 return new RealmResults<EmbeddedObject>(Realm, relatedMeta, resultsHandle);
@@ -569,19 +569,15 @@ namespace Realms
 
             internal readonly IRealmObjectHelper Helper;
 
-            internal readonly IReadOnlyDictionary<string, ColumnKey> ColumnKeys;
-
-            internal readonly IReadOnlyDictionary<string, IntPtr> ComputedProperties;
+            internal readonly IReadOnlyDictionary<string, IntPtr> PropertyIndices;
 
             internal readonly ObjectSchema Schema;
 
-
-            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, ColumnKey> columnKeys, IDictionary<string, IntPtr> computedProperties, ObjectSchema schema)
+            public Metadata(TableHandle table, IRealmObjectHelper helper, IDictionary<string, IntPtr> propertyIndices, ObjectSchema schema)
             {
                 Table = table;
                 Helper = helper;
-                ColumnKeys = new ReadOnlyDictionary<string, ColumnKey>(columnKeys);
-                ComputedProperties = new ReadOnlyDictionary<string, IntPtr>(computedProperties);
+                PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
                 Schema = schema;
             }
         }
