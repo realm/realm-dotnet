@@ -37,7 +37,7 @@ namespace Realms
         private delegate void release_context(IntPtr context);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.I1)]
+        [return: MarshalAs(UnmanagedType.U1)]
         private delegate bool is_on_context(IntPtr context, IntPtr targetContext);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_scheduler_invoke_function", CallingConvention = CallingConvention.Cdecl)]

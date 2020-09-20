@@ -81,7 +81,7 @@ namespace Realms.Sync
             public static extern unsafe void configure([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_length,
                                                        [MarshalAs(UnmanagedType.LPWStr)] string user_agent, IntPtr user_agent_length,
                                                        UserPersistenceMode* userPersistence, byte[] encryptionKey,
-                                                       [MarshalAs(UnmanagedType.I1)] bool resetMetadataOnError,
+                                                       [MarshalAs(UnmanagedType.U1)] bool resetMetadataOnError,
                                                        out NativeException exception);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_install_syncmanager_callbacks", CallingConvention = CallingConvention.Cdecl)]
@@ -94,7 +94,7 @@ namespace Realms.Sync
             public static extern IntPtr get_path_for_realm(SyncUserHandle user, [MarshalAs(UnmanagedType.LPWStr)] string url, IntPtr url_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_immediately_run_file_actions", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool immediately_run_file_actions([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr path_len, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncmanager_reconnect", CallingConvention = CallingConvention.Cdecl)]

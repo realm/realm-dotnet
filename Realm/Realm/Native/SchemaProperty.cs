@@ -37,10 +37,10 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.LPStr)]
         internal string link_origin_property_name;
 
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool is_primary;
 
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool is_indexed;
     }
 }
