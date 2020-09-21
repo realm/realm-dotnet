@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Sync;
@@ -28,36 +27,13 @@ namespace Realms.Tests.Sync
     public abstract class SyncTestBase : RealmTest
     {
         private readonly List<Session> _sessions = new List<Session>();
+        private readonly List<App> _apps = new List<App>();
 
-        protected override void CustomSetUp()
+        protected App CreateApp(AppConfiguration config)
         {
-            base.CustomSetUp();
-
-            var defaultFolder = InteropConfig.DefaultStorageFolder;
-            if (TestHelpers.IsWindows)
-            {
-                // We do this to reduce the length of the folders in Windows
-                var testsIndex = defaultFolder.IndexOf("\\Tests\\");
-                var docsIndex = defaultFolder.IndexOf("\\Documents") + 1;
-
-                if (testsIndex > -1 && docsIndex > testsIndex)
-                {
-                    defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
-                                        .Replace("\\Documents", "\\D");
-
-                    Directory.CreateDirectory(defaultFolder);
-                }
-            }
-
-            if (TestHelpers.IsMacOS)
-            {
-                // VS for Mac hangs when Realm files are written in a location it doesn't ignore.
-                defaultFolder = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Documents");
-                Directory.CreateDirectory(defaultFolder);
-            }
-
-            SyncConfiguration.UserAgent = GetType().Name;
-            SyncConfiguration.Initialize(UserPersistenceMode.NotEncrypted, null, false, defaultFolder);
+            var app = App.Create(config);
+            _apps.Add(app);
+            return app;
         }
 
         protected override void CustomTearDown()
@@ -67,6 +43,11 @@ namespace Realms.Tests.Sync
             foreach (var session in _sessions)
             {
                 session?.CloseHandle();
+            }
+
+            foreach (var app in _apps)
+            {
+                app.AppHandle.ResetForTesting();
             }
         }
 

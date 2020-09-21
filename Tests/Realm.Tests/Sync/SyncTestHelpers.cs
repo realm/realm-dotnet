@@ -28,44 +28,36 @@ namespace Realms.Tests.Sync
 {
     public static class SyncTestHelpers
     {
-        public const string FakeRosUrl = "some.fake.server:9080";
+        private static AppConfiguration _baseConfig;
 
-        public static Credentials CreateCredentials()
-        {
-            return Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a", createUser: true);
-        }
+        public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig.AppId) { BaseUri = _baseConfig.BaseUri };
 
-        public static Credentials AdminCredentials()
+        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
-            return Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, createUser: false);
-        }
-
-        public static void RunRosTestAsync(Func<Task> testFunc, int timeout = 30000)
-        {
-            if (Constants.RosUrl == null)
+            if (_baseConfig == null)
             {
-                Assert.Ignore("ROS is not setup.");
+                Assert.Ignore("MongoDB Realm is not setup.");
             }
 
             TestHelpers.RunAsyncTest(testFunc, timeout);
         }
 
-        public static string[] ExtractRosSettings(string[] args)
+        public static string[] ExtractBaasSettings(string[] args)
         {
             var result = new List<string>();
+
+            string baasUrl = null;
+            string baasAppId = null;
 
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--ros":
-                        Constants.RosUrl = args[++i];
+                    case "--baasurl":
+                        baasUrl = args[++i];
                         break;
-                    case "--rosport":
-                        Constants.RosPort = args[++i];
-                        break;
-                    case "--rossecureport":
-                        Constants.RosSecurePort = args[++i];
+                    case "--baasappid":
+                        baasAppId = args[++i];
                         break;
                     default:
                         result.Add(args[i]);
@@ -73,45 +65,45 @@ namespace Realms.Tests.Sync
                 }
             }
 
+            if (baasUrl != null && baasAppId != null)
+            {
+                _baseConfig = new AppConfiguration(baasAppId)
+                {
+                    BaseUri = new Uri(baasUrl),
+                };
+            }
+
             return result.ToArray();
         }
 
-        public static Uri AuthServerUri => new Uri($"http://{Constants.RosUrl}:{Constants.RosPort}");
-
-        public static Uri RealmUri(string path) => new Uri($"realm://{Constants.RosUrl}:{Constants.RosPort}/{path.TrimStart('/')}");
-
-        public static Uri SecureRealmUri(string path) => new Uri($"realms://{Constants.RosUrl}:{Constants.RosSecurePort}/{path.TrimStart('/')}");
-
         public static Task<User> GetUserAsync()
         {
-            var credentials = CreateCredentials();
-            return User.LoginAsync(credentials, AuthServerUri);
-        }
-
-        public static Task<User> GetAdminUserAsync()
-        {
-            var credentials = AdminCredentials();
-            return User.LoginAsync(credentials, AuthServerUri);
+            throw new NotImplementedException();
+            //var credentials = CreateCredentials();
+            //return User.LoginAsync(credentials, AuthServerUri);
         }
 
         public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
-            var user = await GetFakeUserAsync(userId);
-            var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
-            return new SyncConfiguration(serverUri, user, optionalPath);
+            throw new NotImplementedException();
+
+            //var user = await GetFakeUserAsync(userId);
+            //var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
+            //return new SyncConfiguration(serverUri, user, optionalPath);
         }
 
         public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
         {
-            // V10TODO: find another way to get fake users
+            throw new NotImplementedException();
+
             // var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty);
-            return Task.FromResult(new User(null));
+            // return Task.FromResult(new User(null));
         }
 
-        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string path)
+        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition)
         {
             var user = await GetUserAsync();
-            return new SyncConfiguration(RealmUri($"~/{path}"), user);
+            return new SyncConfiguration(partition, user);
         }
 
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)

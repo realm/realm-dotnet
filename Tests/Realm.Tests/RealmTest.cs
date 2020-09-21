@@ -33,7 +33,7 @@ namespace Realms.Tests
 
         static RealmTest()
         {
-            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"realm-tests-${System.Diagnostics.Process.GetCurrentProcess().Id}");
+            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"rt-${System.Diagnostics.Process.GetCurrentProcess().Id}");
             Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
         }
 
@@ -68,7 +68,6 @@ namespace Realms.Tests
             {
                 CustomTearDown();
 
-                Realms.Sync.SharedRealmHandleExtensions.ResetForTesting();
                 _isSetup = false;
                 Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             }

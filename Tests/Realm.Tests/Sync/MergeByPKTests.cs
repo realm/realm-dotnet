@@ -22,7 +22,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
-using Realms.Sync;
 using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
@@ -34,7 +33,7 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(MergeTestCases))]
         public void WhenObjectHasPK_ShouldNotCreateDuplicates(Type objectType, object pkValue, Func<dynamic, bool> pkValueChecker)
         {
-            SyncTestHelpers.RunRosTestAsync(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var pkProperty = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                            .Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
@@ -101,16 +100,17 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetSyncedRealm(Type objectType)
         {
-            var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
-            var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
-            var configuration = new SyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
-            {
-                ObjectClasses = new[] { objectType }
-            };
+            throw new NotImplementedException();
+            //var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
+            //var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
+            //var configuration = new SyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
+            //{
+            //    ObjectClasses = new[] { objectType }
+            //};
 
-            Realm.DeleteRealm(configuration);
+            //Realm.DeleteRealm(configuration);
 
-            return GetRealm(configuration);
+            //return GetRealm(configuration);
         }
     }
 }

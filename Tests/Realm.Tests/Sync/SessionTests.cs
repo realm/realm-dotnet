@@ -17,15 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-using TestExplicitAttribute = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Sync
 {
@@ -41,8 +38,7 @@ namespace Realms.Tests.Sync
             TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var serverUri = new Uri("realm://localhost:9080/foobar");
-                var config = new SyncConfiguration(serverUri, user);
+                var config = new SyncConfiguration("foo-bar", user);
 
                 using (var realm = GetRealm(config))
                 {
@@ -135,77 +131,13 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, TestExplicit("Fails with obscure error.")]
-        public void Session_Error_WhenInvalidRefreshToken()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var errors = new List<Exception>();
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                using (var realm = GetRealm(config))
-                {
-                    EventHandler<Realms.ErrorEventArgs> handler = null;
-                    handler = new EventHandler<Realms.ErrorEventArgs>((sender, e) =>
-                    {
-                        errors.Add(e.Exception);
-                        CleanupOnTearDown((Session)sender);
-                    });
-
-                    Session.Error += handler;
-
-                    while (!errors.Any())
-                    {
-                        await Task.Yield();
-                    }
-
-                    Session.Error -= handler;
-
-                    var authErrors = errors.OfType<HttpException>().ToArray();
-                    Assert.That(authErrors.Count, Is.EqualTo(1));
-                    Assert.That(authErrors[0].ErrorCode, Is.EqualTo(ErrorCode.InvalidCredentials));
-                }
-            });
-        }
-
-        [Test, TestExplicit("Fails with obscure error.")]
-        public void Session_Error_WhenInvalidAccessToken()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var errors = new List<Exception>();
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                using (var realm = GetRealm(config))
-                {
-                    EventHandler<ErrorEventArgs> handler = null;
-                    handler = new EventHandler<ErrorEventArgs>((sender, e) =>
-                    {
-                        errors.Add(e.Exception);
-                        CleanupOnTearDown((Session)sender);
-                    });
-
-                    Session.Error += handler;
-
-                    while (!errors.Any())
-                    {
-                        await Task.Yield();
-                    }
-
-                    Session.Error -= handler;
-
-                    var sessionErrors = errors.OfType<SessionException>().ToArray();
-                    Assert.That(sessionErrors.Count, Is.EqualTo(1));
-                    Assert.That(sessionErrors[0].ErrorCode, Is.EqualTo(ErrorCode.BadUserAuthentication));
-                }
-            });
-        }
-
         [TestCase(ProgressMode.ForCurrentlyOutstandingWork)]
         [TestCase(ProgressMode.ReportIndefinitely)]
         public void Session_ProgressObservable_IntegrationTests(ProgressMode mode)
         {
             const int ObjectSize = 1000000;
             const int ObjectsToRecord = 2;
-            SyncTestHelpers.RunRosTestAsync(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await SyncTestHelpers.GetIntegrationConfigAsync("progress");
                 var realm = GetRealm(config);

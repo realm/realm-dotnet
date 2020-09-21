@@ -93,7 +93,7 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
 {
     s_session_error_callback = session_error_callback;
     s_progress_callback = progress_callback;

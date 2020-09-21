@@ -23,48 +23,59 @@
 #include "sync/sync_manager.hpp"
 #include "sync/sync_user.hpp"
 #include "sync/sync_session.hpp"
+#include "sync/app.hpp"
 
 using namespace realm;
 using namespace realm::binding;
+using namespace app;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 extern "C" {
+    REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&] {
+            user->log_out();
+        });
+    }
 
-REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&] {
-        user->log_out();
-    });
-}
+    REALM_EXPORT size_t realm_syncuser_get_id(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            std::string identity(user->identity());
+            return stringdata_to_csharpstringbuffer(identity, buffer, buffer_length);
+        });
+    }
 
-REALM_EXPORT size_t realm_syncuser_get_identity(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        std::string identity(user->identity());
-        return stringdata_to_csharpstringbuffer(identity, buffer, buffer_length);
-    });
-}
+    REALM_EXPORT size_t realm_syncuser_get_refresh_token(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            std::string refresh_token(user->refresh_token());
+            return stringdata_to_csharpstringbuffer(refresh_token, buffer, buffer_length);
+        });
+    }
 
-REALM_EXPORT size_t realm_syncuser_get_refresh_token(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        std::string refresh_token(user->refresh_token());
-        return stringdata_to_csharpstringbuffer(refresh_token, buffer, buffer_length);
-    });
-}
+    REALM_EXPORT SyncUser::State realm_syncuser_get_state(SharedSyncUser& user, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            return user->state();
+        });
+    }
 
-REALM_EXPORT SyncUser::State realm_syncuser_get_state(SharedSyncUser& user, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        return user->state();
-    });
-}
+    REALM_EXPORT SharedApp* realm_syncuser_get_app(SharedSyncUser& user, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            if (auto shared_app = user->sync_manager()->app().lock()) {
+                return new SharedApp(shared_app);
+            }
 
-REALM_EXPORT void realm_syncuser_destroy(SharedSyncUser* user)
-{
-    delete user;
-}
+            return (SharedApp*)nullptr;
+        });
+    }
 
+    REALM_EXPORT void realm_syncuser_destroy(SharedSyncUser* user)
+    {
+        delete user;
+    }
 }

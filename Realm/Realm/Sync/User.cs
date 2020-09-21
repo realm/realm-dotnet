@@ -18,10 +18,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
-using Realms.Exceptions;
-using Realms.Helpers;
 
 namespace Realms.Sync
 {
@@ -32,64 +29,6 @@ namespace Realms.Sync
     /// </summary>
     public class User : IEquatable<User>
     {
-        #region static
-
-        /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned.
-        /// If more than one user is currently logged in, an exception is thrown.
-        /// </summary>
-        /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        /// <exception cref="RealmException">Thrown if there are more than one users logged in.</exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public static User Current
-        {
-            get
-            {
-                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-                if (SyncUserHandle.TryGetCurrentUser(out var userHandle))
-                {
-                    return new User(userHandle);
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets all currently logged in users.
-        /// </summary>
-        /// <value>An array of valid logged in users.</value>
-        public static User[] AllLoggedIn
-        {
-            get
-            {
-                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-                return SyncUserHandle.GetAllLoggedInUsers()
-                                     .Select(handle => new User(handle))
-                                     .ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Logs the user in to the Realm Object Server.
-        /// </summary>
-        /// <param name="credentials">The credentials to use for authentication.</param>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
-        public static async Task<User> LoginAsync(Credentials credentials, Uri serverUri)
-        {
-            Argument.NotNull(credentials, nameof(credentials));
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.Ensure(serverUri.Scheme.StartsWith("http"), "Unexpected protocol for login url. Expected http:// or https://.", nameof(serverUri));
-
-            // V10TODO: do the native login
-            return new User(null);
-        }
-
-        #endregion static
-
         /// <summary>
         /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
         /// </summary>
@@ -103,7 +42,7 @@ namespace Realms.Sync
         /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
         /// </summary>
         /// <value>A string that uniquely identifies that user in Realm Object Server.</value>
-        public string Identity => Handle.GetIdentity();
+        public string Id => Handle.GetUserId();
 
         /// <summary>
         /// Gets the current state of the user.
@@ -111,10 +50,23 @@ namespace Realms.Sync
         /// <value>A value indicating whether the user is active, logged out, or an error has occurred.</value>
         public UserState State => Handle.GetState();
 
+        /// <summary>
+        /// Gets the app with which this user is associated.
+        /// </summary>
+        /// <value>An <see cref="App"/> instance that owns this user.</value>
+        public App App { get; }
+
         internal readonly SyncUserHandle Handle;
 
-        internal User(SyncUserHandle handle)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
+        internal User(SyncUserHandle handle, App app = null)
         {
+            if (app == null && handle.TryGetApp(out var appHandle))
+            {
+                app = new App(appHandle);
+            }
+
+            App = app;
             Handle = handle;
         }
 
@@ -143,13 +95,13 @@ namespace Realms.Sync
         /// <returns>true if the two instances are equal; false otherwise.</returns>
         public bool Equals(User other)
         {
-            return Identity.Equals(other?.Identity);
+            return Id.Equals(other?.Id);
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Identity.GetHashCode();
+            return Id.GetHashCode();
         }
     }
 }

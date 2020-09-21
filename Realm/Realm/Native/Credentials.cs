@@ -16,24 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Framework;
-using Realms.Sync;
+using System;
+using System.Runtime.InteropServices;
+using static Realms.Sync.Credentials;
 
-namespace Realms.Tests.Sync
+namespace Realms.Sync.Native
 {
-    [TestFixture, Preserve(AllMembers = true)]
-    [Ignore("V10TODO: Enable when sync API are wired up.")]
-    public class MetadataTests : RealmTest
+    internal struct Credentials
     {
-        [Test]
-        public void Metadata_WhenAccessed_ShouldWork()
+        internal AuthProvider provider;
+
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string token;
+        private IntPtr token_len;
+
+        internal string Token
         {
-            Assert.That(SharedRealmHandleExtensions.IsMetadataConfigured, Is.False);
+            set
+            {
+                token = value;
+                token_len = (IntPtr)value.Length;
+            }
+        }
 
-            var users = User.AllLoggedIn;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string password;
+        private IntPtr password_len;
 
-            Assert.That(SharedRealmHandleExtensions.IsMetadataConfigured, Is.True);
-            Assert.That(users, Is.Empty);
+        internal string Password
+        {
+            set
+            {
+                password = value;
+                password_len = (IntPtr)value.Length;
+            }
         }
     }
 }

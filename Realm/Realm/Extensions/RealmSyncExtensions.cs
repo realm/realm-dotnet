@@ -38,9 +38,11 @@ namespace Realms.Sync
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
-            Argument.Ensure(realm.Config is SyncConfiguration, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
+            var syncConfig = Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
-            return new Session(realm.Config.DatabasePath);
+            var app = syncConfig.User.App;
+            var session = app.AppHandle.GetSessionForPath(realm.SharedRealmHandle);
+            return new Session(session);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,18 +19,24 @@
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object containing information about an account associated with a user.
+    /// Enumeration that specifies how and if logged-in <see cref="User"/> objects are persisted
+    /// across application launches.
     /// </summary>
-    public class AccountInfo
+    public enum MetadataPersistenceMode
     {
         /// <summary>
-        /// Gets the provider that manages this user account.
+        /// Persist <see cref="User"/> objects, but do not encrypt them.
         /// </summary>
-        public string Provider { get; internal set; }
+        NotEncrypted = 0,
 
         /// <summary>
-        /// Gets the user account's identity in the provider's system.
+        /// Persist <see cref="User"/> objects in an encrypted store.
         /// </summary>
-        public string ProviderUserIdentity { get; internal set; }
+        Encrypted,
+
+        /// <summary>
+        /// Do not persist <see cref="User"/> objects.
+        /// </summary>
+        Disabled
     }
 }

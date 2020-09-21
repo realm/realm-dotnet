@@ -53,16 +53,7 @@ namespace Realms
 
             try
             {
-                var specialFolderType = typeof(Environment).GetNestedType("SpecialFolder", BindingFlags.Public);
-                if (specialFolderType != null)
-                {
-                    var getFolderPath = typeof(Environment).GetMethod("GetFolderPath", new[] { specialFolderType });
-                    if (getFolderPath != null)
-                    {
-                        var personalField = specialFolderType.GetField("Personal");
-                        return (string)getFolderPath.Invoke(null, new[] { personalField.GetValue(null) });
-                    }
-                }
+                return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             }
             catch
             {

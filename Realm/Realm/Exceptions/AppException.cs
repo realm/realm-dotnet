@@ -16,15 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Tests.Sync
-{
-    public static class Constants
-    {
-        public const string AdminUsername = "realm-admin";
-        public const string AdminPassword = "";
+using System;
 
-        public static string RosUrl;
-        public static string RosPort;
-        public static string RosSecurePort;
+namespace Realms.Exceptions
+{
+    public class AppException : Exception
+    {
+        public int ErrorCode { get; }
+
+        public string ErrorCategory { get; }
+
+        internal AppException(string message, string category, int errorCode)
+            : base(message)
+        {
+            ErrorCode = errorCode;
+            ErrorCategory = category;
+        }
     }
 }

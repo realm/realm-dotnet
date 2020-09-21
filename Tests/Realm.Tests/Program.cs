@@ -27,7 +27,7 @@ namespace Realms.Tests
         public static int Main(string[] args)
         {
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            var arguments = Sync.SyncTestHelpers.ExtractRosSettings(args);
+            var arguments = Sync.SyncTestHelpers.ExtractBaasSettings(args);
 
             autorun.Execute(arguments);
 

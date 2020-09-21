@@ -19,10 +19,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
 {
@@ -36,8 +34,7 @@ namespace Realms.Tests.Sync
             TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var serverUri = new Uri("realm://localhost:9080/foobar");
-                var config = new SyncConfiguration(serverUri, user);
+                var config = new SyncConfiguration("foo-bar", user);
 
                 var file = new FileInfo(config.DatabasePath);
                 Assert.That(file.Exists, Is.False);
@@ -57,8 +54,7 @@ namespace Realms.Tests.Sync
             TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var serverUri = new Uri("realm://localhost:9080/foobar");
-                var config = new SyncConfiguration(serverUri, user, "myrealm.realm");
+                var config = new SyncConfiguration("foo-bar", user, "myrealm.realm");
 
                 var file = new FileInfo(config.DatabasePath);
                 Assert.That(file.Exists, Is.False);
@@ -79,10 +75,9 @@ namespace Realms.Tests.Sync
             TestHelpers.RunAsyncTest(async () =>
             {
                 var user = await SyncTestHelpers.GetFakeUserAsync();
-                var serverUri = new Uri("realm://localhost:9080/foobar");
 
                 var path = Path.GetTempFileName();
-                var config = new SyncConfiguration(serverUri, user, path);
+                var config = new SyncConfiguration(123, user, path);
 
                 Realm.DeleteRealm(config);
                 var file = new FileInfo(config.DatabasePath);
@@ -106,7 +101,7 @@ namespace Realms.Tests.Sync
                 var user = await SyncTestHelpers.GetFakeUserAsync();
                 var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
-                var config = new SyncConfiguration(new Uri("realm://foobar"), user)
+                var config = new SyncConfiguration("foo-bar", user)
                 {
                     EncryptionKey = TestHelpers.GetEncryptionKey(key)
                 };
@@ -115,81 +110,22 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCase("http://localhost/~/foo")]
-        [TestCase("https://localhost/~/foo")]
-        [TestCase("foo://bar/~/foo")]
-        public void SyncConfiguration_WrongProtocolTests(string url)
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
-
-                Assert.That(() => new SyncConfiguration(new Uri(url), user), Throws.TypeOf<ArgumentException>());
-            });
-        }
-
-        [Test]
-        public void DefaultConfiguration_WhenNoUserLoggedIn_ShouldThrow()
-        {
-            Assert.That(() => new SyncConfiguration(new Uri("realms://foo/bar")), Throws.TypeOf<ArgumentException>().And.Message.Contains("The user must be explicitly specified when the number of logged-in users is not 1."));
-        }
-
-        [Test]
-        public void DefaultConfiguration_WhenMoreThanOneUserLoggedIn_ShouldThrow()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                await SyncTestHelpers.GetFakeUserAsync();
-                await SyncTestHelpers.GetFakeUserAsync();
-
-                Assert.That(() => new SyncConfiguration(new Uri("realms://foo/bar")), Throws.TypeOf<ArgumentException>().And.Message.Contains("The user must be explicitly specified when the number of logged-in users is not 1."));
-            });
-        }
-
-        [TestCase("http", "realm")]
-        [TestCase("https", "realms")]
-        public void DefaultConfiguration_WhenOneUserLoggedIn_ShouldWork(string userScheme, string realmScheme)
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                await SyncTestHelpers.GetFakeUserAsync(scheme: userScheme);
-
-                var config = new SyncConfiguration(new Uri("/foo", UriKind.Relative));
-                Assert.That(config.ServerUri.Scheme, Is.EqualTo(realmScheme));
-                Assert.That(config.ServerUri.Segments, Is.EqualTo(new[] { "/", "foo" }));
-            });
-        }
-
         [Test]
         public void SyncConfiguration_CanBeSetAsRealmConfigurationDefault()
         {
-            SyncTestHelpers.RunRosTestAsync(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await SyncTestHelpers.GetUserAsync();
 
-                RealmConfiguration.DefaultConfiguration = new SyncConfiguration(new Uri("/foo", UriKind.Relative));
+                RealmConfiguration.DefaultConfiguration = new SyncConfiguration("abc", user);
 
                 using (var realm = GetRealm(null))
                 {
                     Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
                     var syncConfig = (SyncConfiguration)realm.Config;
-                    Assert.That(syncConfig.User.Identity, Is.EqualTo(user.Identity));
-                    Assert.That(syncConfig.ServerUri.Segments, Is.EqualTo(new[] { "/", "foo" }));
+                    Assert.That(syncConfig.User.Id, Is.EqualTo(user.Id));
+                    Assert.That(syncConfig.Partition, Is.EqualTo("abc"));
                 }
-            });
-        }
-
-        [TestCase("bar", "/bar")]
-        [TestCase("/bar", "/bar")]
-        [TestCase("/~/bar", "/~/bar")]
-        [TestCase("~/bar", "/~/bar")]
-        public void SyncConfiguration_WithRelativeUri_ResolvesCorrectly(string path, string expected)
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
-                var syncConfiguration = new SyncConfiguration(new Uri(path, UriKind.Relative), user);
-                Assert.That(syncConfiguration.ServerUri.AbsoluteUri, Is.EqualTo($"realm://{SyncTestHelpers.FakeRosUrl}{expected}"));
             });
         }
 
@@ -197,31 +133,32 @@ namespace Realms.Tests.Sync
         [TestCase(LogLevel.Info)]
         public void SyncConfiguration_LoggerFactory_Test(LogLevel logLevel)
         {
-            SyncTestHelpers.RunRosTestAsync(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var logBuilder = new StringBuilder();
+                throw new NotImplementedException();
+                //var logBuilder = new StringBuilder();
 
-                SyncConfiguration.CustomLogger = (message, level) =>
-                {
-                    logBuilder.AppendLine($"[{level}] {message}");
-                };
-                SyncConfiguration.LogLevel = logLevel;
+                //SyncConfiguration.CustomLogger = (message, level) =>
+                //{
+                //    logBuilder.AppendLine($"[{level}] {message}");
+                //};
+                //SyncConfiguration.LogLevel = logLevel;
 
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using (var realm = await GetRealmAsync(config))
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new Person());
-                    });
+                //var config = await SyncTestHelpers.GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                //using (var realm = await GetRealmAsync(config))
+                //{
+                //    realm.Write(() =>
+                //    {
+                //        realm.Add(new Person());
+                //    });
 
-                    await SyncTestHelpers.WaitForUploadAsync(realm);
-                }
+                //    await SyncTestHelpers.WaitForUploadAsync(realm);
+                //}
 
-                var log = logBuilder.ToString();
+                //var log = logBuilder.ToString();
 
-                Assert.That(log, Does.Contain($"[{logLevel}]"));
-                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
+                //Assert.That(log, Does.Contain($"[{logLevel}]"));
+                //Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
             });
         }
     }
