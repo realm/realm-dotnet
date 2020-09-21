@@ -27,8 +27,8 @@ set(HEADERS
 
 if(REALM_ENABLE_SYNC)
     list(APPEND SOURCES
+        app_cs.cpp
         async_open_task_cs.cpp
-        sync_manager_cs.cpp
         sync_session_cs.cpp
         sync_user_cs.cpp
     )

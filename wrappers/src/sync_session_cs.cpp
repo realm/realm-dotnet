@@ -50,14 +50,6 @@ namespace binding {
 }
 extern "C" {
 
-REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_path(const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        Utf16StringAccessor path(path_buf, path_len);
-        return new SharedSyncSession(SyncManager::shared().get_existing_active_session(path));
-    });
-}
-
 REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
 {
     if (session->user() == nullptr) {
