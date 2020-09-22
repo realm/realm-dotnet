@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -200,12 +198,12 @@ namespace Realms.Sync
 
             if (errorCode.IsClientResetError())
             {
-                var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
+                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
                 exception = new ClientResetException(session.User.App, message, userInfo);
             }
             else if (errorCode == ErrorCode.PermissionDenied)
             {
-                var userInfo = MarshalErrorUserInfo(userInfoPairs, userInfoPairsLength);
+                var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
                 exception = new PermissionDeniedException(session.User.App, message, userInfo);
             }
             else
@@ -214,13 +212,6 @@ namespace Realms.Sync
             }
 
             Session.RaiseError(session, exception);
-        }
-
-        private static Dictionary<string, string> MarshalErrorUserInfo(IntPtr userInfoPairs, int userInfoPairsLength)
-        {
-            return Enumerable.Range(0, userInfoPairsLength)
-                             .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(userInfoPairs, i * StringStringPair.Size)))
-                             .ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]

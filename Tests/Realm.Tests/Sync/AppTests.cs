@@ -46,5 +46,17 @@ namespace Realms.Tests.Sync
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
         }
+
+        [Test]
+        public void App_Login_Anonymous()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+                var app = CreateApp(appConfig);
+
+                var user = await app.LogInAsync(Credentials.Anonymous());
+            });
+        }
     }
 }

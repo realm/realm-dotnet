@@ -31,10 +31,12 @@ if(REALM_ENABLE_SYNC)
         async_open_task_cs.cpp
         sync_session_cs.cpp
         sync_user_cs.cpp
+        transport_cs.cpp
     )
 
     list(APPEND HEADERS
         sync_session_cs.hpp
+        transport_cs.hpp
     )
 endif()
 

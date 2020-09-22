@@ -60,7 +60,7 @@ namespace Realms.Sync
             {
                 AppId = config.AppId,
                 BaseFilePath = config.BaseFilePath ?? InteropConfig.DefaultStorageFolder,
-                BaseUrl = config.BaseUri?.ToString(),
+                BaseUrl = config.BaseUri?.ToString().TrimEnd('/'),
                 LocalAppName = config.LocalAppName,
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,

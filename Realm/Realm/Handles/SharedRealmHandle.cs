@@ -201,7 +201,7 @@ namespace Realms
 
         public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
-            var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
+            var marshaledSchema = new SchemaMarshaler(schema);
 
             var result = NativeMethods.open_with_sync(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -211,7 +211,7 @@ namespace Realms
 
         public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, GCHandle tcsHandle)
         {
-            var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
+            var marshaledSchema = new SchemaMarshaler(schema);
 
             var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
             nativeException.ThrowIfNecessary();

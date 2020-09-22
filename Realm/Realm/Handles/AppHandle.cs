@@ -120,6 +120,8 @@ namespace Realms.Sync
                 platformVersion, (IntPtr)platformVersion.Length,
                 sdkVersion, (IntPtr)sdkVersion.Length,
                 userLogin, logMessage);
+
+            HttpClientTransport.Install();
         }
 
         internal AppHandle(IntPtr handle) : base(null, handle)

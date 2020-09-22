@@ -22,6 +22,7 @@
 #include "realm_export_decls.hpp"
 #include "shared_realm_cs.hpp"
 #include "sync_session_cs.hpp"
+#include "transport_cs.hpp"
 
 #include "sync/sync_manager.hpp"
 #include "sync/app_credentials.hpp"
@@ -178,7 +179,7 @@ extern "C" {
             config.platform = s_platform;
             config.platform_version = s_platform_version;
             config.sdk_version = s_sdk_version;
-            config.transport_generator = nullptr;
+            config.transport_generator = realm::binding::s_transport_factory;
 
             if (app_config.base_url != nullptr) {
                 config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
@@ -294,12 +295,6 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             app->log_in_with_credentials(credentials.to_app_credentials(), [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
-                const char* message = nullptr;
-                size_t message_len = 0;
-
-                const char* category = nullptr;
-                size_t category_len = 0;
-
                 if (app_error) {
                     s_login_callback(
                         task_completion_source, nullptr,

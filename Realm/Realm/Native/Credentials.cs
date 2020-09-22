@@ -35,7 +35,7 @@ namespace Realms.Sync.Native
             set
             {
                 token = value;
-                token_len = (IntPtr)value.Length;
+                token_len = (IntPtr)(value?.Length ?? 0);
             }
         }
 
@@ -48,7 +48,7 @@ namespace Realms.Sync.Native
             set
             {
                 password = value;
-                password_len = (IntPtr)value.Length;
+                password_len = (IntPtr)(value?.Length ?? 0);
             }
         }
     }
