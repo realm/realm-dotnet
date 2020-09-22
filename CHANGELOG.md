@@ -10,6 +10,7 @@
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
 
 ### Internal
 * Using Sync 5.0.23 and Core 6.0.26.
@@ -18,7 +19,7 @@
 ## 5.0.1 (2020-09-10)
 ------------------
 
-NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to version 10 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Studio 3.11](https://github.com/realm/realm-studio/releases/tag/v3.11.0) or later will be able to open the new file format.
+NOTE: This version bumps the Realm file format to version 11. It is not possible to downgrade to version 10 or earlier. Files created with older versions of Realm will be automatically upgraded. Only [Realm Studio 5.0.0](https://github.com/realm/realm-studio/releases/tag/v5.0.0) or later will be able to open the new file format.
 
 ### Enhancements
 * Added the notion of "frozen objects" - these are objects, queries, lists, or Realms that have been "frozen" at a specific version. This allows you to access the data from any thread, but it will never change. All frozen objects can be accessed and queried as normal, but attempting to mutate them or add change listeners will throw an exception. (Issue [#1945](https://github.com/realm/realm-dotnet/issues/1945))
@@ -36,7 +37,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
-* Realm Studio: 3.11 or later.
+* Realm Studio: 5.0.0 or later.
 
 ### Internal
 * Using Sync 5.0.21 and Core 6.0.24.
