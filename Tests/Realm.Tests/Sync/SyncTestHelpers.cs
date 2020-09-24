@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -52,6 +51,7 @@ namespace Realms.Tests.Sync
             var result = new List<string>();
 
             string baasUrl = null;
+            string baasAppId = null;
 
             for (var i = 0; i < args.Length; i++)
             {
@@ -60,16 +60,18 @@ namespace Realms.Tests.Sync
                     case "--baasurl":
                         baasUrl = args[++i];
                         break;
+                    case "--baasappid":
+                        baasAppId = args[++i];
+                        break;
                     default:
                         result.Add(args[i]);
                         break;
                 }
             }
 
-            if (baasUrl != null)
+            if (baasUrl != null && baasAppId != null)
             {
-                var appId = File.ReadAllText("/apps/default/app_id");
-                _baseConfig = new AppConfiguration(appId)
+                _baseConfig = new AppConfiguration(baasAppId)
                 {
                     BaseUri = new Uri(baasUrl),
                 };

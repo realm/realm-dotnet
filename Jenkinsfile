@@ -333,9 +333,11 @@ def NetCoreTest(String nodeName) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
-          withRealmCloud(version: '2020-09-24') { networkName ->
+          withRealmCloud(version: '2020-09-24', appsToImport: "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests") { networkName ->
+            def appId = readFile("${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests/app_id")
+
             test_runner_image.inside("--network=${networkName}") {
-              script += " --baasurl http://mongodb-realm"
+              script += " --baasurl http://mongodb-realm --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
