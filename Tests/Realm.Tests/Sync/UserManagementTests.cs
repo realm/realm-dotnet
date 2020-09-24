@@ -136,7 +136,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppRemoveUser_RemovesUser()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var first = await SyncTestHelpers.GetUserAsync(_app);
                 var second = await SyncTestHelpers.GetUserAsync(_app);
@@ -149,12 +149,31 @@ namespace Realms.Tests.Sync
                 await _app.RemoveUserAsync(second);
 
                 // TODO: validate that the refresh token is invalidated.
-                Assert.That(second.State, Is.EqualTo(UserState.LoggedOut));
-                Assert.That(second.AccessToken, Is.Null);
-                Assert.That(second.RefreshToken, Is.Null);
+                Assert.That(second.State, Is.EqualTo(UserState.Removed));
+                Assert.That(second.AccessToken, Is.Empty);
+                Assert.That(second.RefreshToken, Is.Empty);
                 Assert.That(second.Id, Is.EqualTo(secondId));
 
                 Assert.That(_app.CurrentUser, Is.EqualTo(first));
+            });
+        }
+
+        [Test]
+        public void EmailPasswordRegisterUser_Works()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var username = Guid.NewGuid().ToString();
+                await _app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+
+                var user = await _app.LogInAsync(Credentials.UsernamePassword(username, SyncTestHelpers.DefaultPassword));
+
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+                Assert.That(user.AccessToken, Is.Not.Null);
+                Assert.That(user.RefreshToken, Is.Not.Null);
+
+                Assert.That(_app.CurrentUser, Is.EqualTo(user));
             });
         }
     }

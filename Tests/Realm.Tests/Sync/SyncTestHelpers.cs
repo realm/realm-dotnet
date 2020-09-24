@@ -28,6 +28,8 @@ namespace Realms.Tests.Sync
 {
     public static class SyncTestHelpers
     {
+        public const string DefaultPassword = "123456";
+
         private static AppConfiguration _baseConfig = new AppConfiguration("abc-xlgib") { BaseUri = new Uri("http://10.12.1.180:8080") };
 
         public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig.AppId) { BaseUri = _baseConfig.BaseUri };
@@ -65,9 +67,6 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            baasUrl = "http://10.12.1.180:8080";
-            baasAppId = "abc-xlgib";
-
             if (baasUrl != null && baasAppId != null)
             {
                 _baseConfig = new AppConfiguration(baasAppId)
@@ -79,10 +78,13 @@ namespace Realms.Tests.Sync
             return result.ToArray();
         }
 
-        public static Task<User> GetUserAsync(App app)
+        public static async Task<User> GetUserAsync(App app)
         {
-            var credentials = Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a");
-            return app.LogInAsync(credentials);
+            var username = Guid.NewGuid().ToString();
+            await app.EmailPasswordAuth.RegisterUserAsync(username, DefaultPassword);
+
+            var credentials = Credentials.UsernamePassword(username, DefaultPassword);
+            return await app.LogInAsync(credentials);
         }
 
         public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)

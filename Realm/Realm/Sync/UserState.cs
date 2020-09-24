@@ -31,11 +31,11 @@ namespace Realms.Sync
         /// <summary>
         /// The user is logged in, and any Realms associated with it are synchronizing with MongoDB Realm.
         /// </summary>
-        Active,
+        LoggedIn,
 
         /// <summary>
-        /// The user has encountered a fatal error state, and cannot be used.
+        /// The user has been logged out and their local data has been removed.
         /// </summary>
-        Error
+        Removed
     }
 }

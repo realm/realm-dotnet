@@ -284,7 +284,8 @@ extern "C" {
     REALM_EXPORT void shared_app_login_user(SharedApp& app, Credentials credentials, void* task_completion_source, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            app->log_in_with_credentials(credentials.to_app_credentials(), [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
+            auto app_credentials = credentials.to_app_credentials();
+            app->log_in_with_credentials(app_credentials, [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
                 if (app_error) {
                     s_login_callback(
                         task_completion_source, nullptr,

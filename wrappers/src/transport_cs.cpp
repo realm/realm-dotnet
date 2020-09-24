@@ -39,6 +39,7 @@ struct HttpClientRequest {
     HttpMethod method;
 
     const char* url;
+    size_t url_len;
 
     uint64_t timeout_ms;
 
@@ -46,6 +47,7 @@ struct HttpClientRequest {
     int headers_len;
 
     const char* body;
+    size_t body_len;
 };
 
 using ExecuteRequest = void(HttpClientRequest request, void* callback);
@@ -74,10 +76,12 @@ public:
         HttpClientRequest client_request = {
             request.method,
             request.url.c_str(),
+            request.url.length(),
             request.timeout_ms,
             headers.data(),
             headers.size(),
-            request.body.c_str()
+            request.body.c_str(),
+            request.body.length()
         };
 
         m_execute(std::move(client_request), new ResponseFunction(completionBlock));

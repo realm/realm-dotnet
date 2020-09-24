@@ -128,7 +128,7 @@ namespace Realms.Native
 
                     if (request.method != NativeHttpMethod.get)
                     {
-                        message.Content = new StringContent(request.Body);
+                        message.Content = new StringContent(request.Body, Encoding.UTF8, "application/json");
                     }
 
                     using var cts = new CancellationTokenSource();
