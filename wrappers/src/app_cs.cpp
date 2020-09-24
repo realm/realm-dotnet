@@ -109,8 +109,7 @@ namespace realm {
                     return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
 
                 case realm::app::AuthProvider::FUNCTION:
-                    throw std::exception("Implement me!");
-                    // return AppCredentials::function(Utf16StringAccessor(token, token_len));
+                    return AppCredentials::function(Utf16StringAccessor(token, token_len));
 
                 case realm::app::AuthProvider::USER_API_KEY:
                     return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
