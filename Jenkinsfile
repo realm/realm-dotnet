@@ -334,11 +334,10 @@ def NetCoreTest(String nodeName) {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
           withRealmCloud(version: '2020-09-24') { networkName ->
-
-            String appId = readFile("/apps/default/app_id")
+            def appId = sh script: 'cat /apps/default/app_id', returnStdout: true
 
             test_runner_image.inside("--network=${networkName}") {
-              script += " --baasurl http://mongodb-realm --baasappid ${appId}"
+              script += " --baasurl http://mongodb-realm --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
