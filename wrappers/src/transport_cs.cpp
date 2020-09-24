@@ -79,7 +79,7 @@ public:
             request.url.length(),
             request.timeout_ms,
             headers.data(),
-            headers.size(),
+            (int)headers.size(),
             request.body.c_str(),
             request.body.length()
         };
