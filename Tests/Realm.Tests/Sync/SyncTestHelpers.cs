@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
             var username = GetVerifiedUsername();
             await app.EmailPasswordAuth.RegisterUserAsync(username, DefaultPassword);
 
-            var credentials = Credentials.UsernamePassword(username, DefaultPassword);
+            var credentials = Credentials.EmailPassword(username, DefaultPassword);
             return await app.LogInAsync(credentials);
         }
 

@@ -166,7 +166,7 @@ namespace Realms.Tests.Sync
                 var username = SyncTestHelpers.GetVerifiedUsername();
                 await _app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
 
-                var user = await _app.LogInAsync(Credentials.UsernamePassword(username, SyncTestHelpers.DefaultPassword));
+                var user = await _app.LogInAsync(Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword));
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
