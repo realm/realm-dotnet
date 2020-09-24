@@ -37,7 +37,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
                 var config = new SyncConfiguration("foo-bar", user);
 
                 using (var realm = GetRealm(config))
@@ -139,7 +139,7 @@ namespace Realms.Tests.Sync
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync("progress");
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "progress");
                 var realm = GetRealm(config);
                 var completionTCS = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;

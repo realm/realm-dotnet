@@ -28,7 +28,7 @@ namespace Realms.Tests.Sync
 {
     public static class SyncTestHelpers
     {
-        private static AppConfiguration _baseConfig;
+        private static AppConfiguration _baseConfig = new AppConfiguration("abc-xlgib") { BaseUri = new Uri("http://10.12.1.180:8080") };
 
         public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig.AppId) { BaseUri = _baseConfig.BaseUri };
 
@@ -65,6 +65,9 @@ namespace Realms.Tests.Sync
                 }
             }
 
+            baasUrl = "http://10.12.1.180:8080";
+            baasAppId = "abc-xlgib";
+
             if (baasUrl != null && baasAppId != null)
             {
                 _baseConfig = new AppConfiguration(baasAppId)
@@ -76,11 +79,10 @@ namespace Realms.Tests.Sync
             return result.ToArray();
         }
 
-        public static Task<User> GetUserAsync()
+        public static Task<User> GetUserAsync(App app)
         {
-            throw new NotImplementedException();
-            //var credentials = CreateCredentials();
-            //return User.LoginAsync(credentials, AuthServerUri);
+            var credentials = Credentials.UsernamePassword(Guid.NewGuid().ToString(), "a");
+            return app.LogInAsync(credentials);
         }
 
         public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
@@ -92,17 +94,15 @@ namespace Realms.Tests.Sync
             //return new SyncConfiguration(serverUri, user, optionalPath);
         }
 
-        public static Task<User> GetFakeUserAsync(string id = null, string scheme = "http")
+        public static Task<User> GetFakeUserAsync(App app, string id = null)
         {
-            throw new NotImplementedException();
-
-            // var handle = SyncUserHandle.GetSyncUser(id ?? Guid.NewGuid().ToString(), $"{scheme}://{FakeRosUrl}", string.Empty);
-            // return Task.FromResult(new User(null));
+            var handle = app.AppHandle.GetUserForTesting(id ?? Guid.NewGuid().ToString());
+            return Task.FromResult(new User(handle));
         }
 
-        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition)
+        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(App app, string partition)
         {
-            var user = await GetUserAsync();
+            var user = await GetUserAsync(app);
             return new SyncConfiguration(partition, user);
         }
 

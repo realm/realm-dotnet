@@ -24,13 +24,10 @@ namespace Realms.Exceptions
     {
         public int ErrorCode { get; }
 
-        public string ErrorCategory { get; }
-
         internal AppException(string message, string category, int errorCode)
-            : base(message)
+            : base($"{message}: {category}")
         {
             ErrorCode = errorCode;
-            ErrorCategory = category;
         }
     }
 }

@@ -18,9 +18,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Sync.Native;
@@ -29,6 +31,14 @@ namespace Realms.Native
 {
     internal static class HttpClientTransport
     {
+        private enum CustomErrorCode
+        {
+            NoError = 0,
+            UnknownHttp = 998,
+            Unknown = 999,
+            Timeout = 1000,
+        }
+
         private enum NativeHttpMethod
         {
             get,
@@ -39,26 +49,32 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct HttpClientRequest
+        private unsafe struct HttpClientRequest
         {
             public NativeHttpMethod method;
 
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string url;
+            private byte* url_buf;
+            private IntPtr url_len;
 
             public UInt64 timeout_ms;
 
             public IntPtr /* StringStringPair[] */ headers;
             public int headers_len;
 
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string body;
+            private byte* body_buf;
+            private IntPtr body_len;
+
+            public string Url => Encoding.UTF8.GetString(url_buf, (int)url_len);
+
+            public string Body => Encoding.UTF8.GetString(body_buf, (int)body_len);
         }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct HttpClientResponse
         {
             public Int32 http_status_code;
+
+            public CustomErrorCode custom_status_code;
 
             [MarshalAs(UnmanagedType.LPWStr)]
             private string body;
@@ -102,47 +118,75 @@ namespace Realms.Native
         {
             try
             {
-                using var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.url);
-                foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len))
+                try
                 {
-                    message.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                }
-
-                if (request.method != NativeHttpMethod.get)
-                {
-                    message.Content = new StringContent(request.body);
-                }
-                using var cts = new CancellationTokenSource();
-                cts.CancelAfter((int)request.timeout_ms);
-
-                var response = await _httpClient.SendAsync(message, cts.Token);
-                var headers = new List<StringStringPair>(response.Headers.Count());
-                foreach (var header in response.Headers)
-                {
-                    headers.Add(new StringStringPair
+                    using var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.Url);
+                    foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len))
                     {
-                        Key = header.Key,
-                        Value = header.Value.FirstOrDefault()
-                    });
+                        message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+
+                    if (request.method != NativeHttpMethod.get)
+                    {
+                        message.Content = new StringContent(request.Body);
+                    }
+
+                    using var cts = new CancellationTokenSource();
+                    cts.CancelAfter((int)request.timeout_ms);
+
+                    var response = await _httpClient.SendAsync(message, cts.Token);
+                    var headers = new List<StringStringPair>(response.Headers.Count());
+                    foreach (var header in response.Headers)
+                    {
+                        headers.Add(new StringStringPair
+                        {
+                            Key = header.Key,
+                            Value = header.Value.FirstOrDefault()
+                        });
+                    }
+
+                    var nativeResponse = new HttpClientResponse
+                    {
+                        http_status_code = (int)response.StatusCode,
+                        Body = await response.Content.ReadAsStringAsync(),
+                    };
+
+                    respond(nativeResponse, headers.ToArray(), headers.Count, callback);
                 }
-
-                var nativeResponse = new HttpClientResponse
+                catch (HttpRequestException rex)
                 {
-                    http_status_code = (int)response.StatusCode,
-                    Body = await response.Content.ReadAsStringAsync(),
-                };
+                    var nativeResponse = new HttpClientResponse
+                    {
+                        custom_status_code = CustomErrorCode.UnknownHttp,
+                        Body = rex.Message,
+                    };
 
-                respond(nativeResponse, headers.ToArray(), headers.Count, callback);
+                    respond(nativeResponse, null, 0, callback);
+                }
+                catch (TaskCanceledException)
+                {
+                    var nativeResponse = new HttpClientResponse
+                    {
+                        custom_status_code = CustomErrorCode.Timeout,
+                        Body = $"Operation failed to complete within {request.timeout_ms} ms.",
+                    };
+
+                    respond(nativeResponse, null, 0, callback);
+                }
+                catch (Exception ex)
+                {
+                    var nativeResponse = new HttpClientResponse
+                    {
+                        custom_status_code = CustomErrorCode.Unknown,
+                        Body = ex.Message,
+                    };
+
+                    respond(nativeResponse, null, 0, callback);
+                }
             }
-            catch (HttpRequestException ex)
+            catch (Exception outerEx)
             {
-                // V10TODO: implement me
-                throw;
-            }
-            catch (TaskCanceledException)
-            {
-                // V10TODO: implement me
-                throw;
+                Debug.WriteLine($"Unexpected error occurred while trying to respond to a request: {outerEx}");
             }
         }
 

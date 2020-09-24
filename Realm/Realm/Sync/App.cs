@@ -31,6 +31,8 @@ namespace Realms.Sync
 
         public SyncApi Sync { get; }
 
+        public EmailPasswordApi EmailPasswordAuth { get; }
+
         /// <summary>
         /// Gets the currently logged-in user. If none exists, null is returned.
         /// </summary>
@@ -50,6 +52,7 @@ namespace Realms.Sync
         {
             AppHandle = handle;
             Sync = new SyncApi(this);
+            EmailPasswordAuth = new EmailPasswordApi(this);
         }
 
         public static App Create(AppConfiguration config)
@@ -99,9 +102,13 @@ namespace Realms.Sync
             AppHandle.SwitchUser(user.Handle);
         }
 
-        public Task RemoveUserAsync(User user)
+        public async Task RemoveUserAsync(User user)
         {
-            throw new NotImplementedException();
+            Argument.NotNull(user, nameof(user));
+
+            var tcs = new TaskCompletionSource<object>();
+            AppHandle.Remove(user.Handle, tcs);
+            await tcs.Task;
         }
 
         public class SyncApi
@@ -116,6 +123,78 @@ namespace Realms.Sync
             public void Reconnect()
             {
                 _app.AppHandle.Reconnect();
+            }
+        }
+
+        public class EmailPasswordApi
+        {
+            private readonly App _app;
+
+            internal EmailPasswordApi(App app)
+            {
+                _app = app;
+            }
+
+            public async Task RegisterUserAsync(string email, string password)
+            {
+                Argument.NotNullOrEmpty(email, nameof(email));
+                Argument.NotNullOrEmpty(password, nameof(password));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.RegisterUser(email, password, tcs);
+                await tcs.Task;
+            }
+
+            public async Task ConfirmUserAsync(string token, string tokenId)
+            {
+                Argument.NotNullOrEmpty(token, nameof(token));
+                Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.ConfirmUser(token, tokenId, tcs);
+                await tcs.Task;
+            }
+
+            public async Task ResendConfirmationEmailAsync(string email)
+            {
+                Argument.NotNullOrEmpty(email, nameof(email));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.ResendConfirmationEmail(email, tcs);
+                await tcs.Task;
+            }
+
+            public async Task SendResetPasswordEmailAsync(string email)
+            {
+                Argument.NotNullOrEmpty(email, nameof(email));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.SendResetPasswordEmail(email, tcs);
+                await tcs.Task;
+            }
+
+            public async Task ResetPasswordAsync(string password, string token, string tokenId)
+            {
+                Argument.NotNullOrEmpty(token, nameof(token));
+                Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
+                Argument.NotNullOrEmpty(password, nameof(password));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.ResetPassword(password, token, tokenId, tcs);
+                await tcs.Task;
+            }
+
+            public async Task CallResetPasswordFunctionAsync(string email, string password)
+            {
+                // V10TODO: need to pass in some BsonArray
+                throw new NotImplementedException();
+
+                Argument.NotNullOrEmpty(email, nameof(email));
+                Argument.NotNullOrEmpty(password, nameof(password));
+
+                var tcs = new TaskCompletionSource<object>();
+                _app.AppHandle.EmailPassword.RegisterUser(email, password, tcs);
+                await tcs.Task;
             }
         }
     }

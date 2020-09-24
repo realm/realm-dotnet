@@ -33,7 +33,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
                 var config = new SyncConfiguration("foo-bar", user);
 
                 var file = new FileInfo(config.DatabasePath);
@@ -53,7 +53,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
                 var config = new SyncConfiguration("foo-bar", user, "myrealm.realm");
 
                 var file = new FileInfo(config.DatabasePath);
@@ -74,7 +74,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
 
                 var path = Path.GetTempFileName();
                 var config = new SyncConfiguration(123, user, path);
@@ -98,7 +98,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
                 var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
                 var config = new SyncConfiguration("foo-bar", user)
@@ -115,7 +115,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync();
+                var user = await SyncTestHelpers.GetUserAsync(_app);
 
                 RealmConfiguration.DefaultConfiguration = new SyncConfiguration("abc", user);
 

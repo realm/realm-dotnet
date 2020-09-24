@@ -46,7 +46,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync();
+                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
 
                 var config = new SyncConfiguration($"compactrealm_{encrypt}_{populate}", user);
                 if (encrypt)
@@ -82,7 +82,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync();
+                var user = await SyncTestHelpers.GetUserAsync(_app);
 
                 var partition = "GetInstanceAsync_ShouldDownloadRealm";
 
@@ -156,7 +156,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync();
+                var user = await SyncTestHelpers.GetUserAsync(_app);
                 var config = new SyncConfiguration(ObjectId.GenerateNewId(), user, Guid.NewGuid().ToString());
                 await GetRealmAsync(config);
             });
@@ -167,7 +167,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "foo");
                 await PopulateData(config);
 
                 var callbacksInvoked = 0;
@@ -196,7 +196,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync("foo");
+                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "foo");
                 await PopulateData(config);
 
                 // Update config to make sure we're not opening the same Realm file.

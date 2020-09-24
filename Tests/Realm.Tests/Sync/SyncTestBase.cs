@@ -29,11 +29,20 @@ namespace Realms.Tests.Sync
         private readonly List<Session> _sessions = new List<Session>();
         private readonly List<App> _apps = new List<App>();
 
-        protected App CreateApp(AppConfiguration config)
+        protected App _app;
+
+        protected App CreateApp(AppConfiguration config = null)
         {
-            var app = App.Create(config);
+            var app = App.Create(config ?? SyncTestHelpers.GetAppConfig());
             _apps.Add(app);
             return app;
+        }
+
+        protected override void CustomSetUp()
+        {
+            base.CustomSetUp();
+
+            _app = CreateApp();
         }
 
         protected override void CustomTearDown()
@@ -49,6 +58,8 @@ namespace Realms.Tests.Sync
             {
                 app.AppHandle.ResetForTesting();
             }
+
+            _app = null;
         }
 
         protected void CleanupOnTearDown(Session session)

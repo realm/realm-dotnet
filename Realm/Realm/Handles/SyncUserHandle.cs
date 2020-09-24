@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -34,8 +35,19 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_refresh_token", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_refresh_token(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_access_token", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_access_token(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_device_id", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_device_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_state", CallingConvention = CallingConvention.Cdecl)]
             public static extern UserState get_state(SyncUserHandle user, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_profile_data", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_profile_data(SyncUserHandle user, UserProfileField field,
+                IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull,
+                out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_app", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_app(SyncUserHandle user, out NativeException ex);
@@ -78,6 +90,24 @@ namespace Realms.Sync
             });
         }
 
+        public string GetAccessToken()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_access_token(this, buffer, length, out ex);
+            });
+        }
+
+        public string GetDeviceId()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_device_id(this, buffer, length, out ex);
+            });
+        }
+
         public UserState GetState()
         {
             var result = NativeMethods.get_state(this, out var ex);
@@ -104,6 +134,14 @@ namespace Realms.Sync
         {
             NativeMethods.log_out(this, out var ex);
             ex.ThrowIfNecessary();
+        }
+
+        public string GetProfileData(UserProfileField field)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                return NativeMethods.get_profile_data(this, field, buffer, length, out isNull, out ex);
+            });
         }
 
         protected override void Unbind()

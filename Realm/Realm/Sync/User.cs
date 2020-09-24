@@ -30,12 +30,30 @@ namespace Realms.Sync
     public class User : IEquatable<User>
     {
         /// <summary>
-        /// Gets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
+        /// Gets this user's refresh token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
         /// </summary>
         /// <value>A unique string that can be used for refreshing the user's credentials.</value>
         public string RefreshToken
         {
             get => Handle.GetRefreshToken();
+        }
+
+        /// <summary>
+        /// Gets this user's access token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
+        /// </summary>
+        /// <value>A unique string that can be used to represent this user before the server.</value>
+        public string AccessToken
+        {
+            get => Handle.GetAccessToken();
+        }
+
+        /// <summary>
+        /// Gets a unique identifier for the device the user logged in to.
+        /// </summary>
+        /// <value>A unique string that identifies the current device.</value>
+        public string DeviceId
+        {
+            get => Handle.GetDeviceId();
         }
 
         /// <summary>
@@ -56,6 +74,12 @@ namespace Realms.Sync
         /// <value>An <see cref="App"/> instance that owns this user.</value>
         public App App { get; }
 
+        /// <summary>
+        /// Gets the profile information for that user.
+        /// </summary>
+        /// <value>A <see cref="UserProfile"/> object, containing information about the user's name, email, and so on.</value>
+        public UserProfile Profile { get; }
+
         internal readonly SyncUserHandle Handle;
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
@@ -68,6 +92,7 @@ namespace Realms.Sync
 
             App = app;
             Handle = handle;
+            Profile = new UserProfile(this);
         }
 
         /// <summary>

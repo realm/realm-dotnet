@@ -53,6 +53,7 @@ using ResponseFunction = std::function<void(const Response)>;
 
 struct HttpClientResponse {
     int http_status_code;
+    int custom_status_code;
 
     uint16_t* body_buf;
     size_t body_len;
@@ -103,7 +104,7 @@ extern "C" {
 
         Response response = {
             client_response.http_status_code,
-            /* custom_status_code */ 0,
+            client_response.custom_status_code,
             std::move(headers_map),
             Utf16StringAccessor(client_response.body_buf, client_response.body_len)
         };

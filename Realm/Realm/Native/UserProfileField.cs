@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
+namespace Realms.Native
 {
-    /// <summary>
-    /// The state of the user object.
-    /// </summary>
-    public enum UserState
+    internal enum UserProfileField : byte
     {
-        /// <summary>
-        /// The user is logged out. Call <see cref="App.LogInAsync(Credentials)"/> with valid credentials to log the user back in.
-        /// </summary>
-        LoggedOut,
-
-        /// <summary>
-        /// The user is logged in, and any Realms associated with it are synchronizing with MongoDB Realm.
-        /// </summary>
-        Active,
-
-        /// <summary>
-        /// The user has encountered a fatal error state, and cannot be used.
-        /// </summary>
-        Error
+        Name,
+        Email,
+        PictureUrl,
+        FirstName,
+        LastName,
+        Gender,
+        Birthday,
+        MinAge,
+        MaxAge,
     }
 }

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Exceptions
 {
@@ -104,6 +105,14 @@ namespace Realms.Exceptions
 
                 case RealmExceptionCodes.RealmClosed:
                     return new RealmClosedException(message);
+
+                case RealmExceptionCodes.AppClientError:
+                case RealmExceptionCodes.AppCustomError:
+                case RealmExceptionCodes.AppHttpError:
+                case RealmExceptionCodes.AppJsonError:
+                case RealmExceptionCodes.AppServiceError:
+                case RealmExceptionCodes.AppUnknownError:
+                    return new RealmAppException(exceptionCode, message);
 
                 case RealmExceptionCodes.StdArgumentOutOfRange:
                 case RealmExceptionCodes.StdIndexOutOfRange:

@@ -30,7 +30,7 @@ using Realms.Native;
 
 namespace Realms.Sync
 {
-    internal class AppHandle : RealmHandle
+    internal partial class AppHandle : RealmHandle
     {
         private static readonly Regex _platformRegex = new Regex("^(?<platform>[^0-9]*) (?<version>[^ ]*)", RegexOptions.Compiled);
 
@@ -44,12 +44,15 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void UserLoginCallback(IntPtr tcs_ptr, IntPtr user_ptr, byte* message_buf, IntPtr message_len, byte* category_buf, IntPtr category_len, int error_code);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public unsafe delegate void VoidTaskCallback(IntPtr tcs_ptr, byte* message_buf, IntPtr message_len, byte* category_buf, IntPtr category_len, int error_code);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
                 [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
-                UserLoginCallback user_login_callback, LogMessageCallback log_message_callback);
+                UserLoginCallback user_login_callback, VoidTaskCallback void_callback, LogMessageCallback log_message_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[] encryptionKey, out NativeException ex);
@@ -70,7 +73,7 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_sync_reconnect", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reconnect(AppHandle app);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_current_sync_user", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_current_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_current_user(AppHandle app, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_logged_in_users", CallingConvention = CallingConvention.Cdecl)]
@@ -82,8 +85,52 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_login_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern void login_user(AppHandle app, Native.Credentials credentials, IntPtr tcs_ptr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_remove_user", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void remove_user(AppHandle app, SyncUserHandle user, IntPtr tcs_ptr, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_reset_for_testing", CallingConvention = CallingConvention.Cdecl)]
             public static extern void reset_for_testing(AppHandle app);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_user_for_testing", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_user_for_testing(AppHandle app, [MarshalAs(UnmanagedType.LPWStr)] string id_buf, IntPtr id_len, out NativeException ex);
+
+            public static class EmailPassword
+            {
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void register_user(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
+                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_confirm_user", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void confirm_user(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
+                    [MarshalAs(UnmanagedType.LPWStr)] string token_id, IntPtr token_id_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_resend_confirmation_email", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void resent_confirmation_email(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_send_reset_password_email", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void send_reset_password_email(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_reset_password", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void reset_password(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
+                    [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
+                    [MarshalAs(UnmanagedType.LPWStr)] string token_id, IntPtr token_id_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+
+                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_call_reset_password_function", CallingConvention = CallingConvention.Cdecl)]
+                public static extern void call_reset_password_function(AppHandle app,
+                    [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
+                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
+                    IntPtr tcs_ptr, out NativeException ex);
+            }
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -96,9 +143,11 @@ namespace Realms.Sync
 
             NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
             NativeMethods.UserLoginCallback userLogin = HandleUserLogin;
+            NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
 
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(userLogin);
+            GCHandle.Alloc(taskCallback);
 
             string platform;
             string platformVersion;
@@ -119,13 +168,14 @@ namespace Realms.Sync
                 platform, (IntPtr)platform.Length,
                 platformVersion, (IntPtr)platformVersion.Length,
                 sdkVersion, (IntPtr)sdkVersion.Length,
-                userLogin, logMessage);
+                userLogin, taskCallback, logMessage);
 
             HttpClientTransport.Install();
         }
 
         internal AppHandle(IntPtr handle) : base(null, handle)
         {
+            EmailPassword = new EmailPasswordApi(this);
         }
 
         public static AppHandle CreateApp(Native.AppConfiguration config, byte[] encryptionKey)
@@ -198,9 +248,23 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        public void Remove(SyncUserHandle user, TaskCompletionSource<object> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+            NativeMethods.remove_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary();
+        }
+
         public void ResetForTesting()
         {
             NativeMethods.reset_for_testing(this);
+        }
+
+        public SyncUserHandle GetUserForTesting(string id)
+        {
+            var result = NativeMethods.get_user_for_testing(this, id, (IntPtr)id.Length, out var ex);
+            ex.ThrowIfNecessary();
+            return new SyncUserHandle(result);
         }
 
         protected override void Unbind()
@@ -224,7 +288,7 @@ namespace Realms.Sync
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.UserLoginCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The user will own its handle.")]
         private static unsafe void HandleUserLogin(IntPtr tcs_ptr, IntPtr user_ptr, byte* message_buf, IntPtr message_len, byte* error_category_buf, IntPtr error_category_len, int error_code)
         {
@@ -236,6 +300,30 @@ namespace Realms.Sync
                 {
                     var userHandle = new SyncUserHandle(user_ptr);
                     tcs.TrySetResult(userHandle);
+                }
+                else
+                {
+                    var message = Encoding.UTF8.GetString(message_buf, (int)message_len);
+                    var errorCategory = Encoding.UTF8.GetString(error_category_buf, (int)error_category_len);
+                    tcs.TrySetException(new AppException(message, errorCategory, error_code));
+                }
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.VoidTaskCallback))]
+        private static unsafe void HandleTaskCompletion(IntPtr tcs_ptr, byte* message_buf, IntPtr message_len, byte* error_category_buf, IntPtr error_category_len, int error_code)
+        {
+            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
+            try
+            {
+                var tcs = (TaskCompletionSource<object>)tcsHandle.Target;
+                if (message_buf == null)
+                {
+                    tcs.TrySetResult(null);
                 }
                 else
                 {

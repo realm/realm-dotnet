@@ -46,6 +46,7 @@ namespace realm {
         
         void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
         void (*s_login_callback)(void* tcs_ptr, SharedSyncUser* user, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
+        void (*s_void_callback)(void* tcs_ptr, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
 
         struct AppConfiguration
         {
@@ -153,6 +154,19 @@ namespace realm {
         private:
             void* m_managed_log_handler;
         };
+
+        inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
+            return [tcs_ptr](util::Optional<AppError> err) {
+                if (err) {
+                    s_void_callback(tcs_ptr, err->message.c_str(), err->message.length(),
+                        err->error_code.message().c_str(), err->error_code.message().length(),
+                        err->error_code.value());
+                }
+                else {
+                    s_void_callback(tcs_ptr, nullptr, 0, nullptr, 0, 0);
+                }
+            };
+        }
     }
 }
 
@@ -161,6 +175,7 @@ extern "C" {
         uint16_t* platform_version, size_t platform_version_len, 
         uint16_t* sdk_version, size_t sdk_version_len,
         decltype(s_login_callback) login_callback,
+        decltype(s_void_callback) void_callback,
         decltype(s_log_message_callback) log_message_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
@@ -168,6 +183,7 @@ extern "C" {
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
 
         s_login_callback = login_callback;
+        s_void_callback = void_callback;
         s_log_message_callback = log_message_callback;
     }
 
@@ -258,6 +274,55 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void shared_app_switch_user(SharedApp& app, SharedSyncUser& user, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->switch_user(user);
+        });
+    }
+
+    REALM_EXPORT void shared_app_login_user(SharedApp& app, Credentials credentials, void* task_completion_source, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->log_in_with_credentials(credentials.to_app_credentials(), [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
+                if (app_error) {
+                    s_login_callback(
+                        task_completion_source, nullptr,
+                        app_error->message.c_str(), app_error->message.length(),
+                        app_error->error_code.message().c_str(), app_error->error_code.message().length(),
+                        app_error->error_code.value());
+                }
+                else {
+                    s_login_callback(task_completion_source, new SharedSyncUser(user), nullptr, 0, nullptr, 0, 0);
+                }
+            });
+        });
+}
+
+    REALM_EXPORT SharedSyncUser* shared_app_get_user_for_testing(SharedApp& app, uint16_t* id_buf, size_t id_len, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            Utf16StringAccessor id(id_buf, id_len);
+            return new SharedSyncUser(
+                app->sync_manager()->get_user(
+                    id,
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M",
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ",
+                    "testing",
+                    "my-device-id"));
+        });
+    }
+
+    REALM_EXPORT void shared_app_remove_user(SharedApp& app, SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            app->remove_user(user, [tcs_ptr](util::Optional<AppError>) {
+                // ignore errors
+                s_void_callback(tcs_ptr, nullptr, 0, nullptr, 0, 0);
+            });
+        });
+    }
+
     REALM_EXPORT SharedSyncSession* shared_app_sync_get_session_from_path(SharedApp& app, SharedRealm& realm, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
@@ -284,31 +349,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void shared_app_switch_user(SharedApp& app, SharedSyncUser& user, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            app->switch_user(user);
-        });
-    }
-
-    REALM_EXPORT void shared_app_login_user(SharedApp& app, Credentials credentials, void* task_completion_source, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            app->log_in_with_credentials(credentials.to_app_credentials(), [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
-                if (app_error) {
-                    s_login_callback(
-                        task_completion_source, nullptr,
-                        app_error->message.c_str(), app_error->message.length(),
-                        app_error->error_code.message().c_str(), app_error->error_code.message().length(),
-                        app_error->error_code.value());
-                }
-                else {
-                    s_login_callback(task_completion_source, new SharedSyncUser(user), nullptr, 0, nullptr, 0, 0);
-                }
-            });
-        });
-    }
-
     REALM_EXPORT void shared_app_sync_reconnect(SharedApp& app)
     {
         app->sync_manager()->reconnect();
@@ -328,4 +368,66 @@ extern "C" {
 
         app->sync_manager()->reset_for_testing();
     }
+
+#pragma region EmailPassword
+
+    REALM_EXPORT void shared_app_email_register_user(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor username(username_buf, username_len);
+            Utf16StringAccessor password(password_buf, password_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().register_email(username, password, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_confirm_user(SharedApp& app, uint16_t* token_buf, size_t token_len, uint16_t* token_id_buf, size_t token_id_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor token(token_buf, token_len);
+            Utf16StringAccessor token_id(token_id_buf, token_id_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().confirm_user(token, token_id, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_resend_confirmation_email(SharedApp& app, uint16_t* email_buf, size_t email_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor email(email_buf, email_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().resend_confirmation_email(email, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_send_reset_password_email(SharedApp& app, uint16_t* email_buf, size_t email_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor email(email_buf, email_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().send_reset_password_email(email, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_reset_password(SharedApp& app, uint16_t* password_buf, size_t password_len, uint16_t* token_buf, size_t token_len, uint16_t* token_id_buf, size_t token_id_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor password(password_buf, password_len);
+            Utf16StringAccessor token(token_buf, token_len);
+            Utf16StringAccessor token_id(token_id_buf, token_id_len);
+            app->provider_client<App::UsernamePasswordProviderClient>().reset_password(password, token, token_id, get_callback_handler(tcs_ptr));
+        });
+    }
+
+    REALM_EXPORT void shared_app_email_call_reset_password_function(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            Utf16StringAccessor username(username_buf, username_len);
+            Utf16StringAccessor password(password_buf, password_len);
+
+            // V10TODO: pass correct bson array
+            bson::BsonArray args;
+
+            app->provider_client<App::UsernamePasswordProviderClient>().call_reset_password_function(username, password, args, get_callback_handler(tcs_ptr));
+        });
+    }
+
+#pragma endregion
+
 }

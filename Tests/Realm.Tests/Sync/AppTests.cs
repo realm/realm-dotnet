@@ -52,10 +52,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var appConfig = SyncTestHelpers.GetAppConfig();
-                var app = CreateApp(appConfig);
-
-                var user = await app.LogInAsync(Credentials.Anonymous());
+                var user = await _app.LogInAsync(Credentials.Anonymous());
             });
         }
     }
