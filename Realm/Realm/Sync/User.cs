@@ -57,9 +57,9 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
+        /// Gets the Id of this user on MongoDB Realm.
         /// </summary>
-        /// <value>A string that uniquely identifies that user in Realm Object Server.</value>
+        /// <value>A string that uniquely identifies that user.</value>
         public string Id => Handle.GetUserId();
 
         /// <summary>

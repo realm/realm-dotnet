@@ -35,18 +35,15 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var user = GetFakeUser(_app);
+            var config = new SyncConfiguration("foo-bar", user);
+
+            using (var realm = GetRealm(config))
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var config = new SyncConfiguration("foo-bar", user);
+                var session = GetSession(realm);
 
-                using (var realm = GetRealm(config))
-                {
-                    var session = GetSession(realm);
-
-                    Assert.That(session.User, Is.EqualTo(user));
-                }
-            });
+                Assert.That(session.User, Is.EqualTo(user));
+            }
         }
 
         [Test]
@@ -139,7 +136,7 @@ namespace Realms.Tests.Sync
             const int ObjectsToRecord = 2;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "progress");
+                var config = await GetIntegrationConfigAsync("progress");
                 var realm = GetRealm(config);
                 var completionTCS = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;

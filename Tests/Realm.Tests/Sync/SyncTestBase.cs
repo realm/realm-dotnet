@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +34,11 @@ namespace Realms.Tests.Sync
 
         protected App CreateApp(AppConfiguration config = null)
         {
-            var app = App.Create(config ?? SyncTestHelpers.GetAppConfig());
+            config ??= SyncTestHelpers.GetAppConfig();
+
+            config.LogLevel = LogLevel.All;
+
+            var app = App.Create(config);
             _apps.Add(app);
             return app;
         }
@@ -103,6 +108,33 @@ namespace Realms.Tests.Sync
 
             CleanupOnTearDown(result);
             return result;
+        }
+
+        protected async Task<User> GetUserAsync(App app = null)
+        {
+            app ??= _app;
+
+            var username = SyncTestHelpers.GetVerifiedUsername();
+            await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+
+            var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
+            return await app.LogInAsync(credentials);
+        }
+
+        protected User GetFakeUser(App app = null, string id = null)
+        {
+            app ??= _app;
+
+            var handle = app.AppHandle.GetUserForTesting(id ?? Guid.NewGuid().ToString());
+            return new User(handle);
+        }
+
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition, App app = null)
+        {
+            app ??= _app;
+
+            var user = await GetUserAsync(app);
+            return new SyncConfiguration(partition, user);
         }
     }
 }

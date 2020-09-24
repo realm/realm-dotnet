@@ -27,7 +27,6 @@ using Realms.Tests.Database;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class MergeByPKTests : SyncTestBase
     {
         [TestCaseSource(nameof(MergeTestCases))]
@@ -100,17 +99,10 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetSyncedRealm(Type objectType)
         {
-            throw new NotImplementedException();
-            //var credentials = Credentials.UsernamePassword(Constants.AdminUsername, Constants.AdminPassword, false);
-            //var user = await User.LoginAsync(credentials, SyncTestHelpers.AuthServerUri);
-            //var configuration = new SyncConfiguration(SyncTestHelpers.RealmUri($"~/merge_by_pk_{objectType.Name}"), user, Guid.NewGuid().ToString())
-            //{
-            //    ObjectClasses = new[] { objectType }
-            //};
+            var config = await GetIntegrationConfigAsync($"merge_by_pk_{objectType.Name}");
+            config.ObjectClasses = new[] { objectType };
 
-            //Realm.DeleteRealm(configuration);
-
-            //return GetRealm(configuration);
+            return GetRealm(config);
         }
     }
 }

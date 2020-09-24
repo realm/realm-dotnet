@@ -35,26 +35,20 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCurrentUser_WhenThereIsOneUser_ShouldReturnThatUser()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var currentUser = _app.CurrentUser;
+            var user = GetFakeUser();
+            var currentUser = _app.CurrentUser;
 
-                Assert.That(currentUser, Is.EqualTo(user));
-            });
+            Assert.That(currentUser, Is.EqualTo(user));
         }
 
         [Test]
         public void AppCurrentUser_WhenThereIsMoreThanOneUser_ShouldReturnLastOne()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var first = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var second = await SyncTestHelpers.GetFakeUserAsync(_app);
+            var first = GetFakeUser();
+            var second = GetFakeUser();
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(second));
-                Assert.That(_app.CurrentUser, Is.Not.EqualTo(first));
-            });
+            Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(_app.CurrentUser, Is.Not.EqualTo(first));
         }
 
         [Test]
@@ -67,64 +61,52 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppAllUsers_WhenThereIsOneUser_ShouldReturnThatUser()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
+            var user = GetFakeUser();
 
-                var users = _app.AllUsers;
+            var users = _app.AllUsers;
 
-                Assert.That(users.Length, Is.EqualTo(1));
-                Assert.That(users[0], Is.EqualTo(user));
-            });
+            Assert.That(users.Length, Is.EqualTo(1));
+            Assert.That(users[0], Is.EqualTo(user));
         }
 
         [Test]
         public void AppAllUsers_WhenThereAreNineUsers_ShouldReturnAllOfThem()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var users = new List<User>();
+            for (var i = 0; i < 9; i++)
             {
-                var users = new List<User>();
-                for (var i = 0; i < 9; i++)
-                {
-                    users.Add(await SyncTestHelpers.GetFakeUserAsync(_app));
-                }
+                users.Add(GetFakeUser());
+            }
 
-                var current = _app.AllUsers;
+            var current = _app.AllUsers;
 
-                Assert.That(current, Is.EquivalentTo(users));
-            });
+            Assert.That(current, Is.EquivalentTo(users));
         }
 
         [Test]
         public void AppSwitchUser_SwitchesCurrentUser()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var first = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var second = await SyncTestHelpers.GetFakeUserAsync(_app);
+            var first = GetFakeUser();
+            var second = GetFakeUser();
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(_app.CurrentUser, Is.EqualTo(second));
 
-                _app.SwitchUser(first);
+            _app.SwitchUser(first);
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(first));
-            });
+            Assert.That(_app.CurrentUser, Is.EqualTo(first));
         }
 
         [Test]
         public void AppSwitchUser_WhenUserIsCurrent_DoesNothing()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var first = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var second = await SyncTestHelpers.GetFakeUserAsync(_app);
+            var first = GetFakeUser();
+            var second = GetFakeUser();
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(_app.CurrentUser, Is.EqualTo(second));
 
-                _app.SwitchUser(second);
+            _app.SwitchUser(second);
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(second));
-            });
+            Assert.That(_app.CurrentUser, Is.EqualTo(second));
         }
 
         [Test]
@@ -138,8 +120,8 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var first = await SyncTestHelpers.GetUserAsync(_app);
-                var second = await SyncTestHelpers.GetUserAsync(_app);
+                var first = await GetUserAsync();
+                var second = await GetUserAsync();
 
                 Assert.That(_app.CurrentUser, Is.EqualTo(second));
 

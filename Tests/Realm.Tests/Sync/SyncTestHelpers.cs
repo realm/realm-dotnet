@@ -80,15 +80,6 @@ namespace Realms.Tests.Sync
             return result.ToArray();
         }
 
-        public static async Task<User> GetUserAsync(App app)
-        {
-            var username = GetVerifiedUsername();
-            await app.EmailPasswordAuth.RegisterUserAsync(username, DefaultPassword);
-
-            var credentials = Credentials.EmailPassword(username, DefaultPassword);
-            return await app.LogInAsync(credentials);
-        }
-
         public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
         {
             throw new NotImplementedException();
@@ -96,18 +87,6 @@ namespace Realms.Tests.Sync
             //var user = await GetFakeUserAsync(userId);
             //var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
             //return new SyncConfiguration(serverUri, user, optionalPath);
-        }
-
-        public static Task<User> GetFakeUserAsync(App app, string id = null)
-        {
-            var handle = app.AppHandle.GetUserForTesting(id ?? Guid.NewGuid().ToString());
-            return Task.FromResult(new User(handle));
-        }
-
-        public static async Task<SyncConfiguration> GetIntegrationConfigAsync(App app, string partition)
-        {
-            var user = await GetUserAsync(app);
-            return new SyncConfiguration(partition, user);
         }
 
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)

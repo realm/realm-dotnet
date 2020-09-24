@@ -367,6 +367,7 @@ extern "C" {
         }
 
         app->sync_manager()->reset_for_testing();
+        App::clear_cached_apps();
     }
 
 #pragma region EmailPassword

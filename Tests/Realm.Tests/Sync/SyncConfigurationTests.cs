@@ -31,42 +31,36 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithoutPath()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var user = GetFakeUser();
+            var config = new SyncConfiguration("foo-bar", user);
+
+            var file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists, Is.False);
+
+            using (var realm = GetRealm(config))
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var config = new SyncConfiguration("foo-bar", user);
+            }
 
-                var file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists, Is.False);
-
-                using (var realm = GetRealm(config))
-                {
-                }
-
-                file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists);
-            });
+            file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists);
         }
 
         [Test]
         public void SyncConfiguration_WithRelativePath()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var user = GetFakeUser();
+            var config = new SyncConfiguration("foo-bar", user, "myrealm.realm");
+
+            var file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists, Is.False);
+
+            using (var realm = GetRealm(config))
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
-                var config = new SyncConfiguration("foo-bar", user, "myrealm.realm");
+            }
 
-                var file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists, Is.False);
-
-                using (var realm = GetRealm(config))
-                {
-                }
-
-                file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists);
-                Assert.That(config.DatabasePath.EndsWith("myrealm.realm"));
-            });
+            file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists);
+            Assert.That(config.DatabasePath.EndsWith("myrealm.realm"));
         }
 
         [Test]
@@ -74,7 +68,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
+                var user = GetFakeUser();
 
                 var path = Path.GetTempFileName();
                 var config = new SyncConfiguration(123, user, path);
@@ -98,7 +92,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
+                var user = GetFakeUser();
                 var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
                 var config = new SyncConfiguration("foo-bar", user)
@@ -115,7 +109,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync(_app);
+                var user = await GetUserAsync();
 
                 RealmConfiguration.DefaultConfiguration = new SyncConfiguration("abc", user);
 

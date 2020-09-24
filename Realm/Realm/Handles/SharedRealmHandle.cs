@@ -54,7 +54,7 @@ namespace Realms
                 byte[] encryptionKey,
                 out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_sync_open_realm_async", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
@@ -68,7 +68,6 @@ namespace Realms
                 byte[] encryptionKey,
                 IntPtr task_completion_source,
                 out NativeException ex);
-
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_managed_state_handle", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_managed_state_handle(SharedRealmHandle sharedRealm, IntPtr managedStateHandle, out NativeException ex);

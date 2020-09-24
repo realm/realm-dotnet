@@ -44,36 +44,33 @@ namespace Realms.Tests.Sync
         [TestCase(false, false)]
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var user = GetFakeUser();
+
+            var config = new SyncConfiguration($"compactrealm_{encrypt}_{populate}", user);
+            if (encrypt)
             {
-                var user = await SyncTestHelpers.GetFakeUserAsync(_app);
+                config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
+            }
 
-                var config = new SyncConfiguration($"compactrealm_{encrypt}_{populate}", user);
-                if (encrypt)
+            using (var realm = GetRealm(config))
+            {
+                if (populate)
                 {
-                    config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
+                    AddDummyData(realm, singleTransaction: false);
                 }
+            }
 
-                using (var realm = GetRealm(config))
-                {
-                    if (populate)
-                    {
-                        AddDummyData(realm, singleTransaction: false);
-                    }
-                }
+            var initialSize = new FileInfo(config.DatabasePath).Length;
 
-                var initialSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(Realm.Compact(config));
 
-                Assert.That(Realm.Compact(config));
+            var finalSize = new FileInfo(config.DatabasePath).Length;
+            Assert.That(initialSize >= finalSize);
 
-                var finalSize = new FileInfo(config.DatabasePath).Length;
-                Assert.That(initialSize >= finalSize);
-
-                using (var realm = GetRealm(config))
-                {
-                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
-                }
-            });
+            using (var realm = GetRealm(config))
+            {
+                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+            }
         }
 
         [TestCase(true)]
@@ -82,7 +79,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync(_app);
+                var user = await GetUserAsync();
 
                 var partition = "GetInstanceAsync_ShouldDownloadRealm";
 
@@ -156,7 +153,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await SyncTestHelpers.GetUserAsync(_app);
+                var user = await GetUserAsync();
                 var config = new SyncConfiguration(ObjectId.GenerateNewId(), user, Guid.NewGuid().ToString());
                 await GetRealmAsync(config);
             });
@@ -167,7 +164,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "foo");
+                var config = await GetIntegrationConfigAsync("foo");
                 await PopulateData(config);
 
                 var callbacksInvoked = 0;
@@ -196,7 +193,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await SyncTestHelpers.GetIntegrationConfigAsync(_app, "foo");
+                var config = await GetIntegrationConfigAsync("foo");
                 await PopulateData(config);
 
                 // Update config to make sure we're not opening the same Realm file.
