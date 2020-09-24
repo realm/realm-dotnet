@@ -30,7 +30,7 @@ namespace Realms.Tests.Sync
     {
         public const string DefaultPassword = "123456";
 
-        private static AppConfiguration _baseConfig = new AppConfiguration("abc-xlgib") { BaseUri = new Uri("http://10.12.1.180:8080") };
+        private static AppConfiguration _baseConfig;
 
         public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig.AppId) { BaseUri = _baseConfig.BaseUri };
 
@@ -43,6 +43,8 @@ namespace Realms.Tests.Sync
 
             TestHelpers.RunAsyncTest(testFunc, timeout);
         }
+
+        public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
 
         public static string[] ExtractBaasSettings(string[] args)
         {
@@ -80,7 +82,7 @@ namespace Realms.Tests.Sync
 
         public static async Task<User> GetUserAsync(App app)
         {
-            var username = Guid.NewGuid().ToString();
+            var username = GetVerifiedUsername();
             await app.EmailPasswordAuth.RegisterUserAsync(username, DefaultPassword);
 
             var credentials = Credentials.UsernamePassword(username, DefaultPassword);

@@ -163,15 +163,15 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var username = Guid.NewGuid().ToString();
+                var username = SyncTestHelpers.GetVerifiedUsername();
                 await _app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
 
                 var user = await _app.LogInAsync(Credentials.UsernamePassword(username, SyncTestHelpers.DefaultPassword));
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
-                Assert.That(user.AccessToken, Is.Not.Null);
-                Assert.That(user.RefreshToken, Is.Not.Null);
+                Assert.That(user.AccessToken, Is.Not.Empty);
+                Assert.That(user.RefreshToken, Is.Not.Empty);
 
                 Assert.That(_app.CurrentUser, Is.EqualTo(user));
             });
