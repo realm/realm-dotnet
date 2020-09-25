@@ -33,7 +33,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
-            var user = GetFakeUser(_app);
+            var user = GetFakeUser();
             var config = GetSyncConfiguration("foo-bar", user);
 
             using var realm = GetRealm(config);

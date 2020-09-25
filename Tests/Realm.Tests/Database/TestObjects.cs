@@ -21,8 +21,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MongoDB.Bson;
+using Realms.Tests.Database;
 
-namespace Realms.Tests.Database
+namespace Realms.Tests
 {
     public class AllTypesObject : RealmObject
     {

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -25,14 +24,13 @@ using Realms.Sync;
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class SyncConfigurationTests : SyncTestBase
     {
         [Test]
         public void SyncConfiguration_WithoutPath()
         {
             var user = GetFakeUser();
-            var config = new SyncConfiguration("foo-bar", user);
+            var config = GetSyncConfiguration("foo-bar", user);
 
             var file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists, Is.False);
@@ -49,7 +47,7 @@ namespace Realms.Tests.Sync
         public void SyncConfiguration_WithRelativePath()
         {
             var user = GetFakeUser();
-            var config = new SyncConfiguration("foo-bar", user, "myrealm.realm");
+            var config = GetSyncConfiguration("foo-bar", user, "myrealm.realm");
 
             var file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists, Is.False);
@@ -66,42 +64,34 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            TestHelpers.RunAsyncTest(async () =>
+            var user = GetFakeUser();
+
+            var path = Path.GetTempFileName();
+            var config = GetSyncConfiguration("foo-bar", user, path);
+
+            Realm.DeleteRealm(config);
+            var file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists, Is.False);
+
+            using (var realm = GetRealm(config))
             {
-                var user = GetFakeUser();
+            }
 
-                var path = Path.GetTempFileName();
-                var config = new SyncConfiguration(123, user, path);
-
-                Realm.DeleteRealm(config);
-                var file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists, Is.False);
-
-                using (var realm = GetRealm(config))
-                {
-                }
-
-                file = new FileInfo(config.DatabasePath);
-                Assert.That(file.Exists);
-                Assert.That(config.DatabasePath, Is.EqualTo(path));
-            });
+            file = new FileInfo(config.DatabasePath);
+            Assert.That(file.Exists);
+            Assert.That(config.DatabasePath, Is.EqualTo(path));
         }
 
         [Test]
         public void SyncConfiguration_WithEncryptionKey_DoesntThrow()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var user = GetFakeUser();
-                var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
+            var user = GetFakeUser();
+            var key = Enumerable.Range(0, 63).Select(i => (byte)i).ToArray();
 
-                var config = new SyncConfiguration("foo-bar", user)
-                {
-                    EncryptionKey = TestHelpers.GetEncryptionKey(key)
-                };
+            var config = GetSyncConfiguration("foo-bar", user);
+            config.EncryptionKey = TestHelpers.GetEncryptionKey(key);
 
-                Assert.That(() => GetRealm(config), Throws.Nothing);
-            });
+            Assert.That(() => GetRealm(config), Throws.Nothing);
         }
 
         [Test]
@@ -111,48 +101,14 @@ namespace Realms.Tests.Sync
             {
                 var user = await GetUserAsync();
 
-                RealmConfiguration.DefaultConfiguration = new SyncConfiguration("abc", user);
+                RealmConfiguration.DefaultConfiguration = GetSyncConfiguration("abc", user);
 
-                using (var realm = GetRealm(null))
-                {
-                    Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
-                    var syncConfig = (SyncConfiguration)realm.Config;
-                    Assert.That(syncConfig.User.Id, Is.EqualTo(user.Id));
-                    Assert.That(syncConfig.Partition, Is.EqualTo("abc"));
-                }
-            });
-        }
+                using var realm = GetRealm(null);
 
-        [TestCase(LogLevel.Debug)]
-        [TestCase(LogLevel.Info)]
-        public void SyncConfiguration_LoggerFactory_Test(LogLevel logLevel)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                throw new NotImplementedException();
-                //var logBuilder = new StringBuilder();
-
-                //SyncConfiguration.CustomLogger = (message, level) =>
-                //{
-                //    logBuilder.AppendLine($"[{level}] {message}");
-                //};
-                //SyncConfiguration.LogLevel = logLevel;
-
-                //var config = await SyncTestHelpers.GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                //using (var realm = await GetRealmAsync(config))
-                //{
-                //    realm.Write(() =>
-                //    {
-                //        realm.Add(new Person());
-                //    });
-
-                //    await SyncTestHelpers.WaitForUploadAsync(realm);
-                //}
-
-                //var log = logBuilder.ToString();
-
-                //Assert.That(log, Does.Contain($"[{logLevel}]"));
-                //Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
+                Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
+                var syncConfig = (SyncConfiguration)realm.Config;
+                Assert.That(syncConfig.User.Id, Is.EqualTo(user.Id));
+                Assert.That(syncConfig.Partition, Is.EqualTo("abc"));
             });
         }
     }

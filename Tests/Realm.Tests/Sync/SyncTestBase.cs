@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Realms.Sync;
 
@@ -30,24 +29,29 @@ namespace Realms.Tests.Sync
         private readonly List<Session> _sessions = new List<Session>();
         private readonly List<App> _apps = new List<App>();
 
-        protected App _app;
+        private App _defaultApp;
+
+        protected App DefaultApp
+        {
+            get
+            {
+                return _defaultApp ?? CreateApp();
+            }
+        }
 
         protected App CreateApp(AppConfiguration config = null)
         {
             config ??= SyncTestHelpers.GetAppConfig();
 
-            config.LogLevel = LogLevel.All;
-
             var app = App.Create(config);
             _apps.Add(app);
+
+            if (_defaultApp == null)
+            {
+                _defaultApp = app;
+            }
+
             return app;
-        }
-
-        protected override void CustomSetUp()
-        {
-            base.CustomSetUp();
-
-            _app = CreateApp();
         }
 
         protected override void CustomTearDown()
@@ -64,7 +68,7 @@ namespace Realms.Tests.Sync
                 app.AppHandle.ResetForTesting();
             }
 
-            _app = null;
+            _defaultApp = null;
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -93,26 +97,9 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)
-        {
-            Realm result;
-            if (openAsync)
-            {
-                result = await Realm.GetInstanceAsync(config, cancellationToken);
-            }
-            else
-            {
-                result = Realm.GetInstance(config);
-                await SyncTestHelpers.WaitForDownloadAsync(result);
-            }
-
-            CleanupOnTearDown(result);
-            return result;
-        }
-
         protected async Task<User> GetUserAsync(App app = null)
         {
-            app ??= _app;
+            app ??= DefaultApp;
 
             var username = SyncTestHelpers.GetVerifiedUsername();
             await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
@@ -123,7 +110,7 @@ namespace Realms.Tests.Sync
 
         protected User GetFakeUser(App app = null, string id = null)
         {
-            app ??= _app;
+            app ??= DefaultApp;
 
             var handle = app.AppHandle.GetUserForTesting(id ?? Guid.NewGuid().ToString());
             return new User(handle);
@@ -131,17 +118,17 @@ namespace Realms.Tests.Sync
 
         protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition, App app = null)
         {
-            app ??= _app;
+            app ??= DefaultApp;
 
             var user = await GetUserAsync(app);
             return GetSyncConfiguration(partition, user);
         }
 
-        protected SyncConfiguration GetSyncConfiguration(string partition, User user)
+        protected static SyncConfiguration GetSyncConfiguration(string partition, User user, string optionalPath = null)
         {
-            return new SyncConfiguration(partition, user)
+            return new SyncConfiguration(partition, user, optionalPath)
             {
-                ObjectClasses = new[] { typeof(HugeSyncObject) }
+                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject) }
             };
         }
 

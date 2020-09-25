@@ -29,14 +29,14 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCurrentUser_WhenThereAreNoUsers_ShouldReturnNull()
         {
-            Assert.That(() => _app.CurrentUser, Is.Null);
+            Assert.That(() => DefaultApp.CurrentUser, Is.Null);
         }
 
         [Test]
         public void AppCurrentUser_WhenThereIsOneUser_ShouldReturnThatUser()
         {
             var user = GetFakeUser();
-            var currentUser = _app.CurrentUser;
+            var currentUser = DefaultApp.CurrentUser;
 
             Assert.That(currentUser, Is.EqualTo(user));
         }
@@ -47,14 +47,14 @@ namespace Realms.Tests.Sync
             var first = GetFakeUser();
             var second = GetFakeUser();
 
-            Assert.That(_app.CurrentUser, Is.EqualTo(second));
-            Assert.That(_app.CurrentUser, Is.Not.EqualTo(first));
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
+            Assert.That(DefaultApp.CurrentUser, Is.Not.EqualTo(first));
         }
 
         [Test]
         public void AppAllUsers_WhenThereAreNoUsers_ShouldReturnEmptyCollection()
         {
-            var users = _app.AllUsers;
+            var users = DefaultApp.AllUsers;
             Assert.That(users, Is.Empty);
         }
 
@@ -63,7 +63,7 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
 
-            var users = _app.AllUsers;
+            var users = DefaultApp.AllUsers;
 
             Assert.That(users.Length, Is.EqualTo(1));
             Assert.That(users[0], Is.EqualTo(user));
@@ -78,7 +78,7 @@ namespace Realms.Tests.Sync
                 users.Add(GetFakeUser());
             }
 
-            var current = _app.AllUsers;
+            var current = DefaultApp.AllUsers;
 
             Assert.That(current, Is.EquivalentTo(users));
         }
@@ -89,11 +89,11 @@ namespace Realms.Tests.Sync
             var first = GetFakeUser();
             var second = GetFakeUser();
 
-            Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
 
-            _app.SwitchUser(first);
+            DefaultApp.SwitchUser(first);
 
-            Assert.That(_app.CurrentUser, Is.EqualTo(first));
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
         }
 
         [Test]
@@ -102,17 +102,17 @@ namespace Realms.Tests.Sync
             var first = GetFakeUser();
             var second = GetFakeUser();
 
-            Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
 
-            _app.SwitchUser(second);
+            DefaultApp.SwitchUser(second);
 
-            Assert.That(_app.CurrentUser, Is.EqualTo(second));
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
         }
 
         [Test]
         public void AppSwitchUser_WhenUserIsNull_Throws()
         {
-            Assert.That(() => _app.SwitchUser(null), Throws.InstanceOf<ArgumentNullException>());
+            Assert.That(() => DefaultApp.SwitchUser(null), Throws.InstanceOf<ArgumentNullException>());
         }
 
         [Test]
@@ -123,12 +123,12 @@ namespace Realms.Tests.Sync
                 var first = await GetUserAsync();
                 var second = await GetUserAsync();
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(second));
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
 
                 var rereshToken = second.RefreshToken;
                 var secondId = second.Id;
 
-                await _app.RemoveUserAsync(second);
+                await DefaultApp.RemoveUserAsync(second);
 
                 // TODO: validate that the refresh token is invalidated.
                 Assert.That(second.State, Is.EqualTo(UserState.Removed));
@@ -136,7 +136,7 @@ namespace Realms.Tests.Sync
                 Assert.That(second.RefreshToken, Is.Empty);
                 Assert.That(second.Id, Is.EqualTo(secondId));
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(first));
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
             });
         }
 
@@ -146,16 +146,16 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var username = SyncTestHelpers.GetVerifiedUsername();
-                await _app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
 
-                var user = await _app.LogInAsync(Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword));
+                var user = await DefaultApp.LogInAsync(Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword));
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
                 Assert.That(user.AccessToken, Is.Not.Empty);
                 Assert.That(user.RefreshToken, Is.Not.Empty);
 
-                Assert.That(_app.CurrentUser, Is.EqualTo(user));
+                Assert.That(DefaultApp.CurrentUser, Is.EqualTo(user));
             });
         }
     }

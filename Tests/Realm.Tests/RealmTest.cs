@@ -18,6 +18,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests
@@ -69,7 +71,13 @@ namespace Realms.Tests
                 CustomTearDown();
 
                 _isSetup = false;
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                try
+                {
+                    Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -90,7 +98,21 @@ namespace Realms.Tests
 
         protected Realm GetRealm(RealmConfigurationBase config = null)
         {
-            var result = Realm.GetInstance(config ?? RealmConfiguration.DefaultConfiguration);
+            var result = Realm.GetInstance(config);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, CancellationToken cancellationToken = default)
+        {
+            var result = await Realm.GetInstanceAsync(config, cancellationToken);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected Realm Freeze(Realm realm)
+        {
+            var result = realm.Freeze();
             CleanupOnTearDown(result);
             return result;
         }

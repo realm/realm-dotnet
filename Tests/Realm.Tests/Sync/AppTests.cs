@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Text;
 using NUnit.Framework;
 using Realms.Sync;
 
@@ -52,7 +53,40 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await _app.LogInAsync(Credentials.Anonymous());
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+            });
+        }
+
+        [TestCase(LogLevel.Debug)]
+        [TestCase(LogLevel.Info)]
+        public void App_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var logBuilder = new StringBuilder();
+
+                var appConfig = SyncTestHelpers.GetAppConfig();
+                appConfig.LogLevel = logLevel;
+                appConfig.CustomLogger = (message, level) =>
+                {
+                    logBuilder.AppendLine($"[{level}] {message}");
+                };
+
+                var app = CreateApp(appConfig);
+
+                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                using var realm = await GetRealmAsync(config);
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
+                });
+
+                await SyncTestHelpers.WaitForUploadAsync(realm);
+
+                var log = logBuilder.ToString();
+
+                Assert.That(log, Does.Contain($"[{logLevel}]"));
+                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
             });
         }
     }
