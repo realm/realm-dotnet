@@ -23,6 +23,7 @@
 #include "shared_realm_cs.hpp"
 #include "sync_session_cs.hpp"
 #include "transport_cs.hpp"
+#include "debug.hpp"
 
 #include "sync/sync_manager.hpp"
 #include "sync/app_credentials.hpp"
@@ -43,7 +44,7 @@ namespace realm {
         std::string s_platform;
         std::string s_platform_version;
         std::string s_sdk_version;
-        
+
         void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
         void (*s_login_callback)(void* tcs_ptr, SharedSyncUser* user, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
         void (*s_void_callback)(void* tcs_ptr, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
@@ -171,7 +172,7 @@ namespace realm {
 
 extern "C" {
     REALM_EXPORT void shared_app_initialize(uint16_t* platform, size_t platform_len,
-        uint16_t* platform_version, size_t platform_version_len, 
+        uint16_t* platform_version, size_t platform_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
         decltype(s_login_callback) login_callback,
         decltype(s_void_callback) void_callback,
@@ -367,7 +368,7 @@ extern "C" {
         }
 
         while (app->sync_manager()->has_existing_sessions()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            sleep_ms(5);
         }
 
         bool did_reset = false;
