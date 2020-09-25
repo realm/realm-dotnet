@@ -116,9 +116,10 @@ namespace Realms.Tests.Sync
             return new User(handle);
         }
 
-        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition, App app = null)
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null)
         {
             app ??= DefaultApp;
+            partition ??= Guid.NewGuid().ToString();
 
             var user = await GetUserAsync(app);
             return GetSyncConfiguration(partition, user);
@@ -128,14 +129,15 @@ namespace Realms.Tests.Sync
         {
             return new SyncConfiguration(partition, user, optionalPath)
             {
-                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject) }
+                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(IntPrimaryKeyWithValueObject) },
+                SessionStopPolicy = SessionStopPolicy.Immediately,
             };
         }
 
         public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
-            return new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath);
+            return GetSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath);
         }
     }
 }

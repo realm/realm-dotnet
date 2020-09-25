@@ -48,7 +48,6 @@ namespace Realms.Sync.Native
             }
         }
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal ClientResyncMode client_resync_mode;
+        internal SessionStopPolicy session_stop_policy;
     }
 }

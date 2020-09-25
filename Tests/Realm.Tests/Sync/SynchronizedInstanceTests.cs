@@ -22,17 +22,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
-    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class SynchronizedInstanceTests : SyncTestBase
     {
         private const int OneMegabyte = 1024 * 1024;
@@ -44,33 +41,42 @@ namespace Realms.Tests.Sync
         [TestCase(false, false)]
         public void Compact_ShouldReduceSize(bool encrypt, bool populate)
         {
-            var user = GetFakeUser();
-
-            var config = new SyncConfiguration($"compactrealm_{encrypt}_{populate}", user);
-            if (encrypt)
+            TestHelpers.RunAsyncTest(async () =>
             {
-                config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
-            }
-
-            using (var realm = GetRealm(config))
-            {
-                if (populate)
+                var config = GetFakeConfig();
+                if (encrypt)
                 {
-                    AddDummyData(realm, singleTransaction: false);
+                    config.EncryptionKey = TestHelpers.GetEncryptionKey(5);
                 }
-            }
 
-            var initialSize = new FileInfo(config.DatabasePath).Length;
+                using (var realm = GetRealm(config))
+                {
+                    if (populate)
+                    {
+                        AddDummyData(realm, singleTransaction: false);
+                    }
+                }
 
-            Assert.That(Realm.Compact(config));
+                var initialSize = new FileInfo(config.DatabasePath).Length;
 
-            var finalSize = new FileInfo(config.DatabasePath).Length;
-            Assert.That(initialSize >= finalSize);
+                var attempts = 10;
 
-            using (var realm = GetRealm(config))
-            {
-                Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
-            }
+                // Give core a chance to close the Realm
+                while (!Realm.Compact(config) && (attempts-- > 0))
+                {
+                    await Task.Delay(50);
+                }
+
+                Assert.That(attempts > 0);
+
+                var finalSize = new FileInfo(config.DatabasePath).Length;
+                Assert.That(initialSize >= finalSize);
+
+                using (var realm = GetRealm(config))
+                {
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+                }
+            });
         }
 
         [TestCase(true)]
@@ -81,27 +87,24 @@ namespace Realms.Tests.Sync
             {
                 var user = await GetUserAsync();
 
-                var partition = "GetInstanceAsync_ShouldDownloadRealm";
+                var partition = Guid.NewGuid().ToString();
 
-                var config = new SyncConfiguration(partition, user, Guid.NewGuid().ToString());
-                var asyncConfig = new SyncConfiguration(partition, user, config.DatabasePath + "_async");
+                var config = GetSyncConfiguration(partition, user, Guid.NewGuid().ToString());
+                var asyncConfig = GetSyncConfiguration(partition, user, config.DatabasePath + "_async");
 
-                using (var realm = GetRealm(config))
-                {
-                    AddDummyData(realm, singleTransaction);
+                using var realm = GetRealm(config);
+                AddDummyData(realm, singleTransaction);
 
-                    await SyncTestHelpers.WaitForUploadAsync(realm);
-                }
+                await WaitForUploadAsync(realm);
 
-                using (var asyncRealm = await GetRealmAsync(asyncConfig))
-                {
-                    Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
-                }
+                using var asyncRealm = await GetRealmAsync(asyncConfig);
+                Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
             });
         }
 
         [TestCase(true)]
         [TestCase(false)]
+        [Ignore("V10TODO: implement me")]
         public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -153,8 +156,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var user = await GetUserAsync();
-                var config = new SyncConfiguration(ObjectId.GenerateNewId(), user, Guid.NewGuid().ToString());
+                var config = await GetIntegrationConfigAsync();
                 await GetRealmAsync(config);
             });
         }
@@ -164,27 +166,24 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync("foo");
+                var config = await GetIntegrationConfigAsync();
+
                 await PopulateData(config);
 
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = new SyncConfiguration("foo", config.User, config.DatabasePath + "1")
+                config = GetSyncConfiguration((string)config.Partition, config.User, config.DatabasePath + "_download");
+                config.OnProgress = (progress) =>
                 {
-                    OnProgress = (progress) =>
-                    {
-                        callbacksInvoked++;
-                        lastProgress = progress;
-                    }
+                    callbacksInvoked++;
+                    lastProgress = progress;
                 };
 
-                using (var realm = await GetRealmAsync(config))
-                {
-                    Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
-                    Assert.That(callbacksInvoked, Is.GreaterThan(0));
-                    Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
-                }
+                using var realm = await GetRealmAsync(config);
+                Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
+                Assert.That(callbacksInvoked, Is.GreaterThan(0));
+                Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
             });
         }
 
@@ -193,30 +192,28 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetIntegrationConfigAsync("foo");
+                var config = await GetIntegrationConfigAsync();
                 await PopulateData(config);
 
                 // Update config to make sure we're not opening the same Realm file.
-                config = new SyncConfiguration("foo", config.User, config.DatabasePath + "1");
+                config = GetSyncConfiguration((string)config.Partition, config.User, config.DatabasePath + "1");
 
-                using (var cts = new CancellationTokenSource())
+                using var cts = new CancellationTokenSource();
+                _ = Task.Run(async () =>
                 {
-                    _ = Task.Run(async () =>
-                    {
-                        await Task.Delay(1);
-                        cts.Cancel();
-                    });
+                    await Task.Delay(1);
+                    cts.Cancel();
+                });
 
-                    try
-                    {
-                        var realm = await Realm.GetInstanceAsync(config, cts.Token);
-                        CleanupOnTearDown(realm);
-                        Assert.Fail("Expected task to be cancelled.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
-                    }
+                try
+                {
+                    var realm = await Realm.GetInstanceAsync(config, cts.Token);
+                    CleanupOnTearDown(realm);
+                    Assert.Fail("Expected task to be cancelled.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.That(ex, Is.InstanceOf<TaskCanceledException>());
                 }
             });
         }
@@ -225,15 +222,15 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamic_ReadsSchemaFromDisk()
         {
             var config = GetFakeConfig();
-            config.ObjectClasses = new[] { typeof(AllTypesObject) };
+            config.ObjectClasses = new[] { typeof(IntPrimaryKeyWithValueObject) };
 
             // Create the realm and add some objects
             using (var realm = GetRealm(config))
             {
-                realm.Write(() => realm.Add(new AllTypesObject
+                realm.Write(() => realm.Add(new IntPrimaryKeyWithValueObject
                 {
-                    Int32Property = 42,
-                    RequiredStringProperty = "This is required!"
+                    Id = 42,
+                    StringValue = "This is a string!"
                 }));
             }
 
@@ -242,157 +239,25 @@ namespace Realms.Tests.Sync
             using var dynamicRealm = GetRealm(config);
             Assert.That(dynamicRealm.Schema.Count == 1);
 
-            var objectSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+            var objectSchema = dynamicRealm.Schema.Find(nameof(IntPrimaryKeyWithValueObject));
             Assert.That(objectSchema, Is.Not.Null);
 
-            var hasExpectedProp = objectSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
-            Assert.That(hasExpectedProp);
-            Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
+            Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
+            Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
-            Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+            var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
+            Assert.That(dynamicObj.StringValue, Is.EqualTo("This is a string!"));
         }
 
         [Test]
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
             var config = GetFakeConfig();
+            config.ObjectClasses = null;
             config.IsDynamic = true;
 
             using var realm = GetRealm(config);
             Assert.That(realm.Schema, Is.Empty);
-        }
-
-        // Used by TestClientResync and TestClientResync2. Must be either RecoverLocal or DiscardLocal. Manual is tested
-        // by TestManualClientResync.
-        private ClientResyncMode _clientResyncMode = ClientResyncMode.DiscardLocalRealm;
-
-        private async Task<SyncConfiguration> GetClientResyncConfig(ClientResyncMode? _mode = null)
-        {
-            throw new NotImplementedException();
-            //if (!_mode.HasValue)
-            //{
-            //    _mode = _clientResyncMode;
-            //}
-
-            //var user = await User.LoginAsync(Credentials.UsernamePassword("foo", "bar"), SyncTestHelpers.AuthServerUri);
-            //return new SyncConfiguration(SyncTestHelpers.RealmUri($"~/{_mode.Value}"), user, $"{_mode}.realm")
-            //{
-            //    ClientResyncMode = _mode.Value,
-            //    ObjectClasses = new[] { typeof(IntPrimaryKeyWithValueObject) },
-            //};
-        }
-
-        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
-        public void TestClientResync()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetClientResyncConfig();
-
-                // Let's delete anything local.
-                Realm.DeleteRealm(config);
-                Exception ex = null;
-                Session.Error += (s, e) =>
-                {
-                    if (e.Exception.Message != "End of input")
-                    {
-                        Debugger.Break();
-                        ex = e.Exception;
-                    }
-                };
-
-                using (var realm = await Realm.GetInstanceAsync(config))
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new IntPrimaryKeyWithValueObject
-                        {
-                            Id = 1,
-                            StringValue = "1"
-                        });
-                    });
-
-                    await WaitForUploadAsync(realm);
-                }
-
-                // Stop ROS and backup the file. Then restart
-                Debugger.Break();
-
-                using (var realm = await GetRealmAsync(config))
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new IntPrimaryKeyWithValueObject
-                        {
-                            Id = 2,
-                            StringValue = "2"
-                        });
-                    });
-
-                    await WaitForUploadAsync(realm);
-
-                    // Stop ROS
-                    Debugger.Break();
-
-                    realm.Write(() =>
-                    {
-                        realm.Add(new IntPrimaryKeyWithValueObject
-                        {
-                            Id = 3,
-                            StringValue = "3"
-                        });
-                    });
-                }
-
-                // Replace the file from backup. Restart ROS and run TestClientResync2
-                Debugger.Break();
-
-                Assert.That(ex, Is.Null);
-            }, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
-        }
-
-        [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
-        public void TestClientResync2()
-        {
-            Assert.That(new[] { ClientResyncMode.DiscardLocalRealm, ClientResyncMode.RecoverLocalRealm }, Does.Contain(_clientResyncMode));
-
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var config = await GetClientResyncConfig();
-
-                Exception ex = null;
-                Session.Error += (s, e) =>
-                {
-                    if (e.Exception.Message != "End of input")
-                    {
-                        ex = e.Exception;
-                    }
-                };
-
-                using (var realm = await GetRealmAsync(config))
-                {
-                    var values = realm.All<IntPrimaryKeyWithValueObject>().AsEnumerable().Select(i => i.StringValue).ToArray();
-
-                    // Verify expected result:
-                    //   - RecoverLocalRealm: we have 2 objects - "1" and "3". The "2" is lost because the client had uploaded them to the server already.
-                    //   - DiscardLocalRealm: we have 1 object - "1". The "2" is lost because we restored from backup and the "3" is discarded.
-                    switch (_clientResyncMode)
-                    {
-                        case ClientResyncMode.DiscardLocalRealm:
-                            Assert.That(values.Length, Is.EqualTo(1));
-                            Assert.That(values[0], Is.EqualTo("1"));
-                            Assert.That(ex, Is.Null);
-                            break;
-
-                        case ClientResyncMode.RecoverLocalRealm:
-                            Assert.That(values.Length, Is.EqualTo(2));
-                            CollectionAssert.AreEquivalent(values, new[] { "1", "3" });
-                            Assert.That(ex, Is.Null);
-                            break;
-                    }
-                }
-            }, (int)TimeSpan.FromMinutes(10).TotalMilliseconds);
         }
 
         [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
@@ -400,7 +265,7 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var config = await GetClientResyncConfig(ClientResyncMode.Manual);
+                var config = await GetIntegrationConfigAsync();
 
                 Realm.DeleteRealm(config);
                 using (var realm = await Realm.GetInstanceAsync(config))
@@ -481,18 +346,29 @@ namespace Realms.Tests.Sync
 
         private async Task PopulateData(SyncConfiguration config)
         {
-            using (var realm = GetRealm(config))
-            {
-                realm.Write(() =>
-                {
-                    for (var i = 0; i < NumberOfObjects; i++)
-                    {
-                        realm.Add(new HugeSyncObject(OneMegabyte));
-                    }
-                });
+            using var realm = GetRealm(config);
 
-                await GetSession(realm).WaitForUploadAsync();
-            }
+            // Split in 2 because MDB Realm has a limit of 16 MB per changeset
+            var firstBatch = NumberOfObjects / 2;
+            var secondBatch = NumberOfObjects - firstBatch;
+
+            realm.Write(() =>
+            {
+                for (var i = 0; i < firstBatch; i++)
+                {
+                    realm.Add(new HugeSyncObject(OneMegabyte));
+                }
+            });
+
+            realm.Write(() =>
+            {
+                for (var i = 0; i < secondBatch; i++)
+                {
+                    realm.Add(new HugeSyncObject(OneMegabyte));
+                }
+            });
+
+            await WaitForUploadAsync(realm);
         }
 
         /* Code to generate the legacy Realm

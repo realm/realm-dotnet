@@ -155,10 +155,21 @@ namespace Realms.Native
                 }
                 catch (HttpRequestException rex)
                 {
+                    var sb = new StringBuilder("An unexpected error occurred while sending the request");
+
+                    // We're doing this because the message for the top-level exception is usually pretty useless.
+                    // If there's inner exception, we want to skip it and directly go for the more specific messages.
+                    var innerEx = rex.InnerException ?? rex;
+                    while (innerEx != null)
+                    {
+                        sb.Append($": {innerEx.Message}");
+                        innerEx = innerEx.InnerException;
+                    }
+
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.UnknownHttp,
-                        Body = rex.Message,
+                        Body = sb.ToString(),
                     };
 
                     respond(nativeResponse, null, 0, callback);

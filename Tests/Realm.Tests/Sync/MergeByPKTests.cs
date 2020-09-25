@@ -22,7 +22,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
-using Realms.Tests.Database;
 
 namespace Realms.Tests.Sync
 {
@@ -43,24 +42,22 @@ namespace Realms.Tests.Sync
 
                     pkProperty.SetValue(instance, (dynamic)pkValue);
 
-                    using (var realm = await GetSyncedRealm(objectType))
+                    using var realm = await GetSyncedRealm(objectType);
+                    try
                     {
-                        try
-                        {
-                            realm.Write(() => realm.Add(instance));
-                        }
-                        catch (RealmDuplicatePrimaryKeyValueException)
-                        {
-                            // Sync went through too quickly (that's why we do 5 attempts)
-                        }
-
-                        await SyncTestHelpers.WaitForUploadAsync(realm);
+                        realm.Write(() => realm.Add(instance));
                     }
+                    catch (RealmDuplicatePrimaryKeyValueException)
+                    {
+                        // Sync went through too quickly (that's why we do 5 attempts)
+                    }
+
+                    await WaitForUploadAsync(realm);
                 }
 
                 using (var realm = await GetSyncedRealm(objectType))
                 {
-                    await SyncTestHelpers.WaitForDownloadAsync(realm);
+                    await WaitForDownloadAsync(realm);
                     var allObjects = realm.DynamicApi.All(objectType.Name).ToArray();
 
                     Assert.That(allObjects.Count(pkValueChecker), Is.EqualTo(1));
@@ -72,7 +69,9 @@ namespace Realms.Tests.Sync
         {
             new object[] { typeof(PrimaryKeyInt64Object), 0L, new Func<dynamic, bool>(i => Int64ValueChecker(i, 0)) },
             new object[] { typeof(PrimaryKeyInt64Object), 1L, new Func<dynamic, bool>(i => Int64ValueChecker(i, 1)) },
-            new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)null, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, null)) },
+
+            // V10TODO: reenable this when the server adds support for null PKs
+            // new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)null, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, null)) },
             new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)0, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, 0)) },
             new object[] { typeof(PrimaryKeyNullableInt64Object), (long?)1, new Func<dynamic, bool>(i => NullableInt64ValueChecker(i, 1)) },
             new object[] { typeof(PrimaryKeyStringObject), string.Empty, new Func<dynamic, bool>(i => StringValueChecker(i, string.Empty)) },

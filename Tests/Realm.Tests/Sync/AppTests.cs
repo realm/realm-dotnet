@@ -81,7 +81,7 @@ namespace Realms.Tests.Sync
                     realm.Add(new PrimaryKeyStringObject { StringProperty = Guid.NewGuid().ToString() });
                 });
 
-                await SyncTestHelpers.WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm);
 
                 var log = logBuilder.ToString();
 

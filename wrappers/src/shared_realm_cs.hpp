@@ -73,7 +73,7 @@ struct SyncConfiguration
     uint16_t* url;
     size_t url_len;
 
-    realm::ClientResyncMode client_resync_mode;
+    SyncSessionStopPolicy session_stop_policy;
 };
 
 namespace realm {

@@ -51,12 +51,9 @@ namespace Realms.Sync
         /// </summary>
         public Action<SyncProgress> OnProgress { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value controlling the behavior in case of a Client Resync. Default is <see cref="ClientResyncMode.RecoverLocalRealm"/>.
-        /// </summary>
-        public ClientResyncMode ClientResyncMode { get; set; } = ClientResyncMode.RecoverLocalRealm;
-
         public object Partition { get; }
+
+        internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
@@ -193,7 +190,7 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 Partition = _partitionString,
-                client_resync_mode = ClientResyncMode,
+                session_stop_policy = SessionStopPolicy,
             };
         }
     }

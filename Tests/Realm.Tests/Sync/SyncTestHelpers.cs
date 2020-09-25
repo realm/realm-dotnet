@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -107,36 +106,6 @@ namespace Realms.Tests.Sync
             session.SimulateError(code, message);
 
             return tcs.Task;
-        }
-
-        public static Task WaitForUploadAsync(Realm realm) => WaitForSyncAsync(realm, upload: true, download: false);
-
-        public static Task WaitForDownloadAsync(Realm realm) => WaitForSyncAsync(realm, upload: false, download: true);
-
-        public static async Task WaitForSyncAsync(Realm realm, bool upload = true, bool download = true)
-        {
-            var session = realm.GetSession();
-            try
-            {
-                if (upload)
-                {
-                    await session.WaitForUploadAsync();
-                }
-
-                if (upload && download)
-                {
-                    await Task.Delay(50);
-                }
-
-                if (download)
-                {
-                    await session.WaitForDownloadAsync();
-                }
-            }
-            finally
-            {
-                session.CloseHandle();
-            }
         }
     }
 }
