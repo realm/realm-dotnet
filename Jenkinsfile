@@ -329,14 +329,17 @@ def NetCoreTest(String nodeName) {
         dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
         dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
+
+      String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
+
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
-          withRealmCloud(version: '2020-09-24', appsToImport: ["dotnet-integration-tests": "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"]) { networkName ->
-            def appId = sh script: "cat ${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests/app_id", returnStdout: true
-
+          withRealmCloud(version: '2020-09-24', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
+              def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
+
               script += " --baasurl http://mongodb-realm --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
               sh """
