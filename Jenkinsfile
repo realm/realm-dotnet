@@ -340,7 +340,7 @@ def NetCoreTest(String nodeName) {
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
 
-              script += " --baasurl http://mongodb-realm --baasappid ${appId.trim()}"
+              script += " --baasurl http://mongodb-realm:9090 --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
