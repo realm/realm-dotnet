@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -78,15 +79,6 @@ namespace Realms.Tests.Sync
             }
 
             return result.ToArray();
-        }
-
-        public static async Task<SyncConfiguration> GetFakeConfigAsync(string userId = null, string optionalPath = null)
-        {
-            throw new NotImplementedException();
-
-            //var user = await GetFakeUserAsync(userId);
-            //var serverUri = new Uri($"realm://localhost:9080/{Guid.NewGuid()}");
-            //return new SyncConfiguration(serverUri, user, optionalPath);
         }
 
         public static Task<Tuple<Session, T>> SimulateSessionErrorAsync<T>(Session session, ErrorCode code, string message)

@@ -366,7 +366,21 @@ extern "C" {
             user->log_out();
         }
 
-        app->sync_manager()->reset_for_testing();
+        while (app->sync_manager()->has_existing_sessions()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+
+        bool did_reset = false;
+        while (!did_reset) {
+            try {
+                app->sync_manager()->reset_for_testing();
+                did_reset = true;
+            }
+            catch (...) {
+
+            }
+        }
+
         App::clear_cached_apps();
     }
 

@@ -134,7 +134,21 @@ namespace Realms.Tests.Sync
             app ??= _app;
 
             var user = await GetUserAsync(app);
-            return new SyncConfiguration(partition, user);
+            return GetSyncConfiguration(partition, user);
+        }
+
+        protected SyncConfiguration GetSyncConfiguration(string partition, User user)
+        {
+            return new SyncConfiguration(partition, user)
+            {
+                ObjectClasses = new[] { typeof(HugeSyncObject) }
+            };
+        }
+
+        public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        {
+            var user = GetFakeUser(app, userId);
+            return new SyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath);
         }
     }
 }

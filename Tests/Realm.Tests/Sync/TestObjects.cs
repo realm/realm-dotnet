@@ -16,10 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using MongoDB.Bson;
+
 namespace Realms.Tests.Sync
 {
     public class HugeSyncObject : RealmObject
     {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
         public byte[] Data { get; set; }
 
         public HugeSyncObject()

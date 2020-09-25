@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -29,47 +28,37 @@ namespace Realms.Tests.Sync
 #pragma warning disable CS0618 // Don't complain about SimulateProgress
 
     [TestFixture, Preserve(AllMembers = true)]
-    [Ignore("V10TODO: Enable when sync API are wired up.")]
     public class SessionTests : SyncTestBase
     {
         [Test]
         public void Realm_GetSession_WhenSyncedRealm()
         {
             var user = GetFakeUser(_app);
-            var config = new SyncConfiguration("foo-bar", user);
+            var config = GetSyncConfiguration("foo-bar", user);
 
-            using (var realm = GetRealm(config))
-            {
-                var session = GetSession(realm);
+            using var realm = GetRealm(config);
+            var session = GetSession(realm);
 
-                Assert.That(session.User, Is.EqualTo(user));
-            }
+            Assert.That(session.User, Is.EqualTo(user));
         }
 
         [Test]
         public void Realm_GetSession_WhenLocalRealm_ShouldThrow()
         {
-            using (var realm = Realm.GetInstance())
-            {
-                Assert.Throws<ArgumentException>(() => GetSession(realm));
-            }
+            using var realm = Realm.GetInstance();
+            Assert.Throws<ArgumentException>(() => GetSession(realm));
         }
 
         [Test]
         public void Realm_GetSession_ShouldReturnSameObject()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                using (var realm = GetRealm(config))
-                {
-                    var session1 = GetSession(realm);
-                    var session2 = GetSession(realm);
+            var config = GetFakeConfig();
+            using var realm = GetRealm(config);
+            var session1 = GetSession(realm);
+            var session2 = GetSession(realm);
 
-                    Assert.That(session1, Is.EqualTo(session2));
-                    Assert.That(session1.GetHashCode(), Is.EqualTo(session2.GetHashCode()));
-                }
-            });
+            Assert.That(session1, Is.EqualTo(session2));
+            Assert.That(session1.GetHashCode(), Is.EqualTo(session2.GetHashCode()));
         }
 
         [Test]
@@ -77,54 +66,23 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                using (var realm = GetRealm(config))
-                {
-                    var session = GetSession(realm);
+                var config = GetFakeConfig();
+                using var realm = GetRealm(config);
+                var session = GetSession(realm);
 
-                    const ErrorCode code = (ErrorCode)102;
-                    const string message = "Some fake error has occurred";
+                const ErrorCode code = (ErrorCode)102;
+                const string message = "Some fake error has occurred";
 
-                    var result = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message);
-                    CleanupOnTearDown(result.Item1);
+                var result = await SyncTestHelpers.SimulateSessionErrorAsync<SessionException>(session, code, message);
+                CleanupOnTearDown(result.Item1);
 
-                    var error = result.Item2;
-                    Assert.That(error.Message, Is.EqualTo(message));
-                    Assert.That(error.ErrorCode, Is.EqualTo(code));
+                var error = result.Item2;
+                Assert.That(error.Message, Is.EqualTo(message));
+                Assert.That(error.ErrorCode, Is.EqualTo(code));
 
-                    var errorSession = result.Item1;
-                }
-            });
-        }
+                var errorSession = result.Item1;
 
-        [Test]
-        [Ignore("This is no longer relevant with the automatic client reset recovery.")]
-        public void Session_DivergingHistories_ShouldRaiseClientResetException()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var config = await SyncTestHelpers.GetFakeConfigAsync();
-                ClientResetException error = null;
-                using (var realm = GetRealm(config))
-                {
-                    var session = GetSession(realm);
-
-                    var result = await SyncTestHelpers.SimulateSessionErrorAsync<ClientResetException>(session,
-                                                                                                  ErrorCode.DivergingHistories,
-                                                                                                  "Fake client reset is required");
-                    CleanupOnTearDown(result.Item1);
-
-                    error = result.Item2;
-                }
-
-                Assert.That(error.BackupFilePath, Is.Not.Null);
-                Assert.That(error.BackupFilePath, Does.Contain(Path.Combine("io.realm.object-server-recovered-realms", "recovered_realm")));
-                Assert.That(File.Exists(error.BackupFilePath), Is.False);
-
-                var clientResetSuccess = error.InitiateClientReset();
-
-                Assert.That(clientResetSuccess, Is.True);
-                Assert.That(File.Exists(error.BackupFilePath), Is.True);
+                Assert.That(errorSession, Is.EqualTo(session));
             });
         }
 
@@ -137,7 +95,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync("progress");
-                var realm = GetRealm(config);
+                using var realm = GetRealm(config);
+
                 var completionTCS = new TaskCompletionSource<ulong>();
                 var callbacksInvoked = 0;
 
@@ -153,7 +112,7 @@ namespace Realms.Tests.Sync
                     });
                 }
 
-                var token = observable.Subscribe(p =>
+                using var token = observable.Subscribe(p =>
                 {
                     try
                     {
@@ -168,9 +127,9 @@ namespace Realms.Tests.Sync
                         if (mode == ProgressMode.ForCurrentlyOutstandingWork)
                         {
                             if (p.TransferableBytes <= ObjectSize ||
-                                p.TransferableBytes >= (ObjectsToRecord + 1) * ObjectSize)
+                                p.TransferableBytes >= (ObjectsToRecord + 2) * ObjectSize)
                             {
-                                throw new Exception($"Expected: {p.TransferredBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
+                                throw new Exception($"Expected: {p.TransferableBytes} to be in the ({ObjectSize}, {(ObjectsToRecord + 1) * ObjectSize}) range.");
                             }
                         }
                     }
@@ -185,82 +144,67 @@ namespace Realms.Tests.Sync
                     }
                 });
 
-                using (token)
+                realm.Write(() =>
                 {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new HugeSyncObject(ObjectSize));
-                    });
+                    realm.Add(new HugeSyncObject(ObjectSize));
+                });
 
-                    var totalTransferred = await completionTCS.Task;
+                var totalTransferred = await completionTCS.Task;
 
-                    if (mode == ProgressMode.ForCurrentlyOutstandingWork)
-                    {
-                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
+                if (mode == ProgressMode.ForCurrentlyOutstandingWork)
+                {
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo(ObjectSize));
 
-                        // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
-                        // so in the fixed mode, we should not get updates for it.
-                        Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 5) * ObjectSize));
-                    }
-                    else
-                    {
-                        Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
-                    }
-
-                    Assert.That(callbacksInvoked, Is.GreaterThan(1));
+                    // We add ObjectsToRecord + 1 items, but the last item is added after subscribing
+                    // so in the fixed mode, we should not get updates for it.
+                    Assert.That(totalTransferred, Is.LessThan((ObjectsToRecord + 5) * ObjectSize));
                 }
+                else
+                {
+                    Assert.That(totalTransferred, Is.GreaterThanOrEqualTo((ObjectsToRecord + 1) * ObjectSize));
+                }
+
+                Assert.That(callbacksInvoked, Is.GreaterThan(1));
             });
         }
 
         [Test]
         public void Session_Stop_StopsSession()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                // OpenRealmAndStopSession will call Stop and assert the state changed
-                await OpenRealmAndStopSession();
-            });
+            // OpenRealmAndStopSession will call Stop and assert the state changed
+            OpenRealmAndStopSession();
         }
 
         [Test]
         public void Session_Start_ResumesSession()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var session = await OpenRealmAndStopSession();
+            var session = OpenRealmAndStopSession();
 
-                session.Start();
-                Assert.That(session.State, Is.EqualTo(SessionState.Active));
-            });
+            session.Start();
+            Assert.That(session.State, Is.EqualTo(SessionState.Active));
         }
 
         [Test]
         public void Session_Stop_IsIdempotent()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var session = await OpenRealmAndStopSession();
+            var session = OpenRealmAndStopSession();
 
-                // Stop it again
-                session.Stop();
-                Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
-            });
+            // Stop it again
+            session.Stop();
+            Assert.That(session.State, Is.EqualTo(SessionState.Inactive));
         }
 
         [Test]
         public void Session_Start_IsIdempotent()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var session = await OpenRealmAndStopSession();
+            var session = OpenRealmAndStopSession();
 
-                session.Start();
-                Assert.That(session.State, Is.EqualTo(SessionState.Active));
+            session.Start();
+            Assert.That(session.State, Is.EqualTo(SessionState.Active));
 
-                // Start it again
-                session.Start();
-                Assert.That(session.State, Is.EqualTo(SessionState.Active));
-            });
+            // Start it again
+            session.Start();
+            Assert.That(session.State, Is.EqualTo(SessionState.Active));
         }
 
         /// <summary>
@@ -268,9 +212,9 @@ namespace Realms.Tests.Sync
         /// to Inactive.
         /// </summary>
         /// <returns>The stopped session.</returns>
-        private async Task<Session> OpenRealmAndStopSession()
+        private Session OpenRealmAndStopSession()
         {
-            var config = await SyncTestHelpers.GetFakeConfigAsync();
+            var config = GetFakeConfig();
             var realm = GetRealm(config);
             var session = GetSession(realm);
 
