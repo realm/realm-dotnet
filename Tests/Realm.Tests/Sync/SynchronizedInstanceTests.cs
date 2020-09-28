@@ -59,7 +59,7 @@ namespace Realms.Tests.Sync
 
                 var initialSize = new FileInfo(config.DatabasePath).Length;
 
-                var attempts = 10;
+                var attempts = 20;
 
                 // Give core a chance to close the Realm
                 while (!Realm.Compact(config) && (attempts-- > 0))
