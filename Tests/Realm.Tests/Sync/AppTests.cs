@@ -69,7 +69,10 @@ namespace Realms.Tests.Sync
                 appConfig.LogLevel = logLevel;
                 appConfig.CustomLogger = (message, level) =>
                 {
-                    logBuilder.AppendLine($"[{level}] {message}");
+                    lock (logBuilder)
+                    {
+                        logBuilder.AppendLine($"[{level}] {message}");
+                    }
                 };
 
                 var app = CreateApp(appConfig);
