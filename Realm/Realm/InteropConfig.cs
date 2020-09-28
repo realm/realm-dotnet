@@ -69,7 +69,7 @@ namespace Realms
             Directory.CreateDirectory(folder);
             return folder;
 
-            bool IsDirectoryWritable(string path)
+            static bool IsDirectoryWritable(string path)
             {
                 if (!Directory.Exists(path))
                 {

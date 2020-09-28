@@ -55,6 +55,16 @@ namespace Realms.Sync
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
+        [Preserve]
+        static SyncConfiguration()
+        {
+            _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
+            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
+            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
+            _ = new MongoDB.Bson.Serialization.Serializers.Int64Serializer();
+            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
@@ -67,7 +77,8 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(string partition, User user, string optionalPath = null) : this(partition, partition.ToJson(), user, optionalPath)
+        public SyncConfiguration(string partition, User user, string optionalPath = null)
+            : this(partition, partition.ToJson(), user, optionalPath)
         {
         }
 
@@ -83,7 +94,8 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(long? partition, User user, string optionalPath = null) : this(partition, partition.ToJson(), user, optionalPath)
+        public SyncConfiguration(long? partition, User user, string optionalPath = null)
+            : this(partition, partition.ToJson(), user, optionalPath)
         {
         }
 
@@ -99,7 +111,8 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null) : this(partition, partition.ToJson(), user, optionalPath)
+        public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
+            : this(partition, partition.ToJson(), user, optionalPath)
         {
         }
 
