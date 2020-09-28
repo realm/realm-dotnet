@@ -32,7 +32,11 @@ namespace Realms.Tests.Sync
 
         private static AppConfiguration _baseConfig;
 
-        public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig?.AppId ?? "myapp-123") { BaseUri = _baseConfig?.BaseUri ?? new Uri("http://localhost:12345") };
+        public static AppConfiguration GetAppConfig() => new AppConfiguration(_baseConfig?.AppId ?? "myapp-123")
+        {
+            BaseUri = _baseConfig?.BaseUri ?? new Uri("http://localhost:12345"),
+            MetadataPersistenceMode = MetadataPersistenceMode.NotEncrypted,
+        };
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
