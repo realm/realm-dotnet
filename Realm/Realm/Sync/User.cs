@@ -70,6 +70,12 @@ namespace Realms.Sync
         public UserState State => Handle.GetState();
 
         /// <summary>
+        /// Gets a value indicating which <see cref="Credentials.AuthProvider"/> this user logged in with.
+        /// </summary>
+        /// <value>The <see cref="Credentials.AuthProvider"/> used to login the user.</value>
+        public Credentials.AuthProvider Provider => Handle.GetProvider();
+
+        /// <summary>
         /// Gets the app with which this user is associated.
         /// </summary>
         /// <value>An <see cref="App"/> instance that owns this user.</value>

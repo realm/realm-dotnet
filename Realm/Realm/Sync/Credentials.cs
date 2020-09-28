@@ -212,6 +212,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets a value indicating which <see cref="AuthProvider"/> these Credentials are using.
         /// </summary>
+        /// <value>The <see cref="AuthProvider"/> these credentials use.</value>
         public AuthProvider Provider { get; }
 
         internal string Token { get; }

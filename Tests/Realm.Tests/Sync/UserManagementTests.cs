@@ -153,6 +153,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.State, Is.EqualTo(UserState.LoggedIn));
+                Assert.That(user.Provider, Is.EqualTo(Credentials.AuthProvider.EmailPassword));
                 Assert.That(user.AccessToken, Is.Not.Empty);
                 Assert.That(user.RefreshToken, Is.Not.Empty);
 

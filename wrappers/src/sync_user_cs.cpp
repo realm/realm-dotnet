@@ -80,6 +80,50 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT AuthProvider realm_syncuser_get_auth_provider(SharedSyncUser& user, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            auto provider = user->provider_type();
+            if (provider == IdentityProviderAnonymous) {
+                return AuthProvider::ANONYMOUS;
+            }
+
+            if (provider == IdentityProviderFacebook) {
+                return AuthProvider::FACEBOOK;
+            }
+
+            if (provider == IdentityProviderGoogle) {
+                return AuthProvider::GOOGLE;
+            }
+
+            if (provider == IdentityProviderApple) {
+                return AuthProvider::APPLE;
+            }
+
+            if (provider == IdentityProviderCustom) {
+                return AuthProvider::CUSTOM;
+            }
+
+            if (provider == IdentityProviderUsernamePassword) {
+                return AuthProvider::USERNAME_PASSWORD;
+            }
+
+            if (provider == IdentityProviderFunction) {
+                return AuthProvider::FUNCTION;
+            }
+
+            if (provider == IdentityProviderUserAPIKey) {
+                return AuthProvider::USER_API_KEY;
+            }
+
+            if (provider == IdentityProviderServerAPIKey) {
+                return AuthProvider::SERVER_API_KEY;
+            }
+
+            return (AuthProvider)999;
+        });
+    }
+
     REALM_EXPORT size_t realm_syncuser_get_custom_data(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
