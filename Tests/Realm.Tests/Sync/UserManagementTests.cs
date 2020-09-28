@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Realms.Sync;
 
@@ -166,14 +167,14 @@ namespace Realms.Tests.Sync
             var user = GetFakeUser(accessToken: tokenWithCustomData);
 
             Assert.That(user.CustomData, Is.Not.Null);
-            Assert.That(user.CustomData["name"], Is.EqualTo("Timothy"));
-            Assert.That(user.CustomData["email"], Is.EqualTo("big_tim@gmail.com"));
+            Assert.That(user.CustomData["name"].AsString, Is.EqualTo("Timothy"));
+            Assert.That(user.CustomData["email"].AsString, Is.EqualTo("big_tim@gmail.com"));
             Assert.That(user.CustomData["addresses"].AsBsonArray.Count, Is.EqualTo(2));
-            Assert.That(user.CustomData["addresses"][0]["city"], Is.EqualTo("NY"));
-            Assert.That(user.CustomData["addresses"][0]["street"], Is.EqualTo("42nd"));
-            Assert.That(user.CustomData["addresses"][1]["city"], Is.EqualTo("SF"));
-            Assert.That(user.CustomData["addresses"][1]["street"], Is.EqualTo("Main St."));
-            Assert.That(user.CustomData["favoriteIds"], Is.EquivalentTo(new[] { 1, 2, 3 }));
+            Assert.That(user.CustomData["addresses"][0]["city"].AsString, Is.EqualTo("NY"));
+            Assert.That(user.CustomData["addresses"][0]["street"].AsString, Is.EqualTo("42nd"));
+            Assert.That(user.CustomData["addresses"][1]["city"].AsString, Is.EqualTo("SF"));
+            Assert.That(user.CustomData["addresses"][1]["street"].AsString, Is.EqualTo("Main St."));
+            Assert.That(user.CustomData["favoriteIds"].AsBsonArray.Select(i => i.AsInt64), Is.EquivalentTo(new[] { 1, 2, 3 }));
         }
 
         [Test]

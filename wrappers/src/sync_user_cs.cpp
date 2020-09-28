@@ -80,14 +80,16 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT size_t realm_syncuser_get_custom_data(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t realm_syncuser_get_custom_data(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             if (user->custom_data()) {
+                is_null = false;
                 std::string serialized_data = bson::Bson(user->custom_data().value()).to_string();
                 return stringdata_to_csharpstringbuffer(serialized_data, buffer, buffer_length);
             }
 
+            is_null = true;
             return (size_t)0;
         });
     }
