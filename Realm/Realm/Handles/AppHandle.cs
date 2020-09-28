@@ -92,7 +92,12 @@ namespace Realms.Sync
             public static extern void reset_for_testing(AppHandle app);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_user_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_user_for_testing(AppHandle app, [MarshalAs(UnmanagedType.LPWStr)] string id_buf, IntPtr id_len, out NativeException ex);
+            public static extern IntPtr get_user_for_testing(
+                AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string id_buf, IntPtr id_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string refresh_token_buf, IntPtr refresh_token_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string access_token_buf, IntPtr access_token_len,
+                out NativeException ex);
 
             public static class EmailPassword
             {
@@ -260,9 +265,14 @@ namespace Realms.Sync
             NativeMethods.reset_for_testing(this);
         }
 
-        public SyncUserHandle GetUserForTesting(string id)
+        public SyncUserHandle GetUserForTesting(string id, string refreshToken, string accessToken)
         {
-            var result = NativeMethods.get_user_for_testing(this, id, (IntPtr)id.Length, out var ex);
+            var result = NativeMethods.get_user_for_testing(
+                this,
+                id, (IntPtr)id.Length,
+                refreshToken, (IntPtr)refreshToken.Length,
+                accessToken, (IntPtr)accessToken.Length,
+                out var ex);
             ex.ThrowIfNecessary();
             return new SyncUserHandle(result);
         }

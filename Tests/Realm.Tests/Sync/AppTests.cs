@@ -23,7 +23,7 @@ using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class AppTests : SyncTestBase
     {
         [Test]

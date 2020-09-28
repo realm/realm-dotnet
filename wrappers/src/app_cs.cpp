@@ -24,6 +24,7 @@
 #include "sync_session_cs.hpp"
 #include "transport_cs.hpp"
 #include "debug.hpp"
+#include "app_cs.hpp"
 
 #include "sync/sync_manager.hpp"
 #include "sync/app_credentials.hpp"
@@ -154,19 +155,6 @@ namespace realm {
         private:
             void* m_managed_log_handler;
         };
-
-        inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
-            return [tcs_ptr](util::Optional<AppError> err) {
-                if (err) {
-                    s_void_callback(tcs_ptr, err->message.c_str(), err->message.length(),
-                        err->error_code.message().c_str(), err->error_code.message().length(),
-                        err->error_code.value());
-                }
-                else {
-                    s_void_callback(tcs_ptr, nullptr, 0, nullptr, 0, 0);
-                }
-            };
-        }
     }
 }
 
@@ -300,15 +288,22 @@ extern "C" {
         });
 }
 
-    REALM_EXPORT SharedSyncUser* shared_app_get_user_for_testing(SharedApp& app, uint16_t* id_buf, size_t id_len, NativeException::Marshallable& ex)
+    REALM_EXPORT SharedSyncUser* shared_app_get_user_for_testing(
+        SharedApp& app,
+        uint16_t* id_buf, size_t id_len,
+        uint16_t* refresh_token_buf, size_t refresh_token_len,
+        uint16_t* access_token_buf, size_t access_token_len,
+        NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             Utf16StringAccessor id(id_buf, id_len);
+            Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
+            Utf16StringAccessor access_token(access_token_buf, access_token_len);
             return new SharedSyncUser(
                 app->sync_manager()->get_user(
                     id,
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ",
+                    refresh_token,
+                    access_token,
                     "testing",
                     "my-device-id"));
         });

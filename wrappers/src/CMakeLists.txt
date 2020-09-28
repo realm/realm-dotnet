@@ -35,6 +35,7 @@ if(REALM_ENABLE_SYNC)
     )
 
     list(APPEND HEADERS
+        app_cs.hpp
         sync_session_cs.hpp
         transport_cs.hpp
     )

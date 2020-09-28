@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace Realms.Sync
 {
@@ -80,6 +81,28 @@ namespace Realms.Sync
         /// <value>A <see cref="UserProfile"/> object, containing information about the user's name, email, and so on.</value>
         public UserProfile Profile { get; }
 
+        /// <summary>
+        /// Gets the custom user data associated with this user in the Realm app.
+        /// </summary>
+        /// <remarks>
+        /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
+        /// </remarks>
+        /// <value>A document containing the user data.</value>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        public BsonDocument CustomData
+        {
+            get
+            {
+                var serialized = Handle.GetCustomData();
+                if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
+                {
+                    return null;
+                }
+
+                return doc;
+            }
+        }
+
         internal readonly SyncUserHandle Handle;
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
@@ -105,6 +128,22 @@ namespace Realms.Sync
 
             // V10TODO: native logout must be async
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Re-fetch the user's custom data from the server.
+        /// </summary>
+        /// <returns>
+        /// An awaitable Task, that, upon completion returns the updated user custom data. The <see cref="CustomData"/>
+        /// property will also be updated with the new information.
+        /// </returns>
+        public async Task<BsonDocument> RefreshCustomDataAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            Handle.RefreshCustomData(tcs);
+            await tcs.Task;
+
+            return CustomData;
         }
 
         /// <inheritdoc />

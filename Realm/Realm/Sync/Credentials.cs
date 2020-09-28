@@ -77,7 +77,13 @@ namespace Realms.Sync
             /// <summary>
             /// Mechanism for logging in with API keys generated in the server UI.
             /// </summary>
-            ServerApiKey = 8
+            ServerApiKey = 8,
+
+            /// <summary>
+            /// A provider that is not among the well known provider types. This is most likely the result of the server
+            /// introducing a new provider type that this version of the SDK doesn't know about.
+            /// </summary>
+            Unknown = 999,
         }
 
         /// <summary>

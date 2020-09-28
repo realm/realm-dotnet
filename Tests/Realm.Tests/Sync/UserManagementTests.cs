@@ -23,7 +23,7 @@ using Realms.Sync;
 
 namespace Realms.Tests.Sync
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class UserManagementTests : SyncTestBase
     {
         [Test]
@@ -157,6 +157,31 @@ namespace Realms.Tests.Sync
 
                 Assert.That(DefaultApp.CurrentUser, Is.EqualTo(user));
             });
+        }
+
+        [Test]
+        public void UserCustomData_ReadsFromAccessToken()
+        {
+            const string tokenWithCustomData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjIsInVzZXJfZGF0YSI6eyJuYW1lIjoiVGltb3RoeSIsImVtYWlsIjoiYmlnX3RpbUBnbWFpbC5jb20iLCJhZGRyZXNzZXMiOlt7ImNpdHkiOiJOWSIsInN0cmVldCI6IjQybmQifSx7ImNpdHkiOiJTRiIsInN0cmVldCI6Ik1haW4gU3QuIn1dLCJmYXZvcml0ZUlkcyI6WzEsMiwzXX19.wYYtavafunx-iEKFNwXC6DR0C3vBDunwhvIox6XgqDE";
+            var user = GetFakeUser(accessToken: tokenWithCustomData);
+
+            Assert.That(user.CustomData, Is.Not.Null);
+            Assert.That(user.CustomData["name"], Is.EqualTo("Timothy"));
+            Assert.That(user.CustomData["email"], Is.EqualTo("big_tim@gmail.com"));
+            Assert.That(user.CustomData["addresses"].AsBsonArray.Count, Is.EqualTo(2));
+            Assert.That(user.CustomData["addresses"][0]["city"], Is.EqualTo("NY"));
+            Assert.That(user.CustomData["addresses"][0]["street"], Is.EqualTo("42nd"));
+            Assert.That(user.CustomData["addresses"][1]["city"], Is.EqualTo("SF"));
+            Assert.That(user.CustomData["addresses"][1]["street"], Is.EqualTo("Main St."));
+            Assert.That(user.CustomData["favoriteIds"], Is.EquivalentTo(new[] { 1, 2, 3 }));
+        }
+
+        [Test]
+        public void UserCustomData_WhenEmpty_ReturnsNull()
+        {
+            var user = GetFakeUser();
+
+            Assert.That(user.CustomData, Is.Null);
         }
     }
 }

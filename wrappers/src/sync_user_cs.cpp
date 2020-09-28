@@ -24,6 +24,7 @@
 #include "sync/sync_user.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/app.hpp"
+#include "app_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -79,6 +80,25 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT size_t realm_syncuser_get_custom_data(SharedSyncUser& user, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&] {
+            if (user->custom_data()) {
+                std::string serialized_data = bson::Bson(user->custom_data().value()).to_string();
+                return stringdata_to_csharpstringbuffer(serialized_data, buffer, buffer_length);
+            }
+
+            return (size_t)0;
+        });
+    }
+
+    REALM_EXPORT void realm_syncuser_refresh_custom_data(SharedSyncUser& user, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&] {
+            user->refresh_custom_data(get_callback_handler(tcs_ptr));
+        });
+    }
+
     enum class UserProfileField : uint8_t {
         name,
         email,
@@ -94,7 +114,7 @@ extern "C" {
     REALM_EXPORT size_t realm_syncuser_get_profile_data(SharedSyncUser& user, UserProfileField profile_field, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex) {
         return handle_errors(ex, [&]() {
             util::Optional<std::string> field;
-            
+
             switch (profile_field)
             {
             case UserProfileField::name:

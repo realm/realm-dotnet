@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -49,11 +50,18 @@ namespace Realms.Sync
                 IntPtr buffer, IntPtr buffer_length, [MarshalAs(UnmanagedType.U1)] out bool isNull,
                 out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_custom_data", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_custom_data(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length,
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_app", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_app(SyncUserHandle user, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_log_out", CallingConvention = CallingConvention.Cdecl)]
             public static extern void log_out(SyncUserHandle user, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_refresh_custom_data", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void refresh_custom_data(SyncUserHandle user, IntPtr tcs_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
@@ -136,11 +144,26 @@ namespace Realms.Sync
             ex.ThrowIfNecessary();
         }
 
+        public void RefreshCustomData(TaskCompletionSource<object> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+            NativeMethods.refresh_custom_data(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary();
+        }
+
         public string GetProfileData(UserProfileField field)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
                 return NativeMethods.get_profile_data(this, field, buffer, length, out isNull, out ex);
+            });
+        }
+
+        public string GetCustomData()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                return NativeMethods.get_custom_data(this, buffer, length, out isNull, out ex);
             });
         }
 
