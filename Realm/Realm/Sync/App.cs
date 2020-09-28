@@ -27,6 +27,7 @@ namespace Realms.Sync
 {
     public class App
     {
+        private readonly GCHandle? _logHandle;
         internal readonly AppHandle AppHandle;
 
         public SyncApi Sync { get; }
@@ -48,11 +49,23 @@ namespace Realms.Sync
                                             .Select(handle => new User(handle, this))
                                             .ToArray();
 
-        internal App(AppHandle handle)
+        internal App(AppHandle handle, GCHandle? logHandle = null)
         {
             AppHandle = handle;
+            _logHandle = logHandle;
             Sync = new SyncApi(this);
             EmailPasswordAuth = new EmailPasswordApi(this);
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="App"/> class.
+        /// </summary>
+        ~App()
+        {
+            if (_logHandle.HasValue)
+            {
+                _logHandle.Value.Free();
+            }
         }
 
         public static App Create(AppConfiguration config)
@@ -72,11 +85,12 @@ namespace Realms.Sync
                 log_level = config.LogLevel,
             };
 
+            GCHandle? logHandle = null;
             if (config.CustomLogger != null)
             {
                 // V10TODO: free the handle
-                var logHandle = GCHandle.Alloc(config.CustomLogger);
-                nativeConfig.managed_log_callback = GCHandle.ToIntPtr(logHandle);
+                logHandle = GCHandle.Alloc(config.CustomLogger);
+                nativeConfig.managed_log_callback = GCHandle.ToIntPtr(logHandle.Value);
             }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);

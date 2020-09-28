@@ -51,6 +51,10 @@ namespace Realms.Sync
         /// </summary>
         public Action<SyncProgress> OnProgress { get; set; }
 
+        /// <summary>
+        /// Gets the partition identifying the Realm this configuration is describing.
+        /// </summary>
+        /// <value>The partition value for the Realm.</value>
         public object Partition { get; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
@@ -69,7 +73,7 @@ namespace Realms.Sync
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="partition">
-        /// V10TODO: document this.
+        /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
         /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
@@ -77,6 +81,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(string partition, User user, string optionalPath = null)
             : this(partition, partition.ToJson(), user, optionalPath)
         {
@@ -86,7 +91,7 @@ namespace Realms.Sync
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="partition">
-        /// V10TODO: document this.
+        /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
         /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
@@ -94,6 +99,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(long? partition, User user, string optionalPath = null)
             : this(partition, partition.ToJson(), user, optionalPath)
         {
@@ -103,7 +109,7 @@ namespace Realms.Sync
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         /// <param name="partition">
-        /// V10TODO: document this.
+        /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
         /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
@@ -111,6 +117,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
             : this(partition, partition.ToJson(), user, optionalPath)
         {
@@ -149,46 +156,42 @@ namespace Realms.Sync
             ProgressNotificationToken progressToken = null;
             try
             {
-                using (var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcsHandle))
+                using var handle = SharedRealmHandle.OpenWithSyncAsync(configuration, ToNative(), schema, EncryptionKey, tcsHandle);
+                cancellationToken.Register(() =>
                 {
-                    cancellationToken.Register(() =>
+                    if (!handle.IsClosed)
                     {
-                        if (!handle.IsClosed)
-                        {
-                            handle.Cancel();
-                            tcs.TrySetCanceled();
-                        }
-                    });
-
-                    if (OnProgress != null)
-                    {
-                        progressToken = new ProgressNotificationToken(
-                            observer: (progress) =>
-                            {
-                                OnProgress(progress);
-                            },
-                            register: handle.RegisterProgressNotifier,
-                            unregister: (token) =>
-                            {
-                                if (!handle.IsClosed)
-                                {
-                                    handle.UnregisterProgressNotifier(token);
-                                }
-                            });
+                        handle.Cancel();
+                        tcs.TrySetCanceled();
                     }
+                });
 
-                    using (var realmReference = await tcs.Task)
-                    {
-                        var realmPtr = SharedRealmHandle.ResolveFromReference(realmReference);
-                        var sharedRealmHandle = new SharedRealmHandle(realmPtr);
-                        if (IsDynamic && !schema.Any())
+                if (OnProgress != null)
+                {
+                    progressToken = new ProgressNotificationToken(
+                        observer: (progress) =>
                         {
-                            sharedRealmHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
-                        }
-
-                        return new Realm(sharedRealmHandle, this, schema);
-                    }
+                            OnProgress(progress);
+                        },
+                        register: handle.RegisterProgressNotifier,
+                        unregister: (token) =>
+                        {
+                            if (!handle.IsClosed)
+                            {
+                                handle.UnregisterProgressNotifier(token);
+                            }
+                        });
                 }
+
+                using var realmReference = await tcs.Task;
+                var realmPtr = SharedRealmHandle.ResolveFromReference(realmReference);
+                var sharedRealmHandle = new SharedRealmHandle(realmPtr);
+                if (IsDynamic && !schema.Any())
+                {
+                    sharedRealmHandle.GetSchema(nativeSchema => schema = RealmSchema.CreateFromObjectStoreSchema(nativeSchema));
+                }
+
+                return new Realm(sharedRealmHandle, this, schema);
             }
             finally
             {

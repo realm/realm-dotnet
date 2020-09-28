@@ -39,6 +39,9 @@ namespace Realms.Native
             Timeout = 1000,
         }
 
+#pragma warning disable SA1300 // Element should begin with upper-case letter
+#pragma warning disable IDE1006 // Naming Styles
+
         private enum NativeHttpMethod
         {
             get,
@@ -101,6 +104,9 @@ namespace Realms.Native
             HttpClientResponse response,
             [MarshalAs(UnmanagedType.LPArray), In] StringStringPair[] headers, int headers_len,
             IntPtr callback_ptr);
+
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore SA1300 // Element should begin with upper-case letter
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
