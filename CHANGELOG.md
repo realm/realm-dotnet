@@ -1,4 +1,4 @@
-## 5.1.0 (2020-09-29)
+## 5.1.0 (2020-09-30)
 ------------------
 
 ### Enhancements
@@ -16,7 +16,7 @@
 * Realm Studio: 5.0.0 or later.
 
 ### Internal
-* Using Sync 5.0.26 and Core 6.1.2.
+* Using Sync 5.0.27 and Core 6.1.2.
 * Added prerelease nuget feed via [GitHub packages](https://github.com/features/packages). (PR [#2028](https://github.com/realm/realm-dotnet/pull/2028))
 
 ## 5.0.1 (2020-09-10)
