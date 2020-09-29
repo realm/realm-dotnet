@@ -105,9 +105,6 @@ namespace Realms.Sync.Native
             }
         }
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool reset_metadata_on_error;
-
         internal LogLevel log_level;
 
         internal IntPtr managed_log_callback;

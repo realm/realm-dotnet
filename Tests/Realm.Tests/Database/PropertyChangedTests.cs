@@ -209,16 +209,15 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_databasePath))
-                    using (var transaction = otherRealm.BeginWrite())
-                    {
-                        var otherInstance = otherRealm.All<Person>().First();
-                        otherInstance.FirstName = "Peter";
+                    using var otherRealm = Realm.GetInstance(_databasePath);
+                    using var transaction = otherRealm.BeginWrite();
 
-                        Assert.That(notifiedPropertyNames, Is.Empty);
+                    var otherInstance = otherRealm.All<Person>().First();
+                    otherInstance.FirstName = "Peter";
 
-                        transaction.Rollback();
-                    }
+                    Assert.That(notifiedPropertyNames, Is.Empty);
+
+                    transaction.Rollback();
                 });
 
                 _realm.Refresh();

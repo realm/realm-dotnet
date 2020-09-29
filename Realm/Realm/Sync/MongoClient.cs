@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
-namespace Realms.Exceptions
+namespace Realms.Sync
 {
     /// <summary>
-    /// An exception thrown from operations interacting with a MongoDB Realm app.
+    /// The remote MongoClient used for working with data in MongoDB remotely via Realm.
     /// </summary>
-    public class AppException : Exception
+    public class MongoClient
     {
-        /// <summary>
-        /// Gets the error code, associated with the error.
-        /// </summary>
-        public int ErrorCode { get; }
+        private readonly User _user;
+        private readonly string _serviceId;
 
-        internal AppException(string message, string category, int errorCode)
-            : base($"{message}: {category}")
+        internal MongoClient(User user, string serviceId)
         {
-            ErrorCode = errorCode;
+            _user = user;
+            _serviceId = serviceId;
         }
     }
 }

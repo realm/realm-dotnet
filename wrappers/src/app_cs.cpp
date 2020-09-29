@@ -73,8 +73,6 @@ namespace realm {
 
             bool metadata_mode_has_value;
 
-            bool reset_metadata_on_error;
-
             util::Logger::Level log_level;
 
             void* managed_log_handler;
@@ -202,7 +200,6 @@ extern "C" {
             }
 
             SyncClientConfig sync_client_config;
-            sync_client_config.reset_metadata_on_error = app_config.reset_metadata_on_error;
             sync_client_config.log_level = app_config.log_level;
             sync_client_config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
 
@@ -426,16 +423,15 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void shared_app_email_call_reset_password_function(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void shared_app_email_call_reset_password_function(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, uint16_t* args_buf, size_t args_len, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             Utf16StringAccessor username(username_buf, username_len);
             Utf16StringAccessor password(password_buf, password_len);
+            Utf16StringAccessor serialized_args(args_buf, args_len);
 
-            // V10TODO: pass correct bson array
-            bson::BsonArray args;
-
-            app->provider_client<App::UsernamePasswordProviderClient>().call_reset_password_function(username, password, args, get_callback_handler(tcs_ptr));
+            auto args = static_cast<bson::BsonArray>(bson::parse(serialized_args.to_string()));
+            app->provider_client<App::UsernamePasswordProviderClient>().call_reset_password_function(std::move(username), std::move(password), std::move(args), get_callback_handler(tcs_ptr));
         });
     }
 

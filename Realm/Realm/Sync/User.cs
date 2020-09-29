@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -109,6 +110,20 @@ namespace Realms.Sync
             }
         }
 
+        /// <summary>
+        /// Gets a <see cref="ApiKeyApi"/> instance that exposes functionality about managing user API keys.
+        /// </summary>
+        /// <value>A <see cref="ApiKeyApi"/> instance scoped to this <see cref="User"/>.</value>
+        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/"/>
+        public ApiKeyApi ApiKeys { get; }
+
+        /// <summary>
+        /// Gets a <see cref="FunctionsApi"/> instance that exposes functionality about calling remote MongoDB Realm functions.
+        /// </summary>
+        /// <value>A <see cref="FunctionsApi"/> instance scoped to this <see cref="User"/>.</value>
+        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
+        public FunctionsApi Functions { get; }
+
         internal readonly SyncUserHandle Handle;
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
@@ -122,6 +137,8 @@ namespace Realms.Sync
             App = app;
             Handle = handle;
             Profile = new UserProfile(this);
+            ApiKeys = new ApiKeyApi(this);
+            Functions = new FunctionsApi(this);
         }
 
         /// <summary>
@@ -152,6 +169,13 @@ namespace Realms.Sync
             return CustomData;
         }
 
+        /// <summary>
+        /// Gets a <see cref="MongoClient"/> instance for accessing documents in the MongoDB.
+        /// </summary>
+        /// <param name="serviceName">The name of the service as configured on the server.</param>
+        /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
+        public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
+
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
@@ -172,6 +196,108 @@ namespace Realms.Sync
         public override int GetHashCode()
         {
             return Id.GetHashCode();
+        }
+
+        /// <summary>
+        /// A class exposing functionality for users to manage API keys from the client. It is always scoped
+        /// to a particular <see cref="User"/> and can only be accessed via <see cref="ApiKeys"/>.
+        /// </summary>
+        public class ApiKeyApi
+        {
+            private readonly User _user;
+
+            internal ApiKeyApi(User user)
+            {
+                _user = user;
+            }
+
+            /// <summary>
+            /// Creates an API key that can be used to authenticate as the user.
+            /// </summary>
+            /// <remarks>
+            /// The value of the returned API key must be persisted at this time as this is the only
+            /// time it is visible. The key is enabled when created. It can be disabled by calling
+            /// <see cref="DisableAsync"/>.
+            /// </remarks>
+            /// <param name="name">The friendly name of the key.</param>
+            /// <returns>
+            /// A <see cref="Task{ApiKey}"/> representing the asynchronous operation. Successful completion indicates
+            /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
+            /// be used to create <see cref="Credentials.ApiKey(string)"/>.
+            /// </returns>
+            public Task<ApiKey> CreateAsync(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// Fetches a specific user API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to fetch.</param>
+            /// <returns>
+            /// A <see cref="Task{ApiKey}"/> representing the asynchronous lookup operation.
+            /// </returns>
+            public Task<ApiKey> FetchAsync(ObjectId id)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// Fetches all API keys associated with the user.
+            /// </summary>
+            /// <returns>
+            /// An awaitable task representing the asynchronous lookup operation. Upon completion, the result contains
+            /// a collection of all API keys for that user.
+            /// </returns>
+            public Task<IEnumerable<ApiKey>> FetchAllAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// Deletes an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to delete.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchronous delete operation.</returns>
+            public Task DeleteAsync(ObjectId id)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// Disables an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to disable.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchronous disable operation.</returns>
+            /// <seealso cref="EnableAsync(ObjectId)"/>
+            public Task DisableAsync(ObjectId id)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// Enables an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to enable.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchrounous enable operation.</returns>
+            /// <seealso cref="DisableAsync(ObjectId)"/>
+            public Task EnableAsync(ObjectId id)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// A class exposing functionality for calling remote MongoDB Realm functions.
+        /// </summary>
+        public class FunctionsApi
+        {
+            private readonly User _user;
+
+            internal FunctionsApi(User user)
+            {
+                _user = user;
+            }
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Realms.Sync
             public static extern void call_reset_password_function(AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string function_args, IntPtr function_args_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
@@ -118,10 +119,14 @@ namespace Realms.Sync
                 ex.ThrowIfNecessary();
             }
 
-            public void CallResetPasswordFunction(string username, string password, TaskCompletionSource<object> tcs)
+            public void CallResetPasswordFunction(string username, string password, string functionArgs, TaskCompletionSource<object> tcs)
             {
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.call_reset_password_function(_appHandle, username, (IntPtr)username.Length, password, (IntPtr)password.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                EmailNativeMethods.call_reset_password_function(_appHandle,
+                    username, (IntPtr)username.Length,
+                    password, (IntPtr)password.Length,
+                    functionArgs, (IntPtr)functionArgs.Length,
+                    GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
             }
         }
