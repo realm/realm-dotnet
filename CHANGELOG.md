@@ -1,19 +1,22 @@
-## 5.0.2 (TBD)
+## 5.1.0 (TBD)
 ------------------
 
 ### Enhancements
-* None
+* Greatly improve performance of NOT IN queries on indexed string or int columns. (Core upgrade)
 
 ### Fixed
 * Fixed an issue that would cause using Realm on the main thread in WPF applications to throw an exception with a message "Realm accessed from the incorrect thread". (Issue [#2026](https://github.com/realm/realm-dotnet/issues/2026))
 * Fixed an issue that could cause an exception with the message "Opening Realm files of format version 0 is not supported by this version of Realm" when opening an encrypted Realm. (Core upgrade)
+* Slightly improve performance of most operations which read data from the Realm file. (Core upgrade)
+* Rerunning an equals query on an indexed string column which previously had more than one match and now has one match would sometimes throw a "key not found" exception. (Core upgrade)
+* When querying a table where links are part of the condition, the application may crash if objects has recently been added to the target table. (Core upgrade)
 
 ### Compatibility
 * Realm Object Server: 3.23.1 or later.
 * Realm Studio: 5.0.0 or later.
 
 ### Internal
-* Using Sync 5.0.23 and Core 6.0.26.
+* Using Sync 5.0.26 and Core 6.1.2.
 * Added prerelease nuget feed via [GitHub packages](https://github.com/features/packages). (PR [#2028](https://github.com/realm/realm-dotnet/pull/2028))
 
 ## 5.0.1 (2020-09-10)
@@ -40,7 +43,7 @@ NOTE: This version bumps the Realm file format to version 11. It is not possible
 * Realm Studio: 5.0.0 or later.
 
 ### Internal
-* Using Sync 5.0.21 and Core 6.0.24.
+* Using Sync 5.0.22 and Core 6.0.25.
 
 ## 4.3.0 (2020-02-05)
 ------------------
