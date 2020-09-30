@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,24 +17,27 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Native;
+using System.Runtime.InteropServices;
+using System.Text;
 
-namespace Realms.Exceptions
+namespace Realms.Native
 {
-    /// <summary>
-    /// An exception thrown from operations interacting with a MongoDB Realm app.
-    /// </summary>
-    public class AppException : Exception
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct AppError
     {
-        /// <summary>
-        /// Gets the error code, associated with the error.
-        /// </summary>
-        public int ErrorCode { get; }
+        [MarshalAs(UnmanagedType.U1)]
+        public bool is_null;
 
-        internal AppException(AppError appError)
-            : base($"{appError.Message}: {appError.ErrorCategory}")
-        {
-            ErrorCode = appError.error_code;
-        }
+        private byte* message_buf;
+        private IntPtr message_len;
+
+        private byte* error_category_buf;
+        private IntPtr error_category_len;
+
+        public int error_code;
+
+        public string Message => message_buf == null ? null : Encoding.UTF8.GetString(message_buf, (int)message_len);
+
+        public string ErrorCategory => error_category_buf == null ? null : Encoding.UTF8.GetString(error_category_buf, (int)error_category_len);
     }
 }

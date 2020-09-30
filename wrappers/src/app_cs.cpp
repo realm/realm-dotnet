@@ -47,8 +47,8 @@ namespace realm {
         std::string s_sdk_version;
 
         void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
-        void (*s_login_callback)(void* tcs_ptr, SharedSyncUser* user, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
-        void (*s_void_callback)(void* tcs_ptr, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
+        void (*s_login_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+        void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
 
         struct AppConfiguration
         {
@@ -266,20 +266,20 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void shared_app_login_user(SharedApp& app, Credentials credentials, void* task_completion_source, NativeException::Marshallable& ex)
+    REALM_EXPORT void shared_app_login_user(SharedApp& app, Credentials credentials, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             auto app_credentials = credentials.to_app_credentials();
-            app->log_in_with_credentials(app_credentials, [task_completion_source](std::shared_ptr<SyncUser> user, util::Optional<AppError> app_error) {
-                if (app_error) {
-                    s_login_callback(
-                        task_completion_source, nullptr,
-                        app_error->message.c_str(), app_error->message.length(),
-                        app_error->error_code.message().c_str(), app_error->error_code.message().length(),
-                        app_error->error_code.value());
+            app->log_in_with_credentials(app_credentials, [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
+                if (err) {
+                    std::string message = err->message;
+                    std::string error_category = err->error_code.message();
+                    MarshaledAppError app_error(message, error_category, err->error_code.value());
+
+                    s_login_callback(tcs_ptr, nullptr, app_error);
                 }
                 else {
-                    s_login_callback(task_completion_source, new SharedSyncUser(user), nullptr, 0, nullptr, 0, 0);
+                    s_login_callback(tcs_ptr, new SharedSyncUser(user), MarshaledAppError());
                 }
             });
         });
@@ -311,7 +311,7 @@ extern "C" {
         return handle_errors(ex, [&]() {
             app->remove_user(user, [tcs_ptr](util::Optional<AppError>) {
                 // ignore errors
-                s_void_callback(tcs_ptr, nullptr, 0, nullptr, 0, 0);
+                s_void_callback(tcs_ptr, MarshaledAppError());
             });
         });
     }

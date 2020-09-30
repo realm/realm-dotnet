@@ -18,9 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -225,9 +229,17 @@ namespace Realms.Sync
             /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
             /// be used to create <see cref="Credentials.ApiKey(string)"/>.
             /// </returns>
-            public Task<ApiKey> CreateAsync(string name)
+            public async Task<ApiKey> CreateAsync(string name)
             {
-                throw new NotImplementedException();
+                Argument.NotNullOrEmpty(name, nameof(name));
+
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.CreateApiKey(_user.App.AppHandle, name, tcs);
+                var apiKeys = await tcs.Task;
+
+                Debug.Assert(apiKeys.Length == 1, "The result of Create should be exactly 1 ApiKey.");
+
+                return new ApiKey(apiKeys.Single());
             }
 
             /// <summary>

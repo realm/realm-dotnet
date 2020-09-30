@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Sync;
 
@@ -185,5 +186,24 @@ namespace Realms.Tests.Sync
 
             Assert.That(user.CustomData, Is.Null);
         }
+
+        #region API Keys
+
+        [Test]
+        public void UserApiKeys_Create_CreatesApiKeyAndRevealsValue()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
+
+                Assert.That(apiKey.IsEnabled);
+                Assert.That(apiKey.Name, Is.EqualTo("my-api-key"));
+                Assert.That(apiKey.Value, Is.Not.Null);
+                Assert.That(apiKey.Id, Is.Not.EqualTo(default(ObjectId)));
+            });
+        }
+
+        #endregion
     }
 }

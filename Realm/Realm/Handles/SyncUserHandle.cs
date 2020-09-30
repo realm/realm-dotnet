@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms.Sync
@@ -29,6 +30,9 @@ namespace Realms.Sync
         {
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void ApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
@@ -69,6 +73,14 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr syncuserHandle);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_sync_user_initialize", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_create_api_key", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void create_api_key(SyncUserHandle handle, AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
+                IntPtr tcs_ptr, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
         }
@@ -76,6 +88,10 @@ namespace Realms.Sync
         static SyncUserHandle()
         {
             NativeCommon.Initialize();
+
+            NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
+            GCHandle.Alloc(apiKeysCallback);
+            NativeMethods.initialize(apiKeysCallback);
         }
 
         [Preserve]
@@ -158,7 +174,7 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             NativeMethods.refresh_custom_data(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
+            ex.ThrowIfNecessary(tcsHandle);
         }
 
         public string GetProfileData(UserProfileField field)
@@ -177,9 +193,44 @@ namespace Realms.Sync
             });
         }
 
+        public void CreateApiKey(AppHandle app, string name, TaskCompletionSource<UserApiKey[]> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+            NativeMethods.create_api_key(this, app, name, (IntPtr)name.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary(tcsHandle);
+        }
+
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.ApiKeysCallback))]
+        private static unsafe void HandleApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error)
+        {
+            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
+            try
+            {
+                var tcs = (TaskCompletionSource<UserApiKey[]>)tcsHandle.Target;
+                if (error.is_null)
+                {
+                    var result = new UserApiKey[api_keys_len];
+                    for (var i = 0; i < api_keys_len; i++)
+                    {
+                        result[i] = Marshal.PtrToStructure<UserApiKey>(IntPtr.Add(api_keys, i * UserApiKey.Size));
+                    }
+
+                    tcs.TrySetResult(result);
+                }
+                else
+                {
+                    tcs.TrySetException(new AppException(error));
+                }
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
     }
 }

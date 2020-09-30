@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using MongoDB.Bson;
+using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -62,5 +63,13 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         public override string ToString() => $"ApiKey {Name} ({Id})";
+
+        internal ApiKey(UserApiKey nativeKey)
+        {
+            Id = nativeKey.Id;
+            Name = nativeKey.Name;
+            Value = nativeKey.Key;
+            IsEnabled = !nativeKey.disabled;
+        }
     }
 }

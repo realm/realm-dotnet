@@ -42,10 +42,10 @@ namespace Realms.Sync
             public unsafe delegate void LogMessageCallback(IntPtr managed_handler, byte* message_buf, IntPtr message_len, LogLevel logLevel);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void UserLoginCallback(IntPtr tcs_ptr, IntPtr user_ptr, byte* message_buf, IntPtr message_len, byte* category_buf, IntPtr category_len, int error_code);
+            public delegate void UserLoginCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void VoidTaskCallback(IntPtr tcs_ptr, byte* message_buf, IntPtr message_len, byte* category_buf, IntPtr category_len, int error_code);
+            public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
@@ -250,14 +250,14 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             NativeMethods.login_user(this, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
+            ex.ThrowIfNecessary(tcsHandle);
         }
 
         public void Remove(SyncUserHandle user, TaskCompletionSource<object> tcs)
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             NativeMethods.remove_user(this, user, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
+            ex.ThrowIfNecessary(tcsHandle);
         }
 
         public void ResetForTesting()
@@ -300,22 +300,20 @@ namespace Realms.Sync
 
         [MonoPInvokeCallback(typeof(NativeMethods.UserLoginCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The user will own its handle.")]
-        private static unsafe void HandleUserLogin(IntPtr tcs_ptr, IntPtr user_ptr, byte* message_buf, IntPtr message_len, byte* error_category_buf, IntPtr error_category_len, int error_code)
+        private static unsafe void HandleUserLogin(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             try
             {
                 var tcs = (TaskCompletionSource<SyncUserHandle>)tcsHandle.Target;
-                if (user_ptr != IntPtr.Zero)
+                if (error.is_null)
                 {
                     var userHandle = new SyncUserHandle(user_ptr);
                     tcs.TrySetResult(userHandle);
                 }
                 else
                 {
-                    var message = Encoding.UTF8.GetString(message_buf, (int)message_len);
-                    var errorCategory = Encoding.UTF8.GetString(error_category_buf, (int)error_category_len);
-                    tcs.TrySetException(new AppException(message, errorCategory, error_code));
+                    tcs.TrySetException(new AppException(error));
                 }
             }
             finally
@@ -325,21 +323,19 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.VoidTaskCallback))]
-        private static unsafe void HandleTaskCompletion(IntPtr tcs_ptr, byte* message_buf, IntPtr message_len, byte* error_category_buf, IntPtr error_category_len, int error_code)
+        private static unsafe void HandleTaskCompletion(IntPtr tcs_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             try
             {
                 var tcs = (TaskCompletionSource<object>)tcsHandle.Target;
-                if (message_buf == null)
+                if (error.is_null)
                 {
                     tcs.TrySetResult(null);
                 }
                 else
                 {
-                    var message = Encoding.UTF8.GetString(message_buf, (int)message_len);
-                    var errorCategory = Encoding.UTF8.GetString(error_category_buf, (int)error_category_len);
-                    tcs.TrySetException(new AppException(message, errorCategory, error_code));
+                    tcs.TrySetException(new AppException(error));
                 }
             }
             finally

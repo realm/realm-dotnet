@@ -188,7 +188,7 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
             else {
                 s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), 0, nullptr, 0);
             }
-            });
+        });
 
         return new SharedAsyncOpenTask(task);
     });

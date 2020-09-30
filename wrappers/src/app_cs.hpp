@@ -25,17 +25,45 @@ using namespace realm::app;
 
 namespace realm {
 namespace binding {
-    extern void (*s_void_callback)(void* tcs_ptr, const char* message_buf, size_t message_len, const char* error_category_buf, size_t error_category_len, int error_code);
+    struct MarshaledAppError
+    {
+        bool is_null = true;
+        const char* message_buf = nullptr;
+        size_t message_len = 0;
+        const char* error_category_buf = nullptr;
+        size_t error_category_len = 0;
+        int error_code = 0;
+
+        MarshaledAppError()
+        {
+        }
+
+        MarshaledAppError(const std::string& message, const std::string& error_category, int err_code)
+        {
+            is_null = false;
+
+            message_buf = message.c_str();
+            message_len = message.size();
+
+            error_category_buf = error_category.c_str();
+            error_category_len = error_category.size();
+
+            error_code = err_code;
+        }
+    };
+
+    extern void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
 
     inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
-                s_void_callback(tcs_ptr, err->message.c_str(), err->message.length(),
-                    err->error_code.message().c_str(), err->error_code.message().length(),
-                    err->error_code.value());
+                std::string message = err->message;
+                std::string error_category = err->error_code.message();
+                MarshaledAppError app_error(message, error_category, err->error_code.value());
+                s_void_callback(tcs_ptr, app_error);
             }
             else {
-                s_void_callback(tcs_ptr, nullptr, 0, nullptr, 0, 0);
+                s_void_callback(tcs_ptr, MarshaledAppError());
             }
         };
     }
