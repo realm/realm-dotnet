@@ -35,6 +35,9 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void ApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public unsafe delegate void FunctionCallback(IntPtr tcs_ptr, BsonPayload response, AppError error);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -75,7 +78,15 @@ namespace Realms.Sync
             public static extern void destroy(IntPtr syncuserHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_sync_user_initialize", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback);
+            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback, FunctionCallback function_callback);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_call_function", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void call_function(SyncUserHandle handle, AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string function_name, IntPtr function_name_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string args, IntPtr args_len,
+                IntPtr tcs_ptr, out NativeException ex);
+
+            #region Api Keys
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_create_api_key", CallingConvention = CallingConvention.Cdecl)]
             public static extern void create_api_key(SyncUserHandle handle, AppHandle app,
@@ -105,17 +116,23 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_enable_api_key", CallingConvention = CallingConvention.Cdecl)]
             public static extern void enable_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
 
+            #endregion
+
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
         }
 
-        static SyncUserHandle()
+        static unsafe SyncUserHandle()
         {
             NativeCommon.Initialize();
 
             NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
+            NativeMethods.FunctionCallback functionCallback = HandleFunctionCallback;
+
             GCHandle.Alloc(apiKeysCallback);
-            NativeMethods.initialize(apiKeysCallback);
+            GCHandle.Alloc(functionCallback);
+
+            NativeMethods.initialize(apiKeysCallback, functionCallback);
         }
 
         [Preserve]
@@ -217,6 +234,16 @@ namespace Realms.Sync
             });
         }
 
+        public void CallFunction(AppHandle app, string name, string args, TaskCompletionSource<BsonPayload> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+
+            NativeMethods.call_function(this, app, name, (IntPtr)name.Length, args, (IntPtr)args.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        #region Api Keys
+
         public void CreateApiKey(AppHandle app, string name, TaskCompletionSource<UserApiKey[]> tcs)
         {
             var tcsHandle = GCHandle.Alloc(tcs);
@@ -247,7 +274,6 @@ namespace Realms.Sync
             PrimitiveValue* idPtr = &primitiveId;
             NativeMethods.delete_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
-
         }
 
         public unsafe void DisableApiKey(AppHandle app, ObjectId id, TaskCompletionSource<object> tcs)
@@ -267,6 +293,8 @@ namespace Realms.Sync
             NativeMethods.enable_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
         }
+
+        #endregion
 
         protected override void Unbind()
         {
@@ -289,6 +317,28 @@ namespace Realms.Sync
                     }
 
                     tcs.TrySetResult(result);
+                }
+                else
+                {
+                    tcs.TrySetException(new AppException(error));
+                }
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.FunctionCallback))]
+        private static unsafe void HandleFunctionCallback(IntPtr tcs_ptr, BsonPayload response, AppError error)
+        {
+            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
+            try
+            {
+                var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
+                if (error.is_null)
+                {
+                    tcs.TrySetResult(response);
                 }
                 else
                 {

@@ -45,9 +45,17 @@ struct UserApiKey {
     bool disabled;
 };
 
+struct BsonPayload {
+    bson::Bson::Type type = bson::Bson::Type::Null;
+    const char* serialized;
+    int serialized_len;
+};
+
 namespace realm {
     namespace binding {
         void (*s_api_key_callback)(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
+        
+        void (*s_function_callback)(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
 
         inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
             if (err) {
@@ -80,7 +88,7 @@ namespace realm {
                     }
 
                     marshaled_key.name = api_key.name.c_str();
-                    marshaled_key.name_len = api_key.name.length();
+                    marshaled_key.name_len = api_key.name.size();
                     marshaled_key.disabled = api_key.disabled;
 
                     marshalled_keys[i] = marshaled_key;
@@ -100,11 +108,11 @@ namespace realm {
 }
 
 extern "C" {
-    REALM_EXPORT void realm_sync_user_initialize(decltype(s_api_key_callback) api_key_callback)
+    REALM_EXPORT void realm_sync_user_initialize(decltype(s_api_key_callback) api_key_callback, decltype(s_function_callback) function_callback)
     {
         s_api_key_callback = api_key_callback;
+        s_function_callback = function_callback;
     }
-
 
     REALM_EXPORT void realm_syncuser_log_out(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
@@ -285,9 +293,40 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void realm_syncuser_call_function(SharedSyncUser& user, SharedApp& app, uint16_t* function_name_buf, size_t function_name_len, uint16_t* args_buf, size_t args_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&] {
+            Utf16StringAccessor function_name(function_name_buf, function_name_len);
+            Utf16StringAccessor serialized_args(args_buf, args_len);
+
+            auto args = static_cast<bson::BsonArray>(bson::parse(serialized_args.to_string()));
+
+            app->call_function(user, function_name, args, [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
+                if (err) {
+                    std::string message = err->message;
+                    std::string error_category = err->error_code.message();
+                    MarshaledAppError app_error(message, error_category, err->error_code.value());
+
+                    s_function_callback(tcs_ptr, BsonPayload(), app_error);
+                }
+                else if (response) {
+                    BsonPayload payload;
+                    std::string serialized = response->to_string();
+                    payload.type = response->type();
+                    payload.serialized = serialized.c_str();
+                    payload.serialized_len = static_cast<int>(serialized.size());
+                    s_function_callback(tcs_ptr, payload, MarshaledAppError());
+                }
+                else {
+                    s_function_callback(tcs_ptr, BsonPayload(), MarshaledAppError());
+                }
+            });
+        });
+    }
+
     REALM_EXPORT void realm_syncuser_create_api_key(SharedSyncUser& user, SharedApp& app, uint16_t* name_buf, size_t name_len, void* tcs_ptr, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&] {
+        handle_errors(ex, [&] {
             Utf16StringAccessor name(name_buf, name_len);
             app->provider_client<App::UserAPIKeyProviderClient>().create_api_key(name, user, [tcs_ptr](App::UserAPIKey api_key, util::Optional<AppError> err) {
                 invoke_api_key_callback(tcs_ptr, api_key, err);

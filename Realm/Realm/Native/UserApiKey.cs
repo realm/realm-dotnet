@@ -39,7 +39,6 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public bool disabled;
 
-
         public ObjectId Id => id.ToObjectId();
 
         public string Key => key_buf == null ? null : Encoding.UTF8.GetString(key_buf, (int)key_len);

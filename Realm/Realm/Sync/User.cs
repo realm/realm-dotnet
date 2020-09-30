@@ -347,6 +347,31 @@ namespace Realms.Sync
             {
                 _user = user;
             }
+
+            public async Task<BsonValue> CallAsync(string name, params object[] args)
+            {
+                var response = await CallCoreAsync(name, args);
+                return response.GetValue();
+            }
+
+            public async Task<T> CallAsync<T>(string name, params object[] args)
+            {
+                var response = await CallCoreAsync(name, args);
+                return response.GetValue<T>();
+            }
+
+            private Task<BsonPayload> CallCoreAsync(string name, params object[] args)
+            {
+                Argument.NotNullOrEmpty(name, nameof(name));
+
+                var tcs = new TaskCompletionSource<BsonPayload>();
+
+                var bsonArgs = new BsonArray(args);
+
+                _user.Handle.CallFunction(_user.App.AppHandle, name, bsonArgs.ToString(), tcs);
+
+                return tcs.Task;
+            }
         }
     }
 }
