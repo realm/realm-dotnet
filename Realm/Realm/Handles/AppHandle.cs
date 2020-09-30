@@ -23,7 +23,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Native;
@@ -32,8 +31,6 @@ namespace Realms.Sync
 {
     internal partial class AppHandle : RealmHandle
     {
-        private static readonly Regex _platformRegex = new Regex("^(?<platform>[^0-9]*) (?<version>[^ ]*)", RegexOptions.Compiled);
-
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
@@ -154,21 +151,28 @@ namespace Realms.Sync
             GCHandle.Alloc(userLogin);
             GCHandle.Alloc(taskCallback);
 
-            string platform;
-            string platformVersion;
-            var osDescription = _platformRegex.Match(RuntimeInformation.OSDescription);
-            if (osDescription.Success)
-            {
-                platform = osDescription.Groups["platform"].Value;
-                platformVersion = osDescription.Groups["version"].Value;
-            }
-            else
-            {
-                platform = Environment.OSVersion.Platform.ToString();
-                platformVersion = Environment.OSVersion.VersionString;
-            }
+            //// This is a hack due to a mixup of what OS uses as platform/SDK and what is displayed in the UI.
+            //// The original code is below:
+            ////
+            //// string platform;
+            //// string platformVersion;
+            //// var platformRegex = new Regex("^(?<platform>[^0-9]*) (?<version>[^ ]*)", RegexOptions.Compiled);
+            //// var osDescription = platformRegex.Match(RuntimeInformation.OSDescription);
+            //// if (osDescription.Success)
+            //// {
+            ////     platform = osDescription.Groups["platform"].Value;
+            ////     platformVersion = osDescription.Groups["version"].Value;
+            //// }
+            //// else
+            //// {
+            ////     platform = Environment.OSVersion.Platform.ToString();
+            ////     platformVersion = Environment.OSVersion.VersionString;
+            //// }
 
-            var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString();
+            var platform = "Realm .NET";
+            var platformVersion = RuntimeInformation.OSDescription;
+
+            var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString(3);
             NativeMethods.initialize(
                 platform, (IntPtr)platform.Length,
                 platformVersion, (IntPtr)platformVersion.Length,
