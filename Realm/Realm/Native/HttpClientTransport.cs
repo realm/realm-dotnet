@@ -151,6 +151,15 @@ namespace Realms.Native
                         });
                     }
 
+                    foreach (var header in response.Content.Headers)
+                    {
+                        headers.Add(new StringStringPair
+                        {
+                            Key = header.Key,
+                            Value = header.Value.FirstOrDefault()
+                        });
+                    }
+
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,

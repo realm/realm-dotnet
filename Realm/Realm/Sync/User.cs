@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
 
@@ -249,9 +250,15 @@ namespace Realms.Sync
             /// <returns>
             /// A <see cref="Task{ApiKey}"/> representing the asynchronous lookup operation.
             /// </returns>
-            public Task<ApiKey> FetchAsync(ObjectId id)
+            public async Task<ApiKey> FetchAsync(ObjectId id)
             {
-                throw new NotImplementedException();
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.FetchApiKey(_user.App.AppHandle, id, tcs);
+                var apiKeys = await Handle404(tcs);
+
+                Debug.Assert(apiKeys == null || apiKeys.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
+
+                return apiKeys == null || apiKeys.Length == 0 ? null : new ApiKey(apiKeys.Single());
             }
 
             /// <summary>
@@ -261,9 +268,13 @@ namespace Realms.Sync
             /// An awaitable task representing the asynchronous lookup operation. Upon completion, the result contains
             /// a collection of all API keys for that user.
             /// </returns>
-            public Task<IEnumerable<ApiKey>> FetchAllAsync()
+            public async Task<IEnumerable<ApiKey>> FetchAllAsync()
             {
-                throw new NotImplementedException();
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.FetchAllApiKeys(_user.App.AppHandle, tcs);
+                var apiKeys = await tcs.Task;
+
+                return apiKeys.Select(k => new ApiKey(k)).ToArray();
             }
 
             /// <summary>
@@ -273,7 +284,10 @@ namespace Realms.Sync
             /// <returns>A <see cref="Task"/> representing the asynchronous delete operation.</returns>
             public Task DeleteAsync(ObjectId id)
             {
-                throw new NotImplementedException();
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DeleteApiKey(_user.App.AppHandle, id, tcs);
+
+                return Handle404(tcs);
             }
 
             /// <summary>
@@ -284,7 +298,10 @@ namespace Realms.Sync
             /// <seealso cref="EnableAsync(ObjectId)"/>
             public Task DisableAsync(ObjectId id)
             {
-                throw new NotImplementedException();
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DisableApiKey(_user.App.AppHandle, id, tcs);
+
+                return Handle404(tcs, id, shouldThrow: true);
             }
 
             /// <summary>
@@ -295,7 +312,27 @@ namespace Realms.Sync
             /// <seealso cref="DisableAsync(ObjectId)"/>
             public Task EnableAsync(ObjectId id)
             {
-                throw new NotImplementedException();
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.EnableApiKey(_user.App.AppHandle, id, tcs);
+
+                return Handle404(tcs, id, shouldThrow: true);
+            }
+
+            private static async Task<T> Handle404<T>(TaskCompletionSource<T> tcs, ObjectId? id = null, bool shouldThrow = false)
+            {
+                try
+                {
+                    return await tcs.Task;
+                }
+                catch (AppException ex) when (ex.ErrorCode == (int)AppException.AppErrorCodes.ApiKeyNotFound)
+                {
+                    if (shouldThrow)
+                    {
+                        throw new AppException($"Failed to execute operation because ApiKey with Id: {id} doesn't exist.", 404);
+                    }
+
+                    return default;
+                }
             }
         }
 

@@ -32,9 +32,19 @@ namespace Realms.Exceptions
         public int ErrorCode { get; }
 
         internal AppException(AppError appError)
-            : base($"{appError.Message}: {appError.ErrorCategory}")
+            : this($"{appError.ErrorCategory}: {appError.Message}", appError.error_code)
         {
-            ErrorCode = appError.error_code;
+        }
+
+        internal AppException(string message, int errorCode)
+            : base(message)
+        {
+            ErrorCode = errorCode;
+        }
+
+        internal enum AppErrorCodes
+        {
+            ApiKeyNotFound = 35,
         }
     }
 }

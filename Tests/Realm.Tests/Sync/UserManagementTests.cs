@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -202,6 +203,380 @@ namespace Realms.Tests.Sync
                 Assert.That(apiKey.Value, Is.Not.Null);
                 Assert.That(apiKey.Id, Is.Not.EqualTo(default(ObjectId)));
             });
+        }
+
+        [Test]
+        public void UserApiKeys_Create_WithInvalidName_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.CreateAsync("My very cool key"));
+
+                Assert.That(ex.Message, Does.Contain("InvalidParameter"));
+                Assert.That(ex.Message, Does.Contain("can only contain ASCII letters, numbers, underscores, and hyphens"));
+                Assert.That(ex.ErrorCode, Is.EqualTo(400));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_Fetch_WhenNoneExist_ReturnsNull()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var apiKey = await user.ApiKeys.FetchAsync(ObjectId.GenerateNewId());
+
+                Assert.That(apiKey, Is.Null);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_Fetch_WhenIdDoesntMatch_ReturnsNull()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                await user.ApiKeys.CreateAsync("foo");
+
+                var apiKey = await user.ApiKeys.FetchAsync(ObjectId.GenerateNewId());
+
+                Assert.That(apiKey, Is.Null);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_Fetch_WhenIdMatches_ReturnsKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var key = await user.ApiKeys.CreateAsync("foo");
+
+                var fetched = await user.ApiKeys.FetchAsync(key.Id);
+
+                Assert.That(fetched, Is.Not.Null);
+                AssertKeysAreSame(key, fetched);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_FetchAll_WithNoKeys()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var keys = await user.ApiKeys.FetchAllAsync();
+                Assert.That(keys, Is.Empty);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_FetchAll_WithOneKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var key1 = await user.ApiKeys.CreateAsync("foo");
+
+                var keys = await user.ApiKeys.FetchAllAsync();
+                Assert.That(keys.Count(), Is.EqualTo(1));
+
+                AssertKeysAreSame(key1, keys.Single());
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_FetchAll_WithMultipleKeys()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var originals = new List<ApiKey>();
+                for (var i = 0; i < 5; i++)
+                {
+                    originals.Add(await user.ApiKeys.CreateAsync($"key-{i}"));
+                }
+
+                var keys = await user.ApiKeys.FetchAllAsync();
+                Assert.That(keys.Count(), Is.EqualTo(originals.Count));
+
+                for (var i = 0; i < originals.Count; i++)
+                {
+                    AssertKeysAreSame(originals[i], keys.ElementAt(i));
+                }
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_DeleteKey_WithExistingId()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var toDelete = await user.ApiKeys.CreateAsync("to-delete");
+                var toRemain = await user.ApiKeys.CreateAsync("to-remain");
+
+                await user.ApiKeys.DeleteAsync(toDelete.Id);
+
+                var fetchedDeleted = await user.ApiKeys.FetchAsync(toDelete.Id);
+                Assert.That(fetchedDeleted, Is.Null);
+
+                var fetchedRemained = await user.ApiKeys.FetchAsync(toRemain.Id);
+                AssertKeysAreSame(toRemain, fetchedRemained);
+
+                var allKeys = await user.ApiKeys.FetchAllAsync();
+
+                Assert.That(allKeys.Count(), Is.EqualTo(1));
+                AssertKeysAreSame(toRemain, allKeys.Single());
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_DeleteKey_WithNonExistingId()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var first = await user.ApiKeys.CreateAsync("first");
+                var second = await user.ApiKeys.CreateAsync("second");
+
+                await user.ApiKeys.DeleteAsync(ObjectId.GenerateNewId());
+
+                var allKeys = await user.ApiKeys.FetchAllAsync();
+
+                Assert.That(allKeys.Count(), Is.EqualTo(2));
+                AssertKeysAreSame(first, allKeys.ElementAt(0));
+                AssertKeysAreSame(second, allKeys.ElementAt(1));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_DisableApiKey_WhenNonExistent_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var id = ObjectId.GenerateNewId();
+                var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.DisableAsync(id));
+
+                Assert.That(ex.ErrorCode, Is.EqualTo(404));
+                Assert.That(ex.Message, Does.Contain("doesn't exist"));
+                Assert.That(ex.Message, Does.Contain(id.ToString()));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_EnableApiKey_WhenNonExistent_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var id = ObjectId.GenerateNewId();
+                var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.EnableAsync(id));
+
+                Assert.That(ex.ErrorCode, Is.EqualTo(404));
+                Assert.That(ex.Message, Does.Contain("doesn't exist"));
+                Assert.That(ex.Message, Does.Contain(id.ToString()));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_EnableApiKey_WhenEnabled_IsNoOp()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var key = await user.ApiKeys.CreateAsync("foo");
+                Assert.That(key.IsEnabled);
+
+                await user.ApiKeys.EnableAsync(key.Id);
+
+                var fetched = await user.ApiKeys.FetchAsync(key.Id);
+                Assert.That(fetched.IsEnabled);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_DisableApiKey_WhenDisabled_IsNoOp()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var key = await user.ApiKeys.CreateAsync("foo");
+                Assert.That(key.IsEnabled);
+
+                await user.ApiKeys.DisableAsync(key.Id);
+
+                var fetched = await user.ApiKeys.FetchAsync(key.Id);
+                Assert.IsFalse(fetched.IsEnabled);
+
+                await user.ApiKeys.DisableAsync(key.Id);
+
+                var refetched = await user.ApiKeys.FetchAsync(key.Id);
+                Assert.IsFalse(refetched.IsEnabled);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_Disable_DisablesKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var first = await user.ApiKeys.CreateAsync("first");
+                var second = await user.ApiKeys.CreateAsync("second");
+
+                Assert.That(first.IsEnabled);
+                Assert.That(second.IsEnabled);
+
+                await user.ApiKeys.DisableAsync(first.Id);
+
+                var keys = await user.ApiKeys.FetchAllAsync();
+
+                Assert.That(keys.ElementAt(0).Id, Is.EqualTo(first.Id));
+                Assert.IsFalse(keys.ElementAt(0).IsEnabled);
+
+                Assert.That(keys.ElementAt(1).Id, Is.EqualTo(second.Id));
+                Assert.IsTrue(keys.ElementAt(1).IsEnabled);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_Enable_ReenablesKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var first = await user.ApiKeys.CreateAsync("first");
+                var second = await user.ApiKeys.CreateAsync("second");
+
+                Assert.That(first.IsEnabled);
+                Assert.That(second.IsEnabled);
+
+                await user.ApiKeys.DisableAsync(first.Id);
+
+                var keys = await user.ApiKeys.FetchAllAsync();
+
+                Assert.That(keys.ElementAt(0).Id, Is.EqualTo(first.Id));
+                Assert.IsFalse(keys.ElementAt(0).IsEnabled);
+
+                Assert.That(keys.ElementAt(1).Id, Is.EqualTo(second.Id));
+                Assert.IsTrue(keys.ElementAt(1).IsEnabled);
+
+                await user.ApiKeys.EnableAsync(first.Id);
+
+                keys = await user.ApiKeys.FetchAllAsync();
+
+                Assert.That(keys.ElementAt(0).Id, Is.EqualTo(first.Id));
+                Assert.IsTrue(keys.ElementAt(0).IsEnabled);
+
+                Assert.That(keys.ElementAt(1).Id, Is.EqualTo(second.Id));
+                Assert.IsTrue(keys.ElementAt(1).IsEnabled);
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_CanLoginWithGeneratedKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
+
+                var credentials = Credentials.ApiKey(apiKey.Value);
+                var apiKeyUser = await DefaultApp.LogInAsync(credentials);
+
+                Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
+
+                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
+                Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_CanLoginWithReenabledKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
+
+                await user.ApiKeys.DisableAsync(apiKey.Id);
+
+                var credentials = Credentials.ApiKey(apiKey.Value);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+
+                await user.ApiKeys.EnableAsync(apiKey.Id);
+
+                var apiKeyUser = await DefaultApp.LogInAsync(credentials);
+
+                Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
+
+                Assert.That(apiKeyUser.Provider, Is.EqualTo(Credentials.AuthProvider.ApiKey));
+                Assert.That(apiKeyUser.RefreshToken, Is.Not.EqualTo(user.RefreshToken));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_CantLoginWithDisabledKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
+
+                await user.ApiKeys.DisableAsync(apiKey.Id);
+
+                var credentials = Credentials.ApiKey(apiKey.Value);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+
+                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+            });
+        }
+
+        [Test]
+        public void UserApiKeys_CantLoginWithDeletedKey()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
+
+                await user.ApiKeys.DeleteAsync(apiKey.Id);
+
+                var credentials = Credentials.ApiKey(apiKey.Value);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+
+                Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+            });
+        }
+
+        private static void AssertKeysAreSame(ApiKey original, ApiKey fetched)
+        {
+            Assert.That(fetched.Id, Is.EqualTo(original.Id));
+            Assert.That(fetched.IsEnabled, Is.EqualTo(original.IsEnabled));
+            Assert.That(fetched.Name, Is.EqualTo(original.Name));
+            Assert.That(fetched.Value, Is.Null);
         }
 
         #endregion

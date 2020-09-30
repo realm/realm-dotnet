@@ -61,25 +61,29 @@ namespace realm {
                 std::vector<UserApiKey> marshalled_keys(keys.size());
                 for (auto i = 0; i < keys.size(); i++) {
                     auto& api_key = keys[i];
-                    UserApiKey marshalled_key;
-                    marshalled_key.id.type = realm::PropertyType::ObjectId;
-                    marshalled_key.id.has_value = true;
+                    UserApiKey marshaled_key;
+                    marshaled_key.id.type = realm::PropertyType::ObjectId;
+                    marshaled_key.id.has_value = true;
                     auto bytes = api_key.id.to_bytes();
                     for (int i = 0; i < 12; i++)
                     {
-                        marshalled_key.id.value.object_id_bytes[i] = bytes[i];
+                        marshaled_key.id.value.object_id_bytes[i] = bytes[i];
                     }
 
                     if (api_key.key) {
-                        marshalled_key.key = api_key.key->c_str();
-                        marshalled_key.key_len = api_key.key->size();
+                        marshaled_key.key = api_key.key->c_str();
+                        marshaled_key.key_len = api_key.key->size();
+                    }
+                    else {
+                        marshaled_key.key = nullptr;
+                        marshaled_key.key_len = 0;
                     }
 
-                    marshalled_key.name = api_key.name.c_str();
-                    marshalled_key.name_len = api_key.name.length();
-                    marshalled_key.disabled = api_key.disabled;
+                    marshaled_key.name = api_key.name.c_str();
+                    marshaled_key.name_len = api_key.name.length();
+                    marshaled_key.disabled = api_key.disabled;
 
-                    marshalled_keys[i] = marshalled_key;
+                    marshalled_keys[i] = marshaled_key;
                 }
 
                 s_api_key_callback(tcs_ptr, marshalled_keys.data(), static_cast<int>(marshalled_keys.size()), MarshaledAppError());
@@ -291,13 +295,10 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_fetch_api_key(SharedSyncUser& user, SharedApp& app, uint8_t* id_bytes, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_fetch_api_key(SharedSyncUser& user, SharedApp& app, PrimitiveValue& id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            std::array<uint8_t, 12> bytes;
-            std::copy(id_bytes, id_bytes + 12, bytes.begin());
-
-            app->provider_client<App::UserAPIKeyProviderClient>().fetch_api_key(ObjectId(std::move(bytes)), user, [tcs_ptr](App::UserAPIKey api_key, util::Optional<AppError> err) {
+            app->provider_client<App::UserAPIKeyProviderClient>().fetch_api_key(to_object_id(id), user, [tcs_ptr](App::UserAPIKey api_key, util::Optional<AppError> err) {
                 invoke_api_key_callback(tcs_ptr, api_key, err);
             });
         });
@@ -312,33 +313,24 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_delete_api_key(SharedSyncUser& user, SharedApp& app, uint8_t* id_bytes, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_delete_api_key(SharedSyncUser& user, SharedApp& app, PrimitiveValue& id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            std::array<uint8_t, 12> bytes;
-            std::copy(id_bytes, id_bytes + 12, bytes.begin());
-
-            app->provider_client<App::UserAPIKeyProviderClient>().delete_api_key(ObjectId(std::move(bytes)), user, get_callback_handler(tcs_ptr));
+            app->provider_client<App::UserAPIKeyProviderClient>().delete_api_key(to_object_id(id), user, get_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_syncuser_disable_api_key(SharedSyncUser& user, SharedApp& app, uint8_t* id_bytes, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_disable_api_key(SharedSyncUser& user, SharedApp& app, PrimitiveValue& id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            std::array<uint8_t, 12> bytes;
-            std::copy(id_bytes, id_bytes + 12, bytes.begin());
-
-            app->provider_client<App::UserAPIKeyProviderClient>().disable_api_key(ObjectId(std::move(bytes)), user, get_callback_handler(tcs_ptr));
+            app->provider_client<App::UserAPIKeyProviderClient>().disable_api_key(to_object_id(id), user, get_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_syncuser_enable_api_key(SharedSyncUser& user, SharedApp& app, uint8_t* id_bytes, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_enable_api_key(SharedSyncUser& user, SharedApp& app, PrimitiveValue& id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            std::array<uint8_t, 12> bytes;
-            std::copy(id_bytes, id_bytes + 12, bytes.begin());
-
-            app->provider_client<App::UserAPIKeyProviderClient>().enable_api_key(ObjectId(std::move(bytes)), user, get_callback_handler(tcs_ptr));
+            app->provider_client<App::UserAPIKeyProviderClient>().enable_api_key(to_object_id(id), user, get_callback_handler(tcs_ptr));
         });
     }
 
