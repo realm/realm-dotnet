@@ -24,3 +24,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is fine for tests.", Scope = "module")]
 [assembly: SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This is fine for tests.", Scope = "module")]
 [assembly: SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "This is fine for tests.", Scope = "module")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "This is fine for tests.", Scope = "module")]

@@ -99,7 +99,7 @@ namespace Realms.Tests.Sync
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
                 Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
-            });
+            }, timeout: 120000);
         }
 
         [TestCase(true)]
