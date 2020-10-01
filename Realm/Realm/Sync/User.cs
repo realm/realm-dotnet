@@ -382,7 +382,7 @@ namespace Realms.Sync
             /// <br/>
             /// If you want to modify the global conventions used when deserializing the response, such as convert
             /// camelCase properties to PascalCase, you can regiseter a
-            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.4/reference/bson/mapping/conventions/">ConventionPack</see>.
+            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/reference/bson/mapping/conventions/">ConventionPack</see>.
             /// </remarks>
             /// <typeparam name="T">The type that the response will be decoded to.</typeparam>
             /// <param name="name">Name of the Realm function to call.</param>
