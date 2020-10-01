@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
@@ -341,6 +342,11 @@ namespace Realms.Sync
         /// </summary>
         public class FunctionsApi
         {
+            private static readonly JsonWriterSettings _jsonSettings = new JsonWriterSettings
+            {
+                OutputMode = JsonOutputMode.CanonicalExtendedJson,
+            };
+
             private readonly User _user;
 
             internal FunctionsApi(User user)
@@ -366,9 +372,7 @@ namespace Realms.Sync
 
                 var tcs = new TaskCompletionSource<BsonPayload>();
 
-                var bsonArgs = new BsonArray(args);
-
-                _user.Handle.CallFunction(_user.App.AppHandle, name, bsonArgs.ToString(), tcs);
+                _user.Handle.CallFunction(_user.App.AppHandle, name, args.ToJson(_jsonSettings), tcs);
 
                 return tcs.Task;
             }

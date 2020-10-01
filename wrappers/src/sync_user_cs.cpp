@@ -301,7 +301,7 @@ extern "C" {
 
             auto args = static_cast<bson::BsonArray>(bson::parse(serialized_args.to_string()));
 
-            app->call_function(user, function_name, args, [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
+            app->call_function(user, function_name, std::move(args), [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
                 if (err) {
                     std::string message = err->message;
                     std::string error_category = err->error_code.message();
