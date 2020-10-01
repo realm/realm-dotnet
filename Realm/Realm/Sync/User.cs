@@ -340,6 +340,7 @@ namespace Realms.Sync
         /// <summary>
         /// A class exposing functionality for calling remote MongoDB Realm functions.
         /// </summary>
+        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
         public class FunctionsApi
         {
             private static readonly JsonWriterSettings _jsonSettings = new JsonWriterSettings
@@ -354,12 +355,42 @@ namespace Realms.Sync
                 _user = user;
             }
 
+            /// <summary>
+            /// Calls a remote function with the supplied arguments.
+            /// </summary>
+            /// <param name="name">Name of the Realm function to call.</param>
+            /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
+            /// <returns>
+            /// A <see cref="Task{BsonValue}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// the value returned by the function.
+            /// </returns>
             public async Task<BsonValue> CallAsync(string name, params object[] args)
             {
                 var response = await CallCoreAsync(name, args);
                 return response.GetValue();
             }
 
+            /// <summary>
+            /// Calls a remote function with the supplied arguments.
+            /// </summary>
+            /// <remarks>
+            /// The <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/">MongoDB Bson</see> library is used
+            /// to decode the response. It will automatically handle most cases, but if you want to control the behavior
+            /// of the deserializer, you can use the attributes in the
+            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/apidocs/html/N_MongoDB_Bson_Serialization_Attributes.htm">MongoDB.Bson.Serialization.Attributes</see>
+            /// namespace.
+            /// <br/>
+            /// If you want to modify the global conventions used when deserializing the response, such as convert
+            /// camelCase properties to PascalCase, you can regiseter a
+            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.4/reference/bson/mapping/conventions/">ConventionPack</see>.
+            /// </remarks>
+            /// <typeparam name="T">The type that the response will be decoded to.</typeparam>
+            /// <param name="name">Name of the Realm function to call.</param>
+            /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
+            /// <returns>
+            /// A <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// the value returned by the function decoded as <typeparamref name="T"/>.
+            /// </returns>
             public async Task<T> CallAsync<T>(string name, params object[] args)
             {
                 var response = await CallCoreAsync(name, args);
