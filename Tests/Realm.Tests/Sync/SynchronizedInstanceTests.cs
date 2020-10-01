@@ -184,7 +184,7 @@ namespace Realms.Tests.Sync
                 Assert.That(realm.All<HugeSyncObject>().Count(), Is.EqualTo(NumberOfObjects));
                 Assert.That(callbacksInvoked, Is.GreaterThan(0));
                 Assert.That(lastProgress.TransferableBytes, Is.EqualTo(lastProgress.TransferredBytes));
-            });
+            }, 60000);
         }
 
         [Test]

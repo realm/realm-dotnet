@@ -216,7 +216,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ex.Message, Does.Contain("InvalidParameter"));
                 Assert.That(ex.Message, Does.Contain("can only contain ASCII letters, numbers, underscores, and hyphens"));
-                Assert.That(ex.ErrorCode, Is.EqualTo(400));
             });
         }
 
@@ -370,7 +369,6 @@ namespace Realms.Tests.Sync
                 var id = ObjectId.GenerateNewId();
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.DisableAsync(id));
 
-                Assert.That(ex.ErrorCode, Is.EqualTo(404));
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
             });
@@ -386,7 +384,6 @@ namespace Realms.Tests.Sync
                 var id = ObjectId.GenerateNewId();
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.EnableAsync(id));
 
-                Assert.That(ex.ErrorCode, Is.EqualTo(404));
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
             });

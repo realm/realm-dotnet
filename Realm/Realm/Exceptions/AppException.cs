@@ -26,10 +26,7 @@ namespace Realms.Exceptions
     /// </summary>
     public class AppException : Exception
     {
-        /// <summary>
-        /// Gets the error code, associated with the error.
-        /// </summary>
-        public int ErrorCode { get; }
+        internal int ErrorCode { get; }
 
         internal AppException(AppError appError)
             : this($"{appError.ErrorCategory}: {appError.Message}", appError.error_code)
