@@ -1,3 +1,21 @@
+## 5.1.1 (2020-10-01)
+------------------
+
+### Enhancements
+* None
+
+### Fixed
+* Querying on an indexed property may give a “Key not found” exception. (Core upgrade)
+* Fix queries for null on non-nullable indexed integer columns returning results for zero entries. (Core upgrade)
+
+### Compatibility
+* Realm Object Server: 3.23.1 or later.
+* Realm Studio: 5.0.0 or later.
+
+### Internal
+* Using Sync 5.0.28 and Core 6.1.3.
+
+
 ## 5.1.0 (2020-09-30)
 ------------------
 
