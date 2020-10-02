@@ -42,6 +42,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string BooleanTypeName = "System.Boolean";
     internal const string DecimalTypeName = "System.Decimal";
     internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
+    internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
     internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
     internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
     internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
@@ -54,6 +55,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string NullableDecimalTypeName = "System.Nullable`1<System.Decimal>";
     internal const string NullableDecimal128TypeName = "System.Nullable`1<MongoDB.Bson.Decimal128>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
+    internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
@@ -69,6 +71,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         { BooleanTypeName, "Bool" },
         { DecimalTypeName, "Decimal" },
         { Decimal128TypeName, "Decimal" },
+        { ObjectIdTypeName, "ObjectId" },
         { DateTimeOffsetTypeName, "Date" },
         { NullableCharTypeName, "NullableInt" },
         { NullableSingleTypeName, "NullableFloat" },
@@ -77,6 +80,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         { NullableDateTimeOffsetTypeName, "NullableDate" },
         { NullableDecimalTypeName, "NullableDecimal" },
         { NullableDecimal128TypeName, "NullableDecimal" },
+        { NullableObjectIdTypeName, "NullableObjectId" },
     };
 
     private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
@@ -107,11 +111,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         Int16TypeName,
         Int32TypeName,
         Int64TypeName,
+        ObjectIdTypeName,
         NullableCharTypeName,
         NullableByteTypeName,
         NullableInt16TypeName,
         NullableInt32TypeName,
         NullableInt64TypeName,
+        NullableObjectIdTypeName,
     };
 
     private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
@@ -1074,7 +1080,8 @@ Analytics payload
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
                                           property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                           property.IsDecimal() ||
-                                          property.IsDecimal128();
+                                          property.IsDecimal128() ||
+                                          property.IsObjectId();
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!skipDefaults || castInstance.field != default(fieldType))

@@ -104,6 +104,11 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.FullName == Decimal128TypeName;
     }
 
+    internal static bool IsObjectId(this PropertyDefinition property)
+    {
+        return property.PropertyType.FullName == ObjectIdTypeName;
+    }
+
     internal static bool IsString(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == StringTypeName;

@@ -119,6 +119,57 @@ namespace Realms.Tests.Database
             Assert.That(lessEqual, Is.EqualTo(expectLessEqual));
         }
 
+        [Test]
+        public void ObjectId_Equals()
+        {
+            var id = ObjectId.GenerateNewId();
+            _realm.Write(() =>
+            {
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, ObjectIdProperty = id });
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, ObjectIdProperty = ObjectId.GenerateNewId() });
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, ObjectIdProperty = ObjectId.GenerateNewId() });
+            });
+
+            var matches = _realm.All<AllTypesObject>().Where(o => o.ObjectIdProperty == id);
+            Assert.That(matches.Count(), Is.EqualTo(1));
+            Assert.That(matches.Single().ObjectIdProperty, Is.EqualTo(id));
+
+            var nonMatches = _realm.All<AllTypesObject>().Where(o => o.ObjectIdProperty != id);
+            Assert.That(nonMatches.Count(), Is.EqualTo(2));
+            Assert.That(nonMatches.ElementAt(0).ObjectIdProperty, Is.Not.EqualTo(id));
+            Assert.That(nonMatches.ElementAt(1).ObjectIdProperty, Is.Not.EqualTo(id));
+        }
+
+        [Test]
+        public void NullableObjectId_Equals()
+        {
+            var id = ObjectId.GenerateNewId();
+            _realm.Write(() =>
+            {
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableObjectIdProperty = id });
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableObjectIdProperty = ObjectId.GenerateNewId() });
+                _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty, NullableObjectIdProperty = null });
+            });
+
+            var idMatches = _realm.All<AllTypesObject>().Where(o => o.NullableObjectIdProperty == id);
+            Assert.That(idMatches.Count(), Is.EqualTo(1));
+            Assert.That(idMatches.Single().NullableObjectIdProperty, Is.EqualTo(id));
+
+            var idNonMatches = _realm.All<AllTypesObject>().Where(o => o.NullableObjectIdProperty != id);
+            Assert.That(idNonMatches.Count(), Is.EqualTo(2));
+            Assert.That(idNonMatches.ElementAt(0).NullableObjectIdProperty, Is.Not.EqualTo(id));
+            Assert.That(idNonMatches.ElementAt(1).NullableObjectIdProperty, Is.Not.EqualTo(id));
+
+            var nullMatches = _realm.All<AllTypesObject>().Where(o => o.NullableObjectIdProperty == null);
+            Assert.That(nullMatches.Count(), Is.EqualTo(1));
+            Assert.That(nullMatches.Single().NullableObjectIdProperty, Is.Null);
+
+            var nullNonMatches = _realm.All<AllTypesObject>().Where(o => o.NullableObjectIdProperty != null);
+            Assert.That(nullNonMatches.Count(), Is.EqualTo(2));
+            Assert.That(nullNonMatches.ElementAt(0).NullableObjectIdProperty, Is.Not.Null);
+            Assert.That(nullNonMatches.ElementAt(1).NullableObjectIdProperty, Is.Not.Null);
+        }
+
         // The following test cases exercise both Convert and Member RHS expressions
         [TestCase("Peter", 1)]
         [TestCase("Zach", 0)]

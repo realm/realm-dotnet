@@ -51,6 +51,8 @@ namespace AssemblyToProcess
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        public ObjectId ObjectIdProperty { get; set; }
+
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -88,6 +90,8 @@ namespace AssemblyToProcess
         public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
 
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -191,6 +195,13 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId ObjectIdProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -223,6 +234,13 @@ namespace AssemblyToProcess
     {
         [PrimaryKey]
         public long? Int64Property { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId? ObjectIdProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -276,6 +294,8 @@ namespace AssemblyToProcess
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        public ObjectId ObjectIdProperty { get; set; }
+
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -313,6 +333,8 @@ namespace AssemblyToProcess
         public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
 
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

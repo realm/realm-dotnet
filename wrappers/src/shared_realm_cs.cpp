@@ -329,13 +329,35 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& ta
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_int_unique(const SharedRealm& realm, TableRef& table, int64_t key, bool has_value, bool is_nullable, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, PrimitiveValue& primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        if (is_nullable) {
-            return create_object_unique(realm, table, has_value ? util::some<int64_t>(key) : null(), try_update, is_new);
-        } else {
-            return create_object_unique(realm, table, key, try_update, is_new);
+        switch (primitive.type) {
+        case PropertyType::Int:
+            REALM_ASSERT(primitive.has_value);
+
+            return create_object_unique(realm, table, primitive.value.int_value, try_update, is_new);
+
+        case PropertyType::Int | PropertyType::Nullable:
+            return create_object_unique(realm, table, primitive.has_value ? util::some<int64_t>(primitive.value.int_value) : null(), try_update, is_new);
+
+        case PropertyType::ObjectId:
+            REALM_ASSERT(primitive.has_value);
+
+            return create_object_unique(realm, table, to_object_id(primitive), try_update, is_new);
+
+        case PropertyType::ObjectId | PropertyType::Nullable:
+            // HACK: https://github.com/realm/realm-core/issues/3919 - this should eventually be
+            //return create_object_unique(realm, table, primitive.has_value ? util::some<ObjectId>(to_object_id(primitive)) : null(), try_update, is_new);
+
+            if (primitive.has_value) {
+                return create_object_unique(realm, table, to_object_id(primitive), try_update, is_new);
+            }
+
+            return create_object_unique(realm, table, util::Optional<int64_t>(), try_update, is_new);
+
+        default:
+            REALM_UNREACHABLE();
         }
     });
 }

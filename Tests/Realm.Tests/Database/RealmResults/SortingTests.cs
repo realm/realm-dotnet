@@ -380,6 +380,59 @@ namespace Realms.Tests.Database
             }
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SortsByObjectId(bool ascending)
+        {
+            var data = Enumerable.Range(0, 10).Select(_ => ObjectId.GenerateNewId()).ToArray();
+            _realm.Write(() =>
+            {
+                foreach (var value in data)
+                {
+                    _realm.Add(new AllTypesObject { ObjectIdProperty = value, RequiredStringProperty = string.Empty });
+                }
+            });
+
+            if (ascending)
+            {
+                var sortedDecimals = _realm.All<AllTypesObject>().OrderBy(d => d.ObjectIdProperty).ToArray().Select(d => d.ObjectIdProperty);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderBy(d => d)));
+            }
+            else
+            {
+                var sortedDecimals = _realm.All<AllTypesObject>().OrderByDescending(d => d.ObjectIdProperty).ToArray().Select(d => d.ObjectIdProperty);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderByDescending(d => d)));
+            }
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SortsByNullableObjectId(bool ascending)
+        {
+            var data = Enumerable.Range(0, 10).Select(_ => (ObjectId?)ObjectId.GenerateNewId()).ToArray();
+            data[5] = null;
+            data[3] = null;
+
+            _realm.Write(() =>
+            {
+                foreach (var value in data)
+                {
+                    _realm.Add(new AllTypesObject { NullableObjectIdProperty = value, RequiredStringProperty = string.Empty });
+                }
+            });
+
+            if (ascending)
+            {
+                var sortedDecimals = _realm.All<AllTypesObject>().OrderBy(d => d.NullableObjectIdProperty).ToArray().Select(d => d.NullableObjectIdProperty);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderBy(d => d)));
+            }
+            else
+            {
+                var sortedDecimals = _realm.All<AllTypesObject>().OrderByDescending(d => d.NullableObjectIdProperty).ToArray().Select(d => d.NullableObjectIdProperty);
+                Assert.That(sortedDecimals, Is.EqualTo(data.OrderByDescending(d => d)));
+            }
+        }
+
         private void MakeThreeLinkingObjects(
             string string1, int int1, long date1,
             string string2, int int2, long date2,

@@ -86,7 +86,6 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-
         protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
