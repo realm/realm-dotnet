@@ -34,19 +34,25 @@ REALM_EXPORT void sort_descriptor_destroy(DescriptorOrdering* descriptor)
     delete descriptor;
 }
 
-REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableRef& table, SharedRealm& realm, ColKey* col_keys_chain, size_t col_keys_count, bool ascending, NativeException::Marshallable& ex)
+REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableRef& table, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         std::vector<ColKey> column_keys;
+        column_keys.reserve(properties_count);
 
         const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
         const std::vector<Property>* properties = &realm->schema().find(object_name)->persisted_properties;
 
-        for (auto i = 0; i < col_keys_count; ++i) {
-            column_keys.push_back(col_keys_chain[i]);
+        for (auto i = 0; i < properties_count; ++i) {
+            const Property& property = properties->at(property_chain[i]);
+            column_keys.push_back(property.column_key);
+
+            if (property.type == PropertyType::Object) {
+                properties = &realm->schema().find(property.object_type)->persisted_properties;
+            }
         }
 
-        descriptor.append_sort(SortDescriptor({column_keys}, {ascending}), SortDescriptor::MergeMode::append);
+        descriptor.append_sort(SortDescriptor({ column_keys }, { ascending }), SortDescriptor::MergeMode::append);
     });
 }
 

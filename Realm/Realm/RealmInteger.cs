@@ -52,7 +52,7 @@ namespace Realms
     {
         private readonly T _value;
         private readonly ObjectHandle _objectHandle;
-        private readonly ColumnKey _columnKey;
+        private readonly IntPtr _propertyIndex;
 
         private bool IsManaged => _objectHandle != null;
 
@@ -60,14 +60,14 @@ namespace Realms
         {
             _value = value;
             _objectHandle = null;
-            _columnKey = default;
+            _propertyIndex = default;
         }
 
-        internal RealmInteger(T value, ObjectHandle objectHandle, ColumnKey columnKey)
+        internal RealmInteger(T value, ObjectHandle objectHandle, IntPtr propertyIndex)
         {
             _value = value;
             _objectHandle = objectHandle;
-            _columnKey = columnKey;
+            _propertyIndex = propertyIndex;
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace Realms
         {
             if (IsManaged)
             {
-                _objectHandle.AddInt64(_columnKey, value.ToLong());
-                var result = _objectHandle.GetPrimitive(_columnKey, Schema.PropertyType.Int).ToIntegral<T>();
-                return new RealmInteger<T>(result, _objectHandle, _columnKey);
+                _objectHandle.AddInt64(_propertyIndex, value.ToLong());
+                var result = _objectHandle.GetPrimitive(_propertyIndex, Schema.PropertyType.Int).ToIntegral<T>();
+                return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
             }
 
             throw new NotSupportedException("Increment should only be called on RealmInteger properties of managed objects.");
@@ -325,7 +325,7 @@ namespace Realms
         /// </param>
         /// <param name="formatProvider">
         /// The provider to use to format the value. -or- A null reference to obtain the numeric format
-        /// information from the current locale setting of the operating system</param>
+        /// information from the current locale setting of the operating system.</param>
         /// <returns>The value of the current instance in the specified format.</returns>
         public string ToString(string format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
 

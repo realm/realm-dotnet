@@ -21,11 +21,11 @@ using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
-    [return: MarshalAs(UnmanagedType.I1)]
+    [return: MarshalAs(UnmanagedType.U1)]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
-    [return: MarshalAs(UnmanagedType.I1)]
+    [return: MarshalAs(UnmanagedType.U1)]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate bool ShouldCompactCallback(IntPtr config, ulong totalSize, ulong dataSize);
 
@@ -45,12 +45,12 @@ namespace Realms.Native
             }
         }
 
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool read_only;
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool in_memory;
 
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool delete_if_migration_needed;
 
         internal ulong schema_version;
@@ -61,7 +61,7 @@ namespace Realms.Native
         internal ShouldCompactCallback should_compact_callback;
         internal IntPtr managed_should_compact_delegate;
 
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         internal bool enable_cache;
 
         internal ulong max_number_of_active_versions;

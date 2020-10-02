@@ -28,7 +28,7 @@ namespace Realms.Native
     internal unsafe struct PrimitiveValue
     {
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         private bool bool_value;
 
         [FieldOffset(0)]
@@ -56,7 +56,7 @@ namespace Realms.Native
         public PropertyType Type;
 
         [FieldOffset(17)]
-        [MarshalAs(UnmanagedType.I1)]
+        [MarshalAs(UnmanagedType.U1)]
         private bool has_value;
 
         public static PrimitiveValue Bool(bool value)

@@ -33,7 +33,7 @@ namespace Realms
 #pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_valid(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_key", CallingConvention = CallingConvention.Cdecl)]
@@ -43,62 +43,62 @@ namespace Realms
             public static extern void destroy(IntPtr objectHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(ObjectHandle handle, ColumnKey columnKey, ref PrimitiveValue value, out NativeException ex);
+            public static extern void get_primitive(ObjectHandle handle, IntPtr propertyIndex, ref PrimitiveValue value, out NativeException ex);
 
             // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_primitive(ObjectHandle handle, ColumnKey columnKey, IntPtr value, out NativeException ex);
+            public static extern void set_primitive(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_string(ObjectHandle handle, ColumnKey columnKey,
+            public static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
                 [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_string(ObjectHandle handle, ColumnKey columnKey,
-                IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+            public static extern IntPtr get_string(ObjectHandle handle, IntPtr propertyIndex,
+                IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_link(ObjectHandle handle, ColumnKey columnKey, ObjectHandle targetHandle, out NativeException ex);
+            public static extern void set_link(ObjectHandle handle, IntPtr propertyIndex, ObjectHandle targetHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+            public static extern IntPtr get_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_embedded_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+            public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void clear_link(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+            public static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_list(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+            public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_null(ObjectHandle handle, ColumnKey columnKey, out NativeException ex);
+            public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_int64", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_int64(ObjectHandle handle, ColumnKey columnKey, Int64 value, out NativeException ex);
+            public static extern void add_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr set_binary(ObjectHandle handle, ColumnKey columnKey,
+            public static extern IntPtr set_binary(ObjectHandle handle, IntPtr propertyIndex,
                 IntPtr buffer, IntPtr bufferLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_binary(ObjectHandle handle, ColumnKey columnKey,
-                IntPtr buffer, IntPtr bufferLength, [MarshalAs(UnmanagedType.I1)] out bool is_null, out NativeException ex);
+            public static extern IntPtr get_binary(ObjectHandle handle, IntPtr propertyIndex,
+                IntPtr buffer, IntPtr bufferLength, [MarshalAs(UnmanagedType.U1)] out bool is_null, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlinks(ObjectHandle objectHandle, IntPtr property_index, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlinks_for_type", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle, TableHandle source_table, ColumnKey source_column_key, out NativeException nativeException);
+            public static extern IntPtr get_backlinks_for_type(ObjectHandle objectHandle, TableHandle source_table, IntPtr source_property_index, out NativeException nativeException);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
@@ -110,7 +110,7 @@ namespace Realms
             public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_freeze", CallingConvention = CallingConvention.Cdecl)]
@@ -175,71 +175,71 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public PrimitiveValue GetPrimitive(ColumnKey columnKey, PropertyType type)
+        public PrimitiveValue GetPrimitive(IntPtr propertyIndex, PropertyType type)
         {
             var result = new PrimitiveValue { Type = type };
 
-            NativeMethods.get_primitive(this, columnKey, ref result, out var nativeException);
+            NativeMethods.get_primitive(this, propertyIndex, ref result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
         }
 
-        public unsafe void SetPrimitive(ColumnKey columnKey, PrimitiveValue value)
+        public unsafe void SetPrimitive(IntPtr propertyIndex, PrimitiveValue value)
         {
             PrimitiveValue* valuePtr = &value;
-            NativeMethods.set_primitive(this, columnKey, new IntPtr(valuePtr), out var nativeException);
+            NativeMethods.set_primitive(this, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void SetString(ColumnKey columnKey, string value)
+        public void SetString(IntPtr propertyIndex, string value)
         {
             NativeException nativeException;
             if (value != null)
             {
-                NativeMethods.set_string(this, columnKey, value, (IntPtr)value.Length, out nativeException);
+                NativeMethods.set_string(this, propertyIndex, value, (IntPtr)value.Length, out nativeException);
             }
             else
             {
-                NativeMethods.set_null(this, columnKey, out nativeException);
+                NativeMethods.set_null(this, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
-        public void SetStringUnique(ColumnKey columnKey, string value)
+        public void SetStringUnique(IntPtr propertyIndex, string value)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value), "Object identifiers cannot be null");
             }
 
-            if (GetString(columnKey) != value)
+            if (GetString(propertyIndex) != value)
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
         }
 
-        public string GetString(ColumnKey columnKey)
+        public string GetString(IntPtr propertyIndex)
         {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) => NativeMethods.get_string(this, columnKey, buffer, length, out isNull, out ex));
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) => NativeMethods.get_string(this, propertyIndex, buffer, length, out isNull, out ex));
         }
 
-        public void SetLink(ColumnKey columnKey, ObjectHandle targetHandle)
+        public void SetLink(IntPtr propertyIndex, ObjectHandle targetHandle)
         {
-            NativeMethods.set_link(this, columnKey, targetHandle, out var nativeException);
+            NativeMethods.set_link(this, propertyIndex, targetHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void ClearLink(ColumnKey columnKey)
+        public void ClearLink(IntPtr propertyIndex)
         {
-            NativeMethods.clear_link(this, columnKey, out var nativeException);
+            NativeMethods.clear_link(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public bool TryGetLink(ColumnKey columnKey, out ObjectHandle objectHandle)
+        public bool TryGetLink(IntPtr propertyIndex, out ObjectHandle objectHandle)
         {
-            var result = NativeMethods.get_link(this, columnKey, out var nativeException);
+            var result = NativeMethods.get_link(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             if (result == IntPtr.Zero)
@@ -252,46 +252,46 @@ namespace Realms
             return true;
         }
 
-        public IntPtr GetLinklist(ColumnKey columnKey)
+        public IntPtr GetLinklist(IntPtr propertyIndex)
         {
-            var result = NativeMethods.get_list(this, columnKey, out var nativeException);
+            var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public void AddInt64(ColumnKey columnKey, long value)
+        public void AddInt64(IntPtr propertyIndex, long value)
         {
-            NativeMethods.add_int64(this, columnKey, value, out var nativeException);
+            NativeMethods.add_int64(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void SetPrimitiveUnique(ColumnKey columnKey, PrimitiveValue value)
+        public void SetPrimitiveUnique(IntPtr propertyIndex, PrimitiveValue value)
         {
-            if (!GetPrimitive(columnKey, value.Type).Equals(value))
+            if (!GetPrimitive(propertyIndex, value.Type).Equals(value))
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
         }
 
-        public unsafe void SetByteArray(ColumnKey columnKey, byte[] value)
+        public unsafe void SetByteArray(IntPtr propertyIndex, byte[] value)
         {
             MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
             {
                 if (hasValue)
                 {
-                    NativeMethods.set_binary(this, columnKey, buffer, bufferSize, out ex);
+                    NativeMethods.set_binary(this, propertyIndex, buffer, bufferSize, out ex);
                 }
                 else
                 {
-                    NativeMethods.set_null(this, columnKey, out ex);
+                    NativeMethods.set_null(this, propertyIndex, out ex);
                 }
             });
         }
 
-        public byte[] GetByteArray(ColumnKey columnKey)
+        public byte[] GetByteArray(IntPtr propertyIndex)
         {
             return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_binary(this, columnKey, buffer, bufferLength, out isNull, out ex));
+                NativeMethods.get_binary(this, propertyIndex, buffer, bufferLength, out isNull, out ex));
         }
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)
@@ -300,18 +300,18 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public RealmList<T> GetList<T>(Realm realm, ColumnKey columnKey, string objectType)
+        public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var listHandle = new ListHandle(Root, GetLinklist(columnKey));
+            var listHandle = new ListHandle(Root, GetLinklist(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        public T GetObject<T>(Realm realm, ColumnKey columnKey, string objectType)
+        public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType)
             where T : RealmObjectBase
         {
-            if (TryGetLink(columnKey, out var objectHandle))
+            if (TryGetLink(propertyIndex, out var objectHandle))
             {
                 return (T)realm.MakeObject(realm.Metadata[objectType], objectHandle);
             }
@@ -319,11 +319,11 @@ namespace Realms
             return null;
         }
 
-        public void SetObject(Realm realm, ColumnKey columnKey, RealmObjectBase @object)
+        public void SetObject(Realm realm, IntPtr propertyIndex, RealmObjectBase @object)
         {
             if (@object == null)
             {
-                ClearLink(columnKey);
+                ClearLink(propertyIndex);
             }
             else if (@object is RealmObject realmObj)
             {
@@ -332,7 +332,7 @@ namespace Realms
                     realm.Add(realmObj);
                 }
 
-                SetLink(columnKey, realmObj.ObjectHandle);
+                SetLink(propertyIndex, realmObj.ObjectHandle);
             }
             else if (@object is EmbeddedObject embeddedObj)
             {
@@ -341,7 +341,7 @@ namespace Realms
                     throw new RealmException("Can't link to an embedded object that is already managed.");
                 }
 
-                var handle = CreateEmbeddedObjectForProperty(columnKey);
+                var handle = CreateEmbeddedObjectForProperty(propertyIndex);
                 realm.ManageEmbedded(embeddedObj, handle);
             }
             else
@@ -350,9 +350,9 @@ namespace Realms
             }
         }
 
-        public ObjectHandle CreateEmbeddedObjectForProperty(ColumnKey columnKey)
+        public ObjectHandle CreateEmbeddedObjectForProperty(IntPtr propertyIndex)
         {
-            var objPtr = NativeMethods.create_embedded_link(this, columnKey, out var ex);
+            var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(Root, objPtr);
         }
@@ -365,9 +365,9 @@ namespace Realms
             return new ResultsHandle(this, resultsPtr);
         }
 
-        public ResultsHandle GetBacklinksForType(TableHandle table, ColumnKey columnKey)
+        public ResultsHandle GetBacklinksForType(TableHandle table, IntPtr propertyIndex)
         {
-            var resultsPtr = NativeMethods.get_backlinks_for_type(this, table, columnKey, out var nativeException);
+            var resultsPtr = NativeMethods.get_backlinks_for_type(this, table, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new ResultsHandle(this, resultsPtr);

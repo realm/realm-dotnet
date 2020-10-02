@@ -46,11 +46,11 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_string(ResultsHandle results, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_binary(ResultsHandle results, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
 
             #endregion
 
@@ -67,7 +67,7 @@ namespace Realms
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_valid(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
@@ -86,7 +86,7 @@ namespace Realms
             public static extern IntPtr get_sort_descriptor(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_freeze", CallingConvention = CallingConvention.Cdecl)]

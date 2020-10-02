@@ -166,15 +166,10 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm& realm, NativeException::
     });
 }
 
-REALM_EXPORT TableRef* shared_realm_get_table_info(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, ColKey* columns_buffer, NativeException::Marshallable& ex)
+REALM_EXPORT TableRef* shared_realm_get_table(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor object_type(object_type_buf, object_type_len);
-
-        auto properties = realm->schema().find(object_type)->persisted_properties;
-        for (size_t i = 0; i < properties.size(); i++) {
-            columns_buffer[i] = properties.at(i).column_key;
-        }
         return new TableRef(ObjectStore::table_for_object_type(realm->read_group(), object_type));
     });
 }

@@ -119,13 +119,13 @@ namespace Realms
                 throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
             }
 
-            var columnChain = TraverseSort(body);
-            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, columnChain, ascending);
+            var propertyChain = TraverseSort(body);
+            _sortDescriptor.AddClause(_metadata.Table, _realm.SharedRealmHandle, propertyChain, ascending);
         }
 
-        private ColumnKey[] TraverseSort(MemberExpression expression)
+        private IntPtr[] TraverseSort(MemberExpression expression)
         {
-            var chain = new List<ColumnKey>();
+            var chain = new List<IntPtr>();
 
             while (expression != null)
             {
@@ -137,7 +137,7 @@ namespace Realms
                 }
 
                 var columnName = GetColumnName(expression);
-                if (!metadata.ColumnKeys.TryGetValue(columnName, out var index))
+                if (!metadata.PropertyIndices.TryGetValue(columnName, out var index))
                 {
                     throw new NotSupportedException($"The property {columnName} is not a persisted property on {type.Name} so sorting by it is not allowed.");
                 }
@@ -330,29 +330,29 @@ namespace Realms
 
                 if (AreMethodsSame(node.Method, Methods.String.Contains.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
+                    queryMethod = (q, r, p, v) => q.StringContains(r, p, v, caseSensitive: true);
                 }
                 else if (IsStringContainsWithComparison(node.Method, out var index))
                 {
                     member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = index;
-                    queryMethod = (q, c, v) => q.StringContains(c, v, GetComparisonCaseSensitive(node));
+                    queryMethod = (q, r, p, v) => q.StringContains(r, p, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, caseSensitive: true);
+                    queryMethod = (q, r, p, v) => q.StringStartsWith(r, p, v, caseSensitive: true);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.StartsWithStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, GetComparisonCaseSensitive(node));
+                    queryMethod = (q, r, p, v) => q.StringStartsWith(r, p, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EndsWith.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, caseSensitive: true);
+                    queryMethod = (q, r, p, v) => q.StringEndsWith(r, p, v, caseSensitive: true);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EndsWithStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, GetComparisonCaseSensitive(node));
+                    queryMethod = (q, r, p, v) => q.StringEndsWith(r, p, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.IsNullOrEmpty.Value))
                 {
@@ -363,22 +363,22 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = _metadata.ColumnKeys[columnName];
+                    var propertyIndex = _metadata.PropertyIndices[columnName];
 
                     _coreQueryHandle.GroupBegin();
-                    _coreQueryHandle.NullEqual(columnKey);
+                    _coreQueryHandle.NullEqual(_realm.SharedRealmHandle, propertyIndex);
                     _coreQueryHandle.Or();
-                    _coreQueryHandle.StringEqual(columnKey, string.Empty, caseSensitive: true);
+                    _coreQueryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, string.Empty, caseSensitive: true);
                     _coreQueryHandle.GroupEnd();
                     return node;
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EqualsMethod.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEqual(c, v, caseSensitive: true);
+                    queryMethod = (q, r, p, v) => q.StringEqual(r, p, v, caseSensitive: true);
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.EqualsStringComparison.Value))
                 {
-                    queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(node));
+                    queryMethod = (q, r, p, v) => q.StringEqual(r, p, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
                 {
@@ -389,7 +389,7 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a string and boolean constant arguments.");
                     }
 
-                    queryMethod = (q, c, v) => q.StringLike(c, v, (bool)caseSensitive);
+                    queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
                 }
 
                 if (queryMethod != null)
@@ -402,7 +402,7 @@ namespace Realms
                     }
 
                     var columnName = GetColumnName(member, node.NodeType);
-                    var columnKey = _metadata.ColumnKeys[columnName];
+                    var propertyIndex = _metadata.PropertyIndices[columnName];
 
                     if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
@@ -410,7 +410,7 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
 
-                    queryMethod(_coreQueryHandle, columnKey, (string)argument);
+                    queryMethod(_coreQueryHandle, _realm.SharedRealmHandle, propertyIndex, (string)argument);
                     return node;
                 }
             }
@@ -622,27 +622,27 @@ namespace Realms
 
         private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
 
             switch (value)
             {
                 case null:
-                    queryHandle.NullEqual(columnKey);
+                    queryHandle.NullEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
-                    queryHandle.StringEqual(columnKey, stringValue, caseSensitive: true);
+                    queryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Bool(boolValue));
+                    queryHandle.PrimitiveEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset dateValue:
-                    queryHandle.PrimitiveEqual(columnKey, PrimitiveValue.Date(dateValue));
+                    queryHandle.PrimitiveEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(dateValue));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
                     {
                         // see RealmObjectBase.SetByteArrayValue
-                        queryHandle.BinaryEqual(columnKey, (IntPtr)0x1, IntPtr.Zero);
+                        queryHandle.BinaryEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)0x1, IntPtr.Zero);
                         return;
                     }
 
@@ -650,43 +650,43 @@ namespace Realms
                     {
                         fixed (byte* bufferPtr = (byte[])value)
                         {
-                            queryHandle.BinaryEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
+                            queryHandle.BinaryEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
                         }
                     }
 
                     break;
                 case RealmObjectBase obj:
-                    queryHandle.ObjectEqual(columnKey, obj.ObjectHandle);
+                    queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveEqual);
                     break;
             }
         }
 
         private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
                 case null:
-                    queryHandle.NullNotEqual(columnKey);
+                    queryHandle.NullNotEqual(_realm.SharedRealmHandle, propertyIndex);
                     break;
                 case string stringValue:
-                    queryHandle.StringNotEqual(columnKey, stringValue, caseSensitive: true);
+                    queryHandle.StringNotEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
                     break;
                 case bool boolValue:
-                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Bool(boolValue));
+                    queryHandle.PrimitiveNotEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Bool(boolValue));
                     break;
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveNotEqual(columnKey, PrimitiveValue.Date(date));
+                    queryHandle.PrimitiveNotEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
                     break;
                 case byte[] buffer:
                     if (buffer.Length == 0)
                     {
                         // see RealmObjectBase.SetByteArrayValue
-                        queryHandle.BinaryNotEqual(columnKey, (IntPtr)0x1, IntPtr.Zero);
+                        queryHandle.BinaryNotEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)0x1, IntPtr.Zero);
                         return;
                     }
 
@@ -694,95 +694,95 @@ namespace Realms
                     {
                         fixed (byte* bufferPtr = (byte[])value)
                         {
-                            queryHandle.BinaryNotEqual(columnKey, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
+                            queryHandle.BinaryNotEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
                         }
                     }
 
                     break;
                 case RealmObjectBase obj:
                     queryHandle.Not();
-                    queryHandle.ObjectEqual(columnKey, obj.ObjectHandle);
+                    queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveNotEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveNotEqual);
                     break;
             }
         }
 
         private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveLess(columnKey, PrimitiveValue.Date(date));
+                    queryHandle.PrimitiveLess(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveLess);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveLess);
                     break;
             }
         }
 
         private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveLessEqual(columnKey, PrimitiveValue.Date(date));
+                    queryHandle.PrimitiveLessEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveLessEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveLessEqual);
                     break;
             }
         }
 
         private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveGreater(columnKey, PrimitiveValue.Date(date));
+                    queryHandle.PrimitiveGreater(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveGreater);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveGreater);
                     break;
             }
         }
 
         private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
-            var columnKey = _metadata.ColumnKeys[columnName];
+            var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
                 case DateTimeOffset date:
-                    queryHandle.PrimitiveGreaterEqual(columnKey, PrimitiveValue.Date(date));
+                    queryHandle.PrimitiveGreaterEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
                     break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(columnKey, value, columnType, queryHandle.PrimitiveGreaterEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveGreaterEqual);
                     break;
             }
         }
 
-        private static void AddQueryForConvertibleTypes(ColumnKey columnKey, object value, Type columnType, Action<ColumnKey, PrimitiveValue> action)
+        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, Action<SharedRealmHandle, IntPtr, PrimitiveValue> action)
         {
             if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
@@ -799,15 +799,15 @@ namespace Realms
                 columnType == typeof(RealmInteger<int>) ||
                 columnType == typeof(RealmInteger<long>))
             {
-                action(columnKey, PrimitiveValue.Int((long)Convert.ChangeType(value, typeof(long))));
+                action(realm, propertyIndex, PrimitiveValue.Int((long)Convert.ChangeType(value, typeof(long))));
             }
             else if (columnType == typeof(float))
             {
-                action(columnKey, PrimitiveValue.Float((float)Convert.ChangeType(value, typeof(float))));
+                action(realm, propertyIndex, PrimitiveValue.Float((float)Convert.ChangeType(value, typeof(float))));
             }
             else if (columnType == typeof(double))
             {
-                action(columnKey, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
+                action(realm, propertyIndex, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
             }
             else if (columnType == typeof(Decimal128))
             {
@@ -817,15 +817,15 @@ namespace Realms
                     decimalValue = (Decimal128)Convert.ChangeType(value, typeof(Decimal128));
                 }
 
-                action(columnKey, PrimitiveValue.Decimal(decimalValue));
+                action(realm, propertyIndex, PrimitiveValue.Decimal(decimalValue));
             }
             else if (columnType == typeof(decimal))
             {
-                action(columnKey, PrimitiveValue.Decimal((decimal)Convert.ChangeType(value, typeof(decimal))));
+                action(realm, propertyIndex, PrimitiveValue.Decimal((decimal)Convert.ChangeType(value, typeof(decimal))));
             }
             else if (columnType == typeof(ObjectId))
             {
-                action(columnKey, PrimitiveValue.ObjectId((ObjectId)Convert.ChangeType(value, typeof(ObjectId))));
+                action(realm, propertyIndex, PrimitiveValue.ObjectId((ObjectId)Convert.ChangeType(value, typeof(ObjectId))));
             }
             else
             {
