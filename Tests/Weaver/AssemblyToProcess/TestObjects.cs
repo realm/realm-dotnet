@@ -117,6 +117,12 @@ namespace AssemblyToProcess
 
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
 
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
+
         public IList<char?> NullableCharList { get; }
 
         public IList<byte?> NullableByteList { get; }
@@ -134,6 +140,12 @@ namespace AssemblyToProcess
         public IList<bool?> NullableBooleanList { get; }
 
         public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+
+        public IList<decimal?> NullableDecimalList { get; }
+
+        public IList<Decimal128?> NullableDecimal128List { get; }
+
+        public IList<ObjectId?> NullableObjectIdList { get; }
 
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 
