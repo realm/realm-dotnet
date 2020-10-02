@@ -48,6 +48,8 @@ namespace Realms.Tests.Database
 
         public Decimal128 Decimal128Property { get; set; }
 
+        public ObjectId ObjectIdProperty { get; set; }
+
         [Required]
         public string RequiredStringProperty { get; set; }
 
@@ -76,6 +78,8 @@ namespace Realms.Tests.Database
         public decimal? NullableDecimalProperty { get; set; }
 
         public Decimal128? NullableDecimal128Property { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
@@ -223,6 +227,12 @@ namespace Realms.Tests.Database
         public string Value { get; set; }
     }
 
+    public class PrimaryKeyObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId StringProperty { get; set; }
+    }
+
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -251,6 +261,12 @@ namespace Realms.Tests.Database
     {
         [PrimaryKey]
         public long? Int64Property { get; set; }
+    }
+
+    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId? StringProperty { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject

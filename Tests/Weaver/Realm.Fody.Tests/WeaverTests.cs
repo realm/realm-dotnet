@@ -127,6 +127,7 @@ namespace RealmWeaver
             "DateTimeOffset",
             "Decimal",
             "Decimal128",
+            "ObjectId",
             "NullableChar",
             "NullableSingle",
             "NullableDouble",
@@ -134,6 +135,7 @@ namespace RealmWeaver
             "NullableDateTimeOffset",
             "NullableDecimal",
             "NullableDecimal128",
+            "NullableObjectId",
         };
 
         public enum PropertyChangedWeaver
@@ -222,6 +224,7 @@ namespace RealmWeaver
             new object[] { "String", "str", null },
             new object[] { "Decimal", 123.456M, 0M },
             new object[] { "Decimal128", new Decimal128(123.456), new Decimal128() },
+            new object[] { "ObjectId", ObjectId.GenerateNewId(), default(ObjectId) },
             new object[] { "NullableChar", '0', null },
             new object[] { "NullableByte", (byte)100, null },
             new object[] { "NullableInt16", (short)100, null },
@@ -232,6 +235,7 @@ namespace RealmWeaver
             new object[] { "NullableBoolean", true, null },
             new object[] { "NullableDecimal", 123.456M, null },
             new object[] { "NullableDecimal128", new Decimal128(123.456), null },
+            new object[] { "NullableObjectId", ObjectId.GenerateNewId(), null },
             new object[] { "ByteCounter", (RealmInteger<byte>)100, (byte)0 },
             new object[] { "Int16Counter", (RealmInteger<short>)100, (short)0 },
             new object[] { "Int32Counter", (RealmInteger<int>)100, 0 },
@@ -619,6 +623,8 @@ namespace RealmWeaver
             WovenCopyToRealm_ShouldSetNonDefaultProperties("Decimal", 1234.3225352352M, "DecimalProperty");
             WovenCopyToRealm_ShouldSetNonDefaultProperties("Decimal128", default(Decimal128), "Decimal128Property");
             WovenCopyToRealm_ShouldSetNonDefaultProperties("Decimal128", new Decimal128(124.3124214), "Decimal128Property");
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("ObjectId", default(ObjectId), "ObjectIdProperty");
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("ObjectId", ObjectId.GenerateNewId(), "ObjectIdProperty");
         }
 
         [Test]

@@ -43,6 +43,9 @@ namespace Realms.Native
         [FieldOffset(0)]
         private fixed ulong decimal_bits[2];
 
+        [FieldOffset(0)]
+        private fixed byte object_id_bytes[12];
+
         // Without this padding, .NET fails to marshal the decimal_bits array correctly and the second element is always 0.
         [FieldOffset(8)]
         [Obsolete("Don't use, please!")]
@@ -160,9 +163,42 @@ namespace Realms.Native
             return result;
         }
 
-        public static PrimitiveValue ObjectId(ObjectId value) => throw new NotImplementedException();
+        public static PrimitiveValue ObjectId(ObjectId value)
+        {
+            var result = new PrimitiveValue
+            {
+                Type = PropertyType.ObjectId,
+                has_value = true
+            };
 
-        public static PrimitiveValue NullableObjectId(ObjectId? value) => throw new NotImplementedException();
+            var objectIdBytes = value.ToByteArray();
+            for (var i = 0; i < 12; i++)
+            {
+                result.object_id_bytes[i] = objectIdBytes[i];
+            }
+
+            return result;
+        }
+
+        public static PrimitiveValue NullableObjectId(ObjectId? value)
+        {
+            var result = new PrimitiveValue
+            {
+                Type = PropertyType.NullableObjectId,
+                has_value = value.HasValue
+            };
+
+            if (value.HasValue)
+            {
+                var objectIdBytes = value.Value.ToByteArray();
+                for (var i = 0; i < 12; i++)
+                {
+                    result.object_id_bytes[i] = objectIdBytes[i];
+                }
+            }
+
+            return result;
+        }
 
         public static PrimitiveValue Create<T>(T value, PropertyType type)
         {
@@ -214,9 +250,26 @@ namespace Realms.Native
 
         public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
 
-        public ObjectId ToObjectId() => throw new NotImplementedException();
+        public ObjectId ToObjectId()
+        {
+            var bytes = new byte[12];
+            for (var i = 0; i < 12; i++)
+            {
+                bytes[i] = object_id_bytes[i];
+            }
 
-        public ObjectId? ToNullableObjectId() => has_value ? throw new NotImplementedException() : (ObjectId?)null;
+            return new ObjectId(bytes);
+        }
+
+        public ObjectId? ToNullableObjectId()
+        {
+            if (!has_value)
+            {
+                return null;
+            }
+
+            return ToObjectId();
+        }
 
         public T Get<T>()
         {

@@ -161,11 +161,32 @@ extern "C" {
                 }
                 break;
             }
+            case realm::PropertyType::ObjectId: {
+                auto result = object.obj().get<ObjectId>(column_key);
+                auto bytes = result.to_bytes();
+                for (int i = 0; i < 12; i++)
+                {
+                    value.value.object_id_bytes[i] = bytes[i];
+                }
+                break;
+            }
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
+                auto result = object.obj().get<util::Optional<ObjectId>>(column_key);
+                value.has_value = !!result;
+                if (value.has_value) {
+                    auto bytes = result.value().to_bytes();
+                    for (int i = 0; i < 12; i++)
+                    {
+                        value.value.object_id_bytes[i] = bytes[i];
+                    }
+                }
+                break;
+            }
             default:
                 REALM_UNREACHABLE();
             }
 #pragma GCC diagnostic pop
-            });
+        });
     }
 
     REALM_EXPORT void object_set_primitive(const Object& object, ColKey column_key, PrimitiveValue& value, NativeException::Marshallable& ex)
@@ -213,6 +234,14 @@ extern "C" {
             case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
                 auto decimal = value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null());
                 object.obj().set(column_key, decimal);
+                break;
+            }
+            case realm::PropertyType::ObjectId: {
+                object.obj().set(column_key, to_object_id(value));
+                break;
+            }
+            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
+                object.obj().set(column_key, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>(none));
                 break;
             }
             default:

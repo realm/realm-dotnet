@@ -36,11 +36,19 @@ struct PrimitiveValue
         float float_value;
         double double_value;
         realm::Decimal128::Bid128 decimal_bits;
+        uint8_t object_id_bytes[12];
     } value;
 
     realm::PropertyType type;
     bool has_value;
 };
+
+inline ObjectId to_object_id(PrimitiveValue primitive)
+{
+    std::array<uint8_t, 12> bytes;
+    std::copy(std::begin(primitive.value.object_id_bytes), std::end(primitive.value.object_id_bytes), bytes.begin());
+    return ObjectId(std::move(bytes));
+}
 
 struct StringValue
 {

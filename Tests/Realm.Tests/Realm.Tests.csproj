@@ -5,6 +5,7 @@
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
+    <LangVersion>8.0</LangVersion>
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
