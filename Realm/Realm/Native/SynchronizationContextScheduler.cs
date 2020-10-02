@@ -49,6 +49,8 @@ namespace Realms
 
         private class Scheduler
         {
+            private readonly int _threadId;
+
             private volatile bool _isReleased;
             private SynchronizationContext _context;
 
@@ -57,6 +59,7 @@ namespace Realms
                 Argument.NotNull(context, nameof(context));
 
                 _context = context;
+                _threadId = Environment.CurrentManagedThreadId;
             }
 
             internal void Post(IntPtr function_ptr)
@@ -70,7 +73,7 @@ namespace Realms
                 }, null);
             }
 
-            internal bool IsOnContext(Scheduler other) => _context.IsSameAs(other?._context ?? SynchronizationContext.Current);
+            internal bool IsOnContext(Scheduler other) => _context == (other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal void Invalidate()
