@@ -24,8 +24,11 @@ namespace Realms
 {
     internal static class SynchronizationContextExtensions
     {
-        private static readonly Lazy<Type> _dispatcherSyncContextType = new Lazy<Type>(() => Type.GetType("System.Windows.Threading.DispatcherSynchronizationContext, WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"));
-        private static readonly Lazy<FieldInfo> _dispatcherFI = new Lazy<FieldInfo>(() => _dispatcherSyncContextType.Value?.GetField("_dispatcher", BindingFlags.NonPublic | BindingFlags.Instance));
+        private static readonly Lazy<Type> _wpfSyncContext = new Lazy<Type>(() => Type.GetType("System.Windows.Threading.DispatcherSynchronizationContext, WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"));
+        private static readonly Lazy<FieldInfo> _wpfDispatcherFI = new Lazy<FieldInfo>(() => _wpfSyncContext.Value?.GetField("_dispatcher", BindingFlags.NonPublic | BindingFlags.Instance));
+
+        private static readonly Lazy<Type> _uwpSyncContext = new Lazy<Type>(() => Type.GetType("System.Threading.WinRTCoreDispatcherBasedSynchronizationContext, System.Runtime.WindowsRuntime, Version=4.0.14.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"));
+        private static readonly Lazy<FieldInfo> _uwpRTDispatcherFI = new Lazy<FieldInfo>(() => _uwpSyncContext.Value?.GetField("_dispatcher", BindingFlags.NonPublic | BindingFlags.Instance));
 
         public static bool IsSameAs(this SynchronizationContext first, SynchronizationContext second)
         {
@@ -34,14 +37,16 @@ namespace Realms
                 return false;
             }
 
-            if (first == second)
-            {
-                return true;
-            }
+            return first == second ||
+                first.IsSameDispatcherContext(second, _wpfSyncContext, _wpfDispatcherFI) ||
+                first.IsSameDispatcherContext(second, _uwpSyncContext, _uwpRTDispatcherFI);
+        }
 
+        private static bool IsSameDispatcherContext(this SynchronizationContext first, SynchronizationContext second, Lazy<Type> contextType, Lazy<FieldInfo> dispatcherFI)
+        {
             try
             {
-                if (_dispatcherSyncContextType.Value == null)
+                if (contextType.Value == null || contextType.Value == null)
                 {
                     return false;
                 }
@@ -49,9 +54,9 @@ namespace Realms
                 var firstType = first.GetType();
                 var secondType = second.GetType();
 
-                return firstType == _dispatcherSyncContextType.Value &&
-                    secondType == _dispatcherSyncContextType.Value &&
-                    _dispatcherFI.Value.GetValue(first) == _dispatcherFI.Value.GetValue(second);
+                return firstType == contextType.Value &&
+                    secondType == contextType.Value &&
+                    dispatcherFI.Value.GetValue(first) == dispatcherFI.Value.GetValue(second);
             }
             catch
             {
