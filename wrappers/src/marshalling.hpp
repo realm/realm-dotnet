@@ -88,53 +88,87 @@ void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
         switch (value.type) {
-            case realm::PropertyType::Bool:
-                value.value.bool_value = collection.template get<bool>(ndx);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
-                auto result = collection.template get<util::Optional<bool>>(ndx);
-                value.has_value = !!result;
-                value.value.bool_value = result.value_or(false);
-                break;
+        case realm::PropertyType::Bool:
+            value.value.bool_value = collection.template get<bool>(ndx);
+            break;
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
+            auto result = collection.template get<util::Optional<bool>>(ndx);
+            value.has_value = !!result;
+            value.value.bool_value = result.value_or(false);
+            break;
+        }
+        case realm::PropertyType::Int:
+            value.value.int_value = collection.template get<int64_t>(ndx);
+            break;
+        case realm::PropertyType::Int | realm::PropertyType::Nullable: {
+            auto result = collection.template get<util::Optional<int64_t>>(ndx);
+            value.has_value = !!result;
+            value.value.int_value = result.value_or(0);
+            break;
+        }
+        case realm::PropertyType::Float:
+            value.value.float_value = collection.template get<float>(ndx);
+            break;
+        case realm::PropertyType::Float | realm::PropertyType::Nullable: {
+            auto result = collection.template get<util::Optional<float>>(ndx);
+            value.has_value = !!result;
+            value.value.float_value = result.value_or((float)0);
+            break;
+        }
+        case realm::PropertyType::Double:
+            value.value.double_value = collection.template get<double>(ndx);
+            break;
+        case realm::PropertyType::Double | realm::PropertyType::Nullable: {
+            auto result = collection.template get<util::Optional<double>>(ndx);
+            value.has_value = !!result;
+            value.value.double_value = result.value_or((double)0);
+            break;
+        }
+        case realm::PropertyType::Date:
+            value.value.int_value = to_ticks(collection.template get<Timestamp>(ndx));
+            break;
+        case realm::PropertyType::Date | realm::PropertyType::Nullable: {
+            auto result = collection.template get<Timestamp>(ndx);
+            value.has_value = !result.is_null();
+            value.value.int_value = result.is_null() ? 0 : to_ticks(result);
+            break;
+        }
+        case realm::PropertyType::Decimal: {
+            auto result = collection.template get<realm::Decimal128>(ndx);
+            value.value.decimal_bits = *result.raw();
+            break;
+        }
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
+            auto result = collection.template get<realm::Decimal128>(ndx);
+            value.has_value = !result.is_null();
+            if (value.has_value) {
+                value.value.decimal_bits = *result.raw();
             }
-            case realm::PropertyType::Int:
-                value.value.int_value = collection.template get<int64_t>(ndx);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable: {
-                auto result = collection.template get<util::Optional<int64_t>>(ndx);
-                value.has_value = !!result;
-                value.value.int_value = result.value_or(0);
-                break;
+            break;
+        }
+        case realm::PropertyType::ObjectId: {
+            auto result = collection.template get<realm::ObjectId>(ndx);
+            auto bytes = result.to_bytes();
+            for (int i = 0; i < 12; i++)
+            {
+                value.value.object_id_bytes[i] = bytes[i];
             }
-            case realm::PropertyType::Float:
-                value.value.float_value = collection.template get<float>(ndx);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable: {
-                auto result = collection.template get<util::Optional<float>>(ndx);
-                value.has_value = !!result;
-                value.value.float_value = result.value_or((float)0);
-                break;
+            break;
+        }
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
+            auto result = collection.template get<util::Optional<realm::ObjectId>>(ndx);
+            value.has_value = !!result;
+            if (value.has_value) {
+                auto bytes = result.value().to_bytes();
+                for (int i = 0; i < 12; i++)
+                {
+                    value.value.object_id_bytes[i] = bytes[i];
+                }
             }
-            case realm::PropertyType::Double:
-                value.value.double_value = collection.template get<double>(ndx);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable: {
-                auto result = collection.template get<util::Optional<double>>(ndx);
-                value.has_value = !!result;
-                value.value.double_value = result.value_or((double)0);
-                break;
-            }
-            case realm::PropertyType::Date:
-                value.value.int_value = to_ticks(collection.template get<Timestamp>(ndx));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable: {
-                auto result = collection.template get<Timestamp>(ndx);
-                value.has_value = !result.is_null();
-                value.value.int_value = result.is_null() ? 0 : to_ticks(result);
-                break;
-            }
-            default:
-                REALM_UNREACHABLE();
+            break;
+        }
+        default:
+            REALM_UNREACHABLE();
         }
 #pragma GCC diagnostic pop
     });
