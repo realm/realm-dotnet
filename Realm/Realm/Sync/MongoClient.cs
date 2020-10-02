@@ -24,12 +24,17 @@ namespace Realms.Sync
     public class MongoClient
     {
         private readonly User _user;
-        private readonly string _serviceId;
 
-        internal MongoClient(User user, string serviceId)
+        /// <summary>
+        /// Gets the service name for this client.
+        /// </summary>
+        /// <value>The name of the remote MongoDB service.</value>
+        public string ServiceName { get; }
+
+        internal MongoClient(User user, string serviceName)
         {
             _user = user;
-            _serviceId = serviceId;
+            ServiceName = serviceName;
         }
     }
 }
