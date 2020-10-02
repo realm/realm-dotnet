@@ -405,9 +405,8 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
 
-                var bsonArgs = new BsonArray(functionArgs);
                 var tcs = new TaskCompletionSource<object>();
-                _app.AppHandle.EmailPassword.CallResetPasswordFunction(email, password, bsonArgs.ToString(), tcs);
+                _app.AppHandle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToJson(), tcs);
                 return tcs.Task;
             }
         }
