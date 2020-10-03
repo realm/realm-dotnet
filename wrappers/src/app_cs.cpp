@@ -272,9 +272,8 @@ extern "C" {
             auto app_credentials = credentials.to_app_credentials();
             app->log_in_with_credentials(app_credentials, [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
                 if (err) {
-                    std::string message = err->message;
                     std::string error_category = err->error_code.message();
-                    MarshaledAppError app_error(message, error_category, err->error_code.value());
+                    MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
 
                     s_login_callback(tcs_ptr, nullptr, app_error);
                 }

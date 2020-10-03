@@ -329,7 +329,7 @@ namespace Realms.Sync
                 {
                     if (shouldThrow)
                     {
-                        throw new AppException($"Failed to execute operation because ApiKey with Id: {id} doesn't exist.", 404);
+                        throw new AppException($"Failed to execute operation because ApiKey with Id: {id} doesn't exist.", ex.HelpLink, 404);
                     }
 
                     return default;

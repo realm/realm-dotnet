@@ -32,13 +32,15 @@ namespace binding {
         size_t message_len = 0;
         const char* error_category_buf = nullptr;
         size_t error_category_len = 0;
+        const char* logs_link_buf = nullptr;
+        size_t logs_link_len = 0;
         int error_code = 0;
 
         MarshaledAppError()
         {
         }
 
-        MarshaledAppError(const std::string& message, const std::string& error_category, int err_code)
+        MarshaledAppError(const std::string& message, const std::string& error_category, const std::string& logs_link, int err_code)
         {
             is_null = false;
 
@@ -47,6 +49,9 @@ namespace binding {
 
             error_category_buf = error_category.c_str();
             error_category_len = error_category.size();
+
+            logs_link_buf = logs_link.c_str();
+            logs_link_len = logs_link.size();
 
             error_code = err_code;
         }
@@ -57,9 +62,8 @@ namespace binding {
     inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
-                std::string message = err->message;
                 std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(message, error_category, err->error_code.value());
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
                 s_void_callback(tcs_ptr, app_error);
             }
             else {

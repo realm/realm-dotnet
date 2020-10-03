@@ -29,14 +29,15 @@ namespace Realms.Exceptions
         internal int ErrorCode { get; }
 
         internal AppException(AppError appError)
-            : this($"{appError.ErrorCategory}: {appError.Message}", appError.error_code)
+            : this($"{appError.ErrorCategory}: {appError.Message}", appError.LogsLink, appError.error_code)
         {
         }
 
-        internal AppException(string message, int errorCode)
+        internal AppException(string message, string helpLink, int errorCode)
             : base(message)
         {
             ErrorCode = errorCode;
+            HelpLink = helpLink;
         }
 
         internal enum AppErrorCodes

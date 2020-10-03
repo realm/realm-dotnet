@@ -216,6 +216,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ex.Message, Does.Contain("InvalidParameter"));
                 Assert.That(ex.Message, Does.Contain("can only contain ASCII letters, numbers, underscores, and hyphens"));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
 
@@ -371,6 +372,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
 
@@ -386,6 +388,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
 
@@ -519,6 +522,7 @@ namespace Realms.Tests.Sync
                 var credentials = Credentials.ApiKey(apiKey.Value);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
 
                 await user.ApiKeys.EnableAsync(apiKey.Id);
@@ -547,6 +551,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
 
@@ -565,6 +570,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
+                Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
         }
 
