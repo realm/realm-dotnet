@@ -35,8 +35,6 @@ namespace Realms.Sync
     /// <seealso cref="Credentials"/>
     public class SyncConfiguration : RealmConfigurationBase
     {
-        private readonly string _partitionString;
-
         /// <summary>
         /// Gets the <see cref="User"/> used to create this <see cref="SyncConfiguration"/>.
         /// </summary>
@@ -59,16 +57,6 @@ namespace Realms.Sync
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
-        [Preserve]
-        static SyncConfiguration()
-        {
-            _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
-            _ = new MongoDB.Bson.Serialization.Serializers.Int64Serializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
@@ -83,7 +71,7 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(string partition, User user, string optionalPath = null)
-            : this(partition, partition.ToJson(), user, optionalPath)
+            : this((object)partition, user, optionalPath)
         {
         }
 
@@ -101,7 +89,7 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(long? partition, User user, string optionalPath = null)
-            : this(partition, partition.ToJson(), user, optionalPath)
+            : this((object)partition, user, optionalPath)
         {
         }
 
@@ -119,18 +107,17 @@ namespace Realms.Sync
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
         public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
-            : this(partition, partition.ToJson(), user, optionalPath)
+            : this((object)partition, user, optionalPath)
         {
         }
 
-        private SyncConfiguration(object partition, string partitionString, User user, string path)
+        private SyncConfiguration(object partition, User user, string path)
         {
             Argument.NotNull(user, nameof(user));
 
-            _partitionString = partitionString;
             User = user;
             Partition = partition;
-            DatabasePath = GetPathToRealm(path ?? user.App.AppHandle.GetRealmPath(User, partitionString));
+            DatabasePath = GetPathToRealm(path ?? user.App.AppHandle.GetRealmPath(User, SerializationHelper.ToJson(partition)));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -205,7 +192,7 @@ namespace Realms.Sync
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
-                Partition = _partitionString,
+                Partition = SerializationHelper.ToJson(Partition),
                 session_stop_policy = SessionStopPolicy,
             };
         }

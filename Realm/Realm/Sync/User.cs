@@ -23,7 +23,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-using MongoDB.Bson.IO;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Sync.Exceptions;
@@ -343,11 +342,6 @@ namespace Realms.Sync
         /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
         public class FunctionsApi
         {
-            private static readonly JsonWriterSettings _jsonSettings = new JsonWriterSettings
-            {
-                OutputMode = JsonOutputMode.CanonicalExtendedJson,
-            };
-
             private readonly User _user;
 
             internal FunctionsApi(User user)
@@ -393,7 +387,7 @@ namespace Realms.Sync
 
                 var tcs = new TaskCompletionSource<BsonPayload>();
 
-                _user.Handle.CallFunction(_user.App.AppHandle, name, args.ToJson(_jsonSettings), tcs);
+                _user.Handle.CallFunction(_user.App.AppHandle, name, SerializationHelper.ToJson(args), tcs);
 
                 var response = await tcs.Task;
 

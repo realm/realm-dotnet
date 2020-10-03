@@ -21,7 +21,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -406,7 +405,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(password, nameof(password));
 
                 var tcs = new TaskCompletionSource<object>();
-                _app.AppHandle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToJson(), tcs);
+                _app.AppHandle.EmailPassword.CallResetPasswordFunction(email, password, SerializationHelper.ToJson(functionArgs), tcs);
                 return tcs.Task;
             }
         }
