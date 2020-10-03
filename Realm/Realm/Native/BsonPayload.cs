@@ -16,60 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Runtime.InteropServices;
 using System.Text;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 
 namespace Realms.Native
 {
+    [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct BsonPayload
     {
-        public enum BsonType
-        {
-            Null,
-            Int32,
-            Int64,
-            Bool,
-            Double,
-            String,
-            Binary,
-            Timestamp,
-            Datetime,
-            ObjectId,
-            Decimal128,
-            RegularExpression,
-            MaxKey,
-            MinKey,
-            Document,
-            Array
-        }
-
-        public BsonType type;
-
         private byte* serialized;
-        private int serialized_len;
-
-        private string Serialized => Encoding.UTF8.GetString(serialized, serialized_len);
-
-        public BsonValue GetValue()
-        {
-            if (type == BsonType.Null || Serialized == null)
-            {
-                return null;
-            }
-
-            if (type == BsonType.Document)
-            {
-                return BsonDocument.Parse(Serialized);
-            }
-
-            var fakeDoc = $"{{ \"value\": {Serialized} }}";
-            return BsonDocument.Parse(fakeDoc)["value"];
-        }
+        private IntPtr serialized_len;
 
         public T GetValue<T>()
         {
-            return BsonSerializer.Deserialize<T>(Serialized);
+            return BsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(serialized, (int)serialized_len));
         }
     }
 }

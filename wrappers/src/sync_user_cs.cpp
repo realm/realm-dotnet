@@ -46,7 +46,6 @@ struct UserApiKey {
 };
 
 struct BsonPayload {
-    bson::Bson::Type type = bson::Bson::Type::Null;
     const char* serialized;
     int serialized_len;
 };
@@ -310,7 +309,6 @@ extern "C" {
                 else if (response) {
                     BsonPayload payload;
                     std::string serialized = response->to_string();
-                    payload.type = response->type();
                     payload.serialized = serialized.c_str();
                     payload.serialized_len = static_cast<int>(serialized.size());
                     s_function_callback(tcs_ptr, payload, MarshaledAppError());

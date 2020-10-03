@@ -24,8 +24,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Realms.Exceptions;
 using Realms.Native;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Sync
 {

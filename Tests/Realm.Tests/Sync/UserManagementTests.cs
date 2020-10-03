@@ -21,8 +21,8 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
-using Realms.Exceptions;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Tests.Sync
 {

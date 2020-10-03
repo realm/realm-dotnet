@@ -20,8 +20,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MongoDB.Bson;
-using Realms.Exceptions;
 using Realms.Native;
+using Realms.Sync.Exceptions;
+using Realms.Sync.Native;
 
 namespace Realms.Sync
 {

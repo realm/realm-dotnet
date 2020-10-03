@@ -20,7 +20,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Realms.Native
+namespace Realms.Sync.Native
 {
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct AppError

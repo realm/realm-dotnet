@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Native;
+using Realms.Sync.Native;
 
-namespace Realms.Exceptions
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception thrown from operations interacting with a MongoDB Realm app.

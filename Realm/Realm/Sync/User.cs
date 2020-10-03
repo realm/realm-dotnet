@@ -24,9 +24,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
-using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -364,11 +364,7 @@ namespace Realms.Sync
             /// A <see cref="Task{BsonValue}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function.
             /// </returns>
-            public async Task<BsonValue> CallAsync(string name, params object[] args)
-            {
-                var response = await CallCoreAsync(name, args);
-                return response.GetValue();
-            }
+            public Task<BsonValue> CallAsync(string name, params object[] args) => CallAsync<BsonValue>(name, args);
 
             /// <summary>
             /// Calls a remote function with the supplied arguments.
@@ -393,19 +389,15 @@ namespace Realms.Sync
             /// </returns>
             public async Task<T> CallAsync<T>(string name, params object[] args)
             {
-                var response = await CallCoreAsync(name, args);
-                return response.GetValue<T>();
-            }
-
-            private Task<BsonPayload> CallCoreAsync(string name, params object[] args)
-            {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
                 var tcs = new TaskCompletionSource<BsonPayload>();
 
                 _user.Handle.CallFunction(_user.App.AppHandle, name, args.ToJson(_jsonSettings), tcs);
 
-                return tcs.Task;
+                var response = await tcs.Task;
+
+                return response.GetValue<T>();
             }
         }
     }
