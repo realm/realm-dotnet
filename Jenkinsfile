@@ -23,7 +23,8 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    if (env.BRANCH_NAME == 'master') {
+    // V10TODO: temporary set v10 as publishing branch
+    if (shouldPublishPackage()) {
       versionSuffix = "alpha-${env.BUILD_ID}"
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
@@ -92,7 +93,7 @@ stage('Build wrappers') {
           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
@@ -108,7 +109,7 @@ stage('Build wrappers') {
           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
@@ -164,7 +165,7 @@ stage('Package') {
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
             echo "Publishing Realm.Fody.${packageVersion} to github packages"
             bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
@@ -404,6 +405,10 @@ def reportTests(spec) {
     tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
     thresholds: [ failed(unstableThreshold: '0') ]
   )
+}
+
+boolean shouldPublishPackage() {
+  return env.BRANCH_NAME == 'master' || (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == 'v10')
 }
 
 // Required due to JENKINS-27421
