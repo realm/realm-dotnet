@@ -871,7 +871,11 @@ namespace Realms.Tests.Database
             Assert.Throws<RealmInvalidTransactionException>(() => realm.Write(() => { }), "Number of active versions (2) in the Realm exceeded the limit of 1");
         }
 
-        private const int DummyDataSize = 100;
+#if DEBUG
+        private const int DummyDataSize = 200;
+#else
+        private const int DummyDataSize = 1000;
+#endif
 
         private static void AddDummyData(Realm realm)
         {
