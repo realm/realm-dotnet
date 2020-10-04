@@ -176,15 +176,12 @@ namespace Realms.Tests.Database
             };
 
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
-            object castPKValue = pkType switch
+            if (pkType == PKType.Int && primaryKeyValue != null)
             {
-                PKType.Int => primaryKeyValue == null ? (long?)null : Convert.ToInt64(primaryKeyValue),
-                PKType.String => (string)primaryKeyValue,
-                PKType.ObjectId => (ObjectId?)primaryKeyValue,
-                _ => throw new NotSupportedException(),
-            };
+                primaryKeyValue = Convert.ToInt64(primaryKeyValue);
+            }
 
-            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
+            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
         }
 
         [Test]
