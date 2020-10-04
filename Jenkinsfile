@@ -25,10 +25,10 @@ stage('Checkout') {
 
     // V10TODO: temporary set v10 as publishing branch
     if (shouldPublishPackage()) {
-      versionSuffix = "alpha-${env.BUILD_ID}"
+      versionSuffix = "alpha.${env.BUILD_ID}"
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
-      versionSuffix = "PR-${env.CHANGE_ID}-${env.BUILD_ID}"
+      versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
