@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -539,7 +540,6 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                Realm realm = null;
                 var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
                 config.SchemaVersion = 1;
 
@@ -562,39 +562,16 @@ namespace Realms.Tests.Database
                     hasCompletedMigration = true;
                 };
 
-                Exception ex = null;
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Realm.GetInstanceAsync(config)
-                     .ContinueWith(t =>
-                     {
-                         if (t.IsFaulted)
-                         {
-                             ex = t.Exception;
-                         }
-                         else
-                         {
-                             realm = t.Result;
-                         }
-                     }, TaskScheduler.FromCurrentSynchronizationContext());
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                var sw = new Stopwatch();
+                sw.Start();
 
-                var ticks = 0;
-                while (realm == null)
-                {
-                    await Task.Delay(100);
-                    ticks++;
+                using var realm = await GetRealmAsync(config).Timeout(1000);
 
-                    if (ticks > 10)
-                    {
-                        Assert.Fail("Migration should have completed by now.");
-                    }
-                }
+                sw.Stop();
 
-                Assert.That(ex, Is.Null);
                 Assert.That(hasCompletedMigration);
-                Assert.That(ticks, Is.GreaterThanOrEqualTo(2));
+                Assert.That(sw.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(200));
                 Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
-                realm.Dispose();
             });
         }
 
@@ -620,37 +597,35 @@ namespace Realms.Tests.Database
 
             try
             {
-                using (var original = Realm.GetInstance(originalConfig))
+                using var original = Realm.GetInstance(originalConfig);
+                original.Write(() =>
                 {
-                    original.Write(() =>
+                    original.Add(new Person
                     {
-                        original.Add(new Person
-                        {
-                            FirstName = "John",
-                            LastName = "Doe"
-                        });
-
-                        original.WriteCopy(copyConfig);
-
-                        using (var copy = Realm.GetInstance(copyConfig))
-                        {
-                            var copiedPerson = copy.All<Person>().SingleOrDefault();
-                            Assert.That(copiedPerson, Is.Not.Null);
-                            Assert.That(copiedPerson.FirstName, Is.EqualTo("John"));
-                            Assert.That(copiedPerson.LastName, Is.EqualTo("Doe"));
-                        }
-
-                        if (copyEncrypted)
-                        {
-                            var invalidConfig = new RealmConfiguration(copyConfig.DatabasePath)
-                            {
-                                EncryptionKey = originalConfig.EncryptionKey
-                            };
-
-                            Assert.That(() => Realm.GetInstance(invalidConfig), Throws.TypeOf<RealmFileAccessErrorException>());
-                        }
+                        FirstName = "John",
+                        LastName = "Doe"
                     });
-                }
+
+                    original.WriteCopy(copyConfig);
+
+                    using (var copy = Realm.GetInstance(copyConfig))
+                    {
+                        var copiedPerson = copy.All<Person>().SingleOrDefault();
+                        Assert.That(copiedPerson, Is.Not.Null);
+                        Assert.That(copiedPerson.FirstName, Is.EqualTo("John"));
+                        Assert.That(copiedPerson.LastName, Is.EqualTo("Doe"));
+                    }
+
+                    if (copyEncrypted)
+                    {
+                        var invalidConfig = new RealmConfiguration(copyConfig.DatabasePath)
+                        {
+                            EncryptionKey = originalConfig.EncryptionKey
+                        };
+
+                        Assert.That(() => Realm.GetInstance(invalidConfig), Throws.TypeOf<RealmFileAccessErrorException>());
+                    }
+                });
             }
             finally
             {
@@ -672,11 +647,9 @@ namespace Realms.Tests.Database
             try
             {
                 var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
-                using (var first = Realm.GetInstance(config))
-                using (var second = Realm.GetInstance(config))
-                {
-                    Assert.That(enableCache == ReferenceEquals(stateAccessor.GetValue(first), stateAccessor.GetValue(second)));
-                }
+                using var first = Realm.GetInstance(config);
+                using var second = Realm.GetInstance(config);
+                Assert.That(enableCache == ReferenceEquals(stateAccessor.GetValue(first), stateAccessor.GetValue(second)));
             }
             finally
             {
@@ -715,31 +688,29 @@ namespace Realms.Tests.Database
 
                 config.IsDynamic = true;
 
-                using (var dynamicRealm = Realm.GetInstance(config))
-                {
-                    Assert.That(dynamicRealm.Schema.Count == 4);
+                using var dynamicRealm = Realm.GetInstance(config);
+                Assert.That(dynamicRealm.Schema.Count == 4);
 
-                    var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
-                    Assert.That(allTypesSchema, Is.Not.Null);
-                    Assert.That(allTypesSchema.IsEmbedded, Is.False);
+                var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
+                Assert.That(allTypesSchema, Is.Not.Null);
+                Assert.That(allTypesSchema.IsEmbedded, Is.False);
 
-                    var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
-                    Assert.That(hasExpectedProp);
-                    Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
+                var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
+                Assert.That(hasExpectedProp);
+                Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-                    var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
-                    Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
+                var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
+                Assert.That(ato.RequiredStringProperty, Is.EqualTo("This is required!"));
 
-                    var embeddedAllTypesSchema = dynamicRealm.Schema.Find(nameof(EmbeddedAllTypesObject));
-                    Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-                    Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
+                var embeddedAllTypesSchema = dynamicRealm.Schema.Find(nameof(EmbeddedAllTypesObject));
+                Assert.That(embeddedAllTypesSchema, Is.Not.Null);
+                Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
 
-                    Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
-                    Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
+                Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
+                Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-                    var embeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
-                    Assert.That(embeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
-                }
+                var embeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
+                Assert.That(embeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
             }
             finally
             {
@@ -798,8 +769,100 @@ namespace Realms.Tests.Database
         [Test]
         public void Freeze_FreezesTheRealm()
         {
-            using (var realm = Realm.GetInstance())
+            using var realm = Realm.GetInstance();
+            realm.Write(() =>
             {
+                var dog = realm.Add(new Dog
+                {
+                    Name = "Charlie"
+                });
+
+                realm.Add(new Owner
+                {
+                    Name = "George",
+                    TopDog = dog,
+                    Dogs = { dog }
+                });
+            });
+
+            using var frozenRealm = realm.Freeze();
+            Assert.That(frozenRealm.IsFrozen);
+
+            var query = frozenRealm.All<Owner>();
+            Assert.That(query.AsRealmCollection().IsFrozen);
+
+            var owner = query.Single();
+            Assert.That(owner.IsFrozen);
+            Assert.That(owner.TopDog.IsFrozen);
+            Assert.That(owner.Dogs.AsRealmCollection().IsFrozen);
+            Assert.That(owner.Dogs[0].IsFrozen);
+        }
+
+        [Test]
+        public void FrozenRealm_DoesntUpdate()
+        {
+            using var realm = Realm.GetInstance();
+            Owner george = null;
+            realm.Write(() =>
+            {
+                var dog = realm.Add(new Dog
+                {
+                    Name = "Charlie"
+                });
+
+                george = realm.Add(new Owner
+                {
+                    Name = "George",
+                    TopDog = dog,
+                    Dogs = { dog }
+                });
+            });
+
+            using var frozenRealm = realm.Freeze();
+            realm.Write(() =>
+            {
+                realm.Add(new Owner
+                {
+                    Name = "Peter"
+                });
+
+                george.Name = "George Jr.";
+            });
+
+            var owners = frozenRealm.All<Owner>();
+            Assert.That(owners.Count(), Is.EqualTo(1));
+
+            var frozenGeorge = owners.Single();
+            Assert.That(frozenGeorge.Name, Is.EqualTo("George"));
+        }
+
+        [Test]
+        public void FrozenRealm_CannotWrite()
+        {
+            using var realm = Realm.GetInstance();
+            using var frozenRealm = realm.Freeze();
+
+            Assert.Throws<RealmFrozenException>(() => frozenRealm.Write(() => { }));
+            Assert.Throws<RealmFrozenException>(() => frozenRealm.BeginWrite());
+        }
+
+        [Test]
+        public void FrozenRealm_CannotSubscribeForNotifications()
+        {
+            using var realm = Realm.GetInstance();
+            using var frozenRealm = realm.Freeze();
+
+            Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged += (_, __) => { });
+            Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged -= (_, __) => { });
+        }
+
+        [Test]
+        public void FrozenRealms_CanBeUsedAcrossThreads()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                using var realm = Realm.GetInstance();
+
                 realm.Write(() =>
                 {
                     var dog = realm.Add(new Dog
@@ -815,124 +878,20 @@ namespace Realms.Tests.Database
                     });
                 });
 
-                using (var frozenRealm = realm.Freeze())
+                using var frozenRealm = realm.Freeze();
+
+                var georgeOnThreadOne = frozenRealm.All<Owner>().Single();
+                var georgeOnThreadTwo = await Task.Run(() =>
                 {
-                    Assert.That(frozenRealm.IsFrozen);
-
-                    var query = frozenRealm.All<Owner>();
-                    Assert.That(query.AsRealmCollection().IsFrozen);
-
-                    var owner = query.Single();
-                    Assert.That(owner.IsFrozen);
-                    Assert.That(owner.TopDog.IsFrozen);
-                    Assert.That(owner.Dogs.AsRealmCollection().IsFrozen);
-                    Assert.That(owner.Dogs[0].IsFrozen);
-                }
-            }
-        }
-
-        [Test]
-        public void FrozenRealm_DoesntUpdate()
-        {
-            using (var realm = Realm.GetInstance())
-            {
-                Owner george = null;
-                realm.Write(() =>
-                {
-                    var dog = realm.Add(new Dog
-                    {
-                        Name = "Charlie"
-                    });
-
-                    george = realm.Add(new Owner
-                    {
-                        Name = "George",
-                        TopDog = dog,
-                        Dogs = { dog }
-                    });
+                    var bgGeorge = frozenRealm.All<Owner>().Single();
+                    Assert.That(bgGeorge.Name, Is.EqualTo("George"));
+                    Assert.That(georgeOnThreadOne.IsValid);
+                    Assert.That(georgeOnThreadOne.Name, Is.EqualTo("George"));
+                    return bgGeorge;
                 });
 
-                using (var frozenRealm = realm.Freeze())
-                {
-                    realm.Write(() =>
-                    {
-                        realm.Add(new Owner
-                        {
-                            Name = "Peter"
-                        });
-
-                        george.Name = "George Jr.";
-                    });
-
-                    var owners = frozenRealm.All<Owner>();
-                    Assert.That(owners.Count(), Is.EqualTo(1));
-
-                    var frozenGeorge = owners.Single();
-                    Assert.That(frozenGeorge.Name, Is.EqualTo("George"));
-                }
-            }
-        }
-
-        [Test]
-        public void FrozenRealm_CannotWrite()
-        {
-            using (var realm = Realm.GetInstance())
-            using (var frozenRealm = realm.Freeze())
-            {
-                Assert.Throws<RealmFrozenException>(() => frozenRealm.Write(() => { }));
-                Assert.Throws<RealmFrozenException>(() => frozenRealm.BeginWrite());
-            }
-        }
-
-        [Test]
-        public void FrozenRealm_CannotSubscribeForNotifications()
-        {
-            using (var realm = Realm.GetInstance())
-            using (var frozenRealm = realm.Freeze())
-            {
-                Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged += (_, __) => { });
-                Assert.Throws<RealmFrozenException>(() => frozenRealm.RealmChanged -= (_, __) => { });
-            }
-        }
-
-        [Test]
-        public void FrozenRealms_CanBeUsedAcrossThreads()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                using (var realm = Realm.GetInstance())
-                {
-                    realm.Write(() =>
-                    {
-                        var dog = realm.Add(new Dog
-                        {
-                            Name = "Charlie"
-                        });
-
-                        realm.Add(new Owner
-                        {
-                            Name = "George",
-                            TopDog = dog,
-                            Dogs = { dog }
-                        });
-                    });
-
-                    using (var frozenRealm = realm.Freeze())
-                    {
-                        var georgeOnThreadOne = frozenRealm.All<Owner>().Single();
-                        var georgeOnThreadTwo = await Task.Run(() =>
-                        {
-                            var bgGeorge = frozenRealm.All<Owner>().Single();
-                            Assert.That(bgGeorge.Name, Is.EqualTo("George"));
-                            Assert.That(georgeOnThreadOne.IsValid);
-                            Assert.That(georgeOnThreadOne.Name, Is.EqualTo("George"));
-                            return bgGeorge;
-                        });
-
-                        Assert.That(georgeOnThreadTwo.IsValid);
-                        Assert.That(georgeOnThreadOne.Name, Is.EqualTo(georgeOnThreadTwo.Name));
-                    }
-                }
+                Assert.That(georgeOnThreadTwo.IsValid);
+                Assert.That(georgeOnThreadOne.Name, Is.EqualTo(georgeOnThreadTwo.Name));
             });
         }
 
@@ -967,15 +926,15 @@ namespace Realms.Tests.Database
         public void Realm_Freeze_WhenFrozen_ReturnsSameInstance()
         {
             var realm = GetRealm();
-            var frozenRealm = realm.Freeze();
+            using var frozenRealm = realm.Freeze();
             Assert.That(ReferenceEquals(realm, frozenRealm), Is.False);
 
             // Freezing a frozen realm should do nothing
-            var deepFrozenRealm = frozenRealm.Freeze();
+            using var deepFrozenRealm = frozenRealm.Freeze();
             Assert.That(ReferenceEquals(deepFrozenRealm, frozenRealm));
 
             // Freezing the same Realm again should return a new instance
-            var anotherFrozenRealm = realm.Freeze();
+            using var anotherFrozenRealm = realm.Freeze();
 
             Assert.That(ReferenceEquals(realm, anotherFrozenRealm), Is.False);
             Assert.That(ReferenceEquals(frozenRealm, anotherFrozenRealm), Is.False);

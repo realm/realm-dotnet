@@ -21,8 +21,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MongoDB.Bson;
+using Realms.Tests.Database;
 
-namespace Realms.Tests.Database
+namespace Realms.Tests
 {
     public class AllTypesObject : RealmObject
     {
@@ -163,6 +164,7 @@ namespace Realms.Tests.Database
     public class CounterObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public RealmInteger<byte> ByteProperty { get; set; }
@@ -187,6 +189,7 @@ namespace Realms.Tests.Database
     public class IntPrimaryKeyWithValueObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public string StringValue { get; set; }
@@ -195,36 +198,42 @@ namespace Realms.Tests.Database
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public char CharProperty { get; set; }
     }
 
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public byte ByteProperty { get; set; }
     }
 
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public short Int16Property { get; set; }
     }
 
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Int32Property { get; set; }
     }
 
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public long Int64Property { get; set; }
     }
 
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public string StringProperty { get; set; }
 
         public string Value { get; set; }
@@ -234,6 +243,7 @@ namespace Realms.Tests.Database
     {
         [PrimaryKey]
         [Required]
+        [MapTo("_id")]
         public string StringProperty { get; set; }
 
         public string Value { get; set; }
@@ -242,42 +252,49 @@ namespace Realms.Tests.Database
     public class PrimaryKeyObjectIdObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public ObjectId StringProperty { get; set; }
     }
 
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public char? CharProperty { get; set; }
     }
 
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public byte? ByteProperty { get; set; }
     }
 
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public short? Int16Property { get; set; }
     }
 
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int? Int32Property { get; set; }
     }
 
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public long? Int64Property { get; set; }
     }
 
     public class PrimaryKeyNullableObjectIdObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public ObjectId? StringProperty { get; set; }
     }
 
@@ -396,7 +413,7 @@ namespace Realms.Tests.Database
     public class RemappedTypeObject : RealmObject
     {
         [PrimaryKey]
-        [MapTo("__id")]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public string StringValue { get; set; }

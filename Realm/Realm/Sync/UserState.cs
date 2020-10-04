@@ -24,18 +24,18 @@ namespace Realms.Sync
     public enum UserState
     {
         /// <summary>
-        /// The user is logged out. Call <see cref="User.LoginAsync"/> with valid credentials to log the user back in.
+        /// The user is logged out. Call <see cref="App.LogInAsync"/> with valid credentials to log the user back in.
         /// </summary>
         LoggedOut,
 
         /// <summary>
-        /// The user is logged in, and any Realms associated with it are synchronizing with the Realm Object Server.
+        /// The user is logged in, and any Realms associated with it are synchronizing with MongoDB Realm.
         /// </summary>
-        Active,
+        LoggedIn,
 
         /// <summary>
-        /// The user has encountered a fatal error state, and cannot be used.
+        /// The user has been logged out and their local data has been removed.
         /// </summary>
-        Error
+        Removed
     }
 }

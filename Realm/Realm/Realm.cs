@@ -153,10 +153,8 @@ namespace Realms
         /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
         public static bool Compact(RealmConfigurationBase config = null)
         {
-            using (var realm = GetInstance(config))
-            {
-                return realm.SharedRealmHandle.Compact();
-            }
+            using var realm = GetInstance(config);
+            return realm.SharedRealmHandle.Compact();
         }
 
         /// <summary>
@@ -173,12 +171,14 @@ namespace Realms
                 throw new RealmPermissionDeniedException("Unable to delete Realm because it is still open.");
             }
 
-            File.Delete(fullpath);
-            File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a
-            File.Delete(fullpath + ".log_b");
-            File.Delete(fullpath + ".log");
-            File.Delete(fullpath + ".lock");
-            File.Delete(fullpath + ".note");
+            var filesToDelete = new[] { string.Empty, ".log_a", ".log_b", ".log", ".lock", ".note" }
+                .Select(ext => fullpath + ext)
+                .Where(File.Exists);
+
+            foreach (var file in filesToDelete)
+            {
+                File.Delete(file);
+            }
 
             if (Directory.Exists($"{fullpath}.management"))
             {

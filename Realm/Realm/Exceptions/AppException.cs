@@ -16,15 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Tests.Sync
-{
-    public static class Constants
-    {
-        public const string AdminUsername = "realm-admin";
-        public const string AdminPassword = "";
+using System;
+using Realms.Sync.Native;
 
-        public static string RosUrl;
-        public static string RosPort;
-        public static string RosSecurePort;
+namespace Realms.Sync.Exceptions
+{
+    /// <summary>
+    /// An exception thrown from operations interacting with a MongoDB Realm app.
+    /// </summary>
+    public class AppException : Exception
+    {
+        internal int ErrorCode { get; }
+
+        internal AppException(AppError appError)
+            : this($"{appError.ErrorCategory}: {appError.Message}", appError.LogsLink, appError.error_code)
+        {
+        }
+
+        internal AppException(string message, string helpLink, int errorCode)
+            : base(message)
+        {
+            ErrorCode = errorCode;
+            HelpLink = helpLink;
+        }
+
+        internal enum AppErrorCodes
+        {
+            ApiKeyNotFound = 35,
+        }
     }
 }

@@ -104,10 +104,8 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 const string message = "this is an exception from user code";
-                await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)), ex =>
-                {
-                    Assert.That(ex.Message, Is.EqualTo(message));
-                });
+                var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
+                Assert.That(ex.Message, Is.EqualTo(message));
             });
         }
 

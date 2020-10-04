@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Realms.Sync;
 
@@ -28,36 +27,31 @@ namespace Realms.Tests.Sync
     public abstract class SyncTestBase : RealmTest
     {
         private readonly List<Session> _sessions = new List<Session>();
+        private readonly List<App> _apps = new List<App>();
 
-        protected override void CustomSetUp()
+        private App _defaultApp;
+
+        protected App DefaultApp
         {
-            base.CustomSetUp();
-
-            var defaultFolder = InteropConfig.DefaultStorageFolder;
-            if (TestHelpers.IsWindows)
+            get
             {
-                // We do this to reduce the length of the folders in Windows
-                var testsIndex = defaultFolder.IndexOf("\\Tests\\");
-                var docsIndex = defaultFolder.IndexOf("\\Documents") + 1;
+                return _defaultApp ?? CreateApp();
+            }
+        }
 
-                if (testsIndex > -1 && docsIndex > testsIndex)
-                {
-                    defaultFolder = Path.Combine(defaultFolder.Substring(0, testsIndex), defaultFolder.Substring(docsIndex))
-                                        .Replace("\\Documents", "\\D");
+        protected App CreateApp(AppConfiguration config = null)
+        {
+            config ??= SyncTestHelpers.GetAppConfig();
 
-                    Directory.CreateDirectory(defaultFolder);
-                }
+            var app = App.Create(config);
+            _apps.Add(app);
+
+            if (_defaultApp == null)
+            {
+                _defaultApp = app;
             }
 
-            if (TestHelpers.IsMacOS)
-            {
-                // VS for Mac hangs when Realm files are written in a location it doesn't ignore.
-                defaultFolder = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Documents");
-                Directory.CreateDirectory(defaultFolder);
-            }
-
-            SyncConfiguration.UserAgent = GetType().Name;
-            SyncConfiguration.Initialize(UserPersistenceMode.NotEncrypted, null, false, defaultFolder);
+            return app;
         }
 
         protected override void CustomTearDown()
@@ -68,6 +62,13 @@ namespace Realms.Tests.Sync
             {
                 session?.CloseHandle();
             }
+
+            foreach (var app in _apps)
+            {
+                app.AppHandle.ResetForTesting();
+            }
+
+            _defaultApp = null;
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -96,21 +97,49 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, bool openAsync = true, CancellationToken cancellationToken = default)
+        protected async Task<User> GetUserAsync(App app = null)
         {
-            Realm result;
-            if (openAsync)
-            {
-                result = await Realm.GetInstanceAsync(config, cancellationToken);
-            }
-            else
-            {
-                result = Realm.GetInstance(config);
-                await SyncTestHelpers.WaitForDownloadAsync(result);
-            }
+            app ??= DefaultApp;
 
-            CleanupOnTearDown(result);
-            return result;
+            var username = SyncTestHelpers.GetVerifiedUsername();
+            await app.EmailPasswordAuth.RegisterUserAsync(username, SyncTestHelpers.DefaultPassword);
+
+            var credentials = Credentials.EmailPassword(username, SyncTestHelpers.DefaultPassword);
+            return await app.LogInAsync(credentials);
+        }
+
+        protected User GetFakeUser(App app = null, string id = null, string refreshToken = null, string accessToken = null)
+        {
+            app ??= DefaultApp;
+            id ??= Guid.NewGuid().ToString();
+            refreshToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M";
+            accessToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ";
+            var handle = app.AppHandle.GetUserForTesting(id, refreshToken, accessToken);
+            return new User(handle);
+        }
+
+        protected async Task<SyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null)
+        {
+            app ??= DefaultApp;
+            partition ??= Guid.NewGuid().ToString();
+
+            var user = await GetUserAsync(app);
+            return GetSyncConfiguration(partition, user);
+        }
+
+        protected static SyncConfiguration GetSyncConfiguration(string partition, User user, string optionalPath = null)
+        {
+            return new SyncConfiguration(partition, user, optionalPath)
+            {
+                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(IntPrimaryKeyWithValueObject) },
+                SessionStopPolicy = SessionStopPolicy.Immediately,
+            };
+        }
+
+        public SyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        {
+            var user = GetFakeUser(app, userId);
+            return GetSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath);
         }
     }
 }

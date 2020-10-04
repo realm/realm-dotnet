@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,21 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Sync
-{
-    /// <summary>
-    /// An object containing information about an account associated with a user.
-    /// </summary>
-    public class AccountInfo
-    {
-        /// <summary>
-        /// Gets the provider that manages this user account.
-        /// </summary>
-        public string Provider { get; internal set; }
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+using MongoDB.Bson.Serialization;
 
-        /// <summary>
-        /// Gets the user account's identity in the provider's system.
-        /// </summary>
-        public string ProviderUserIdentity { get; internal set; }
+namespace Realms.Native
+{
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct BsonPayload
+    {
+        private byte* serialized;
+        private IntPtr serialized_len;
+
+        public T GetValue<T>()
+        {
+            return BsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(serialized, (int)serialized_len));
+        }
     }
 }

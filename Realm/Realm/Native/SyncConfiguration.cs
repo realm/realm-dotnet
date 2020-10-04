@@ -35,20 +35,19 @@ namespace Realms.Sync.Native
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string url;
+        private string partition;
 
-        private IntPtr url_len;
+        private IntPtr partition_len;
 
-        internal string Url
+        internal string Partition
         {
             set
             {
-                url = value;
-                url_len = (IntPtr)value.Length;
+                partition = value;
+                partition_len = (IntPtr)value.Length;
             }
         }
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal ClientResyncMode client_resync_mode;
+        internal SessionStopPolicy session_stop_policy;
     }
 }

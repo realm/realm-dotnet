@@ -46,6 +46,13 @@ namespace Realms.Exceptions
 
         RealmDotNetExceptionDuringMigration = 30,
 
+        AppClientError = 50,
+        AppCustomError = 51,
+        AppHttpError = 52,
+        AppJsonError = 53,
+        AppServiceError = 54,
+        AppUnknownError = 59,
+
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,
         StdInvalidOperation = 102

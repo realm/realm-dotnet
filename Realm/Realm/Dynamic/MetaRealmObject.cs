@@ -222,7 +222,7 @@ namespace Realms.Dynamic
             var valueExpression = value.Expression;
             switch (property.Type.UnderlyingType())
             {
-                // V10TODO: split these into individual cases to avoid calling the generic method
+                // TODO: split these into individual cases to avoid calling the generic method
                 case PropertyType.Int:
                 case PropertyType.Bool:
                 case PropertyType.Float:

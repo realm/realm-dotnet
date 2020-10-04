@@ -494,7 +494,6 @@ namespace Realms.Tests.Database
             Assert.That(doubleQuery[0].Decimal128Property, Is.EqualTo(decimalValue));
         }
 
-
         [Test]
         public void Equal_WhenVariableIsNullable_Int16()
         {

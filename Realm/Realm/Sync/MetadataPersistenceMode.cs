@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object containing information about a user's identity in Realm's authentication system.
+    /// Enumeration that specifies how and if logged-in <see cref="User"/> objects are persisted
+    /// across application launches.
     /// </summary>
-    public class UserInfo
+    public enum MetadataPersistenceMode
     {
         /// <summary>
-        /// Gets the identity of the user in Realm's system. Equivalent to <see cref="User.Identity"/>.
+        /// Persist <see cref="User"/> objects, but do not encrypt them.
         /// </summary>
-        public string Identity { get; internal set; }
+        NotEncrypted = 0,
 
         /// <summary>
-        /// Gets a collection of all the user accounts associated with the user.
+        /// Persist <see cref="User"/> objects in an encrypted store.
         /// </summary>
-        public IEnumerable<AccountInfo> Accounts { get; internal set; }
+        Encrypted,
 
         /// <summary>
-        /// Gets the metadata about this user stored on the Realm Object Server.
+        /// Do not persist <see cref="User"/> objects.
         /// </summary>
-        public IDictionary<string, string> Metadata { get; internal set; }
+        Disabled
     }
 }

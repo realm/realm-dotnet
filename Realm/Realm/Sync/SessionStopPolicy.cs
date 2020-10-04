@@ -1,6 +1,6 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,23 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
-#include "realm_export_decls.hpp"
-#include "sync/sync_config.hpp"
-
-using namespace realm;
-
-namespace realm {
-    class SyncUser;
-
-    struct SyncConfiguration
+namespace Realms.Sync
+{
+    internal enum SessionStopPolicy
     {
-        std::shared_ptr<SyncUser>* user;
-
-        uint16_t* url;
-        size_t url_len;
-
-        realm::ClientResyncMode client_resync_mode;
-    };
+        Immediately,          // Immediately stop the session as soon as all Realms/Sessions go out of scope.
+        LiveIndefinitely,     // Never stop the session.
+        AfterChangesUploaded, // Once all Realms/Sessions go out of scope, wait for uploads to complete and stop.
+    }
 }

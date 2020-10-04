@@ -50,14 +50,6 @@ namespace binding {
 }
 extern "C" {
 
-REALM_EXPORT SharedSyncSession* realm_syncsession_get_from_path(const uint16_t* path_buf, size_t path_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        Utf16StringAccessor path(path_buf, path_len);
-        return new SharedSyncSession(SyncManager::shared().get_existing_active_session(path));
-    });
-}
-
 REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
 {
     if (session->user() == nullptr) {
@@ -101,7 +93,7 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_install_syncsession_callbacks(decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
+REALM_EXPORT void realm_syncsession_install_callbacks(decltype(s_session_error_callback) session_error_callback, decltype(s_progress_callback) progress_callback, decltype(s_wait_callback) wait_callback)
 {
     s_session_error_callback = session_error_callback;
     s_progress_callback = progress_callback;

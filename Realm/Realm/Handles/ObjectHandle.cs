@@ -209,11 +209,6 @@ namespace Realms
 
         public void SetStringUnique(IntPtr propertyIndex, string value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value), "Object identifiers cannot be null");
-            }
-
             if (GetString(propertyIndex) != value)
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
