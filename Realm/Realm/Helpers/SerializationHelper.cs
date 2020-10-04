@@ -32,6 +32,7 @@ namespace Realms.Helpers
         static SerializationHelper()
         {
             // V10TODO: remove when MongoDB.Bson releases preserved version.
+            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
             _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
             _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
             _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
