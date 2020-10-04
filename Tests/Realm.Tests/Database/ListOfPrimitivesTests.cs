@@ -639,7 +639,7 @@ namespace Realms.Tests.Database
             }, timeout: 100000);
         }
 
-        private static async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
+        private async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
         {
             var realm = (items as RealmList<T>).Realm;
 
@@ -701,13 +701,11 @@ namespace Realms.Tests.Database
             var reference = ThreadSafeReference.Create(items);
             await Task.Run(() =>
             {
-                using (var bgRealm = Realm.GetInstance(realm.Config))
+                using var bgRealm = GetRealm(realm.Config);
+                var backgroundList = bgRealm.ResolveReference(reference);
+                for (var i = 0; i < backgroundList.Count; i++)
                 {
-                    var backgroundList = bgRealm.ResolveReference(reference);
-                    for (var i = 0; i < backgroundList.Count; i++)
-                    {
-                        Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
-                    }
+                    Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
                 }
             });
 

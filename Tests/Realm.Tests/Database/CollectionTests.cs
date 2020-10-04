@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -160,11 +159,9 @@ namespace Realms.Tests.Database
             var config = _configuration.ConfigWithPath(_configuration.DatabasePath);
             config.IsReadOnly = true;
 
-            using (var readonlyRealm = Realm.GetInstance(config))
-            {
-                var readonlyContainer = readonlyRealm.All<ContainerObject>().Single();
-                Assert.That(readonlyContainer.Items.IsReadOnly);
-            }
+            using var readonlyRealm = GetRealm(config);
+            var readonlyContainer = readonlyRealm.All<ContainerObject>().Single();
+            Assert.That(readonlyContainer.Items.IsReadOnly);
         }
 
         [Test]
@@ -620,30 +617,21 @@ namespace Realms.Tests.Database
         [Test]
         public void List_IndexOf_WhenObjectBelongsToADifferentRealm_ShouldThrow()
         {
-            var config = new RealmConfiguration(Path.GetTempFileName());
-            try
+            var owner = new Owner();
+            _realm.Write(() =>
             {
-                var owner = new Owner();
-                _realm.Write(() =>
-                {
-                    _realm.Add(owner);
-                });
+                _realm.Add(owner);
+            });
 
-                using (var otherRealm = Realm.GetInstance(config))
-                {
-                    var otherRealmDog = new Dog();
-                    otherRealm.Write(() =>
-                    {
-                        otherRealm.Add(otherRealmDog);
-                    });
-
-                    Assert.That(() => owner.Dogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
-                }
-            }
-            finally
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            using var otherRealm = GetRealm(config);
+            var otherRealmDog = new Dog();
+            otherRealm.Write(() =>
             {
-                Realm.DeleteRealm(config);
-            }
+                otherRealm.Add(otherRealmDog);
+            });
+
+            Assert.That(() => owner.Dogs.IndexOf(otherRealmDog), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
         }
 
         [Test]

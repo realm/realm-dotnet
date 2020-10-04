@@ -63,7 +63,7 @@ namespace Realms.Tests.Database
             TestHelpers.IgnoreOnWindows("GC blocks on Windows");
 
             // Arrange
-            var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
+            using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
             var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
             realm.Write(() =>
@@ -78,9 +78,6 @@ namespace Realms.Tests.Database
             // Assert
             Assert.That(realmThatWillBeFinalized.IsAlive, Is.False);
             Assert.That(person.IsValid);
-
-            // TearDown
-            realm.Dispose();
         }
 
         [Test]

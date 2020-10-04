@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -1272,25 +1271,16 @@ namespace Realms.Tests.Database
         [Test]
         public void Queryable_IndexOf_WhenObjectBelongsToADifferentRealm_ShouldThrow()
         {
-            var config = new RealmConfiguration(Path.GetTempFileName());
-            try
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            using var otherRealm = GetRealm(config);
+            var otherRealmItem = new IntPrimaryKeyWithValueObject { Id = 1 };
+            otherRealm.Write(() =>
             {
-                using (var otherRealm = Realm.GetInstance(config))
-                {
-                    var otherRealmItem = new IntPrimaryKeyWithValueObject { Id = 1 };
-                    otherRealm.Write(() =>
-                    {
-                        otherRealm.Add(otherRealmItem);
-                    });
+                otherRealm.Add(otherRealmItem);
+            });
 
-                    var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
-                    Assert.That(() => query.IndexOf(otherRealmItem), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
-                }
-            }
-            finally
-            {
-                Realm.DeleteRealm(config);
-            }
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
+            Assert.That(() => query.IndexOf(otherRealmItem), Throws.InstanceOf<RealmObjectManagedByAnotherRealmException>());
         }
 
         [Test]

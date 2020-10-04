@@ -40,7 +40,7 @@ namespace Realms.Tests.Database
         [Test]
         public void InMemoryRealm_WhenDeleted_RemovesAuxiliaryFiles()
         {
-            using (var realm = Realm.GetInstance(_config))
+            using (var realm = GetRealm(_config))
             {
                 realm.Write(() => realm.Add(new IntPropertyObject
                 {
@@ -53,7 +53,7 @@ namespace Realms.Tests.Database
 
             Assert.That(File.Exists(_config.DatabasePath), Is.False);
 
-            using (var realm = Realm.GetInstance(_config))
+            using (var realm = GetRealm(_config))
             {
                 Assert.That(File.Exists(_config.DatabasePath));
                 Assert.That(realm.All<IntPropertyObject>(), Is.Empty);
@@ -67,7 +67,7 @@ namespace Realms.Tests.Database
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
 
-                var realm = Realm.GetInstance(_config);
+                var realm = GetRealm(_config);
 
                 try
                 {
@@ -86,13 +86,11 @@ namespace Realms.Tests.Database
 
                     await Task.Run(() =>
                     {
-                        using (var otherRealm = Realm.GetInstance(_config))
+                        using var otherRealm = GetRealm(_config);
+                        otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
                         {
-                            otherRealm.Write(() => otherRealm.Add(new IntPropertyObject
-                            {
-                                Int = 42
-                            }));
-                        }
+                            Int = 42
+                        }));
                     });
 
                     var backgroundChanges = await tcs.Task;
@@ -112,8 +110,8 @@ namespace Realms.Tests.Database
         [Test]
         public void InMemoryRealm_WhenMultipleInstancesOpen_DoesntDeleteData()
         {
-            var first = Realm.GetInstance(_config);
-            var second = Realm.GetInstance(_config);
+            var first = GetRealm(_config);
+            var second = GetRealm(_config);
 
             first.Write(() => first.Add(new IntPropertyObject
             {
@@ -163,7 +161,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(File.Exists(_config.DatabasePath), Is.False);
 
-                using (var realm = Realm.GetInstance(_config))
+                using (var realm = GetRealm(_config))
                 {
                     Assert.That(realm.All<IntPropertyObject>(), Is.Empty);
                 }
@@ -178,17 +176,17 @@ namespace Realms.Tests.Database
                 EncryptionKey = TestHelpers.GetEncryptionKey(23)
             };
 
-            using (var realm = Realm.GetInstance(encryptedConfig))
+            using (var realm = GetRealm(encryptedConfig))
             {
                 realm.Write(() => realm.Add(new IntPropertyObject
                 {
                     Int = 42
                 }));
 
-                Assert.That(() => Realm.GetInstance(_config), Throws.TypeOf<RealmMismatchedConfigException>());
+                Assert.That(() => GetRealm(_config), Throws.TypeOf<RealmMismatchedConfigException>());
             }
 
-            Assert.That(() => Realm.GetInstance(_config), Throws.Nothing);
+            Assert.That(() => GetRealm(_config), Throws.Nothing);
         }
     }
 }

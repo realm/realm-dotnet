@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Realms.Tests
@@ -74,7 +73,7 @@ namespace Realms.Tests
 
         protected override void CustomSetUp()
         {
-            _configuration = CreateConfiguration(Path.GetTempFileName());
+            _configuration = CreateConfiguration(Guid.NewGuid().ToString());
             _lazyRealm = new Lazy<Realm>(() => GetRealm(_configuration));
             base.CustomSetUp();
         }

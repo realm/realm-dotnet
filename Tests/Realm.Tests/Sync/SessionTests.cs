@@ -45,7 +45,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Realm_GetSession_WhenLocalRealm_ShouldThrow()
         {
-            using var realm = Realm.GetInstance();
+            using var realm = GetRealm();
             Assert.Throws<ArgumentException>(() => GetSession(realm));
         }
 

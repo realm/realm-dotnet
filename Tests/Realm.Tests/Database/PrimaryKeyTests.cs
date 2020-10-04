@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -168,41 +167,21 @@ namespace Realms.Tests.Database
 
         private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
-            Type genericArgument;
-            switch (pkType)
+            var genericArgument = pkType switch
             {
-                case PKType.Int:
-                    genericArgument = typeof(long?);
-                    break;
-                case PKType.String:
-                    genericArgument = typeof(string);
-                    break;
-                case PKType.ObjectId:
-                    genericArgument = typeof(ObjectId?);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
+                PKType.Int => typeof(long?),
+                PKType.String => typeof(string),
+                PKType.ObjectId => typeof(ObjectId?),
+                _ => throw new NotSupportedException(),
+            };
 
             var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
-
-            object castPKValue;
-            switch (pkType)
+            if (pkType == PKType.Int && primaryKeyValue != null)
             {
-                case PKType.Int:
-                    castPKValue = primaryKeyValue == null ? (long?)null : Convert.ToInt64(primaryKeyValue);
-                    break;
-                case PKType.String:
-                    castPKValue = (string)primaryKeyValue;
-                    break;
-                case PKType.ObjectId:
-                    castPKValue = (ObjectId?)primaryKeyValue;
-                    break;
-                default:
-                    throw new NotSupportedException();
+                primaryKeyValue = Convert.ToInt64(primaryKeyValue);
             }
 
-            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
+            return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
         }
 
         [Test]
@@ -236,11 +215,9 @@ namespace Realms.Tests.Database
                 // Act
                 await Task.Run(() =>
                 {
-                    using (var realm2 = Realm.GetInstance(_configuration))
-                    {
-                        var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
-                        foundValue = foundObj.Int64Property;
-                    }
+                    using var realm2 = GetRealm(_configuration);
+                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
+                    foundValue = foundObj.Int64Property;
                 });
 
                 Assert.That(foundValue, Is.EqualTo(42000042));
@@ -287,19 +264,11 @@ namespace Realms.Tests.Database
         [Test]
         public void PrimaryKeyFailsIfClassNotInRealm()
         {
-            var conf = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath(Path.GetTempFileName());
+            var conf = ((RealmConfiguration)RealmConfiguration.DefaultConfiguration).ConfigWithPath(Guid.NewGuid().ToString());
             conf.ObjectClasses = new[] { typeof(Person) };
-            try
-            {
-                using (var skinny = Realm.GetInstance(conf))
-                {
-                    Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());
-                }
-            }
-            finally
-            {
-                Realm.DeleteRealm(conf);
-            }
+
+            using var skinny = GetRealm(conf);
+            Assert.That(() => skinny.Find<PrimaryKeyInt64Object>(42), Throws.TypeOf<KeyNotFoundException>());
         }
 
         [Test]

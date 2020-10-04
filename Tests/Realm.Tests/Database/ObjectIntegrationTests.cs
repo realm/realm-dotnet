@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -166,18 +165,9 @@ namespace Realms.Tests.Database
             Person p = null;
             _realm.Write(() => p = _realm.Add(new Person()));
 
-            var secondaryConfig = new RealmConfiguration(Path.GetTempFileName());
-            try
-            {
-                using (var otherRealm = Realm.GetInstance(secondaryConfig))
-                {
-                    Assert.That(() => otherRealm.Add(p), Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
-                }
-            }
-            finally
-            {
-                Realm.DeleteRealm(secondaryConfig);
-            }
+            var secondaryConfig = new RealmConfiguration(Guid.NewGuid().ToString());
+            using var otherRealm = GetRealm(secondaryConfig);
+            Assert.That(() => otherRealm.Add(p), Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
         }
 
         [Test]
@@ -186,12 +176,10 @@ namespace Realms.Tests.Database
             var firstObject = new IntPrimaryKeyWithValueObject();
             _realm.Write(() => _realm.Add(firstObject));
 
-            using (var realm2 = Realm.GetInstance(_realm.Config))
-            {
-                Assert.That(firstObject.IsManaged);
-                Assert.That(realm2.IsSameInstance(firstObject.Realm));
-                realm2.Write(() => realm2.Add(firstObject));
-            }
+            using var realm2 = GetRealm(_realm.Config);
+            Assert.That(firstObject.IsManaged);
+            Assert.That(realm2.IsSameInstance(firstObject.Realm));
+            realm2.Write(() => realm2.Add(firstObject));
         }
 
         [Test]

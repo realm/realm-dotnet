@@ -18,11 +18,8 @@
 
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -69,9 +66,8 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    var r = Realm.GetInstance(_configuration);
+                    using var r = GetRealm(_configuration);
                     r.Write(() => r.Add(new Person { FullName = "Person 2" }));
-                    r.Dispose();
                 });
 
                 _realm.Refresh();
