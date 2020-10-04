@@ -87,6 +87,9 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string args, IntPtr args_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_link_credentials", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void link_credentials(SyncUserHandle hadnle, AppHandle app, Native.Credentials credentials, IntPtr tcs_ptr, out NativeException ex);
+
             #region Api Keys
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_create_api_key", CallingConvention = CallingConvention.Cdecl)]
@@ -241,6 +244,13 @@ namespace Realms.Sync
 
             NativeMethods.call_function(this, app, name, (IntPtr)name.Length, args, (IntPtr)args.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary();
+        }
+
+        public void LinkCredentials(AppHandle app, Native.Credentials credentials, TaskCompletionSource<SyncUserHandle> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+            NativeMethods.link_credentials(this, app, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary(tcsHandle);
         }
 
         #region Api Keys

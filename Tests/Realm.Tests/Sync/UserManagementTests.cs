@@ -188,6 +188,110 @@ namespace Realms.Tests.Sync
             Assert.That(user.CustomData, Is.Null);
         }
 
+        [Test]
+        public void User_LinkCredentials_AllowsLoginWithNewCredentials()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                var email = SyncTestHelpers.GetVerifiedUsername();
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(email, SyncTestHelpers.DefaultPassword);
+                var linkedUser = await user.LinkCredentialsAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
+
+                Assert.That(linkedUser.Id, Is.EqualTo(user.Id));
+
+                var emailPasswordUser = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
+
+                Assert.That(emailPasswordUser.Id, Is.EqualTo(user.Id));
+            });
+        }
+
+        [Test]
+        public void User_LinkCredentials_MultipleTimes_AllowsLoginWithAllCredentials()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                var email = SyncTestHelpers.GetVerifiedUsername();
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(email, SyncTestHelpers.DefaultPassword);
+                var linkedUser1 = await user.LinkCredentialsAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
+                Assert.That(linkedUser1.Id, Is.EqualTo(user.Id));
+
+                var functionId = Guid.NewGuid().ToString();
+                var linkedUser2 = await user.LinkCredentialsAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
+                Assert.That(linkedUser2.Id, Is.EqualTo(user.Id));
+
+                var emailPasswordUser = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
+                Assert.That(emailPasswordUser.Id, Is.EqualTo(user.Id));
+
+                var functionUser = await DefaultApp.LogInAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
+                Assert.That(functionUser.Id, Is.EqualTo(user.Id));
+            });
+        }
+
+        [Test]
+        public void User_LinkCredentials_MultipleTimesSameCredentials_IsNoOp()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                var functionId = Guid.NewGuid().ToString();
+                var linkedUser = await user.LinkCredentialsAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
+                Assert.That(linkedUser.Id, Is.EqualTo(user.Id));
+
+                var sameLinkedUser = await user.LinkCredentialsAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
+                Assert.That(sameLinkedUser.Id, Is.EqualTo(user.Id));
+
+                var functionUser = await DefaultApp.LogInAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
+                Assert.That(functionUser.Id, Is.EqualTo(user.Id));
+            });
+        }
+
+        [Test]
+        public void User_LinkCredentials_WhenMultipleEmailPassword_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var email2 = SyncTestHelpers.GetVerifiedUsername();
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(email2, SyncTestHelpers.DefaultPassword);
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.EmailPassword(email2, SyncTestHelpers.DefaultPassword)));
+                Assert.That(ex.Message, Does.Contain("linking a local-userpass identity is not allowed when one is already linked"));
+            });
+        }
+
+        [Test]
+        public void User_LinkCredentials_WhenAnonymous_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.Anonymous()));
+                Assert.That(ex.Message, Does.Contain("linking an anonymous identity is not allowed"));
+            });
+        }
+
+        [Test]
+        public void User_LinkCredentials_WhenInUse_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var existingEmail = SyncTestHelpers.GetVerifiedUsername();
+                await DefaultApp.EmailPasswordAuth.RegisterUserAsync(existingEmail, SyncTestHelpers.DefaultPassword);
+                var emailUser = await DefaultApp.LogInAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword));
+
+                var anonUser = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                var ex = await TestHelpers.AssertThrows<AppException>(() => anonUser.LinkCredentialsAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword)));
+                Assert.That(ex.Message, Does.Contain("a user already exists with the specified provider"));
+            });
+        }
+
         #region API Keys
 
         [Test]
