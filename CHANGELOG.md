@@ -13,6 +13,7 @@
 
 ### Internal
 * Using Sync 5.0.28 and Core 6.1.3.
+* Updated the QuickJournal example to latest Realm and Xamarin.Forms versions. (PR [#2057](https://github.com/realm/realm-dotnet/pull/2057))
 
 ## 5.1.1 (2020-10-02)
 ------------------
