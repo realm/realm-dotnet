@@ -20,8 +20,15 @@
 #define APP_CS_HPP
 
 #include "sync/generic_network_transport.hpp"
+#include "sync/app_credentials.hpp"
+#include "sync/app.hpp"
+#include "sync/sync_user.hpp"
+#include "sync/sync_manager.hpp"
 
+using namespace realm;
 using namespace realm::app;
+
+using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 namespace realm {
 namespace binding {
@@ -57,7 +64,67 @@ namespace binding {
         }
     };
 
+    struct Credentials
+    {
+        AuthProvider provider;
+
+        uint16_t* token;
+        size_t token_len;
+
+        uint16_t* password;
+        size_t password_len;
+
+        AppCredentials to_app_credentials() {
+            switch (provider)
+            {
+            case AuthProvider::ANONYMOUS:
+                return AppCredentials::anonymous();
+
+            case AuthProvider::FACEBOOK:
+                return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
+
+            case AuthProvider::GOOGLE:
+                return AppCredentials::google(Utf16StringAccessor(token, token_len));
+            case AuthProvider::APPLE:
+                return AppCredentials::apple(Utf16StringAccessor(token, token_len));
+
+            case AuthProvider::CUSTOM:
+                return AppCredentials::custom(Utf16StringAccessor(token, token_len));
+
+            case AuthProvider::USERNAME_PASSWORD:
+                return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
+
+            case AuthProvider::FUNCTION:
+                return AppCredentials::function(Utf16StringAccessor(token, token_len));
+
+            case AuthProvider::USER_API_KEY:
+                return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
+
+            case AuthProvider::SERVER_API_KEY:
+                return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
+
+            default:
+                REALM_UNREACHABLE();
+            }
+        }
+    };
+
     extern void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
+    extern void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+
+    inline std::function<void(std::shared_ptr<SyncUser> user, util::Optional<AppError>)> get_user_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
+            if (err) {
+                std::string error_category = err->error_code.message();
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
+
+                s_user_callback(tcs_ptr, nullptr, app_error);
+            }
+            else {
+                s_user_callback(tcs_ptr, new SharedSyncUser(user), MarshaledAppError());
+            }
+        };
+    }
 
     inline std::function<void(util::Optional<AppError>)> get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {

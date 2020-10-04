@@ -47,7 +47,7 @@ namespace realm {
         std::string s_sdk_version;
 
         void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
-        void (*s_login_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
+        void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
         void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
 
         struct AppConfiguration
@@ -76,51 +76,6 @@ namespace realm {
             util::Logger::Level log_level;
 
             void* managed_log_handler;
-        };
-
-        struct Credentials
-        {
-            AuthProvider provider;
-
-            uint16_t* token;
-            size_t token_len;
-
-            uint16_t* password;
-            size_t password_len;
-
-            AppCredentials to_app_credentials() {
-                switch (provider)
-                {
-                case realm::app::AuthProvider::ANONYMOUS:
-                    return AppCredentials::anonymous();
-
-                case realm::app::AuthProvider::FACEBOOK:
-                    return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
-
-                case realm::app::AuthProvider::GOOGLE:
-                    return AppCredentials::google(Utf16StringAccessor(token, token_len));
-                case realm::app::AuthProvider::APPLE:
-                    return AppCredentials::apple(Utf16StringAccessor(token, token_len));
-
-                case realm::app::AuthProvider::CUSTOM:
-                    return AppCredentials::custom(Utf16StringAccessor(token, token_len));
-
-                case realm::app::AuthProvider::USERNAME_PASSWORD:
-                    return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
-
-                case realm::app::AuthProvider::FUNCTION:
-                    return AppCredentials::function(Utf16StringAccessor(token, token_len));
-
-                case realm::app::AuthProvider::USER_API_KEY:
-                    return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
-
-                case realm::app::AuthProvider::SERVER_API_KEY:
-                    return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
-
-                default:
-                    REALM_UNREACHABLE();
-                }
-            }
         };
 
         class SyncLogger : public util::RootLogger {
@@ -160,7 +115,7 @@ extern "C" {
     REALM_EXPORT void shared_app_initialize(uint16_t* platform, size_t platform_len,
         uint16_t* platform_version, size_t platform_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
-        decltype(s_login_callback) login_callback,
+        decltype(s_user_callback) user_callback,
         decltype(s_void_callback) void_callback,
         decltype(s_log_message_callback) log_message_callback)
     {
@@ -168,7 +123,7 @@ extern "C" {
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
 
-        s_login_callback = login_callback;
+        s_user_callback = user_callback;
         s_void_callback = void_callback;
         s_log_message_callback = log_message_callback;
     }
@@ -270,17 +225,7 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             auto app_credentials = credentials.to_app_credentials();
-            app->log_in_with_credentials(app_credentials, [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
-                if (err) {
-                    std::string error_category = err->error_code.message();
-                    MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
-
-                    s_login_callback(tcs_ptr, nullptr, app_error);
-                }
-                else {
-                    s_login_callback(tcs_ptr, new SharedSyncUser(user), MarshaledAppError());
-                }
-            });
+            app->log_in_with_credentials(app_credentials, get_user_callback_handler(tcs_ptr));
         });
 }
 

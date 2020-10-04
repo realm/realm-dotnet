@@ -320,6 +320,13 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT void realm_syncuser_link_credentials(SharedSyncUser& user, SharedApp& app, Credentials credentials, void* tcs_ptr, NativeException::Marshallable& ex) {
+        handle_errors(ex, [&]() {
+            auto app_credentials = credentials.to_app_credentials();
+            app->link_user(user, app_credentials, get_user_callback_handler(tcs_ptr));
+        });
+    }
+
     REALM_EXPORT void realm_syncuser_create_api_key(SharedSyncUser& user, SharedApp& app, uint16_t* name_buf, size_t name_len, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {

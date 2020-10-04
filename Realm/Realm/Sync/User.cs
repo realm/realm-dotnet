@@ -150,13 +150,7 @@ namespace Realms.Sync
         /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
         /// </summary>
         /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
-        public Task LogOutAsync()
-        {
-            Handle.LogOut();
-
-            // V10TODO: native logout must be async
-            return Task.CompletedTask;
-        }
+        public Task LogOutAsync() => App.RemoveUserAsync(this);
 
         /// <summary>
         /// Re-fetch the user's custom data from the server.
@@ -180,6 +174,47 @@ namespace Realms.Sync
         /// <param name="serviceName">The name of the service as configured on the server.</param>
         /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
         public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
+
+        /// <summary>
+        /// Links the current user with a new user identity represented by the given credentials.
+        /// </summary>
+        /// <remarks>
+        /// Linking a user with more credentials, mean the user can login either of these credentials. It also
+        /// makes it possible to "upgrade" an anonymous user by linking it with e.g. Email/Password credentials.
+        /// <br/>
+        /// Note: It is not possible to link two existing users of MongoDB Realm. The provided credentials must not have been used by another user.
+        /// <br/>
+        /// Note for email/password auth: To link a user with a new set of <see cref="Credentials.EmailPassword"/> credentials, you will need to first
+        /// register these credentials by calling <see cref="App.EmailPasswordApi.RegisterUserAsync"/>.
+        /// </remarks>
+        /// <example>
+        /// The following snippet shows how to associate an email and password with an anonymous user
+        /// allowing them to login on a different device.
+        /// <code>
+        /// var app = App.Create("app-id")
+        /// var user = await app.LogInAsync(Credentials.Anonymous());
+        ///
+        /// // This step is only needed for email password auth - a password record must exist
+        /// // before you can link a user to it.
+        /// await app.EmailPasswordAuth.RegisterUserAsync("email", "password");
+        /// await user.LinkCredentialsAsync(Credentials.EmailPassword("email", "password"));
+        /// </code>
+        /// </example>
+        /// <param name="credentials">The credentials to link with the current user.</param>
+        /// <returns>
+        /// A <see cref="Task{User}"/> representing the remote link credentials operation. Upon successful completion, the task result
+        /// will contain the user to which the credentials were linked.
+        /// </returns>
+        public async Task<User> LinkCredentialsAsync(Credentials credentials)
+        {
+            Argument.NotNull(credentials, nameof(credentials));
+
+            var tcs = new TaskCompletionSource<SyncUserHandle>();
+            Handle.LinkCredentials(App.AppHandle, credentials.ToNative(), tcs);
+            var handle = await tcs.Task;
+
+            return new User(handle, App);
+        }
 
         /// <inheritdoc />
         public override bool Equals(object obj)

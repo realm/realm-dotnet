@@ -36,11 +36,12 @@ namespace Realms.Sync
         {
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void LogMessageCallback(IntPtr managed_handler, byte* message_buf, IntPtr message_len, LogLevel logLevel);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void UserLoginCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
+            public delegate void UserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
@@ -50,7 +51,7 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
-                UserLoginCallback user_login_callback, VoidTaskCallback void_callback, LogMessageCallback log_message_callback);
+                UserCallback user_callback, VoidTaskCallback void_callback, LogMessageCallback log_message_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[] encryptionKey, out NativeException ex);
@@ -145,7 +146,7 @@ namespace Realms.Sync
             SessionHandle.InstallCallbacks();
 
             NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
-            NativeMethods.UserLoginCallback userLogin = HandleUserLogin;
+            NativeMethods.UserCallback userLogin = HandleUserCallback;
             NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
 
             GCHandle.Alloc(logMessage);
@@ -303,9 +304,9 @@ namespace Realms.Sync
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.UserLoginCallback))]
+        [MonoPInvokeCallback(typeof(NativeMethods.UserCallback))]
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The user will own its handle.")]
-        private static unsafe void HandleUserLogin(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
+        private static unsafe void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             try

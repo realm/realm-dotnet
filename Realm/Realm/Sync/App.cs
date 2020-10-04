@@ -202,6 +202,7 @@ namespace Realms.Sync
             var tcs = new TaskCompletionSource<SyncUserHandle>();
             AppHandle.LogIn(credentials.ToNative(), tcs);
             var handle = await tcs.Task;
+
             return new User(handle, this);
         }
 
