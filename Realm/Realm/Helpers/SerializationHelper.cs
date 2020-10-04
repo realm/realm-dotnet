@@ -18,6 +18,7 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace Realms.Helpers
 {
@@ -32,7 +33,17 @@ namespace Realms.Helpers
         static SerializationHelper()
         {
             // V10TODO: remove when MongoDB.Bson releases preserved version.
-            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
+            IDiscriminatorConvention convention = null;
+            try
+            {
+                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer();
+                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention);
+                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention, GuidRepresentation.Standard);
+            }
+            catch
+            {
+            }
+
             _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
             _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
             _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
