@@ -3,7 +3,6 @@ using Xamarin.Forms.Xaml;
 
 namespace QuickJournal
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class JournalEntryDetailsPage : ContentPage
     {
         public JournalEntryDetailsPage(JournalEntryDetailsViewModel viewModel)

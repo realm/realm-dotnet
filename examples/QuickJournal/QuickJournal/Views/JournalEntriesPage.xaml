@@ -13,7 +13,7 @@
 					<TextCell Text="{Binding Title}" Detail="{Binding Metadata.Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
 						<TextCell.ContextActions>
 							<MenuItem Text="Delete" IsDestructive="true" 
-									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}" 
+									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}}" 
 								      CommandParameter="{Binding .}" />
 						</TextCell.ContextActions>
 					</TextCell>
