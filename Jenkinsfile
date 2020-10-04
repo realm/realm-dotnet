@@ -60,9 +60,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f centos.Dockerfile").inside() {
-            sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh"
-          }
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
@@ -75,9 +73,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f android.Dockerfile').inside() {
-            sh "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}"
-          }
+          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}")
         }
         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
       }
@@ -405,6 +401,15 @@ def reportTests(spec) {
     tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
     thresholds: [ failed(unstableThreshold: '0') ]
   )
+}
+
+def buildWrappersInDocker(String label, String image, String invocation) {
+  String uid = sh(script: 'id -u', returnStdout: true).trim()
+  String gid = sh(script: 'id -g', returnStdout: true).trim()
+
+  buildDockerEnv("ci/realm-dotnet:${label}", extra_args: "-f ${image}").inside("--mount 'type=bind,src=/tmp,dst=/tmp' -u ${uid}:${gid}") {
+    sh invocation
+  }
 }
 
 boolean shouldPublishPackage() {
