@@ -47,7 +47,7 @@ struct UserApiKey {
 
 struct BsonPayload {
     const char* serialized;
-    int serialized_len;
+    size_t serialized_len;
 };
 
 namespace realm {
@@ -310,7 +310,7 @@ extern "C" {
                     BsonPayload payload;
                     std::string serialized = response->to_string();
                     payload.serialized = serialized.c_str();
-                    payload.serialized_len = static_cast<int>(serialized.size());
+                    payload.serialized_len = serialized.size();
                     s_function_callback(tcs_ptr, payload, MarshaledAppError());
                 }
                 else {

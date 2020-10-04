@@ -58,10 +58,16 @@ namespace Realms.Sync
         /// <inheritdoc/>
         public override bool Equals(object obj) => (obj is ApiKey key) && key.Id == Id;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the hash code.
+        /// </summary>
+        /// <returns>The hash code.</returns>
         public override int GetHashCode() => Id.GetHashCode();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"ApiKey {Name} ({Id})";
 
         internal ApiKey(UserApiKey nativeKey)

@@ -28,6 +28,7 @@ namespace Realms.Sync
         {
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern void register_user(AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,

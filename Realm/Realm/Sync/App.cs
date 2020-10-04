@@ -78,7 +78,7 @@ namespace Realms.Sync
     /// </code>
     /// You can call remote Realm functions as shown below:
     /// <code>
-    /// user.Functions.Call("sum", 1, 2, 3, 4, 5);
+    /// user.Functions.CallAsync("sum", 1, 2, 3, 4, 5);
     /// </code>
     /// And access collections from the remote Realm App as shown here:
     /// <code>
@@ -288,7 +288,7 @@ namespace Realms.Sync
             /// <param name="password">The password to associate with the email. The password must be between 6 and 128 characters long.</param>
             /// <returns>
             /// A <see cref="Task"/> representing the asynchronous RegisterUser operation. Successful completion indicates that the user has been
-            /// created on the server and can now be logged in calling <see cref="LogInAsync(Credentials)"/> with <see cref="Credentials.EmailPassword(string, string)"/>.
+            /// created on the server and can now be logged in calling <see cref="LogInAsync"/> with <see cref="Credentials.EmailPassword"/>.
             /// </returns>
             public Task RegisterUserAsync(string email, string password)
             {
@@ -372,7 +372,7 @@ namespace Realms.Sync
             /// <param name="tokenId">The password reset token id that was sent together with the <paramref name="token"/> to the user's email address.</param>
             /// <returns>
             /// A <see cref="Task"/> representing the asynchronous request that a user's password is reset. Successful completion indicates that the user's password has been
-            /// reset and they can now use the new password to create <see cref="Credentials.EmailPassword"/> credentials and call <see cref="LogInAsync(Credentials)"/> to login.
+            /// reset and they can now use the new password to create <see cref="Credentials.EmailPassword"/> credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
             public Task ResetPasswordAsync(string password, string token, string tokenId)
             {
@@ -397,7 +397,7 @@ namespace Realms.Sync
             /// <returns>
             /// A <see cref="Task"/> representing the asynchronous request to call a password reset function. Successful completion indicates
             /// that the user's password has been change and they can now use the new password to create <see cref="Credentials.EmailPassword"/>
-            /// credentials and call <see cref="LogInAsync(Credentials)"/> to login.
+            /// credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
             public Task CallResetPasswordFunctionAsync(string email, string password, params object[] functionArgs)
             {

@@ -24,7 +24,7 @@ namespace Realms.Sync
     public enum UserState
     {
         /// <summary>
-        /// The user is logged out. Call <see cref="App.LogInAsync(Credentials)"/> with valid credentials to log the user back in.
+        /// The user is logged out. Call <see cref="App.LogInAsync"/> with valid credentials to log the user back in.
         /// </summary>
         LoggedOut,
 

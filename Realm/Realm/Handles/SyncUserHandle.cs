@@ -34,7 +34,7 @@ namespace Realms.Sync
 #pragma warning disable SA1121 // Use built-in type alias
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void ApiKeysCallback(IntPtr tcs_ptr, IntPtr api_keys, int api_keys_len, AppError error);
+            public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, int api_keys_len, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public unsafe delegate void FunctionCallback(IntPtr tcs_ptr, BsonPayload response, AppError error);

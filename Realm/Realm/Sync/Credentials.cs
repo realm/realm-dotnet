@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using MongoDB.Bson;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -96,40 +95,40 @@ namespace Realms.Sync
         /// <summary>
         /// Creates credentials representing a login using a Facebook access token.
         /// </summary>
-        /// <param name="facebookToken">The OAuth 2.0 access token representing the Facebook user.</param>
+        /// <param name="accessToken">The OAuth 2.0 access token representing the Facebook user.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Facebook.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/facebook/"/>
-        public static Credentials Facebook(string facebookToken)
+        public static Credentials Facebook(string accessToken)
         {
-            Argument.NotNull(facebookToken, nameof(facebookToken));
+            Argument.NotNull(accessToken, nameof(accessToken));
 
-            return new Credentials(AuthProvider.Facebook, facebookToken);
+            return new Credentials(AuthProvider.Facebook, accessToken);
         }
 
         /// <summary>
         /// Creates credentials representing a login using a Google access token.
         /// </summary>
-        /// <param name="googleToken">The OAuth 2.0 access token representing the Google user.</param>
+        /// <param name="authCode">The auth code representing the Google user.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Google.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/google/"/>
-        public static Credentials Google(string googleToken)
+        public static Credentials Google(string authCode)
         {
-            Argument.NotNull(googleToken, nameof(googleToken));
+            Argument.NotNull(authCode, nameof(authCode));
 
-            return new Credentials(AuthProvider.Google, googleToken);
+            return new Credentials(AuthProvider.Google, authCode);
         }
 
         /// <summary>
         /// Creates credentials representing a login using an Apple ID access token.
         /// </summary>
-        /// <param name="appleToken">The OAuth 2.0 access token representing the user's Apple ID.</param>
+        /// <param name="accessToken">The OAuth 2.0 access token representing the user's Apple ID.</param>
         /// <returns>A Credentials that can be used to authenticate a user via an Apple ID.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/google/"/>
-        public static Credentials Apple(string appleToken)
+        public static Credentials Apple(string accessToken)
         {
-            Argument.NotNull(appleToken, nameof(appleToken));
+            Argument.NotNull(accessToken, nameof(accessToken));
 
-            return new Credentials(AuthProvider.Apple, appleToken);
+            return new Credentials(AuthProvider.Apple, accessToken);
         }
 
         /// <summary>
@@ -161,6 +160,9 @@ namespace Realms.Sync
         /// <seealso href="https://docs.mongodb.com/realm/authentication/email-password/"/>
         public static Credentials EmailPassword(string email, string password)
         {
+            Argument.NotNullOrEmpty(email, nameof(email));
+            Argument.NotNullOrEmpty(password, nameof(password));
+
             return new Credentials(AuthProvider.EmailPassword, email, password);
         }
 
@@ -178,9 +180,7 @@ namespace Realms.Sync
         /// <seealso href="https://docs.mongodb.com/realm/authentication/anonymous/"/>
         public static Credentials Function(object payload)
         {
-            var jsonPayload = payload == null ? string.Empty : BsonDocument.Create(payload).ToString();
-
-            return new Credentials(AuthProvider.Function, jsonPayload);
+            return new Credentials(AuthProvider.Function, SerializationHelper.ToJson(payload));
         }
 
         /// <summary>
