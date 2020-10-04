@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -223,7 +222,7 @@ namespace Realms.Tests.Database
         private void PerformWithOtherRealm(string path, Action<Realm> action)
         {
             Realm otherRealm;
-            using (otherRealm = Realm.GetInstance(path ?? Path.GetTempFileName()))
+            using (otherRealm = GetRealm(path ?? Guid.NewGuid().ToString()))
             {
                 action(otherRealm);
             }

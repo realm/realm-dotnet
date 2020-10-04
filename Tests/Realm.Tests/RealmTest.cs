@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -46,7 +47,7 @@ namespace Realms.Tests
             {
                 if (OverrideDefaultConfig)
                 {
-                    RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+                    RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Guid.NewGuid().ToString());
                 }
 
                 CustomSetUp();
@@ -99,6 +100,13 @@ namespace Realms.Tests
         protected Realm GetRealm(RealmConfigurationBase config = null)
         {
             var result = Realm.GetInstance(config);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected Realm GetRealm(string path)
+        {
+            var result = Realm.GetInstance(path);
             CleanupOnTearDown(result);
             return result;
         }

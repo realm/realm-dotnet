@@ -56,20 +56,18 @@ namespace Realms.Tests.Database
             _person.LastName = "Dent";
             _person.IsInteresting = true;
 
-            using (var realm = Realm.GetInstance())
+            using var realm = GetRealm();
+            realm.Write(() =>
             {
-                realm.Write(() =>
-                {
-                    realm.Add(_person);
-                });
+                realm.Add(_person);
+            });
 
-                Assert.That(_person.IsManaged);
+            Assert.That(_person.IsManaged);
 
-                var p = realm.All<Person>().Single();
-                Assert.That(p.FirstName, Is.EqualTo("Arthur"));
-                Assert.That(p.LastName, Is.EqualTo("Dent"));
-                Assert.That(p.IsInteresting);
-            }
+            var p = realm.All<Person>().Single();
+            Assert.That(p.FirstName, Is.EqualTo("Arthur"));
+            Assert.That(p.LastName, Is.EqualTo("Dent"));
+            Assert.That(p.IsInteresting);
         }
 
         [Test]
@@ -84,43 +82,41 @@ namespace Realms.Tests.Database
         public void RealmObject_WhenManaged_ShouldNotThrow()
         {
             // This is a test to ensure that our weaver is generating valid IL regardless of property configurations
-            using (var realm = Realm.GetInstance())
+            using var realm = GetRealm();
+            Assert.DoesNotThrow(() => realm.Write(() =>
             {
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new NoListProperties());
-                }), $"{nameof(NoListProperties)} add failed.");
+                realm.Add(new NoListProperties());
+            }), $"{nameof(NoListProperties)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new OnlyListProperties());
-                }), $"{nameof(OnlyListProperties)} add failed.");
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new OnlyListProperties());
+            }), $"{nameof(OnlyListProperties)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new MixedProperties1());
-                }), $"{nameof(MixedProperties1)} add failed.");
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new MixedProperties1());
+            }), $"{nameof(MixedProperties1)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new MixedProperties2());
-                }), $"{nameof(MixedProperties2)} add failed.");
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new MixedProperties2());
+            }), $"{nameof(MixedProperties2)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new OneNonListProperty());
-                }), $"{nameof(OneNonListProperty)} add failed.");
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new OneNonListProperty());
+            }), $"{nameof(OneNonListProperty)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new OneListProperty());
-                }), $"{nameof(OneListProperty)} add failed.");
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new OneListProperty());
+            }), $"{nameof(OneListProperty)} add failed.");
 
-                Assert.DoesNotThrow(() => realm.Write(() =>
-                {
-                    realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
-                }), $"{nameof(AllTypesObject)} add failed.");
-            }
+            Assert.DoesNotThrow(() => realm.Write(() =>
+            {
+                realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+            }), $"{nameof(AllTypesObject)} add failed.");
         }
 
         public class NoListProperties : RealmObject

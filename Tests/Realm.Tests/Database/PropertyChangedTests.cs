@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -27,34 +26,8 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class PropertyChangedTests
+    public class PropertyChangedTests : RealmInstanceTest
     {
-        private string _databasePath;
-
-        private Lazy<Realm> _lazyRealm;
-
-        private Realm _realm => _lazyRealm.Value;
-
-        // We capture the current SynchronizationContext when opening a Realm.
-        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
-        // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        [SetUp]
-        public void SetUp()
-        {
-            _databasePath = Path.GetTempFileName();
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(_databasePath));
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            if (_lazyRealm.IsValueCreated)
-            {
-                _realm.Dispose();
-                Realm.DeleteRealm(_realm.Config);
-            }
-        }
-
         [Test]
         public void UnmanagedObject()
         {
@@ -209,7 +182,7 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using var otherRealm = Realm.GetInstance(_databasePath);
+                    using var otherRealm = GetRealm(_realm.Config);
                     using var transaction = otherRealm.BeginWrite();
 
                     var otherInstance = otherRealm.All<Person>().First();

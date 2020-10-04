@@ -74,7 +74,7 @@ namespace Realms.Tests.Sync
 
                 using (var realm = GetRealm(config))
                 {
-                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? 500 : 0));
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
                 }
             });
         }
@@ -98,7 +98,7 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(realm);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
-                Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(500));
+                Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
             }, timeout: 120000);
         }
 
@@ -201,7 +201,7 @@ namespace Realms.Tests.Sync
                 using var cts = new CancellationTokenSource();
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(1);
+                    await Task.Delay(10);
                     cts.Cancel();
                 });
 
@@ -296,6 +296,8 @@ namespace Realms.Tests.Sync
             });
         }
 
+        private const int DummyDataSize = 100;
+
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
@@ -311,7 +313,7 @@ namespace Realms.Tests.Sync
                 write = realm.Write;
             }
 
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < DummyDataSize; i++)
             {
                 write(() =>
                 {
@@ -329,7 +331,7 @@ namespace Realms.Tests.Sync
                 currentTransaction = realm.BeginWrite();
             }
 
-            for (var i = 0; i < 500; i++)
+            for (var i = 0; i < DummyDataSize / 2; i++)
             {
                 write(() =>
                 {

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
@@ -66,7 +67,7 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
 
-            var path = Path.GetTempFileName();
+            var path = Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString());
             var config = GetSyncConfiguration("foo-bar", user, path);
 
             Realm.DeleteRealm(config);
@@ -103,7 +104,7 @@ namespace Realms.Tests.Sync
 
                 RealmConfiguration.DefaultConfiguration = GetSyncConfiguration("abc", user);
 
-                using var realm = GetRealm(null);
+                using var realm = GetRealm();
 
                 Assert.That(realm.Config, Is.TypeOf<SyncConfiguration>());
                 var syncConfig = (SyncConfiguration)realm.Config;

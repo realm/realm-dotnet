@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 
@@ -136,17 +135,15 @@ namespace Realms.Tests.Database
         public void IndexedDateTimeOffsetTest()
         {
             // Arrange
-            var config = new RealmConfiguration(Path.GetTempFileName())
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
                 ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) }
             };
 
             // Act and "assert" that no exception is thrown here
-            using (Realm.GetInstance(config))
+            using (GetRealm(config))
             {
             }
-
-            Realm.DeleteRealm(config);
         }
 
         [Test]
