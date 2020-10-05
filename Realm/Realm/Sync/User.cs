@@ -130,18 +130,18 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets a <see cref="ApiKeyApi"/> instance that exposes functionality about managing user API keys.
+        /// Gets a <see cref="ApiKeyClient"/> instance that exposes functionality about managing user API keys.
         /// </summary>
-        /// <value>A <see cref="ApiKeyApi"/> instance scoped to this <see cref="User"/>.</value>
+        /// <value>A <see cref="ApiKeyClient"/> instance scoped to this <see cref="User"/>.</value>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/"/>
-        public ApiKeyApi ApiKeys { get; }
+        public ApiKeyClient ApiKeys { get; }
 
         /// <summary>
-        /// Gets a <see cref="FunctionsApi"/> instance that exposes functionality about calling remote MongoDB Realm functions.
+        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality about calling remote MongoDB Realm functions.
         /// </summary>
-        /// <value>A <see cref="FunctionsApi"/> instance scoped to this <see cref="User"/>.</value>
+        /// <value>A <see cref="FunctionsClient"/> instance scoped to this <see cref="User"/>.</value>
         /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
-        public FunctionsApi Functions { get; }
+        public FunctionsClient Functions { get; }
 
         internal readonly SyncUserHandle Handle;
 
@@ -156,8 +156,8 @@ namespace Realms.Sync
             App = app;
             Handle = handle;
             Profile = new UserProfile(this);
-            ApiKeys = new ApiKeyApi(this);
-            Functions = new FunctionsApi(this);
+            ApiKeys = new ApiKeyClient(this);
+            Functions = new FunctionsClient(this);
         }
 
         /// <summary>
@@ -190,6 +190,18 @@ namespace Realms.Sync
         public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
 
         /// <summary>
+        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in MongoDB Realm.
+        /// </summary>
+        /// <remarks>
+        /// The FCM service needs to be configured and enabled in the MongodB Realm UI before devices can register
+        /// and receive push notifications.
+        /// </remarks>
+        /// <param name="serviceName">The name of the service as configured in the MongoDB Realm UI.</param>
+        /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
+        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification"/>
+        public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
+
+        /// <summary>
         /// Links the current user with a new user identity represented by the given credentials.
         /// </summary>
         /// <remarks>
@@ -199,7 +211,7 @@ namespace Realms.Sync
         /// Note: It is not possible to link two existing users of MongoDB Realm. The provided credentials must not have been used by another user.
         /// <br/>
         /// Note for email/password auth: To link a user with a new set of <see cref="Credentials.EmailPassword"/> credentials, you will need to first
-        /// register these credentials by calling <see cref="App.EmailPasswordApi.RegisterUserAsync"/>.
+        /// register these credentials by calling <see cref="App.EmailPasswordClient.RegisterUserAsync"/>.
         /// </remarks>
         /// <example>
         /// The following snippet shows how to associate an email and password with an anonymous user
@@ -224,7 +236,7 @@ namespace Realms.Sync
             Argument.NotNull(credentials, nameof(credentials));
 
             var tcs = new TaskCompletionSource<SyncUserHandle>();
-            Handle.LinkCredentials(App.AppHandle, credentials.ToNative(), tcs);
+            Handle.LinkCredentials(App.Handle, credentials.ToNative(), tcs);
             var handle = await tcs.Task;
 
             return new User(handle, App);
@@ -256,11 +268,11 @@ namespace Realms.Sync
         /// A class exposing functionality for users to manage API keys from the client. It is always scoped
         /// to a particular <see cref="User"/> and can only be accessed via <see cref="ApiKeys"/>.
         /// </summary>
-        public class ApiKeyApi
+        public class ApiKeyClient
         {
             private readonly User _user;
 
-            internal ApiKeyApi(User user)
+            internal ApiKeyClient(User user)
             {
                 _user = user;
             }
@@ -284,7 +296,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(name, nameof(name));
 
                 var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.CreateApiKey(_user.App.AppHandle, name, tcs);
+                _user.Handle.CreateApiKey(_user.App.Handle, name, tcs);
                 var apiKeys = await tcs.Task;
 
                 Debug.Assert(apiKeys.Length == 1, "The result of Create should be exactly 1 ApiKey.");
@@ -302,7 +314,7 @@ namespace Realms.Sync
             public async Task<ApiKey> FetchAsync(ObjectId id)
             {
                 var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.FetchApiKey(_user.App.AppHandle, id, tcs);
+                _user.Handle.FetchApiKey(_user.App.Handle, id, tcs);
                 var apiKeys = await Handle404(tcs);
 
                 Debug.Assert(apiKeys == null || apiKeys.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
@@ -320,7 +332,7 @@ namespace Realms.Sync
             public async Task<IEnumerable<ApiKey>> FetchAllAsync()
             {
                 var tcs = new TaskCompletionSource<UserApiKey[]>();
-                _user.Handle.FetchAllApiKeys(_user.App.AppHandle, tcs);
+                _user.Handle.FetchAllApiKeys(_user.App.Handle, tcs);
                 var apiKeys = await tcs.Task;
 
                 return apiKeys.Select(k => new ApiKey(k)).ToArray();
@@ -334,7 +346,7 @@ namespace Realms.Sync
             public Task DeleteAsync(ObjectId id)
             {
                 var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DeleteApiKey(_user.App.AppHandle, id, tcs);
+                _user.Handle.DeleteApiKey(_user.App.Handle, id, tcs);
 
                 return Handle404(tcs);
             }
@@ -348,7 +360,7 @@ namespace Realms.Sync
             public Task DisableAsync(ObjectId id)
             {
                 var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DisableApiKey(_user.App.AppHandle, id, tcs);
+                _user.Handle.DisableApiKey(_user.App.Handle, id, tcs);
 
                 return Handle404(tcs, id, shouldThrow: true);
             }
@@ -362,7 +374,7 @@ namespace Realms.Sync
             public Task EnableAsync(ObjectId id)
             {
                 var tcs = new TaskCompletionSource<object>();
-                _user.Handle.EnableApiKey(_user.App.AppHandle, id, tcs);
+                _user.Handle.EnableApiKey(_user.App.Handle, id, tcs);
 
                 return Handle404(tcs, id, shouldThrow: true);
             }
@@ -389,11 +401,11 @@ namespace Realms.Sync
         /// A class exposing functionality for calling remote MongoDB Realm functions.
         /// </summary>
         /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
-        public class FunctionsApi
+        public class FunctionsClient
         {
             private readonly User _user;
 
-            internal FunctionsApi(User user)
+            internal FunctionsClient(User user)
             {
                 _user = user;
             }
@@ -436,11 +448,58 @@ namespace Realms.Sync
 
                 var tcs = new TaskCompletionSource<BsonPayload>();
 
-                _user.Handle.CallFunction(_user.App.AppHandle, name, SerializationHelper.ToJson(args), tcs);
+                _user.Handle.CallFunction(_user.App.Handle, name, SerializationHelper.ToJson(args), tcs);
 
                 var response = await tcs.Task;
 
                 return response.GetValue<T>();
+            }
+        }
+
+        /// <summary>
+        /// The Push client exposes an API to register/deregister for push notifications from a client app.
+        /// </summary>
+        public class PushClient
+        {
+            private readonly User _user;
+            private readonly string _service;
+
+            internal PushClient(User user, string service)
+            {
+                _user = user;
+                _service = service;
+            }
+
+            /// <summary>
+            /// Registers the given Firebase Cloud Messaging registration token with the user's device on MongoDB Realm.
+            /// </summary>
+            /// <param name="token">The FCM registration token.</param>
+            /// <returns>
+            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
+            /// by the MongoDB Realm server and this device can now receive push notifications.
+            /// </returns>
+            public Task RegisterDeviceAsync(string token)
+            {
+                Argument.NotNullOrEmpty(token, nameof(token));
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.RegisterPushToken(_user.App.Handle, _service, token, tcs);
+
+                return tcs.Task;
+            }
+
+            /// <summary>
+            /// Deregister the user's device from Firebase Cloud Messaging.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the devices registration token
+            /// was removed from the MongoDB Realm server and it will no longer receive push notifications.
+            /// </returns>
+            public Task DeregisterDeviceAsync()
+            {
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DeregisterPushToken(_user.App.Handle, _service, tcs);
+
+                return tcs.Task;
             }
         }
     }

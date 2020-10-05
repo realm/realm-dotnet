@@ -117,7 +117,7 @@ namespace Realms.Sync
 
             User = user;
             Partition = partition;
-            DatabasePath = GetPathToRealm(path ?? user.App.AppHandle.GetRealmPath(User, SerializationHelper.ToJson(partition)));
+            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, SerializationHelper.ToJson(partition)));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)

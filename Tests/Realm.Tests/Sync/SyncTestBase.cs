@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
 
             foreach (var app in _apps)
             {
-                app.AppHandle.ResetForTesting();
+                app.Handle.ResetForTesting();
             }
 
             _defaultApp = null;
@@ -114,7 +114,7 @@ namespace Realms.Tests.Sync
             id ??= Guid.NewGuid().ToString();
             refreshToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoicmVmcmVzaCB0b2tlbiIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyNTM2MjM5MDIyfQ.SWH98a-UYBEoJ7DLxpP7mdibleQFeCbGt4i3CrsyT2M";
             accessToken ??= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjJ9.bgnlxP_mGztBZsImn7HaF-6lDevFDn2U_K7D8WUC2GQ";
-            var handle = app.AppHandle.GetUserForTesting(id, refreshToken, accessToken);
+            var handle = app.Handle.GetUserForTesting(id, refreshToken, accessToken);
             return new User(handle);
         }
 

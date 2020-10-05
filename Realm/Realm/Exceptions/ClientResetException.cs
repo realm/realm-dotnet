@@ -55,7 +55,7 @@ namespace Realms.Sync.Exceptions
         /// </remarks>
         public bool InitiateClientReset()
         {
-            return _app.AppHandle.ImmediatelyRunFileActions(_originalFilePath);
+            return _app.Handle.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
 }

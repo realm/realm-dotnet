@@ -93,34 +93,49 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_serialized_identities", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_identities(SyncUserHandle handle, IntPtr buffer, IntPtr bufsize, out NativeException ex);
 
+            #region Push
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_push_register", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void push_register(SyncUserHandle handle, AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string service, IntPtr service_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
+                IntPtr tcs_ptr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_push_deregister", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void push_deregister(SyncUserHandle handle, AppHandle app,
+                [MarshalAs(UnmanagedType.LPWStr)] string service, IntPtr service_len,
+                IntPtr tcs_ptr, out NativeException ex);
+
+            #endregion
+
             #region Api Keys
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_create_api_key", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern void create_api_key(SyncUserHandle handle, AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
             // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_fetch_api_key", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_fetch", CallingConvention = CallingConvention.Cdecl)]
             public static extern void fetch_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_fetch_api_keys", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_fetch_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern void fetch_api_keys(SyncUserHandle handle, AppHandle app, IntPtr tcs_ptr, out NativeException ex);
 
             // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_delete_api_key", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_delete", CallingConvention = CallingConvention.Cdecl)]
             public static extern void delete_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
 
             // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_disable_api_key", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_disable", CallingConvention = CallingConvention.Cdecl)]
             public static extern void disable_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
 
             // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_enable_api_key", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_enable", CallingConvention = CallingConvention.Cdecl)]
             public static extern void enable_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
 
             #endregion
@@ -264,6 +279,26 @@ namespace Realms.Sync
                 return NativeMethods.get_identities(this, buffer, length, out ex);
             });
         }
+
+        #region Push
+
+        public void RegisterPushToken(AppHandle app, string service, string token, TaskCompletionSource<object> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+
+            NativeMethods.push_register(this, app, service, (IntPtr)service.Length, token, (IntPtr)token.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        public void DeregisterPushToken(AppHandle app, string service, TaskCompletionSource<object> tcs)
+        {
+            var tcsHandle = GCHandle.Alloc(tcs);
+
+            NativeMethods.push_deregister(this, app, service, (IntPtr)service.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+            ex.ThrowIfNecessary();
+        }
+
+        #endregion
 
         #region Api Keys
 
