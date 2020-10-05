@@ -65,7 +65,7 @@ namespace Realms.Sync.Exceptions
             Argument.Ensure<NotSupportedException>(!_actionInvoked, $"{nameof(DeleteRealmUserInfo)} can only be called once.");
             _actionInvoked = true;
 
-            return _app.AppHandle.ImmediatelyRunFileActions(_originalFilePath);
+            return _app.Handle.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
 }

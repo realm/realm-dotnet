@@ -41,7 +41,7 @@ namespace Realms.Sync
             var syncConfig = Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
             var app = syncConfig.User.App;
-            var session = app.AppHandle.GetSessionForPath(realm.SharedRealmHandle);
+            var session = app.Handle.GetSessionForPath(realm.SharedRealmHandle);
             return new Session(session);
         }
     }

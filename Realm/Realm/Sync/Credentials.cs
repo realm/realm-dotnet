@@ -152,8 +152,8 @@ namespace Realms.Sync
         /// <returns>A Credentials that can be used to authenticate a user with their email and password.</returns>
         /// <remarks>
         /// A user can login with email and password only after they've registered their account and verified their
-        /// email. To register an email/password user via the SDK, use <see cref="App.EmailPasswordApi.RegisterUserAsync"/>.
-        /// To verify an email from the SDK, use <see cref="App.EmailPasswordApi.ConfirmUserAsync"/>. The email/password
+        /// email. To register an email/password user via the SDK, use <see cref="App.EmailPasswordClient.RegisterUserAsync"/>.
+        /// To verify an email from the SDK, use <see cref="App.EmailPasswordClient.ConfirmUserAsync"/>. The email/password
         /// provider can also be configured to automatically confirm users or to run a custom confirmation function upon
         /// user registration.
         /// </remarks>

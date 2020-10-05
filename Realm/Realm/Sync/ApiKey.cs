@@ -40,7 +40,7 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the name of the key.
         /// </summary>
-        /// <value>The friendly name of the key, specified when calling <see cref="User.ApiKeyApi.CreateAsync"/>.</value>
+        /// <value>The friendly name of the key, specified when calling <see cref="User.ApiKeyClient.CreateAsync"/>.</value>
         public string Name { get; }
 
         /// <summary>
