@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Sync.Exceptions;
@@ -112,6 +113,19 @@ namespace Realms.Sync
                 }
 
                 return doc;
+            }
+        }
+
+        /// <summary>
+        /// Gets a collection of all identities associated with this user.
+        /// </summary>
+        /// <value>The user's identities across different <see cref="Credentials.AuthProvider"/>s.</value>
+        public UserIdentity[] Identities
+        {
+            get
+            {
+                var serialized = Handle.GetIdentities();
+                return BsonSerializer.Deserialize<UserIdentity[]>(serialized);
             }
         }
 
