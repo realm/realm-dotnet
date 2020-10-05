@@ -32,6 +32,7 @@ using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
 using Realms.Schema;
+using Realms.Sync;
 
 namespace Realms
 {
@@ -88,13 +89,14 @@ namespace Realms
         /// Factory for asynchronously obtaining a <see cref="Realm"/> instance.
         /// </summary>
         /// <remarks>
-        /// If the configuration points to a remote realm belonging to a Realm Object Server
-        /// the realm will be downloaded and fully synchronized with the server prior to the completion
-        /// of the returned Task object.
-        /// Otherwise this method behaves identically to <see cref="GetInstance(RealmConfigurationBase)"/>
-        /// and immediately returns a completed Task.
+        /// If the configuration is <see cref="SyncConfiguration"/>, the realm will be downloaded and fully
+        /// synchronized with the server prior to the completion of the returned Task object.
+        /// Otherwise this method will perform any migrations on a background thread before returning an
+        /// opened instance to the calling thread.
         /// </remarks>
-        /// <returns>A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or immediately if it's a local realm.</returns>
+        /// <returns>
+        /// A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or after migrations are executed if it's a local realm.
+        /// </returns>
         /// <param name="config">A configuration object that describes the realm.</param>
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
         public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken cancellationToken = default)

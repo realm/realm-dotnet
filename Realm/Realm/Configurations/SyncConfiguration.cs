@@ -29,10 +29,9 @@ using Realms.Schema;
 namespace Realms.Sync
 {
     /// <summary>
-    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using the
-    /// Realm Object Server.
+    /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
     /// </summary>
-    /// <seealso cref="Credentials"/>
+    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/"/>
     public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>

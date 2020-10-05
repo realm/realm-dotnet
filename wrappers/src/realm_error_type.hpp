@@ -73,12 +73,7 @@ namespace realm {
         RealmClosed = 24,
         
         ObjectManagedByAnotherRealm = 25,
-        
-        RealmFeatureUnavailable = 26,
-        
-        // deprecated: sync 1.x migration related
-        RealmIncompatibleSyncedFile = 27,
-        
+     
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,

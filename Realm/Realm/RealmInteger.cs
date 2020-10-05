@@ -19,7 +19,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Realms.Helpers;
-using Realms.Native;
 
 namespace Realms
 {
@@ -39,7 +38,6 @@ namespace Realms
     /// The integer type, represented by this <see cref="RealmInteger{T}"/>. Supported types are <see cref="byte"/>,
     /// <see cref="short"/>, <see cref="int"/>, and <see cref="long"/>.
     /// </typeparam>
-    /// <seealso href="https://realm.io/docs/realm-object-server/#counters"/>
     [Preserve(AllMembers = true, Conditional = false)]
     [SuppressMessage("Design", "CA1066:Implement IEquatable when overriding Object.Equals", Justification = "We already implement IEquatable<T> and RealmInteger<T> implicitly converts to T.")]
     public struct RealmInteger<T> :

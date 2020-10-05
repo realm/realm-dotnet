@@ -75,12 +75,6 @@ public:
     ObjectManagedByAnotherRealmException(std::string message) : std::runtime_error(message) {}
 };
     
-class RealmFeatureUnavailableException : public std::runtime_error {
-public:
-    RealmFeatureUnavailableException(std::string message) : std::runtime_error(message) {}
-};
-
-
 REALM_EXPORT NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);

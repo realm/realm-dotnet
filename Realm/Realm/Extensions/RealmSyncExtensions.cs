@@ -31,17 +31,16 @@ namespace Realms.Sync
         /// <summary>
         /// Gets the <see cref="Session"/> for the realm file behind this <see cref="Realm"/>.
         /// </summary>
-        /// <returns>The <see cref="Session"/> that is responsible for synchronizing with a Realm Object Server instance.</returns>
+        /// <returns>The <see cref="Session"/> that is responsible for synchronizing with the MongoDB Realm server.</returns>
         /// <param name="realm">An instance of the <see cref="Realm"/> class created with a <see cref="SyncConfiguration"/> object.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <c>realm</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if the <c>realm</c> was not created with a <see cref="SyncConfiguration"/> object.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="realm"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown if the <paramref name="realm"/> was not created with a <see cref="SyncConfiguration"/> object.</exception>
         public static Session GetSession(this Realm realm)
         {
             Argument.NotNull(realm, nameof(realm));
             var syncConfig = Argument.EnsureType<SyncConfiguration>(realm.Config, "Cannot get a Session for a Realm without a SyncConfiguration", nameof(realm));
 
-            var app = syncConfig.User.App;
-            var session = app.Handle.GetSessionForPath(realm.SharedRealmHandle);
+            var session = syncConfig.User.App.Handle.GetSessionForPath(realm.SharedRealmHandle);
             return new Session(session);
         }
     }

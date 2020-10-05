@@ -37,7 +37,6 @@ namespace Realms.Sync.Exceptions
         internal SessionException(string message, ErrorCode errorCode, Exception innerException = null) : base(message, innerException)
         {
             ErrorCode = errorCode;
-            HelpLink = "https://realm.io/docs/realm-object-server/#session-specific-errors";
         }
     }
 }

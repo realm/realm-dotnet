@@ -23,8 +23,9 @@ using System.Threading.Tasks;
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
-    /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
+    /// An object encapsulating a synchronization session. Sessions represent the communication between the client (and a local Realm file on disk),
+    /// and the server (and a remote Realm at a given partition served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
+    /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
     public class Session
     {
@@ -40,7 +41,7 @@ namespace Realms.Sync
         public SessionState State => Handle.GetState();
 
         /// <summary>
-        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to the Realm Object Server.
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to MongoDB Realm.
         /// </summary>
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
@@ -125,7 +126,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Stops any synchronization with the Realm Object Server until the Realm is re-opened again
+        /// Stops any synchronization with the server until the Realm is re-opened again
         /// after fully closing it.
         /// <br/>
         /// Synchronization can be re-enabled by calling <see cref="Start"/> again.
@@ -139,7 +140,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Attempts to resume the session and enable synchronization with the Realm Object Server.
+        /// Attempts to resume the session and enable synchronization with the server.
         /// </summary>
         /// <remarks>
         /// All sessions will be active by default and calling this method only makes sense if

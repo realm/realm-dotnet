@@ -119,9 +119,6 @@ namespace realm {
         catch (const ObjectManagedByAnotherRealmException& e) {
             return { RealmErrorType::ObjectManagedByAnotherRealm, e.what() };
         }
-        catch (const RealmFeatureUnavailableException& e) {
-            return { RealmErrorType::RealmFeatureUnavailable, e.what() };
-        }
         catch (const AppError& e) {
             if (e.is_client_error()) {
                 return { RealmErrorType::AppClientError, e.message };

@@ -31,8 +31,8 @@ using Realms.Sync.Exceptions;
 namespace Realms.Sync
 {
     /// <summary>
-    /// This class represents a user on the Realm Object Server. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
-    /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
+    /// This class represents a user in a MongoDB Realm app. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
+    /// A user can log in to the server and, if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
     /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
     public class User : IEquatable<User>
@@ -161,17 +161,17 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
+        /// Removes the user's local credentials and attempts to invalidate their refresh token from the server.
         /// </summary>
-        /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
+        /// <returns>A <see cref="Task"/> that represents the remote logout operation.</returns>
         public Task LogOutAsync() => App.RemoveUserAsync(this);
 
         /// <summary>
         /// Re-fetch the user's custom data from the server.
         /// </summary>
         /// <returns>
-        /// An awaitable Task, that, upon completion returns the updated user custom data. The <see cref="CustomData"/>
-        /// property will also be updated with the new information.
+        /// A <see cref="Task{BsonDocument}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
+        /// containing the updated custom user data. The <see cref="CustomData"/> property will also be updated with the new information.
         /// </returns>
         public async Task<BsonDocument> RefreshCustomDataAsync()
         {
@@ -183,7 +183,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets a <see cref="MongoClient"/> instance for accessing documents in the MongoDB.
+        /// Gets a <see cref="MongoClient"/> instance for accessing documents in a MongoDB database.
         /// </summary>
         /// <param name="serviceName">The name of the service as configured on the server.</param>
         /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
