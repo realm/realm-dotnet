@@ -102,6 +102,54 @@ namespace realm {
 
             invoke_api_key_callback(tcs_ptr, api_keys, err);
         }
+
+        inline AuthProvider to_auth_provider(const std::string& provider) {
+            if (provider == IdentityProviderAnonymous) {
+                return AuthProvider::ANONYMOUS;
+            }
+
+            if (provider == IdentityProviderFacebook) {
+                return AuthProvider::FACEBOOK;
+            }
+
+            if (provider == IdentityProviderGoogle) {
+                return AuthProvider::GOOGLE;
+            }
+
+            if (provider == IdentityProviderApple) {
+                return AuthProvider::APPLE;
+            }
+
+            if (provider == IdentityProviderCustom) {
+                return AuthProvider::CUSTOM;
+            }
+
+            if (provider == IdentityProviderUsernamePassword) {
+                return AuthProvider::USERNAME_PASSWORD;
+            }
+
+            if (provider == IdentityProviderFunction) {
+                return AuthProvider::FUNCTION;
+            }
+
+            if (provider == IdentityProviderUserAPIKey) {
+                return AuthProvider::USER_API_KEY;
+            }
+
+            if (provider == IdentityProviderServerAPIKey) {
+                return AuthProvider::SERVER_API_KEY;
+            }
+
+            return (AuthProvider)999;
+        }
+    }
+
+    void to_json(nlohmann::json& j, const SyncUserIdentity& i)
+    {
+        j = nlohmann::json{
+            { "Id", i.id },
+            { "Provider", to_auth_provider(i.provider_type)}
+        };
     }
 }
 
@@ -161,44 +209,7 @@ extern "C" {
     REALM_EXPORT AuthProvider realm_syncuser_get_auth_provider(SharedSyncUser& user, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
-            auto provider = user->provider_type();
-            if (provider == IdentityProviderAnonymous) {
-                return AuthProvider::ANONYMOUS;
-            }
-
-            if (provider == IdentityProviderFacebook) {
-                return AuthProvider::FACEBOOK;
-            }
-
-            if (provider == IdentityProviderGoogle) {
-                return AuthProvider::GOOGLE;
-            }
-
-            if (provider == IdentityProviderApple) {
-                return AuthProvider::APPLE;
-            }
-
-            if (provider == IdentityProviderCustom) {
-                return AuthProvider::CUSTOM;
-            }
-
-            if (provider == IdentityProviderUsernamePassword) {
-                return AuthProvider::USERNAME_PASSWORD;
-            }
-
-            if (provider == IdentityProviderFunction) {
-                return AuthProvider::FUNCTION;
-            }
-
-            if (provider == IdentityProviderUserAPIKey) {
-                return AuthProvider::USER_API_KEY;
-            }
-
-            if (provider == IdentityProviderServerAPIKey) {
-                return AuthProvider::SERVER_API_KEY;
-            }
-
-            return (AuthProvider)999;
+            return to_auth_provider(user->provider_type());
         });
     }
 
@@ -277,6 +288,14 @@ extern "C" {
             }
 
             return stringdata_to_csharpstringbuffer(field.value(), string_buffer, buffer_size);
+        });
+    }
+
+    REALM_EXPORT size_t realm_syncuser_get_serialized_identities(SharedSyncUser& user, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() -> size_t {
+            nlohmann::json j = user->identities();
+            return stringdata_to_csharpstringbuffer(j.dump(), string_buffer, buffer_size);
         });
     }
 

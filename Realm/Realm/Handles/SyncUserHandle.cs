@@ -88,7 +88,10 @@ namespace Realms.Sync
                 IntPtr tcs_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_link_credentials", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void link_credentials(SyncUserHandle hadnle, AppHandle app, Native.Credentials credentials, IntPtr tcs_ptr, out NativeException ex);
+            public static extern void link_credentials(SyncUserHandle handle, AppHandle app, Native.Credentials credentials, IntPtr tcs_ptr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_serialized_identities", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_identities(SyncUserHandle handle, IntPtr buffer, IntPtr bufsize, out NativeException ex);
 
             #region Api Keys
 
@@ -251,6 +254,15 @@ namespace Realms.Sync
             var tcsHandle = GCHandle.Alloc(tcs);
             NativeMethods.link_credentials(this, app, credentials, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
+        }
+
+        public string GetIdentities()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_identities(this, buffer, length, out ex);
+            });
         }
 
         #region Api Keys

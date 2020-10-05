@@ -103,6 +103,8 @@ namespace Realms.Tests.Sync
         public void AppSwitchUser_WhenUserIsCurrent_DoesNothing()
         {
             var first = GetFakeUser();
+            Assert.That(DefaultApp.CurrentUser, Is.EqualTo(first));
+
             var second = GetFakeUser();
 
             Assert.That(DefaultApp.CurrentUser, Is.EqualTo(second));
@@ -194,15 +196,27 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                Assert.That(user.Identities, Has.Length.EqualTo(1));
+                Assert.That(user.Identities[0].Provider, Is.EqualTo(Credentials.AuthProvider.Anonymous));
+                Assert.That(user.Identities[0].Id, Is.Not.Null);
+
                 var email = SyncTestHelpers.GetVerifiedUsername();
                 await DefaultApp.EmailPasswordAuth.RegisterUserAsync(email, SyncTestHelpers.DefaultPassword);
                 var linkedUser = await user.LinkCredentialsAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
 
+                Assert.That(user.Identities, Has.Length.EqualTo(2));
+                Assert.That(user.Identities[1].Provider, Is.EqualTo(Credentials.AuthProvider.EmailPassword));
+                Assert.That(user.Identities[1].Id, Is.Not.Null);
+
+                Assert.That(linkedUser.Identities, Has.Length.EqualTo(2));
                 Assert.That(linkedUser.Id, Is.EqualTo(user.Id));
+                Assert.That(linkedUser.Identities, Is.EquivalentTo(user.Identities));
 
                 var emailPasswordUser = await DefaultApp.LogInAsync(Credentials.EmailPassword(email, SyncTestHelpers.DefaultPassword));
 
                 Assert.That(emailPasswordUser.Id, Is.EqualTo(user.Id));
+                Assert.That(emailPasswordUser.Identities, Is.EquivalentTo(user.Identities));
             });
         }
 
@@ -227,6 +241,16 @@ namespace Realms.Tests.Sync
 
                 var functionUser = await DefaultApp.LogInAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
                 Assert.That(functionUser.Id, Is.EqualTo(user.Id));
+
+                Assert.That(user.Identities, Has.Length.EqualTo(3));
+                Assert.That(user.Identities[0].Provider, Is.EqualTo(Credentials.AuthProvider.Anonymous));
+                Assert.That(user.Identities[0].Id, Is.Not.Null);
+
+                Assert.That(user.Identities[1].Provider, Is.EqualTo(Credentials.AuthProvider.EmailPassword));
+                Assert.That(user.Identities[1].Id, Is.Not.Null);
+
+                Assert.That(user.Identities[2].Provider, Is.EqualTo(Credentials.AuthProvider.Function));
+                Assert.That(user.Identities[2].Id, Is.EqualTo(functionId));
             });
         }
 
@@ -246,6 +270,10 @@ namespace Realms.Tests.Sync
 
                 var functionUser = await DefaultApp.LogInAsync(Credentials.Function(new { realmCustomAuthFuncUserId = functionId }));
                 Assert.That(functionUser.Id, Is.EqualTo(user.Id));
+
+                Assert.That(user.Identities, Has.Length.EqualTo(2));
+                Assert.That(user.Identities[1].Id, Is.EqualTo(functionId));
+                Assert.That(user.Identities[1].Provider, Is.EqualTo(Credentials.AuthProvider.Function));
             });
         }
 
