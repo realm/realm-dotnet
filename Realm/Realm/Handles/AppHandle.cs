@@ -46,12 +46,15 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public unsafe delegate void BsonCallback(IntPtr tcs_ptr, BsonPayload response, AppError error);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
                 [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
-                UserCallback user_callback, VoidTaskCallback void_callback, LogMessageCallback log_message_callback);
+                UserCallback user_callback, VoidTaskCallback void_callback, BsonCallback bson_callback, LogMessageCallback log_message_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[] encryptionKey, out NativeException ex);
@@ -148,10 +151,12 @@ namespace Realms.Sync
             NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
             NativeMethods.UserCallback userLogin = HandleUserCallback;
             NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
+            NativeMethods.BsonCallback bsonCallback = HandleBsonCallback;
 
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(userLogin);
             GCHandle.Alloc(taskCallback);
+            GCHandle.Alloc(bsonCallback);
 
             //// This is a hack due to a mixup of what OS uses as platform/SDK and what is displayed in the UI.
             //// The original code is below:
@@ -179,7 +184,7 @@ namespace Realms.Sync
                 platform, (IntPtr)platform.Length,
                 platformVersion, (IntPtr)platformVersion.Length,
                 sdkVersion, (IntPtr)sdkVersion.Length,
-                userLogin, taskCallback, logMessage);
+                userLogin, taskCallback, bsonCallback, logMessage);
 
             HttpClientTransport.Install();
         }
@@ -338,6 +343,28 @@ namespace Realms.Sync
                 if (error.is_null)
                 {
                     tcs.TrySetResult(null);
+                }
+                else
+                {
+                    tcs.TrySetException(new AppException(error));
+                }
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(NativeMethods.BsonCallback))]
+        private static unsafe void HandleBsonCallback(IntPtr tcs_ptr, BsonPayload response, AppError error)
+        {
+            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
+            try
+            {
+                var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
+                if (error.is_null)
+                {
+                    tcs.TrySetResult(response);
                 }
                 else
                 {

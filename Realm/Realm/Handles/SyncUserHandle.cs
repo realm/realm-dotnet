@@ -36,9 +36,6 @@ namespace Realms.Sync
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, int api_keys_len, AppError error);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void FunctionCallback(IntPtr tcs_ptr, BsonPayload response, AppError error);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -79,7 +76,7 @@ namespace Realms.Sync
             public static extern void destroy(IntPtr syncuserHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_sync_user_initialize", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback, FunctionCallback function_callback);
+            public static extern IntPtr initialize(ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_call_function", CallingConvention = CallingConvention.Cdecl)]
             public static extern void call_function(SyncUserHandle handle, AppHandle app,
@@ -149,12 +146,10 @@ namespace Realms.Sync
             NativeCommon.Initialize();
 
             NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
-            NativeMethods.FunctionCallback functionCallback = HandleFunctionCallback;
 
             GCHandle.Alloc(apiKeysCallback);
-            GCHandle.Alloc(functionCallback);
 
-            NativeMethods.initialize(apiKeysCallback, functionCallback);
+            NativeMethods.initialize(apiKeysCallback);
         }
 
         [Preserve]
@@ -375,28 +370,6 @@ namespace Realms.Sync
                     }
 
                     tcs.TrySetResult(result);
-                }
-                else
-                {
-                    tcs.TrySetException(new AppException(error));
-                }
-            }
-            finally
-            {
-                tcsHandle.Free();
-            }
-        }
-
-        [MonoPInvokeCallback(typeof(NativeMethods.FunctionCallback))]
-        private static unsafe void HandleFunctionCallback(IntPtr tcs_ptr, BsonPayload response, AppError error)
-        {
-            var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
-            try
-            {
-                var tcs = (TaskCompletionSource<BsonPayload>)tcsHandle.Target;
-                if (error.is_null)
-                {
-                    tcs.TrySetResult(response);
                 }
                 else
                 {

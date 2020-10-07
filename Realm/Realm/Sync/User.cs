@@ -448,7 +448,7 @@ namespace Realms.Sync
 
                 var tcs = new TaskCompletionSource<BsonPayload>();
 
-                _user.Handle.CallFunction(_user.App.Handle, name, SerializationHelper.ToJson(args), tcs);
+                _user.Handle.CallFunction(_user.App.Handle, name, args.ToNativeJson(), tcs);
 
                 var response = await tcs.Task;
 

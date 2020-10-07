@@ -18,7 +18,6 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
-using MongoDB.Bson.Serialization.Conventions;
 
 namespace Realms.Helpers
 {
@@ -29,28 +28,6 @@ namespace Realms.Helpers
             OutputMode = JsonOutputMode.CanonicalExtendedJson,
         };
 
-        [Preserve]
-        static SerializationHelper()
-        {
-            // V10TODO: remove when MongoDB.Bson releases preserved version.
-            IDiscriminatorConvention convention = null;
-            try
-            {
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer();
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention);
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention, GuidRepresentation.Standard);
-            }
-            catch
-            {
-            }
-
-            _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
-            _ = new MongoDB.Bson.Serialization.Serializers.Int64Serializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
-        }
-
-        public static string ToJson<T>(T value) => value.ToJson(_jsonSettings);
+        public static string ToNativeJson<T>(this T value) => value.ToJson(_jsonSettings);
     }
 }

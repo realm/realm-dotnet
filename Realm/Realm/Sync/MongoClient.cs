@@ -20,7 +20,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -29,7 +31,7 @@ namespace Realms.Sync
     /// </summary>
     public class MongoClient
     {
-        private readonly User _user;
+        internal User User { get; }
 
         /// <summary>
         /// Gets the service name for this client.
@@ -39,7 +41,7 @@ namespace Realms.Sync
 
         internal MongoClient(User user, string serviceName)
         {
-            _user = user;
+            User = user;
             ServiceName = serviceName;
         }
 
@@ -71,7 +73,11 @@ namespace Realms.Sync
         /// </summary>
         public class Database
         {
-            private readonly MongoClient _client;
+            /// <summary>
+            /// Gets the <see cref="MongoClient"/> that manages this database.
+            /// </summary>
+            /// <value>The database's <see cref="MongoClient"/>.</value>
+            public MongoClient Client { get; }
 
             /// <summary>
             /// Gets the name of the database.
@@ -81,7 +87,7 @@ namespace Realms.Sync
 
             internal Database(MongoClient client, string name)
             {
-                _client = client;
+                Client = client;
                 Name = name;
             }
 
@@ -114,7 +120,8 @@ namespace Realms.Sync
             {
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
-                return new Collection<TDocument>(this, name);
+                var handle = MongoCollectionHandle.Create(Client.User.Handle, Client.User.App.Handle, Client.ServiceName, Name, name);
+                return new Collection<TDocument>(this, name, handle);
             }
         }
 
@@ -125,7 +132,13 @@ namespace Realms.Sync
         public class Collection<TDocument>
             where TDocument : class
         {
-            private readonly Database _database;
+            private readonly MongoCollectionHandle _handle;
+
+            /// <summary>
+            /// Gets the <see cref="Database"/> this collection belongs to.
+            /// </summary>
+            /// <value>The collection's <see cref="Database"/>.</value>
+            public Database Database { get; }
 
             /// <summary>
             /// Gets the name of the collection.
@@ -133,10 +146,11 @@ namespace Realms.Sync
             /// <value>The collection name.</value>
             public string Name { get; }
 
-            internal Collection(Database database, string name)
+            internal Collection(Database database, string name, MongoCollectionHandle handle)
             {
-                _database = database;
+                Database = database;
                 Name = name;
+                _handle = handle;
             }
 
             /// <summary>
@@ -148,9 +162,13 @@ namespace Realms.Sync
             /// contains the <c>_id</c> of the inserted document.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.insertOne/"/>
-            public Task<InsertResult> InsertOneAsync(TDocument doc)
+            public async Task<InsertResult> InsertOneAsync(TDocument doc)
             {
-                throw new NotImplementedException();
+                Argument.NotNull(doc, nameof(doc));
+
+                var result = await _handle.InsertOne(doc.ToNativeJson());
+
+                return result.GetValue<InsertResult>();
             }
 
             /// <summary>
@@ -162,9 +180,10 @@ namespace Realms.Sync
             /// contains the <c>_id</c>s of the inserted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.insertMany/"/>
-            public Task<InsertManyResult> InsertManyAsync(IEnumerable<TDocument> docs)
+            public async Task<InsertManyResult> InsertManyAsync(IEnumerable<TDocument> docs)
             {
-                throw new NotImplementedException();
+                var result = await _handle.InsertMany(docs.ToNativeJson());
+                return result.GetValue<InsertManyResult>();
             }
 
             /// <summary>
@@ -190,9 +209,10 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/"/>
-            public Task<UpdateResult> UpdateOneAsync(object updateDocument, object filter = null, bool upsert = false)
+            public async Task<UpdateResult> UpdateOneAsync(object updateDocument, object filter = null, bool upsert = false)
             {
-                throw new NotImplementedException();
+                var result = await _handle.UpdateOne(filter?.ToNativeJson(), updateDocument?.ToNativeJson(), upsert);
+                return result.GetValue<UpdateResult>();
             }
 
             /// <summary>
@@ -218,9 +238,10 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/"/>
-            public Task<UpdateResult> UpdateManyAsync(object updateDocument, object filter = null, bool upsert = false)
+            public async Task<UpdateResult> UpdateManyAsync(object updateDocument, object filter = null, bool upsert = false)
             {
-                throw new NotImplementedException();
+                var result = await _handle.UpdateMany(filter?.ToNativeJson(), updateDocument.ToNativeJson(), upsert);
+                return result.GetValue<UpdateResult>();
             }
 
             /// <summary>
@@ -235,9 +256,10 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
-            public Task<DeleteResult> DeleteOneAsync(object filter = null)
+            public async Task<DeleteResult> DeleteOneAsync(object filter = null)
             {
-                throw new NotImplementedException();
+                var result = await _handle.DeleteOne(filter?.ToNativeJson());
+                return result.GetValue<DeleteResult>();
             }
 
             /// <summary>
@@ -252,9 +274,10 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
-            public Task<DeleteResult> DeleteManyAsync(object filter = null)
+            public async Task<DeleteResult> DeleteManyAsync(object filter = null)
             {
-                throw new NotImplementedException();
+                var result = await _handle.DeleteMany(filter?.ToNativeJson());
+                return result.GetValue<DeleteResult>();
             }
 
             /// <summary>
@@ -305,9 +328,10 @@ namespace Realms.Sync
             /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public Task<TProjection[]> FindAsync<TProjection>(object filter, object projection, object sort = null, long? limit = null)
+            public async Task<TProjection[]> FindAsync<TProjection>(object filter, object projection, object sort = null, long? limit = null)
             {
-                throw new NotImplementedException();
+                var result = await _handle.Find(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
+                return result.GetValue<TProjection[]>();
             }
 
             /// <summary>
@@ -361,9 +385,10 @@ namespace Realms.Sync
             /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public Task<TProjection> FindOneAsync<TProjection>(object filter = null, object projection = null, object sort = null)
+            public async Task<TProjection> FindOneAsync<TProjection>(object filter = null, object projection = null, object sort = null)
             {
-                throw new NotImplementedException();
+                var result = await _handle.FindOne(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
+                return result.GetValue<TProjection>();
             }
 
             /// <summary>
@@ -425,9 +450,10 @@ namespace Realms.Sync
             /// A <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
-            public Task<long> CountAsync(object filter = null, long? limit = null)
+            public async Task<long> CountAsync(object filter = null, long? limit = null)
             {
-                throw new NotImplementedException();
+                var result = await _handle.Count(filter?.ToNativeJson(), limit);
+                return result.GetValue<long>();
             }
         }
 
@@ -440,19 +466,22 @@ namespace Realms.Sync
             /// Gets the number of documents matched by the filter.
             /// </summary>
             /// <value>The number of matched documents.</value>
-            public int MatchedCount { get; }
+            [BsonElement("matchedCount")]
+            public int MatchedCount { get; private set; }
 
             /// <summary>
             /// Gets the number of documents modified by the operation.
             /// </summary>
             /// <value>The number of modified documents.</value>
-            public int ModifiedCount { get; }
+            [BsonElement("modifiedCount")]
+            public int ModifiedCount { get; private set; }
 
             /// <summary>
             /// Gets the <c>_id</c> of the inserted document if the operation resulted in an insertion.
             /// </summary>
             /// <value>The <c>_id</c> of the inserted document or <c>null</c> if the operation didn't result in an insertion.</value>
-            public object UpsertedId { get; }
+            [BsonElement("upsertedId")]
+            public object UpsertedId { get; private set; }
         }
 
         /// <summary>
@@ -464,7 +493,8 @@ namespace Realms.Sync
             /// Gets the <c>_id</c> of the inserted document.
             /// </summary>
             /// <value>The <c>_id</c> of the inserted document.</value>
-            public object InsertedId { get; }
+            [BsonElement("insertedId")]
+            public object InsertedId { get; private set; }
         }
 
         /// <summary>
@@ -476,7 +506,8 @@ namespace Realms.Sync
             /// Gets an array containing the <c>_id</c>s of the inserted documents.
             /// </summary>
             /// <value>The <c>_id</c>s of the inserted documents.</value>
-            public object[] InsertedIds { get; }
+            [BsonElement("insertedIds")]
+            public object[] InsertedIds { get; private set; }
         }
 
         /// <summary>
@@ -488,7 +519,8 @@ namespace Realms.Sync
             /// Gets the number of deleted documents.
             /// </summary>
             /// <value>The number of deleted documents.</value>
-            public int DeletedCount { get; }
+            [BsonElement("deletedCount")]
+            public int DeletedCount { get; private set; }
         }
     }
 }

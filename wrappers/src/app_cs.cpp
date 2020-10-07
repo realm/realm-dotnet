@@ -49,6 +49,7 @@ namespace realm {
         void (*s_log_message_callback)(void* managed_handler, const char* message, size_t message_len, util::Logger::Level level);
         void (*s_user_callback)(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
         void (*s_void_callback)(void* tcs_ptr, MarshaledAppError err);
+        void (*s_bson_callback)(void* tcs_ptr, BsonPayload response, MarshaledAppError err);
 
         struct AppConfiguration
         {
@@ -117,6 +118,7 @@ extern "C" {
         uint16_t* sdk_version, size_t sdk_version_len,
         decltype(s_user_callback) user_callback,
         decltype(s_void_callback) void_callback,
+        decltype(s_bson_callback) bson_callback,
         decltype(s_log_message_callback) log_message_callback)
     {
         s_platform = Utf16StringAccessor(platform, platform_len);
@@ -125,6 +127,7 @@ extern "C" {
 
         s_user_callback = user_callback;
         s_void_callback = void_callback;
+        s_bson_callback = bson_callback;
         s_log_message_callback = log_message_callback;
     }
 

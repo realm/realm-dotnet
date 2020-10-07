@@ -406,7 +406,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(password, nameof(password));
 
                 var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, SerializationHelper.ToJson(functionArgs), tcs);
+                _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToNativeJson(), tcs);
                 return tcs.Task;
             }
         }
