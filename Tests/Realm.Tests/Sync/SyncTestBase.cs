@@ -131,7 +131,7 @@ namespace Realms.Tests.Sync
         {
             return new SyncConfiguration(partition, user, optionalPath)
             {
-                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(IntPrimaryKeyWithValueObject) },
+                ObjectClasses = new[] { typeof(HugeSyncObject), typeof(PrimaryKeyStringObject), typeof(ObjectIdPrimaryKeyWithValueObject) },
                 SessionStopPolicy = SessionStopPolicy.Immediately,
             };
         }

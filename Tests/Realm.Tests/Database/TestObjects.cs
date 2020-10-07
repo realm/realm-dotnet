@@ -186,6 +186,15 @@ namespace Realms.Tests
         public override string ToString() => Id.ToString();
     }
 
+    public class ObjectIdPrimaryKeyWithValueObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+        public string StringValue { get; set; }
+    }
+
     public class IntPrimaryKeyWithValueObject : RealmObject
     {
         [PrimaryKey]

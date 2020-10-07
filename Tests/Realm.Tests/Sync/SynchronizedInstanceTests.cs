@@ -74,7 +74,7 @@ namespace Realms.Tests.Sync
 
                 using (var realm = GetRealm(config))
                 {
-                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
+                    Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(populate ? DummyDataSize / 2 : 0));
                 }
             });
         }
@@ -98,7 +98,7 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(realm);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
-                Assert.That(asyncRealm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
             }, timeout: 120000);
         }
 
@@ -317,9 +317,8 @@ namespace Realms.Tests.Sync
             {
                 write(() =>
                 {
-                    realm.Add(new IntPrimaryKeyWithValueObject
+                    realm.Add(new ObjectIdPrimaryKeyWithValueObject
                     {
-                        Id = i,
                         StringValue = "Super secret product " + i
                     });
                 });
@@ -331,11 +330,12 @@ namespace Realms.Tests.Sync
                 currentTransaction = realm.BeginWrite();
             }
 
+            var objs = realm.All<ObjectIdPrimaryKeyWithValueObject>();
             for (var i = 0; i < DummyDataSize / 2; i++)
             {
                 write(() =>
                 {
-                    var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i);
+                    var item = objs.ElementAt(i);
                     realm.Remove(item);
                 });
             }
