@@ -460,7 +460,7 @@ namespace Realms.Tests
 
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
-        public RecursiveEmbeddedObject RecursiveObject { get; set; }
+        public EmbeddedLevel1 RecursiveObject { get; set; }
     }
 
     public class EmbeddedAllTypesObject : EmbeddedObject
@@ -531,12 +531,26 @@ namespace Realms.Tests
         public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
     }
 
-    public class RecursiveEmbeddedObject : EmbeddedObject
+    public class EmbeddedLevel1 : EmbeddedObject
     {
         public string String { get; set; }
 
-        public RecursiveEmbeddedObject Child { get; set; }
+        public EmbeddedLevel2 Child { get; set; }
 
-        public IList<RecursiveEmbeddedObject> Children { get; }
+        public IList<EmbeddedLevel2> Children { get; }
+    }
+
+    public class EmbeddedLevel2 : EmbeddedObject
+    {
+        public string String { get; set; }
+
+        public EmbeddedLevel3 Child { get; set; }
+
+        public IList<EmbeddedLevel3> Children { get; }
+    }
+
+    public class EmbeddedLevel3 : EmbeddedObject
+    {
+        public string String { get; set; }
     }
 }

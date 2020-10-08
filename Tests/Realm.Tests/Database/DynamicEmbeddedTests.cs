@@ -39,23 +39,29 @@ namespace Realms.Tests.Database
             public CompletionReport CompletionReport { get; set; }
 
             public IList<DynamicSubTask> SubTasks { get; }
+
+            public IList<DynamicSubSubTask> SubSubTasks { get; }
         }
 
         private class DynamicSubTask : EmbeddedObject
         {
             public string Summary { get; set; }
 
-            public IList<DynamicSubTask> SubTasks { get; }
-
             public CompletionReport CompletionReport { get; set; }
 
-            // Singular because we only expect 1
-            [Backlink(nameof(DynamicTask.SubTasks))]
-            public IQueryable<DynamicTask> ParentTask { get; }
+            public IList<DynamicSubSubTask> SubSubTasks { get; }
+        }
+
+        private class DynamicSubSubTask : EmbeddedObject
+        {
+            public string Summary { get; set; }
 
             // Singular because we only expect 1
-            [Backlink(nameof(SubTasks))]
+            [Backlink(nameof(DynamicSubTask.SubSubTasks))]
             public IQueryable<DynamicSubTask> ParentSubTask { get; }
+
+            [Backlink(nameof(DynamicTask.SubSubTasks))]
+            public IQueryable<DynamicTask> ParentTask { get; }
         }
 
         private class CompletionReport : EmbeddedObject
@@ -76,7 +82,7 @@ namespace Realms.Tests.Database
         {
             return new RealmConfiguration(path)
             {
-                ObjectClasses = new[] { typeof(DynamicTask), typeof(DynamicSubTask), typeof(CompletionReport) },
+                ObjectClasses = new[] { typeof(DynamicTask), typeof(DynamicSubTask), typeof(CompletionReport), typeof(DynamicSubSubTask) },
                 IsDynamic = _mode == DynamicTestObjectType.DynamicRealmObject
             };
         }
@@ -187,16 +193,16 @@ namespace Realms.Tests.Database
                 var secondSubTask = _realm.DynamicApi.AddEmbeddedObjectToList(addedParent.SubTasks);
                 secondSubTask.Summary = "This is a second subtask level 1";
 
-                var secondLevelSubTask = _realm.DynamicApi.AddEmbeddedObjectToList(addedParent.SubTasks[0].SubTasks);
+                var secondLevelSubTask = _realm.DynamicApi.AddEmbeddedObjectToList(addedParent.SubTasks[0].SubSubTasks);
                 secondLevelSubTask.Summary = "This is subtask level 2";
             });
 
             Assert.That(addedParent.SubTasks.Count, Is.EqualTo(2));
             Assert.That(addedParent.SubTasks[1].Summary, Is.EqualTo("This is a second subtask level 1"));
-            Assert.That(addedParent.SubTasks[1].SubTasks.Count, Is.EqualTo(0));
+            Assert.That(addedParent.SubTasks[1].SubSubTasks.Count, Is.EqualTo(0));
 
-            Assert.That(addedParent.SubTasks[0].SubTasks.Count, Is.EqualTo(1));
-            Assert.That(addedParent.SubTasks[0].SubTasks[0].Summary, Is.EqualTo("This is subtask level 2"));
+            Assert.That(addedParent.SubTasks[0].SubSubTasks.Count, Is.EqualTo(1));
+            Assert.That(addedParent.SubTasks[0].SubSubTasks[0].Summary, Is.EqualTo("This is subtask level 2"));
         }
 
         [Test]
@@ -390,21 +396,22 @@ namespace Realms.Tests.Database
                 var subTask = _realm.DynamicApi.AddEmbeddedObjectToList(task.SubTasks);
                 subTask.Summary = "This is level 1 subtask";
 
-                var subSubTask = _realm.DynamicApi.AddEmbeddedObjectToList(subTask.SubTasks);
-                subSubTask.Summary = "This is level 2 subtask";
+                var subSubTask1 = _realm.DynamicApi.AddEmbeddedObjectToList(task.SubSubTasks);
+                var subSubtask2 = _realm.DynamicApi.AddEmbeddedObjectToList(subTask.SubSubTasks);
             });
 
             var addedTask = _realm.DynamicApi.All(nameof(DynamicTask)).Single();
             var addedSubTask = addedTask.SubTasks[0];
-            var addedSubSubTask = addedSubTask.SubTasks[0];
+            var addedSubSubTask1 = addedTask.SubSubTasks[0];
+            var addedSubSubTask2 = addedSubTask.SubSubTasks[0];
 
-            Assert.That(addedSubTask.ParentTask.Count, Is.EqualTo(1));
-            Assert.That(addedSubTask.ParentSubTask.Count, Is.EqualTo(0));
-            Assert.That(((IQueryable<RealmObject>)addedSubTask.ParentTask).Single(), Is.EqualTo(addedTask));
+            Assert.That(addedSubSubTask1.ParentTask.Count, Is.EqualTo(1));
+            Assert.That(addedSubSubTask1.ParentSubTask.Count, Is.EqualTo(0));
+            Assert.That(((IQueryable<RealmObject>)addedSubSubTask1.ParentTask).Single(), Is.EqualTo(addedTask));
 
-            Assert.That(addedSubSubTask.ParentTask.Count, Is.EqualTo(0));
-            Assert.That(addedSubSubTask.ParentSubTask.Count, Is.EqualTo(1));
-            Assert.That(((IQueryable<EmbeddedObject>)addedSubSubTask.ParentSubTask).Single(), Is.EqualTo(addedSubTask));
+            Assert.That(addedSubSubTask2.ParentTask.Count, Is.EqualTo(0));
+            Assert.That(addedSubSubTask2.ParentSubTask.Count, Is.EqualTo(1));
+            Assert.That(((IQueryable<EmbeddedObject>)addedSubSubTask2.ParentSubTask).Single(), Is.EqualTo(addedSubTask));
         }
 
         [Test]

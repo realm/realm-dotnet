@@ -49,7 +49,7 @@ namespace Realms.Helpers
 
                 if (typeof(T) == typeof(object[]))
                 {
-                    var elements = (value as object[]).Select(o => ToNativeJson((dynamic)o, tryDynamic: false));
+                    var elements = (value as object[]).Select(o => o is null ? ToNativeJson(o, tryDynamic: false) : ToNativeJson((dynamic)o, tryDynamic: false));
                     return $"[{string.Join(",", elements)}]";
                 }
             }
