@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -182,6 +182,9 @@ namespace Realms.Sync
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.insertMany/"/>
             public async Task<InsertManyResult> InsertManyAsync(IEnumerable<TDocument> docs)
             {
+                Argument.NotNull(docs, nameof(docs));
+                Argument.Ensure(docs.All(d => d != null), "Collection must not contain null elements.", nameof(docs));
+
                 var result = await _handle.InsertMany(docs.ToNativeJson());
                 return result.GetValue<InsertManyResult>();
             }
@@ -211,6 +214,8 @@ namespace Realms.Sync
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/"/>
             public async Task<UpdateResult> UpdateOneAsync(object updateDocument, object filter = null, bool upsert = false)
             {
+                Argument.NotNull(updateDocument, nameof(updateDocument));
+
                 var result = await _handle.UpdateOne(filter?.ToNativeJson(), updateDocument?.ToNativeJson(), upsert);
                 return result.GetValue<UpdateResult>();
             }
@@ -240,6 +245,8 @@ namespace Realms.Sync
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/"/>
             public async Task<UpdateResult> UpdateManyAsync(object updateDocument, object filter = null, bool upsert = false)
             {
+                Argument.NotNull(updateDocument, nameof(updateDocument));
+
                 var result = await _handle.UpdateMany(filter?.ToNativeJson(), updateDocument.ToNativeJson(), upsert);
                 return result.GetValue<UpdateResult>();
             }
@@ -283,37 +290,6 @@ namespace Realms.Sync
             /// <summary>
             /// Finds the all documents in the collection up to <paramref name="limit"/>.
             /// </summary>
-            /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
-            /// <returns>
-            /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
-            /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public Task<TDocument[]> FindAsync(long? limit = null)
-            {
-                return FindAsync(filter: null, limit: limit);
-            }
-
-            /// <summary>
-            /// Finds the all documents in the collection up to <paramref name="limit"/>.
-            /// </summary>
-            /// <param name="filter">
-            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
-            /// If not specified, all documents in the collection will be returned.
-            /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
-            /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
-            /// <returns>
-            /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
-            /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public Task<TDocument[]> FindAsync(object filter, object sort = null, long? limit = null)
-            {
-                return FindAsync<TDocument>(filter, null, sort, limit);
-            }
-
-            /// <summary>
-            /// Finds the all documents in the collection up to <paramref name="limit"/>.
-            /// </summary>
             /// <param name="filter">
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will be returned.
@@ -323,50 +299,14 @@ namespace Realms.Sync
             /// </param>
             /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
-            /// <typeparam name="TProjection">The managed type that matches the shape of the projection.</typeparam>
             /// <returns>
             /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public async Task<TProjection[]> FindAsync<TProjection>(object filter, object projection, object sort = null, long? limit = null)
+            public async Task<TDocument[]> FindAsync(object filter = null, object projection = null, object sort = null, long? limit = null)
             {
                 var result = await _handle.Find(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
-                return result.GetValue<TProjection[]>();
-            }
-
-            /// <summary>
-            /// Finds the all documents in the collection up to <paramref name="limit"/>.
-            /// </summary>
-            /// <param name="filter">
-            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
-            /// If not specified, all documents in the collection will be returned.
-            /// </param>
-            /// <param name="projection">
-            /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
-            /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
-            /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
-            /// <returns>
-            /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
-            /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public Task<BsonDocument[]> FindAsync(object filter, object projection, object sort = null, long? limit = null) => FindAsync<BsonDocument>(filter, projection, sort, limit);
-
-            /// <summary>
-            /// Finds the first document in the collection that satisfies the query criteria.
-            /// </summary>
-            /// <param name="filter">
-            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
-            /// If not specified, all documents in the collection will match the request.
-            /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
-            /// <returns>
-            /// A <see cref="Task{TDocument}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
-            /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public Task<TDocument> FindOneAsync(object filter = null, object sort = null)
-            {
-                return FindOneAsync<TDocument>(filter, null, sort);
+                return result.GetValue<TDocument[]>();
             }
 
             /// <summary>
@@ -380,33 +320,15 @@ namespace Realms.Sync
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
             /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
-            /// <typeparam name="TProjection">The managed type that matches the shape of the projection.</typeparam>
             /// <returns>
             /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public async Task<TProjection> FindOneAsync<TProjection>(object filter = null, object projection = null, object sort = null)
+            public async Task<TDocument> FindOneAsync(object filter = null, object projection = null, object sort = null)
             {
                 var result = await _handle.FindOne(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
-                return result.GetValue<TProjection>();
+                return result.GetValue<TDocument>();
             }
-
-            /// <summary>
-            /// Finds the first document in the collection that satisfies the query criteria.
-            /// </summary>
-            /// <param name="filter">
-            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
-            /// If not specified, all documents in the collection will match the request.
-            /// </param>
-            /// <param name="projection">
-            /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
-            /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
-            /// <returns>
-            /// A <see cref="Task{BsonDocument}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
-            /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public Task<BsonDocument> FindOneAsync(object filter = null, object projection = null, object sort = null) => FindOneAsync<BsonDocument>(filter, projection, sort);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <typeparamref name="TProjection"/> array.
@@ -420,9 +342,10 @@ namespace Realms.Sync
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
-            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline)
+            public async Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline)
             {
-                throw new NotImplementedException();
+                var result = await _handle.Aggregate(pipeline.ToNativeJson());
+                return result.GetValue<TProjection[]>();
             }
 
             /// <summary>
