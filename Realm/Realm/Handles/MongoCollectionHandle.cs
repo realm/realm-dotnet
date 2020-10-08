@@ -98,6 +98,26 @@ namespace Realms
                 [MarshalAs(UnmanagedType.U1)] bool upsert,
                 IntPtr tcs_ptr, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_mongo_collection_find_one_and_update", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void find_one_and_update(MongoCollectionHandle handle,
+                [MarshalAs(UnmanagedType.LPWStr)] string filter, IntPtr filter_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string update, IntPtr update_len,
+                FindAndModifyOptions options,
+                IntPtr tcs_ptr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_mongo_collection_find_one_and_replace", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void find_one_and_replace(MongoCollectionHandle handle,
+                [MarshalAs(UnmanagedType.LPWStr)] string filter, IntPtr filter_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string update, IntPtr update_len,
+                FindAndModifyOptions options,
+                IntPtr tcs_ptr, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_mongo_collection_find_one_and_delete", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void find_one_and_delete(MongoCollectionHandle handle,
+                [MarshalAs(UnmanagedType.LPWStr)] string filter, IntPtr filter_len,
+                FindAndModifyOptions options,
+                IntPtr tcs_ptr, out NativeException ex);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -162,6 +182,24 @@ namespace Realms
         public Task<BsonPayload> UpdateMany(string filter, string update, bool upsert)
         {
             return CallNativeMethod((IntPtr tcs, out NativeException ex) => NativeMethods.update_many(this, filter, filter.IntPtrLength(), update, update.IntPtrLength(), upsert, tcs, out ex));
+        }
+
+        public Task<BsonPayload> FindOneAndUpdate(string filter, string update, FindAndModifyOptions options)
+        {
+            return CallNativeMethod((IntPtr tcs, out NativeException ex) =>
+                NativeMethods.find_one_and_update(this, filter, filter.IntPtrLength(), update, update.IntPtrLength(), options, tcs, out ex));
+        }
+
+        public Task<BsonPayload> FindOneAndReplace(string filter, string replacement, FindAndModifyOptions options)
+        {
+            return CallNativeMethod((IntPtr tcs, out NativeException ex) =>
+                NativeMethods.find_one_and_replace(this, filter, filter.IntPtrLength(), replacement, replacement.IntPtrLength(), options, tcs, out ex));
+        }
+
+        public Task<BsonPayload> FindOneAndDelete(string filter, FindAndModifyOptions options)
+        {
+            return CallNativeMethod((IntPtr tcs, out NativeException ex) =>
+                NativeMethods.find_one_and_delete(this, filter, filter.IntPtrLength(), options, tcs, out ex));
         }
 
         protected override void Unbind()

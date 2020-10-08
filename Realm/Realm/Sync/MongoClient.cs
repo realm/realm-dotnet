@@ -294,16 +294,16 @@ namespace Realms.Sync
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will be returned.
             /// </param>
+            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <param name="projection">
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
             /// <returns>
             /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public async Task<TDocument[]> FindAsync(object filter = null, object projection = null, object sort = null, long? limit = null)
+            public async Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
             {
                 var result = await _handle.Find(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
                 return result.GetValue<TDocument[]>();
@@ -316,17 +316,112 @@ namespace Realms.Sync
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will match the request.
             /// </param>
+            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <param name="projection">
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
-            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <returns>
             /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public async Task<TDocument> FindOneAsync(object filter = null, object projection = null, object sort = null)
+            public async Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
             {
                 var result = await _handle.FindOne(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
+                return result.GetValue<TDocument>();
+            }
+
+            /// <summary>
+            /// Finds the first document in the collection that satisfies the query criteria.
+            /// </summary>
+            /// <param name="updateDocument">
+            /// A document describing the update. Can only contain
+            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
+            /// </param>
+            /// <param name="filter">
+            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
+            /// If not specified, all documents in the collection will match the request.
+            /// </param>
+            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
+            /// <param name="projection">
+            /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
+            /// </param>
+            /// <param name="upsert">
+            /// A boolean controlling whether the update should insert a document if no documents match the <paramref name="filter"/>.
+            /// Defaults to <c>false</c>.
+            /// </param>
+            /// <param name="returnNewDocument">
+            /// A boolean controlling whether to return the new updated document. If set to <c>false</c> the original document
+            /// before the update is returned. Defaults to <c>false</c>.
+            /// </param>
+            /// <returns>
+            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// </returns>
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
+            public async Task<TDocument> FindOneAndUpdateAsync(object updateDocument, object filter = null, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            {
+                Argument.NotNull(updateDocument, nameof(updateDocument));
+
+                var result = await _handle.FindOneAndUpdate(filter?.ToNativeJson(), updateDocument.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
+                return result.GetValue<TDocument>();
+            }
+
+            /// <summary>
+            /// Finds the first document in the collection that satisfies the query criteria.
+            /// </summary>
+            /// <param name="replacementDoc">
+            /// The replacement document. Cannot contain update operator expressions.
+            /// </param>
+            /// <param name="filter">
+            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
+            /// If not specified, all documents in the collection will match the request.
+            /// </param>
+            /// <param name="sort">
+            /// A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.
+            /// </param>
+            /// <param name="projection">
+            /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
+            /// </param>
+            /// <param name="upsert">
+            /// A boolean controlling whether the replace should insert a document if no documents match the <paramref name="filter"/>.
+            /// Defaults to <c>false</c>.
+            /// <br/>
+            /// MongoDB will add the <c>_id</c> field to the replacement document if it is not specified in either the filter or
+            /// replacement documents. If <c>_id</c> is present in both, the values must be equal.
+            /// </param>
+            /// <param name="returnNewDocument">
+            /// A boolean controlling whether to return the replacement document. If set to <c>false</c> the original document
+            /// before the update is returned. Defaults to <c>false</c>.
+            /// </param>
+            /// <returns>
+            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// </returns>
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
+            public async Task<TDocument> FindOneAndReplaceAsync(TDocument replacementDoc, object filter = null, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            {
+                Argument.NotNull(replacementDoc, nameof(replacementDoc));
+
+                var result = await _handle.FindOneAndReplace(filter?.ToNativeJson(), replacementDoc.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
+                return result.GetValue<TDocument>();
+            }
+
+            /// <summary>
+            /// Finds the first document in the collection that satisfies the query criteria.
+            /// </summary>
+            /// <param name="filter">
+            /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
+            /// If not specified, all documents in the collection will match the request.
+            /// </param>
+            /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
+            /// <param name="projection">
+            /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
+            /// </param>
+            /// <returns>
+            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// </returns>
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
+            public async Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
+            {
+                var result = await _handle.FindOneAndDelete(filter?.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort));
                 return result.GetValue<TDocument>();
             }
 

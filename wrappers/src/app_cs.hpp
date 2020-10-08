@@ -167,6 +167,10 @@ namespace binding {
     }
 
     inline bson::BsonDocument to_document(uint16_t* buf, size_t len) {
+        if (buf == nullptr) {
+            return bson::BsonDocument();
+        }
+
         Utf16StringAccessor json(buf, len);
         return static_cast<bson::BsonDocument>(bson::parse(json.to_string()));
     }

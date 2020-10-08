@@ -70,7 +70,7 @@ namespace Realms.Native
             return result;
         }
 
-        public static FindAndModifyOptions FindAndModify(object projection, object sort, bool upsert, bool returnNewDocument)
+        public static FindAndModifyOptions FindAndModify(object projection, object sort, bool upsert = false, bool returnNewDocument = false)
         {
             var result = new FindAndModifyOptions(projection, sort);
             result.upsert = upsert;
