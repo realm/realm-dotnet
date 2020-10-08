@@ -120,7 +120,7 @@ namespace Realms.Sync
             {
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
-                var handle = MongoCollectionHandle.Create(Client.User.Handle, Client.User.App.Handle, Client.ServiceName, Name, name);
+                var handle = MongoCollectionHandle.Create(Client.User.Handle, Client.ServiceName, Name, name);
                 return new Collection<TDocument>(this, name, handle);
             }
         }

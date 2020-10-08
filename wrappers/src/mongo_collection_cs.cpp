@@ -46,8 +46,8 @@ struct FindAndModifyOptions
     bool return_new_document;
     int64_t limit;
 
-    RemoteMongoCollection::RemoteFindOneAndModifyOptions to_find_and_modify_options() {
-        RemoteMongoCollection::RemoteFindOneAndModifyOptions options;
+    MongoCollection::FindOneAndModifyOptions to_find_and_modify_options() {
+        MongoCollection::FindOneAndModifyOptions options;
         
         if (projection_buf != nullptr) {
             options.projection_bson = to_document(projection_buf, projection_len);
@@ -63,8 +63,8 @@ struct FindAndModifyOptions
         return options;
     }
 
-    RemoteMongoCollection::RemoteFindOptions to_find_options() {
-        RemoteMongoCollection::RemoteFindOptions options;
+    MongoCollection::FindOptions to_find_options() {
+        MongoCollection::FindOptions options;
 
         if (projection_buf != nullptr) {
             options.projection_bson = to_document(projection_buf, projection_len);
@@ -83,7 +83,7 @@ struct FindAndModifyOptions
 };
 
 extern "C" {
-    REALM_EXPORT RemoteMongoCollection* realm_mongo_collection_get(SharedSyncUser& user, SharedApp& app,
+    REALM_EXPORT MongoCollection* realm_mongo_collection_get(SharedSyncUser& user,
             uint16_t* service_buf, size_t service_len,
             uint16_t* database_buf, size_t database_len,
             uint16_t* collection_buf, size_t collection_len,
@@ -93,73 +93,73 @@ extern "C" {
             Utf16StringAccessor database(database_buf, database_len);
             Utf16StringAccessor collection(collection_buf, collection_len);
             
-            auto col = app->remote_mongo_client(service).db(database).collection(collection);
-            return new RemoteMongoCollection(col);
+            auto col = user->mongo_client(service).db(database).collection(collection);
+            return new MongoCollection(col);
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_destroy(RemoteMongoCollection* collection)
+    REALM_EXPORT void realm_mongo_collection_destroy(MongoCollection* collection)
     {
         delete collection;
     }
 
-    REALM_EXPORT void realm_mongo_collection_find(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_find(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.find_bson(filter, options.to_find_options(), get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_find_one(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_find_one(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.find_one_bson(filter, options.to_find_options(), get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_aggregate(RemoteMongoCollection& collection, uint16_t* pipeline_buf, size_t pipeline_len, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_aggregate(MongoCollection& collection, uint16_t* pipeline_buf, size_t pipeline_len, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto pipeline = to_array(pipeline_buf, pipeline_len);
             collection.aggregate_bson(pipeline, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_count(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, int64_t limit, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_count(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, int64_t limit, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.count_bson(filter, limit, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_insert_one(RemoteMongoCollection& collection, uint16_t* doc_buf, size_t doc_len, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_insert_one(MongoCollection& collection, uint16_t* doc_buf, size_t doc_len, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto doc = to_document(doc_buf, doc_len);
             collection.insert_one_bson(doc, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_insert_many(RemoteMongoCollection& collection, uint16_t* docs_buf, size_t docs_len, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_insert_many(MongoCollection& collection, uint16_t* docs_buf, size_t docs_len, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto docs = to_array(docs_buf, docs_len);
             collection.insert_many_bson(docs, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_delete_one(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_delete_one(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.delete_one_bson(filter, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_delete_many(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_delete_many(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.delete_many_bson(filter, get_bson_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_update_one(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, bool upsert, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_update_one(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, bool upsert, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             auto doc = to_document(doc_buf, doc_len);
@@ -167,7 +167,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_update_many(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, bool upsert, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_update_many(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, bool upsert, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             auto doc = to_document(doc_buf, doc_len);
@@ -175,7 +175,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_find_one_and_update(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_find_one_and_update(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             auto doc = to_document(doc_buf, doc_len);
@@ -183,7 +183,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_find_one_and_replace(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_find_one_and_replace(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, uint16_t* doc_buf, size_t doc_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             auto doc = to_document(doc_buf, doc_len);
@@ -191,7 +191,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_mongo_collection_find_one_and_delete(RemoteMongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
+    REALM_EXPORT void realm_mongo_collection_find_one_and_delete(MongoCollection& collection, uint16_t* filter_buf, size_t filter_len, FindAndModifyOptions options, void* tcs_ptr, NativeException::Marshallable& ex) {
         handle_errors(ex, [&]() {
             auto filter = to_document(filter_buf, filter_len);
             collection.find_one_and_delete_bson(filter, options.to_find_and_modify_options(), get_bson_callback_handler(tcs_ptr));

@@ -32,7 +32,7 @@ namespace Realms
 #pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_mongo_collection_get", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get(SyncUserHandle user, AppHandle app,
+            public static extern IntPtr get(SyncUserHandle user,
                 [MarshalAs(UnmanagedType.LPWStr)] string service, IntPtr service_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string database, IntPtr database_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string collection, IntPtr collection_len,
@@ -126,9 +126,9 @@ namespace Realms
         {
         }
 
-        public static MongoCollectionHandle Create(SyncUserHandle user, AppHandle app, string service, string database, string collection)
+        public static MongoCollectionHandle Create(SyncUserHandle user, string service, string database, string collection)
         {
-            var handle = NativeMethods.get(user, app, service, (IntPtr)service.Length, database, (IntPtr)database.Length, collection, (IntPtr)collection.Length, out var ex);
+            var handle = NativeMethods.get(user, service, (IntPtr)service.Length, database, (IntPtr)database.Length, collection, (IntPtr)collection.Length, out var ex);
             ex.ThrowIfNecessary();
 
             return new MongoCollectionHandle(user, handle);
