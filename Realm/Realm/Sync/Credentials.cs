@@ -180,7 +180,7 @@ namespace Realms.Sync
         /// <seealso href="https://docs.mongodb.com/realm/authentication/anonymous/"/>
         public static Credentials Function(object payload)
         {
-            return new Credentials(AuthProvider.Function, SerializationHelper.ToJson(payload));
+            return new Credentials(AuthProvider.Function, payload.ToNativeJson());
         }
 
         /// <summary>

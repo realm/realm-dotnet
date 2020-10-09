@@ -275,8 +275,6 @@ namespace AssemblyToProcess
         public EmbeddedAllTypesObject AllTypesObject { get; set; }
 
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
-
-        public RecursiveEmbeddedObject RecursiveObject { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -347,15 +345,5 @@ namespace AssemblyToProcess
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
-    }
-
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    public class RecursiveEmbeddedObject : EmbeddedObject
-    {
-        public string String { get; set; }
-
-        public RecursiveEmbeddedObject Child { get; set; }
-
-        public IList<RecursiveEmbeddedObject> Children { get; }
     }
 }

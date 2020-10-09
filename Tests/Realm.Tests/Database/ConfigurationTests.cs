@@ -204,7 +204,6 @@ namespace Realms.Tests.Database
         [Test]
         public void ReadOnlyRealmsArentWritable()
         {
-            // Arrange
             _configuration.SchemaVersion = 0;  // must set version before file can be opened readOnly
             using (var openToCreate = GetRealm(_configuration))
             {
@@ -217,7 +216,7 @@ namespace Realms.Tests.Database
             _configuration.IsReadOnly = true;
 
             using var openedReadonly = GetRealm(_configuration);
-            // Assert
+
             Assert.That(() =>
             {
                 openedReadonly.Write(() =>

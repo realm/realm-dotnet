@@ -605,7 +605,7 @@ namespace Realms.Tests.Database
         {
             var config = new RealmConfiguration(Guid.NewGuid().ToString())
             {
-                ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(RecursiveEmbeddedObject) }
+                ObjectClasses = new[] { typeof(AllTypesObject), typeof(ObjectWithEmbeddedProperties), typeof(EmbeddedAllTypesObject), typeof(EmbeddedLevel1), typeof(EmbeddedLevel2), typeof(EmbeddedLevel3) }
             };
 
             // Create the realm and add some objects
@@ -630,7 +630,7 @@ namespace Realms.Tests.Database
             config.IsDynamic = true;
 
             using var dynamicRealm = GetRealm(config);
-            Assert.That(dynamicRealm.Schema.Count == 4);
+            Assert.That(dynamicRealm.Schema.Count, Is.EqualTo(6));
 
             var allTypesSchema = dynamicRealm.Schema.Find(nameof(AllTypesObject));
             Assert.That(allTypesSchema, Is.Not.Null);

@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
-using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Options;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace Realms.Helpers
 {
@@ -29,28 +32,34 @@ namespace Realms.Helpers
             OutputMode = JsonOutputMode.CanonicalExtendedJson,
         };
 
-        [Preserve]
         static SerializationHelper()
         {
-            // V10TODO: remove when MongoDB.Bson releases preserved version.
-            IDiscriminatorConvention convention = null;
-            try
-            {
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer();
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention);
-                _ = new MongoDB.Bson.Serialization.Serializers.ObjectSerializer(convention, GuidRepresentation.Standard);
-            }
-            catch
-            {
-            }
-
-            _ = new MongoDB.Bson.Serialization.Serializers.StringSerializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<long>();
-            _ = new MongoDB.Bson.Serialization.Serializers.NullableSerializer<ObjectId>();
-            _ = new MongoDB.Bson.Serialization.Serializers.Int64Serializer();
-            _ = new MongoDB.Bson.Serialization.Serializers.ObjectIdSerializer();
+            var decimalSerializer = new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false));
+            BsonSerializer.RegisterSerializer(decimalSerializer);
         }
 
-        public static string ToJson<T>(T value) => value.ToJson(_jsonSettings);
+        public static string ToNativeJson<T>(this T value, bool tryDynamic = true)
+        {
+            if (tryDynamic && !(value is null))
+            {
+                if (typeof(T) == typeof(object))
+                {
+                    return ToNativeJson((dynamic)value, tryDynamic: false);
+                }
+
+                if (typeof(T) == typeof(object[]))
+                {
+                    var elements = (value as object[]).Select(o => o is null ? ToNativeJson(o, tryDynamic: false) : ToNativeJson((dynamic)o, tryDynamic: false));
+                    return $"[{string.Join(",", elements)}]";
+                }
+            }
+
+            if (tryDynamic && (typeof(T) == typeof(object)) && !(value is null))
+            {
+                return ToNativeJson((dynamic)value, tryDynamic: false);
+            }
+
+            return value.ToJson(_jsonSettings);
+        }
     }
 }

@@ -255,7 +255,7 @@ namespace Realms.Tests.Sync
 
                 if (arr is DateTime[] dateArr)
                 {
-                    var dateArrResult = arrResult["_v"].AsBsonArray.Select(a => a.ToUniversalTime()).ToArray();
+                    var dateArrResult = arrResult.AsBsonArray.Select(a => a.ToUniversalTime()).ToArray();
                     Assert.That(dateArrResult.Length, Is.EqualTo(dateArr.Length));
                     for (var i = 0; i < dateArr.Length; i++)
                     {
@@ -265,7 +265,7 @@ namespace Realms.Tests.Sync
                 else
                 {
                     Assert.That(
-                        arrResult["_v"].AsBsonArray.Select(a => a.ToString().ToLower()),
+                        arrResult.AsBsonArray.Select(a => a.ToString().ToLower()),
                         Is.EquivalentTo(arr.Select(a => a.ToString().ToLower())));
                 }
             });

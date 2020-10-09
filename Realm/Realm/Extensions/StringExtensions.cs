@@ -77,5 +77,7 @@ namespace Realms
             var options = caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase;
             return Regex.Match(str, $"^{pattern}$", options).Success;
         }
+
+        internal static IntPtr IntPtrLength(this string str) => (IntPtr)(str?.Length ?? 0);
     }
 }

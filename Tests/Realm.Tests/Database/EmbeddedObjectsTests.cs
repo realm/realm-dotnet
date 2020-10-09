@@ -36,29 +36,29 @@ namespace Realms.Tests.Database
             };
 
             obj.ListOfAllTypesObjects.Add(new EmbeddedAllTypesObject());
-            obj.RecursiveObject = new RecursiveEmbeddedObject
+            obj.RecursiveObject = new EmbeddedLevel1
             {
                 String = "first",
-                Child = new RecursiveEmbeddedObject
+                Child = new EmbeddedLevel2
                 {
                     String = "second",
-                    Child = new RecursiveEmbeddedObject
+                    Child = new EmbeddedLevel3
                     {
                         String = "third"
                     }
                 },
                 Children =
                 {
-                    new RecursiveEmbeddedObject
+                    new EmbeddedLevel2
                     {
                         String = "I'm in a list",
-                        Child = new RecursiveEmbeddedObject
+                        Child = new EmbeddedLevel3
                         {
                             String = "child in a list"
                         },
                         Children =
                         {
-                            new RecursiveEmbeddedObject
+                            new EmbeddedLevel3
                             {
                                 String = "children in a list"
                             }
@@ -335,59 +335,29 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RecursiveEmbedded_WhenLinkingToItself_Fails()
+        public void Embedded_AddingALinkToManaged_Fails()
         {
             var parent = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject
-                {
-                    String = "a"
-                }
+                RecursiveObject = new EmbeddedLevel1 { String = "a" }
             };
 
-            // Set up a recursive relationship linking to itself
-            parent.RecursiveObject.Child = parent.RecursiveObject;
-
-            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(parent)));
-            Assert.That(ex.Message, Is.EqualTo("Can't link to an embedded object that is already managed."));
-        }
-
-        [Test]
-        public void RecursiveEmbeddedList_WhenLinkingToItself_Fails()
-        {
-            var parent = new ObjectWithEmbeddedProperties
+            var parent2 = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject
-                {
-                    String = "a"
-                }
-            };
-
-            // Set up a recursive relationship linking to itself
-            parent.RecursiveObject.Children.Add(parent.RecursiveObject);
-
-            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(parent)));
-            Assert.That(ex.Message, Is.EqualTo("Can't add, set, or insert an embedded object that is already managed."));
-        }
-
-        [Test]
-        public void RecursiveEmbedded_AddingALinkToItself_Fails()
-        {
-            var parent = new ObjectWithEmbeddedProperties
-            {
-                RecursiveObject = new RecursiveEmbeddedObject { String = "a" }
+                PrimaryKey = 1
             };
 
             _realm.Write(() =>
             {
                 _realm.Add(parent);
+                _realm.Add(parent2);
             });
 
             var ex = Assert.Throws<RealmException>(() =>
             {
                 _realm.Write(() =>
                 {
-                    parent.RecursiveObject.Child = parent.RecursiveObject;
+                    parent2.RecursiveObject = parent.RecursiveObject;
                 });
             });
             Assert.That(ex.Message, Is.EqualTo("Can't link to an embedded object that is already managed."));
@@ -398,7 +368,11 @@ namespace Realms.Tests.Database
         {
             var parent = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject { String = "a" }
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    String = "a",
+                    Child = new EmbeddedLevel2()
+                }
             };
 
             _realm.Write(() =>
@@ -410,7 +384,7 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    parent.RecursiveObject.Children.Add(parent.RecursiveObject);
+                    parent.RecursiveObject.Children.Add(parent.RecursiveObject.Child);
                 });
             });
             Assert.That(ex.Message, Is.EqualTo("Can't add, set, or insert an embedded object that is already managed."));
@@ -421,10 +395,10 @@ namespace Realms.Tests.Database
         {
             var parent = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject
+                RecursiveObject = new EmbeddedLevel1
                 {
                     String = "a",
-                    Child = new RecursiveEmbeddedObject
+                    Child = new EmbeddedLevel2
                     {
                         String = "b"
                     }
@@ -444,7 +418,7 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                parent.RecursiveObject.Child.Child = new RecursiveEmbeddedObject
+                parent.RecursiveObject.Child.Child = new EmbeddedLevel3
                 {
                     String = "c"
                 };
@@ -452,7 +426,6 @@ namespace Realms.Tests.Database
 
             Assert.That(parent.RecursiveObject.Child.Child.IsManaged);
             Assert.That(parent.RecursiveObject.Child.Child.String, Is.EqualTo("c"));
-            Assert.That(parent.RecursiveObject.Child.Child.Child, Is.Null);
         }
 
         [Test]
@@ -572,20 +545,20 @@ namespace Realms.Tests.Database
         {
             var parent = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject
+                RecursiveObject = new EmbeddedLevel1
                 {
-                    Child = new RecursiveEmbeddedObject
+                    Child = new EmbeddedLevel2
                     {
                         Children =
                         {
-                            new RecursiveEmbeddedObject()
+                            new EmbeddedLevel3()
                         }
                     },
                     Children =
                     {
-                        new RecursiveEmbeddedObject
+                        new EmbeddedLevel2
                         {
-                            Child = new RecursiveEmbeddedObject()
+                            Child = new EmbeddedLevel3()
                         }
                     }
                 }
@@ -596,20 +569,26 @@ namespace Realms.Tests.Database
                 _realm.Add(parent);
             });
 
-            var previousEmbedded = _realm.AllEmbedded<RecursiveEmbeddedObject>().ToArray();
-            Assert.That(previousEmbedded.Length, Is.EqualTo(5));
+            var previousEmbedded1 = _realm.AllEmbedded<EmbeddedLevel1>().ToArray();
+            Assert.That(previousEmbedded1.Length, Is.EqualTo(1));
+            var previousEmbedded2 = _realm.AllEmbedded<EmbeddedLevel2>().ToArray();
+            Assert.That(previousEmbedded2.Length, Is.EqualTo(2));
+            var previousEmbedded3 = _realm.AllEmbedded<EmbeddedLevel3>().ToArray();
+            Assert.That(previousEmbedded3.Length, Is.EqualTo(2));
 
             _realm.Write(() =>
             {
-                parent.RecursiveObject = new RecursiveEmbeddedObject();
+                parent.RecursiveObject = new EmbeddedLevel1();
             });
 
-            foreach (var previous in previousEmbedded)
+            foreach (var previous in previousEmbedded3)
             {
                 Assert.That(previous.IsValid, Is.False);
             }
 
-            Assert.That(_realm.AllEmbedded<RecursiveEmbeddedObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.AllEmbedded<EmbeddedLevel1>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.AllEmbedded<EmbeddedLevel2>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.AllEmbedded<EmbeddedLevel3>().Count(), Is.EqualTo(0));
         }
 
         [Test]
@@ -634,10 +613,10 @@ namespace Realms.Tests.Database
         {
             var parent = new ObjectWithEmbeddedProperties
             {
-                RecursiveObject = new RecursiveEmbeddedObject
+                RecursiveObject = new EmbeddedLevel1
                 {
                     String = "level 1",
-                    Child = new RecursiveEmbeddedObject
+                    Child = new EmbeddedLevel2
                     {
                         String = "level 2"
                     }
@@ -653,12 +632,12 @@ namespace Realms.Tests.Database
             Assert.That(topLevelBacklinks.Count(), Is.EqualTo(1));
             Assert.That(topLevelBacklinks.Single(), Is.EqualTo(parent));
 
-            var secondLevelBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(RecursiveEmbeddedObject), nameof(RecursiveEmbeddedObject.Child));
+            var secondLevelBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Child));
             Assert.That(secondLevelBacklinks.Count(), Is.EqualTo(1));
             Assert.That(secondLevelBacklinks.Single(), Is.EqualTo(parent.RecursiveObject));
 
             // This should be empty because no objects link to it via .Children
-            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(RecursiveEmbeddedObject), nameof(RecursiveEmbeddedObject.Children));
+            var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.GetBacklinks(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
 

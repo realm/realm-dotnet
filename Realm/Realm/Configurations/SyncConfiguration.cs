@@ -116,7 +116,7 @@ namespace Realms.Sync
 
             User = user;
             Partition = partition;
-            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, SerializationHelper.ToJson(partition)));
+            DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, partition.ToNativeJson()));
         }
 
         internal override Realm CreateRealm(RealmSchema schema)
@@ -191,7 +191,7 @@ namespace Realms.Sync
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
-                Partition = SerializationHelper.ToJson(Partition),
+                Partition = Partition.ToNativeJson(),
                 session_stop_policy = SessionStopPolicy,
             };
         }
