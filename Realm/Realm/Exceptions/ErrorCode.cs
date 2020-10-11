@@ -99,6 +99,30 @@ namespace Realms.Sync.Exceptions
         DisabledSession = 213,
 
         /// <summary>
+        /// The client file is invalid.
+        /// </summary>
+        BadClientFile = 217,
+
+        /// <summary>
+        /// The user for this session doesn't match the user who originally created the file. This can happen
+        /// if you explicitly specify the Realm file path in the configuration and you open the Realm first with
+        /// user A, then with user B without changing the on-disk path.
+        /// </summary>
+        UserMismatch = 223,
+
+        /// <summary>
+        /// The server has received too many sessions from this client. This is typically a transient error
+        /// but can also indicate that the client has too many Realms open at the same time.
+        /// </summary>
+        TooManySessions = 224,
+
+        /// <summary>
+        /// The client attempted to upload an invalid schema change - either an additive schema change
+        /// when developer mode is <c>off</c> or a destructive schema change.
+        /// </summary>
+        InvalidSchemaChange = 225,
+
+        /// <summary>
         /// Your request parameters did not validate.
         /// </summary>
         InvalidParameters = 601,

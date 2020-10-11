@@ -32,7 +32,7 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 namespace realm {
 namespace binding {
-    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len);
+    void (*s_session_error_callback)(std::shared_ptr<SyncSession>*, int32_t error_code, const char* message, size_t message_len, std::pair<char*, char*>* user_info_pairs, int user_info_pairs_len, bool is_client_reset);
     void (*s_progress_callback)(void*, uint64_t transferred_bytes, uint64_t transferrable_bytes);
     void (*s_wait_callback)(void* task_completion_source, int32_t error_code, const char* message, size_t message_len);
 
@@ -44,7 +44,7 @@ namespace binding {
             user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
         }
 
-        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length(), user_info_pairs.data(), user_info_pairs.size());
+        s_session_error_callback(new std::shared_ptr<SyncSession>(session), error.error_code.value(), error.message.c_str(), error.message.length(), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested());
     }
 }
 }
