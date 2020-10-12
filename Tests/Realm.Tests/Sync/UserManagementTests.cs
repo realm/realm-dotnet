@@ -351,6 +351,28 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void User_JWT_LogsInAndReadsDataFromToken()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                const string token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwic3ViIjoiMTIzNDU2Nzg5MCIsIm5hbWUiOnsiZmlyc3QiOiJKb2huIiwibGFzdCI6IkRvZSJ9LCJqb2JUaXRsZSI6IkJyZWFrZXIgb2YgdGhpbmdzIiwiZW1haWwiOiJqb2huQGRvZS5jb20iLCJwaWN0dXJlVXJsIjoiaHR0cHM6Ly9kb2UuY29tL215cGljdHVyZSIsImdlbmRlciI6Im90aGVyIiwiYmlydGhkYXkiOiIxOTM0LTA1LTE1IiwibWluQWdlIjoiODAiLCJtYXhBZ2UiOiI5MCIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyMDE2MjM5MDIyLCJhdWQiOiJteS1hdWRpZW5jZSJ9.B6u3SkU-pzCH_LA_HsevAJF1EI1LbAOfL6GP3bhjVpP4FBtrmZYQD_b7Z_wJLE0vaffX1eN6U_vE9t26bmXz2ig4jJRmbg7Kx9ka1BkcE7MF9nmdC90ffHgNBvU40yKpMBtVL9VNQCe-F6mSvUqpox2tQQpNKaXf8yQslAf_tfvqTvF0mPXnqU1v_5KtieMybOb7O8nV6LITrjsAA5ff4spWSgcskjXcyjq6DIdWbLlVJycodr-MjKu94fNXXsBLf0iK5XHYpL1Bs-ILs494_aK_Pf2GD3pYa56XjqN-nO_cYbIxzmsBkNtAp0hvg_Gp0O6QFi66Qkr7ORbkRasGAg";
+                var credentials = Credentials.JWT(token);
+                var user = await DefaultApp.LogInAsync(credentials);
+
+                Assert.That(user.Profile.FirstName, Is.EqualTo("John"));
+                Assert.That(user.Profile.LastName, Is.EqualTo("Doe"));
+                Assert.That(user.Profile.Email, Is.EqualTo("john@doe.com"));
+                Assert.That(user.Profile.Birthday, Is.EqualTo("1934-05-15"));
+                Assert.That(user.Profile.Gender, Is.EqualTo("other"));
+                Assert.That(user.Profile.MinAge, Is.EqualTo("80"));
+                Assert.That(user.Profile.MaxAge, Is.EqualTo("90"));
+                Assert.That(user.Profile.PictureUrl.AbsoluteUri, Is.EqualTo("https://doe.com/mypicture"));
+
+                // TODO: add other checks once https://github.com/realm/realm-object-store/issues/1123 is implemented.
+            });
+        }
+
         #region API Keys
 
         [Test]
