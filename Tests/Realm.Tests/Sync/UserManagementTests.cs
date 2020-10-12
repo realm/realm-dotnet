@@ -373,6 +373,22 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test, NUnit.Framework.Explicit("Requires manually getting a fb token")]
+        public void User_Facebook_LogsInAndReadsDataFromFacebook()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                const string fbToken = "EAAFYw2aZAL1EBAHBBH22XBDZAutJFQ65KxH0bZAexYul5KtsHcjhI722XYEr4jKlaNvlosFsdZCT8dGUQNy2euZB684mpvtIIJEWWYMoH66bbEbKIrHRWqZBC8KMpSscoyzhFTJMpDYsrIilZBRN1A6bicXGaUNXVz5A0ucyZB7WkmQ8uUmdRWel9q6S8BJH3ZBCZAzWtcZCYmgEwZDZD";
+                var credentials = Credentials.Facebook(fbToken);
+                var user = await DefaultApp.LogInAsync(credentials);
+
+                Assert.That(user.Id, Is.Not.Null);
+
+                Assert.That(user.Profile.FirstName, Is.Not.Null);
+                Assert.That(user.Profile.LastName, Is.Not.Null);
+            });
+        }
+
         #region API Keys
 
         [Test]
