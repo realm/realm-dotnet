@@ -333,7 +333,7 @@ def NetCoreTest(String nodeName) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
-          withRealmCloud(version: '2020-09-24', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
+          withRealmCloud(version: '2020-10-12', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
 
