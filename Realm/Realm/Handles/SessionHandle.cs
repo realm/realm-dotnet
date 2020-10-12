@@ -34,7 +34,7 @@ namespace Realms.Sync
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable SA1121 // Use built-in type alias
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len);
+            public unsafe delegate void SessionErrorCallback(IntPtr session_handle_ptr, ErrorCode error_code, byte* message_buf, IntPtr message_len, IntPtr user_info_pairs, int user_info_pairs_len, [MarshalAs(UnmanagedType.U1)] bool is_client_reset);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionProgressCallback(IntPtr progress_token_ptr, ulong transferred_bytes, ulong transferable_bytes);
@@ -188,7 +188,7 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength)
+        private static unsafe void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, byte* messageBuffer, IntPtr messageLength, IntPtr userInfoPairs, int userInfoPairsLength, bool isClientReset)
         {
             var handle = new SessionHandle(sessionHandlePtr);
             var session = new Session(handle);
@@ -196,7 +196,7 @@ namespace Realms.Sync
 
             SessionException exception;
 
-            if (errorCode.IsClientResetError())
+            if (isClientReset)
             {
                 var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength);
                 exception = new ClientResetException(session.User.App, message, userInfo);

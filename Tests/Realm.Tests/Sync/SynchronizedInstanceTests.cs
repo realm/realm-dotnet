@@ -260,6 +260,65 @@ namespace Realms.Tests.Sync
             Assert.That(realm.Schema, Is.Empty);
         }
 
+        [Test]
+        [Ignore("doesn't work due to a OS bug")]
+        public void InvalidSchemaChange_RaisesClientReset()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                var backupLocation = config.DatabasePath + "_backup";
+                using (var realm = await GetRealmAsync(config))
+                {
+                    // Backup the file
+                    File.Copy(config.DatabasePath, backupLocation);
+
+                    realm.Write(() => realm.Add(new HugeSyncObject(1024)));
+
+                    await WaitForUploadAsync(realm);
+                }
+
+                // restore the backup
+                while (true)
+                {
+                    try
+                    {
+                        File.Copy(backupLocation, config.DatabasePath, overwrite: true);
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        await Task.Delay(50);
+                    }
+                }
+
+                var errorTcs = new TaskCompletionSource<Exception>();
+                Session.Error += (s, e) =>
+                {
+                    errorTcs.TrySetResult(e.Exception);
+                };
+
+                using var realm2 = GetRealm(config);
+
+                var ex = await errorTcs.Task.Timeout(5000);
+
+                Assert.That(ex, Is.InstanceOf<ClientResetException>());
+                var clientEx = (ClientResetException)ex;
+
+                Assert.That(clientEx.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
+
+                var realmPath = config.DatabasePath;
+
+                Assert.That(File.Exists(realmPath));
+
+                Assert.That(clientEx.InitiateClientReset(), Is.True);
+
+                Assert.That(File.Exists(realmPath), Is.False);
+
+            });
+        }
+
         [Test, NUnit.Framework.Explicit("Requires debugger and a lot of manual steps")]
         public void TestManualClientResync()
         {
