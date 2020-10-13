@@ -14,9 +14,10 @@ v10 (TBD)
 * It is now required that all top-level objects in a synchronized Realm have a primary key called `_id`. You can use the `MapTo("_id")` attribute to avoid using unidiomatic names for the model properties.
 * Bumped the minimum target for Xamarin.iOS apps to iOS 9.
 * Bumped the minimum API level for Xamarin.Android apps to 16 (Android 4.1).
+* Renamed `FullSyncConfiguration` to `SyncConfiguration`.
 
 ### Enhancements
-* Added support for next generation sync. Support for syncing to MongoDB instead of Realm Object Server. Applications must be created at [realm.mongodb.com](https://realm.mongodb.com).
+* Added support for syncing to MongoDB instead of Realm Object Server. Applications must be created at [realm.mongodb.com](https://realm.mongodb.com).
 * Added an `App` class which is the entrypoint for synchronizing with a MongoDB Realm App.
 * Added `User.CustomData` containing an unstructured document with additional information about the user. Custom data is configured in your MongoDB Realm App.
 * Added `User.Functions`. This is the entry point for calling Remote MongoDB Realm functions. Functions allow you to define and execute server-side logic for your application. Functions are written in modern JavaScript (ES6+) and execute in a serverless manner. When you call a function, you can dynamically access components of the current application as well as information about the request to execute the function and the logged in user that sent the request.
@@ -93,26 +94,23 @@ v10 (TBD)
 
     // dynamic API
     var dynamicCompany = realm.DynamicApi.CreateObject("Company");
-    var officeToAdd = realm.DynamicApi.AddEmbeddedObjectToList(dynamicCompany.OfficeAddresses)  ;
+    var officeToAdd = realm.DynamicApi.AddEmbeddedObjectToList(dynamicCompany.OfficeAddresses);
     officeToAdd.City = "New York";
 
-    var officeToInsert = realm.DynamicApi.InsertEmbeddedObjectInList(dynamicCompany.  OfficeAddresses, 0);
+    var officeToInsert = realm.DynamicApi.InsertEmbeddedObjectInList(dynamicCompany.OfficeAddresses, 0);
     officeToInsert.City = "Palo Alto";
 
-    var officeToSet = realm.DynamicApi.SetEmbeddedObjectInList(dynamicCompany.  OfficeAddresses, 1);
+    var officeToSet = realm.DynamicApi.SetEmbeddedObjectInList(dynamicCompany.OfficeAddresses, 1);
     officeToSet.City = "New Jersey";
     ```
 
 * The memory mapping scheme for Realm files has changed to better support opening very large files.
 
-### Fixed
-
 ### Compatibility
-* MongoDB Realm: 84893c5 or later.
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Sync 10.0.0-beta.14 and Core 10.0.0-beta.9.
+* Using Sync 10.0.0 and Core 10.0.0.
 
 ## 5.1.2 (TBD)
 ------------------
