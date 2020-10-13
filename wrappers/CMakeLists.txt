@@ -56,14 +56,14 @@ endfunction()
 function(download_android_openssl)
     if(ANDROID)
         string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
-        set(OPENSSL_URL "http://static.realm.io/downloads/openssl/${ANDROID_OPENSSL_VERSION}/Android/${CMAKE_ANDROID_ARCH_ABI}/openssl.tgz")
+        set(OPENSSL_URL "http://static.realm.io/downloads/openssl/${ANDROID_OPENSSL_VERSION}/Android/${CMAKE_ANDROID_ARCH_ABI}/openssl.tar.gz")
 
         message(STATUS "Downloading OpenSSL...s")
-        file(DOWNLOAD "${OPENSSL_URL}" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl.tgz")
+        file(DOWNLOAD "${OPENSSL_URL}" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl.tar.gz")
 
         message(STATUS "Uncompressing OpenSSL...")
         file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl")
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz ../openssl.tgz
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xfz ../openssl.tar.gz
                         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/openssl")
 
         message(STATUS "Importing OpenSSL...")
