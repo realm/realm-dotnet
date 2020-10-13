@@ -775,6 +775,40 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void UserCustomData()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                Assert.That(user.CustomData, Is.Null);
+
+                var updatedData = await user.RefreshCustomDataAsync();
+                Assert.That(updatedData, Is.Null);
+
+                var collection = user.GetMongoClient("BackingDB").GetDatabase("my-db").GetCollection("users");
+
+                var customDataDoc = BsonDocument.Parse(@"{
+                    _id: ObjectId(""" + ObjectId.GenerateNewId() + @"""),
+                    user_id: """ + user.Id + @""",
+                    age: 153,
+                    interests: [ ""painting"", ""sci-fi"" ]
+                }");
+
+                await collection.InsertOneAsync(customDataDoc);
+
+                updatedData = await user.RefreshCustomDataAsync();
+
+                Assert.That(updatedData, Is.Not.Null);
+                Assert.That(updatedData["age"].AsInt32, Is.EqualTo(153));
+                Assert.That(updatedData["interests"].AsBsonArray.Select(i => i.AsString), Is.EquivalentTo(new[] { "painting", "sci-fi" }));
+
+                Assert.That(user.CustomData, Is.Not.Null);
+                Assert.That(user.CustomData["age"].AsInt32, Is.EqualTo(153));
+
+            });
+        }
+
         private static void AssertKeysAreSame(ApiKey original, ApiKey fetched)
         {
             Assert.That(fetched.Id, Is.EqualTo(original.Id));
