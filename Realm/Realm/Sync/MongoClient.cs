@@ -192,14 +192,14 @@ namespace Realms.Sync
             /// <summary>
             /// Updates a single document in the collection according to the specified arguments.
             /// </summary>
-            /// <param name="updateDocument">
-            /// A document describing the update. Can only contain
-            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
-            /// </param>
             /// <param name="filter">
             /// A document describing the selection criteria of the update. If not specified, the first document in the
             /// collection will be updated. Can only contain
             /// <see href="https://docs.mongodb.com/manual/reference/operator/query/#query-selectors">query selector expressions</see>.
+            /// </param>
+            /// <param name="updateDocument">
+            /// A document describing the update. Can only contain
+            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
             /// </param>
             /// <param name="upsert">
             /// A boolean controlling whether the update should insert a document if no documents match the <paramref name="filter"/>.
@@ -212,7 +212,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/"/>
-            public async Task<UpdateResult> UpdateOneAsync(object updateDocument, object filter = null, bool upsert = false)
+            public async Task<UpdateResult> UpdateOneAsync(object filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -223,14 +223,14 @@ namespace Realms.Sync
             /// <summary>
             /// Updates one or more documents in the collection according to the specified arguments.
             /// </summary>
-            /// <param name="updateDocument">
-            /// A document describing the update. Can only contain
-            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
-            /// </param>
             /// <param name="filter">
             /// A document describing the selection criteria of the update. If not specified, all documents in the
             /// collection will be updated. Can only contain
             /// <see href="https://docs.mongodb.com/manual/reference/operator/query/#query-selectors">query selector expressions</see>.
+            /// </param>
+            /// <param name="updateDocument">
+            /// A document describing the update. Can only contain
+            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
             /// </param>
             /// <param name="upsert">
             /// A boolean controlling whether the update should insert a document if no documents match the <paramref name="filter"/>.
@@ -243,7 +243,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/"/>
-            public async Task<UpdateResult> UpdateManyAsync(object updateDocument, object filter = null, bool upsert = false)
+            public async Task<UpdateResult> UpdateManyAsync(object filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 

@@ -258,18 +258,14 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+                var update = BsonDocument.Parse(@"{
+                    $set: {
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999""}
                     }
-                };
+                }");
 
-                var result = await collection.UpdateOneAsync(update);
+                var result = await collection.UpdateOneAsync(filter: null, update);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(1));
@@ -293,28 +289,18 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+                var update = BsonDocument.Parse(@"{
+                    $set: {
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999"" }
                     }
-                };
+                }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse(@"{
+                    LongValue: { $gte: 1 }
+                }");
 
-                var result = await collection.UpdateOneAsync(update, filter);
+                var result = await collection.UpdateOneAsync(filter, update);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(1));
@@ -340,34 +326,26 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertSomeData(collection, 3);
 
                 var upsertId = ObjectId.GenerateNewId();
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+
+                var test = new BsonDocument{
+                    { "foo", upsertId }
+                }.ToJson();
+
+                var update = BsonDocument.Parse(@"{
+                    $set: {
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999"" }
                     },
-                    {
-                        "$setOnInsert", new BsonDocument
-                        {
-                            { "_id", upsertId }
-                        }
+                    $setOnInsert: {
+                        _id: ObjectId(""" + upsertId + @""")
                     }
-                };
+                }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse(@"{
+                    LongValue: { $gte: 5 }
+                }");
 
-                var result = await collection.UpdateOneAsync(update, filter, upsert: true);
+                var result = await collection.UpdateOneAsync(filter, update, upsert: true);
 
                 Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
                 Assert.That(result.MatchedCount, Is.EqualTo(0));
@@ -398,34 +376,21 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertSomeData(collection, 3);
 
                 var upsertId = ObjectId.GenerateNewId();
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+                var update = BsonDocument.Parse(@"{
+                    $set: {
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999"" }
                     },
-                    {
-                        "$setOnInsert", new BsonDocument
-                        {
-                            { "_id", upsertId }
-                        }
+                    $setOnInsert: {
+                        _id: ObjectId(""" + upsertId + @""")
                     }
-                };
+                }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse(@"{
+                    LongValue: { $gte: 5 }
+                }");
 
-                var result = await collection.UpdateOneAsync(update, filter, upsert: false);
+                var result = await collection.UpdateOneAsync(filter, update, upsert: false);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(0));
@@ -443,7 +408,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateOneAsync(null));
+                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateOneAsync(filter: null, updateDocument: null));
                 Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
             });
         }
@@ -457,18 +422,12 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
-                    }
-                };
+                var update = BsonDocument.Parse(@"{ $set: { 
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999"" }
+                } }");
 
-                var result = await collection.UpdateManyAsync(update);
+                var result = await collection.UpdateManyAsync(filter: null, update);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(3));
@@ -495,28 +454,14 @@ namespace Realms.Tests.Sync
 
                 var inserted = await InsertSomeData(collection, 3);
 
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
-                    }
-                };
+                var update = BsonDocument.Parse(@"{ $set: { 
+                    StringValue: ""this is update!"",
+                    LongValue: { $numberLong: ""999"" }
+                } }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 1 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.UpdateManyAsync(update, filter);
+                var result = await collection.UpdateManyAsync(filter, update);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(2));
@@ -545,34 +490,20 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertSomeData(collection, 3);
 
                 var upsertId = ObjectId.GenerateNewId();
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+
+                var update = BsonDocument.Parse(@"{ 
+                    $set: { 
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999"" }
                     },
-                    {
-                        "$setOnInsert", new BsonDocument
-                        {
-                            { "_id", upsertId }
-                        }
+                    $setOnInsert: {
+                        _id: ObjectId(""" + upsertId + @""")
                     }
-                };
+                }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
 
-                var result = await collection.UpdateManyAsync(update, filter, upsert: true);
+                var result = await collection.UpdateManyAsync(filter, update, upsert: true);
 
                 Assert.That(result.UpsertedId, Is.EqualTo(upsertId));
                 Assert.That(result.MatchedCount, Is.EqualTo(0));
@@ -603,34 +534,20 @@ namespace Realms.Tests.Sync
                 var inserted = await InsertSomeData(collection, 3);
 
                 var upsertId = ObjectId.GenerateNewId();
-                var update = new BsonDocument
-                {
-                    {
-                        "$set", new BsonDocument
-                        {
-                            { "StringValue", "this is update!" },
-                            { "LongValue", 999L }
-                        }
+
+                var update = BsonDocument.Parse(@"{ 
+                    $set: { 
+                        StringValue: ""this is update!"",
+                        LongValue: { $numberLong: ""999"" }
                     },
-                    {
-                        "$setOnInsert", new BsonDocument
-                        {
-                            { "_id", upsertId }
-                        }
+                    $setOnInsert: {
+                        _id: ObjectId(""" + upsertId + @""")
                     }
-                };
+                }");
 
-                var filter = new BsonDocument
-                {
-                    {
-                        "LongValue", new BsonDocument
-                        {
-                            { "$gte", 5 }
-                        }
-                    }
-                };
+                var filter = BsonDocument.Parse("{ LongValue: { $gte: 5 } }");
 
-                var result = await collection.UpdateManyAsync(update, filter, upsert: false);
+                var result = await collection.UpdateManyAsync(filter, update, upsert: false);
 
                 Assert.That(result.UpsertedId, Is.Null);
                 Assert.That(result.MatchedCount, Is.EqualTo(0));
@@ -648,7 +565,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(null));
+                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(filter: null, updateDocument: null));
                 Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
             });
         }
