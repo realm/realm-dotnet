@@ -23,12 +23,15 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    // V10TODO: temporary set v10 as publishing branch
     if (shouldPublishPackage()) {
       versionSuffix = "alpha.${env.BUILD_ID}"
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
+    }
+    // TODO: temporary add a beta.X suffix for v10 releases
+    else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.1') {
+      versionSuffix = "beta.1"
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
@@ -413,7 +416,7 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 }
 
 boolean shouldPublishPackage() {
-  return env.BRANCH_NAME == 'master' || (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == 'v10')
+  return env.BRANCH_NAME == 'master'
 }
 
 // Required due to JENKINS-27421
