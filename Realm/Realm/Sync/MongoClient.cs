@@ -109,7 +109,7 @@ namespace Realms.Sync
             /// namespace.
             /// <br/>
             /// If you want to modify the global conventions used when deserializing the response, such as convert
-            /// camelCase properties to PascalCase, you can regiseter a
+            /// camelCase properties to PascalCase, you can register a
             /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/reference/bson/mapping/conventions/">ConventionPack</see>.
             /// </remarks>
             /// <typeparam name="TDocument">The managed type that matches the shape of the documents in the collection.</typeparam>
@@ -158,7 +158,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="doc">The document to insert.</param>
             /// <returns>
-            /// A <see cref="Task{InsertResult}"/> representing the remote insert operation. The result of the task
+            /// An awaitable <see cref="Task{T}"/> representing the remote insert operation. The result of the task
             /// contains the <c>_id</c> of the inserted document.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.insertOne/"/>
@@ -176,7 +176,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="docs">The documents to insert.</param>
             /// <returns>
-            /// A <see cref="Task{InsertManyResult}"/> representing the remote insert many operation. The result of the task
+            /// An awaitable <see cref="Task{T}"/> representing the remote insert many operation. The result of the task
             /// contains the <c>_id</c>s of the inserted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.insertMany/"/>
@@ -206,7 +206,7 @@ namespace Realms.Sync
             /// Defaults to <c>false</c>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{UpdateResult}"/> representing the remote update one operation. The result of the task
+            /// An awaitable <see cref="Task{T}"/> representing the remote update one operation. The result of the task
             /// contains information about the number of matched and updated documents, as well as the <c>_id</c> of the
             /// upserted document if <paramref name="upsert"/> was set to <c>true</c> and the operation resulted in an
             /// upsert.
@@ -237,7 +237,7 @@ namespace Realms.Sync
             /// Defaults to <c>false</c>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{UpdateResult}"/> representing the remote update many operation. The result of the task
+            /// An awaitable <see cref="Task{T}"/> representing the remote update many operation. The result of the task
             /// contains information about the number of matched and updated documents, as well as the <c>_id</c> of the
             /// upserted document if <paramref name="upsert"/> was set to <c>true</c> and the operation resulted in an
             /// upsert.
@@ -259,7 +259,7 @@ namespace Realms.Sync
             /// If not specified, the first document in the collection will be deleted.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{DeleteResult}"/> representing the remote delete one operation. The result of the task contains the number
+            /// An awaitable <see cref="Task{T}"/> representing the remote delete one operation. The result of the task contains the number
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
@@ -277,7 +277,7 @@ namespace Realms.Sync
             /// If not specified, all documents in the collection will be deleted.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{DeleteResult}"/> representing the remote delete many operation. The result of the task contains the number
+            /// An awaitable <see cref="Task{T}"/> representing the remote delete many operation. The result of the task contains the number
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
@@ -298,9 +298,9 @@ namespace Realms.Sync
             /// <param name="projection">
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
-            /// <param name="limit">The maximum number of documents to return. If not specified all documents in the collection are returned.</param>
+            /// <param name="limit">The maximum number of documents to return. If not specified, all documents in the collection are returned.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
+            /// An awaitable <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
             public async Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
@@ -321,7 +321,7 @@ namespace Realms.Sync
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
             public async Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
@@ -333,13 +333,13 @@ namespace Realms.Sync
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
             /// </summary>
-            /// <param name="updateDocument">
-            /// A document describing the update. Can only contain
-            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
-            /// </param>
             /// <param name="filter">
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will match the request.
+            /// </param>
+            /// <param name="updateDocument">
+            /// A document describing the update. Can only contain
+            /// <see href="https://docs.mongodb.com/manual/reference/operator/update/#id1">update operator expressions</see>.
             /// </param>
             /// <param name="sort">A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.</param>
             /// <param name="projection">
@@ -354,10 +354,10 @@ namespace Realms.Sync
             /// before the update is returned. Defaults to <c>false</c>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public async Task<TDocument> FindOneAndUpdateAsync(object updateDocument, object filter = null, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndUpdate/"/>
+            public async Task<TDocument> FindOneAndUpdateAsync(object filter, object updateDocument, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -368,12 +368,12 @@ namespace Realms.Sync
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
             /// </summary>
-            /// <param name="replacementDoc">
-            /// The replacement document. Cannot contain update operator expressions.
-            /// </param>
             /// <param name="filter">
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will match the request.
+            /// </param>
+            /// <param name="replacementDoc">
+            /// The replacement document. Cannot contain update operator expressions.
             /// </param>
             /// <param name="sort">
             /// A document describing the sort criteria. If not specified, the order of the returned documents is not guaranteed.
@@ -393,10 +393,10 @@ namespace Realms.Sync
             /// before the update is returned. Defaults to <c>false</c>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public async Task<TDocument> FindOneAndReplaceAsync(TDocument replacementDoc, object filter = null, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndReplace/"/>
+            public async Task<TDocument> FindOneAndReplaceAsync(object filter, TDocument replacementDoc, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 
@@ -416,9 +416,9 @@ namespace Realms.Sync
             /// A document describing the fields to return for all matching documents. If not specified, all fields are returned.
             /// </param>
             /// <returns>
-            /// A <see cref="Task{TProjection}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
+            /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
-            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
+            /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
             public async Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
             {
                 var result = await _handle.FindOneAndDelete(filter?.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort));
@@ -433,7 +433,7 @@ namespace Realms.Sync
             /// Documents describing the different pipeline stages using <see href="https://docs.mongodb.com/manual/core/aggregation-pipeline/#pipeline-expressions">pipeline expressions</see>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote aggregate operation. The result of the task is an array containing the documents returned
+            /// An awaitable <see cref="Task"/> representing the remote aggregate operation. The result of the task is an array containing the documents returned
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
@@ -450,7 +450,7 @@ namespace Realms.Sync
             /// Documents describing the different pipeline stages using <see href="https://docs.mongodb.com/manual/core/aggregation-pipeline/#pipeline-expressions">pipeline expressions</see>.
             /// </param>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote aggregate operation. The result of the task is an array containing the documents returned
+            /// An awaitable <see cref="Task"/> representing the remote aggregate operation. The result of the task is an array containing the documents returned
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
@@ -463,9 +463,9 @@ namespace Realms.Sync
             /// A document describing the find criteria using <see href="https://docs.mongodb.com/manual/reference/operator/query/">query operators</see>.
             /// If not specified, all documents in the collection will be counted.
             /// </param>
-            /// <param name="limit">The maximum number of documents to count. If not specified all documents in the collection are counted.</param>
+            /// <param name="limit">The maximum number of documents to count. If not specified, all documents in the collection are counted.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
+            /// An awaitable <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
             public async Task<long> CountAsync(object filter = null, long? limit = null)

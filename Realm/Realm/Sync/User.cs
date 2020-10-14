@@ -102,7 +102,7 @@ namespace Realms.Sync
         /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
         public BsonDocument GetCustomData()
         {
             var serialized = Handle.GetCustomData();
@@ -122,7 +122,7 @@ namespace Realms.Sync
         /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
         public T GetCustomData<T>()
             where T : class
         {
@@ -149,17 +149,17 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets a <see cref="ApiKeyClient"/> instance that exposes functionality about managing user API keys.
+        /// Gets a <see cref="ApiKeyClient"/> instance that exposes functionality for managing user API keys.
         /// </summary>
         /// <value>A <see cref="ApiKeyClient"/> instance scoped to this <see cref="User"/>.</value>
-        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/"/>
+        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Keys Authentication Docs</seealso>
         public ApiKeyClient ApiKeys { get; }
 
         /// <summary>
-        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality about calling remote MongoDB Realm functions.
+        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality for calling remote MongoDB Realm functions.
         /// </summary>
         /// <value>A <see cref="FunctionsClient"/> instance scoped to this <see cref="User"/>.</value>
-        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
+        /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
         public FunctionsClient Functions { get; }
 
         internal readonly SyncUserHandle Handle;
@@ -182,14 +182,14 @@ namespace Realms.Sync
         /// <summary>
         /// Removes the user's local credentials and attempts to invalidate their refresh token from the server.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the remote logout operation.</returns>
+        /// <returns>An awaitable <see cref="Task"/> that represents the remote logout operation.</returns>
         public Task LogOutAsync() => App.RemoveUserAsync(this);
 
         /// <summary>
         /// Re-fetch the user's custom data from the server.
         /// </summary>
         /// <returns>
-        /// A <see cref="Task{BsonDocument}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
+        /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData"/> will also be updated with the new information.
         /// </returns>
         public async Task<BsonDocument> RefreshCustomDataAsync()
@@ -206,7 +206,7 @@ namespace Realms.Sync
         /// </summary>
         /// <typeparam name="T">The managed type that matches the shape of the custom data documents.</typeparam>
         /// <returns>
-        /// A <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
+        /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData{T}"/> will also be updated with the new information.
         /// </returns>
         public async Task<T> RefreshCustomDataAsync<T>()
@@ -237,7 +237,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="serviceName">The name of the service as configured in the MongoDB Realm UI.</param>
         /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification"/>
+        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification">Send Mobile Push Notifications Docs</seealso>
         public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace Realms.Sync
         /// </example>
         /// <param name="credentials">The credentials to link with the current user.</param>
         /// <returns>
-        /// A <see cref="Task{User}"/> representing the remote link credentials operation. Upon successful completion, the task result
+        /// An awaitable <see cref="Task{T}"/> representing the remote link credentials operation. Upon successful completion, the task result
         /// will contain the user to which the credentials were linked.
         /// </returns>
         public async Task<User> LinkCredentialsAsync(Credentials credentials)
@@ -326,7 +326,7 @@ namespace Realms.Sync
             /// </remarks>
             /// <param name="name">The friendly name of the key.</param>
             /// <returns>
-            /// A <see cref="Task{ApiKey}"/> representing the asynchronous operation. Successful completion indicates
+            /// An awaitable <see cref="Task{T}"/> representing the asynchronous operation. Successful completion indicates
             /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
             /// be used to create <see cref="Credentials.ApiKey(string)"/>.
             /// </returns>
@@ -348,7 +348,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="id">The id of the key to fetch.</param>
             /// <returns>
-            /// A <see cref="Task{ApiKey}"/> representing the asynchronous lookup operation.
+            /// An awaitable <see cref="Task{T}"/> representing the asynchronous lookup operation.
             /// </returns>
             public async Task<ApiKey> FetchAsync(ObjectId id)
             {
@@ -381,7 +381,7 @@ namespace Realms.Sync
             /// Deletes an API key by id.
             /// </summary>
             /// <param name="id">The id of the key to delete.</param>
-            /// <returns>A <see cref="Task"/> representing the asynchronous delete operation.</returns>
+            /// <returns>An awaitable <see cref="Task"/> representing the asynchronous delete operation.</returns>
             public Task DeleteAsync(ObjectId id)
             {
                 var tcs = new TaskCompletionSource<object>();
@@ -394,7 +394,7 @@ namespace Realms.Sync
             /// Disables an API key by id.
             /// </summary>
             /// <param name="id">The id of the key to disable.</param>
-            /// <returns>A <see cref="Task"/> representing the asynchronous disable operation.</returns>
+            /// <returns>An awaitable <see cref="Task"/> representing the asynchronous disable operation.</returns>
             /// <seealso cref="EnableAsync(ObjectId)"/>
             public Task DisableAsync(ObjectId id)
             {
@@ -408,7 +408,7 @@ namespace Realms.Sync
             /// Enables an API key by id.
             /// </summary>
             /// <param name="id">The id of the key to enable.</param>
-            /// <returns>A <see cref="Task"/> representing the asynchrounous enable operation.</returns>
+            /// <returns>An awaitable <see cref="Task"/> representing the asynchrounous enable operation.</returns>
             /// <seealso cref="DisableAsync(ObjectId)"/>
             public Task EnableAsync(ObjectId id)
             {
@@ -439,7 +439,7 @@ namespace Realms.Sync
         /// <summary>
         /// A class exposing functionality for calling remote MongoDB Realm functions.
         /// </summary>
-        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
+        /// <seealso href="https://docs.mongodb.com/realm/functions/">Functions Docs</seealso>
         public class FunctionsClient
         {
             private readonly User _user;
@@ -455,7 +455,7 @@ namespace Realms.Sync
             /// <param name="name">Name of the Realm function to call.</param>
             /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
             /// <returns>
-            /// A <see cref="Task{BsonValue}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function.
             /// </returns>
             public Task<BsonValue> CallAsync(string name, params object[] args) => CallAsync<BsonValue>(name, args);
@@ -471,14 +471,14 @@ namespace Realms.Sync
             /// namespace.
             /// <br/>
             /// If you want to modify the global conventions used when deserializing the response, such as convert
-            /// camelCase properties to PascalCase, you can regiseter a
+            /// camelCase properties to PascalCase, you can register a
             /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/reference/bson/mapping/conventions/">ConventionPack</see>.
             /// </remarks>
             /// <typeparam name="T">The type that the response will be decoded to.</typeparam>
             /// <param name="name">Name of the Realm function to call.</param>
             /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
             /// <returns>
-            /// A <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function decoded as <typeparamref name="T"/>.
             /// </returns>
             public async Task<T> CallAsync<T>(string name, params object[] args)
@@ -514,7 +514,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="token">The FCM registration token.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
+            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
             /// by the MongoDB Realm server and this device can now receive push notifications.
             /// </returns>
             public Task RegisterDeviceAsync(string token)
@@ -530,7 +530,7 @@ namespace Realms.Sync
             /// Deregister the user's device from Firebase Cloud Messaging.
             /// </summary>
             /// <returns>
-            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the devices registration token
+            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the devices registration token
             /// was removed from the MongoDB Realm server and it will no longer receive push notifications.
             /// </returns>
             public Task DeregisterDeviceAsync()

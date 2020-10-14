@@ -1504,7 +1504,7 @@ namespace Realms.Tests.Sync
                     LongValue: { $numberLong: ""999"" }
                 } }");
 
-                var result = await collection.FindOneAndUpdateAsync(update);
+                var result = await collection.FindOneAndUpdateAsync(filter: null, update);
 
                 Assert.That(result, Is.EqualTo(inserted[0]));
 
@@ -1530,7 +1530,7 @@ namespace Realms.Tests.Sync
                     LongValue: { $numberLong: ""999"" }
                 } }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, returnNewDocument: true);
+                var result = await collection.FindOneAndUpdateAsync(filter: null, update, returnNewDocument: true);
 
                 Assert.That(result.StringValue, Is.EqualTo("this is update!"));
                 Assert.That(result.LongValue, Is.EqualTo(999));
@@ -1558,7 +1558,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, filter);
+                var result = await collection.FindOneAndUpdateAsync(filter, update);
 
                 Assert.That(result, Is.EqualTo(inserted[1]));
 
@@ -1586,7 +1586,7 @@ namespace Realms.Tests.Sync
 
                 var sort = BsonDocument.Parse("{ LongValue: -1 }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, sort: sort);
+                var result = await collection.FindOneAndUpdateAsync(filter: null, update, sort: sort);
 
                 Assert.That(result, Is.EqualTo(inserted[2]));
 
@@ -1614,7 +1614,7 @@ namespace Realms.Tests.Sync
 
                 var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, projection: projection);
+                var result = await collection.FindOneAndUpdateAsync(filter: null, update, projection: projection);
 
                 Assert.That(result.StringValue, Is.Null);
                 Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
@@ -1644,7 +1644,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, filter, upsert: true);
+                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
 
                 Assert.That(result, Is.EqualTo(inserted[1]));
 
@@ -1672,7 +1672,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, filter, upsert: true);
+                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true);
                 Assert.That(result, Is.Null);
 
                 // Update inserted with expected values after the update
@@ -1699,7 +1699,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, filter, upsert: true, returnNewDocument: true);
+                var result = await collection.FindOneAndUpdateAsync(filter, update, upsert: true, returnNewDocument: true);
                 Assert.That(result.StringValue, Is.EqualTo("this is update!"));
                 Assert.That(result.LongValue, Is.EqualTo(999));
 
@@ -1728,7 +1728,7 @@ namespace Realms.Tests.Sync
                 var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndUpdateAsync(update, filter, sort, projection, upsert: true, returnNewDocument: true);
+                var result = await collection.FindOneAndUpdateAsync(filter, update, sort, projection, upsert: true, returnNewDocument: true);
                 Assert.That(result.StringValue, Is.EqualTo("this is update!"));
                 Assert.That(result.LongValue, Is.EqualTo(default(long)));
                 Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
@@ -1751,7 +1751,7 @@ namespace Realms.Tests.Sync
 
                 var replacement = Foo.WithoutId("this is update!", 999);
 
-                var result = await collection.FindOneAndReplaceAsync(replacement);
+                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement);
 
                 Assert.That(result, Is.EqualTo(inserted[0]));
 
@@ -1774,7 +1774,7 @@ namespace Realms.Tests.Sync
 
                 var replacement = Foo.WithoutId("this is update!", 999);
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, returnNewDocument: true);
+                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, returnNewDocument: true);
 
                 replacement.Id = inserted[0].Id;
                 Assert.That(result, Is.EqualTo(replacement));
@@ -1799,7 +1799,7 @@ namespace Realms.Tests.Sync
                 var replacement = Foo.WithoutId("this is update!", 999);
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter, upsert: true, returnNewDocument: true);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
 
                 Assert.That(result.Id, Is.Not.EqualTo(default(ObjectId)));
                 replacement.Id = result.Id;
@@ -1825,7 +1825,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement);
 
                 Assert.That(result, Is.EqualTo(inserted[1]));
 
@@ -1849,7 +1849,7 @@ namespace Realms.Tests.Sync
                 var replacement = Foo.WithoutId("this is update!", 999);
                 var sort = BsonDocument.Parse("{ LongValue: -1 }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, sort: sort);
+                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, sort: sort);
 
                 Assert.That(result, Is.EqualTo(inserted[2]));
 
@@ -1873,7 +1873,7 @@ namespace Realms.Tests.Sync
                 var replacement = Foo.WithoutId("this is update!", 999);
                 var projection = BsonDocument.Parse("{ LongValue: 1, _id: 0 }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, projection: projection);
+                var result = await collection.FindOneAndReplaceAsync(filter: null, replacement, projection: projection);
 
                 Assert.That(result.StringValue, Is.Null);
                 Assert.That(result.LongValue, Is.EqualTo(inserted[0].LongValue));
@@ -1899,7 +1899,7 @@ namespace Realms.Tests.Sync
                 var replacement = Foo.WithoutId("this is update!", 999);
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter, upsert: true);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
 
                 Assert.That(result, Is.EqualTo(inserted[1]));
 
@@ -1923,7 +1923,7 @@ namespace Realms.Tests.Sync
                 var replacement = new Foo("this is update!", 999);
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter, upsert: true);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true);
                 Assert.That(result, Is.Null);
 
                 // Update inserted with expected values after the update
@@ -1946,7 +1946,7 @@ namespace Realms.Tests.Sync
 
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 5} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter, upsert: true, returnNewDocument: true);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement, upsert: true, returnNewDocument: true);
                 Assert.That(result, Is.EqualTo(replacement));
 
                 // Update inserted with expected values after the update
@@ -1970,7 +1970,7 @@ namespace Realms.Tests.Sync
                 var projection = BsonDocument.Parse("{ StringValue: 1, _id: 0 }");
                 var filter = BsonDocument.Parse("{ LongValue: { $gte: 1} }");
 
-                var result = await collection.FindOneAndReplaceAsync(replacement, filter, sort, projection, upsert: true, returnNewDocument: true);
+                var result = await collection.FindOneAndReplaceAsync(filter, replacement, sort, projection, upsert: true, returnNewDocument: true);
                 Assert.That(result.StringValue, Is.EqualTo(replacement.StringValue));
                 Assert.That(result.LongValue, Is.EqualTo(default(long)));
                 Assert.That(result.Id, Is.EqualTo(default(ObjectId)));
