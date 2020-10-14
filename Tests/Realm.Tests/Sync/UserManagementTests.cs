@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using NUnit.Framework;
@@ -332,6 +333,9 @@ namespace Realms.Tests.Sync
                 await DefaultApp.EmailPasswordAuth.RegisterUserAsync(email2, SyncTestHelpers.DefaultPassword);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.EmailPassword(email2, SyncTestHelpers.DefaultPassword)));
+
+                // TODO: this should be bad request when https://jira.mongodb.org/browse/REALMC-7028 is fixed
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
                 Assert.That(ex.Message, Does.Contain("linking a local-userpass identity is not allowed when one is already linked"));
             });
         }
@@ -344,6 +348,10 @@ namespace Realms.Tests.Sync
                 var user = await GetUserAsync();
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.Anonymous()));
+
+
+                // TODO: this should be bad request when https://jira.mongodb.org/browse/REALMC-7028 is fixed
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
                 Assert.That(ex.Message, Does.Contain("linking an anonymous identity is not allowed"));
             });
         }
@@ -360,6 +368,8 @@ namespace Realms.Tests.Sync
                 var anonUser = await DefaultApp.LogInAsync(Credentials.Anonymous());
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => anonUser.LinkCredentialsAsync(Credentials.EmailPassword(existingEmail, SyncTestHelpers.DefaultPassword)));
+
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.Message, Does.Contain("a user already exists with the specified provider"));
             });
         }
@@ -381,6 +391,7 @@ namespace Realms.Tests.Sync
             {
                 var user = await GetUserAsync();
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.GetPushClient("non-existent").RegisterDeviceAsync("hello"));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(ex.Message, Does.Contain("service not found: 'non-existent'"));
             });
         }
@@ -459,6 +470,7 @@ namespace Realms.Tests.Sync
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.CreateAsync("My very cool key"));
 
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                 Assert.That(ex.Message, Does.Contain("InvalidParameter"));
                 Assert.That(ex.Message, Does.Contain("can only contain ASCII letters, numbers, underscores, and hyphens"));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
@@ -616,6 +628,7 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.DisableAsync(id));
 
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
@@ -631,6 +644,7 @@ namespace Realms.Tests.Sync
                 var id = ObjectId.GenerateNewId();
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.ApiKeys.EnableAsync(id));
 
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(ex.Message, Does.Contain("doesn't exist"));
                 Assert.That(ex.Message, Does.Contain(id.ToString()));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
@@ -767,6 +781,7 @@ namespace Realms.Tests.Sync
                 var credentials = Credentials.ApiKey(apiKey.Value);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
 
@@ -795,6 +810,7 @@ namespace Realms.Tests.Sync
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });
@@ -814,6 +830,7 @@ namespace Realms.Tests.Sync
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                 Assert.That(ex.Message, Is.EqualTo("AuthError: invalid API key"));
                 Assert.That(ex.HelpLink, Does.Contain("logs?co_id="));
             });

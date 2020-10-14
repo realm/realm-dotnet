@@ -37,7 +37,7 @@ namespace Realms.Sync.Native
         private byte* logs_link_buf;
         private IntPtr logs_link_len;
 
-        public int error_code;
+        public int http_status_code;
 
         public string Message => message_buf == null ? null : Encoding.UTF8.GetString(message_buf, (int)message_len);
 

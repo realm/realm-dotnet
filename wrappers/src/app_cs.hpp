@@ -41,13 +41,13 @@ namespace binding {
         size_t error_category_len = 0;
         const char* logs_link_buf = nullptr;
         size_t logs_link_len = 0;
-        int error_code = 0;
+        int http_status_code = 0;
 
         MarshaledAppError()
         {
         }
 
-        MarshaledAppError(const std::string& message, const std::string& error_category, const std::string& logs_link, int err_code)
+        MarshaledAppError(const std::string& message, const std::string& error_category, const std::string& logs_link, util::Optional<int> http_code)
         {
             is_null = false;
 
@@ -60,7 +60,7 @@ namespace binding {
             logs_link_buf = logs_link.c_str();
             logs_link_len = logs_link.size();
 
-            error_code = err_code;
+            http_status_code = http_code.value_or(0);
         }
     };
 
@@ -122,7 +122,7 @@ namespace binding {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
                 s_user_callback(tcs_ptr, nullptr, app_error);
             }
@@ -136,7 +136,7 @@ namespace binding {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
                 s_void_callback(tcs_ptr, app_error);
             }
             else {
@@ -149,7 +149,7 @@ namespace binding {
         return [tcs_ptr](util::Optional<AppError> err, util::Optional<bson::Bson> response) {
             if (err) {
                 std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
                 s_bson_callback(tcs_ptr, BsonPayload(), app_error);
             }

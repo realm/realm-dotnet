@@ -52,7 +52,7 @@ namespace realm {
         inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->error_code.value());
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
                 s_api_key_callback(tcs_ptr, nullptr, 0, app_error);
             }

@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -111,6 +112,7 @@ namespace Realms.Tests.Sync
                 };
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertOneAsync(doc));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
                 Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
             });
@@ -208,6 +210,7 @@ namespace Realms.Tests.Sync
                 };
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => collection.InsertManyAsync(new[] { doc }));
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                 Assert.That(ex.Message, Does.Contain("insert not permitted"));
                 Assert.That(ex.HelpLink, Does.Contain("/logs?co_id="));
             });
@@ -327,7 +330,8 @@ namespace Realms.Tests.Sync
 
                 var upsertId = ObjectId.GenerateNewId();
 
-                var test = new BsonDocument{
+                var test = new BsonDocument
+                {
                     { "foo", upsertId }
                 }.ToJson();
 

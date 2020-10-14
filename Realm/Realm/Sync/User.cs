@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -423,7 +424,7 @@ namespace Realms.Sync
                 {
                     return await tcs.Task;
                 }
-                catch (AppException ex) when (ex.ErrorCode == (int)AppException.AppErrorCodes.ApiKeyNotFound)
+                catch (AppException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
                 {
                     if (shouldThrow)
                     {

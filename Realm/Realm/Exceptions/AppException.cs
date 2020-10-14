@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Net;
 using Realms.Sync.Native;
 
 namespace Realms.Sync.Exceptions
@@ -26,23 +27,25 @@ namespace Realms.Sync.Exceptions
     /// </summary>
     public class AppException : Exception
     {
-        internal int ErrorCode { get; }
+        /// <summary>
+        /// Gets the HTTP status code returned by the remote operation.
+        /// </summary>
+        /// <value>The HTTP status code of the operation that failed or <c>null</c> if the error was not an http one.</value>
+        public HttpStatusCode? StatusCode { get; }
 
         internal AppException(AppError appError)
-            : this($"{appError.ErrorCategory}: {appError.Message}", appError.LogsLink, appError.error_code)
+            : this($"{appError.ErrorCategory}: {appError.Message}", appError.LogsLink, appError.http_status_code)
         {
         }
 
-        internal AppException(string message, string helpLink, int errorCode)
+        internal AppException(string message, string helpLink, int httpStatusCode)
             : base(message)
         {
-            ErrorCode = errorCode;
             HelpLink = helpLink;
-        }
-
-        internal enum AppErrorCodes
-        {
-            ApiKeyNotFound = 35,
+            if (httpStatusCode != 0)
+            {
+                StatusCode = (HttpStatusCode)httpStatusCode;
+            }
         }
     }
 }
