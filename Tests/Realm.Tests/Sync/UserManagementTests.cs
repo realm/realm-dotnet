@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using NUnit.Framework;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
@@ -171,15 +172,58 @@ namespace Realms.Tests.Sync
             const string tokenWithCustomData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjIsInVzZXJfZGF0YSI6eyJuYW1lIjoiVGltb3RoeSIsImVtYWlsIjoiYmlnX3RpbUBnbWFpbC5jb20iLCJhZGRyZXNzZXMiOlt7ImNpdHkiOiJOWSIsInN0cmVldCI6IjQybmQifSx7ImNpdHkiOiJTRiIsInN0cmVldCI6Ik1haW4gU3QuIn1dLCJmYXZvcml0ZUlkcyI6WzEsMiwzXX19.wYYtavafunx-iEKFNwXC6DR0C3vBDunwhvIox6XgqDE";
             var user = GetFakeUser(accessToken: tokenWithCustomData);
 
-            Assert.That(user.CustomData, Is.Not.Null);
-            Assert.That(user.CustomData["name"].AsString, Is.EqualTo("Timothy"));
-            Assert.That(user.CustomData["email"].AsString, Is.EqualTo("big_tim@gmail.com"));
-            Assert.That(user.CustomData["addresses"].AsBsonArray.Count, Is.EqualTo(2));
-            Assert.That(user.CustomData["addresses"][0]["city"].AsString, Is.EqualTo("NY"));
-            Assert.That(user.CustomData["addresses"][0]["street"].AsString, Is.EqualTo("42nd"));
-            Assert.That(user.CustomData["addresses"][1]["city"].AsString, Is.EqualTo("SF"));
-            Assert.That(user.CustomData["addresses"][1]["street"].AsString, Is.EqualTo("Main St."));
-            Assert.That(user.CustomData["favoriteIds"].AsBsonArray.Select(i => i.AsInt64), Is.EquivalentTo(new[] { 1, 2, 3 }));
+            var customData = user.GetCustomData();
+            Assert.That(customData, Is.Not.Null);
+            Assert.That(customData["name"].AsString, Is.EqualTo("Timothy"));
+            Assert.That(customData["email"].AsString, Is.EqualTo("big_tim@gmail.com"));
+            Assert.That(customData["addresses"].AsBsonArray.Count, Is.EqualTo(2));
+            Assert.That(customData["addresses"][0]["city"].AsString, Is.EqualTo("NY"));
+            Assert.That(customData["addresses"][0]["street"].AsString, Is.EqualTo("42nd"));
+            Assert.That(customData["addresses"][1]["city"].AsString, Is.EqualTo("SF"));
+            Assert.That(customData["addresses"][1]["street"].AsString, Is.EqualTo("Main St."));
+            Assert.That(customData["favoriteIds"].AsBsonArray.Select(i => i.AsInt64), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        }
+
+        private class AccessTokenCustomData
+        {
+            [BsonElement("name")]
+            public string Name { get; set; }
+
+            [BsonElement("email")]
+            public string Email { get; set; }
+
+            [BsonElement("addresses")]
+            public Address[] Addresses { get; set; }
+
+            [BsonElement("favoriteIds")]
+            public long[] FavoriteIds { get; set; }
+
+            public class Address
+            {
+                [BsonElement("city")]
+                public string City { get; set; }
+
+                [BsonElement("street")]
+                public string Street { get; set; }
+            }
+        }
+
+        [Test]
+        public void UserCustomData_Generic_ReadsFromAccessToken()
+        {
+            const string tokenWithCustomData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjIsInVzZXJfZGF0YSI6eyJuYW1lIjoiVGltb3RoeSIsImVtYWlsIjoiYmlnX3RpbUBnbWFpbC5jb20iLCJhZGRyZXNzZXMiOlt7ImNpdHkiOiJOWSIsInN0cmVldCI6IjQybmQifSx7ImNpdHkiOiJTRiIsInN0cmVldCI6Ik1haW4gU3QuIn1dLCJmYXZvcml0ZUlkcyI6WzEsMiwzXX19.wYYtavafunx-iEKFNwXC6DR0C3vBDunwhvIox6XgqDE";
+            var user = GetFakeUser(accessToken: tokenWithCustomData);
+
+            var customData = user.GetCustomData<AccessTokenCustomData>();
+            Assert.That(customData, Is.Not.Null);
+            Assert.That(customData.Name, Is.EqualTo("Timothy"));
+            Assert.That(customData.Email, Is.EqualTo("big_tim@gmail.com"));
+            Assert.That(customData.Addresses.Length, Is.EqualTo(2));
+            Assert.That(customData.Addresses[0].City, Is.EqualTo("NY"));
+            Assert.That(customData.Addresses[0].Street, Is.EqualTo("42nd"));
+            Assert.That(customData.Addresses[1].City, Is.EqualTo("SF"));
+            Assert.That(customData.Addresses[1].Street, Is.EqualTo("Main St."));
+            Assert.That(customData.FavoriteIds, Is.EquivalentTo(new[] { 1, 2, 3 }));
         }
 
         [Test]
@@ -187,7 +231,7 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
 
-            Assert.That(user.CustomData, Is.Null);
+            Assert.That(user.GetCustomData(), Is.Null);
         }
 
         [Test]
@@ -775,13 +819,23 @@ namespace Realms.Tests.Sync
             });
         }
 
+        private static void AssertKeysAreSame(ApiKey original, ApiKey fetched)
+        {
+            Assert.That(fetched.Id, Is.EqualTo(original.Id));
+            Assert.That(fetched.IsEnabled, Is.EqualTo(original.IsEnabled));
+            Assert.That(fetched.Name, Is.EqualTo(original.Name));
+            Assert.That(fetched.Value, Is.Null);
+        }
+
+        #endregion
+
         [Test]
         public void UserCustomData()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await GetUserAsync();
-                Assert.That(user.CustomData, Is.Null);
+                Assert.That(user.GetCustomData(), Is.Null);
 
                 var updatedData = await user.RefreshCustomDataAsync();
                 Assert.That(updatedData, Is.Null);
@@ -803,20 +857,60 @@ namespace Realms.Tests.Sync
                 Assert.That(updatedData["age"].AsInt32, Is.EqualTo(153));
                 Assert.That(updatedData["interests"].AsBsonArray.Select(i => i.AsString), Is.EquivalentTo(new[] { "painting", "sci-fi" }));
 
-                Assert.That(user.CustomData, Is.Not.Null);
-                Assert.That(user.CustomData["age"].AsInt32, Is.EqualTo(153));
-
+                Assert.That(user.GetCustomData(), Is.Not.Null);
+                Assert.That(user.GetCustomData()["age"].AsInt32, Is.EqualTo(153));
             });
         }
 
-        private static void AssertKeysAreSame(ApiKey original, ApiKey fetched)
+        [Test]
+        public void UserCustomData_Generic()
         {
-            Assert.That(fetched.Id, Is.EqualTo(original.Id));
-            Assert.That(fetched.IsEnabled, Is.EqualTo(original.IsEnabled));
-            Assert.That(fetched.Name, Is.EqualTo(original.Name));
-            Assert.That(fetched.Value, Is.Null);
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await GetUserAsync();
+                Assert.That(user.GetCustomData<CustomDataDocument>(), Is.Null);
+
+                var updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
+                Assert.That(updatedData, Is.Null);
+
+                var collection = user.GetMongoClient("BackingDB").GetDatabase("my-db").GetCollection<CustomDataDocument>("users");
+
+                var customDataDoc = new CustomDataDocument
+                {
+                    UserId = user.Id,
+                    Age = 45,
+                    Interests = new[] { "swimming", "biking" }
+                };
+
+                await collection.InsertOneAsync(customDataDoc);
+
+                updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
+
+                Assert.That(updatedData, Is.Not.Null);
+                Assert.That(updatedData.Age, Is.EqualTo(45));
+                Assert.That(updatedData.Interests, Is.EquivalentTo(new[] { "swimming", "biking" }));
+
+                var customData = user.GetCustomData<CustomDataDocument>();
+
+                Assert.That(customData, Is.Not.Null);
+                Assert.That(customData.Age, Is.EqualTo(45));
+                Assert.That(customData.Interests, Is.EquivalentTo(new[] { "swimming", "biking" }));
+            });
         }
 
-        #endregion
+        private class CustomDataDocument
+        {
+            [BsonElement("_id")]
+            public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+            [BsonElement("user_id")]
+            public string UserId { get; set; }
+
+            [BsonElement("age")]
+            public int Age { get; set; }
+
+            [BsonElement("interests")]
+            public string[] Interests { get; set; }
+        }
     }
 }

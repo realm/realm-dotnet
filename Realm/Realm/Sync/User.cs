@@ -100,20 +100,38 @@ namespace Realms.Sync
         /// <remarks>
         /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
         /// </remarks>
-        /// <value>A document containing the user data.</value>
+        /// <returns>A document containing the user data.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
-        public BsonDocument CustomData
+        public BsonDocument GetCustomData()
         {
-            get
+            var serialized = Handle.GetCustomData();
+            if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
             {
-                var serialized = Handle.GetCustomData();
-                if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
-                {
-                    return null;
-                }
-
-                return doc;
+                return null;
             }
+
+            return doc;
+        }
+
+        /// <summary>
+        /// Gets the custom user data associated with this user in the Realm app and parses it to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The managed type that matches the shape of the custom data documents.</typeparam>
+        /// <remarks>
+        /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
+        /// </remarks>
+        /// <returns>A document containing the user data.</returns>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        public T GetCustomData<T>()
+            where T : class
+        {
+            var customData = GetCustomData();
+            if (customData == null)
+            {
+                return null;
+            }
+
+            return BsonSerializer.Deserialize<T>(customData);
         }
 
         /// <summary>
@@ -171,7 +189,7 @@ namespace Realms.Sync
         /// </summary>
         /// <returns>
         /// A <see cref="Task{BsonDocument}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
-        /// containing the updated custom user data. The <see cref="CustomData"/> property will also be updated with the new information.
+        /// containing the updated custom user data. The value returned by <see cref="GetCustomData"/> will also be updated with the new information.
         /// </returns>
         public async Task<BsonDocument> RefreshCustomDataAsync()
         {
@@ -179,7 +197,27 @@ namespace Realms.Sync
             Handle.RefreshCustomData(tcs);
             await tcs.Task;
 
-            return CustomData;
+            return GetCustomData();
+        }
+
+        /// <summary>
+        /// Re-fetch the user's custom data from the server.
+        /// </summary>
+        /// <typeparam name="T">The managed type that matches the shape of the custom data documents.</typeparam>
+        /// <returns>
+        /// A <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
+        /// containing the updated custom user data. The value returned by <see cref="GetCustomData{T}"/> will also be updated with the new information.
+        /// </returns>
+        public async Task<T> RefreshCustomDataAsync<T>()
+            where T : class
+        {
+            var result = await RefreshCustomDataAsync();
+            if (result == null)
+            {
+                return null;
+            }
+
+            return BsonSerializer.Deserialize<T>(result);
         }
 
         /// <summary>
