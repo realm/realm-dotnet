@@ -23,11 +23,12 @@ stage('Checkout') {
       userRemoteConfigs: scm.userRemoteConfigs
     ])
 
-    if (env.BRANCH_NAME == 'master') {
-      versionSuffix = "alpha-${env.BUILD_ID}"
+    // V10TODO: temporary set v10 as publishing branch
+    if (shouldPublishPackage()) {
+      versionSuffix = "alpha.${env.BUILD_ID}"
     }
     else if (env.CHANGE_BRANCH == null || !env.CHANGE_BRANCH.startsWith('release')) {
-      versionSuffix = "PR-${env.CHANGE_ID}-${env.BUILD_ID}"
+      versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
@@ -38,7 +39,7 @@ stage('Checkout') {
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
-      rlmNode('osx') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "./build-ios.sh --configuration=${configuration}"
@@ -47,7 +48,7 @@ stage('Build wrappers') {
       }
     },
     'macOS': {
-      rlmNode('osx') {
+      rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
@@ -59,9 +60,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers", extra_args: "-f centos.Dockerfile").inside() {
-            sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh"
-          }
+          buildWrappersInDocker('wrappers', 'centos.Dockerfile', "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh")
         }
         stash includes: 'wrappers/build/**', name: 'linux-wrappers'
       }
@@ -74,9 +73,7 @@ stage('Build wrappers') {
       rlmNode('docker') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          buildDockerEnv("ci/realm-dotnet:wrappers_android", extra_args: '-f android.Dockerfile').inside() {
-            sh "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}"
-          }
+          buildWrappersInDocker('wrappers_android', 'android.Dockerfile', "./build-android.sh --configuration=${configuration} --ARCH=${localAbi}")
         }
         stash includes: 'wrappers/build/**', name: "android-wrappers-${localAbi}"
       }
@@ -86,13 +83,13 @@ stage('Build wrappers') {
   for(platform in WindowsPlatforms) {
     def localPlatform = platform
     jobs["Windows ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
+      rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 Windows -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windows-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
@@ -102,13 +99,13 @@ stage('Build wrappers') {
   for(platform in WindowsUniversalPlatforms) {
     def localPlatform = platform
     jobs["WindowsUniversal ${localPlatform}"] = {
-      rlmNode('windows-vs2017') {
+      rlmNode('windows') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
           powershell ".\\build.ps1 WindowsStore -Configuration ${configuration} -Platforms ${localPlatform}"
         }
         stash includes: 'wrappers/build/**', name: "windowsuniversal-wrappers-${localPlatform}"
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           archiveArtifacts 'wrappers/build/**/*.pdb'
         }
       }
@@ -164,7 +161,7 @@ stage('Package') {
         packageVersion = getVersion(packages[0].name);
         echo "Inferred version is ${packageVersion}"
 
-        if (env.BRANCH_NAME == 'master') {
+        if (shouldPublishPackage()) {
           withCredentials([usernamePassword(credentialsId: 'github-packages-token', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
             echo "Publishing Realm.Fody.${packageVersion} to github packages"
             bat "dotnet nuget add source https://nuget.pkg.github.com/realm/index.json -n github -u ${env.GITHUB_USERNAME} -p ${env.GITHUB_PASSWORD} & exit 0"
@@ -329,13 +326,18 @@ def NetCoreTest(String nodeName) {
         dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
         dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
+
+      String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
+
       if (isUnix()) {
         if (nodeName == 'docker') {
           def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
           test_runner_image.pull()
-          withRos('3.23.1') { ros ->
-            test_runner_image.inside("--link ${ros.id}:ros") {
-              script += ' --ros $ROS_PORT_9080_TCP_ADDR --rosport $ROS_PORT_9080_TCP_PORT'
+          withRealmCloud(version: '2020-10-12', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
+            test_runner_image.inside("--network=${networkName}") {
+              def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
+
+              script += " --baasurl http://mongodb-realm:9090 --baasappid ${appId.trim()}"
               // see https://stackoverflow.com/a/53782505
               sh """
                 export HOME=/tmp
@@ -399,6 +401,19 @@ def reportTests(spec) {
     tools: [NUnit3(deleteOutputFiles: true, failIfNotNew: true, pattern: spec, skipNoTestFiles: false, stopProcessingIfError: true)],
     thresholds: [ failed(unstableThreshold: '0') ]
   )
+}
+
+def buildWrappersInDocker(String label, String image, String invocation) {
+  String uid = sh(script: 'id -u', returnStdout: true).trim()
+  String gid = sh(script: 'id -g', returnStdout: true).trim()
+
+  buildDockerEnv("ci/realm-dotnet:${label}", extra_args: "-f ${image}").inside("--mount 'type=bind,src=/tmp,dst=/tmp' -u ${uid}:${gid}") {
+    sh invocation
+  }
+}
+
+boolean shouldPublishPackage() {
+  return env.BRANCH_NAME == 'master' || (env.CHANGE_BRANCH != null && env.CHANGE_BRANCH == 'v10')
 }
 
 // Required due to JENKINS-27421

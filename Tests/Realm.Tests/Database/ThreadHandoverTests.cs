@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -38,14 +37,12 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherObj = otherRealm.ResolveReference(objReference);
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherObj = otherRealm.ResolveReference(objReference);
 
-                        Assert.That(otherObj.IsManaged);
-                        Assert.That(otherObj.IsValid);
-                        Assert.That(otherObj.Int, Is.EqualTo(12));
-                    }
+                    Assert.That(otherObj.IsManaged);
+                    Assert.That(otherObj.IsValid);
+                    Assert.That(otherObj.Int, Is.EqualTo(12));
                 });
             });
         }
@@ -65,14 +62,12 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherList = otherRealm.ResolveReference(listReference);
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherList = otherRealm.ResolveReference(listReference);
 
-                        Assert.That(otherList, Is.InstanceOf(typeof(RealmList<Dog>)));
-                        var dogNames = otherList.Select(d => d.Name);
-                        Assert.That(dogNames, Is.EqualTo(new[] { "1", "2" }));
-                    }
+                    Assert.That(otherList, Is.InstanceOf(typeof(RealmList<Dog>)));
+                    var dogNames = otherList.Select(d => d.Name);
+                    Assert.That(dogNames, Is.EqualTo(new[] { "1", "2" }));
                 });
             });
         }
@@ -96,11 +91,9 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        otherRealm.ResolveReference(objReference);
-                        Assert.That(() => otherRealm.ResolveReference(objReference), Throws.InstanceOf<RealmException>().And.Message.Contains("Can only resolve a thread safe reference once."));
-                    }
+                    using var otherRealm = GetRealm(_realm.Config);
+                    otherRealm.ResolveReference(objReference);
+                    Assert.That(() => otherRealm.ResolveReference(objReference), Throws.InstanceOf<RealmException>().And.Message.Contains("Can only resolve a thread safe reference once."));
                 });
             });
         }
@@ -128,14 +121,12 @@ namespace Realms.Tests.Database
         {
             var objReference = SetupObjectReference();
 
-            using (var otherRealm = Realm.GetInstance(_realm.Config))
-            {
-                var otherObj = otherRealm.ResolveReference(objReference);
+            using var otherRealm = GetRealm(_realm.Config);
+            var otherObj = otherRealm.ResolveReference(objReference);
 
-                Assert.That(otherObj.IsManaged);
-                Assert.That(otherObj.IsValid);
-                Assert.That(otherObj.Int, Is.EqualTo(12));
-            }
+            Assert.That(otherObj.IsManaged);
+            Assert.That(otherObj.IsValid);
+            Assert.That(otherObj.Int, Is.EqualTo(12));
         }
 
         [Test]
@@ -188,19 +179,10 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    var config = new RealmConfiguration(Path.GetTempFileName());
-                    try
-                    {
-                        using (var otherRealm = Realm.GetInstance(config))
-                        {
-                            var otherObj = otherRealm.ResolveReference(objReference);
-                            Assert.That(otherObj, Is.Null);
-                        }
-                    }
-                    finally
-                    {
-                        Realm.DeleteRealm(config);
-                    }
+                    var config = new RealmConfiguration(Guid.NewGuid().ToString());
+                    using var otherRealm = GetRealm(config);
+                    var otherObj = otherRealm.ResolveReference(objReference);
+                    Assert.That(otherObj, Is.Null);
                 });
             });
         }
@@ -214,17 +196,15 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
+                    using var otherRealm = GetRealm(_realm.Config);
+                    otherRealm.Write(() =>
                     {
-                        otherRealm.Write(() =>
-                        {
-                            var otherObj = otherRealm.ResolveReference(objReference);
+                        var otherObj = otherRealm.ResolveReference(objReference);
 
-                            Assert.That(otherObj.IsManaged);
-                            Assert.That(otherObj.IsValid);
-                            Assert.That(otherObj.Int, Is.EqualTo(12));
-                        });
-                    }
+                        Assert.That(otherObj.IsManaged);
+                        Assert.That(otherObj.IsValid);
+                        Assert.That(otherObj.Int, Is.EqualTo(12));
+                    });
                 });
             });
         }
@@ -244,14 +224,12 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherObj = otherRealm.ResolveReference(objRef);
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherObj = otherRealm.ResolveReference(objRef);
 
-                        Assert.That(otherObj.IsManaged);
-                        Assert.That(otherObj.IsValid);
-                        Assert.That(otherObj.Int, Is.EqualTo(123));
-                    }
+                    Assert.That(otherObj.IsManaged);
+                    Assert.That(otherObj.IsValid);
+                    Assert.That(otherObj.Int, Is.EqualTo(123));
                 });
             });
         }
@@ -270,11 +248,9 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherObj = otherRealm.ResolveReference(objReference);
-                        Assert.That(otherObj, Is.Null);
-                    }
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherObj = otherRealm.ResolveReference(objReference);
+                    Assert.That(otherObj, Is.Null);
                 });
             });
         }
@@ -296,12 +272,10 @@ namespace Realms.Tests.Database
 
                 await Task.Run(() =>
                 {
-                    using (var otherRealm = Realm.GetInstance(_realm.Config))
-                    {
-                        var otherList = otherRealm.ResolveReference(listReference);
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherList = otherRealm.ResolveReference(listReference);
 
-                        Assert.That(otherList, Is.Null);
-                    }
+                    Assert.That(otherList, Is.Null);
                 });
             });
         }
@@ -372,14 +346,12 @@ namespace Realms.Tests.Database
         {
             return Task.Run(() =>
             {
-                using (var otherRealm = Realm.GetInstance(_realm.Config))
-                {
-                    var otherQuery = otherRealm.ResolveReference(reference);
+                using var otherRealm = GetRealm(_realm.Config);
+                var otherQuery = otherRealm.ResolveReference(reference);
 
-                    Assert.That(otherQuery, Is.InstanceOf(typeof(RealmResults<IntPropertyObject>)));
-                    var values = otherQuery.ToArray().Select(q => q.Int);
-                    Assert.That(values, Is.EqualTo(expected));
-                }
+                Assert.That(otherQuery, Is.InstanceOf(typeof(RealmResults<IntPropertyObject>)));
+                var values = otherQuery.ToArray().Select(q => q.Int);
+                Assert.That(values, Is.EqualTo(expected));
             });
         }
     }

@@ -40,11 +40,14 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
 
             #endregion
 
@@ -60,11 +63,14 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr set_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
             #endregion
 
@@ -80,11 +86,14 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_embedded", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
             #endregion
 
@@ -98,11 +107,11 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_string(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_binary(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
 
             #endregion
 
@@ -118,11 +127,11 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.I1)] bool has_value, out NativeException ex);
+                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -145,7 +154,7 @@ namespace Realms
             public static extern IntPtr move(ListHandle listHandle, IntPtr sourceIndex, IntPtr targetIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_valid(ListHandle listHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
@@ -155,7 +164,7 @@ namespace Realms
             public static extern IntPtr snapshot(ListHandle list, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.I1)]
+            [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(ListHandle list, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_freeze", CallingConvention = CallingConvention.Cdecl)]
@@ -232,6 +241,13 @@ namespace Realms
                 NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
         }
 
+        public ObjectHandle AddEmbedded()
+        {
+            var result = NativeMethods.add_embedded(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
+        }
+
         #endregion
 
         #region Set
@@ -263,6 +279,13 @@ namespace Realms
                 NativeMethods.set_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
         }
 
+        public ObjectHandle SetEmbedded(int targetIndex)
+        {
+            var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
+        }
+
         #endregion
 
         #region Insert
@@ -292,6 +315,13 @@ namespace Realms
         {
             MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
                 NativeMethods.insert_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
+        }
+
+        public ObjectHandle InsertEmbedded(int targetIndex)
+        {
+            var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new ObjectHandle(Root, result);
         }
 
         #endregion

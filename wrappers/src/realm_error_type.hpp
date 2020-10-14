@@ -73,19 +73,26 @@ namespace realm {
         RealmClosed = 24,
         
         ObjectManagedByAnotherRealm = 25,
-        
-        RealmFeatureUnavailable = 26,
-        
-        // deprecated: sync 1.x migration related
-        RealmIncompatibleSyncedFile = 27,
-        
+     
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,
 
-        StdInvalidOperation = 102
+        StdInvalidOperation = 102,
+
+        AppClientError = 50,
+
+        AppCustomError = 51,
+
+        AppHttpError = 52,
+
+        AppJsonError = 53,
+
+        AppServiceError = 54,
+
+        AppUnknownError = 59,
     };
 
 }   // namespace realm

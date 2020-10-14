@@ -27,6 +27,7 @@ namespace Realms.Sync.Exceptions
     public class ClientResetException : SessionException
     {
         private readonly string _originalFilePath;
+        private readonly App _app;
 
         /// <summary>
         /// Gets the path where the backup copy of the realm will be placed once the client reset process is complete.
@@ -34,11 +35,12 @@ namespace Realms.Sync.Exceptions
         /// <value>The path to the backup realm.</value>
         public string BackupFilePath { get; }
 
-        internal ClientResetException(string message, IDictionary<string, string> userInfo)
+        internal ClientResetException(App app, string message, IDictionary<string, string> userInfo)
             : base(message, ErrorCode.DivergingHistories)
         {
             // Using Path.GetFullPath to normalize path separators on Windows
             _originalFilePath = Path.GetFullPath(userInfo[OriginalFilePathKey]);
+            _app = app;
             BackupFilePath = Path.GetFullPath(userInfo[BackupFilePathKey]);
             HelpLink = "https://realm.io/docs/xamarin/latest/#client-reset";
         }
@@ -53,7 +55,7 @@ namespace Realms.Sync.Exceptions
         /// </remarks>
         public bool InitiateClientReset()
         {
-            return SharedRealmHandleExtensions.ImmediatelyRunFileActions(_originalFilePath);
+            return _app.Handle.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
 }

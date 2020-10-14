@@ -114,28 +114,28 @@ namespace Realms.Tests.Database
         {
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
-            using (Realm.GetInstance(_configuration))
+            using (GetRealm(_configuration))
             {
             }
 
             _configuration.EncryptionKey = null;
 
             // Assert
-            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
         public void UnableToOpenWithKeyIfNotEncrypted()
         {
             // Arrange
-            using (Realm.GetInstance(_configuration))
+            using (GetRealm(_configuration))
             {
             }
 
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
             // Assert
-            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
@@ -144,14 +144,14 @@ namespace Realms.Tests.Database
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
-            using (Realm.GetInstance(_configuration))
+            using (GetRealm(_configuration))
             {
             }
 
             _configuration.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
         }
 
         [Test]
@@ -160,7 +160,7 @@ namespace Realms.Tests.Database
             // Arrange
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey(42);
 
-            using (Realm.GetInstance(_configuration))
+            using (GetRealm(_configuration))
             {
             }
 
@@ -172,7 +172,7 @@ namespace Realms.Tests.Database
             // Assert
             Assert.That(() =>
             {
-                using (Realm.GetInstance(config2))
+                using (GetRealm(config2))
                 {
                 }
             }, Throws.Nothing);
@@ -185,7 +185,7 @@ namespace Realms.Tests.Database
             _configuration.IsReadOnly = true;
 
             // Assert
-            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileNotFoundException>());
         }
 
         [Test, TestExplicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
@@ -198,15 +198,14 @@ namespace Realms.Tests.Database
                 "ForMigrationsToCopyAndMigrate.realm", Path.GetFileName(_configuration.DatabasePath));
 
             // Assert
-            Assert.That(() => Realm.GetInstance(_configuration), Throws.TypeOf<RealmMigrationNeededException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmMigrationNeededException>());
         }
 
         [Test]
         public void ReadOnlyRealmsArentWritable()
         {
-            // Arrange
             _configuration.SchemaVersion = 0;  // must set version before file can be opened readOnly
-            using (var openToCreate = Realm.GetInstance(_configuration))
+            using (var openToCreate = GetRealm(_configuration))
             {
                 openToCreate.Write(() =>
                 {
@@ -216,17 +215,15 @@ namespace Realms.Tests.Database
 
             _configuration.IsReadOnly = true;
 
-            using (var openedReadonly = Realm.GetInstance(_configuration))
+            using var openedReadonly = GetRealm(_configuration);
+
+            Assert.That(() =>
             {
-                // Assert
-                Assert.That(() =>
+                openedReadonly.Write(() =>
                 {
-                    openedReadonly.Write(() =>
-                    {
-                        openedReadonly.Add(new Person());
-                    });
-                }, Throws.TypeOf<RealmInvalidTransactionException>());
-            }
+                    openedReadonly.Add(new Person());
+                });
+            }, Throws.TypeOf<RealmInvalidTransactionException>());
         }
 
         [Test]
@@ -245,7 +242,7 @@ namespace Realms.Tests.Database
                                    .Message.Contains("Foo.DuplicateClass").And
                                    .Message.Contains("Bar.DuplicateClass");
 
-            Assert.That(() => Realm.GetInstance(config), constraint);
+            Assert.That(() => GetRealm(config), constraint);
         }
     }
 }

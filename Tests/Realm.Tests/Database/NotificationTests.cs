@@ -28,7 +28,7 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class NotificationTests
+    public class NotificationTests : RealmInstanceTest
     {
         private class OrderedContainer : RealmObject
         {
@@ -44,29 +44,6 @@ namespace Realms.Tests.Database
             public override string ToString()
             {
                 return $"[OrderedObject: Order={Order}]";
-            }
-        }
-
-        private Lazy<Realm> _lazyRealm;
-
-        // We capture the current SynchronizationContext when opening a Realm.
-        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
-        // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        private Realm _realm => _lazyRealm.Value;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(Path.GetTempFileName()));
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            if (_lazyRealm.IsValueCreated)
-            {
-                _realm.Dispose();
-                Realm.DeleteRealm(_realm.Config);
             }
         }
 
@@ -87,15 +64,13 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmError_WhenNoSubscribers_OutputsMessageInConsole()
         {
-            using (var sw = new StringWriter())
-            {
-                var original = Console.Error;
-                Console.SetError(sw);
-                _realm.NotifyError(new Exception());
+            using var sw = new StringWriter();
+            var original = Console.Error;
+            Console.SetError(sw);
+            _realm.NotifyError(new Exception());
 
-                Assert.That(sw.ToString(), Does.Contain("exception").And.Contains("Realm.Error"));
-                Console.SetError(original);
-            }
+            Assert.That(sw.ToString(), Does.Contain("exception").And.Contains("Realm.Error"));
+            Console.SetError(original);
         }
 
         [Test]

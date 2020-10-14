@@ -22,9 +22,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -36,7 +34,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RealmList<Person>))]
         public void RealmCollectionContravariance(Type type)
         {
-            Assert.That(typeof(IRealmCollection<RealmObject>).IsAssignableFrom(type));
+            Assert.That(typeof(IRealmCollection<RealmObjectBase>).IsAssignableFrom(type));
         }
 
         [Test]

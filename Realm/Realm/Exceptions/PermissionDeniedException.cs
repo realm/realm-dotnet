@@ -42,13 +42,15 @@ namespace Realms.Sync.Exceptions
     public class PermissionDeniedException : SessionException
     {
         private readonly string _originalFilePath;
+        private readonly App _app;
 
         private bool _actionInvoked;
 
-        internal PermissionDeniedException(string message, IDictionary<string, string> userInfo)
+        internal PermissionDeniedException(App app, string message, IDictionary<string, string> userInfo)
             : base(message, ErrorCode.PermissionDenied)
         {
             _originalFilePath = userInfo[OriginalFilePathKey];
+            _app = app;
             HelpLink = "https://realm.io/docs/xamarin/latest/#access-control";
         }
 
@@ -63,7 +65,7 @@ namespace Realms.Sync.Exceptions
             Argument.Ensure<NotSupportedException>(!_actionInvoked, $"{nameof(DeleteRealmUserInfo)} can only be called once.");
             _actionInvoked = true;
 
-            return SharedRealmHandleExtensions.ImmediatelyRunFileActions(_originalFilePath);
+            return _app.Handle.ImmediatelyRunFileActions(_originalFilePath);
         }
     }
 }

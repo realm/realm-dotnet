@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using MongoDB.Bson;
 using Realms;
 
 namespace AssemblyToProcess
@@ -40,11 +41,17 @@ namespace AssemblyToProcess
 
         public double DoubleProperty { get; set; }
 
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
         public bool BooleanProperty { get; set; }
 
         public string StringProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
@@ -61,6 +68,10 @@ namespace AssemblyToProcess
         public double? NullableDoubleProperty { get; set; }
 
         public bool? NullableBooleanProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
 
@@ -79,6 +90,8 @@ namespace AssemblyToProcess
         public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
 
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -104,6 +117,12 @@ namespace AssemblyToProcess
 
         public IList<DateTimeOffset> DateTimeOffsetList { get; }
 
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
+
         public IList<char?> NullableCharList { get; }
 
         public IList<byte?> NullableByteList { get; }
@@ -121,6 +140,12 @@ namespace AssemblyToProcess
         public IList<bool?> NullableBooleanList { get; }
 
         public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+
+        public IList<decimal?> NullableDecimalList { get; }
+
+        public IList<Decimal128?> NullableDecimal128List { get; }
+
+        public IList<ObjectId?> NullableObjectIdList { get; }
 
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 
@@ -182,6 +207,13 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId ObjectIdProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -217,6 +249,13 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        public ObjectId? ObjectIdProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class GetterOnlyUnsupportedProperty : RealmObject
     {
         public int IntPropety { get; set; }
@@ -228,5 +267,83 @@ namespace AssemblyToProcess
         public enum MyEnum
         {
         }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class ObjectWithEmbeddedProperties : RealmObject
+    {
+        public EmbeddedAllTypesObject AllTypesObject { get; set; }
+
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class EmbeddedAllTypesObject : EmbeddedObject
+    {
+        public char CharProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public short Int16Property { get; set; }
+
+        public int Int32Property { get; set; }
+
+        public long Int64Property { get; set; }
+
+        public float SingleProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public bool BooleanProperty { get; set; }
+
+        public string StringProperty { get; set; }
+
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
+
+        public char? NullableCharProperty { get; set; }
+
+        public byte? NullableByteProperty { get; set; }
+
+        public short? NullableInt16Property { get; set; }
+
+        public int? NullableInt32Property { get; set; }
+
+        public long? NullableInt64Property { get; set; }
+
+        public float? NullableSingleProperty { get; set; }
+
+        public double? NullableDoubleProperty { get; set; }
+
+        public bool? NullableBooleanProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmInteger<byte>? NullableByteCounterProperty { get; set; }
+
+        public RealmInteger<short>? NullableInt16CounterProperty { get; set; }
+
+        public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
+
+        public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
     }
 }

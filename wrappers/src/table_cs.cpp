@@ -49,7 +49,7 @@ Object* get_object_for_primarykey(TableRef& table, SharedRealm& realm, const T& 
             return nullptr;
 
         return new Object(realm, object_schema, table->get_object(obj_key));
-        });
+    });
 }
 
 extern "C" {
@@ -82,20 +82,6 @@ REALM_EXPORT Results* table_create_results(TableRef& table, SharedRealm& realm, 
     });
 }
 
-REALM_EXPORT size_t table_get_name(TableRef& table, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return stringdata_to_csharpstringbuffer(table->get_name(), string_buffer, buffer_size);
-    });
-}
-
-REALM_EXPORT size_t table_get_column_name(TableRef& table, const ColKey column_key, uint16_t* string_buffer, size_t buffer_size, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return stringdata_to_csharpstringbuffer(table->get_column_name(column_key), string_buffer, buffer_size);
-    });
-}
-
 REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKey object_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() -> Object* {
@@ -110,18 +96,32 @@ REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKe
     });
 }
 
-REALM_EXPORT Object* table_get_object_for_int_primarykey(TableRef& table, SharedRealm& realm, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object_for_primitive_primarykey(TableRef& table, SharedRealm& realm, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
-    return get_object_for_primarykey(table, realm, value, ex);
-}
+    if (!primitive.has_value) {
+        return get_object_for_primarykey(table, realm, null{}, ex);
+    }
 
-REALM_EXPORT Object* table_get_object_for_null_primarykey(TableRef& table, SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return get_object_for_primarykey(table, realm, null{}, ex);
+    switch (primitive.type) {
+    case realm::PropertyType::Int:
+    case realm::PropertyType::Int | realm::PropertyType::Nullable:
+        return get_object_for_primarykey(table, realm, primitive.value.int_value, ex);
+
+    case realm::PropertyType::ObjectId:
+    case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+        return get_object_for_primarykey(table, realm, to_object_id(primitive), ex);
+
+    default:
+        REALM_UNREACHABLE();
+    }
 }
 
 REALM_EXPORT Object* table_get_object_for_string_primarykey(TableRef& table, SharedRealm& realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
+    if (value == nullptr) {
+        return get_object_for_primarykey(table, realm, null{}, ex);
+    }
+
     Utf16StringAccessor str(value, value_len);
     return get_object_for_primarykey(table, realm, StringData(str), ex);
 }

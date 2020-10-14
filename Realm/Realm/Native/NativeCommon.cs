@@ -61,21 +61,14 @@ namespace Realms
             {
                 try
                 {
-                    var osVersionPI = typeof(Environment).GetProperty("OSVersion");
-                    var platformPI = osVersionPI?.PropertyType.GetProperty("Platform");
-                    var assemblyLocationPI = typeof(Assembly).GetProperty("Location", BindingFlags.Public | BindingFlags.Instance);
-                    if (osVersionPI != null && osVersionPI != null && assemblyLocationPI != null)
-                    {
-                        var osVersion = osVersionPI.GetValue(null);
-                        var platform = platformPI.GetValue(osVersion);
+                    var platform = Environment.OSVersion.Platform;
 
-                        if (platform.ToString() == "Win32NT")
-                        {
-                            var assemblyLocation = Path.GetDirectoryName((string)assemblyLocationPI.GetValue(typeof(NativeCommon).GetTypeInfo().Assembly));
-                            var architecture = Environment.Is64BitProcess ? "x64" : "x86";
-                            var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                            Environment.SetEnvironmentVariable("PATH", path);
-                        }
+                    if (platform == PlatformID.Win32NT)
+                    {
+                        var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
+                        var architecture = Environment.Is64BitProcess ? "x64" : "x86";
+                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+                        Environment.SetEnvironmentVariable("PATH", path);
                     }
                 }
                 catch

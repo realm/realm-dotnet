@@ -23,6 +23,18 @@
 #include "schema_cs.hpp"
 #include "object-store/src/binding_context.hpp"
 #include "object_accessor.hpp"
+#include "marshalling.hpp"
+
+#include "sync_session_cs.hpp"
+#include "sync/sync_config.hpp"
+#include "sync/sync_manager.hpp"
+#include "sync/sync_config.hpp"
+#include "sync/sync_session.hpp"
+
+using SharedSyncUser = std::shared_ptr<SyncUser>;
+
+using namespace realm;
+using namespace realm::binding;
 
 class ManagedExceptionDuringMigration : public std::runtime_error
 {
@@ -52,6 +64,16 @@ struct Configuration
     
     bool enable_cache;
     uint64_t max_number_of_active_versions;
+};
+
+struct SyncConfiguration
+{
+    SharedSyncUser* user;
+
+    uint16_t* url;
+    size_t url_len;
+
+    SyncSessionStopPolicy session_stop_policy;
 };
 
 namespace realm {

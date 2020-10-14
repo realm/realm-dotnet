@@ -27,21 +27,18 @@ set(HEADERS
 
 if(REALM_ENABLE_SYNC)
     list(APPEND SOURCES
+        app_cs.cpp
         async_open_task_cs.cpp
-        sync_manager_cs.cpp
+        mongo_collection_cs.cpp
         sync_session_cs.cpp
         sync_user_cs.cpp
-        subscription_cs.cpp
+        transport_cs.cpp
     )
 
     list(APPEND HEADERS
+        app_cs.hpp
         sync_session_cs.hpp
-    )
-endif()
-
-if(REALM_ENABLE_SERVER)
-    list(APPEND SOURCES
-        global_notifier_cs.cpp
+        transport_cs.hpp
     )
 endif()
 

@@ -28,7 +28,7 @@ namespace Realms.DataBinding
         // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
         private static readonly ConcurrentDictionary<Type, RealmObjectTypeDelegator> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeDelegator>();
 
-        public static TypeInfo GetInfo(RealmObject obj)
+        public static TypeInfo GetInfo(RealmObjectBase obj)
         {
             Argument.NotNull(obj, nameof(obj));
             return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t));

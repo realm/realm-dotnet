@@ -34,7 +34,7 @@ namespace Realms.Sync.Testing
         /// <param name="message">Error message.</param>
         /// <param name="isFatal">If set to <c>true</c> the error will be marked as fatal.</param>
         /// <remarks>
-        /// Use this method to test your error handling code without connecting to a Realm Object Server.
+        /// Use this method to test your error handling code without connecting to a MongoDB Realm Server.
         /// Some error codes, such as <see cref="ErrorCode.OtherSessionError"/> will be ignored and will not be reported
         /// to <see cref="Session.Error"/> subscribers.
         /// </remarks>

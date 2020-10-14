@@ -25,7 +25,7 @@ using Realms.Helpers;
 namespace Realms
 {
     /// <summary>
-    /// A set of extension methods on top of RealmObject.
+    /// A set of extension methods on top of RealmObjectBase.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class FrozenObjectsExtensions
@@ -33,7 +33,7 @@ namespace Realms
         /// <summary>
         /// Returns a frozen snapshot of this object. The frozen copy can be read and queried from any thread without throwing an exception.
         /// <para/>
-        /// Freezing a RealmObject also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// Freezing a RealmObjectBase also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
         /// original object is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
         /// object will be closed as well.
         /// <para/>
@@ -43,12 +43,12 @@ namespace Realms
         /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
-        /// <param name="realmObj">The <see cref="RealmObject"/> instance that you want to create a frozen version of.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>.</typeparam>
+        /// <param name="realmObj">The <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> instance that you want to create a frozen version of.</param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A new frozen instance of the passed in object or the object itself if it was already frozen.</returns>
-        /// <seealso cref="RealmObject.FreezeInPlace"/>
+        /// <seealso cref="RealmObjectBase.FreezeInPlace"/>
         public static T Freeze<T>(this T realmObj)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             Argument.NotNull(realmObj, nameof(realmObj));
 
@@ -105,10 +105,10 @@ namespace Realms
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
         /// <param name="query">The query you want to create a frozen copy of.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/> in the query.</typeparam>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> in the query.</typeparam>
         /// <returns>A frozen copy of this query.</returns>
         public static IQueryable<T> Freeze<T>(this IQueryable<T> query)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             Argument.NotNull(query, nameof(query));
 

@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms.Sync.Native
@@ -30,5 +33,12 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.LPStr)]
         public string Value;
+
+        public static Dictionary<string, string> UnmarshalDictionary(IntPtr pairs, int pairsLength)
+        {
+            return Enumerable.Range(0, pairsLength)
+                             .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(pairs, i * StringStringPair.Size)))
+                             .ToDictionary(pair => pair.Key, pair => pair.Value);
+        }
     }
 }

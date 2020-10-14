@@ -24,7 +24,7 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class MigrationTests : RealmTest
+    public class MigrationTests : RealmInstanceTest
     {
         private const string FileToMigrate = "ForMigrationsToCopyAndMigrate.realm";
 
@@ -33,28 +33,18 @@ namespace Realms.Tests.Database
         {
             var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
 
-            // Arrange
-            using (var realm = Realm.GetInstance())
+            using (var realm = GetRealm())
             {
                 // new database doesn't push back a version number
                 Assert.That(realm.Config.SchemaVersion, Is.EqualTo(0));
             }
 
-            // Act
             var config2 = config.ConfigWithPath(config.DatabasePath);
             config2.SchemaVersion = 99;
-            Realm realm2 = null;  // should be updated by DoesNotThrow
 
-            try
-            {
-                // Assert
-                Assert.That(() => realm2 = Realm.GetInstance(config2), Throws.Nothing); // same path, different version, should auto-migrate quietly
-                Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
-            }
-            finally
-            {
-                realm2.Dispose();
-            }
+            // same path, different version, should auto-migrate quietly
+            using var realm2 = GetRealm(config2);
+            Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
         }
 
         [Test]
@@ -67,7 +57,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.GetTempFileName());
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
             var triggersSchemaFieldValue = string.Empty;
 
@@ -78,7 +68,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = migration.OldRealm.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -94,11 +84,9 @@ namespace Realms.Tests.Database
                 }
             };
 
-            using (var realm = Realm.GetInstance(configuration))
-            {
-                var person = realm.All<Person>().Single();
-                Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
-            }
+            using var realm = GetRealm(configuration);
+            var person = realm.All<Person>().Single();
+            Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
         }
 
         [Test]
@@ -107,7 +95,7 @@ namespace Realms.Tests.Database
             // Because Realms opened during migration are not immediately disposed of, they can't be deleted.
             // To circumvent that, we're leaking realm files.
             // See https://github.com/realm/realm-dotnet/issues/1357
-            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.GetTempFileName());
+            var path = TestHelpers.CopyBundledFileToDocuments(FileToMigrate, Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString()));
 
             var dummyException = new Exception();
 
@@ -120,7 +108,7 @@ namespace Realms.Tests.Database
                 }
             };
 
-            var ex = Assert.Throws<AggregateException>(() => Realm.GetInstance(configuration).Dispose());
+            var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration).Dispose());
             Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
         }
 
@@ -131,7 +119,7 @@ namespace Realms.Tests.Database
 
             var oldSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.String });
                 oldSchema.Add(person.Build());
             }
@@ -140,21 +128,21 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    dynamic person = realm.CreateObject("Person", null);
+                    dynamic person = realm.DynamicApi.CreateObject("Person", null);
                     person.Name = "Foo";
                 });
             }
 
             var newSchema = new Schema.RealmSchema.Builder();
             {
-                var person = new Schema.ObjectSchema.Builder("Person");
+                var person = new Schema.ObjectSchema.Builder("Person", isEmbedded: false);
                 person.Add(new Schema.Property { Name = "Name", Type = Schema.PropertyType.Int });
                 newSchema.Add(person.Build());
             }
 
             using (var realm = Realm.GetInstance(new RealmConfiguration(path) { IsDynamic = true, ShouldDeleteIfMigrationNeeded = true }, newSchema.Build()))
             {
-                Assert.That(realm.All("Person"), Is.Empty);
+                Assert.That(realm.DynamicApi.All("Person"), Is.Empty);
             }
         }
     }

@@ -18,162 +18,58 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using Realms.Exceptions;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using Realms.Helpers;
+using Realms.Native;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
     /// <summary>
-    /// This class represents a user on the Realm Object Server. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
-    /// A user can log in to the Realm Object Server, and if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
+    /// This class represents a user in a MongoDB Realm app. The credentials are provided by various 3rd party providers (Facebook, Google, etc.).
+    /// A user can log in to the server and, if access is granted, it is possible to synchronize the local and the remote Realm. Moreover, synchronization is halted when the user is logged out.
     /// It is possible to persist a user. By retrieving a user, there is no need to log in to the 3rd party provider again. Persisting a user between sessions, the user's credentials are stored locally on the device, and should be treated as sensitive data.
     /// </summary>
     public class User : IEquatable<User>
     {
-        #region static
-
         /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned.
-        /// If more than one user is currently logged in, an exception is thrown.
-        /// </summary>
-        /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        /// <exception cref="RealmException">Thrown if there are more than one users logged in.</exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public static User Current
-        {
-            get
-            {
-                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-                if (SyncUserHandle.TryGetCurrentUser(out var userHandle))
-                {
-                    return new User(userHandle);
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets all currently logged in users.
-        /// </summary>
-        /// <value>An array of valid logged in users.</value>
-        public static User[] AllLoggedIn
-        {
-            get
-            {
-                SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-                return SyncUserHandle.GetAllLoggedInUsers()
-                                     .Select(handle => new User(handle))
-                                     .ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Logs the user in to the Realm Object Server.
-        /// </summary>
-        /// <param name="credentials">The credentials to use for authentication.</param>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <returns>An awaitable Task, that, upon completion, contains the logged in user.</returns>
-        public static async Task<User> LoginAsync(Credentials credentials, Uri serverUri)
-        {
-            Argument.NotNull(credentials, nameof(credentials));
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.Ensure(serverUri.Scheme.StartsWith("http"), "Unexpected protocol for login url. Expected http:// or https://.", nameof(serverUri));
-
-            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-            if (credentials.IdentityProvider == Credentials.Provider.AdminToken)
-            {
-                return new User(SyncUserHandle.GetAdminTokenUser(serverUri.AbsoluteUri, credentials.Token));
-            }
-
-            if (credentials.IdentityProvider == Credentials.Provider.CustomRefreshToken)
-            {
-                var userId = (string)credentials.UserInfo[Credentials.Keys.Identity];
-                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
-                return new User(SyncUserHandle.GetSyncUser(userId, serverUri.AbsoluteUri, credentials.Token, isAdmin));
-            }
-
-            var result = await AuthenticationHelper.LoginAsync(credentials, serverUri);
-            var handle = SyncUserHandle.GetSyncUser(result.UserId, serverUri.AbsoluteUri, result.RefreshToken, result.IsAdmin);
-            return new User(handle);
-        }
-
-        /// <summary>
-        /// Gets a logged in user with a specified identity.
-        /// </summary>
-        /// <returns>A user instance if a logged in user with that id exists, <c>null</c> otherwise.</returns>
-        /// <param name="identity">The identity of the user.</param>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public static User GetLoggedInUser(string identity, Uri serverUri)
-        {
-            Argument.NotNull(identity, nameof(identity));
-            Argument.NotNull(serverUri, nameof(serverUri));
-
-            SharedRealmHandleExtensions.DoInitialMetadataConfiguration();
-
-            if (SyncUserHandle.TryGetLoggedInUser(identity, serverUri.AbsoluteUri, out var userHandle))
-            {
-                return new User(userHandle);
-            }
-
-            return null;
-        }
-
-        #endregion static
-
-        /// <summary>
-        /// Gets or sets this user's refresh token. This is the user's credential for accessing the Realm Object Server and should be treated as sensitive data.
-        /// Setting the refresh token is only supported for users authenticated with <see cref="Credentials.CustomRefreshToken"/>.
+        /// Gets this user's refresh token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
         /// </summary>
         /// <value>A unique string that can be used for refreshing the user's credentials.</value>
         public string RefreshToken
         {
             get => Handle.GetRefreshToken();
-            set
-            {
-                Argument.NotNull(value, nameof(value));
-                Handle.SetRefreshToken(value);
-            }
         }
 
         /// <summary>
-        /// Gets the identity of this user on the Realm Object Server. The identity is a guaranteed to be unique among all users on the Realm Object Server.
+        /// Gets this user's access token. This is the user's credential for accessing MongoDB Realm data and should be treated as sensitive information.
         /// </summary>
-        /// <value>A string that uniquely identifies that user in Realm Object Server.</value>
-        public string Identity => Handle.GetIdentity();
-
-        /// <summary>
-        /// Gets the server URI that was used for authentication.
-        /// </summary>
-        /// <value>The <see cref="Uri"/> used to connect to the authentication service.</value>
-        public Uri ServerUri
+        /// <value>A unique string that can be used to represent this user before the server.</value>
+        public string AccessToken
         {
-            get
-            {
-                var serverUrl = Handle.GetServerUrl();
-                if (string.IsNullOrEmpty(serverUrl))
-                {
-                    return null;
-                }
-
-                return new Uri(serverUrl);
-            }
+            get => Handle.GetAccessToken();
         }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="User"/> is a Realm Object Server administrator user.
+        /// Gets a unique identifier for the device the user logged in to.
         /// </summary>
-        /// <value><c>true</c> if the user is admin; otherwise, <c>false</c>.</value>
-        public bool IsAdmin => Handle.GetIsAdmin();
+        /// <value>A unique string that identifies the current device.</value>
+        public string DeviceId
+        {
+            get => Handle.GetDeviceId();
+        }
+
+        /// <summary>
+        /// Gets the Id of this user on MongoDB Realm.
+        /// </summary>
+        /// <value>A string that uniquely identifies that user.</value>
+        public string Id => Handle.GetUserId();
 
         /// <summary>
         /// Gets the current state of the user.
@@ -181,207 +77,208 @@ namespace Realms.Sync
         /// <value>A value indicating whether the user is active, logged out, or an error has occurred.</value>
         public UserState State => Handle.GetState();
 
+        /// <summary>
+        /// Gets a value indicating which <see cref="Credentials.AuthProvider"/> this user logged in with.
+        /// </summary>
+        /// <value>The <see cref="Credentials.AuthProvider"/> used to login the user.</value>
+        public Credentials.AuthProvider Provider => Handle.GetProvider();
+
+        /// <summary>
+        /// Gets the app with which this user is associated.
+        /// </summary>
+        /// <value>An <see cref="App"/> instance that owns this user.</value>
+        public App App { get; }
+
+        /// <summary>
+        /// Gets the profile information for that user.
+        /// </summary>
+        /// <value>A <see cref="UserProfile"/> object, containing information about the user's name, email, and so on.</value>
+        public UserProfile Profile { get; }
+
+        /// <summary>
+        /// Gets the custom user data associated with this user in the Realm app.
+        /// </summary>
+        /// <remarks>
+        /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
+        /// </remarks>
+        /// <returns>A document containing the user data.</returns>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        public BsonDocument GetCustomData()
+        {
+            var serialized = Handle.GetCustomData();
+            if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
+            {
+                return null;
+            }
+
+            return doc;
+        }
+
+        /// <summary>
+        /// Gets the custom user data associated with this user in the Realm app and parses it to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The managed type that matches the shape of the custom data documents.</typeparam>
+        /// <remarks>
+        /// The data is only refreshed when the user's access token is refreshed or when explicitly calling <see cref="RefreshCustomDataAsync"/>.
+        /// </remarks>
+        /// <returns>A document containing the user data.</returns>
+        /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/"/>
+        public T GetCustomData<T>()
+            where T : class
+        {
+            var customData = GetCustomData();
+            if (customData == null)
+            {
+                return null;
+            }
+
+            return BsonSerializer.Deserialize<T>(customData);
+        }
+
+        /// <summary>
+        /// Gets a collection of all identities associated with this user.
+        /// </summary>
+        /// <value>The user's identities across different <see cref="Credentials.AuthProvider"/>s.</value>
+        public UserIdentity[] Identities
+        {
+            get
+            {
+                var serialized = Handle.GetIdentities();
+                return BsonSerializer.Deserialize<UserIdentity[]>(serialized);
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="ApiKeyClient"/> instance that exposes functionality about managing user API keys.
+        /// </summary>
+        /// <value>A <see cref="ApiKeyClient"/> instance scoped to this <see cref="User"/>.</value>
+        /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/"/>
+        public ApiKeyClient ApiKeys { get; }
+
+        /// <summary>
+        /// Gets a <see cref="FunctionsClient"/> instance that exposes functionality about calling remote MongoDB Realm functions.
+        /// </summary>
+        /// <value>A <see cref="FunctionsClient"/> instance scoped to this <see cref="User"/>.</value>
+        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
+        public FunctionsClient Functions { get; }
+
         internal readonly SyncUserHandle Handle;
 
-        internal User(SyncUserHandle handle)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
+        internal User(SyncUserHandle handle, App app = null)
         {
+            if (app == null && handle.TryGetApp(out var appHandle))
+            {
+                app = new App(appHandle);
+            }
+
+            App = app;
             Handle = handle;
-        }
-
-        internal static User Create(IntPtr userPtr)
-        {
-            var userHandle = new SyncUserHandle(userPtr);
-            return new User(userHandle);
-        }
-
-        internal Uri GetUriForRealm(string path)
-        {
-            if (!path.StartsWith("/"))
-            {
-                path = $"/{path}";
-            }
-
-            return GetUriForRealm(new Uri(path, UriKind.Relative));
-        }
-
-        internal Uri GetUriForRealm(Uri uri)
-        {
-            Argument.Ensure(!uri.IsAbsoluteUri, "The passed Uri must be relative", nameof(uri));
-            var uriBuilder = new UriBuilder(new Uri(ServerUri, uri));
-            uriBuilder.Scheme = uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) ? "realms" : "realm";
-            return uriBuilder.Uri;
+            Profile = new UserProfile(this);
+            ApiKeys = new ApiKeyClient(this);
+            Functions = new FunctionsClient(this);
         }
 
         /// <summary>
-        /// Logs out the user from the Realm Object Server. Once the Object Server has confirmed the logout the user credentials will be deleted from this device.
+        /// Removes the user's local credentials and attempts to invalidate their refresh token from the server.
         /// </summary>
-        /// <returns>An awaitable Task, that, upon completion indicates that the user has been logged out both locally and on the server.</returns>
-        public async Task LogOutAsync()
-        {
-            var uri = ServerUri;
-            var refreshToken = RefreshToken;
-            Handle.LogOut();
-
-            try
-            {
-                await AuthenticationHelper.LogOutAsync(uri, refreshToken);
-            }
-            catch (Exception ex)
-            {
-                ErrorMessages.OutputError($"An error has occurred while logging the user out: {ex.Message}. The user is still logged out locally, but their refresh token may not have been revoked yet.");
-            }
-        }
+        /// <returns>A <see cref="Task"/> that represents the remote logout operation.</returns>
+        public Task LogOutAsync() => App.RemoveUserAsync(this);
 
         /// <summary>
-        /// Changes the user's password.
+        /// Re-fetch the user's custom data from the server.
         /// </summary>
-        /// <param name="newPassword">The user's new password.</param>
-        /// <remarks>
-        /// Changing a user's password using an authentication server that doesn't
-        /// use HTTPS is a major security flaw, and should only be done while testing.
-        /// </remarks>
-        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
-        public Task ChangePasswordAsync(string newPassword)
-        {
-            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Password may be changed only by active users.");
-            Argument.NotNullOrEmpty(newPassword, nameof(newPassword));
-
-            return AuthenticationHelper.ChangePasswordAsync(this, newPassword);
-        }
-
-        /// <summary>
-        /// Changes another user's password.
-        /// </summary>
-        /// <param name="userId">The <see cref="Identity"/> of the user we want to change the password for.</param>
-        /// <param name="newPassword">The user's new password.</param>
-        /// <remarks>
-        /// This user needs admin privilege in order to change someone else's password.
-        /// <br/>
-        /// Changing a user's password using an authentication server that doesn't
-        /// use HTTPS is a major security flaw, and should only be done while testing.
-        /// </remarks>
-        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
-        public Task ChangePasswordAsync(string userId, string newPassword)
-        {
-            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Password may be changed only by active users.");
-            Argument.Ensure<InvalidOperationException>(IsAdmin, "Other users' passwords may be changed only by admin users.");
-            Argument.NotNullOrEmpty(userId, nameof(userId));
-            Argument.NotNullOrEmpty(newPassword, nameof(newPassword));
-
-            return AuthenticationHelper.ChangePasswordAsync(this, newPassword, userId);
-        }
-
-        /// <summary>
-        /// Looks up user's information by provider id. This is useful when you know the id of a user in a provider's system,
-        /// e.g. on Facebook and want to find the associated Realm user's Id.
-        /// </summary>
-        /// <param name="provider">The provider that the user has signed up with.</param>
-        /// <param name="providerUserIdentity">The id of the user in the provider's system.</param>
-        /// <remarks>
-        /// This user needs admin privilege in order to look up other users by provider id.
-        /// <br/>
-        /// The exact names of built-in providers can be found in <see cref="Credentials.Provider"/>.
-        /// </remarks>
         /// <returns>
-        /// A <see cref="UserInfo"/>, containing information about the User's Identity in Realm's authentication system,
-        /// or <c>null</c> if a user has not been found.
+        /// A <see cref="Task{BsonDocument}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
+        /// containing the updated custom user data. The value returned by <see cref="GetCustomData"/> will also be updated with the new information.
         /// </returns>
-        public Task<UserInfo> RetrieveInfoForUserAsync(string provider, string providerUserIdentity)
+        public async Task<BsonDocument> RefreshCustomDataAsync()
         {
-            Argument.Ensure<InvalidOperationException>(State == UserState.Active, "Users may be looked up only by active users.");
-            Argument.Ensure<InvalidOperationException>(IsAdmin, "Users may be looked up only by admin users.");
-            Argument.NotNullOrEmpty(provider, nameof(provider));
-            Argument.NotNullOrEmpty(providerUserIdentity, nameof(providerUserIdentity));
+            var tcs = new TaskCompletionSource<object>();
+            Handle.RefreshCustomData(tcs);
+            await tcs.Task;
 
-            return AuthenticationHelper.RetrieveInfoForUserAsync(this, provider, providerUserIdentity);
+            return GetCustomData();
         }
 
         /// <summary>
-        /// Request a password reset email to be sent to a user's email. This method requires internet connection
-        /// and will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+        /// Re-fetch the user's custom data from the server.
         /// </summary>
-        /// <remarks>
-        /// This can only be used for users who authenticated with <see cref="Credentials.UsernamePassword"/>
-        /// and passed a valid email address as a username.
-        /// </remarks>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <param name="email">The email that corresponds to the user's username.</param>
-        /// <returns>An awaitable task that, upon completion, indicates that the request has been sent.</returns>
-        public static Task RequestPasswordResetAsync(Uri serverUri, string email)
+        /// <typeparam name="T">The managed type that matches the shape of the custom data documents.</typeparam>
+        /// <returns>
+        /// A <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
+        /// containing the updated custom user data. The value returned by <see cref="GetCustomData{T}"/> will also be updated with the new information.
+        /// </returns>
+        public async Task<T> RefreshCustomDataAsync<T>()
+            where T : class
         {
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.NotNullOrEmpty(email, nameof(email));
-
-            return AuthenticationHelper.UpdateAccountAsync(serverUri, "reset_password", email);
-        }
-
-        /// <summary>
-        /// Complete the password reset flow by using the reset token sent to the user's email as a one-time
-        /// authorization token to change the password.
-        /// </summary>
-        /// <remarks>
-        /// By default, the link that will be sent to the user's email will redirect to a webpage where
-        /// they can enter their new password. If you wish to provide a native UX, you may wish to modify
-        /// the url to use deep linking to open the app, extract the token, and navigate to a view that
-        /// allows them to change their password within the app.
-        /// </remarks>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <param name="token">The token that was sent to the user's email address.</param>
-        /// <param name="newPassword">The user's new password.</param>
-        /// <returns>An awaitable task that, when successful, indicates that the password has changed.</returns>
-        public static Task CompletePasswordResetAsync(Uri serverUri, string token, string newPassword)
-        {
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.NotNullOrEmpty(token, nameof(token));
-            Argument.NotNullOrEmpty(newPassword, nameof(newPassword));
-
-            var data = new Dictionary<string, string>
+            var result = await RefreshCustomDataAsync();
+            if (result == null)
             {
-                ["token"] = token,
-                ["new_password"] = newPassword
-            };
-            return AuthenticationHelper.UpdateAccountAsync(serverUri, "complete_reset", data: data);
+                return null;
+            }
+
+            return BsonSerializer.Deserialize<T>(result);
         }
 
         /// <summary>
-        /// Request an email confirmation email to be sent to a user's email. This method requires internet connection
-        /// and will not throw an exception, even if the email doesn't belong to a Realm Object Server user.
+        /// Gets a <see cref="MongoClient"/> instance for accessing documents in a MongoDB database.
         /// </summary>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <param name="email">The email that corresponds to the user's username.</param>
-        /// <returns>An awaitable task that, upon completion, indicates that the request has been sent.</returns>
-        public static Task RequestEmailConfirmationAsync(Uri serverUri, string email)
-        {
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.NotNullOrEmpty(email, nameof(email));
-
-            return AuthenticationHelper.UpdateAccountAsync(serverUri, "request_email_confirmation", email);
-        }
+        /// <param name="serviceName">The name of the service as configured on the server.</param>
+        /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
+        public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
 
         /// <summary>
-        /// Complete the password reset flow by using the confirmation token sent to the user's email as a one-time
-        /// authorization token to confirm their email.
+        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in MongoDB Realm.
         /// </summary>
         /// <remarks>
-        /// By default, the link that will be sent to the user's email will redirect to a webpage where
-        /// they'll see a generic "Thank you for confirming" text. If you wish to provide a native UX, you
-        /// may wish to modify the url to use deep linking to open the app, extract the token, and inform them
-        /// that their email has been confirmed.
+        /// The FCM service needs to be configured and enabled in the MongodB Realm UI before devices can register
+        /// and receive push notifications.
         /// </remarks>
-        /// <param name="serverUri">The URI of the server that the user is authenticated against.</param>
-        /// <param name="token">The token that was sent to the user's email address.</param>
-        /// <returns>An awaitable task that, when successful, indicates that the email has been confirmed.</returns>
-        public static Task ConfirmEmailAsync(Uri serverUri, string token)
+        /// <param name="serviceName">The name of the service as configured in the MongoDB Realm UI.</param>
+        /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
+        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification"/>
+        public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
+
+        /// <summary>
+        /// Links the current user with a new user identity represented by the given credentials.
+        /// </summary>
+        /// <remarks>
+        /// Linking a user with more credentials, mean the user can login either of these credentials. It also
+        /// makes it possible to "upgrade" an anonymous user by linking it with e.g. Email/Password credentials.
+        /// <br/>
+        /// Note: It is not possible to link two existing users of MongoDB Realm. The provided credentials must not have been used by another user.
+        /// <br/>
+        /// Note for email/password auth: To link a user with a new set of <see cref="Credentials.EmailPassword"/> credentials, you will need to first
+        /// register these credentials by calling <see cref="App.EmailPasswordClient.RegisterUserAsync"/>.
+        /// </remarks>
+        /// <example>
+        /// The following snippet shows how to associate an email and password with an anonymous user
+        /// allowing them to login on a different device.
+        /// <code>
+        /// var app = App.Create("app-id")
+        /// var user = await app.LogInAsync(Credentials.Anonymous());
+        ///
+        /// // This step is only needed for email password auth - a password record must exist
+        /// // before you can link a user to it.
+        /// await app.EmailPasswordAuth.RegisterUserAsync("email", "password");
+        /// await user.LinkCredentialsAsync(Credentials.EmailPassword("email", "password"));
+        /// </code>
+        /// </example>
+        /// <param name="credentials">The credentials to link with the current user.</param>
+        /// <returns>
+        /// A <see cref="Task{User}"/> representing the remote link credentials operation. Upon successful completion, the task result
+        /// will contain the user to which the credentials were linked.
+        /// </returns>
+        public async Task<User> LinkCredentialsAsync(Credentials credentials)
         {
-            Argument.NotNull(serverUri, nameof(serverUri));
-            Argument.NotNullOrEmpty(token, nameof(token));
+            Argument.NotNull(credentials, nameof(credentials));
 
-            var data = new Dictionary<string, string>
-            {
-                ["token"] = token
-            };
+            var tcs = new TaskCompletionSource<SyncUserHandle>();
+            Handle.LinkCredentials(App.Handle, credentials.ToNative(), tcs);
+            var handle = await tcs.Task;
 
-            return AuthenticationHelper.UpdateAccountAsync(serverUri, "confirm_email", data: data);
+            return new User(handle, App);
         }
 
         /// <inheritdoc />
@@ -397,162 +294,252 @@ namespace Realms.Sync
         /// <returns>true if the two instances are equal; false otherwise.</returns>
         public bool Equals(User other)
         {
-            return Identity.Equals(other?.Identity);
+            return Id.Equals(other?.Id);
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Identity.GetHashCode();
-        }
-
-        #region Permissions
-
-        /// <summary>
-        /// Asynchronously retrieve all permissions associated with the user calling this method.
-        /// </summary>
-        /// <returns>
-        /// A collection of <see cref="PathPermission"/> objects that provide detailed information
-        /// regarding the granted access.
-        /// </returns>
-        /// <param name="recipient">The optional recipient of the permission.</param>
-        public async Task<IEnumerable<PathPermission>> GetGrantedPermissionsAsync(Recipient recipient = Recipient.Any)
-        {
-            var result = await MakePermissionRequestAsync(HttpMethod.Get, $"permissions?recipient={recipient}");
-            return result["permissions"].ToObject<IEnumerable<PathPermission>>();
+            return Id.GetHashCode();
         }
 
         /// <summary>
-        /// Changes the permissions of a Realm.
+        /// A class exposing functionality for users to manage API keys from the client. It is always scoped
+        /// to a particular <see cref="User"/> and can only be accessed via <see cref="ApiKeys"/>.
         /// </summary>
-        /// <returns>
-        /// An awaitable task, that, upon completion, indicates that the permissions have been successfully applied by the server.
-        /// </returns>
-        /// <param name="condition">A <see cref="PermissionCondition"/> that will be used to match existing users against.</param>
-        /// <param name="realmPath">The Realm path whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
-        /// <param name="accessLevel">
-        /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />.
-        /// </param>
-        public async Task ApplyPermissionsAsync(PermissionCondition condition, string realmPath, AccessLevel accessLevel)
+        public class ApiKeyClient
         {
-            Argument.NotNull(condition, nameof(condition));
+            private readonly User _user;
 
-            if (string.IsNullOrEmpty(realmPath))
+            internal ApiKeyClient(User user)
             {
-                throw new ArgumentNullException(nameof(realmPath));
+                _user = user;
             }
 
-            var payload = new Dictionary<string, object>
+            /// <summary>
+            /// Creates an API key that can be used to authenticate as the user.
+            /// </summary>
+            /// <remarks>
+            /// The value of the returned API key must be persisted at this time as this is the only
+            /// time it is visible. The key is enabled when created. It can be disabled by calling
+            /// <see cref="DisableAsync"/>.
+            /// </remarks>
+            /// <param name="name">The friendly name of the key.</param>
+            /// <returns>
+            /// A <see cref="Task{ApiKey}"/> representing the asynchronous operation. Successful completion indicates
+            /// that the <see cref="ApiKey"/> has been created on the server and its <see cref="ApiKey.Value"/> can
+            /// be used to create <see cref="Credentials.ApiKey(string)"/>.
+            /// </returns>
+            public async Task<ApiKey> CreateAsync(string name)
             {
-                ["condition"] = condition.ToJsonObject(),
-                ["realmPath"] = realmPath,
-                ["accessLevel"] = accessLevel.ToString().ToLower()
-            };
-            await MakePermissionRequestAsync(HttpMethod.Post, "permissions/apply", payload);
-        }
+                Argument.NotNullOrEmpty(name, nameof(name));
 
-        /// <summary>
-        /// Generates a token that can be used for sharing a Realm.
-        /// </summary>
-        /// <returns>
-        /// A token that can be shared with another user, e.g. via email or message and then consumed by
-        /// <see cref="AcceptPermissionOfferAsync"/> to obtain permissions to a Realm.</returns>
-        /// <param name="realmPath">The Realm URL whose permissions settings should be changed. Use <c>*</c> to change the permissions of all Realms managed by this <see cref="User"/>.</param>
-        /// <param name="accessLevel">
-        /// The access level to grant matching users. Note that the access level setting is absolute, i.e. it may revoke permissions for users that
-        /// previously had a higher access level. To revoke all permissions, use <see cref="AccessLevel.None" />.
-        /// </param>
-        /// <param name="expiresAt">Optional expiration date of the offer. If set to <c>null</c>, the offer doesn't expire.</param>
-        public async Task<string> OfferPermissionsAsync(string realmPath, AccessLevel accessLevel, DateTimeOffset? expiresAt = null)
-        {
-            if (string.IsNullOrEmpty(realmPath))
-            {
-                throw new ArgumentNullException(nameof(realmPath));
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.CreateApiKey(_user.App.Handle, name, tcs);
+                var apiKeys = await tcs.Task;
+
+                Debug.Assert(apiKeys.Length == 1, "The result of Create should be exactly 1 ApiKey.");
+
+                return new ApiKey(apiKeys.Single());
             }
 
-            if (expiresAt < DateTimeOffset.UtcNow)
+            /// <summary>
+            /// Fetches a specific user API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to fetch.</param>
+            /// <returns>
+            /// A <see cref="Task{ApiKey}"/> representing the asynchronous lookup operation.
+            /// </returns>
+            public async Task<ApiKey> FetchAsync(ObjectId id)
             {
-                throw new ArgumentException("The expiration date may not be in the past", nameof(expiresAt));
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.FetchApiKey(_user.App.Handle, id, tcs);
+                var apiKeys = await Handle404(tcs);
+
+                Debug.Assert(apiKeys == null || apiKeys.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
+
+                return apiKeys == null || apiKeys.Length == 0 ? null : new ApiKey(apiKeys.Single());
             }
 
-            if (accessLevel == AccessLevel.None)
+            /// <summary>
+            /// Fetches all API keys associated with the user.
+            /// </summary>
+            /// <returns>
+            /// An awaitable task representing the asynchronous lookup operation. Upon completion, the result contains
+            /// a collection of all API keys for that user.
+            /// </returns>
+            public async Task<IEnumerable<ApiKey>> FetchAllAsync()
             {
-                throw new ArgumentException("The access level may not be None", nameof(accessLevel));
+                var tcs = new TaskCompletionSource<UserApiKey[]>();
+                _user.Handle.FetchAllApiKeys(_user.App.Handle, tcs);
+                var apiKeys = await tcs.Task;
+
+                return apiKeys.Select(k => new ApiKey(k)).ToArray();
             }
 
-            var payload = new Dictionary<string, object>
+            /// <summary>
+            /// Deletes an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to delete.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchronous delete operation.</returns>
+            public Task DeleteAsync(ObjectId id)
             {
-                ["expiresAt"] = expiresAt?.ToString("O"),
-                ["realmPath"] = realmPath,
-                ["accessLevel"] = accessLevel.ToString().ToLower()
-            };
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DeleteApiKey(_user.App.Handle, id, tcs);
 
-            var result = await MakePermissionRequestAsync(HttpMethod.Post, "permissions/offers", payload);
-            return result.ToObject<PermissionOffer>().Token;
-        }
-
-        /// <summary>
-        /// Consumes a token generated by <see cref="OfferPermissionsAsync"/> to obtain permissions to a shared Realm.
-        /// </summary>
-        /// <returns>The relative url of the Realm that the token has granted permissions to.</returns>
-        /// <param name="offerToken">The token, generated by <see cref="OfferPermissionsAsync"/>.</param>
-        public async Task<string> AcceptPermissionOfferAsync(string offerToken)
-        {
-            if (string.IsNullOrEmpty(offerToken))
-            {
-                throw new ArgumentNullException(nameof(offerToken));
+                return Handle404(tcs);
             }
 
-            var result = await MakePermissionRequestAsync(HttpMethod.Post, $"permissions/offers/{offerToken}/accept");
-            return result["path"].Value<string>();
+            /// <summary>
+            /// Disables an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to disable.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchronous disable operation.</returns>
+            /// <seealso cref="EnableAsync(ObjectId)"/>
+            public Task DisableAsync(ObjectId id)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DisableApiKey(_user.App.Handle, id, tcs);
+
+                return Handle404(tcs, id, shouldThrow: true);
+            }
+
+            /// <summary>
+            /// Enables an API key by id.
+            /// </summary>
+            /// <param name="id">The id of the key to enable.</param>
+            /// <returns>A <see cref="Task"/> representing the asynchrounous enable operation.</returns>
+            /// <seealso cref="DisableAsync(ObjectId)"/>
+            public Task EnableAsync(ObjectId id)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.EnableApiKey(_user.App.Handle, id, tcs);
+
+                return Handle404(tcs, id, shouldThrow: true);
+            }
+
+            private static async Task<T> Handle404<T>(TaskCompletionSource<T> tcs, ObjectId? id = null, bool shouldThrow = false)
+            {
+                try
+                {
+                    return await tcs.Task;
+                }
+                catch (AppException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+                {
+                    if (shouldThrow)
+                    {
+                        throw new AppException($"Failed to execute operation because ApiKey with Id: {id} doesn't exist.", ex.HelpLink, 404);
+                    }
+
+                    return default;
+                }
+            }
         }
 
         /// <summary>
-        /// Invalidates a permission offer.
+        /// A class exposing functionality for calling remote MongoDB Realm functions.
         /// </summary>
-        /// <remarks>
-        /// Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
-        /// already been granted.
-        /// </remarks>
-        /// <returns>
-        /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
-        /// </returns>
-        /// <param name="offer">The offer that should be invalidated.</param>
-        [Obsolete("Use InvalidateOfferAsync(string) by passing the offer.Token instead.")]
-        public Task InvalidateOfferAsync(PermissionOffer offer)
+        /// <seealso href="https://docs.mongodb.com/realm/functions/"/>
+        public class FunctionsClient
         {
-            Argument.NotNull(offer, nameof(offer));
+            private readonly User _user;
 
-            return InvalidateOfferAsync(offer.Token);
+            internal FunctionsClient(User user)
+            {
+                _user = user;
+            }
+
+            /// <summary>
+            /// Calls a remote function with the supplied arguments.
+            /// </summary>
+            /// <param name="name">Name of the Realm function to call.</param>
+            /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
+            /// <returns>
+            /// A <see cref="Task{BsonValue}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// the value returned by the function.
+            /// </returns>
+            public Task<BsonValue> CallAsync(string name, params object[] args) => CallAsync<BsonValue>(name, args);
+
+            /// <summary>
+            /// Calls a remote function with the supplied arguments.
+            /// </summary>
+            /// <remarks>
+            /// The <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/">MongoDB Bson</see> library is used
+            /// to decode the response. It will automatically handle most cases, but if you want to control the behavior
+            /// of the deserializer, you can use the attributes in the
+            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/apidocs/html/N_MongoDB_Bson_Serialization_Attributes.htm">MongoDB.Bson.Serialization.Attributes</see>
+            /// namespace.
+            /// <br/>
+            /// If you want to modify the global conventions used when deserializing the response, such as convert
+            /// camelCase properties to PascalCase, you can regiseter a
+            /// <see href="https://mongodb.github.io/mongo-csharp-driver/2.11/reference/bson/mapping/conventions/">ConventionPack</see>.
+            /// </remarks>
+            /// <typeparam name="T">The type that the response will be decoded to.</typeparam>
+            /// <param name="name">Name of the Realm function to call.</param>
+            /// <param name="args">Arguments that will be sent to the Realm function. They have to be json serializable values.</param>
+            /// <returns>
+            /// A <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
+            /// the value returned by the function decoded as <typeparamref name="T"/>.
+            /// </returns>
+            public async Task<T> CallAsync<T>(string name, params object[] args)
+            {
+                Argument.NotNullOrEmpty(name, nameof(name));
+
+                var tcs = new TaskCompletionSource<BsonPayload>();
+
+                _user.Handle.CallFunction(_user.App.Handle, name, args.ToNativeJson(), tcs);
+
+                var response = await tcs.Task;
+
+                return response.GetValue<T>();
+            }
         }
 
         /// <summary>
-        /// Invalidates a permission offer by its token.
+        /// The Push client exposes an API to register/deregister for push notifications from a client app.
         /// </summary>
-        /// <remarks>
-        /// Invalidating an offer prevents new users from consuming its token. It doesn't revoke any permissions that have
-        /// already been granted.
-        /// </remarks>
-        /// <returns>
-        /// An awaitable task, that, upon completion, indicates that the offer has been successfully invalidated by the server.
-        /// </returns>
-        /// <param name="offerToken">The token of the offer that should be invalidated.</param>
-        public Task InvalidateOfferAsync(string offerToken) => MakePermissionRequestAsync(HttpMethod.Delete, $"permissions/offers/{offerToken}");
-
-        /// <summary>
-        /// Asynchronously retrieve the permission offers that this user has created by invoking <see cref="OfferPermissionsAsync"/>.
-        /// </summary>
-        /// <returns>A collection of <see cref="PermissionOffer"/> objects.</returns>
-        public async Task<IEnumerable<PermissionOffer>> GetPermissionOffersAsync()
+        public class PushClient
         {
-            var result = await MakePermissionRequestAsync(HttpMethod.Get, $"permissions/offers");
-            return result["offers"].ToObject<IEnumerable<PermissionOffer>>();
+            private readonly User _user;
+            private readonly string _service;
+
+            internal PushClient(User user, string service)
+            {
+                _user = user;
+                _service = service;
+            }
+
+            /// <summary>
+            /// Registers the given Firebase Cloud Messaging registration token with the user's device on MongoDB Realm.
+            /// </summary>
+            /// <param name="token">The FCM registration token.</param>
+            /// <returns>
+            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
+            /// by the MongoDB Realm server and this device can now receive push notifications.
+            /// </returns>
+            public Task RegisterDeviceAsync(string token)
+            {
+                Argument.NotNullOrEmpty(token, nameof(token));
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.RegisterPushToken(_user.App.Handle, _service, token, tcs);
+
+                return tcs.Task;
+            }
+
+            /// <summary>
+            /// Deregister the user's device from Firebase Cloud Messaging.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="Task"/> representing the remote operation. Successful completion indicates that the devices registration token
+            /// was removed from the MongoDB Realm server and it will no longer receive push notifications.
+            /// </returns>
+            public Task DeregisterDeviceAsync()
+            {
+                var tcs = new TaskCompletionSource<object>();
+                _user.Handle.DeregisterPushToken(_user.App.Handle, _service, tcs);
+
+                return tcs.Task;
+            }
         }
-
-        private Task<JObject> MakePermissionRequestAsync(HttpMethod method, string relativeUri, IDictionary<string, object> body = null)
-            => AuthenticationHelper.MakeAuthRequestAsync(method, new Uri(ServerUri, relativeUri), body, RefreshToken);
-
-        #endregion Permissions
     }
 }

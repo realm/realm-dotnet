@@ -18,39 +18,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ListOfPrimitivesTests
+    public class ListOfPrimitivesTests : RealmInstanceTest
     {
         private static readonly Random _random = new Random();
-        private Lazy<Realm> _lazyRealm;
-
-        // We capture the current SynchronizationContext when opening a Realm.
-        // However, NUnit replaces the SynchronizationContext after the SetUp method and before the async test method.
-        // That's why we make sure we open the Realm in the test method by accessing it lazily.
-        private Realm _realm => _lazyRealm.Value;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _lazyRealm = new Lazy<Realm>(() => Realm.GetInstance(Path.GetTempFileName()));
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            if (_lazyRealm.IsValueCreated)
-            {
-                Realm.DeleteRealm(_realm.Config);
-            }
-        }
 
         #region TestCaseSources
 
@@ -242,6 +221,89 @@ namespace Realms.Tests.Database
             }
         }
 
+        private static readonly IEnumerable<decimal?[]> _decimalValues = new[]
+        {
+            new decimal?[] { 1.4M },
+            new decimal?[] { null },
+            new decimal?[] { decimal.MinValue, decimal.MaxValue, 0 },
+            new decimal?[] { -1, 3.4M, null, 5.3M, 9.54375843758349634963634M }
+        };
+
+        public static IEnumerable<object> DecimalTestValues()
+        {
+            yield return new object[] { null };
+            var values = _decimalValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableDecimalTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _decimalValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static readonly IEnumerable<Decimal128?[]> _decimal128Values = new[]
+        {
+            new Decimal128?[] { 1.4M },
+            new Decimal128?[] { null },
+            new Decimal128?[] { Decimal128.MinValue, decimal.MinValue, decimal.MaxValue, Decimal128.MaxValue, 0 },
+            new Decimal128?[] { -1, 3.4M, null, 5.3M, -23.424389584396384963M }
+        };
+
+        public static IEnumerable<object> Decimal128TestValues()
+        {
+            yield return new object[] { null };
+            var values = _decimal128Values.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableDecimal128TestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _decimal128Values)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        private static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
+
+        private static readonly IEnumerable<ObjectId?[]> _objectIdValues = new[]
+        {
+            new ObjectId?[] { new ObjectId("5f651b09f6cddff534c3cddf") },
+            new ObjectId?[] { null },
+            new ObjectId?[] { ObjectId.Empty, GenerateRepetitiveObjectId(0), GenerateRepetitiveObjectId(byte.MaxValue) },
+            new ObjectId?[] { new ObjectId("5f651b2930643efeef987e5d"), GenerateRepetitiveObjectId(byte.MaxValue), null, new ObjectId("5f651c4cf755604f2fbf7440") }
+        };
+
+        public static IEnumerable<object> ObjectIdTestValues()
+        {
+            yield return new object[] { null };
+            var values = _objectIdValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableObjectIdTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _objectIdValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
         private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
         {
             new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) },
@@ -360,6 +422,24 @@ namespace Realms.Tests.Database
             RunManagedTests(obj => obj.Int64List, values);
         }
 
+        [TestCaseSource(nameof(DecimalTestValues))]
+        public void Test_ManagedDecimalList(decimal[] values)
+        {
+            RunManagedTests(obj => obj.DecimalList, values);
+        }
+
+        [TestCaseSource(nameof(Decimal128TestValues))]
+        public void Test_ManagedDecimal128List(Decimal128[] values)
+        {
+            RunManagedTests(obj => obj.Decimal128List, values);
+        }
+
+        [TestCaseSource(nameof(ObjectIdTestValues))]
+        public void Test_ManagedObjectIdList(ObjectId[] values)
+        {
+            RunManagedTests(obj => obj.ObjectIdList, values);
+        }
+
         [TestCaseSource(nameof(DateTestValues))]
         public void Test_ManagedDateTimeOffsetList(DateTimeOffset[] values)
         {
@@ -430,6 +510,24 @@ namespace Realms.Tests.Database
         public void Test_ManagedNullableInt64List(long?[] values)
         {
             RunManagedTests(obj => obj.NullableInt64List, values);
+        }
+
+        [TestCaseSource(nameof(NullableDecimalTestValues))]
+        public void Test_ManagedNullableDecimalList(decimal?[] values)
+        {
+            RunManagedTests(obj => obj.NullableDecimalList, values);
+        }
+
+        [TestCaseSource(nameof(NullableDecimal128TestValues))]
+        public void Test_ManagedNullableDecimal128List(Decimal128?[] values)
+        {
+            RunManagedTests(obj => obj.NullableDecimal128List, values);
+        }
+
+        [TestCaseSource(nameof(NullableObjectIdTestValues))]
+        public void Test_ManagedNullableObjectIdList(ObjectId?[] values)
+        {
+            RunManagedTests(obj => obj.NullableObjectIdList, values);
         }
 
         [TestCaseSource(nameof(NullableDateTestValues))]
@@ -541,7 +639,7 @@ namespace Realms.Tests.Database
             }, timeout: 100000);
         }
 
-        private static async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
+        private async Task RunManagedTestsCore<T>(IList<T> items, T[] toAdd)
         {
             var realm = (items as RealmList<T>).Realm;
 
@@ -603,13 +701,11 @@ namespace Realms.Tests.Database
             var reference = ThreadSafeReference.Create(items);
             await Task.Run(() =>
             {
-                using (var bgRealm = Realm.GetInstance(realm.Config))
+                using var bgRealm = GetRealm(realm.Config);
+                var backgroundList = bgRealm.ResolveReference(reference);
+                for (var i = 0; i < backgroundList.Count; i++)
                 {
-                    var backgroundList = bgRealm.ResolveReference(reference);
-                    for (var i = 0; i < backgroundList.Count; i++)
-                    {
-                        Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
-                    }
+                    Assert.That(backgroundList[i], Is.EqualTo(toAdd[i]));
                 }
             });
 
@@ -814,6 +910,24 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(o => o.Int64List, values);
         }
 
+        [TestCaseSource(nameof(DecimalTestValues))]
+        public void Test_UnmanagedDecimalList(decimal[] values)
+        {
+            RunUnmanagedTests(obj => obj.DecimalList, values);
+        }
+
+        [TestCaseSource(nameof(Decimal128TestValues))]
+        public void Test_UnmanagedDecimal128List(Decimal128[] values)
+        {
+            RunUnmanagedTests(obj => obj.Decimal128List, values);
+        }
+
+        [TestCaseSource(nameof(ObjectIdTestValues))]
+        public void Test_UnmanagedObjectIdList(ObjectId[] values)
+        {
+            RunUnmanagedTests(obj => obj.ObjectIdList, values);
+        }
+
         [TestCaseSource(nameof(DateTestValues))]
         public void Test_UnmanagedDateTimeOffsetList(DateTimeOffset[] values)
         {
@@ -884,6 +998,24 @@ namespace Realms.Tests.Database
         public void Test_UnmanagedNullableInt64List(long?[] values)
         {
             RunUnmanagedTests(o => o.NullableInt64List, values);
+        }
+
+        [TestCaseSource(nameof(NullableDecimalTestValues))]
+        public void Test_UnmanagedNullableDecimalList(decimal?[] values)
+        {
+            RunUnmanagedTests(obj => obj.NullableDecimalList, values);
+        }
+
+        [TestCaseSource(nameof(NullableDecimal128TestValues))]
+        public void Test_UnmanagedNullableDecimal128List(Decimal128?[] values)
+        {
+            RunUnmanagedTests(obj => obj.NullableDecimal128List, values);
+        }
+
+        [TestCaseSource(nameof(NullableObjectIdTestValues))]
+        public void Test_UnmanagedONullablebjectIdList(ObjectId?[] values)
+        {
+            RunUnmanagedTests(obj => obj.NullableObjectIdList, values);
         }
 
         [TestCaseSource(nameof(NullableDateTestValues))]

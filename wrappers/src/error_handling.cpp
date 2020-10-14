@@ -31,6 +31,8 @@
 #include "realm/alloc_slab.hpp"
 #include "object_accessor.hpp"
 
+using namespace realm::app;
+
 namespace realm {
 
     SetDuplicatePrimaryKeyValueException::SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value)
@@ -117,8 +119,28 @@ namespace realm {
         catch (const ObjectManagedByAnotherRealmException& e) {
             return { RealmErrorType::ObjectManagedByAnotherRealm, e.what() };
         }
-        catch (const RealmFeatureUnavailableException& e) {
-            return { RealmErrorType::RealmFeatureUnavailable, e.what() };
+        catch (const AppError& e) {
+            if (e.is_client_error()) {
+                return { RealmErrorType::AppClientError, e.message };
+            }
+
+            if (e.is_custom_error()) {
+                return { RealmErrorType::AppCustomError, e.message };
+            }
+
+            if (e.is_http_error()) {
+                return { RealmErrorType::AppHttpError, e.message };
+            }
+
+            if (e.is_json_error()) {
+                return { RealmErrorType::AppJsonError, e.message };
+            }
+
+            if (e.is_service_error()) {
+                return { RealmErrorType::AppCustomError, e.message };
+            }
+
+            return { RealmErrorType::AppUnknownError, e.message };
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };

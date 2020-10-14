@@ -25,16 +25,6 @@ namespace Realms
 {
     internal class MarshalHelpers
     {
-        public static IntPtr BoolToIntPtr(bool value)
-        {
-            return value ? (IntPtr)1 : (IntPtr)0;
-        }
-
-        public static bool IntPtrToBool(IntPtr value)
-        {
-            return (IntPtr)1 == value;
-        }
-
         public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
 
         public delegate void NativeCollectionSetter(IntPtr buffer, IntPtr bufferLength, bool hasValue, out NativeException ex);

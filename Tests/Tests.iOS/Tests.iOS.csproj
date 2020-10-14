@@ -29,7 +29,7 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.runner.iOS --linkskip=nunit.framework --linkskip=MongoDB.Bson --nolinkaway</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -40,7 +40,7 @@
     <MtouchLink>Full</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
     <ConsolePause>false</ConsolePause>
-    <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=nunit.framework --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=nunit.framework --linkskip=MongoDB.Bson --nolinkaway</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>

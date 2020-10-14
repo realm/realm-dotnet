@@ -104,10 +104,8 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 const string message = "this is an exception from user code";
-                await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)), ex =>
-                {
-                    Assert.That(ex.Message, Is.EqualTo(message));
-                });
+                var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
+                Assert.That(ex.Message, Is.EqualTo(message));
             });
         }
 
@@ -128,14 +126,12 @@ namespace Realms.Tests.Database
 
                 Task.Run(() =>
                 {
-                    using (var realm = Realm.GetInstance(_realm.Config))
+                    using var realm = GetRealm(_realm.Config);
+                    var bgObj = realm.ResolveReference(reference);
+                    realm.Write(() =>
                     {
-                        var bgObj = realm.ResolveReference(reference);
-                        realm.Write(() =>
-                        {
-                            bgObj.StringValue = "123";
-                        });
-                    }
+                        bgObj.StringValue = "123";
+                    });
                 }).Wait(); // <- wait to avoid the main thread autoupdating while idle
 
                 Assert.That(obj.StringValue, Is.Null);
@@ -149,7 +145,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(changeTiming, Is.GreaterThan(idleTiming));
 
-                async Task<long> MeasureTiming(Func<Task> func)
+                static async Task<long> MeasureTiming(Func<Task> func)
                 {
                     var sw = new Stopwatch();
                     sw.Start();

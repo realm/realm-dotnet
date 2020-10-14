@@ -40,6 +40,9 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string SingleTypeName = "System.Single";
     internal const string DoubleTypeName = "System.Double";
     internal const string BooleanTypeName = "System.Boolean";
+    internal const string DecimalTypeName = "System.Decimal";
+    internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
+    internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
     internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
     internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
     internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
@@ -49,22 +52,35 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
     internal const string NullableSingleTypeName = "System.Nullable`1<System.Single>";
     internal const string NullableDoubleTypeName = "System.Nullable`1<System.Double>";
     internal const string NullableBooleanTypeName = "System.Nullable`1<System.Boolean>";
+    internal const string NullableDecimalTypeName = "System.Nullable`1<System.Decimal>";
+    internal const string NullableDecimal128TypeName = "System.Nullable`1<MongoDB.Bson.Decimal128>";
     internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
+    internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
 
     private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
         { StringTypeName, "String" },
-        { CharTypeName, "Char" },
-        { SingleTypeName, "Single" },
-        { DoubleTypeName, "Double" },
-        { BooleanTypeName, "Boolean" },
-        { DateTimeOffsetTypeName, "DateTimeOffset" },
         { ByteArrayTypeName, "ByteArray" },
-        { NullableCharTypeName, "NullableChar" },
-        { NullableSingleTypeName, "NullableSingle" },
+    };
+
+    private static readonly Dictionary<string, string> _primitiveValueTypes = new Dictionary<string, string>
+    {
+        { CharTypeName, "Int" },
+        { SingleTypeName, "Float" },
+        { DoubleTypeName, "Double" },
+        { BooleanTypeName, "Bool" },
+        { DecimalTypeName, "Decimal" },
+        { Decimal128TypeName, "Decimal" },
+        { ObjectIdTypeName, "ObjectId" },
+        { DateTimeOffsetTypeName, "Date" },
+        { NullableCharTypeName, "NullableInt" },
+        { NullableSingleTypeName, "NullableFloat" },
         { NullableDoubleTypeName, "NullableDouble" },
-        { NullableBooleanTypeName, "NullableBoolean" },
-        { NullableDateTimeOffsetTypeName, "NullableDateTimeOffset" }
+        { NullableBooleanTypeName, "NullableBool" },
+        { NullableDateTimeOffsetTypeName, "NullableDate" },
+        { NullableDecimalTypeName, "NullableDecimal" },
+        { NullableDecimal128TypeName, "NullableDecimal" },
+        { NullableObjectIdTypeName, "NullableObjectId" },
     };
 
     private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
@@ -95,11 +111,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
         Int16TypeName,
         Int32TypeName,
         Int64TypeName,
+        ObjectIdTypeName,
         NullableCharTypeName,
         NullableByteTypeName,
         NullableInt16TypeName,
         NullableInt32TypeName,
         NullableInt64TypeName,
+        NullableObjectIdTypeName,
     };
 
     private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
@@ -113,13 +131,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
     private IEnumerable<TypeDefinition> GetMatchingTypes()
     {
-        foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject)))
+        foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject) || t.IsDescendedFrom(_references.EmbeddedObject)))
         {
             if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
             {
                 continue;
             }
-            else if (type.BaseType.IsSameAs(_references.RealmObject))
+            else if (type.IsValidRealmObjectBaseInheritor(_references))
             {
                 yield return type;
             }
@@ -256,6 +274,13 @@ Analytics payload
             return;
         }
 
+        var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
+        if (type.IsEmbeddedObjectInheritor(_references) && pkProperty != null)
+        {
+            WriteError($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.");
+            return;
+        }
+
         if (persistedProperties.Count(p => p.IsPrimaryKey) > 1)
         {
             WriteError($"Class {type.Name} has more than one property marked with [PrimaryKey].");
@@ -297,18 +322,18 @@ Analytics payload
 
         var backingField = prop.GetBackingField();
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-        if (isIndexed && !prop.IsIndexable())
+        if (isIndexed && !prop.IsIndexable(_references))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
         }
 
-        var isPrimaryKey = prop.IsPrimaryKey();
+        var isPrimaryKey = prop.IsPrimaryKey(_references);
         if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
             return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
         }
 
-        var isRequired = prop.IsRequired();
+        var isRequired = prop.IsRequired(_references);
         if (isRequired &&
             !prop.IsIList(typeof(string)) &&
             !prop.IsNullable() &&
@@ -320,9 +345,9 @@ Analytics payload
 
         if (!prop.IsAutomatic())
         {
-            if (prop.PropertyType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
-                return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
+                return WeaveResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
             }
 
             return WeaveResult.Skipped();
@@ -346,6 +371,30 @@ Analytics payload
 
             ReplaceGetter(prop, columnName, realmAccessors.Getter);
             ReplaceSetter(prop, backingField, columnName, realmAccessors.Setter);
+        }
+        else if (_primitiveValueTypes.TryGetValue(prop.PropertyType.FullName, out var propertyType))
+        {
+            if (prop.SetMethod == null)
+            {
+                return WeaveResult.Skipped();
+            }
+
+            var suffix = isPrimaryKey ? "Unique" : string.Empty;
+            var typeId = $"{prop.PropertyType.FullName}{suffix}";
+
+            if (!methodTable.TryGetValue(typeId, out var accessors))
+            {
+                var getter = new GenericInstanceMethod(_references.RealmObject_GetPrimitiveValue) { GenericArguments = { prop.PropertyType } };
+                var setter = new GenericInstanceMethod(isPrimaryKey ? _references.RealmObject_SetPrimitiveValueUnique : _references.RealmObject_SetPrimitiveValue)
+                {
+                    GenericArguments = { prop.PropertyType }
+                };
+                methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
+            }
+
+            var propertyTypeRef = _references.GetPropertyTypeField(propertyType);
+            ReplaceGetter(prop, columnName, accessors.Getter, propertyTypeRef);
+            ReplaceSetter(prop, backingField, columnName, accessors.Setter, propertyTypeRef);
         }
         else if (_realmIntegerBackedTypes.Contains(prop.PropertyType.FullName))
         {
@@ -375,7 +424,7 @@ Analytics payload
             var typeId = $"{prefix}{integerType.FullName}{suffix}";
             if (!methodTable.TryGetValue(typeId, out var accessors))
             {
-                var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+                var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
                 {
                     HasThis = true,
                     Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
@@ -392,7 +441,7 @@ Analytics payload
 
                 genericGetter.ReturnType = returnType;
 
-                var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+                var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
                 {
                     HasThis = true,
                     Parameters =
@@ -423,9 +472,10 @@ Analytics payload
         else if (prop.IsIList())
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_references.RealmObject) &&
+            if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
                 !_realmIntegerBackedTypes.Contains(elementType.FullName) &&
-                !_typeTable.ContainsKey(elementType.FullName))
+                !_typeTable.ContainsKey(elementType.FullName) &&
+                !_primitiveValueTypes.ContainsKey(elementType.FullName))
             {
                 return WeaveResult.Error($"{type.Name}.{prop.Name} is an IList but its generic type is {elementType.Name} which is not supported by Realm.");
             }
@@ -447,7 +497,7 @@ Analytics payload
                               new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
                               concreteListConstructor);
         }
-        else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+        else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
         {
             // with casting in the _realmObject methods, should just work
             ReplaceGetter(prop, columnName,
@@ -526,12 +576,13 @@ Analytics payload
 
         if (!methodTable.TryGetValue(typeId, out var realmAccessors))
         {
-            var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObject)
+            var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObjectBase)
             {
                 HasThis = true,
-                Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) }
+                Parameters = { new ParameterDefinition(ModuleDefinition.TypeSystem.String) },
             };
-            var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObject)
+
+            var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), ModuleDefinition.TypeSystem.Void, _references.RealmObjectBase)
             {
                 HasThis = true,
                 Parameters =
@@ -547,7 +598,7 @@ Analytics payload
         return realmAccessors;
     }
 
-    private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
+    private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, FieldReference propertyTypeRef = null)
     {
         //// A synthesized property getter looks like this:
         ////   0: ldarg.0
@@ -576,6 +627,11 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
+        if (propertyTypeRef != null)
+        {
+            il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+        }
+
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
@@ -767,7 +823,7 @@ Analytics payload
         Debug.Write("[get list] ");
     }
 
-    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
+    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, FieldReference propertyTypeRef = null)
     {
         //// A synthesized property setter looks like this:
         ////   0: ldarg.0
@@ -829,6 +885,11 @@ Analytics payload
         il.Append(managedSetStart);
         il.Append(il.Create(OpCodes.Ldstr, columnName));
         il.Append(il.Create(OpCodes.Ldarg_1));
+        if (propertyTypeRef != null)
+        {
+            il.Append(il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+        }
+
         il.Append(il.Create(OpCodes.Call, setValueReference));
         il.Append(il.Create(OpCodes.Ret));
 
@@ -926,7 +987,7 @@ Analytics payload
 
         helperType.Interfaces.Add(new InterfaceImplementation(_references.IRealmObjectHelper));
 
-        var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObject);
+        var createInstance = new MethodDefinition("CreateInstance", DefaultMethodAttributes, _references.RealmObjectBase);
         {
             var il = createInstance.Body.GetILProcessor();
             il.Emit(OpCodes.Newobj, objectConstructor);
@@ -972,7 +1033,7 @@ Analytics payload
                 }
             */
 
-            var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObject);
+            var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObjectBase);
             copyToRealm.Parameters.Add(instanceParameter);
 
             var updateParameter = new ParameterDefinition("update", ParameterAttributes.None, ModuleDefinition.TypeSystem.Boolean);
@@ -984,11 +1045,6 @@ Analytics payload
             copyToRealm.Body.Variables.Add(new VariableDefinition(realmObjectType));
 
             byte currentStloc = 1;
-            if (properties.Any(p => p.Property.IsDateTimeOffset()))
-            {
-                copyToRealm.Body.Variables.Add(new VariableDefinition(_references.System_DateTimeOffset));
-                currentStloc++;
-            }
 
             foreach (var prop in properties.Where(p => p.Property.IsIList()))
             {
@@ -1001,7 +1057,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey()))
+            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey(_references)))
             {
                 var property = prop.Property;
                 var field = prop.Field;
@@ -1020,9 +1076,12 @@ Analytics payload
 
                     // We can skip setting properties that have their default values unless:
                     var shouldSetAlways = property.IsNullable() || // The property is nullable - those should be set explicitly to null
-                                          property.IsRequired() || // Needed for validating that the property is not null (string)
+                                          property.IsRequired(_references) || // Needed for validating that the property is not null (string)
                                           property.IsDateTimeOffset() || // Core's DateTimeOffset property defaults to 1970-1-1, so we should override
-                                          property.PropertyType.IsRealmInteger(out _, out _); // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
+                                          property.IsDecimal() ||
+                                          property.IsDecimal128() ||
+                                          property.IsObjectId();
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (!skipDefaults || castInstance.field != default(fieldType))
@@ -1034,7 +1093,7 @@ Analytics payload
                     // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
                     // instruction later on.
                     Instruction skipDefaultsPlaceholder = null;
-                    if (property.IsDescendantOf(_references.RealmObject))
+                    if (property.ContainsRealmObject(_references))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
@@ -1078,7 +1137,7 @@ Analytics payload
                     var setEndPoint = il.Create(OpCodes.Nop);
                     il.Append(setEndPoint);
 
-                    if (property.IsDescendantOf(_references.RealmObject))
+                    if (property.ContainsRealmObject(_references))
                     {
                         if (addPlaceholder != null)
                         {
@@ -1154,7 +1213,7 @@ Analytics payload
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
 
-                    if (elementType.Resolve().BaseType.IsSameAs(_references.RealmObject))
+                    if (elementType.Resolve().IsRealmObjectInheritor(_references))
                     {
                         // castInstance.Realm.Add(list[i], update)
                         il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));

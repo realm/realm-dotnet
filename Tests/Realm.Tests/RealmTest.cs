@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Realms.Tests
@@ -33,7 +36,7 @@ namespace Realms.Tests
 
         static RealmTest()
         {
-            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"realm-tests-${System.Diagnostics.Process.GetCurrentProcess().Id}");
+            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"rt-${System.Diagnostics.Process.GetCurrentProcess().Id}");
             Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
         }
 
@@ -44,7 +47,7 @@ namespace Realms.Tests
             {
                 if (OverrideDefaultConfig)
                 {
-                    RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Path.GetTempFileName());
+                    RealmConfiguration.DefaultConfiguration = new RealmConfiguration(Guid.NewGuid().ToString());
                 }
 
                 CustomSetUp();
@@ -68,9 +71,14 @@ namespace Realms.Tests
             {
                 CustomTearDown();
 
-                Realms.Sync.SharedRealmHandleExtensions.ResetForTesting();
                 _isSetup = false;
-                Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                try
+                {
+                    Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -91,7 +99,28 @@ namespace Realms.Tests
 
         protected Realm GetRealm(RealmConfigurationBase config = null)
         {
-            var result = Realm.GetInstance(config ?? RealmConfiguration.DefaultConfiguration);
+            var result = Realm.GetInstance(config);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected Realm GetRealm(string path)
+        {
+            var result = Realm.GetInstance(path);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, CancellationToken cancellationToken = default)
+        {
+            var result = await Realm.GetInstanceAsync(config, cancellationToken);
+            CleanupOnTearDown(result);
+            return result;
+        }
+
+        protected Realm Freeze(Realm realm)
+        {
+            var result = realm.Freeze();
             CleanupOnTearDown(result);
             return result;
         }

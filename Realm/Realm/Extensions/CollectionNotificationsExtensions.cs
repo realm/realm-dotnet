@@ -36,11 +36,11 @@ namespace Realms
         /// implements <see cref="INotifyCollectionChanged"/>.
         /// </summary>
         /// <param name="query">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             Argument.NotNull(query, nameof(query));
 
@@ -56,7 +56,7 @@ namespace Realms
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="results">The <see cref="IQueryable{T}" /> to observe for changes.</param>
-        /// <typeparam name="T">Type of the <see cref="RealmObject"/> in the results.</typeparam>
+        /// <typeparam name="T">Type of the <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> in the results.</typeparam>
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
         /// <returns>
@@ -64,7 +64,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
-            where T : RealmObject
+            where T : RealmObjectBase
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }

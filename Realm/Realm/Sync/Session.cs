@@ -23,8 +23,9 @@ using System.Threading.Tasks;
 namespace Realms.Sync
 {
     /// <summary>
-    /// An object encapsulating a Realm Object Server session. Sessions represent the communication between the client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
-    /// Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
+    /// An object encapsulating a synchronization session. Sessions represent the communication between the client (and a local Realm file on disk),
+    /// and the server (and a remote Realm at a given partition served by a MongoDB Realm Server). Sessions are always created by the SDK and vended
+    /// out through various APIs. The lifespans of sessions associated with Realms are managed automatically.
     /// </summary>
     public class Session
     {
@@ -34,21 +35,15 @@ namespace Realms.Sync
         public static event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Gets the <see cref="Uri"/> describing the remote Realm which this session connects to and synchronizes changes with.
-        /// </summary>
-        /// <value>The <see cref="Uri"/> where the Realm Object Server resides.</value>
-        public Uri ServerUri => new Uri(Handle.GetServerUri());
-
-        /// <summary>
         /// Gets the session’s current state.
         /// </summary>
         /// <value>An enum value indicating the state of the session.</value>
         public SessionState State => Handle.GetState();
 
         /// <summary>
-        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to the Realm Object Server.
+        /// Gets the <see cref="User"/> defined by the <see cref="SyncConfiguration"/> that is used to connect to MongoDB Realm.
         /// </summary>
-        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>
+        /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfiguration"/>.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
 
@@ -131,7 +126,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Stops any synchronization with the Realm Object Server until the Realm is re-opened again
+        /// Stops any synchronization with the server until the Realm is re-opened again
         /// after fully closing it.
         /// <br/>
         /// Synchronization can be re-enabled by calling <see cref="Start"/> again.
@@ -145,7 +140,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Attempts to resume the session and enable synchronization with the Realm Object Server.
+        /// Attempts to resume the session and enable synchronization with the server.
         /// </summary>
         /// <remarks>
         /// All sessions will be active by default and calling this method only makes sense if
@@ -161,24 +156,6 @@ namespace Realms.Sync
         internal Session(SessionHandle handle)
         {
             Handle = handle;
-        }
-
-        internal Session(string path) : this(SessionHandle.GetSessionForPath(path))
-        {
-        }
-
-        /// <summary>
-        /// Attempts to reconnect all sessions.
-        /// </summary>
-        /// <remarks>
-        /// By default, the sync engine will attempt to reconnect sessions at incrementing intervals. This method is
-        /// useful when you are monitoring connectivity yourself, using e.g.
-        /// <see href="https://github.com/jamesmontemagno/ConnectivityPlugin">Connectivity Plugin</see> or through the
-        /// native connectivity API and you wish to cancel that delay and try to reconnect immediately.
-        /// </remarks>
-        public static void Reconnect()
-        {
-            SharedRealmHandleExtensions.ReconnectSessions();
         }
 
         internal static void RaiseError(Session session, Exception error)

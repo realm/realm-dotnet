@@ -29,8 +29,8 @@ namespace Realms
     /// <remarks>
     /// <see cref="RealmInteger{T}"/> is implicitly convertible to and from T/>.
     /// <br/>
-    /// Calling <see cref="Increment()"/> on a managed <see cref="RealmObject"/>'s property must be done in a write
-    /// transaction. When calling <see cref="Increment()"/> on a <see cref="RealmObject"/> property, it will increment
+    /// Calling <see cref="Increment()"/> on a managed <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>'s property must be done in a write
+    /// transaction. When calling <see cref="Increment()"/> on a <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> property, it will increment
     /// the property's value in the database, so the change will be reflected the next time this property is accessed.
     /// If the object is unmanaged, its property value will not be affected.
     /// </remarks>
@@ -38,7 +38,6 @@ namespace Realms
     /// The integer type, represented by this <see cref="RealmInteger{T}"/>. Supported types are <see cref="byte"/>,
     /// <see cref="short"/>, <see cref="int"/>, and <see cref="long"/>.
     /// </typeparam>
-    /// <seealso href="https://realm.io/docs/realm-object-server/#counters"/>
     [Preserve(AllMembers = true, Conditional = false)]
     [SuppressMessage("Design", "CA1066:Implement IEquatable when overriding Object.Equals", Justification = "We already implement IEquatable<T> and RealmInteger<T> implicitly converts to T.")]
     public struct RealmInteger<T> :
@@ -59,7 +58,7 @@ namespace Realms
         {
             _value = value;
             _objectHandle = null;
-            _propertyIndex = IntPtr.Zero;
+            _propertyIndex = default;
         }
 
         internal RealmInteger(T value, ObjectHandle objectHandle, IntPtr propertyIndex)
@@ -97,7 +96,7 @@ namespace Realms
             if (IsManaged)
             {
                 _objectHandle.AddInt64(_propertyIndex, value.ToLong());
-                var result = Operator.Convert<long, T>(_objectHandle.GetInt64(_propertyIndex));
+                var result = _objectHandle.GetPrimitive(_propertyIndex, Schema.PropertyType.Int).ToIntegral<T>();
                 return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
             }
 
@@ -324,7 +323,7 @@ namespace Realms
         /// </param>
         /// <param name="formatProvider">
         /// The provider to use to format the value. -or- A null reference to obtain the numeric format
-        /// information from the current locale setting of the operating system</param>
+        /// information from the current locale setting of the operating system.</param>
         /// <returns>The value of the current instance in the specified format.</returns>
         public string ToString(string format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
 

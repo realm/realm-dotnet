@@ -1,3 +1,117 @@
+v10 (TBD)
+------------------
+
+### Breaking Changes
+* We no longer support Realm Cloud (legacy), but instead the new [MongoDB Realm Cloud](https://realm.mongodb.com). MongoDB Realm is a serverless platform that enables developers to quickly build applications without having to set up server infrastructure. MongoDB Realm is built on top of MongoDB Atlas, automatically integrating the connection to your database. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Remove support for Query-based sync, including the configuration parameters and the `SyncSubscription` types. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Remove everything related to sync permissions, including both the path-based permission system and the object-level privileges for query-based sync. [Permissions in MongoDB Realm](https://docs.mongodb.com/realm/sync/permissions/) are defined serverside. ([#2011](https://github.com/realm/realm-dotnet/pull/2011))
+* Moved all API for dynamic access on the `Realm` class to `Realm.DynamicApi`:
+  * `Realm.CreateObject(string className, object primaryKey)` is now `Realm.DynamicApi.CreateObject(string className, object primaryKey)`.
+  * `Realm.All(string className)` is now `Realm.DynamicApi.All(string className)`.
+  * `Realm.RemoveAll(string className)` is now `Realm.DynamicApi.RemoveAll(string className)`.
+  * `Realm.Find(string className, long? primaryKey)` is now `Realm.DynamicApi.Find(string className, long? primaryKey)`.
+  * `Realm.Find(string className, string primaryKey)` is now `Realm.DynamicApi.Find(string className, string primaryKey)`.
+* It is now required that all top-level objects in a synchronized Realm have a primary key called `_id`. You can use the `MapTo("_id")` attribute to avoid using unidiomatic names for the model properties.
+* Bumped the minimum target for Xamarin.iOS apps to iOS 9.
+* Bumped the minimum API level for Xamarin.Android apps to 16 (Android 4.1).
+* Renamed `FullSyncConfiguration` to `SyncConfiguration`.
+
+### Enhancements
+* Added support for syncing to MongoDB instead of Realm Object Server. Applications must be created at [realm.mongodb.com](https://realm.mongodb.com).
+* Added an `App` class which is the entrypoint for synchronizing with a MongoDB Realm App.
+* Added `User.CustomData` containing an unstructured document with additional information about the user. Custom data is configured in your MongoDB Realm App.
+* Added `User.Functions`. This is the entry point for calling Remote MongoDB Realm functions. Functions allow you to define and execute server-side logic for your application. Functions are written in modern JavaScript (ES6+) and execute in a serverless manner. When you call a function, you can dynamically access components of the current application as well as information about the request to execute the function and the logged in user that sent the request.
+* Added `User.GetMongoClient` exposing an API for CRUD operations on a Remote MongoDB Service.
+* Added `User.GetPushClient` exposing an API for registering a device for push notifications.
+* Change `SyncConfiguration` to accept partition value instead of a server Uri. Partition values can currently be of types `string`, `long`, or `ObjectId`. Opening a realm by partition value is the equivalent of previously opening a realm by URL. In this case, partitions are meant to be more closely associated with your data. E.g., if you are a large retailer with multiple locations, the partition key can be the store Id and you each Realm will only contain data related to the specified store.
+* Add support for the Decimal128 data type. This is a 128-bit IEEE 754 decimal floating point number. Properties of this type can be declared either as `MongoDB.Bson.Decimal128` type or the built-in `decimal` type. Note that .NET's built-in decimal is 96-bit, so it cannot represent the full range of numbers, representable by `Decimal128`. (PR [#2014](https://github.com/realm/realm-dotnet/pull/2014))
+* Add support for the `ObjectId` data type. This is a 12 byte unique identifier that is common as a document id in MongoDB databases. It can be used a primary key. (PR [#2035](https://github.com/realm/realm-dotnet/pull/2035))
+* Add support for embedded objects. Embedded objects are objects which are owned by a single parent object, and are deleted when that parent object is deleted or their parent no longer references them. Embedded objects are declared by subclassing `EmbeddedObject` instead of `RealmObject`. Reassigning an embedded object is not allowed and neither is linking to it from multiple parents. Querying for embedded objects directly is also disallowed as they should be viewed as complex structures belonging to their parents as opposed to standalone objects. A trivial example is:
+
+  ```csharp
+  public class Address : EmbeddedObject
+  {
+      public string Street { get; set; }
+
+      public string City { get; set; }
+  }
+
+  public class Person : RealmObject
+  {
+      public string Name { get; set; }
+
+      // Address is an embedded object - you reference it as usual
+      public Address Address { get; set; }
+  }
+
+  public class Company : RealmObject
+  {
+      public string PhoneNumber { get; set; }
+
+      // Embedded objects can be contained in lists too
+      public IList<Address> OfficeAddresses { get; }
+  }
+  ```
+
+* Added new dynamic methods for instantiating embedded objects:
+  * `Realm.DynamicApi.CreateEmbeddedObjectForProperty` should be used to create an embedded object and assign it to a parent's property. For example:
+
+    ```csharp
+    // static API
+    var person = new Person();
+    person.Address = new Address
+    {
+        City = "New York"
+    };
+
+    // dynamic API
+    var dynamicPerson = realm.DynamicApi.CreateObject("Person");
+    var address = realm.DynamicApi.CreateEmbeddedObjectForProperty(dynamicPerson, "Address")
+    address.City = "New York";
+    ```
+
+  * `Realm.DynamicApi.AddEmbeddedObjectToList` should be used to create an embedded object and add it to a parent's list property.
+  * `Realm.DynamicApi.InsertEmbeddedObjectInList` should be used to create an embedded object and insert it in a parent's list property at a specified index.
+  * `Realm.DynamicApi.SetEmbeddedObjectInList` should be used to create an embedded object and set it at an index in a parent's list property.
+
+    ```csharp
+    // static API
+    var company = new Company();
+    company.OfficeAddresses.Add(new Address
+    {
+        City = "New York"
+    });
+
+    company.OfficeAddresses.Insert(0, new Address
+    {
+        City = "Palo Alto"
+    });
+
+    company.OfficeAddresses[1] = new Address
+    {
+        City = "New Jersey"
+    };
+
+    // dynamic API
+    var dynamicCompany = realm.DynamicApi.CreateObject("Company");
+    var officeToAdd = realm.DynamicApi.AddEmbeddedObjectToList(dynamicCompany.OfficeAddresses);
+    officeToAdd.City = "New York";
+
+    var officeToInsert = realm.DynamicApi.InsertEmbeddedObjectInList(dynamicCompany.OfficeAddresses, 0);
+    officeToInsert.City = "Palo Alto";
+
+    var officeToSet = realm.DynamicApi.SetEmbeddedObjectInList(dynamicCompany.OfficeAddresses, 1);
+    officeToSet.City = "New Jersey";
+    ```
+
+* The memory mapping scheme for Realm files has changed to better support opening very large files.
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Sync 10.0.0 and Core 10.0.0.
+
 ## 5.1.2 (TBD)
 ------------------
 

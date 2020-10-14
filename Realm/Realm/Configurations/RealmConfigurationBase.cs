@@ -57,7 +57,7 @@ namespace Realms
         /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>
         /// <remarks>
-        /// Typically left null so by default all <see cref="RealmObject"/>s will be able to be stored in all Realms.
+        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
         /// </remarks>
         /// <example>
         /// <code>

@@ -18,10 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 
 namespace Realms.Tests.Database
@@ -127,7 +125,7 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
 
             // Act
-            _realm.Write(() => _realm.RemoveAll(nameof(Person)));
+            _realm.Write(() => _realm.DynamicApi.RemoveAll(nameof(Person)));
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
@@ -224,7 +222,7 @@ namespace Realms.Tests.Database
         private void PerformWithOtherRealm(string path, Action<Realm> action)
         {
             Realm otherRealm;
-            using (otherRealm = Realm.GetInstance(path ?? Path.GetTempFileName()))
+            using (otherRealm = GetRealm(path ?? Guid.NewGuid().ToString()))
             {
                 action(otherRealm);
             }

@@ -30,6 +30,10 @@
 using namespace realm;
 using namespace realm::binding;
 
+inline ColKey get_key_for_prop(Query& query, SharedRealm& realm, size_t property_index) {
+    return realm->schema().find(ObjectStore::object_type_for_table_name(query.get_table()->get_name()))->persisted_properties[property_index].column_key;
+}
+
 extern "C" {
 
 REALM_EXPORT void query_destroy(Query* query)
@@ -41,16 +45,6 @@ REALM_EXPORT size_t query_count(Query& query, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return query.count();
-    });
-}
-
-//convert from columnName to column_key returns -1 if the string is not a column name
-//assuming that the get_table() does not return anything that must be deleted
-REALM_EXPORT void query_get_column_key(Query& query, uint16_t* column_name, size_t column_name_len, ColKey& key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor str(column_name, column_name_len);
-        key = query.get_table()->get_column_key(str);
     });
 }
 
@@ -82,319 +76,374 @@ REALM_EXPORT void query_or(Query& query, NativeException::Marshallable& ex)
     });
 }
 
-REALM_EXPORT void query_string_contains(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_contains(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.contains(column_key, str, case_sensitive);
+        query.contains(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_starts_with(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_starts_with(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.begins_with(column_key, str, case_sensitive);
+        query.begins_with(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_ends_with(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_ends_with(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.ends_with(column_key, str, case_sensitive);
+        query.ends_with(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_equal(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_equal(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.equal(column_key, str, case_sensitive);
+        query.equal(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_not_equal(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_not_equal(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.not_equal(column_key, str, case_sensitive);
+        query.not_equal(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_like(Query& query, ColKey column_key, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t property_index, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query.like(column_key, str, case_sensitive);
+        query.like(get_key_for_prop(query, realm, property_index), str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_bool_equal(Query& query, ColKey column_key, bool value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.equal(column_key, value);
+        if (!primitive.has_value) {
+            throw std::runtime_error("Comparing null values should be done via query_null_equal. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), primitive.value.bool_value);
+            break;
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.equal(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_bool_not_equal(Query& query, ColKey column_key, bool value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.not_equal(column_key, value);
+        if (!primitive.has_value) {
+            throw std::runtime_error("Comparing null values should be done via query_null_not_equal. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), primitive.value.bool_value);
+            break;
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.not_equal(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_int_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.equal(column_key, static_cast<int>(value));
+        if (!primitive.has_value) {
+            throw std::runtime_error("Using primitive_less with null is not supported. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            throw std::runtime_error("Using primitive_less with bool value is not supported. If you get this error, please report it to help@realm.io");
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.less(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_int_not_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.not_equal(column_key, static_cast<int>(value));
+        if (!primitive.has_value) {
+            throw std::runtime_error("Using primitive_less_equal with null is not supported. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            throw std::runtime_error("Using primitive_less_equal with bool value is not supported. If you get this error, please report it to help@realm.io");
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.less_equal(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_int_less(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.less(column_key, static_cast<int>(value));
+        if (!primitive.has_value) {
+            throw std::runtime_error("Using primitive_greater with null is not supported. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            throw std::runtime_error("Using primitive_greater with bool value is not supported. If you get this error, please report it to help@realm.io");
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.greater(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_int_less_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.less_equal(column_key, static_cast<int>(value));
+        if (!primitive.has_value) {
+            throw std::runtime_error("Using primitive_greater_equal with null is not supported. If you get this error, please report it to help@realm.io.");
+        }
+
+        auto col_key = get_key_for_prop(query, realm, property_index);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+        switch (primitive.type) {
+        case realm::PropertyType::Bool:
+        case realm::PropertyType::Bool | realm::PropertyType::Nullable:
+            throw std::runtime_error("Using primitive_greater_equal with bool value is not supported. If you get this error, please report it to help@realm.io");
+        case realm::PropertyType::Int:
+        case realm::PropertyType::Int | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), primitive.value.int_value);
+            break;
+        case realm::PropertyType::Float:
+        case realm::PropertyType::Float | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), primitive.value.float_value);
+            break;
+        case realm::PropertyType::Double:
+        case realm::PropertyType::Double | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), primitive.value.double_value);
+            break;
+        case realm::PropertyType::Date:
+        case realm::PropertyType::Date | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), from_ticks(primitive.value.int_value));
+            break;
+        case realm::PropertyType::Decimal:
+        case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), realm::Decimal128(primitive.value.decimal_bits));
+            break;
+        case realm::PropertyType::ObjectId:
+        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
+            query.greater_equal(std::move(col_key), to_object_id(primitive));
+            break;
+        default:
+            REALM_UNREACHABLE();
+        }
+#pragma GCC diagnostic pop
     });
 }
 
-REALM_EXPORT void query_int_greater(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_binary_equal(Query& query, SharedRealm& realm, size_t property_index, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.greater(column_key, static_cast<int>(value));
+        query.equal(get_key_for_prop(query, realm, property_index), BinaryData(buffer, buffer_length));
     });
 }
 
-REALM_EXPORT void query_int_greater_equal(Query& query, ColKey column_key, size_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_binary_not_equal(Query& query, SharedRealm& realm, size_t property_index, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.greater_equal(column_key, static_cast<int>(value));
+        query.not_equal(get_key_for_prop(query, realm, property_index), BinaryData(buffer, buffer_length));
     });
 }
 
-REALM_EXPORT void query_long_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_object_equal(Query& query, SharedRealm& realm, size_t property_index, Object& object, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.equal(column_key, value);
+        query.links_to(get_key_for_prop(query, realm, property_index), object.obj().get_key());
     });
 }
 
-REALM_EXPORT void query_long_not_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_null_equal(Query& query, SharedRealm& realm, size_t property_index, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query.not_equal(column_key, value);
-    });
-}
-
-REALM_EXPORT void query_long_less(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less(column_key, value);
-    });
-}
-
-REALM_EXPORT void query_long_less_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less_equal(column_key, value);
-    });
-}
-
-REALM_EXPORT void query_long_greater(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater(column_key, value);
-    });
-}
-
-REALM_EXPORT void query_long_greater_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater_equal(column_key, value);
-    });
-}
-
-    REALM_EXPORT void query_float_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.equal(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_float_not_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.not_equal(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_float_less(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_float_less_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less_equal(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_float_greater(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_float_greater_equal(Query& query, ColKey column_key, float value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater_equal(column_key, static_cast<float>(value));
-    });
-}
-
-REALM_EXPORT void query_double_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.equal(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_double_not_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.not_equal(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_double_less(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_double_less_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less_equal(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_double_greater(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_double_greater_equal(Query& query, ColKey column_key, double value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater_equal(column_key, static_cast<double>(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.equal(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_not_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.not_equal(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_less(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_less_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.less_equal(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_greater(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_timestamp_ticks_greater_equal(Query& query, ColKey column_key, int64_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.greater_equal(column_key, from_ticks(value));
-    });
-}
-
-REALM_EXPORT void query_binary_equal(Query& query, ColKey column_key, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.equal(column_key, BinaryData(buffer, buffer_length));
-    });
-}
-
-REALM_EXPORT void query_binary_not_equal(Query& query, ColKey column_key, char* buffer, size_t buffer_length, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.not_equal(column_key, BinaryData(buffer, buffer_length));
-    });
-}
-
-REALM_EXPORT void query_object_equal(Query& query, ColKey column_key, Object& object, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.links_to(column_key, object.obj().get_key());
-    });
-}
-
-REALM_EXPORT void query_null_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
-            query.and_query(query.get_table()->column<Link>(column_key).is_null());
+        auto col_key = get_key_for_prop(query, realm, property_index);
+        if (query.get_table()->get_column_type(col_key) == DataType::type_Link) {
+            query.and_query(query.get_table()->column<Link>(col_key).is_null());
         }
         else {
-            query.equal(column_key, null());
+            query.equal(col_key, null());
         }
     });
 }
 
-REALM_EXPORT void query_null_not_equal(Query& query, ColKey column_key, NativeException::Marshallable& ex)
+REALM_EXPORT void query_null_not_equal(Query& query, SharedRealm& realm, size_t property_index, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        if (query.get_table()->get_column_type(column_key) == DataType::type_Link) {
-            query.and_query(query.get_table()->column<Link>(column_key).is_not_null());
+        auto col_key = get_key_for_prop(query, realm, property_index);
+        if (query.get_table()->get_column_type(col_key) == DataType::type_Link) {
+            query.and_query(query.get_table()->column<Link>(col_key).is_not_null());
         }
         else {
-            query.not_equal(column_key, null());
+            query.not_equal(col_key, null());
         }
     });
 }

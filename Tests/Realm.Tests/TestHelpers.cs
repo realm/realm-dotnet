@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -200,20 +201,24 @@ namespace Realms.Tests
             AsyncContext.Run(() => testFunc().Timeout(timeout));
         }
 
-        public static async Task AssertThrows<T>(Func<Task> function, Action<T> exceptionAsserts = null)
+        public static async Task<T> AssertThrows<T>(Func<Task> function)
             where T : Exception
         {
             try
             {
                 await function().Timeout(5000);
-                Assert.Fail($"Exception of type {typeof(T)} expected.");
             }
             catch (T ex)
             {
-                exceptionAsserts?.Invoke(ex);
+                return ex;
             }
+
+            Assert.Fail($"Exception of type {typeof(T)} expected.");
+            return null;
         }
 
+        [SuppressMessage("Security", "CA3075:Insecure DTD processing in XML", Justification = "The xml is static and trusted.")]
+        [SuppressMessage("Security", "CA5372:Use XmlReader For XPathDocument", Justification = "The xml is static and trusted.")]
         public static void TransformTestResults(string resultPath)
         {
             CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
@@ -222,10 +227,8 @@ namespace Realms.Tests
             var xpathDocument = new XPathDocument(resultPath);
             var transform = new XslCompiledTransform();
             transform.Load(transformFile);
-            using (var writer = new XmlTextWriter(resultPath, null))
-            {
-                transform.Transform(xpathDocument, null, writer);
-            }
+            using var writer = new XmlTextWriter(resultPath, null);
+            transform.Transform(xpathDocument, null, writer);
         }
     }
 }

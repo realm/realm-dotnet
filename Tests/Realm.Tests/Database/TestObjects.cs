@@ -20,8 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using MongoDB.Bson;
+using Realms.Tests.Database;
 
-namespace Realms.Tests.Database
+namespace Realms.Tests
 {
     public class AllTypesObject : RealmObject
     {
@@ -42,6 +44,12 @@ namespace Realms.Tests.Database
         public bool BooleanProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
 
         [Required]
         public string RequiredStringProperty { get; set; }
@@ -67,6 +75,19 @@ namespace Realms.Tests.Database
         public bool? NullableBooleanProperty { get; set; }
 
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
+    }
+
+    public class DecimalsObject : RealmObject
+    {
+        public decimal DecimalValue { get; set; }
+
+        public Decimal128 Decimal128Value { get; set; }
     }
 
     public class ListsObject : RealmObject
@@ -86,6 +107,12 @@ namespace Realms.Tests.Database
         public IList<double> DoubleList { get; }
 
         public IList<bool> BooleanList { get; }
+
+        public IList<decimal> DecimalList { get; }
+
+        public IList<Decimal128> Decimal128List { get; }
+
+        public IList<ObjectId> ObjectIdList { get; }
 
         public IList<string> StringList { get; }
 
@@ -111,6 +138,12 @@ namespace Realms.Tests.Database
 
         public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
 
+        public IList<decimal?> NullableDecimalList { get; }
+
+        public IList<Decimal128?> NullableDecimal128List { get; }
+
+        public IList<ObjectId?> NullableObjectIdList { get; }
+
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 
         public IList<RealmInteger<short>> Int16CounterList { get; }
@@ -131,6 +164,7 @@ namespace Realms.Tests.Database
     public class CounterObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public RealmInteger<byte> ByteProperty { get; set; }
@@ -152,9 +186,19 @@ namespace Realms.Tests.Database
         public override string ToString() => Id.ToString();
     }
 
+    public class ObjectIdPrimaryKeyWithValueObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+        public string StringValue { get; set; }
+    }
+
     public class IntPrimaryKeyWithValueObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public string StringValue { get; set; }
@@ -163,36 +207,42 @@ namespace Realms.Tests.Database
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public char CharProperty { get; set; }
     }
 
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public byte ByteProperty { get; set; }
     }
 
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public short Int16Property { get; set; }
     }
 
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int Int32Property { get; set; }
     }
 
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public long Int64Property { get; set; }
     }
 
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public string StringProperty { get; set; }
 
         public string Value { get; set; }
@@ -202,39 +252,59 @@ namespace Realms.Tests.Database
     {
         [PrimaryKey]
         [Required]
+        [MapTo("_id")]
         public string StringProperty { get; set; }
 
         public string Value { get; set; }
     }
 
+    public class PrimaryKeyObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId StringProperty { get; set; }
+    }
+
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public char? CharProperty { get; set; }
     }
 
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public byte? ByteProperty { get; set; }
     }
 
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public short? Int16Property { get; set; }
     }
 
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public int? Int32Property { get; set; }
     }
 
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
+        [MapTo("_id")]
         public long? Int64Property { get; set; }
+    }
+
+    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId? StringProperty { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject
@@ -352,7 +422,7 @@ namespace Realms.Tests.Database
     public class RemappedTypeObject : RealmObject
     {
         [PrimaryKey]
-        [MapTo("__id")]
+        [MapTo("_id")]
         public int Id { get; set; }
 
         public string StringValue { get; set; }
@@ -379,5 +449,108 @@ namespace Realms.Tests.Database
     {
         [Required]
         public IList<string> Strings { get; }
+    }
+
+    public class ObjectWithEmbeddedProperties : RealmObject
+    {
+        [PrimaryKey]
+        public int PrimaryKey { get; set; }
+
+        public EmbeddedAllTypesObject AllTypesObject { get; set; }
+
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+
+        public EmbeddedLevel1 RecursiveObject { get; set; }
+    }
+
+    public class EmbeddedAllTypesObject : EmbeddedObject
+    {
+        public char CharProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public short Int16Property { get; set; }
+
+        public int Int32Property { get; set; }
+
+        public long Int64Property { get; set; }
+
+        public float SingleProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public bool BooleanProperty { get; set; }
+
+        public string StringProperty { get; set; }
+
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        public char? NullableCharProperty { get; set; }
+
+        public byte? NullableByteProperty { get; set; }
+
+        public short? NullableInt16Property { get; set; }
+
+        public int? NullableInt32Property { get; set; }
+
+        public long? NullableInt64Property { get; set; }
+
+        public float? NullableSingleProperty { get; set; }
+
+        public double? NullableDoubleProperty { get; set; }
+
+        public bool? NullableBooleanProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        public RealmInteger<byte>? NullableByteCounterProperty { get; set; }
+
+        public RealmInteger<short>? NullableInt16CounterProperty { get; set; }
+
+        public RealmInteger<int>? NullableInt32CounterProperty { get; set; }
+
+        public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+
+        [Backlink(nameof(ObjectWithEmbeddedProperties.AllTypesObject))]
+        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
+    }
+
+    public class EmbeddedLevel1 : EmbeddedObject
+    {
+        public string String { get; set; }
+
+        public EmbeddedLevel2 Child { get; set; }
+
+        public IList<EmbeddedLevel2> Children { get; }
+    }
+
+    public class EmbeddedLevel2 : EmbeddedObject
+    {
+        public string String { get; set; }
+
+        public EmbeddedLevel3 Child { get; set; }
+
+        public IList<EmbeddedLevel3> Children { get; }
+    }
+
+    public class EmbeddedLevel3 : EmbeddedObject
+    {
+        public string String { get; set; }
     }
 }
