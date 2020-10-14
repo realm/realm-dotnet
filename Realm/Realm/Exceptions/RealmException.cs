@@ -112,7 +112,7 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.AppJsonError:
                 case RealmExceptionCodes.AppServiceError:
                 case RealmExceptionCodes.AppUnknownError:
-                    return new RealmAppException(exceptionCode, message);
+                    return new AppException(message, helpLink: null, httpStatusCode: 0);
 
                 case RealmExceptionCodes.StdArgumentOutOfRange:
                 case RealmExceptionCodes.StdIndexOutOfRange:
