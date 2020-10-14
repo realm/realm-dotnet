@@ -102,55 +102,6 @@ namespace Realms.Tests.Sync
             }, timeout: 120000);
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        [Ignore("V10TODO: implement me")]
-        public void GetInstanceAsync_OpensReadonlyRealm(bool singleTransaction)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                //var alice = await SyncTestHelpers.GetUserAsync();
-                //var bob = await SyncTestHelpers.GetUserAsync();
-
-                //var realmUri = SyncTestHelpers.RealmUri($"{alice.Identity}/GetInstanceAsync_OpensReadonlyRealm");
-                //var aliceConfig = new SyncConfiguration(realmUri, alice, Guid.NewGuid().ToString());
-                //var aliceRealm = GetRealm(aliceConfig);
-
-                ////// await alice.ApplyPermissionsAsync(PermissionCondition.UserId(bob.Identity), realmUri.AbsoluteUri, AccessLevel.Read).Timeout(1000);
-
-                //AddDummyData(aliceRealm, singleTransaction);
-
-                //await WaitForUploadAsync(aliceRealm);
-
-                //var bobConfig = new SyncConfiguration(realmUri, bob, Guid.NewGuid().ToString());
-                //var bobRealm = await GetRealmAsync(bobConfig);
-
-                //var bobsObjects = bobRealm.All<IntPrimaryKeyWithValueObject>();
-                //var alicesObjects = aliceRealm.All<IntPrimaryKeyWithValueObject>();
-                //Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
-
-                //aliceRealm.Write(() =>
-                //{
-                //    aliceRealm.Add(new IntPrimaryKeyWithValueObject
-                //    {
-                //        Id = 9999,
-                //        StringValue = "Some value"
-                //    });
-                //});
-
-                //await WaitForUploadAsync(aliceRealm);
-                //await WaitForDownloadAsync(bobRealm);
-
-                //await bobRealm.RefreshAsync();
-
-                //Assert.That(bobsObjects.Count(), Is.EqualTo(alicesObjects.Count()));
-
-                //var bobObject = bobRealm.Find<IntPrimaryKeyWithValueObject>(9999);
-                //Assert.That(bobObject, Is.Not.Null);
-                //Assert.That(bobObject.StringValue, Is.EqualTo("Some value"));
-            });
-        }
-
         [Test]
         public void GetInstanceAsync_CreatesNonExistentRealm()
         {
@@ -287,7 +238,7 @@ namespace Realms.Tests.Sync
                         File.Copy(backupLocation, config.DatabasePath, overwrite: true);
                         break;
                     }
-                    catch (Exception e)
+                    catch
                     {
                         await Task.Delay(50);
                     }
@@ -315,7 +266,6 @@ namespace Realms.Tests.Sync
                 Assert.That(clientEx.InitiateClientReset(), Is.True);
 
                 Assert.That(File.Exists(realmPath), Is.False);
-
             });
         }
 

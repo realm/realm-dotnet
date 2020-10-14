@@ -349,7 +349,6 @@ namespace Realms.Tests.Sync
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => user.LinkCredentialsAsync(Credentials.Anonymous()));
 
-
                 // TODO: this should be bad request when https://jira.mongodb.org/browse/REALMC-7028 is fixed
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
                 Assert.That(ex.Message, Does.Contain("linking an anonymous identity is not allowed"));
