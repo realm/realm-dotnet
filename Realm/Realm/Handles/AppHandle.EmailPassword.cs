@@ -90,7 +90,7 @@ namespace Realms.Sync
             public void ConfirmUser(string token, string tokenId, TaskCompletionSource<object> tcs)
             {
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.register_user(_appHandle, token, (IntPtr)token.Length, tokenId, (IntPtr)tokenId.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                EmailNativeMethods.confirm_user(_appHandle, token, (IntPtr)token.Length, tokenId, (IntPtr)tokenId.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
             }
 
