@@ -185,6 +185,7 @@ namespace Realms.Tests.Sync
             Assert.That(customData["favoriteIds"].AsBsonArray.Select(i => i.AsInt64), Is.EquivalentTo(new[] { 1, 2, 3 }));
         }
 
+        [Preserve(AllMembers = true)]
         private class AccessTokenCustomData
         {
             [BsonElement("name")]
@@ -199,6 +200,7 @@ namespace Realms.Tests.Sync
             [BsonElement("favoriteIds")]
             public long[] FavoriteIds { get; set; }
 
+            [Preserve(AllMembers = true)]
             public class Address
             {
                 [BsonElement("city")]
