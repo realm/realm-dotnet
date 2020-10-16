@@ -28,7 +28,8 @@ namespace Realms.Native
     {
         internal static readonly int Size = Marshal.SizeOf<UserApiKey>();
 
-        private PrimitiveValue id;
+        private byte* id_buf;
+        private IntPtr id_len;
 
         private byte* key_buf;
         private IntPtr key_len;
@@ -39,7 +40,7 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public bool disabled;
 
-        public ObjectId Id => id.ToObjectId();
+        public ObjectId Id => ObjectId.Parse(Encoding.UTF8.GetString(id_buf, (int)id_len));
 
         public string Key => key_buf == null ? null : Encoding.UTF8.GetString(key_buf, (int)key_len);
 

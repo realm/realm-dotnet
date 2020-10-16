@@ -31,7 +31,7 @@ namespace Realms.Sync
     /// <summary>
     /// A <see cref="SyncConfiguration"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using MongoDB Realm.
     /// </summary>
-    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/"/>
+    /// <seealso href="https://docs.mongodb.com/realm/sync/overview/">Sync Overview Docs</seealso>
     public class SyncConfiguration : RealmConfigurationBase
     {
         /// <summary>
@@ -46,6 +46,7 @@ namespace Realms.Sync
         /// progress is made during the lifetime of the Realm. It is ignored when using
         /// <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
         /// </summary>
+        /// <value>A callback that will be periodically invoked as the Realm is downloaded.</value>
         public Action<SyncProgress> OnProgress { get; set; }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace Realms.Sync
         /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
-        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// A valid <see cref="User"/>.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
@@ -81,7 +82,7 @@ namespace Realms.Sync
         /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
-        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// A valid <see cref="User"/>.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
@@ -99,7 +100,7 @@ namespace Realms.Sync
         /// The partition identifying the remote Realm that will be synchronized.
         /// </param>
         /// <param name="user">
-        /// A valid <see cref="User"/>. If not provided, the currently logged-in user will be used.
+        /// A valid <see cref="User"/>.
         /// </param>
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.

@@ -95,7 +95,8 @@ namespace Realms
         /// opened instance to the calling thread.
         /// </remarks>
         /// <returns>
-        /// A <see cref="Task{Realm}"/> that is completed once the remote realm is fully synchronized or after migrations are executed if it's a local realm.
+        /// An awaitable <see cref="Task{T}"/> that is completed once the remote realm is fully synchronized or
+        /// after migrations are executed if it's a local realm.
         /// </returns>
         /// <param name="config">A configuration object that describes the realm.</param>
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
@@ -669,11 +670,9 @@ namespace Realms
             ThrowIfDisposed();
             Argument.NotNull(action, nameof(action));
 
-            using (var transaction = BeginWrite())
-            {
-                action();
-                transaction.Commit();
-            }
+            using var transaction = BeginWrite();
+            action();
+            transaction.Commit();
         }
 
         /// <summary>
@@ -724,10 +723,8 @@ namespace Realms
                 {
                     await Task.Run(() =>
                     {
-                        using (var realm = GetInstance(Config))
-                        {
-                            realm.Write(() => action(realm));
-                        }
+                        using var realm = GetInstance(Config);
+                        realm.Write(() => action(realm));
                     });
                     var didRefresh = await RefreshAsync();
 
@@ -1053,10 +1050,8 @@ namespace Realms
 
             foreach (var metadata in Metadata.Values)
             {
-                using (var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle))
-                {
-                    resultsHandle.Clear(SharedRealmHandle);
-                }
+                using var resultsHandle = metadata.Table.CreateResults(SharedRealmHandle);
+                resultsHandle.Clear(SharedRealmHandle);
             }
         }
 

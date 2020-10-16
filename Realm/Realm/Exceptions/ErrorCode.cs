@@ -19,8 +19,9 @@
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
-    /// Error code enumeration, indicating the type of the error.
+    /// Error code enumeration, indicating the type of the session error.
     /// </summary>
+    /// <seealso cref="SessionException"/>
     public enum ErrorCode
     {
         /// <summary>

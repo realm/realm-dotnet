@@ -56,7 +56,7 @@ namespace Realms.Sync
     ///
     /// var app = new App(appConfig);
     /// </code>
-    /// After configuring the App you can start managing users, configure Synchronized Realms, call remote Realm Functions and access remote data through Mongo Collections.
+    /// After configuring the App you can start managing users, configure Synchronized Realms, call remote Realm Functions, and access remote data through Mongo Collections.
     /// <br/>
     /// To register a new user and/or login with an existing user do as shown below:
     /// <code>
@@ -78,7 +78,7 @@ namespace Realms.Sync
     /// </code>
     /// You can call remote Realm functions as shown below:
     /// <code>
-    /// user.Functions.CallAsync("sum", 1, 2, 3, 4, 5);
+    /// var result = await user.Functions.CallAsync&lt;int&gt;("sum", 1, 2, 3, 4, 5);
     /// </code>
     /// And access collections from the remote Realm App as shown here:
     /// <code>
@@ -107,7 +107,7 @@ namespace Realms.Sync
         public EmailPasswordClient EmailPasswordAuth { get; }
 
         /// <summary>
-        /// Gets the currently logged-in user. If none exists, null is returned.
+        /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
@@ -174,11 +174,11 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// A factory method for creating an app with a particular <see cref="AppConfiguration"/>.
+        /// A factory method for creating an app with a particular app Id.
         /// </summary>
         /// <remarks>
         /// This is a convenience method that creates an <see cref="AppConfiguration"/> with the default parameters and the provided <paramref name="appId"/>
-        /// and invokes <see cref="App.Create(AppConfiguration)"/>.
+        /// and invokes <see cref="Create(AppConfiguration)"/>.
         /// </remarks>
         /// <param name="appId">The application id of the MongoDB Realm Application.</param>
         /// <returns>An <see cref="App"/> instance can now be used to login users, call functions, or open synchronized Realms.</returns>
@@ -194,7 +194,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="credentials">The <see cref="Credentials"/> representing the type of login.</param>
         /// <returns>
-        /// A <see cref="Task{User}"/> that represents the asynchronous LogIn operation.</returns>
+        /// An awaitable <see cref="Task{T}"/> that represents the asynchronous LogIn operation.</returns>
         public async Task<User> LogInAsync(Credentials credentials)
         {
             Argument.NotNull(credentials, nameof(credentials));
@@ -225,7 +225,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <param name="user">The user to log out and remove.</param>
         /// <returns>
-        /// A <see cref="Task"/> that represents the asynchronous RemoveUser operation. Successful completion indicates that the user has been logged out,
+        /// An awaitable <see cref="Task"/> that represents the asynchronous RemoveUser operation. Successful completion indicates that the user has been logged out,
         /// their local data - removed, and the user's <see cref="User.RefreshToken"/> - revoked on the server.
         /// </returns>
         public async Task RemoveUserAsync(User user)
@@ -288,7 +288,7 @@ namespace Realms.Sync
             /// </param>
             /// <param name="password">The password to associate with the email. The password must be between 6 and 128 characters long.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous RegisterUser operation. Successful completion indicates that the user has been
+            /// An awaitable <see cref="Task"/> representing the asynchronous RegisterUser operation. Successful completion indicates that the user has been
             /// created on the server and can now be logged in calling <see cref="LogInAsync"/> with <see cref="Credentials.EmailPassword"/>.
             /// </returns>
             public Task RegisterUserAsync(string email, string password)
@@ -312,7 +312,7 @@ namespace Realms.Sync
             /// <param name="token">The confirmation token.</param>
             /// <param name="tokenId">The id of the confirmation token.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous ConfirmUser operation. Successful completion indicates that the user has been
+            /// An awaitable <see cref="Task"/> representing the asynchronous ConfirmUser operation. Successful completion indicates that the user has been
             /// confirmed on the server.
             /// </returns>
             public Task ConfirmUserAsync(string token, string tokenId)
@@ -330,7 +330,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="email">The email of the user.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous request to the server that a confirmation email is sent. Successful
+            /// An awaitable <see cref="Task"/> representing the asynchronous request to the server that a confirmation email is sent. Successful
             /// completion indicates that the server has accepted the request and will send a confirmation email to the specified address
             /// if a user with that email exists.
             /// </returns>
@@ -348,7 +348,7 @@ namespace Realms.Sync
             /// </summary>
             /// <param name="email">the email of the user.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous request to the server that a reset password email is sent. Successful
+            /// An awaitable <see cref="Task"/> representing the asynchronous request to the server that a reset password email is sent. Successful
             /// completion indicates that the server has accepted the request and will send a password reset email to the specified
             /// address if a user with that email exists.
             /// </returns>
@@ -372,7 +372,7 @@ namespace Realms.Sync
             /// <param name="token">The password reset token that was sent to the user's email address.</param>
             /// <param name="tokenId">The password reset token id that was sent together with the <paramref name="token"/> to the user's email address.</param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous request that a user's password is reset. Successful completion indicates that the user's password has been
+            /// An awaitable <see cref="Task"/> representing the asynchronous request that a user's password is reset. Successful completion indicates that the user's password has been
             /// reset and they can now use the new password to create <see cref="Credentials.EmailPassword"/> credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
             public Task ResetPasswordAsync(string password, string token, string tokenId)
@@ -392,11 +392,11 @@ namespace Realms.Sync
             /// <param name="email">The email of the user.</param>
             /// <param name="password">The new password of the user.</param>
             /// <param name="functionArgs">
-            /// Any additional arguments provided to the reset function. All arguments must be able to be converted to JSON
+            /// Any additional arguments provided to the reset function. All arguments must be serializable to JSON
             /// compatible values.
             /// </param>
             /// <returns>
-            /// A <see cref="Task"/> representing the asynchronous request to call a password reset function. Successful completion indicates
+            /// An awaitable <see cref="Task"/> representing the asynchronous request to call a password reset function. Successful completion indicates
             /// that the user's password has been change and they can now use the new password to create <see cref="Credentials.EmailPassword"/>
             /// credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
