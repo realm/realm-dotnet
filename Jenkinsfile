@@ -30,9 +30,9 @@ stage('Checkout') {
       versionSuffix = "PR-${env.CHANGE_ID}.${env.BUILD_ID}"
     }
     // TODO: temporary add a beta.X suffix for v10 releases
-    else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.1') {
-      versionSuffix = "beta.1"
-    }
+    // else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.1') {
+    //   versionSuffix = "beta.1"
+    // }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
     stash includes: 'wrappers/**', name: 'dotnet-wrappers-source'
