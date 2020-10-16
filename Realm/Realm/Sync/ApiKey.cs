@@ -30,6 +30,7 @@ namespace Realms.Sync
     /// This means that it's the caller's responsibility to safely store an API key's value upon creation.
     /// </remarks>
     /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
+    [Preserve(AllMembers = true)]
     public class ApiKey
     {
         /// <summary>

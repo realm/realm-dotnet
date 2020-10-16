@@ -21,7 +21,7 @@ using System;
 namespace Realms
 {
     /// <summary>
-    /// Prevents the Xamarin managed linker from linking the target.
+    /// Prevents the Xamarin managed linker from removing the target.
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public sealed class PreserveAttribute : Attribute

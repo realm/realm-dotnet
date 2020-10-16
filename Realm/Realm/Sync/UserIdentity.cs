@@ -24,6 +24,7 @@ namespace Realms.Sync
     /// A class containing information about an identity associated with a user.
     /// </summary>
     [BsonNoId]
+    [Preserve(AllMembers = true)]
     public class UserIdentity
     {
         /// <summary>

@@ -478,6 +478,7 @@ namespace Realms.Sync
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.UpdateOneAsync"/> or <see cref="Collection{TDocument}.UpdateManyAsync"/> operation.
         /// </summary>
+        [Preserve(AllMembers = true)]
         public class UpdateResult
         {
             /// <summary>
@@ -505,6 +506,7 @@ namespace Realms.Sync
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.InsertOneAsync"/> operation.
         /// </summary>
+        [Preserve(AllMembers = true)]
         public class InsertResult
         {
             /// <summary>
@@ -518,6 +520,7 @@ namespace Realms.Sync
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.InsertManyAsync"/> operation.
         /// </summary>
+        [Preserve(AllMembers = true)]
         public class InsertManyResult
         {
             /// <summary>
@@ -531,6 +534,7 @@ namespace Realms.Sync
         /// <summary>
         /// The result of <see cref="Collection{TDocument}.DeleteOneAsync"/> or <see cref="Collection{TDocument}.DeleteManyAsync(object)"/> operation.
         /// </summary>
+        [Preserve(AllMembers = true)]
         public class DeleteResult
         {
             /// <summary>

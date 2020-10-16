@@ -23,6 +23,7 @@ namespace Realms.Sync
     /// <summary>
     /// A class, representing the credentials used for authenticating a <see cref="User"/>.
     /// </summary>
+    [Preserve(AllMembers = true)]
     public class Credentials
     {
         /// <summary>

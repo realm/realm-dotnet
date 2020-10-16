@@ -34,7 +34,8 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 struct UserApiKey {
-    PrimitiveValue id;
+    const char* id;
+    size_t id_len;
 
     const char* key;
     size_t key_len;
@@ -48,7 +49,7 @@ struct UserApiKey {
 namespace realm {
     namespace binding {
         void (*s_api_key_callback)(void* tcs_ptr, UserApiKey* api_keys, int api_keys_len, MarshaledAppError err);
-        
+
         inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
             if (err) {
                 std::string error_category = err->error_code.message();
@@ -58,16 +59,15 @@ namespace realm {
             }
             else {
                 std::vector<UserApiKey> marshalled_keys(keys.size());
+                std::vector<std::string> id_storage(keys.size());
+
                 for (auto i = 0; i < keys.size(); i++) {
                     auto& api_key = keys[i];
                     UserApiKey marshaled_key;
-                    marshaled_key.id.type = realm::PropertyType::ObjectId;
-                    marshaled_key.id.has_value = true;
-                    auto bytes = api_key.id.to_bytes();
-                    for (int i = 0; i < 12; i++)
-                    {
-                        marshaled_key.id.value.object_id_bytes[i] = bytes[i];
-                    }
+
+                    id_storage[i] = api_key.id.to_string();
+                    marshaled_key.id = id_storage[i].c_str();
+                    marshaled_key.id_len = id_storage[i].size();
 
                     if (api_key.key) {
                         marshaled_key.key = api_key.key->c_str();
