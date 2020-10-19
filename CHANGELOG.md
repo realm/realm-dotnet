@@ -1,8 +1,5 @@
-## 5.1.2 (TBD)
+## 5.1.2 (2020-10-19)
 ------------------
-
-### Enhancements
-* None
 
 ### Fixed
 * Fixed an issue that would result in `Realm accessed from incorrect thread` exception being thrown when accessing a Realm instance on the main thread in UWP apps. (Issue [#2045](https://github.com/realm/realm-dotnet/issues/2045))
