@@ -245,7 +245,7 @@ namespace Realms
             }
         }
 
-        public ResultsHandle Freeze(SharedRealmHandle frozenRealmHandle)
+        public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();

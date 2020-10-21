@@ -117,7 +117,7 @@ namespace Realms
             _listHandle.Clear();
         }
 
-        public bool Contains(T item) => Contains((object)item);
+        public bool Contains(T item) => IndexOf(item) > -1;
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -222,16 +222,9 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
-        public override IRealmCollection<T> Freeze()
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle)
         {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
+            return new RealmList<T>(realm, (ListHandle)handle, Metadata);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);

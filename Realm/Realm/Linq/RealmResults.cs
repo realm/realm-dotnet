@@ -52,16 +52,9 @@ namespace Realms
 
         public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
-        public override IRealmCollection<T> Freeze()
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle)
         {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = ResultsHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return new RealmResults<T>(frozenRealm, Metadata, frozenHandle);
+            return new RealmResults<T>(realm, Metadata, (ResultsHandle)handle);
         }
 
         internal override CollectionHandleBase CreateHandle()

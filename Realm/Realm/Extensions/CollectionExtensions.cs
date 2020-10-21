@@ -29,7 +29,7 @@ namespace Realms
     /// A set of extensions methods exposing notification-related functionality over collections.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class CollectionNotificationsExtensions
+    public static class CollectionExtensions
     {
         /// <summary>
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> which

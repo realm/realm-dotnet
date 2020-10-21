@@ -39,8 +39,7 @@ namespace Realms
             public static extern void add_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
@@ -63,7 +62,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+                IntPtr valueLen, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
@@ -86,7 +85,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+                IntPtr valueLen, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
@@ -126,8 +125,7 @@ namespace Realms
             public static extern IntPtr find_primitive(ListHandle listHandle, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
+            public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufsize,
@@ -231,7 +229,7 @@ namespace Realms
 
         public void Add(string value)
         {
-            NativeMethods.add_string(this, value, (IntPtr)(value?.Length ?? 0), value != null, out var nativeException);
+            NativeMethods.add_string(this, value, value.IntPtrLength(), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -267,9 +265,7 @@ namespace Realms
 
         public void Set(int targetIndex, string value)
         {
-            var hasValue = value != null;
-            value = value ?? string.Empty;
-            NativeMethods.set_string(this, (IntPtr)targetIndex, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            NativeMethods.set_string(this, (IntPtr)targetIndex, value, value.IntPtrLength(), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -305,9 +301,7 @@ namespace Realms
 
         public void Insert(int targetIndex, string value)
         {
-            var hasValue = value != null;
-            value = value ?? string.Empty;
-            NativeMethods.insert_string(this, (IntPtr)targetIndex, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            NativeMethods.insert_string(this, (IntPtr)targetIndex, value, value.IntPtrLength(), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -345,9 +339,7 @@ namespace Realms
 
         public int Find(string value)
         {
-            var hasValue = value != null;
-            value = value ?? string.Empty;
-            var result = NativeMethods.find_string(this, value, (IntPtr)value.Length, hasValue, out var nativeException);
+            var result = NativeMethods.find_string(this, value, value.IntPtrLength(), out var nativeException);
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
@@ -428,7 +420,7 @@ namespace Realms
             }
         }
 
-        public ListHandle Freeze(SharedRealmHandle frozenRealmHandle)
+        public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();

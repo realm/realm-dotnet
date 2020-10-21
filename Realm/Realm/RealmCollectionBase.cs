@@ -112,7 +112,18 @@ namespace Realms
 
         public Realm Realm { get; }
 
-        public abstract IRealmCollection<T> Freeze();
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
+        public IRealmCollection<T> Freeze()
+        {
+            if (IsFrozen)
+            {
+                return this;
+            }
+
+            var frozenRealm = Realm.Freeze();
+            var frozenHandle = Handle.Value.Freeze(frozenRealm.SharedRealmHandle);
+            return CreateCollection(frozenRealm, frozenHandle);
+        }
 
         IThreadConfinedHandle IThreadConfined.Handle => Handle.Value;
 
@@ -131,6 +142,8 @@ namespace Realms
         }
 
         internal abstract CollectionHandleBase CreateHandle();
+
+        internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
         public T this[int index]
         {
