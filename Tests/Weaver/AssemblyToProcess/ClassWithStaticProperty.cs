@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms;
 
 namespace AssemblyToProcess
@@ -26,12 +27,13 @@ namespace AssemblyToProcess
     {
         public string Name { get; set; }
 
-        private static Dog myDog;
+        private static readonly Dog myDog = new Dog();
 
         public static Dog MyOnlyDog
         {
             get
             {
+                Console.WriteLine("");
                 return myDog;
 
                 // if (myDog != null)

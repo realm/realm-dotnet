@@ -73,6 +73,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_set", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_set(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -247,9 +250,16 @@ namespace Realms
             return true;
         }
 
-        public IntPtr GetLinklist(IntPtr propertyIndex)
+        public IntPtr GetLinkList(IntPtr propertyIndex)
         {
             var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr GetLinkSet(IntPtr propertyIndex)
+        {
+            var result = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -297,9 +307,16 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var listHandle = new ListHandle(Root, GetLinklist(propertyIndex));
+            var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, metadata);
+        }
+
+        public RealmSet<T> GetSet<T>(Realm realm, IntPtr propertyIndex, string objectType)
+        {
+            var setHandle = new SetHandle(Root, GetLinkSet(propertyIndex));
+            var metadata = objectType == null ? null : realm.Metadata[objectType];
+            return new RealmSet<T>(realm, setHandle, metadata);
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]

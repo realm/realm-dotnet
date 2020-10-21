@@ -65,7 +65,7 @@ namespace Realms
             }
         }
 
-        private Realm _realm;
+        private readonly Realm _realm = new Realm();
 
         public Realm Realm
         {

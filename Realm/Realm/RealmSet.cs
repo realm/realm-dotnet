@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -30,31 +33,96 @@ namespace Realms
     public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>
     {
         private readonly SetHandle _setHandle;
+        private readonly Func<T, bool> _add;
+        private readonly Func<T, bool> _remove;
+        private readonly Func<T, bool> _contains;
 
         internal RealmSet(Realm realm, SetHandle adoptedSet, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
         {
             _setHandle = adoptedSet;
+            switch (_argumentType)
+            {
+                case PropertyType.Object | PropertyType.Nullable:
+                    _add = AddObject;
+                    _remove = GetObjectExecutor(_setHandle.Remove);
+                    _contains = GetObjectExecutor(_setHandle.Contains);
+                    break;
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    _add = (item) => _setHandle.Add(Operator.Convert<T, string>(item));
+                    _remove = (item) => _setHandle.Remove(Operator.Convert<T, string>(item));
+                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, string>(item));
+                    break;
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    _add = (item) => _setHandle.Add(Operator.Convert<T, byte[]>(item));
+                    _remove = (item) => _setHandle.Remove(Operator.Convert<T, byte[]>(item));
+                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, string>(item));
+                    break;
+                default:
+                    _add = (item) => _setHandle.Add(PrimitiveValue.Create(item, _argumentType));
+                    _remove = (item) => _setHandle.Remove(PrimitiveValue.Create(item, _argumentType));
+                    _contains = (item) => _setHandle.Contains(PrimitiveValue.Create(item, _argumentType));
+                    break;
+            }
         }
 
-        public bool Add(T item)
+        public bool Add(T item) => _add(item);
+
+        private bool AddObject(T item)
         {
-            throw new System.NotImplementedException();
+            switch (item)
+            {
+                case null:
+                    throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
+                case RealmObject realmObj:
+                    if (!realmObj.IsManaged)
+                    {
+                        Realm.Add(realmObj);
+                    }
+
+                    return _setHandle.Add(realmObj.ObjectHandle);
+                case EmbeddedObject embeddedObj:
+                    if (embeddedObj.IsManaged)
+                    {
+                        throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
+                    }
+
+                    var handle = _setHandle.AddEmbedded();
+                    Realm.ManageEmbedded(embeddedObj, handle);
+                    return true;
+                default:
+                    throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
+            }
+        }
+
+        private static Func<T, bool> GetObjectExecutor(Func<ObjectHandle, bool> handler)
+        {
+            return (item) =>
+            {
+                Argument.NotNull(item, nameof(item));
+
+                var obj = Operator.Convert<T, RealmObjectBase>(item);
+                if (!obj.IsManaged)
+                {
+                    throw new ArgumentException("Item does not belong to a realm", nameof(item));
+                }
+
+                return handler(obj.ObjectHandle);
+            };
         }
 
         void ICollection<T>.Add(T item) => Add(item);
 
-        public bool Remove(T item)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public bool Contains(T item) => IndexOf(item) > -1;
+        public bool Remove(T item) => _remove(item);
 
         public override int IndexOf(T value)
         {
             throw new System.NotImplementedException();
         }
+
+        public override bool Contains(T value) => _contains(value);
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 

@@ -25,7 +25,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Exceptions;
 using Realms.Helpers;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -404,6 +406,34 @@ namespace Realms
 
         #region IList
 
+        public bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
+
+        public void Clear() => Handle.Value.Clear();
+
+        public int IndexOf(object value)
+        {
+            if (value != null && !(value is T))
+            {
+                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
+            }
+
+            return IndexOf((T)value);
+        }
+
+        public bool Contains(object value)
+        {
+            if (value != null && !(value is T))
+            {
+                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
+            }
+
+            return Contains((T)value);
+        }
+
+        public virtual bool Contains(T value) => IndexOf(value) > -1;
+
+        public abstract int IndexOf(T value);
+
         public void CopyTo(T[] array, int arrayIndex)
         {
             Argument.NotNull(array, nameof(array));
@@ -421,59 +451,6 @@ namespace Realms
             foreach (var obj in this)
             {
                 array[arrayIndex++] = obj;
-            }
-        }
-
-        public bool IsFixedSize => false;
-
-        public bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
-
-        public bool IsSynchronized => false;
-
-        public object SyncRoot => null;
-
-        public virtual int Add(object value) => throw new NotSupportedException();
-
-        public virtual void Clear() => throw new NotSupportedException();
-
-        public bool Contains(object value) => IndexOf(value) > -1;
-
-        public int IndexOf(object value)
-        {
-            if (value != null && !(value is T))
-            {
-                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
-            }
-
-            return IndexOf((T)value);
-        }
-
-        public abstract int IndexOf(T value);
-
-        public virtual void Insert(int index, object value) => throw new NotSupportedException();
-
-        public virtual void Remove(object value) => throw new NotSupportedException();
-
-        public virtual void RemoveAt(int index) => throw new NotSupportedException();
-
-        public void CopyTo(Array array, int index)
-        {
-            Argument.NotNull(array, nameof(array));
-
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            if (index + Count > array.Length)
-            {
-                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
-            }
-
-            var list = (IList)array;
-            foreach (var obj in this)
-            {
-                list[index++] = obj;
             }
         }
 

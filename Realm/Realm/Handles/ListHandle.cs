@@ -363,7 +363,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void Clear()
+        public override void Clear()
         {
             NativeMethods.clear(this, out var nativeException);
             nativeException.ThrowIfNecessary();

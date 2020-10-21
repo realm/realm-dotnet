@@ -72,5 +72,7 @@ namespace Realms
         public abstract ResultsHandle GetFilteredResults(string query);
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
+
+        public abstract void Clear();
     }
 }

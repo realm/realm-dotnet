@@ -251,5 +251,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(frozenRealmHandle, result);
         }
+
+        public override void Clear() => throw new NotSupportedException();
     }
 }

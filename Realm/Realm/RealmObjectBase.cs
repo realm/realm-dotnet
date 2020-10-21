@@ -230,6 +230,14 @@ namespace Realms
             return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
+        protected internal ISet<T> GetSetValue<T>(string propertyName)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
+            return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+        }
+
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         protected T GetObjectValue<T>(string propertyName)
             where T : RealmObjectBase

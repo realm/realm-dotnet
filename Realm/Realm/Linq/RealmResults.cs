@@ -72,8 +72,6 @@ namespace Realms
             return qv.MakeResultsForQuery();
         }
 
-        #region IList members
-
         public override int IndexOf(T value)
         {
             Argument.NotNull(value, nameof(value));
@@ -91,8 +89,6 @@ namespace Realms
 
             return ResultsHandle.Find(obj.ObjectHandle);
         }
-
-        #endregion IList members
     }
 
     /// <summary>
