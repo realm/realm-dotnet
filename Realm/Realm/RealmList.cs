@@ -45,28 +45,20 @@ namespace Realms
     [DebuggerDisplay("Count = {Count}")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
     {
-        private readonly Realm _realm;
-
         private readonly ListHandle _listHandle;
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
-            _realm = realm;
             _listHandle = adoptedList;
         }
 
-        internal override CollectionHandleBase CreateHandle()
-        {
-            return _listHandle;
-        }
+        internal override CollectionHandleBase CreateHandle() => _listHandle;
 
         ListHandle IRealmList.NativeHandle => _listHandle;
 
         RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
 
         #region implementing IList properties
-
-        public override bool IsReadOnly => (_realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -118,26 +110,6 @@ namespace Realms
         }
 
         public bool Contains(T item) => IndexOf(item) > -1;
-
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            Argument.NotNull(array, nameof(array));
-
-            if (arrayIndex < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            }
-
-            if (arrayIndex + Count > array.Length)
-            {
-                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {arrayIndex + Count}, available: {array.Length}", nameof(array));
-            }
-
-            foreach (var obj in this)
-            {
-                array[arrayIndex++] = obj;
-            }
-        }
 
         public override int IndexOf(T value)
         {
@@ -222,10 +194,7 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
-        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle)
-        {
-            return new RealmList<T>(realm, (ListHandle)handle, Metadata);
-        }
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
@@ -246,7 +215,7 @@ namespace Realms
                         case RealmObject realmObj:
                             if (!realmObj.IsManaged)
                             {
-                                _realm.Add(realmObj);
+                                Realm.Add(realmObj);
                             }
 
                             objectHandler(realmObj);

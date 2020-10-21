@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-
-namespace Realms
+namespace RealmWeaver
 {
-    public class Realm
+    internal enum RealmCollectionType
     {
-        public T Add<T>(T obj, bool update) where T : RealmObject
-        {
-            return default(T);
-        }
-
-        public RealmObject Add(RealmObject obj, bool update)
-        {
-            return null;
-        }
-
-        public void Add<T>(IEnumerable<T> objs, bool update = false)
-            where T : RealmObject
-        {
-        }
+        None,
+        IList,
+        ISet,
     }
 }

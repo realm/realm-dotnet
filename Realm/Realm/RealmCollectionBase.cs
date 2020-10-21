@@ -187,13 +187,13 @@ namespace Realms
         public RealmCollectionBase<T> Snapshot()
         {
             var handle = Handle.Value.Snapshot();
-            return new RealmResults<T>(Realm, Metadata, handle);
+            return new RealmResults<T>(Realm, handle, Metadata);
         }
 
         internal RealmResults<T> GetFilteredResults(string query)
         {
             var handle = Handle.Value.GetFilteredResults(query);
-            return new RealmResults<T>(Realm, Metadata, handle);
+            return new RealmResults<T>(Realm, handle, Metadata);
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
@@ -404,9 +404,29 @@ namespace Realms
 
         #region IList
 
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            Argument.NotNull(array, nameof(array));
+
+            if (arrayIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            }
+
+            if (arrayIndex + Count > array.Length)
+            {
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {arrayIndex + Count}, available: {array.Length}", nameof(array));
+            }
+
+            foreach (var obj in this)
+            {
+                array[arrayIndex++] = obj;
+            }
+        }
+
         public bool IsFixedSize => false;
 
-        public virtual bool IsReadOnly => true;
+        public bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         public bool IsSynchronized => false;
 

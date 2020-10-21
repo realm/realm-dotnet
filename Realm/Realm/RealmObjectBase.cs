@@ -267,7 +267,7 @@ namespace Realms
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
-            return new RealmResults<T>(_realm, relatedMeta, resultsHandle);
+            return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
@@ -391,10 +391,10 @@ namespace Realms
             var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
             if (relatedMeta.Schema.IsEmbedded)
             {
-                return new RealmResults<EmbeddedObject>(Realm, relatedMeta, resultsHandle);
+                return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
             }
 
-            return new RealmResults<RealmObject>(Realm, relatedMeta, resultsHandle);
+            return new RealmResults<RealmObject>(Realm, resultsHandle, relatedMeta);
         }
 
         /// <inheritdoc/>

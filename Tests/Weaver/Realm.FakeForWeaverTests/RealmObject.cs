@@ -108,10 +108,16 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
             return new RealmList<T>();
+        }
+
+        protected ISet<T> GetSetValue<T>(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return new RealmSet<T>();
         }
 
         protected void SetListValue<T>(string propertyName, IList<T> value) where T : RealmObject

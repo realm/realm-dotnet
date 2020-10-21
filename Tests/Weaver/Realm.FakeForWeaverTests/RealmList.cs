@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace Realms
 {
-    internal class RealmList<T> : IList<T> where T : RealmObject
+    internal class RealmList<T> : IList<T>
     {
         public IEnumerator<T> GetEnumerator()
         {

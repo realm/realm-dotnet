@@ -1,0 +1,189 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Runtime.InteropServices;
+using Realms.Native;
+
+namespace Realms
+{
+    internal class SetHandle : CollectionHandleBase
+    {
+        private static class NativeMethods
+        {
+#pragma warning disable IDE1006 // Naming Styles
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_erase", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void erase(SetHandle handle, IntPtr rowIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_clear", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void clear(SetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_size", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr size(SetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr listInternalHandle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, NotificationCallbackDelegate callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool get_is_valid(SetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_thread_safe_reference(SetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_snapshot", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr snapshot(SetHandle list, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool get_is_frozen(SetHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_freeze", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr freeze(SetHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
+
+            #region get
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object(SetHandle handle, IntPtr link_ndx, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_primitive", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_primitive(SetHandle handle, IntPtr link_ndx, ref PrimitiveValue value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_string", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_string(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_binary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_binary(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
+                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
+
+            #endregion
+
+#pragma warning restore IDE1006 // Naming Styles
+        }
+
+        public override bool IsValid
+        {
+            get
+            {
+                var result = NativeMethods.get_is_valid(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public SetHandle(RealmHandle root, IntPtr handle) : base(root, handle)
+        {
+        }
+
+        protected override void Unbind()
+        {
+            NativeMethods.destroy(handle);
+        }
+
+        public void Erase(IntPtr rowIndex)
+        {
+            NativeMethods.erase(this, rowIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void Clear()
+        {
+            NativeMethods.clear(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, NotificationCallbackDelegate callback)
+        {
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new NotificationTokenHandle(this, result);
+        }
+
+        public override int Count()
+        {
+            var result = NativeMethods.size(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public override ThreadSafeReferenceHandle GetThreadSafeReference()
+        {
+            var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new ThreadSafeReferenceHandle(result);
+        }
+
+        public override ResultsHandle Snapshot()
+        {
+            var ptr = NativeMethods.snapshot(this, out var ex);
+            ex.ThrowIfNecessary();
+
+            return new ResultsHandle(Root ?? this, ptr);
+        }
+
+        public override ResultsHandle GetFilteredResults(string query)
+        {
+            throw new NotImplementedException("Sets can't be filtered yet.");
+        }
+
+        public override bool IsFrozen
+        {
+            get
+            {
+                var result = NativeMethods.get_is_frozen(this, out var nativeException);
+                nativeException.ThrowIfNecessary();
+                return result;
+            }
+        }
+
+        public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
+        {
+            var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return new SetHandle(frozenRealmHandle, result);
+        }
+
+        #region GetAtIndex
+
+        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
+            NativeMethods.get_object(this, index, out nativeException);
+
+        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_primitive(this, index, ref result, out nativeException);
+
+        public override string GetStringAtIndex(int index)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
+        }
+
+        public override byte[] GetByteArrayAtIndex(int index)
+        {
+            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
+        }
+
+        #endregion
+    }
+}

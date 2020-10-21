@@ -42,20 +42,22 @@ namespace Realms
             Expression = expression ?? Expression.Constant(this);
         }
 
-        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata, ResultsHandle handle = null)
+        internal RealmResults(Realm realm, ResultsHandle handle, RealmObjectBase.Metadata metadata)
             : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
-            _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
+            _handle = handle;
+        }
+
+        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata)
+            : this(realm, metadata.Table.CreateResults(realm.SharedRealmHandle), metadata)
+        {
         }
 
         public QueryHandle GetQuery() => ResultsHandle.GetQuery();
 
         public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
-        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle)
-        {
-            return new RealmResults<T>(realm, Metadata, (ResultsHandle)handle);
-        }
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmResults<T>(realm, (ResultsHandle)handle, Metadata);
 
         internal override CollectionHandleBase CreateHandle()
         {

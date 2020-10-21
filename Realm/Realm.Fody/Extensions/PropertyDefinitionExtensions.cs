@@ -54,14 +54,37 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("IList`1", "System.Collections.Generic");
     }
 
-    internal static bool IsIList(this PropertyDefinition property, TypeReference elementType)
+    internal static bool IsISet(this PropertyDefinition property)
     {
-        return IsIList(property) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
+        return property.IsType("ISet`1", "System.Collections.Generic");
     }
 
-    internal static bool IsIList(this PropertyDefinition property, System.Type elementType)
+    internal static bool IsCollection(this PropertyDefinition property, out RealmCollectionType collectionType)
     {
-        return IsIList(property) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().FullName == elementType.FullName;
+        if (property.IsISet())
+        {
+            collectionType = RealmCollectionType.ISet;
+            return true;
+        }
+
+        if (property.IsIList())
+        {
+            collectionType = RealmCollectionType.IList;
+            return true;
+        }
+
+        collectionType = RealmCollectionType.None;
+        return false;
+    }
+
+    internal static bool IsCollection(this PropertyDefinition property, TypeReference elementType)
+    {
+        return (IsIList(property) || IsISet(property)) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
+    }
+
+    internal static bool IsCollection(this PropertyDefinition property, System.Type elementType)
+    {
+        return property.IsCollection(out _) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().FullName == elementType.FullName;
     }
 
     internal static bool IsIQueryable(this PropertyDefinition property)

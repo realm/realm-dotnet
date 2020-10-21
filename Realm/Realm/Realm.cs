@@ -513,8 +513,6 @@ namespace Realms
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
         /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
         /// Returning it is just meant as a convenience to enable fluent syntax scenarios.
-        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior.
-        /// You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c>.</returns>
         public T Add<T>(T obj, bool update = false)
@@ -526,6 +524,38 @@ namespace Realms
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
             AddInternal(obj, typeof(T), update);
             return obj;
+        }
+
+        /// <summary>
+        /// Add a collection of standalone <see cref="RealmObject"/>s to this <see cref="Realm"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The Type T must not only be a <see cref="RealmObject"/> but also have been processed by the Fody weaver,
+        /// so it has persistent properties.
+        /// </typeparam>
+        /// <param name="objs">A collection of <see cref="RealmObject"/> instances that will be added to this <see cref="Realm"/>.</param>
+        /// <param name="update">If <c>true</c>, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">
+        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">
+        /// You can't manage an object with more than one <see cref="Realm"/>.
+        /// </exception>
+        /// <remarks>
+        /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
+        /// This method modifies the objects in-place, meaning that after it has run, all items in <c>objs</c> will be managed.
+        /// </remarks>
+        public void Add<T>(IEnumerable<T> objs, bool update = false)
+            where T : RealmObject
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(objs, nameof(objs));
+            Argument.Ensure(objs.All(o => o != null), $"{nameof(objs)} must not contain null values.", nameof(objs));
+
+            foreach (var obj in objs)
+            {
+                AddInternal(obj, typeof(T), update);
+            }
         }
 
         /// <summary>
@@ -549,8 +579,9 @@ namespace Realms
         public RealmObject Add(RealmObject obj, bool update = false)
         {
             ThrowIfDisposed();
+            Argument.NotNull(obj, nameof(obj));
 
-            AddInternal(obj, obj?.GetType(), update);
+            AddInternal(obj, obj.GetType(), update);
             return obj;
         }
 
@@ -569,7 +600,6 @@ namespace Realms
 
         private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
-            Argument.NotNull(objectType, nameof(objectType));
             if (!ShouldAddNewObject(obj))
             {
                 return;
@@ -972,7 +1002,7 @@ namespace Realms
 
             var resultsPtr = SharedRealmHandle.ResolveReference(reference);
             var resultsHandle = new ResultsHandle(SharedRealmHandle, resultsPtr);
-            return new RealmResults<T>(this, reference.Metadata, resultsHandle);
+            return new RealmResults<T>(this, resultsHandle, reference.Metadata);
         }
 
         #endregion Thread Handover
