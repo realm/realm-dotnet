@@ -41,7 +41,7 @@ namespace RealmWeaver
 
         public MethodReference IListOfT_get_Item { get; private set; }
 
-        public TypeReference ISetOfT { get; }
+        public abstract TypeReference ISetOfT { get; }
 
         public MethodReference ISetOfT_UnionWith { get; private set; }
 
@@ -167,9 +167,6 @@ namespace RealmWeaver
 
             IListOfT = new TypeReference("System.Collections.Generic", "IList`1", Module, Module.TypeSystem.CoreLibrary);
             IListOfT.GenericParameters.Add(new GenericParameter(IListOfT));
-
-            ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
-            ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
             System_ValueType = new TypeReference("System", "ValueType", Module, Module.TypeSystem.CoreLibrary);
 
@@ -475,22 +472,24 @@ namespace RealmWeaver
 
             public override TypeReference System_Linq_Queryable { get; }
 
+            public override TypeReference ISetOfT { get; }
+
             public NETFramework(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
-                var System_Core = GetOrAddFrameworkReference("System.Core");
-
-                IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, System_Core);
+                IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System"));
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
 
-                System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, Module.TypeSystem.CoreLibrary);
+                System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Core"));
                 System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
 
-                System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, System_Core);
-
-                System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, System_Core);
+                System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Core"));
+                System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Core"));
             }
         }
 
@@ -506,10 +505,15 @@ namespace RealmWeaver
 
             public override TypeReference System_Linq_Queryable { get; }
 
+            public override TypeReference ISetOfT { get; }
+
             public NETPortable(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System.Collections"));
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, GetOrAddFrameworkReference("System.Collections"));
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
@@ -534,10 +538,15 @@ namespace RealmWeaver
 
             public override TypeReference System_Linq_Queryable { get; }
 
+            public override TypeReference ISetOfT { get; }
+
             public NetStandard2(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Module.TypeSystem.CoreLibrary);
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
