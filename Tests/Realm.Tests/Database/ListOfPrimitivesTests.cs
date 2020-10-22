@@ -551,91 +551,56 @@ namespace Realms.Tests.Database
         [TestCase]
         public void RequiredStringList_CanAddEmptyString()
         {
-            try
-            {
-                var obj = new ObjectWithRequiredStringList();
-                _realm.Write(() => _realm.Add(obj));
+            var obj = new ObjectWithRequiredStringList();
+            _realm.Write(() => _realm.Add(obj));
 
-                _realm.Write(() => obj.Strings.Add(string.Empty));
+            _realm.Write(() => obj.Strings.Add(string.Empty));
 
-                Assert.That(obj.Strings.Count, Is.EqualTo(1));
-                Assert.That(obj.Strings[0], Is.EqualTo(string.Empty));
-            }
-            finally
-            {
-                _realm.Dispose();
-            }
+            Assert.That(obj.Strings.Count, Is.EqualTo(1));
+            Assert.That(obj.Strings[0], Is.EqualTo(string.Empty));
         }
 
         [TestCase]
         public void RequiredStringList_CanNotAddNullString()
         {
-            try
-            {
-                var obj = new ObjectWithRequiredStringList();
-                _realm.Write(() => _realm.Add(obj));
+            var obj = new ObjectWithRequiredStringList();
+            _realm.Write(() => _realm.Add(obj));
 
-                var ex = Assert.Throws<RealmException>(() => _realm.Write(() => obj.Strings.Add(null)));
-                Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
-            }
-            finally
-            {
-                _realm.Dispose();
-            }
+            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => obj.Strings.Add(null)));
+            Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
         }
 
         [TestCase]
         public void RequiredStringList_WhenContainsEmptyString_CanAddToRealm()
         {
-            try
-            {
-                var obj = new ObjectWithRequiredStringList();
-                obj.Strings.Add(string.Empty);
-                obj.Strings.Add("strings.NonEmpty");
-                _realm.Write(() => _realm.Add(obj));
+            var obj = new ObjectWithRequiredStringList();
+            obj.Strings.Add(string.Empty);
+            obj.Strings.Add("strings.NonEmpty");
+            _realm.Write(() => _realm.Add(obj));
 
-                Assert.That(obj.Strings.Count, Is.EqualTo(2));
-                Assert.That(obj.Strings[0], Is.Empty);
-                Assert.That(obj.Strings[1], Is.Not.Empty);
-            }
-            finally
-            {
-                _realm.Dispose();
-            }
+            Assert.That(obj.Strings.Count, Is.EqualTo(2));
+            Assert.That(obj.Strings[0], Is.Empty);
+            Assert.That(obj.Strings[1], Is.Not.Empty);
         }
 
         [TestCase]
         public void RequiredStringList_WhenContainsNull_CanNotAddToRealm()
         {
-            try
-            {
-                var obj = new ObjectWithRequiredStringList();
-                obj.Strings.Add(null);
-                obj.Strings.Add("strings.NonEmpty");
-                var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(obj)));
-                Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
-            }
-            finally
-            {
-                _realm.Dispose();
-            }
+            var obj = new ObjectWithRequiredStringList();
+            obj.Strings.Add(null);
+            obj.Strings.Add("strings.NonEmpty");
+            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(obj)));
+            Assert.That(ex.Message, Does.Contain("Attempted to insert null into non-nullable column"));
         }
 
         private void RunManagedTests<T>(Func<ListsObject, IList<T>> itemsGetter, T[] toAdd)
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                try
-                {
-                    var listObject = new ListsObject();
-                    _realm.Write(() => _realm.Add(listObject));
-                    var items = itemsGetter(listObject);
-                    await RunManagedTestsCore(items, toAdd);
-                }
-                finally
-                {
-                    _realm.Dispose();
-                }
+                var listObject = new ListsObject();
+                _realm.Write(() => _realm.Add(listObject));
+                var items = itemsGetter(listObject);
+                await RunManagedTestsCore(items, toAdd);
             }, timeout: 100000);
         }
 
@@ -649,7 +614,7 @@ namespace Realms.Tests.Database
             }
 
             var notifications = new List<ChangeSet>();
-            var token = items.SubscribeForNotifications((sender, changes, error) =>
+            using var token = items.SubscribeForNotifications((sender, changes, error) =>
             {
                 if (changes != null)
                 {
@@ -828,8 +793,6 @@ namespace Realms.Tests.Database
                     // TODO: verify notifications contains the expected Deletions collection
                 });
             }
-
-            token.Dispose();
         }
 
         private static void VerifyNotifications(Realm realm, List<ChangeSet> notifications, Action verifier)
@@ -1038,33 +1001,26 @@ namespace Realms.Tests.Database
 
         private void RunUnmanagedTests<T>(Func<ListsObject, IList<T>> accessor, T[] toAdd)
         {
-            try
+            if (toAdd == null)
             {
-                if (toAdd == null)
-                {
-                    toAdd = Array.Empty<T>();
-                }
-
-                var listsObject = new ListsObject();
-                var list = accessor(listsObject);
-
-                foreach (var item in toAdd)
-                {
-                    list.Add(item);
-                }
-
-                CollectionAssert.AreEqual(list, toAdd);
-
-                _realm.Write(() => _realm.Add(listsObject));
-
-                var managedList = accessor(listsObject);
-
-                CollectionAssert.AreEqual(managedList, toAdd);
+                toAdd = Array.Empty<T>();
             }
-            finally
+
+            var listsObject = new ListsObject();
+            var list = accessor(listsObject);
+
+            foreach (var item in toAdd)
             {
-                _realm.Dispose();
+                list.Add(item);
             }
+
+            CollectionAssert.AreEqual(list, toAdd);
+
+            _realm.Write(() => _realm.Add(listsObject));
+
+            var managedList = accessor(listsObject);
+
+            CollectionAssert.AreEqual(managedList, toAdd);
         }
 
         #endregion Unmanaged Tests
