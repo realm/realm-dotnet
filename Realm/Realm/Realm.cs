@@ -676,6 +676,44 @@ namespace Realms
         }
 
         /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
+        /// will be committed.
+        /// </summary>
+        /// <remarks>
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>delegate</c>.
+        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
+        /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
+        /// unless you need to guarantee finer-grained updates.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dog = realm.Write(() =>
+        /// {
+        ///     return realm.Add(new Dog
+        ///     {
+        ///         Name = "Eddie",
+        ///         Age = 5
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="function">
+        /// Delegate with one return value to perform inside a <see cref="Transaction"/>, creating, updating or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
+        /// <returns>The return value of <paramref name="function"/>.</returns>
+        public T Write<T>(Func<T> function)
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(function, nameof(function));
+
+            using var transaction = BeginWrite();
+            var result = function();
+            transaction.Commit();
+            return result;
+        }
+
+        /// <summary>
         /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
