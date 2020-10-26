@@ -319,7 +319,11 @@ namespace Realms.Tests.Database
             var maggie = _realm.DynamicApi.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
             Assert.That(maggie.Owners, Is.Empty);
 
-            _realm.Write(() => dani.Dogs.Add(maggie));
+            _realm.Write(() =>
+            {
+                dani.Dogs.Add(maggie);
+            });
+
             Assert.That(maggie.Owners, Is.EquivalentTo(new[] { dani }));
         }
 
@@ -335,7 +339,11 @@ namespace Realms.Tests.Database
             var maggie = _realm.DynamicApi.All("DynamicDog").ToArray().Single(d => d.Name == "Maggie Mongrel");
             Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.Empty);
 
-            _realm.Write(() => dani.TopDog = maggie);
+            _realm.Write(() =>
+            {
+                dani.TopDog = maggie;
+            });
+
             Assert.That(maggie.GetBacklinks("DynamicOwner", "TopDog"), Is.EquivalentTo(new[] { dani }));
         }
 
@@ -346,13 +354,19 @@ namespace Realms.Tests.Database
 
             Assert.That(tim.Tags.Count, Is.EqualTo(0));
 
-            _realm.Write(() => tim.Tags.Add("First"));
+            _realm.Write(() =>
+            {
+                tim.Tags.Add("First");
+            });
 
             Assert.That(tim.Tags.Count, Is.EqualTo(1));
             Assert.That(tim.Tags[0], Is.EqualTo("First"));
             Assert.That(((IEnumerable<dynamic>)tim.Tags).First(), Is.EqualTo("First"));
 
-            _realm.Write(() => tim.Tags.Clear());
+            _realm.Write(() =>
+            {
+                tim.Tags.Clear();
+            });
 
             Assert.That(tim.Tags, Is.Empty);
         }
