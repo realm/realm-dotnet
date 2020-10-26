@@ -645,7 +645,7 @@ namespace Realms
         /// will be committed.
         /// </summary>
         /// <remarks>
-        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>.
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <paramref name="action"/>.
         /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
         /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
         /// unless you need to guarantee finer-grained updates.
@@ -663,16 +663,18 @@ namespace Realms
         /// </code>
         /// </example>
         /// <param name="action">
-        /// Action to perform inside a <see cref="Transaction"/>, creating, updating or removing objects.
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         public void Write(Action action)
         {
             ThrowIfDisposed();
             Argument.NotNull(action, nameof(action));
 
-            using var transaction = BeginWrite();
-            action();
-            transaction.Commit();
+            Write(() =>
+            {
+                action();
+                return true;
+            });
         }
 
         /// <summary>
@@ -680,7 +682,7 @@ namespace Realms
         /// will be committed.
         /// </summary>
         /// <remarks>
-        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>delegate</c>.
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <paramref name="function"/>.
         /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
         /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
         /// unless you need to guarantee finer-grained updates.
@@ -698,7 +700,7 @@ namespace Realms
         /// </code>
         /// </example>
         /// <param name="function">
-        /// Delegate with one return value to perform inside a <see cref="Transaction"/>, creating, updating or removing objects.
+        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>The return value of <paramref name="function"/>.</returns>
@@ -718,7 +720,7 @@ namespace Realms
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
+        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="action"/> inside a write <see cref="Transaction"/>.
         /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
         /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
@@ -744,7 +746,7 @@ namespace Realms
         /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">
-        /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
