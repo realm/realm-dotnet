@@ -18,18 +18,29 @@
 
 using System.ComponentModel;
 using Mono.Cecil;
+using RealmWeaver;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeReferenceExtensions
 {
-    public static bool IsDescendedFrom(this TypeReference @this, TypeReference @base)
+    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
     {
         try
         {
-            TypeDefinition definition;
-            while ((definition = @this?.Resolve()) != null)
+            while (true)
             {
-                if (definition.BaseType.IsSameAs(@base))
+                if (@this == null || !Weaver.ShouldTraverseAssembly(@this.Module.Assembly.Name))
+                {
+                    return false;
+                }
+
+                var definition = @this?.Resolve();
+                if (definition == null)
+                {
+                    return false;
+                }
+
+                if (definition.BaseType.IsSameAs(references.RealmObject) || definition.BaseType.IsSameAs(references.EmbeddedObject))
                 {
                     return true;
                 }

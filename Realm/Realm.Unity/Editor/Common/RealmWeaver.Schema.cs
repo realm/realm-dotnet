@@ -26,6 +26,9 @@ namespace RealmWeaver
 {
     internal partial class Weaver
     {
+        // b77a5c561934e089
+        private static readonly byte[] _systemAssemblyPublicKey = new byte[] { 183, 122, 92, 86, 25, 52, 224, 137 };
+
         private void WeaveSchema(TypeDefinition[] types)
         {
             if (_references.RealmSchema_AddDefaultTypes == null)
@@ -89,6 +92,7 @@ namespace RealmWeaver
                 }
 
                 var referencedModules = module.AssemblyReferences
+                                              .Where(ShouldTraverseAssembly)
                                               .Select(_moduleDefinition.AssemblyResolver.Resolve)
                                               .Where(a => a != null && processedAssemblies.Add(a.FullName))
                                               .Select(a => a.MainModule);
@@ -162,6 +166,28 @@ namespace RealmWeaver
         private bool ShouldInclude(ICustomAttributeProvider provider)
         {
             return provider.CustomAttributes.All(a => !a.AttributeType.IsSameAs(_references.ExplicitAttribute));
+        }
+
+        /// <summary>
+        /// This is a bit of a hack to speed up compilation times, particularly of unity projects.
+        /// It will return false for system assembly or assemblies that look like Unity ones.
+        /// </summary>
+        public static bool ShouldTraverseAssembly(AssemblyNameReference assembly)
+        {
+            // Filter out system assemblies
+            if (assembly.PublicKeyToken.SequenceEqual(_systemAssemblyPublicKey))
+            {
+                return false;
+            }
+
+            // Attempt to filter out Unity assemblies - we're adding the Version(0.0.0.0)
+            // as a best effort attempt to avoid filtering out legitimate user assemblies.
+            if (assembly.Name == "UnityEditor" || assembly.Name.StartsWith("UnityEngine") || assembly.Name.StartsWith("Unity."))
+            {
+                return assembly.Version == default(Version);
+            }
+
+            return true;
         }
     }
 }

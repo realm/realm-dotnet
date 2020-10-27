@@ -18,70 +18,115 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Pdb;
+using UnityEditor.Compilation;
+using UnityEngine;
 
 namespace RealmWeaver
 {
     public class WeaverAssemblyResolver : BaseAssemblyResolver
     {
-        private readonly IDictionary<string, string> _appDomainAssemblyLocations;
-        private readonly IDictionary<string, AssemblyDefinition> _cache;
+        private readonly IDictionary<string, string> _appDomainAssemblyLocations = new Dictionary<string, string>();
+        private readonly IDictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
 
-        public WeaverAssemblyResolver()
+        private WeaverAssemblyResolver(string[] references)
         {
-            _appDomainAssemblyLocations = new Dictionary<string, string>();
-            _cache = new Dictionary<string, AssemblyDefinition>();
-
-            var domain = AppDomain.CurrentDomain;
-
-            var assemblies = domain.GetAssemblies();
-            foreach (var assembly in domain.GetAssemblies().Where(a => !a.ReflectionOnly && !a.IsDynamic))
+            foreach (var reference in references)
             {
+                AddSearchDirectory(reference);
+            }
 
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.ReflectionOnly && !a.IsDynamic))
+            {
                 _appDomainAssemblyLocations[assembly.FullName] = assembly.Location;
-                AddSearchDirectory(System.IO.Path.GetDirectoryName(assembly.Location));
             }
         }
 
-        public override AssemblyDefinition Resolve(AssemblyNameReference name)
+        public static (ModuleDefinition, IDisposable) Resolve(string assemblyPath)
         {
-            var assemblyDef = FindAssemblyDefinition(name.FullName, null);
+            var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                                              .FirstOrDefault(p => p.outputPath == assemblyPath);
 
-            if (assemblyDef == null)
+            if (assembly == null)
             {
-                assemblyDef = base.Resolve(name);
-                _cache[name.FullName] = assemblyDef;
+                return (null, null);
             }
 
-            return assemblyDef;
+            var absolutePath = GetAbsolutePath(assemblyPath);
+
+            if (!File.Exists(absolutePath))
+            {
+                return (null, null);
+            }
+
+            var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(assembly.compilerOptions.ApiCompatibilityLevel);
+
+            var assemblyStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.ReadWrite);
+            var module = ModuleDefinition.ReadModule(assemblyStream, new ReaderParameters
+            {
+                ReadingMode = ReadingMode.Immediate,
+                ReadWrite = true,
+                AssemblyResolver = new WeaverAssemblyResolver(systemAssemblies),
+                ReadSymbols = true,
+                SymbolReaderProvider = new PdbReaderProvider()
+            });
+
+            return (module, assemblyStream);
+        }
+
+        private static string GetAbsolutePath(string assemblyPath)
+        {
+            return Path.Combine(Application.dataPath, "..", assemblyPath);
         }
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
-            var assemblyDef = FindAssemblyDefinition(name.FullName, parameters);
+            if (_cache.TryGetValue(name.FullName, out var assemblyDef))
+            {
+                return assemblyDef;
+            }
+
+            try
+            {
+                assemblyDef = base.Resolve(name, parameters);
+            }
+            catch
+            {
+            }
 
             if (assemblyDef == null)
             {
-                assemblyDef = base.Resolve(name, parameters);
-                _cache[name.FullName] = assemblyDef;
+                assemblyDef = FindAssemblyDefinition(name.FullName, parameters);
             }
 
+            _cache[name.FullName] = assemblyDef;
             return assemblyDef;
         }
 
         private AssemblyDefinition FindAssemblyDefinition(string fullName, ReaderParameters parameters)
         {
-            if (_cache.TryGetValue(fullName, out var assemblyDefinition))
-            {
-                return assemblyDefinition;
-            }
+            var playerAss = CompilationPipeline.GetAssemblies(AssembliesType.Player);
+            var editorAss = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
+
+            var test1 = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(fullName);
+            var platforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
+            var precompiled = CompilationPipeline.GetPrecompiledAssemblyNames();
+            var test = CompilationPipeline.GetSystemAssemblyDirectories(UnityEditor.ApiCompatibilityLevel.NET_Standard_2_0);
+            var paths = CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All);
+
+            //if (_cache.TryGetValue(fullName, out var assemblyDefinition))
+            //{
+            //    return assemblyDefinition;
+            //}
 
             if (_appDomainAssemblyLocations.TryGetValue(fullName, out var location))
             {
-                assemblyDefinition = parameters != null ? AssemblyDefinition.ReadAssembly(location, parameters) : AssemblyDefinition.ReadAssembly(location);
+                var assemblyDefinition = parameters != null ? AssemblyDefinition.ReadAssembly(location, parameters) : AssemblyDefinition.ReadAssembly(location);
 
-                _cache[fullName] = assemblyDefinition;
+                //_cache[fullName] = assemblyDefinition;
 
                 return assemblyDefinition;
             }

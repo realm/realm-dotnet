@@ -32,16 +32,7 @@ namespace RealmWeaver
 {
     public class UnityWeaver
     {
-        private static readonly ReaderParameters _readerParameters = new ReaderParameters
-        {
-            ReadingMode = ReadingMode.Immediate,
-            ReadWrite = true,
-            AssemblyResolver = new WeaverAssemblyResolver(),
-            ReadSymbols = true,
-            SymbolReaderProvider = new PdbReaderProvider()
-        };
-
-        private static readonly WriterParameters _writerParameters = new WriterParameters
+        private static WriterParameters WriterParameters => new WriterParameters
         {
             WriteSymbols = true,
             SymbolWriterProvider = new PdbWriterProvider()
@@ -62,40 +53,39 @@ namespace RealmWeaver
                 return;
             }
 
+            var logger = new UnityLogger();
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
-            var filePath = GetAbsolutePath(assemblyPath);
-
-            var logger = new UnityLogger();
-            if (!File.Exists(filePath))
+            try
             {
-                logger.Error($"[{name}] Unable to find assembly at path '{filePath}'.");
-                return;
+                var timer = new Stopwatch();
+                timer.Start();
+
+                var (moduleDefinition, fileStream) = WeaverAssemblyResolver.Resolve(assemblyPath);
+                if (moduleDefinition == null)
+                {
+                    return;
+                }
+                using (fileStream)
+                using (moduleDefinition)
+                {
+                    // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
+                    // using NETStandard2, so we just hardcode this.
+                    var weaver = new Weaver(moduleDefinition, logger, new FrameworkName(".NETStandard,Version=v2.0"));
+                    var results = weaver.Execute();
+
+                    moduleDefinition.Write(WriterParameters);
+
+                    logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                }
+
+                // save any changes to our weavedAssembly objects
+                AssetDatabase.SaveAssets();
             }
-
-            var timer = new Stopwatch();
-            timer.Start();
-
-            using (var assemblyStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.ReadWrite))
-            using (var moduleDefinition = ModuleDefinition.ReadModule(assemblyStream, _readerParameters))
+            catch (Exception ex)
             {
-                // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
-                // using NETStandard2, so we just hardcode this.
-                var weaver = new Weaver(moduleDefinition, logger, new FrameworkName(".NETStandard,Version=v2.0"));
-                var results = weaver.Execute();
-
-                moduleDefinition.Write(_writerParameters);
-
-                logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                logger.Warning($"[{name}] Weaving failed: {ex.Message}");
             }
-
-            // save any changes to our weavedAssembly objects
-            AssetDatabase.SaveAssets();
-        }
-
-        private static string GetAbsolutePath(string assemblyPath)
-        {
-            return Path.Combine(Application.dataPath, "..", assemblyPath);
         }
 
         private class UnityLogger : ILogger

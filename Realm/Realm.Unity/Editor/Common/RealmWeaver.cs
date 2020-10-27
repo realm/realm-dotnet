@@ -138,7 +138,7 @@ namespace RealmWeaver
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
-            foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_references.RealmObject) || t.IsDescendedFrom(_references.EmbeddedObject)))
+            foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsRealmObjectDescendant(_references)))
             {
                 if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
                 {
