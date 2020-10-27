@@ -85,7 +85,7 @@ namespace RealmWeaver
                 Config = config
             };
 
-            return weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" });
+            return weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" }, runPeVerify: false);
         }
 
         private static string GetCoreMethodName(string type)
