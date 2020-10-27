@@ -499,13 +499,7 @@ Analytics payload
         }
         else if (prop.PropertyType.GetElementType().FullName == "System.Collections.Generic.List`1")
         {
-            var errMsg = $"{type.Name}.{prop.Name} is a 'System.Collections.Generic.List`1' but only its interface is supported by Realm. Did you mean IList?";
-            if (prop.SetMethod != null)
-            {
-                errMsg += " Additionally, a setter was added and IList only supports getters.";
-            }
-
-            return WeaveResult.Error(errMsg);
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is a 'System.Collections.Generic.List`1' but only its interface is supported by Realm. Did you mean IList?");
         }
         else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
         {

@@ -562,7 +562,6 @@ namespace RealmWeaver
                 "NotSupportedProperties.NullableDateTimeProperty is a DateTime? which is not supported - use DateTimeOffset? instead.",
                 "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
                 "NotSupportedProperties.People is a 'System.Collections.Generic.List`1' but only its interface is supported by Realm. Did you mean IList?",
-                "NotSupportedProperties.ListWithSetter is a 'System.Collections.Generic.List`1' but only its interface is supported by Realm. Did you mean IList? Additionally, a setter was added and IList only supports getters.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
                 "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",

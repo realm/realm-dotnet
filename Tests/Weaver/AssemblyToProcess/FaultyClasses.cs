@@ -211,8 +211,6 @@ namespace AssemblyToProcess
 
         public List<Person> People { get; }
 
-        public List<int> ListWithSetter { get; set; }
-
         public string PersistedProperty { get; set; }
 
         public enum MyEnum
