@@ -514,7 +514,7 @@ namespace RealmWeaver
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
 
-                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System.Collections"));
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
                 ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, GetOrAddFrameworkReference("System.Collections"));
