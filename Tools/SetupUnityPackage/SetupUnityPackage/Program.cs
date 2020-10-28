@@ -30,6 +30,8 @@ namespace SetupUnityPackage
     {
         private const string RealmPackageId = "Realm";
 
+        private static readonly string _buildFolder = typeof(Program).Assembly.Location;
+
         private static readonly IDictionary<string, IDictionary<string, string>> _packageMaps = new Dictionary<string, IDictionary<string, string>>
         {
             [RealmPackageId] = new Dictionary<string, string>
@@ -74,7 +76,12 @@ namespace SetupUnityPackage
                 opts.Path = await DownloadPackage(RealmPackageId, opts.Version);
             }
 
-            var realmDependencies = await CopyBinaries(opts.Path, _packageMaps[RealmPackageId]);
+            Console.WriteLine("Including Realm binaries");
+
+            var (version, realmDependencies) = await CopyBinaries(opts.Path, _packageMaps[RealmPackageId]);
+
+            Console.WriteLine($"Included {_packageMaps[RealmPackageId].Count} files from {RealmPackageId}@{version}");
+
             if (opts.IncludeDependencies)
             {
                 Console.WriteLine("Including dependencies");
@@ -83,17 +90,18 @@ namespace SetupUnityPackage
                 {
                     if (_packageMaps.TryGetValue(package.Id, out var fileMap))
                     {
-                        Console.WriteLine($"Including {package.Id}@{package.VersionRange.MinVersion.ToNormalizedString()}");
-                        var path = await DownloadPackage(package.Id, package.VersionRange.MinVersion.ToNormalizedString());
+                        var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
+                        Console.WriteLine($"Including {package.Id}@{packageVersion}");
+                        var path = await DownloadPackage(package.Id, packageVersion);
                         await CopyBinaries(path, fileMap);
 
-                        Console.WriteLine($"Included {fileMap.Count} files from {package.Id}");
+                        Console.WriteLine($"Included {fileMap.Count} files from {package.Id}@{packageVersion}");
                     }
                 }
 
                 Console.WriteLine("Copying meta files");
 
-                var metaFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "MetaFiles");
+                var metaFilesPath = Path.Combine(_buildFolder, "MetaFiles");
                 var targetBasePath = GetUnityPackagePath();
                 foreach (var file in Directory.EnumerateFiles(metaFilesPath))
                 {
@@ -119,7 +127,7 @@ namespace SetupUnityPackage
                 Console.WriteLine($"  Found latest version: {version}.");
             }
 
-            var tempPath = Path.Combine(Directory.GetCurrentDirectory(), "Downloaded Packages", $"{packageId}-{version}.nupkg");
+            var tempPath = Path.Combine(_buildFolder, "Downloaded Packages", $"{packageId}-{version}.nupkg");
             Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
 
             if (File.Exists(tempPath))
@@ -140,7 +148,7 @@ namespace SetupUnityPackage
             return tempPath;
         }
 
-        private static async Task<IEnumerable<PackageDependency>> CopyBinaries(string path, IDictionary<string, string> fileMap)
+        private static async Task<(string, IEnumerable<PackageDependency>)> CopyBinaries(string path, IDictionary<string, string> fileMap)
         {
             using var stream = File.OpenRead(path);
             using var packageReader = new PackageArchiveReader(stream);
@@ -152,14 +160,16 @@ namespace SetupUnityPackage
             }
 
             var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
-            return dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
+            var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
+            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
+            return (version, packages);
         }
 
         private static string GetUnityPackagePath()
         {
             var pattern = Path.Combine("Tools", "SetupUnityPackage", "SetupUnityPackage");
 
-            var basePath = Directory.GetCurrentDirectory().Substring(0, Directory.GetCurrentDirectory().IndexOf(pattern));
+            var basePath = _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
 
             return Path.Combine(basePath, "Realm", "Realm.Unity", "Runtime");
         }
