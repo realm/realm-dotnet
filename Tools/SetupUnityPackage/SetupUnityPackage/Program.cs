@@ -105,7 +105,7 @@ namespace SetupUnityPackage
 
                 var metaFilesPath = Path.Combine(_buildFolder, "MetaFiles");
                 var targetBasePath = GetUnityPackagePath();
-                foreach (var file in Directory.EnumerateFiles(metaFilesPath))
+                foreach (var file in Directory.EnumerateFiles(metaFilesPath, "*.*", SearchOption.AllDirectories))
                 {
                     File.Copy(file, Path.Combine(targetBasePath, Path.GetRelativePath(metaFilesPath, file)), overwrite: true);
                 }
