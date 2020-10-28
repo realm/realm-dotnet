@@ -190,3 +190,10 @@ NDependOut
 Resource.designer.cs
 FodyWeavers.xsd
 .vscode
+Realm/Realm.Unity/Runtime/**/*.dll
+Realm/Realm.Unity/Runtime/**/*.so
+Realm/Realm.Unity/Runtime/**/*.dylib
+Realm/Realm.Unity/Runtime/**/*.dll.config
+Realm/Realm.Unity/Runtime/**/*.framework/*
+Realm/Realm.Unity/Runtime/Dependencies/*.meta
+Realm/Realm.Unity/Runtime/Dependencies.meta
