@@ -30,7 +30,7 @@ namespace SetupUnityPackage
     {
         private const string RealmPackageId = "Realm";
 
-        private static readonly string _buildFolder = typeof(Program).Assembly.Location;
+        private static readonly string _buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
         private static readonly IDictionary<string, IDictionary<string, string>> _packageMaps = new Dictionary<string, IDictionary<string, string>>
         {
