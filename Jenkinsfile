@@ -40,18 +40,6 @@ stage('Checkout') {
   }
 }
 
-stage('Test') {
-  rlmNode('dotnet && macos') {
-    unstash 'dotnet-source'
-
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/"
-    zip zipFile: "Realm.Unity-latest.zip", archive: true, dir: 'Realm/Realm.Unity'
-
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -f"
-    zip zipFile: "Realm.Unity-latest.BundledDeps.zip", archive: true, dir: 'Realm/Realm.Unity'
-  }
-}
-
 stage('Build wrappers') {
   def jobs = [
     'iOS': {
@@ -196,10 +184,12 @@ stage('Unity Package') {
     unstash 'dotnet-source'
     unstash 'packages'
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p Realm/packages/Realm.${packageVersion}.nupkg"
+    def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
+
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
     zip zipFile: "Realm.Unity-${packageVersion}.zip", archive: true, dir: 'Realm/Realm.Unity'
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p Realm/packages/Realm.${packageVersion}.nupkg -f"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
     zip zipFile: "Realm.Unity-${packageVersion}.BundledDeps.zip", archive: true, dir: 'Realm/Realm.Unity'
   }
 }
