@@ -59,21 +59,18 @@ namespace Realms
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
-                try
-                {
-                    var platform = Environment.OSVersion.Platform;
+                var platform = Environment.OSVersion.Platform;
 
-                    if (platform == PlatformID.Win32NT)
-                    {
-                        var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
-                        var architecture = Environment.Is64BitProcess ? "x64" : "x86";
-                        var path = Path.Combine(assemblyLocation, "lib", "win32", architecture) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-                        Environment.SetEnvironmentVariable("PATH", path);
-                    }
-                }
-                catch
+                if (platform == PlatformID.Win32NT)
                 {
-                    // Try to put wrappers in PATH on Windows Desktop, but be silent if anything fails.
+                    // This is the path for regular windows apps using NuGet.
+                    AddWindowsWrappersToPath("lib\\win32");
+
+                    // This is the path for Unity apps built as standalone.
+                    AddWindowsWrappersToPath("..\\Plugins", isUnityTarget: true);
+
+                    // This is the path in the Unity package - it is what the Editor uses.
+                    AddWindowsWrappersToPath("Windows", isUnityTarget: true);
                 }
 
 #if DEBUG
@@ -83,6 +80,24 @@ namespace Realms
 #endif
 
                 SynchronizationContextScheduler.Install();
+            }
+        }
+
+        private static void AddWindowsWrappersToPath(string relativePath, bool isUnityTarget = false)
+        {
+            try
+            {
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
+
+                // Unity uses x86_64 for x64 native assemblies.
+                var x64Architecture = isUnityTarget ? "x64" : "x86_64";
+                var architecture = Environment.Is64BitProcess ? x64Architecture : "x86";
+                var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, architecture));
+                var path = expectedFilePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.Process);
+            }
+            catch
+            {
             }
         }
     }
