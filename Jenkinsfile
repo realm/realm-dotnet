@@ -188,7 +188,7 @@ stage('Unity Package') {
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
     dir('Realm/Realm.Unity') {
-      sh "npm version ${packageVersion}"
+      sh "npm version ${packageVersion} --allow-same-version"
       sh 'npm pack'
 
       archiveArtifacts "realm.unity-${packageVersion}.tgz"
@@ -197,7 +197,6 @@ stage('Unity Package') {
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
     dir('Realm/Realm.Unity') {
-      sh "npm version ${packageVersion}"
       sh 'npm pack'
 
       archiveArtifacts "*.tgz"
