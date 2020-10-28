@@ -29,6 +29,8 @@ namespace SetupUnityPackage
     public class Program
     {
         private const string RealmPackageId = "Realm";
+        private const string RealmPackagaName = "realm.unity";
+        private const string RealmBundlePackageName = "realm.unity.bundle";
 
         private static readonly string _buildFolder = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
@@ -108,6 +110,8 @@ namespace SetupUnityPackage
                     File.Copy(file, Path.Combine(targetBasePath, Path.GetRelativePath(metaFilesPath, file)), overwrite: true);
                 }
             }
+
+            UpdatePackageJson(opts.IncludeDependencies);
         }
 
         private static async Task<string> DownloadPackage(string packageId, string version)
@@ -175,6 +179,29 @@ namespace SetupUnityPackage
             var basePath = _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
 
             return Path.Combine(basePath, "Realm", "Realm.Unity", "Runtime");
+        }
+
+        private static void UpdatePackageJson(bool includesDependencies)
+        {
+            var packageJsonPath = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..", "package.json"));
+            var contents = File.ReadAllText(packageJsonPath);
+
+            string maybeSourceName;
+            string targetName;
+
+            if (includesDependencies)
+            {
+                targetName = RealmBundlePackageName;
+                maybeSourceName = RealmPackagaName;
+            }
+            else
+            {
+                targetName = RealmPackagaName;
+                maybeSourceName = RealmBundlePackageName;
+            }
+
+            contents = contents.Replace($"\"name\": \"{maybeSourceName}\"", $"\"name\": \"{targetName}\"");
+            File.WriteAllText(packageJsonPath, contents);
         }
     }
 }
