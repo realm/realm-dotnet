@@ -139,8 +139,10 @@ namespace SetupUnityPackage
                 Console.WriteLine($"  Downloading {packageId} {version} to {tempPath}.");
 
                 var nugetVersion = new NuGetVersion(version);
-                using var fileStream = File.OpenWrite(tempPath);
-                await resource.CopyNupkgToStreamAsync(packageId, nugetVersion, fileStream, cache, NullLogger.Instance, CancellationToken.None);
+                using (var fileStream = File.OpenWrite(tempPath))
+                {
+                    await resource.CopyNupkgToStreamAsync(packageId, nugetVersion, fileStream, cache, NullLogger.Instance, CancellationToken.None);
+                }
 
                 Console.WriteLine("  Download complete.");
             }
@@ -150,19 +152,20 @@ namespace SetupUnityPackage
 
         private static async Task<(string, IEnumerable<PackageDependency>)> CopyBinaries(string path, IDictionary<string, string> fileMap)
         {
-            using var stream = File.OpenRead(path);
-            using var packageReader = new PackageArchiveReader(stream);
-
-            var unityPath = GetUnityPackagePath();
-            foreach (var kvp in fileMap)
+            using (var stream = File.OpenRead(path))
+            using (var packageReader = new PackageArchiveReader(stream))
             {
-                packageReader.ExtractFile(kvp.Key, Path.Combine(unityPath, kvp.Value), NullLogger.Instance);
-            }
+                var unityPath = GetUnityPackagePath();
+                foreach (var kvp in fileMap)
+                {
+                    packageReader.ExtractFile(kvp.Key, Path.Combine(unityPath, kvp.Value), NullLogger.Instance);
+                }
 
-            var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
-            var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
-            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
-            return (version, packages);
+                var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
+                var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
+                var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
+                return (version, packages);
+            }
         }
 
         private static string GetUnityPackagePath()
