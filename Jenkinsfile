@@ -187,10 +187,16 @@ stage('Unity Package') {
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
-    zip zipFile: "Realm.Unity-${packageVersion}.zip", archive: true, dir: 'Realm/Realm.Unity'
+    sh "tar -zcvf Realm.Unity-${packageVersion}.tgz Realm/Realm.Unity"
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
-    zip zipFile: "Realm.Unity-${packageVersion}.BundledDeps.zip", archive: true, dir: 'Realm/Realm.Unity'
+    sh "tar -zcvf Realm.Unity-${packageVersion}.BundledDeps.tgz Realm/Realm.Unity"
+
+    archiveArtifacts '*.tgz'
+
+    // zip zipFile: "Realm.Unity-${packageVersion}.zip", archive: true, dir: 'Realm/Realm.Unity'
+
+    // zip zipFile: "Realm.Unity-${packageVersion}.BundledDeps.zip", archive: true, dir: 'Realm/Realm.Unity'
   }
 }
 
