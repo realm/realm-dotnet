@@ -185,10 +185,10 @@ stage('Unity Package') {
     unstash 'packages'
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p Realm/packages/Realm.${packageVersion}.nupkg"
-    zip zipFile: "Realm.Unity-${packageVersion}.zip" archive: true, dir: 'Realm/Realm.Unity'
+    zip zipFile: "Realm.Unity-${packageVersion}.zip", archive: true, dir: 'Realm/Realm.Unity'
 
     sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p Realm/packages/Realm.${packageVersion}.nupkg -f"
-    zip zipFile: "Realm.Unity-${packageVersion}-.BundledDeps.zip" archive: true, dir: 'Realm/Realm.Unity'
+    zip zipFile: "Realm.Unity-${packageVersion}-.BundledDeps.zip", archive: true, dir: 'Realm/Realm.Unity'
   }
 }
 
