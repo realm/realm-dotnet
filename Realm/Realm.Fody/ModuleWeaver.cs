@@ -534,6 +534,11 @@ Analytics payload
 
             ReplaceBacklinksGetter(prop, backingField, columnName, elementType);
         }
+        else if (prop.PropertyType.GetElementType().FullName == "System.Collections.Generic.List`1")
+        {
+            var genericType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single().Name;
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is declared as List<{genericType}> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<{genericType}>, otherwise annotate the property with the [Ignored] attribute.");
+        }
         else if (prop.SetMethod == null)
         {
             return WeaveResult.Skipped();

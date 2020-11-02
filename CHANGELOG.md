@@ -9,6 +9,7 @@
 
 ### Enhancements
 * None
+* Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
