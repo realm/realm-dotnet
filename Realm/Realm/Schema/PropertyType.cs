@@ -28,7 +28,7 @@ namespace Realms.Schema
     [SuppressMessage("Naming", "CA1714:Flags enums should have plural names", Justification = "Would be a breaking change to rename.")]
     [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "This is by design - the enum represents types.")]
     [SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "The native values are duplicated.")]
-    public enum PropertyType : byte
+    public enum PropertyType : ushort
     {
         /// <summary>
         /// Integer property, combining all integral types.
@@ -101,9 +101,14 @@ namespace Realms.Schema
         Array = 128,
 
         /// <summary>
+        /// A collection of unique values. Can be combined with other values.
+        /// </summary>
+        Set = 256,
+
+        /// <summary>
         /// Metadata flags.
         /// </summary>
-        Flags = Nullable | Array,
+        Flags = Nullable | Array | Set,
 
         /// <summary>
         /// A shorthand for PropertyType.Int | PropertyType.Nullable.

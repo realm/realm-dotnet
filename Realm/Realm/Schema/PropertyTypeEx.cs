@@ -87,16 +87,26 @@ namespace Realms.Schema
                     return PropertyType.Object | PropertyType.Nullable;
 
                 case Type _ when type.IsClosedGeneric(typeof(IList<>), out var typeArguments):
-                    var result = PropertyType.Array | typeArguments.Single().ToPropertyType(out objectType);
+                    var listResult = PropertyType.Array | typeArguments.Single().ToPropertyType(out objectType);
 
-                    if (result.HasFlag(PropertyType.Object))
+                    if (listResult.HasFlag(PropertyType.Object))
                     {
                         // List<Object> can't contain nulls
-                        result &= ~PropertyType.Nullable;
+                        listResult &= ~PropertyType.Nullable;
                     }
 
-                    return result;
+                    return listResult;
 
+                case Type _ when type.IsClosedGeneric(typeof(ISet<>), out var typeArguments):
+                    var setResult = PropertyType.Set | typeArguments.Single().ToPropertyType(out objectType);
+
+                    if (setResult.HasFlag(PropertyType.Object))
+                    {
+                        // Set<Object> can't contain nulls
+                        setResult &= ~PropertyType.Nullable;
+                    }
+
+                    return setResult;
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
             }
@@ -107,6 +117,8 @@ namespace Realms.Schema
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);
 
         public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
+
+        public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
 
         public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }

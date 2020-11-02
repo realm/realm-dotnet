@@ -52,10 +52,10 @@ namespace Realms.Native
         private long dontuse;
 
         [FieldOffset(16)]
-        [MarshalAs(UnmanagedType.U1)]
+        [MarshalAs(UnmanagedType.U2)]
         public PropertyType Type;
 
-        [FieldOffset(17)]
+        [FieldOffset(18)]
         [MarshalAs(UnmanagedType.U1)]
         private bool has_value;
 
