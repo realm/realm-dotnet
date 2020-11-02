@@ -665,7 +665,7 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
             if (propertyTypeRef != null)
             {
-                il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+                il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
             }
 
             il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
@@ -966,7 +966,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Ldarg_1));
             if (propertyTypeRef != null)
             {
-                il.Append(il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+                il.Append(il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
             }
 
             il.Append(il.Create(OpCodes.Call, setValueReference));

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using Mono.Cecil.Cil;
+using RealmWeaver;
 
 public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 {
