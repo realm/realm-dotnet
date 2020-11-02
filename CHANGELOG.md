@@ -1,3 +1,21 @@
+## 10.0.0-beta.2 (TBD)
+------------------
+
+### Breaking Changes
+* None
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Sync 10.0.0 and Core 10.0.0.
+
 ## 10.0.0-beta.1 (2020-10-19)
 ------------------
 
@@ -112,11 +130,8 @@
 ### Internal
 * Using Sync 10.0.0 and Core 10.0.0.
 
-## 5.1.2 (TBD)
+## 5.1.2 (2020-10-20)
 ------------------
-
-### Enhancements
-* None
 
 ### Fixed
 * Fixed an issue that would result in `Realm accessed from incorrect thread` exception being thrown when accessing a Realm instance on the main thread in UWP apps. (Issue [#2045](https://github.com/realm/realm-dotnet/issues/2045))
