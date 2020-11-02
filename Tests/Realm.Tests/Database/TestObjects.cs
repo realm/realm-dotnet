@@ -185,7 +185,10 @@ namespace Realms.Tests
 
         public ISet<ObjectId> ObjectIdSet { get; }
 
+        [Required]
         public ISet<string> StringSet { get; }
+
+        public ISet<string> NullableStringSet { get; }
 
         public ISet<byte[]> ByteArraySet { get; }
 

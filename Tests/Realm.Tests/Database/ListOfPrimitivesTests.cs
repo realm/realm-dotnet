@@ -275,14 +275,12 @@ namespace Realms.Tests.Database
             }
         }
 
-        private static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
-
         private static readonly IEnumerable<ObjectId?[]> _objectIdValues = new[]
         {
             new ObjectId?[] { new ObjectId("5f651b09f6cddff534c3cddf") },
             new ObjectId?[] { null },
-            new ObjectId?[] { ObjectId.Empty, GenerateRepetitiveObjectId(0), GenerateRepetitiveObjectId(byte.MaxValue) },
-            new ObjectId?[] { new ObjectId("5f651b2930643efeef987e5d"), GenerateRepetitiveObjectId(byte.MaxValue), null, new ObjectId("5f651c4cf755604f2fbf7440") }
+            new ObjectId?[] { ObjectId.Empty, TestHelpers.GenerateRepetitiveObjectId(0), TestHelpers.GenerateRepetitiveObjectId(byte.MaxValue) },
+            new ObjectId?[] { new ObjectId("5f651b2930643efeef987e5d"), TestHelpers.GenerateRepetitiveObjectId(byte.MaxValue), null, new ObjectId("5f651c4cf755604f2fbf7440") }
         };
 
         public static IEnumerable<object> ObjectIdTestValues()
