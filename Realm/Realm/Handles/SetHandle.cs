@@ -125,7 +125,7 @@ namespace Realms
 
             #endregion
 
-            #region find
+            #region remove
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_object", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -147,6 +147,7 @@ namespace Realms
                 [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             #endregion
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -362,6 +363,5 @@ namespace Realms
         }
 
         #endregion
-
     }
 }

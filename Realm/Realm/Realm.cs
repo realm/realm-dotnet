@@ -988,6 +988,31 @@ namespace Realms
         }
 
         /// <summary>
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.Set{T}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="ISet{T}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="T">The type of the objects, contained in the collection.</typeparam>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="ISet{T}"/> resolved for the current thread or <c>null</c>
+        /// if the set's parent object has been deleted after the reference was created.
+        /// </returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Set instance will own its handle.")]
+        public ISet<T> ResolveReference<T>(ThreadSafeReference.Set<T> reference)
+        {
+            Argument.NotNull(reference, nameof(reference));
+
+            var setPtr = SharedRealmHandle.ResolveReference(reference);
+            var setHandle = new SetHandle(SharedRealmHandle, setPtr);
+            if (!setHandle.IsValid)
+            {
+                return null;
+            }
+
+            return new RealmSet<T>(this, setHandle, reference.Metadata);
+        }
+
+        /// <summary>
         /// Returns the same query as the one referenced when the <see cref="ThreadSafeReference.Query{T}"/> was first created,
         /// but resolved for the current Realm for this thread.
         /// </summary>

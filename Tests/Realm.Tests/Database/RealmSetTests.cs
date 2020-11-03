@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
@@ -637,11 +638,13 @@ namespace Realms.Tests.Database
 
         #endregion
 
-
         private static void RunUnmanagedTests<T>(Func<SetsObject, ISet<T>> accessor, TestCaseData<T> testData)
         {
             var testObject = new SetsObject();
             var set = accessor(testObject);
+
+            // We can't freeze unmanaged sets.
+            Assert.Throws<RealmException>(() => set.Freeze());
 
             testData.AssertCount(set);
             testData.AssertExceptWith(set);

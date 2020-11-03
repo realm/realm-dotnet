@@ -37,8 +37,8 @@ namespace Realms
         /// original object is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
         /// object will be closed as well.
         /// <para/>
-        /// Frozen objects can be queried as normal, but trying to mutate it in any way or attempting to register a listener will
-        /// throw a <see cref="Exceptions.RealmFrozenException"/>.
+        /// Frozen objects can be queried as normal, but trying to mutate it in any way or attempting to subscribe for notifications will
+        /// throw a <see cref="RealmFrozenException"/>.
         /// <para/>
         /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
@@ -69,7 +69,7 @@ namespace Realms
         /// original list is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
         /// list will be closed as well.
         /// <para/>
-        /// Frozen lists can be read and iterated as normal, but trying to mutate it in any way or attempting to register a listener will
+        /// Frozen lists can be read and iterated as normal, but trying to mutate it in any way or attempting to subscribe for notifications will
         /// throw a <see cref="RealmFrozenException"/>.
         /// <para/>
         /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
@@ -98,7 +98,7 @@ namespace Realms
         /// original query is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
         /// query will be closed as well.
         /// <para/>
-        /// Frozen queries can be read and iterated as normal, but trying to mutate it in any way or attempting to register a listener will
+        /// Frozen queries can be read and iterated as normal, but trying to mutate it in any way or attempting to subscribe for notifications will
         /// throw a <see cref="RealmFrozenException"/>.
         /// <para/>
         /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
@@ -118,6 +118,35 @@ namespace Realms
             }
 
             throw new RealmException("Unmanaged queries cannot be frozen.");
+        }
+
+        /// <summary>
+        /// Creates a frozen snapshot of this set. The frozen copy can be read from any thread. If the set is
+        /// not managed, a <see cref="RealmException"/> will be thrown.
+        /// <para/>
+        /// Freezing a set also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// original set is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
+        /// set will be closed as well.
+        /// <para/>
+        /// Frozen sets can be read and iterated as normal, but trying to mutate it in any way or attempting to subscribe for notifications will
+        /// throw a <see cref="RealmFrozenException"/>.
+        /// <para/>
+        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
+        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <param name="set">The set you want to create a frozen copy of.</param>
+        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> in the set.</typeparam>
+        /// <returns>A frozen copy of this set.</returns>
+        public static ISet<T> Freeze<T>(this ISet<T> set)
+        {
+            Argument.NotNull(set, nameof(set));
+
+            if (set is RealmSet<T> realmSet)
+            {
+                return (RealmSet<T>)realmSet.Freeze();
+            }
+
+            throw new RealmException("Unmanaged sets cannot be frozen.");
         }
     }
 }

@@ -19,6 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Dynamic;
+using System.Linq.Expressions;
+using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
@@ -30,7 +33,7 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>
+    public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>, IDynamicMetaObjectProvider
     {
         private readonly SetHandle _setHandle;
         private readonly Func<T, bool> _add;
@@ -69,6 +72,15 @@ namespace Realms
         }
 
         public bool Add(T item) => _add(item);
+
+        public bool Remove(T item) => _remove(item);
+
+        public override int IndexOf(T value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool Contains(T value) => _contains(value);
 
         private bool AddObject(T item)
         {
@@ -115,14 +127,7 @@ namespace Realms
 
         void ICollection<T>.Add(T item) => Add(item);
 
-        public bool Remove(T item) => _remove(item);
-
-        public override int IndexOf(T value)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override bool Contains(T value) => _contains(value);
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmSet(expression, this);
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 
@@ -258,7 +263,9 @@ namespace Realms
                 throw new NotImplementedException();
             }
 
-            var otherSet = GetSet(other);
+            // We create a new hashset because we're going to be manipulating the in-memory collection
+            // as that's cheaper.
+            var otherSet = new HashSet<T>(other);
 
             // Special case - this is a no-op
             if (otherSet.Count == 0)
@@ -267,16 +274,6 @@ namespace Realms
             }
 
             // Special case - SymmetricExceptWith for empty set is equivalent to Union
-            if (Count == 0)
-            {
-                foreach (var item in other)
-                {
-                    Add(item);
-                }
-
-                return;
-            }
-
             foreach (var item in this)
             {
                 if (otherSet.Contains(item))
@@ -287,10 +284,7 @@ namespace Realms
             }
 
             // We removed all duplicates, just add the remainder
-            foreach (var item in otherSet)
-            {
-                Add(item);
-            }
+            UnionWith(otherSet);
         }
 
         public void UnionWith(IEnumerable<T> other)
