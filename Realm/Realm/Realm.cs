@@ -983,7 +983,7 @@ namespace Realms
         ///         Breed = "Poodle",
         ///     });
         ///
-        ///     return mark.Dogs
+        ///     return mark.Dogs;
         /// });
         /// </code>
         /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
