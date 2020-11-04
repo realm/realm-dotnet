@@ -5,7 +5,7 @@
 * None
 
 ### Fixed
-* None
+* Fix crash in case insensitive query on indexed string columns when nothing matches (Core upgrade)
 
 ### Enhancements
 * Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
@@ -14,7 +14,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Sync 10.0.0 and Core 10.0.0.
+* Using Sync 10.1.0 and Core 10.1.0.
 
 ## 10.0.0-beta.1 (2020-10-19)
 ------------------
