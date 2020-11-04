@@ -772,7 +772,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// var dalmatian = await realm.WriteAsync(tempRealm =&gt;
+        /// var dog = await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     return tempRealm.Add(new Dog
         ///     {
@@ -794,59 +794,38 @@ namespace Realms
 
             Argument.NotNull(function, nameof(function));
 
-            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (AsyncHelper.HasValidContext)
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                if (typeof(RealmObjectBase).IsAssignableFrom(typeof(T)))
-                {
-                    async Task<T> DoWorkAsync()
-                    {
-                        var result = await Task.Run(() =>
-                        {
-                            using var realm = GetInstance(Config);
-                            var rob = (RealmObjectBase)(object)realm.Write(() => function(realm));
-                            if (rob.IsManaged && rob.IsValid)
-                            {
-                                return (object)ThreadSafeReference.Create(rob);
-                            }
-
-                            return rob;
-                        });
-                        var didRefresh = await RefreshAsync();
-                        if (result is RealmObjectBase)
-                        {
-                            return (T)result;
-                        }
-                        else
-                        {
-                            var rob = ResolveReference((ThreadSafeReference.Object<RealmObjectBase>)result);
-                            return (T)(object)rob;
-                        }
-                    }
-
-                    return DoWorkAsync();
-                }
-                else
-                {
-                    async Task<T> DoWorkAsync()
-                    {
-                        var result = await Task.Run(() =>
-                        {
-                            using var realm = GetInstance(Config);
-                            return realm.Write(() => function(realm));
-                        });
-                        var didRefresh = await RefreshAsync();
-                        return result;
-                    }
-
-                    return DoWorkAsync();
-                }
-            }
-            else
-            {
-                // If running on background thread, execute synchronously.
                 return Task.FromResult(Write(() => function(this)));
             }
+
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<T> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeAction = realm.Write(() => function(realm));
+                    if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
+                    {
+                        return (object)ThreadSafeReference.Create(rob);
+                    }
+
+                    return writeAction;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
+                {
+                    return (T)(object)ResolveReference(tsr);  //TODO Question. Why did Nikola suggested to use Operator...? 
+                }
+
+                return (T)result;
+            }
+
+            return DoWorkAsync();
         }
 
         /// <summary>
@@ -862,7 +841,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
+        /// var dogs = await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     tempRealm.Add(new Dog
         ///     {
@@ -892,41 +871,38 @@ namespace Realms
 
             Argument.NotNull(function, nameof(function));
 
-            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (AsyncHelper.HasValidContext)
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                async Task<IQueryable<T>> DoWorkAsync()
-                {
-                    var result = await Task.Run(() =>
-                    {
-                        using var realm = GetInstance(Config);
-                        var writeResult = realm.Write(() => function(realm));
-                        if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
-                        {
-                            return (object)ThreadSafeReference.Create(writeResult);
-                        }
-
-                        return writeResult;
-                    });
-
-                    var didRefresh = await RefreshAsync();
-                    if (result is IQueryable<T> queryable)
-                    {
-                        return queryable;
-                    }
-                    else
-                    {
-                        return ResolveReference((ThreadSafeReference.Query<T>)result);
-                    }
-                }
-
-                return DoWorkAsync();
-            }
-            else
-            {
-                // If running on background thread, execute synchronously.
                 return Task.FromResult(Write(() => function(this)));
             }
+
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<IQueryable<T>> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeResult = realm.Write(() => function(realm));
+                    if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
+                    {
+                        return (object)ThreadSafeReference.Create(writeResult);
+                    }
+
+                    return writeResult;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.Query<T> tsr)
+                {
+                    return ResolveReference(tsr);
+                }
+
+                return (IQueryable<T>)result;
+            }
+
+            return DoWorkAsync();
         }
 
         /// <summary>
@@ -942,7 +918,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
+        /// var markDogs = await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     var mark = tempRealm.All&lt;Person&gt;().Single(d =&gt; d.Name == "Mark");
         ///
@@ -973,41 +949,38 @@ namespace Realms
 
             Argument.NotNull(function, nameof(function));
 
-            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (AsyncHelper.HasValidContext)
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                async Task<IList<T>> DoWorkAsync()
-                {
-                    var result = await Task.Run(() =>
-                    {
-                        using var realm = GetInstance(Config);
-                        var writeResult = realm.Write(() => function(realm));
-                        if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
-                        {
-                            return (object)ThreadSafeReference.Create(writeResult);
-                        }
-
-                        return writeResult;
-                    });
-
-                    var didRefresh = await RefreshAsync();
-                    if (result is IList<T> list)
-                    {
-                        return list;
-                    }
-                    else
-                    {
-                        return ResolveReference((ThreadSafeReference.List<T>)result);
-                    }
-                }
-
-                return DoWorkAsync();
-            }
-            else
-            {
-                // If running on background thread, execute synchronously.
                 return Task.FromResult(Write(() => function(this)));
             }
+
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<IList<T>> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeResult = realm.Write(() => function(realm));
+                    if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
+                    {
+                        return (object)ThreadSafeReference.Create(writeResult);
+                    }
+
+                    return writeResult;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.List<T> tsr)
+                {
+                    return ResolveReference(tsr);
+                }
+
+                return (IList<T>)result;
+            }
+
+            return DoWorkAsync();
         }
 
         /// <summary>
