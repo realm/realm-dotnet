@@ -49,6 +49,9 @@ namespace SetupUnityPackage
                 { "native/android/x86_64/librealm-wrappers.so", "Android/x86_64/librealm-wrappers.so" },
                 { "runtimes/win-x64/native/realm-wrappers.dll", "Windows/x86_64/realm-wrappers.dll" },
                 { "runtimes/win-x86/native/realm-wrappers.dll", "Windows/x86/realm-wrappers.dll" },
+                { "runtimes/win10-arm/nativeassets/uap10.0/realm-wrappers.dll", "UWP/ARM/realm-wrappers.dll" },
+                { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "UWP/x86_64/realm-wrappers.dll" },
+                { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "UWP/x86/realm-wrappers.dll" },
             },
             ["MongoDB.Bson"] = new Dictionary<string, string>
             {
