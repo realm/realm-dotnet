@@ -819,7 +819,7 @@ namespace Realms
 
                 if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
                 {
-                    return (T)(object)ResolveReference(tsr);  //TODO Question. Why did Nikola suggested to use Operator...? 
+                    return (T)(object)ResolveReference(tsr);
                 }
 
                 return (T)result;
@@ -861,7 +861,7 @@ namespace Realms
         /// <param name="function">
         /// Delegate with return type <see cref="IQueryable{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
-        /// <typeparam name="T">The type of data in the <see cref="IQueryable"/>.</typeparam>
+        /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
         public Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
             where T : RealmObjectBase
@@ -940,7 +940,7 @@ namespace Realms
         /// <param name="function">
         /// Delegate with return type <see cref="IList{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
-        /// <typeparam name="T">The type of data in the <see cref="IList"/>.</typeparam>
+        /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
         public Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
