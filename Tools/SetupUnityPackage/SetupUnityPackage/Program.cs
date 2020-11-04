@@ -39,7 +39,7 @@ namespace SetupUnityPackage
             [RealmPackageId] = new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.dll", "Realm.dll" },
-                { "native/ios/Realm.dll.config", "iOS/Realm.dll.config" },
+                { "native/ios/Realm.dll.config", "Realm.dll.config" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "iOS/realm-wrappers.framework/realm-wrappers" },
                 { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/info.plist" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "macOS/librealm-wrappers.dylib" },
