@@ -486,16 +486,16 @@ Analytics payload
                 return WeaveResult.Error($"{type.Name}.{prop.Name} has a setter but its type is a {collectionType} which only supports getters.");
             }
 
+            // The woven collection getter sets the backing field to List/Set<T>, forcing it to accept us setting it post-init
+            if (backingField is FieldDefinition backingListField)
+            {
+                backingListField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+            }
+
             switch (collectionType)
             {
                 case RealmCollectionType.IList:
                     var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
-
-                    // weaves list getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-                    if (backingField is FieldDefinition backingListField)
-                    {
-                        backingListField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
-                    }
 
                     ReplaceListGetter(prop, backingField, columnName,
                                         new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
@@ -503,12 +503,6 @@ Analytics payload
                     break;
                 case RealmCollectionType.ISet:
                     var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
-
-                    // weaves set getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-                    if (backingField is FieldDefinition backingSetField)
-                    {
-                        backingSetField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
-                    }
 
                     ReplaceSetGetter(prop, backingField, columnName,
                                         new GenericInstanceMethod(_references.RealmObject_GetSetValue) { GenericArguments = { elementType } },

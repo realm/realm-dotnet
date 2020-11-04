@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms;
 
 namespace AssemblyToProcess
@@ -27,35 +26,6 @@ namespace AssemblyToProcess
     {
         public string Name { get; set; }
 
-        private static readonly Dog myDog = new Dog();
-
-        public static Dog MyOnlyDog
-        {
-            get
-            {
-                Console.WriteLine("");
-                return myDog;
-
-                // if (myDog != null)
-                // {
-                //     return myDog;
-                // }
-                // var dogs = Realm.GetInstance().All<Dog>();
-                // if (dogs.Count() == 0)
-                // {
-                //     Realm.GetInstance().Write(() =>
-                //     {
-                //         var dog = Realm.GetInstance().CreateObject<Dog>();
-                //         dog.Name = "my precious";
-                //         myDog = dog;
-                //     });
-                // }
-                // else
-                // {
-                //     myDog = dogs.First();
-                // }
-                // return myDog;
-            }
-        }
+        public static Dog MyOnlyDog { get; } = new Dog();
     }
 }
