@@ -209,6 +209,8 @@ namespace AssemblyToProcess
 
         public MyEnum EnumProperty { get; set; }
 
+        public List<Person> People { get; }
+
         public string PersistedProperty { get; set; }
 
         public enum MyEnum
