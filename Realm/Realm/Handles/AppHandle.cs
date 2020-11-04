@@ -181,7 +181,7 @@ namespace Realms.Sync
 
             // var sdkVersion = typeof(AppHandle).GetTypeInfo().Assembly.GetName().Version.ToString(3);
 
-            //// TODO: temporarily add -beta.X suffix to the SDK
+            // TODO: temporarily add -beta.X suffix to the SDK
             var sdkVersion = "10.0.0-beta.2";
 
             NativeMethods.initialize(
