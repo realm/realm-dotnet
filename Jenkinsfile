@@ -31,8 +31,8 @@ stage('Checkout') {
     }
     // TODO: temporary add a beta.X suffix for v10 releases
     // Also update in AppHandle.cs
-    else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.2') {
-      versionSuffix = "beta.2"
+    else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.3') {
+      versionSuffix = "beta.3"
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false

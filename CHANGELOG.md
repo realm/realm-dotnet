@@ -1,8 +1,23 @@
-## 10.0.0-beta.2 (2020-11-04)
+## vNext (TBD)
 ------------------
 
 ### Breaking Changes
 * None
+
+### Fixed
+* None
+
+### Enhancements
+* None
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Sync 10.1.0 and Core 10.1.0.
+
+## 10.0.0-beta.2 (2020-11-04)
+------------------
 
 ### Fixed
 * Fix crash in case insensitive query on indexed string columns when nothing matches (Core upgrade)
