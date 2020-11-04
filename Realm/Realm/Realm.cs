@@ -789,7 +789,6 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
         public async Task<T> WriteAsync<T>(Func<Realm, T> function)
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
@@ -861,7 +860,6 @@ namespace Realms
         public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
             where T : RealmObjectBase
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
@@ -934,7 +932,6 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
         public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
