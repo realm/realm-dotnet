@@ -817,9 +817,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
-        public Task<T> WriteAsync<T>(Func<Realm, T> function)
+        public async Task<T> WriteAsync<T>(Func<Realm, T> function)
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
@@ -827,35 +826,30 @@ namespace Realms
             // If running on background thread, execute synchronously.
             if (!AsyncHelper.HasValidContext)
             {
-                return Task.FromResult(Write(() => function(this)));
+                return Write(() => function(this));
             }
 
             // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            async Task<T> DoWorkAsync()
+            var result = await Task.Run(() =>
             {
-                var result = await Task.Run(() =>
+                using var realm = GetInstance(Config);
+                var writeAction = realm.Write(() => function(realm));
+                if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
                 {
-                    using var realm = GetInstance(Config);
-                    var writeAction = realm.Write(() => function(realm));
-                    if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
-                    {
-                        return (object)ThreadSafeReference.Create(rob);
-                    }
-
-                    return writeAction;
-                });
-
-                await RefreshAsync();
-
-                if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
-                {
-                    return (T)(object)ResolveReference(tsr);
+                    return (object)ThreadSafeReference.Create(rob);
                 }
 
-                return (T)result;
+                return writeAction;
+            });
+
+            await RefreshAsync();
+
+            if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
+            {
+                return (T)(object)ResolveReference(tsr);
             }
 
-            return DoWorkAsync();
+            return (T)result;
         }
 
         /// <summary>
@@ -893,10 +887,9 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
-        public Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
+        public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
             where T : RealmObjectBase
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
@@ -904,35 +897,30 @@ namespace Realms
             // If running on background thread, execute synchronously.
             if (!AsyncHelper.HasValidContext)
             {
-                return Task.FromResult(Write(() => function(this)));
+                return Write(() => function(this));
             }
 
             // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            async Task<IQueryable<T>> DoWorkAsync()
+            var result = await Task.Run(() =>
             {
-                var result = await Task.Run(() =>
+                using var realm = GetInstance(Config);
+                var writeResult = realm.Write(() => function(realm));
+                if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
                 {
-                    using var realm = GetInstance(Config);
-                    var writeResult = realm.Write(() => function(realm));
-                    if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
-                    {
-                        return (object)ThreadSafeReference.Create(writeResult);
-                    }
-
-                    return writeResult;
-                });
-
-                await RefreshAsync();
-
-                if (result is ThreadSafeReference.Query<T> tsr)
-                {
-                    return ResolveReference(tsr);
+                    return (object)ThreadSafeReference.Create(writeResult);
                 }
 
-                return (IQueryable<T>)result;
+                return writeResult;
+            });
+
+            await RefreshAsync();
+
+            if (result is ThreadSafeReference.Query<T> tsr)
+            {
+                return ResolveReference(tsr);
             }
 
-            return DoWorkAsync();
+            return (IQueryable<T>)result;
         }
 
         /// <summary>
@@ -972,9 +960,8 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
-        public Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
+        public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
-            // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
             Argument.NotNull(function, nameof(function));
@@ -982,35 +969,30 @@ namespace Realms
             // If running on background thread, execute synchronously.
             if (!AsyncHelper.HasValidContext)
             {
-                return Task.FromResult(Write(() => function(this)));
+                return Write(() => function(this));
             }
 
             // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            async Task<IList<T>> DoWorkAsync()
+            var result = await Task.Run(() =>
             {
-                var result = await Task.Run(() =>
+                using var realm = GetInstance(Config);
+                var writeResult = realm.Write(() => function(realm));
+                if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
                 {
-                    using var realm = GetInstance(Config);
-                    var writeResult = realm.Write(() => function(realm));
-                    if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
-                    {
-                        return (object)ThreadSafeReference.Create(writeResult);
-                    }
-
-                    return writeResult;
-                });
-
-                await RefreshAsync();
-
-                if (result is ThreadSafeReference.List<T> tsr)
-                {
-                    return ResolveReference(tsr);
+                    return (object)ThreadSafeReference.Create(writeResult);
                 }
 
-                return (IList<T>)result;
+                return writeResult;
+            });
+
+            await RefreshAsync();
+
+            if (result is ThreadSafeReference.List<T> tsr)
+            {
+                return ResolveReference(tsr);
             }
 
-            return DoWorkAsync();
+            return (IList<T>)result;
         }
 
         /// <summary>
