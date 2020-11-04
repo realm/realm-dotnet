@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp20;monoandroid90;xamarin.ios10;xamarin.mac20</TargetFrameworks>
