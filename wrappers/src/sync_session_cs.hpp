@@ -20,7 +20,7 @@
 #define SYNC_SESSION_CS_HPP
 
 #include "realm_export_decls.hpp"
-#include "sync/sync_config.hpp"
+#include <realm/sync/config.hpp>
 
 namespace realm {
 namespace binding {

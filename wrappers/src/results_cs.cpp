@@ -20,16 +20,16 @@
 #include <realm/parser/query_builder.hpp>
 
 #include <realm.hpp>
-#include <object_accessor.hpp>
-#include <thread_safe_reference.hpp>
-#include <results.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/results.hpp>
 
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "notifications_cs.hpp"
 #include "wrapper_exceptions.hpp"
 #include "schema_cs.hpp"
-#include "keypath_helpers.hpp"
+#include <realm/object-store/keypath_helpers.hpp>
 #include "realm_export_decls.hpp"
 
 using namespace realm;

@@ -23,9 +23,9 @@
 
 #include <memory>
 #include "timestamp_helpers.hpp"
-#include "object-store/src/results.hpp"
-#include "object_accessor.hpp"
-#include "schema.hpp"
+#include <realm/object-store/results.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/schema.hpp>
 
 using namespace realm;
 using namespace realm::binding;

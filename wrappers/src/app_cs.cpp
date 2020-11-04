@@ -26,12 +26,12 @@
 #include "debug.hpp"
 #include "app_cs.hpp"
 
-#include "sync/sync_manager.hpp"
-#include "sync/app_credentials.hpp"
-#include "sync/app.hpp"
-#include "sync/sync_config.hpp"
-#include "thread_safe_reference.hpp"
-#include "sync/sync_session.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/app_credentials.hpp>
+#include <realm/object-store/sync/app.hpp>
+#include <realm/sync/config.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
 
 using namespace realm;
 using namespace realm::binding;

@@ -18,11 +18,11 @@
 #include "debug.hpp"
 #include "realm_export_decls.hpp"
 
-#include "impl/realm_coordinator.hpp"
+#include <realm/object-store/impl/realm_coordinator.hpp>
 
-#include "sync/sync_manager.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/app.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/app.hpp>
 
 namespace realm {
 

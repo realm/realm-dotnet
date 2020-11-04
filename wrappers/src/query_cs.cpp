@@ -20,11 +20,11 @@
 #include "marshalling.hpp"
 #include "error_handling.hpp"
 #include "realm_export_decls.hpp"
-#include "object-store/src/shared_realm.hpp"
-#include "object-store/src/schema.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/schema.hpp>
 #include "timestamp_helpers.hpp"
-#include "object-store/src/results.hpp"
-#include "object_accessor.hpp"
+#include <realm/object-store/results.hpp>
+#include <realm/object-store/object_accessor.hpp>
 
 
 using namespace realm;

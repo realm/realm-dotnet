@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <functional>
-#include "util/scheduler.hpp"
+#include <realm/object-store/util/scheduler.hpp>
 #include "realm_export_decls.hpp"
 #include <thread>
 

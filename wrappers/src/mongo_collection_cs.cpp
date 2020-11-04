@@ -20,13 +20,13 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_user.hpp"
-#include "sync/sync_session.hpp"
-#include "sync/app.hpp"
-#include "sync/remote_mongo_client.hpp"
-#include "sync/remote_mongo_database.hpp"
-#include "sync/remote_mongo_collection.hpp"
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
+#include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/mongo_client.hpp>
+#include <realm/object-store/sync/mongo_database.hpp>
+#include <realm/object-store/sync/mongo_collection.hpp>
 #include "app_cs.hpp"
 
 using namespace realm;

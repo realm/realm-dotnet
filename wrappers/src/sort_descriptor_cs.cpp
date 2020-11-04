@@ -20,8 +20,8 @@
 #include "marshalling.hpp"
 #include "error_handling.hpp"
 #include "realm_export_decls.hpp"
-#include "object-store/src/shared_realm.hpp"
-#include "object-store/src/schema.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/schema.hpp>
 
 
 using namespace realm;

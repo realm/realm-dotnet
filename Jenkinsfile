@@ -55,7 +55,7 @@ stage('Build wrappers') {
       rlmNode('osx || macos-catalina') {
         unstash 'dotnet-wrappers-source'
         dir('wrappers') {
-          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build.sh -GXcode"
+          sh "REALM_CMAKE_CONFIGURATION=${configuration} ./build-macos.sh -GXcode"
         }
         stash includes: 'wrappers/build/**', name: 'macos-wrappers'
       }

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "object_accessor.hpp"
+#include <realm/object-store/object_accessor.hpp>
 #include "shared_realm_cs.hpp"
 #include "error_handling.hpp"
 

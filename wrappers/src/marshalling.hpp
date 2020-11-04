@@ -20,7 +20,7 @@
 
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
-#include <object_accessor.hpp>
+#include <realm/object-store/object_accessor.hpp>
 #include "wrapper_exceptions.hpp"
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
