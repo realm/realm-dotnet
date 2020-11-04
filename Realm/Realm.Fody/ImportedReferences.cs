@@ -41,6 +41,10 @@ namespace RealmWeaver
 
         public MethodReference IListOfT_get_Item { get; private set; }
 
+        public abstract TypeReference ISetOfT { get; }
+
+        public MethodReference ISetOfT_UnionWith { get; private set; }
+
         public abstract TypeReference IQueryableOfT { get; }
 
         public TypeReference System_Type { get; }
@@ -50,6 +54,10 @@ namespace RealmWeaver
         public abstract TypeReference System_Collections_Generic_ListOfT { get; }
 
         public MethodReference System_Collections_Generic_ListOfT_Constructor { get; private set; }
+
+        public abstract TypeReference System_Collections_Generic_HashSetOfT { get; }
+
+        public MethodReference System_Collections_Generic_HashSetOfT_Constructor { get; private set; }
 
         public abstract TypeReference System_Linq_Enumerable { get; }
 
@@ -75,6 +83,8 @@ namespace RealmWeaver
 
         public MethodReference Realm_Add { get; private set; }
 
+        public MethodReference Realm_AddCollection { get; private set; }
+
         public TypeReference RealmObject { get; private set; }
 
         public TypeReference RealmObjectBase { get; private set; }
@@ -98,6 +108,8 @@ namespace RealmWeaver
         public MethodReference RealmObject_SetObjectValue { get; private set; }
 
         public MethodReference RealmObject_GetListValue { get; private set; }
+
+        public MethodReference RealmObject_GetSetValue { get; private set; }
 
         public MethodReference RealmObject_GetBacklinks { get; private set; }
 
@@ -218,7 +230,15 @@ namespace RealmWeaver
                 Parameters = { new ParameterDefinition(Types.Int32Reference) }
             };
 
+            ISetOfT_UnionWith = new MethodReference("UnionWith", Types.VoidReference, ISetOfT)
+            {
+                HasThis = true,
+                Parameters = { new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { ISetOfT.GenericParameters.Single() } }) }
+            };
+
             System_Collections_Generic_ListOfT_Constructor = new MethodReference(".ctor", Types.VoidReference, System_Collections_Generic_ListOfT) { HasThis = true };
+
+            System_Collections_Generic_HashSetOfT_Constructor = new MethodReference(".ctor", Types.VoidReference, System_Collections_Generic_HashSetOfT) { HasThis = true };
 
             {
                 System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.VoidReference, System_Linq_Enumerable);
@@ -275,6 +295,14 @@ namespace RealmWeaver
                 Realm_Add.Parameters.Add(new ParameterDefinition(Types.BooleanReference));
             }
 
+            {
+                Realm_AddCollection = new MethodReference("Add", Types.VoidReference, Realm) { HasThis = true };
+                var T = new GenericParameter(Realm_AddCollection) { Constraints = { new GenericParameterConstraint(RealmObject) } };
+                Realm_AddCollection.GenericParameters.Add(T);
+                Realm_AddCollection.Parameters.Add(new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { T } }));
+                Realm_AddCollection.Parameters.Add(new ParameterDefinition(Types.BooleanReference));
+            }
+
             RealmObject_get_IsManaged = new MethodReference("get_IsManaged", Types.BooleanReference, RealmObjectBase) { HasThis = true };
             RealmObject_get_Realm = new MethodReference("get_Realm", Realm, RealmObjectBase) { HasThis = true };
             RealmObject_RaisePropertyChanged = new MethodReference("RaisePropertyChanged", Types.VoidReference, RealmObjectBase)
@@ -305,6 +333,14 @@ namespace RealmWeaver
                 (RealmObject_GetListValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetListValue.GenericParameters.Add(T);
                 RealmObject_GetListValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+            }
+
+            {
+                RealmObject_GetSetValue = new MethodReference("GetSetValue", new GenericInstanceType(ISetOfT), RealmObjectBase) { HasThis = true };
+                var T = new GenericParameter(RealmObject_GetSetValue);
+                (RealmObject_GetSetValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
+                RealmObject_GetSetValue.GenericParameters.Add(T);
+                RealmObject_GetSetValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
             }
 
             {
@@ -430,23 +466,30 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_ListOfT { get; }
 
+            public override TypeReference System_Collections_Generic_HashSetOfT { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
 
+            public override TypeReference ISetOfT { get; }
+
             public NETFramework(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
-                var System_Core = GetOrAddFrameworkReference("System.Core");
-
-                IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, System_Core);
+                IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System"));
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
 
-                System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, System_Core);
+                System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Core"));
+                System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
 
-                System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, System_Core);
+                System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Core"));
+                System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Core"));
             }
         }
 
@@ -456,17 +499,27 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_ListOfT { get; }
 
+            public override TypeReference System_Collections_Generic_HashSetOfT { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
+
+            public override TypeReference ISetOfT { get; }
 
             public NETPortable(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
 
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
+
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, GetOrAddFrameworkReference("System.Collections"));
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
+
+                System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Collections"));
+                System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Linq"));
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Linq.Queryable"));
@@ -479,17 +532,27 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_ListOfT { get; }
 
+            public override TypeReference System_Collections_Generic_HashSetOfT { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
+
+            public override TypeReference ISetOfT { get; }
 
             public NetStandard2(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Module.TypeSystem.CoreLibrary);
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
 
+                ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
+                ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
+
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
+
+                System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, Module.TypeSystem.CoreLibrary);
+                System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, Module.TypeSystem.CoreLibrary);
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, Module.TypeSystem.CoreLibrary);

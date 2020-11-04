@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using System.Xml.Xsl;
+using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
@@ -139,6 +140,8 @@ namespace Realms.Tests
 
             return false;
         }
+
+        public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
             where T : struct, IComparable<T>, IFormattable

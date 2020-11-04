@@ -230,6 +230,14 @@ namespace Realms
             return _objectHandle.GetList<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
+        protected internal ISet<T> GetSetValue<T>(string propertyName)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
+            return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+        }
+
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         protected T GetObjectValue<T>(string propertyName)
             where T : RealmObjectBase
@@ -267,7 +275,7 @@ namespace Realms
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
-            return new RealmResults<T>(_realm, relatedMeta, resultsHandle);
+            return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
@@ -391,10 +399,10 @@ namespace Realms
             var resultsHandle = ObjectHandle.GetBacklinksForType(relatedMeta.Table, relatedMeta.PropertyIndices[property]);
             if (relatedMeta.Schema.IsEmbedded)
             {
-                return new RealmResults<EmbeddedObject>(Realm, relatedMeta, resultsHandle);
+                return new RealmResults<EmbeddedObject>(Realm, resultsHandle, relatedMeta);
             }
 
-            return new RealmResults<RealmObject>(Realm, relatedMeta, resultsHandle);
+            return new RealmResults<RealmObject>(Realm, resultsHandle, relatedMeta);
         }
 
         /// <inheritdoc/>

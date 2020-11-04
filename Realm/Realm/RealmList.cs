@@ -45,28 +45,66 @@ namespace Realms
     [DebuggerDisplay("Count = {Count}")]
     public class RealmList<T> : RealmCollectionBase<T>, IList<T>, IDynamicMetaObjectProvider, IRealmList
     {
-        private readonly Realm _realm;
-
         private readonly ListHandle _listHandle;
+        private readonly Action<T> _add;
+        private readonly Action<int, T> _set;
+        private readonly Action<int, T> _insert;
+        private readonly Func<T, int> _indexOf;
 
         internal RealmList(Realm realm, ListHandle adoptedList, RealmObjectBase.Metadata metadata) : base(realm, metadata)
         {
-            _realm = realm;
             _listHandle = adoptedList;
+
+            switch (_argumentType)
+            {
+                case PropertyType.Object | PropertyType.Nullable:
+                    _add = GetObjectExecutor(_listHandle.Add, _listHandle.AddEmbedded);
+                    _set = GetObjectExecutor(_listHandle.Set, _listHandle.SetEmbedded);
+                    _insert = GetObjectExecutor(_listHandle.Insert, _listHandle.InsertEmbedded);
+                    _indexOf = (value) =>
+                    {
+                        Argument.NotNull(value, nameof(value));
+
+                        var obj = Operator.Convert<T, RealmObjectBase>(value);
+                        if (!obj.IsManaged)
+                        {
+                            throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                        }
+
+                        return _listHandle.Find(obj.ObjectHandle);
+                    };
+
+                    break;
+                case PropertyType.String:
+                case PropertyType.String | PropertyType.Nullable:
+                    _add = (item) => _listHandle.Add(Operator.Convert<T, string>(item));
+                    _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, string>(item));
+                    _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, string>(item));
+                    _indexOf = (value) => _listHandle.Find(Operator.Convert<T, string>(value));
+                    break;
+                case PropertyType.Data:
+                case PropertyType.Data | PropertyType.Nullable:
+                    _add = (item) => _listHandle.Add(Operator.Convert<T, byte[]>(item));
+                    _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, byte[]>(item));
+                    _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, byte[]>(item));
+                    _indexOf = (value) => _listHandle.Find(Operator.Convert<T, byte[]>(value));
+                    break;
+                default:
+                    _add = (item) => _listHandle.Add(PrimitiveValue.Create(item, _argumentType));
+                    _set = (index, item) => _listHandle.Set(index, PrimitiveValue.Create(item, _argumentType));
+                    _insert = (index, item) => _listHandle.Insert(index, PrimitiveValue.Create(item, _argumentType));
+                    _indexOf = (value) => _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
+                    break;
+            }
         }
 
-        internal override CollectionHandleBase CreateHandle()
-        {
-            return _listHandle;
-        }
+        internal override CollectionHandleBase CreateHandle() => _listHandle;
 
         ListHandle IRealmList.NativeHandle => _listHandle;
 
         RealmObjectBase.Metadata IRealmList.Metadata => Metadata;
 
         #region implementing IList properties
-
-        public override bool IsReadOnly => (_realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
         [IndexerName("Item")]
         public new T this[int index]
@@ -83,12 +121,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
-                Execute(value,
-                    obj => _listHandle.Set(index, obj.ObjectHandle),
-                    () => _listHandle.SetEmbedded(index),
-                    v => _listHandle.Set(index, v),
-                    v => _listHandle.Set(index, v),
-                    v => _listHandle.Set(index, v));
+                _set(index, value);
             }
         }
 
@@ -96,73 +129,9 @@ namespace Realms
 
         #region implementing IList members
 
-        public void Add(T item)
-        {
-            Execute(item,
-                obj => _listHandle.Add(obj.ObjectHandle),
-                () => _listHandle.AddEmbedded(),
-                _listHandle.Add,
-                _listHandle.Add,
-                _listHandle.Add);
-        }
+        public void Add(T item) => _add(item);
 
-        public override int Add(object value)
-        {
-            Add((T)value);
-            return Count;
-        }
-
-        public override void Clear()
-        {
-            _listHandle.Clear();
-        }
-
-        public bool Contains(T item) => Contains((object)item);
-
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            Argument.NotNull(array, nameof(array));
-
-            if (arrayIndex < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            }
-
-            if (arrayIndex + Count > array.Length)
-            {
-                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {arrayIndex + Count}, available: {array.Length}", nameof(array));
-            }
-
-            foreach (var obj in this)
-            {
-                array[arrayIndex++] = obj;
-            }
-        }
-
-        public override int IndexOf(T value)
-        {
-            switch (_argumentType)
-            {
-                case PropertyType.Object | PropertyType.Nullable:
-                    Argument.NotNull(value, nameof(value));
-
-                    var obj = Operator.Convert<T, RealmObjectBase>(value);
-                    if (!obj.IsManaged)
-                    {
-                        throw new ArgumentException("Value does not belong to a realm", nameof(value));
-                    }
-
-                    return _listHandle.Find(obj.ObjectHandle);
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, string>(value));
-                case PropertyType.Data:
-                case PropertyType.Data | PropertyType.Nullable:
-                    return _listHandle.Find(Operator.Convert<T, byte[]>(value));
-                default:
-                    return _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
-            }
-        }
+        public override int IndexOf(T value) => _indexOf(value);
 
         public void Insert(int index, T item)
         {
@@ -171,15 +140,8 @@ namespace Realms
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            Execute(item,
-                obj => _listHandle.Insert(index, obj.ObjectHandle),
-                () => _listHandle.InsertEmbedded(index),
-                value => _listHandle.Insert(index, value),
-                value => _listHandle.Insert(index, value),
-                value => _listHandle.Insert(index, value));
+            _insert(index, item);
         }
-
-        public override void Insert(int index, object value) => Insert(index, (T)value);
 
         public bool Remove(T item)
         {
@@ -193,9 +155,7 @@ namespace Realms
             return true;
         }
 
-        public override void Remove(object value) => Remove((T)value);
-
-        public override void RemoveAt(int index)
+        public void RemoveAt(int index)
         {
             if (index < 0)
             {
@@ -222,68 +182,70 @@ namespace Realms
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
 
-        public override IRealmCollection<T> Freeze()
-        {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = _listHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return new RealmList<T>(frozenRealm, frozenHandle, Metadata);
-        }
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmList<T>(realm, (ListHandle)handle, Metadata);
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
 
-        private void Execute(T item,
-            Action<RealmObject> objectHandler,
-            Func<ObjectHandle> embeddedHandler,
-            Action<PrimitiveValue> primitiveHandler,
-            Action<string> stringHandler,
-            Action<byte[]> binaryHandler)
+        private Action<T> GetObjectExecutor(Action<ObjectHandle> objectHandler, Func<ObjectHandle> embeddedHandler)
         {
-            switch (_argumentType)
+            return (item) =>
             {
-                case PropertyType.Object | PropertyType.Nullable:
-                    switch (item)
-                    {
-                        case null:
-                            throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
-                        case RealmObject realmObj:
-                            if (!realmObj.IsManaged)
-                            {
-                                _realm.Add(realmObj);
-                            }
+                switch (item)
+                {
+                    case null:
+                        throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
+                    case RealmObject realmObj:
+                        if (!realmObj.IsManaged)
+                        {
+                            Realm.Add(realmObj);
+                        }
 
-                            objectHandler(realmObj);
-                            break;
-                        case EmbeddedObject embeddedObj:
-                            if (embeddedObj.IsManaged)
-                            {
-                                throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
-                            }
+                        objectHandler(realmObj.ObjectHandle);
+                        break;
+                    case EmbeddedObject embeddedObj:
+                        if (embeddedObj.IsManaged)
+                        {
+                            throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
+                        }
 
-                            var handle = embeddedHandler();
-                            Realm.ManageEmbedded(embeddedObj, handle);
-                            break;
-                        default:
-                            throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
-                    }
+                        var handle = embeddedHandler();
+                        Realm.ManageEmbedded(embeddedObj, handle);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
+                }
+            };
+        }
 
-                    break;
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
-                    stringHandler(Operator.Convert<T, string>(item));
-                    break;
-                case PropertyType.Data:
-                case PropertyType.Data | PropertyType.Nullable:
-                    binaryHandler(Operator.Convert<T, byte[]>(item));
-                    break;
-                default:
-                    primitiveHandler(PrimitiveValue.Create(item, _argumentType));
-                    break;
-            }
+        private Action<int, T> GetObjectExecutor(Action<int, ObjectHandle> objectHandler, Func<int, ObjectHandle> embeddedHandler)
+        {
+            return (index, item) =>
+            {
+                switch (item)
+                {
+                    case null:
+                        throw new NotSupportedException("Adding, setting, or inserting <null> in a list of objects is not supported.");
+                    case RealmObject realmObj:
+                        if (!realmObj.IsManaged)
+                        {
+                            Realm.Add(realmObj);
+                        }
+
+                        objectHandler(index, realmObj.ObjectHandle);
+                        break;
+                    case EmbeddedObject embeddedObj:
+                        if (embeddedObj.IsManaged)
+                        {
+                            throw new RealmException("Can't add, set, or insert an embedded object that is already managed.");
+                        }
+
+                        var handle = embeddedHandler(index);
+                        Realm.ManageEmbedded(embeddedObj, handle);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Adding, setting, or inserting {item.GetType()} in a list of objects is not supported, because it doesn't inherit from RealmObject or EmbeddedObject.");
+                }
+            };
         }
     }
 

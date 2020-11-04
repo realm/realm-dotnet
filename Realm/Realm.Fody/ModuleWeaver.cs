@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using RealmWeaver;
 
 public partial class ModuleWeaver : Fody.BaseModuleWeaver
 {
@@ -335,7 +336,7 @@ Analytics payload
 
         var isRequired = prop.IsRequired(_references);
         if (isRequired &&
-            !prop.IsIList(typeof(string)) &&
+            !prop.IsCollection(typeof(string)) &&
             !prop.IsNullable() &&
             prop.PropertyType.FullName != StringTypeName &&
             prop.PropertyType.FullName != ByteArrayTypeName)
@@ -469,7 +470,7 @@ Analytics payload
             ReplaceRealmIntegerGetter(prop, columnName, accessors.Getter, isNullable, integerType);
             ReplaceRealmIntegerSetter(prop, backingField, columnName, accessors.Setter, isNullable, integerType);
         }
-        else if (prop.IsIList())
+        else if (prop.IsCollection(out var collectionType))
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
@@ -477,25 +478,37 @@ Analytics payload
                 !_typeTable.ContainsKey(elementType.FullName) &&
                 !_primitiveValueTypes.ContainsKey(elementType.FullName))
             {
-                return WeaveResult.Error($"{type.Name}.{prop.Name} is an IList but its generic type is {elementType.Name} which is not supported by Realm.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
             }
 
             if (prop.SetMethod != null)
             {
-                return WeaveResult.Error($"{type.Name}.{prop.Name} has a setter but its type is a IList which only supports getters.");
+                return WeaveResult.Error($"{type.Name}.{prop.Name} has a setter but its type is a {collectionType} which only supports getters.");
             }
 
-            var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
-
-            // weaves list getter which also sets backing to List<T>, forcing it to accept us setting it post-init
-            if (backingField is FieldDefinition backingDef)
+            // The woven collection getter sets the backing field to List/Set<T>, forcing it to accept us setting it post-init
+            if (backingField is FieldDefinition backingListField)
             {
-                backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+                backingListField.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
             }
 
-            ReplaceListGetter(prop, backingField, columnName,
-                              new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
-                              concreteListConstructor);
+            switch (collectionType)
+            {
+                case RealmCollectionType.IList:
+                    var concreteListConstructor = _references.System_Collections_Generic_ListOfT_Constructor.MakeHostInstanceGeneric(elementType);
+
+                    ReplaceListGetter(prop, backingField, columnName,
+                                        new GenericInstanceMethod(_references.RealmObject_GetListValue) { GenericArguments = { elementType } },
+                                        concreteListConstructor);
+                    break;
+                case RealmCollectionType.ISet:
+                    var concreteSetConstructor = _references.System_Collections_Generic_HashSetOfT_Constructor.MakeHostInstanceGeneric(elementType);
+
+                    ReplaceSetGetter(prop, backingField, columnName,
+                                        new GenericInstanceMethod(_references.RealmObject_GetSetValue) { GenericArguments = { elementType } },
+                                        concreteSetConstructor);
+                    break;
+            }
         }
         else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
         {
@@ -521,7 +534,7 @@ Analytics payload
             var inversePropertyName = (string)backlinkAttribute.ConstructorArguments[0].Value;
             var inverseProperty = elementType.Resolve().Properties.SingleOrDefault(p => p.Name == inversePropertyName);
 
-            if (inverseProperty == null || (!inverseProperty.PropertyType.IsSameAs(type) && !inverseProperty.IsIList(type)))
+            if (inverseProperty == null || (!inverseProperty.PropertyType.IsSameAs(type) && !inverseProperty.IsCollection(type)))
             {
                 return WeaveResult.Error($"The property '{elementType.Name}.{inversePropertyName}' does not constitute a link to '{type.Name}' as described by '{type.Name}.{prop.Name}'.");
             }
@@ -634,7 +647,7 @@ Analytics payload
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
         if (propertyTypeRef != null)
         {
-            il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+            il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
         }
 
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
@@ -713,10 +726,6 @@ Analytics payload
         Debug.Write("[get] ");
     }
 
-    // WARNING
-    // This code setting the backing field only works if the field is settable after init
-    // if you don't have an automatic set; on the property, it shows in the debugger with
-    //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
     private void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, MethodReference listConstructor)
     {
         //// A synthesized property getter looks like this:
@@ -769,6 +778,60 @@ Analytics payload
         // Let Cecil optimize things for us.
         // TODO prop.SetMethod.Body.OptimizeMacros();
         Debug.Write("[get list] ");
+    }
+
+    private void ReplaceSetGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getSetValueReference, MethodReference setConstructor)
+    {
+        //// A synthesized property getter looks like this:
+        ////   0: ldarg.0  // load the this pointer
+        ////   1: ldfld <backingField>
+        ////   2: ret
+        //// We want to change it so it looks somewhat like this, in C#
+        ////
+        ////  if (<backingField> == null)
+        ////  {
+        ////     if (IsManaged)
+        ////           <backingField> = GetSetValue<T>(<columnName>);
+        ////     else
+        ////           <backingField> = new HashSet<T>();
+        ////  }
+        ////  // original auto-generated getter starts here
+        ////  return <backingField>; // supplied by the generated getter
+
+        var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        // if (<backingField>) goto start
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField));
+        il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, start));
+
+        // if (IsManaged)
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
+
+        // push in the label then go relative to that - so we can forward-ref the label insert if/else blocks backwards
+        // <backingField> = new HashSet<T>()
+        var unmanagedStart = il.Create(OpCodes.Ldarg_0);
+        il.InsertBefore(start, unmanagedStart);
+        il.InsertBefore(start, il.Create(OpCodes.Newobj, setConstructor));
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
+
+        // if (!IsManaged) <backingField> = GetSetValue(<columnName>)
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Brfalse_S, unmanagedStart));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Call, getSetValueReference));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Stfld, backingField));
+        il.InsertBefore(unmanagedStart, il.Create(OpCodes.Br_S, start));
+
+        // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
+        // FALL THROUGH to return the backing field.
+
+        // Let Cecil optimize things for us.
+        // TODO prop.SetMethod.Body.OptimizeMacros();
+        Debug.Write("[get set] ");
     }
 
     // WARNING
@@ -892,7 +955,7 @@ Analytics payload
         il.Append(il.Create(OpCodes.Ldarg_1));
         if (propertyTypeRef != null)
         {
-            il.Append(il.Create(OpCodes.Ldc_I4, (int)(byte)propertyTypeRef.Resolve().Constant));
+            il.Append(il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
         }
 
         il.Append(il.Create(OpCodes.Call, setValueReference));
@@ -1036,6 +1099,19 @@ Analytics payload
                         castInstance.Property.Add(list[i]);
                     }
                 }
+
+                *foreach* set woven property in castInstance's schema
+                var set = castInstance.field;
+                castInstance.field = null;
+                if (!skipDefaults)
+                {
+                    castInstance.Property.Clear();
+                }
+                if (set != null)
+                {
+                    castInstance.Realm.Add(set);
+                    castInstance.Property.Union(set);
+                }
             */
 
             var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.RealmObjectBase);
@@ -1057,12 +1133,18 @@ Analytics payload
                 copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.TypeSystem.Int32));
             }
 
+            foreach (var prop in properties.Where(p => p.Property.IsISet()))
+            {
+                copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(prop.Field.FieldType)));
+            }
+
             var il = copyToRealm.Body.GetILProcessor();
             il.Append(il.Create(OpCodes.Ldarg_1));
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            foreach (var prop in properties.Where(p => !p.Property.IsPrimaryKey(_references)))
+            // We'll process collections separately as those require variable access
+            foreach (var prop in properties.Where(p => !p.IsPrimaryKey && !p.Property.IsCollection(out _)))
             {
                 var property = prop.Property;
                 var field = prop.Field;
@@ -1167,98 +1249,6 @@ Analytics payload
                         }
                     }
                 }
-                else if (property.IsIList())
-                {
-                    var elementType = ((GenericInstanceType)property.PropertyType).GenericArguments.Single();
-                    var propertyGetterMethodReference = ModuleDefinition.ImportReference(property.GetMethod);
-
-                    var iteratorStLoc = (byte)(currentStloc + 1);
-
-                    // if (!skipDefaults ||
-                    var skipDefaultsCheck = il.Create(OpCodes.Ldarg_3);
-                    il.Append(skipDefaultsCheck);
-
-                    // castInstance.field != null)
-                    il.Append(il.Create(OpCodes.Ldloc_0));
-                    var fieldNullCheck = il.Create(OpCodes.Ldfld, field);
-                    il.Append(fieldNullCheck);
-
-                    // var list = castInstance.field;
-                    // castInstance.field = null;
-                    var setterStart = il.Create(OpCodes.Ldloc_0);
-                    il.Append(setterStart);
-                    il.Append(il.Create(OpCodes.Ldfld, field));
-                    il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
-                    il.Append(il.Create(OpCodes.Ldloc_0));
-                    il.Append(il.Create(OpCodes.Ldnull));
-                    il.Append(il.Create(OpCodes.Stfld, field));
-
-                    // if (!skipDefaults)
-                    var clearSkipPlaceholder = il.Create(OpCodes.Ldarg_3);
-                    il.Append(clearSkipPlaceholder);
-
-                    // castInstance.Property.Clear();
-                    il.Append(il.Create(OpCodes.Ldloc_0));
-                    il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_Clear.MakeHostInstanceGeneric(elementType)));
-
-                    // if (list == null)
-                    var localListVarNullCheck = il.Create(OpCodes.Ldloc_S, currentStloc);
-                    il.Append(localListVarNullCheck);
-
-                    // if (skipDefaults), skip List.Clear and jump to checking the list == null
-                    il.InsertAfter(clearSkipPlaceholder, il.Create(OpCodes.Brtrue_S, localListVarNullCheck));
-
-                    il.Append(il.Create(OpCodes.Ldc_I4_0));
-                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
-
-                    var cyclePlaceholder = il.Create(OpCodes.Nop);
-                    il.Append(cyclePlaceholder);
-
-                    var cycleStart = il.Create(OpCodes.Ldloc_0);
-                    il.Append(cycleStart);
-
-                    if (elementType.Resolve().IsRealmObjectInheritor(_references))
-                    {
-                        // castInstance.Realm.Add(list[i], update)
-                        il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
-                        il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
-                        il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
-                        il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
-                        il.Append(il.Create(OpCodes.Ldarg_2));
-                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_Add) { GenericArguments = { elementType } }));
-                        il.Append(il.Create(OpCodes.Pop));
-                        il.Append(il.Create(OpCodes.Ldloc_0));
-                    }
-
-                    // castInstance.Property.Add(list[i]);
-                    il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
-                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
-                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_Add.MakeHostInstanceGeneric(elementType)));
-                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
-                    il.Append(il.Create(OpCodes.Ldc_I4_1));
-                    il.Append(il.Create(OpCodes.Add));
-                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
-
-                    var cycleLabel = il.Create(OpCodes.Nop);
-                    il.Append(cycleLabel);
-                    il.Replace(cyclePlaceholder, il.Create(OpCodes.Br_S, cycleLabel));
-
-                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
-                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_get_Count.MakeHostInstanceGeneric(elementType)));
-                    il.Append(il.Create(OpCodes.Blt_S, cycleStart));
-
-                    var setterEnd = il.Create(OpCodes.Nop);
-                    il.Append(setterEnd);
-                    il.InsertAfter(fieldNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
-                    il.InsertAfter(localListVarNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
-                    il.InsertAfter(skipDefaultsCheck, il.Create(OpCodes.Brfalse_S, setterStart));
-
-                    currentStloc += 2;
-                }
                 else if (property.IsIQueryable())
                 {
                     il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1268,8 +1258,172 @@ Analytics payload
                 else
                 {
                     var sequencePoint = property.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
+                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList/ISet. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
+            }
+
+            foreach (var prop in properties.Where(p => p.Property.IsIList()))
+            {
+                var property = prop.Property;
+                var field = prop.Field;
+
+                var elementType = ((GenericInstanceType)property.PropertyType).GenericArguments.Single();
+                var propertyGetterMethodReference = ModuleDefinition.ImportReference(property.GetMethod);
+
+                var iteratorStLoc = (byte)(currentStloc + 1);
+
+                // if (!skipDefaults ||
+                var skipDefaultsCheck = il.Create(OpCodes.Ldarg_3);
+                il.Append(skipDefaultsCheck);
+
+                // castInstance.field != null)
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                var fieldNullCheck = il.Create(OpCodes.Ldfld, field);
+                il.Append(fieldNullCheck);
+
+                // var list = castInstance.field;
+                // castInstance.field = null;
+                var setterStart = il.Create(OpCodes.Ldloc_0);
+                il.Append(setterStart);
+                il.Append(il.Create(OpCodes.Ldfld, field));
+                il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Ldnull));
+                il.Append(il.Create(OpCodes.Stfld, field));
+
+                // if (!skipDefaults)
+                var clearSkipPlaceholder = il.Create(OpCodes.Ldarg_3);
+                il.Append(clearSkipPlaceholder);
+
+                // castInstance.Property.Clear();
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
+                il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_Clear.MakeHostInstanceGeneric(elementType)));
+
+                // if (list == null)
+                var localListVarNullCheck = il.Create(OpCodes.Ldloc_S, currentStloc);
+                il.Append(localListVarNullCheck);
+
+                // if (skipDefaults), skip List.Clear and jump to checking the list == null
+                il.InsertAfter(clearSkipPlaceholder, il.Create(OpCodes.Brtrue_S, localListVarNullCheck));
+
+                il.Append(il.Create(OpCodes.Ldc_I4_0));
+                il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                var cyclePlaceholder = il.Create(OpCodes.Nop);
+                il.Append(cyclePlaceholder);
+
+                var cycleStart = il.Create(OpCodes.Ldloc_0);
+                il.Append(cycleStart);
+
+                if (elementType.Resolve().IsRealmObjectInheritor(_references))
+                {
+                    // castInstance.Realm.Add(list[i], update)
+                    il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
+                    il.Append(il.Create(OpCodes.Ldarg_2));
+                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_Add) { GenericArguments = { elementType } }));
+                    il.Append(il.Create(OpCodes.Pop));
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                }
+
+                // castInstance.Property.Add(list[i]);
+                il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
+                il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                il.Append(il.Create(OpCodes.Callvirt, _references.IListOfT_get_Item.MakeHostInstanceGeneric(elementType)));
+                il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_Add.MakeHostInstanceGeneric(elementType)));
+                il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                il.Append(il.Create(OpCodes.Ldc_I4_1));
+                il.Append(il.Create(OpCodes.Add));
+                il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                var cycleLabel = il.Create(OpCodes.Nop);
+                il.Append(cycleLabel);
+                il.Replace(cyclePlaceholder, il.Create(OpCodes.Br_S, cycleLabel));
+
+                il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_get_Count.MakeHostInstanceGeneric(elementType)));
+                il.Append(il.Create(OpCodes.Blt_S, cycleStart));
+
+                var setterEnd = il.Create(OpCodes.Nop);
+                il.Append(setterEnd);
+                il.InsertAfter(fieldNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                il.InsertAfter(localListVarNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                il.InsertAfter(skipDefaultsCheck, il.Create(OpCodes.Brfalse_S, setterStart));
+
+                currentStloc += 2;
+            }
+
+            foreach (var prop in properties.Where(p => p.Property.IsISet()))
+            {
+                var property = prop.Property;
+                var field = prop.Field;
+
+                var elementType = ((GenericInstanceType)property.PropertyType).GenericArguments.Single();
+                var propertyGetterMethodReference = ModuleDefinition.ImportReference(property.GetMethod);
+
+                // if (!skipDefaults ||
+                var skipDefaultsCheck = il.Create(OpCodes.Ldarg_3);
+                il.Append(skipDefaultsCheck);
+
+                // castInstance.field != null)
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                var fieldNullCheck = il.Create(OpCodes.Ldfld, field);
+                il.Append(fieldNullCheck);
+
+                // var set = castInstance.field;
+                // castInstance.field = null;
+                var setterStart = il.Create(OpCodes.Ldloc_0);
+                il.Append(setterStart);
+                il.Append(il.Create(OpCodes.Ldfld, field));
+                il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Ldnull));
+                il.Append(il.Create(OpCodes.Stfld, field));
+
+                // if (!skipDefaults)
+                var clearSkipPlaceholder = il.Create(OpCodes.Ldarg_3);
+                il.Append(clearSkipPlaceholder);
+
+                // castInstance.Property.Clear();
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
+                il.Append(il.Create(OpCodes.Callvirt, _references.ICollectionOfT_Clear.MakeHostInstanceGeneric(elementType)));
+
+                // if (set == null)
+                var localSetVarNullCheck = il.Create(OpCodes.Ldloc_S, currentStloc);
+                il.Append(localSetVarNullCheck);
+
+                // if (skipDefaults), skip Set.Clear and jump to checking the set == null
+                il.InsertAfter(clearSkipPlaceholder, il.Create(OpCodes.Brtrue_S, localSetVarNullCheck));
+
+                if (elementType.Resolve().IsRealmObjectInheritor(_references))
+                {
+                    // castInstance.Realm.Add(set, update)
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_Realm));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldarg_2));
+                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.Realm_AddCollection) { GenericArguments = { elementType } }));
+                }
+
+                // castInstance.Property.UnionWith(set)
+                il.Append(il.Create(OpCodes.Ldloc_0));
+                il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
+                il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                il.Append(il.Create(OpCodes.Callvirt, _references.ISetOfT_UnionWith));
+
+                var setterEnd = il.Create(OpCodes.Nop);
+                il.Append(setterEnd);
+                il.InsertAfter(fieldNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                il.InsertAfter(localSetVarNullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+                il.InsertAfter(skipDefaultsCheck, il.Create(OpCodes.Brfalse_S, setterStart));
+
+                currentStloc++;
             }
 
             il.Emit(OpCodes.Ret);

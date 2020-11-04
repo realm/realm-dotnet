@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Runtime.InteropServices;
+using Realms.Schema;
 
 namespace Realms.Native
 {
@@ -28,8 +29,8 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.LPStr)]
         internal string name;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal Realms.Schema.PropertyType type;
+        [MarshalAs(UnmanagedType.U2)]
+        internal PropertyType type;
 
         [MarshalAs(UnmanagedType.LPStr)]
         internal string object_type;

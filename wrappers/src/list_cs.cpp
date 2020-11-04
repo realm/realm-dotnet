@@ -135,9 +135,9 @@ REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeEx
     });
 }
 
-REALM_EXPORT void list_add_string(List& list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_string(List& list, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
-    if (has_value) {
+    if (value != nullptr) {
         Utf16StringAccessor str(value, value_len);
         add(list, (StringData)str, ex);
     }
@@ -228,9 +228,9 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
     });
 }
 
-REALM_EXPORT void list_set_string(List& list, size_t list_ndx, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_set_string(List& list, size_t list_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
-    if (has_value) {
+    if (value != nullptr) {
         Utf16StringAccessor str(value, value_len);
         set(list, list_ndx, (StringData)str, ex);
     }
@@ -326,9 +326,9 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveVa
     });
 }
 
-REALM_EXPORT void list_insert_string(List& list, size_t list_ndx, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_string(List& list, size_t list_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
-    if (has_value) {
+    if (value != nullptr) {
         Utf16StringAccessor str(value, value_len);
         insert(list, list_ndx, (StringData)str, ex);
     }
@@ -437,9 +437,9 @@ REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, Nativ
     });
 }
 
-REALM_EXPORT size_t list_find_string(List& list, uint16_t* value, size_t value_len, bool has_value, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_string(List& list, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
-    if (has_value) {
+    if (value != nullptr) {
         Utf16StringAccessor str(value, value_len);
         return find(list, (StringData)str, ex);
     }

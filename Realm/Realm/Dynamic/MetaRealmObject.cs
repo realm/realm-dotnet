@@ -142,6 +142,79 @@ namespace Realms.Dynamic
                         break;
                 }
             }
+            else if (property.Type.IsSet())
+            {
+                arguments.Add(Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
+                arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
+                switch (property.Type.UnderlyingType())
+                {
+                    case PropertyType.Int:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<long?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<long>);
+                        }
+
+                        break;
+                    case PropertyType.Bool:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<bool?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<bool>);
+                        }
+
+                        break;
+                    case PropertyType.Float:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<float?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<float>);
+                        }
+
+                        break;
+                    case PropertyType.Double:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<double?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<double>);
+                        }
+
+                        break;
+                    case PropertyType.String:
+                        getter = GetGetMethod(DummyHandle.GetSet<string>);
+                        break;
+                    case PropertyType.Data:
+                        getter = GetGetMethod(DummyHandle.GetSet<byte[]>);
+                        break;
+                    case PropertyType.Date:
+                        if (property.Type.IsNullable())
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>);
+                        }
+                        else
+                        {
+                            getter = GetGetMethod(DummyHandle.GetSet<DateTimeOffset>);
+                        }
+
+                        break;
+                    case PropertyType.Object:
+                        getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetSet<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetSet<DynamicRealmObject>);
+                        break;
+                }
+            }
             else
             {
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
@@ -206,7 +279,7 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
         {
-            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsArray())
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out var property) || property.Type.IsArray() || property.Type.IsSet())
             {
                 return base.BindSetMember(binder, value);
             }
@@ -314,6 +387,7 @@ namespace Realms.Dynamic
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, PropertyType, TResult> @delegate) => @delegate.GetMethodInfo();
 
         // GetList(realm, propertyIndex, objectType)
+        // GetSet(realm, propertyIndex, objectType)
         // GetObject(realm, propertyIndex, objectType)
         private static MethodInfo GetGetMethod<TResult>(Func<Realm, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
 

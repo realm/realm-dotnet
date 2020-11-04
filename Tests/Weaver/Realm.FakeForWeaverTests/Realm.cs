@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+
 namespace Realms
 {
     public class Realm
@@ -28,6 +30,11 @@ namespace Realms
         public RealmObject Add(RealmObject obj, bool update)
         {
             return null;
+        }
+
+        public void Add<T>(IEnumerable<T> objs, bool update = false)
+            where T : RealmObject
+        {
         }
     }
 }

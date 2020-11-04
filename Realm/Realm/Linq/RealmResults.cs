@@ -42,27 +42,22 @@ namespace Realms
             Expression = expression ?? Expression.Constant(this);
         }
 
-        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata, ResultsHandle handle = null)
+        internal RealmResults(Realm realm, ResultsHandle handle, RealmObjectBase.Metadata metadata)
             : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
-            _handle = handle ?? metadata.Table.CreateResults(realm.SharedRealmHandle);
+            _handle = handle;
+        }
+
+        internal RealmResults(Realm realm, RealmObjectBase.Metadata metadata)
+            : this(realm, metadata.Table.CreateResults(realm.SharedRealmHandle), metadata)
+        {
         }
 
         public QueryHandle GetQuery() => ResultsHandle.GetQuery();
 
         public SortDescriptorHandle GetSortDescriptor() => ResultsHandle.GetSortDescriptor();
 
-        public override IRealmCollection<T> Freeze()
-        {
-            if (IsFrozen)
-            {
-                return this;
-            }
-
-            var frozenRealm = Realm.Freeze();
-            var frozenHandle = ResultsHandle.Freeze(frozenRealm.SharedRealmHandle);
-            return new RealmResults<T>(frozenRealm, Metadata, frozenHandle);
-        }
+        internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmResults<T>(realm, (ResultsHandle)handle, Metadata);
 
         internal override CollectionHandleBase CreateHandle()
         {
@@ -76,8 +71,6 @@ namespace Realms
             qv.Visit(Expression);
             return qv.MakeResultsForQuery();
         }
-
-        #region IList members
 
         public override int IndexOf(T value)
         {
@@ -96,8 +89,6 @@ namespace Realms
 
             return ResultsHandle.Find(obj.ObjectHandle);
         }
-
-        #endregion IList members
     }
 
     /// <summary>

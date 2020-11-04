@@ -121,6 +121,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_query_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_query_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_set_reference", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr resolve_set_reference(SharedRealmHandle sharedRealm, ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_resolve_realm_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
@@ -335,6 +338,10 @@ namespace Realms
 
                 case ThreadSafeReference.Type.Query:
                     result = NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException);
+                    break;
+
+                case ThreadSafeReference.Type.Set:
+                    result = NativeMethods.resolve_set_reference(this, reference.Handle, out nativeException);
                     break;
 
                 default:

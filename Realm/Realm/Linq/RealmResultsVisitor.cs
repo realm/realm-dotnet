@@ -859,7 +859,8 @@ namespace Realms
                     memberExpression.Expression.NodeType != ExpressionType.Parameter ||
                     !(memberExpression.Member is PropertyInfo) ||
                     !_metadata.Schema.TryFindProperty(name, out var property) ||
-                    property.Type.HasFlag(PropertyType.Array))
+                    property.Type.HasFlag(PropertyType.Array) ||
+                    property.Type.HasFlag(PropertyType.Set))
                 {
                     throw new NotSupportedException($"The left-hand side of the {parentType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{memberExpression}'.");
                 }
