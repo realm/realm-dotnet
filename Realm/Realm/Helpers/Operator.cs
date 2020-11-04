@@ -23,7 +23,7 @@ using MongoDB.Bson;
 
 namespace Realms.Helpers
 {
-    // Heavily based on http://www.yoda.arachsys.com/csharp/miscutil/index.html
+    // Heavily based on https://web.archive.org/web/20181011184205/http://www.yoda.arachsys.com/csharp/miscutil/index.html
     internal static class Operator
     {
         [Preserve]

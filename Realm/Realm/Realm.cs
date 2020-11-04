@@ -645,7 +645,7 @@ namespace Realms
         /// will be committed.
         /// </summary>
         /// <remarks>
-        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <c>action</c>.
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <paramref name="action"/>.
         /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
         /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
         /// unless you need to guarantee finer-grained updates.
@@ -663,16 +663,55 @@ namespace Realms
         /// </code>
         /// </example>
         /// <param name="action">
-        /// Action to perform inside a <see cref="Transaction"/>, creating, updating or removing objects.
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         public void Write(Action action)
         {
-            ThrowIfDisposed();
             Argument.NotNull(action, nameof(action));
 
+            Write(() =>
+            {
+                action();
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/>
+        /// will be committed.
+        /// </summary>
+        /// <remarks>
+        /// Creates its own temporary <see cref="Transaction"/> and commits it after running the lambda passed to <paramref name="function"/>.
+        /// Be careful of wrapping multiple single property updates in multiple <see cref="Write"/> calls.
+        /// It is more efficient to update several properties or even create multiple objects in a single <see cref="Write"/>,
+        /// unless you need to guarantee finer-grained updates.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dog = realm.Write(() =>
+        /// {
+        ///     return realm.Add(new Dog
+        ///     {
+        ///         Name = "Eddie",
+        ///         Age = 5
+        ///     });
+        /// });
+        /// </code>
+        /// </example>
+        /// <param name="function">
+        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
+        /// <returns>The return value of <paramref name="function"/>.</returns>
+        public T Write<T>(Func<T> function)
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(function, nameof(function));
+
             using var transaction = BeginWrite();
-            action();
+            var result = function();
             transaction.Commit();
+            return result;
         }
 
         /// <summary>
@@ -680,7 +719,7 @@ namespace Realms
         /// the <see cref="Transaction"/> will be committed.
         /// </summary>
         /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <c>action</c> inside a write <see cref="Transaction"/>.
+        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="action"/> inside a write <see cref="Transaction"/>.
         /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
         /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
         /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
@@ -706,40 +745,242 @@ namespace Realms
         /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
         /// </example>
         /// <param name="action">
-        /// Action to perform inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
         {
+            Argument.NotNull(action, nameof(action));
+
+            return WriteAsync(tempRealm =>
+            {
+                action(tempRealm);
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
+        /// the <see cref="Transaction"/> will be committed.
+        /// </summary>
+        /// <remarks>
+        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
+        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
+        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dog = await realm.WriteAsync(tempRealm =&gt;
+        /// {
+        ///     return tempRealm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        /// });
+        /// </code>
+        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
+        /// </example>
+        /// <param name="function">
+        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
+        /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
+        public Task<T> WriteAsync<T>(Func<Realm, T> function)
+        {
             // Can't use async/await due to mono inliner bugs
             ThrowIfDisposed();
 
-            Argument.NotNull(action, nameof(action));
+            Argument.NotNull(function, nameof(function));
 
-            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (AsyncHelper.HasValidContext)
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                async Task DoWorkAsync()
-                {
-                    await Task.Run(() =>
-                    {
-                        using var realm = GetInstance(Config);
-                        realm.Write(() => action(realm));
-                    });
-                    var didRefresh = await RefreshAsync();
+                return Task.FromResult(Write(() => function(this)));
+            }
 
-                    // TODO: figure out why this assertion fails in `AsyncTests.AsyncWrite_ShouldExecuteOnWorkerThread`
-                    // System.Diagnostics.Debug.Assert(didRefresh, "Expected RefreshAsync to return true.");
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<T> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeAction = realm.Write(() => function(realm));
+                    if (writeAction is RealmObjectBase rob && rob.IsManaged && rob.IsValid)
+                    {
+                        return (object)ThreadSafeReference.Create(rob);
+                    }
+
+                    return writeAction;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.Object<RealmObjectBase> tsr)
+                {
+                    return (T)(object)ResolveReference(tsr);
                 }
 
-                return DoWorkAsync();
+                return (T)result;
             }
-            else
+
+            return DoWorkAsync();
+        }
+
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
+        /// the <see cref="Transaction"/> will be committed.
+        /// </summary>
+        /// <remarks>
+        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
+        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
+        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var dogs = await realm.WriteAsync(tempRealm =&gt;
+        /// {
+        ///     tempRealm.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        ///
+        ///     tempRealm.Add(new Dog
+        ///     {
+        ///         Breed = "Poddle",
+        ///     });
+        ///
+        ///     return tempRealm.All&lt;Dog&gt;();
+        /// });
+        /// </code>
+        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
+        /// </example>
+        /// <param name="function">
+        /// Delegate with return type <see cref="IQueryable{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
+        /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
+        public Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
+            where T : RealmObjectBase
+        {
+            // Can't use async/await due to mono inliner bugs
+            ThrowIfDisposed();
+
+            Argument.NotNull(function, nameof(function));
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
             {
-                // If running on background thread, execute synchronously.
-                Write(() => action(this));
-                return Task.CompletedTask;
+                return Task.FromResult(Write(() => function(this)));
             }
+
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<IQueryable<T>> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeResult = realm.Write(() => function(realm));
+                    if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
+                    {
+                        return (object)ThreadSafeReference.Create(writeResult);
+                    }
+
+                    return writeResult;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.Query<T> tsr)
+                {
+                    return ResolveReference(tsr);
+                }
+
+                return (IQueryable<T>)result;
+            }
+
+            return DoWorkAsync();
+        }
+
+        /// <summary>
+        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
+        /// the <see cref="Transaction"/> will be committed.
+        /// </summary>
+        /// <remarks>
+        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
+        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
+        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
+        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
+        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var markDogs = await realm.WriteAsync(tempRealm =&gt;
+        /// {
+        ///     var mark = tempRealm.All&lt;Person&gt;().Single(d =&gt; d.Name == "Mark");
+        ///
+        ///     mark.Dogs.Add(new Dog
+        ///     {
+        ///         Breed = "Dalmatian",
+        ///     });
+        ///
+        ///     mark.Dogs.Add(new Dog
+        ///     {
+        ///         Breed = "Poodle",
+        ///     });
+        ///
+        ///     return mark.Dogs;
+        /// });
+        /// </code>
+        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
+        /// </example>
+        /// <param name="function">
+        /// Delegate with return type <see cref="IList{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
+        /// </param>
+        /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
+        /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
+        public Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
+        {
+            // Can't use async/await due to mono inliner bugs
+            ThrowIfDisposed();
+
+            Argument.NotNull(function, nameof(function));
+
+            // If running on background thread, execute synchronously.
+            if (!AsyncHelper.HasValidContext)
+            {
+                return Task.FromResult(Write(() => function(this)));
+            }
+
+            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
+            async Task<IList<T>> DoWorkAsync()
+            {
+                var result = await Task.Run(() =>
+                {
+                    using var realm = GetInstance(Config);
+                    var writeResult = realm.Write(() => function(realm));
+                    if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
+                    {
+                        return (object)ThreadSafeReference.Create(writeResult);
+                    }
+
+                    return writeResult;
+                });
+
+                await RefreshAsync();
+
+                if (result is ThreadSafeReference.List<T> tsr)
+                {
+                    return ResolveReference(tsr);
+                }
+
+                return (IList<T>)result;
+            }
+
+            return DoWorkAsync();
         }
 
         /// <summary>
