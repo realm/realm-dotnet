@@ -31,7 +31,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName);
         var result = weaver.Execute();
-        WriteDebug(result.ToString());
+        WriteInfo(result.ToString());
     }
 
     public override IEnumerable<string> GetAssembliesForScanning()
