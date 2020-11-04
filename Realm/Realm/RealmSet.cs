@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ namespace Realms
                 case PropertyType.Data | PropertyType.Nullable:
                     _add = (item) => _setHandle.Add(Operator.Convert<T, byte[]>(item));
                     _remove = (item) => _setHandle.Remove(Operator.Convert<T, byte[]>(item));
-                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, string>(item));
+                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, byte[]>(item));
                     break;
                 default:
                     _add = (item) => _setHandle.Add(PrimitiveValue.Create(item, _argumentType));

@@ -1138,7 +1138,7 @@ Analytics payload
             il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
             il.Append(il.Create(OpCodes.Stloc_0));
 
-            // We'll process collections separately as those require variable acces
+            // We'll process collections separately as those require variable access
             foreach (var prop in properties.Where(p => !p.IsPrimaryKey && !p.Property.IsCollection(out _)))
             {
                 var property = prop.Property;
@@ -1253,7 +1253,7 @@ Analytics payload
                 else
                 {
                     var sequencePoint = property.GetMethod.DebugInformation.SequencePoints.FirstOrDefault();
-                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
+                    WriteError($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList/ISet. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
             }
 
