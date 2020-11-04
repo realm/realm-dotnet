@@ -8,8 +8,8 @@
 * None
 
 ### Enhancements
-* Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
-* Added overloads for `Realm.Write` and `Realm.WriteAsync` that can return a value (Issue [#2081 (https://github.com/realm/realm-dotnet/issues/2081)])
+* Added an extra compile-time check to detect erroneous List<T> declarations and suggest IList<T> for collection properties in Realm objects. (Issue [#2083](https://github.com/realm/realm-dotnet/pull/2083))
+* Added overloads for `Realm.Write` and `Realm.WriteAsync` that can return a value. (Issue [#2081 (https://github.com/realm/realm-dotnet/issues/2081)])
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
