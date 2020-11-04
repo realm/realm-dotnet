@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Linq;
 using NUnit.Framework;
 
@@ -266,6 +265,29 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(owner.Dogs, Is.EqualTo(collectionResult));
+            });
+        }
+
+        [Test]
+        public void WriteAsync_WhenReturningManagedObjectIndirectly_ShouldThrow()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var pko = await _realm.WriteAsync(realm =>
+                {
+                    var ipo = realm.Add(new IntPrimaryKeyWithValueObject
+                    {
+                        Id = 1,
+                        StringValue = "bla"
+                    });
+
+                    return new
+                    {
+                        IPO = ipo,
+                    };
+                });
+
+                Assert.Throws<Exceptions.RealmClosedException>(() => { _ = pko.IPO.Id != 3; });
             });
         }
     }
