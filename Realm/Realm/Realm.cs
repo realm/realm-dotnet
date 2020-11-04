@@ -667,7 +667,6 @@ namespace Realms
         /// </param>
         public void Write(Action action)
         {
-            ThrowIfDisposed();
             Argument.NotNull(action, nameof(action));
 
             Write(() =>
@@ -751,35 +750,13 @@ namespace Realms
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         public Task WriteAsync(Action<Realm> action)
         {
-            // Can't use async/await due to mono inliner bugs
-            ThrowIfDisposed();
-
             Argument.NotNull(action, nameof(action));
 
-            // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
-            if (AsyncHelper.HasValidContext)
+            return WriteAsync(tempRealm =>
             {
-                async Task DoWorkAsync()
-                {
-                    await Task.Run(() =>
-                    {
-                        using var realm = GetInstance(Config);
-                        realm.Write(() => action(realm));
-                    });
-                    var didRefresh = await RefreshAsync();
-
-                    // TODO: figure out why this assertion fails in `AsyncTests.AsyncWrite_ShouldExecuteOnWorkerThread`
-                    // System.Diagnostics.Debug.Assert(didRefresh, "Expected RefreshAsync to return true.");
-                }
-
-                return DoWorkAsync();
-            }
-            else
-            {
-                // If running on background thread, execute synchronously.
-                Write(() => action(this));
-                return Task.CompletedTask;
-            }
+                action(tempRealm);
+                return true;
+            });
         }
 
         /// <summary>
@@ -795,7 +772,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
+        /// var dalmatian = await realm.WriteAsync(tempRealm =&gt;
         /// {
         ///     return tempRealm.Add(new Dog
         ///     {
@@ -832,10 +809,8 @@ namespace Realms
                             {
                                 return (object)ThreadSafeReference.Create(rob);
                             }
-                            else
-                            {
-                                return (object)rob;
-                            }
+
+                            return rob;
                         });
                         var didRefresh = await RefreshAsync();
                         if (result is RealmObjectBase)
@@ -930,10 +905,8 @@ namespace Realms
                         {
                             return (object)ThreadSafeReference.Create(writeResult);
                         }
-                        else
-                        {
-                            return (object)writeResult;
-                        }
+
+                        return writeResult;
                     });
 
                     var didRefresh = await RefreshAsync();
@@ -1013,10 +986,8 @@ namespace Realms
                         {
                             return (object)ThreadSafeReference.Create(writeResult);
                         }
-                        else
-                        {
-                            return (object)writeResult;
-                        }
+
+                        return writeResult;
                     });
 
                     var didRefresh = await RefreshAsync();
