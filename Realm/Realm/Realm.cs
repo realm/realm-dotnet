@@ -748,11 +748,11 @@ namespace Realms
         /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
         /// </param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
-        public async Task WriteAsync(Action<Realm> action)
+        public Task WriteAsync(Action<Realm> action)
         {
             Argument.NotNull(action, nameof(action));
 
-            await WriteAsync(tempRealm =>
+            return WriteAsync(tempRealm =>
             {
                 action(tempRealm);
                 return true;
