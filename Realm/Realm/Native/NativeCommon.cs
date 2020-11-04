@@ -89,15 +89,22 @@ namespace Realms
             {
                 var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).GetTypeInfo().Assembly.Location);
 
-                // Unity uses x86_64 for x64 native assemblies.
-                var x64Architecture = isUnityTarget ? "x64" : "x86_64";
-                var architecture = Environment.Is64BitProcess ? x64Architecture : "x86";
-                var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, architecture));
+                var expectedFilePath = Path.GetFullPath(Path.Combine(assemblyLocation, relativePath, getArchitecture()));
                 var path = expectedFilePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.Process);
             }
             catch
             {
+            }
+
+            string getArchitecture()
+            {
+                if (!Environment.Is64BitProcess)
+                {
+                    return "x86";
+                }
+
+                return isUnityTarget ? "x86_64" : "x64";
             }
         }
     }
