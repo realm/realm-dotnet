@@ -71,22 +71,22 @@ namespace Realms
             // primitive is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
             // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_not_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_not_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_less(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_less(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_less_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_less_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_greater(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_greater(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void primitive_greater_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
+            public static extern void primitive_greater_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr primitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_object_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void query_object_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, ObjectHandle objectHandle, out NativeException ex);
@@ -205,37 +205,43 @@ namespace Realms
 
         public unsafe void PrimitiveEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_equal(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_equal(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public unsafe void PrimitiveNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_not_equal(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_not_equal(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public unsafe void PrimitiveLess(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_less(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_less(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public unsafe void PrimitiveLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_less_equal(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_less_equal(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public unsafe void PrimitiveGreater(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_greater(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_greater(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         public unsafe void PrimitiveGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
         {
-            NativeMethods.primitive_greater_equal(this, realm, propertyIndex, value, out var nativeException);
+            PrimitiveValue* valuePtr = &value;
+            NativeMethods.primitive_greater_equal(this, realm, propertyIndex, new IntPtr(valuePtr), out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

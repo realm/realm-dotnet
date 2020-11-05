@@ -124,7 +124,7 @@ REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t pro
     });
 }
 
-REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
@@ -170,7 +170,7 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
     });
 }
 
-REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
@@ -217,7 +217,7 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
     });
 }
 
-REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
@@ -263,7 +263,7 @@ REALM_EXPORT void query_primitive_less(Query& query, SharedRealm& realm, size_t 
     });
 }
 
-REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
@@ -309,7 +309,7 @@ REALM_EXPORT void query_primitive_less_equal(Query& query, SharedRealm& realm, s
     });
 }
 
-REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
@@ -355,7 +355,7 @@ REALM_EXPORT void query_primitive_greater(Query& query, SharedRealm& realm, size
     });
 }
 
-REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm, size_t property_index, PrimitiveValue& primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!primitive.has_value) {
