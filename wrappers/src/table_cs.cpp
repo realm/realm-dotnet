@@ -96,7 +96,7 @@ REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKe
     });
 }
 
-REALM_EXPORT Object* table_get_object_for_primitive_primarykey(TableRef& table, SharedRealm& realm, PrimitiveValue& primitive, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object_for_primitive_primarykey(TableRef& table, SharedRealm& realm, PrimitiveValue primitive, NativeException::Marshallable& ex)
 {
     if (!primitive.has_value) {
         return get_object_for_primarykey(table, realm, null{}, ex);
