@@ -57,6 +57,8 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   else()
     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /nodefaultlib:libucrtd.lib /defaultlib:ucrtd.lib")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /nodefaultlib:libucrt.lib /defaultlib:ucrt.lib")
+
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
 endif()
 
