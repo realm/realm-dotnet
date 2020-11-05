@@ -19,10 +19,10 @@
 #pragma once
 
 #include <vector>
-#include <object_accessor.hpp>
-#include <schema.hpp>
-#include <object_schema.hpp>
-#include <property.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/schema.hpp>
+#include <realm/object-store/object_schema.hpp>
+#include <realm/object-store/property.hpp>
 #include <realm/parser/parser.hpp>
 #include <realm/parser/query_builder.hpp>
 

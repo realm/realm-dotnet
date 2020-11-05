@@ -20,7 +20,7 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "sync/async_open_task.hpp"
+#include <realm/object-store/sync/async_open_task.hpp>
 #include "sync_session_cs.hpp"
 
 using namespace realm;

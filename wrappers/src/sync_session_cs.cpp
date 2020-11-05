@@ -21,8 +21,9 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "sync/sync_manager.hpp"
-#include "sync/sync_session.hpp"
+#include <realm/sync/protocol.hpp>
+#include <realm/object-store/sync/sync_manager.hpp>
+#include <realm/object-store/sync/sync_session.hpp>
 #include "sync_session_cs.hpp"
 
 using namespace realm;

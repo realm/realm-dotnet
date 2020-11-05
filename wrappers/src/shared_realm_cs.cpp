@@ -22,12 +22,12 @@
 #include "realm_export_decls.hpp"
 #include "marshalling.hpp"
 
-#include <object_store.hpp>
-#include <binding_context.hpp>
+#include <realm/object-store/object_store.hpp>
+#include <realm/object-store/binding_context.hpp>
 #include <realm.hpp>
-#include <object_accessor.hpp>
-#include <thread_safe_reference.hpp>
-#include "sync/async_open_task.hpp"
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/object-store/sync/async_open_task.hpp>
 
 #include <list>
 #include <unordered_set>

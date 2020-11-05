@@ -20,7 +20,7 @@
 #define NOTIFICATIONS_CS_HPP
 
 #include <memory>
-#include "collection_notifications.hpp"
+#include <realm/object-store/collection_notifications.hpp>
 #include "error_handling.hpp"
 
 namespace realm {

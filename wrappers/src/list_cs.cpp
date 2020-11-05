@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <realm.hpp>
-#include <object_accessor.hpp>
-#include <thread_safe_reference.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
 
 #include "error_handling.hpp"
 #include "marshalling.hpp"

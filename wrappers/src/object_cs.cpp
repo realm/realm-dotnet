@@ -24,8 +24,8 @@
 #include "realm_export_decls.hpp"
 
 #include <realm.hpp>
-#include <object_accessor.hpp>
-#include <thread_safe_reference.hpp>
+#include <realm/object-store/object_accessor.hpp>
+#include <realm/object-store/thread_safe_reference.hpp>
 
 using namespace realm;
 using namespace realm::binding;

@@ -19,7 +19,7 @@
 #ifndef TRANSPORT_CS_HPP
 #define TRANSPORT_CS_HPP
 
-#include "sync/generic_network_transport.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
 
 using namespace realm::app;
 

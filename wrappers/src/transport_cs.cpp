@@ -20,10 +20,10 @@
 #include "marshalling.hpp"
 
 #include <functional>
-#include "util/scheduler.hpp"
+#include <realm/object-store/util/scheduler.hpp>
 #include "realm_export_decls.hpp"
 #include <thread>
-#include "sync/generic_network_transport.hpp"
+#include <realm/object-store/sync/generic_network_transport.hpp>
 
 using namespace realm::util;
 using namespace realm::app;

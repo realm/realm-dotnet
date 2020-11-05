@@ -18,8 +18,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <cassert>
-#include "object-store/src/shared_realm.hpp"
-#include "object-store/src/object_store.hpp"
+#include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/object_store.hpp>
 #include "wrapper_exceptions.hpp"
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
@@ -27,9 +27,9 @@
 #include "shared_realm_cs.hpp"
 
 // core headers for exception types
-#include "realm/util/file.hpp" 
-#include "realm/alloc_slab.hpp"
-#include "object_accessor.hpp"
+#include <realm/util/file.hpp> 
+#include <realm/alloc_slab.hpp>
+#include <realm/object-store/object_accessor.hpp>
 
 using namespace realm::app;
 

@@ -12,6 +12,12 @@ set(SOURCES
     schema_cs.cpp
     shared_realm_cs.cpp
     table_cs.cpp
+    app_cs.cpp
+    async_open_task_cs.cpp
+    mongo_collection_cs.cpp
+    sync_session_cs.cpp
+    sync_user_cs.cpp
+    transport_cs.cpp
 )
 
 set(HEADERS
@@ -23,28 +29,10 @@ set(HEADERS
     realm_export_decls.hpp
     schema_cs.hpp
     shared_realm_cs.hpp
+    app_cs.hpp
+    sync_session_cs.hpp
+    transport_cs.hpp
 )
-
-if(REALM_ENABLE_SYNC)
-    list(APPEND SOURCES
-        app_cs.cpp
-        async_open_task_cs.cpp
-        mongo_collection_cs.cpp
-        sync_session_cs.cpp
-        sync_user_cs.cpp
-        transport_cs.cpp
-    )
-
-    list(APPEND HEADERS
-        app_cs.hpp
-        sync_session_cs.hpp
-        transport_cs.hpp
-    )
-endif()
-
-set(INCLUDE_DIRS
-    ${REALM_CORE_INCLUDE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wno-missing-prototypes)
@@ -54,12 +42,10 @@ add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
 set_target_properties(realm-wrappers PROPERTIES
   FRAMEWORK ${BUILD_APPLE_FRAMEWORK}
   MACOSX_FRAMEWORK_IDENTIFIER io.realm.wrappers
-  MACOSX_FRAMEWORK_SHORT_VERSION_STRING "4.0.0"
-  MACOSX_FRAMEWORK_BUNDLE_VERSION "4.0.0"
+  MACOSX_FRAMEWORK_SHORT_VERSION_STRING "10.0.0"
+  MACOSX_FRAMEWORK_BUNDLE_VERSION "10.0.0"
 )
-target_compile_definitions(realm-wrappers PRIVATE ${PLATFORM_DEFINES})
-target_include_directories(realm-wrappers PUBLIC ${INCLUDE_DIRS})
-target_link_libraries(realm-wrappers realm-object-store realm-parser)
+target_link_libraries(realm-wrappers Realm::ObjectStore Realm::QueryParser)
 
 if(CMAKE_GENERATOR_PLATFORM)
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${CMAKE_GENERATOR_PLATFORM})
