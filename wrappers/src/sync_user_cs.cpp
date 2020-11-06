@@ -348,7 +348,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_api_key_fetch(SharedSyncUser& user, SharedApp& app, realm_value_t& id, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_api_key_fetch(SharedSyncUser& user, SharedApp& app, realm_value_t id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             app->provider_client<App::UserAPIKeyProviderClient>().fetch_api_key(from_capi(id.object_id), user, [tcs_ptr](App::UserAPIKey api_key, util::Optional<AppError> err) {
@@ -366,21 +366,21 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_api_key_delete(SharedSyncUser& user, SharedApp& app, realm_value_t& id, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_api_key_delete(SharedSyncUser& user, SharedApp& app, realm_value_t id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             app->provider_client<App::UserAPIKeyProviderClient>().delete_api_key(from_capi(id.object_id), user, get_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_syncuser_api_key_disable(SharedSyncUser& user, SharedApp& app, realm_value_t& id, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_api_key_disable(SharedSyncUser& user, SharedApp& app, realm_value_t id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             app->provider_client<App::UserAPIKeyProviderClient>().disable_api_key(from_capi(id.object_id), user, get_callback_handler(tcs_ptr));
         });
     }
 
-    REALM_EXPORT void realm_syncuser_api_key_enable(SharedSyncUser& user, SharedApp& app, realm_value_t& id, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_api_key_enable(SharedSyncUser& user, SharedApp& app, realm_value_t id, void* tcs_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {
             app->provider_client<App::UserAPIKeyProviderClient>().enable_api_key(from_capi(id.object_id), user, get_callback_handler(tcs_ptr));
