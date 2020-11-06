@@ -83,34 +83,7 @@ REALM_EXPORT void list_add_object(List& list, const Object& object_ptr, NativeEx
 REALM_EXPORT void list_add_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        switch (value.type)
-        {
-        case realm_value_type_e::RLM_TYPE_NULL:
-            throw std::runtime_error("Implement me!!");
-        case realm_value_type_e::RLM_TYPE_BOOL:
-            list.add(value.boolean);
-            break;
-        case realm_value_type_e::RLM_TYPE_INT:
-            list.add(value.integer);
-            break;
-        case realm_value_type_e::RLM_TYPE_FLOAT:
-            list.add(value.fnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_DOUBLE:
-            list.add(value.dnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
-            list.add(from_capi(value.timestamp));
-            break;
-        case realm_value_type_e::RLM_TYPE_DECIMAL128:
-            list.add(from_capi(value.decimal128));
-            break;
-        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
-            list.add(from_capi(value.object_id));
-            break;
-        default:
-            REALM_UNREACHABLE();
-        }
+        list.insert(list.size(), from_capi(value));
     });
 }
 
@@ -155,34 +128,7 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, realm_value_t 
             throw IndexOutOfRangeException("Set into RealmList", list_ndx, count);
         }
 
-        switch (value.type)
-        {
-        case realm_value_type_e::RLM_TYPE_NULL:
-            throw std::runtime_error("Implement me!!");
-        case realm_value_type_e::RLM_TYPE_BOOL:
-            list.set(list_ndx, value.boolean);
-            break;
-        case realm_value_type_e::RLM_TYPE_INT:
-            list.add(value.integer);
-            break;
-        case realm_value_type_e::RLM_TYPE_FLOAT:
-            list.set(list_ndx, value.fnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_DOUBLE:
-            list.set(list_ndx, value.dnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
-            list.set(list_ndx, from_capi(value.timestamp));
-            break;
-        case realm_value_type_e::RLM_TYPE_DECIMAL128:
-            list.set(list_ndx, from_capi(value.decimal128));
-            break;
-        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
-            list.set(list_ndx, from_capi(value.object_id));
-            break;
-        default:
-            REALM_UNREACHABLE();
-        }
+        list.set(list_ndx, from_capi(value));
     });
 }
 
@@ -232,34 +178,7 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, realm_value
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
 
-        switch (value.type)
-        {
-        case realm_value_type_e::RLM_TYPE_NULL:
-            throw std::runtime_error("Implement me!!");
-        case realm_value_type_e::RLM_TYPE_BOOL:
-            list.insert(list_ndx, value.boolean);
-            break;
-        case realm_value_type_e::RLM_TYPE_INT:
-            list.insert(list_ndx, value.integer);
-            break;
-        case realm_value_type_e::RLM_TYPE_FLOAT:
-            list.insert(list_ndx, value.fnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_DOUBLE:
-            list.insert(list_ndx, value.dnum);
-            break;
-        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
-            list.insert(list_ndx, from_capi(value.timestamp));
-            break;
-        case realm_value_type_e::RLM_TYPE_DECIMAL128:
-            list.insert(list_ndx, from_capi(value.decimal128));
-            break;
-        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
-            list.insert(list_ndx, from_capi(value.object_id));
-            break;
-        default:
-            REALM_UNREACHABLE();
-        }
+        list.insert(list_ndx, from_capi(value));
     });
 }
 
@@ -314,9 +233,8 @@ REALM_EXPORT void list_get_primitive(List& list, size_t ndx, realm_value_t* valu
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from Collection", ndx, count);
 
-        throw std::runtime_error("implement me!!");
-        //auto val = list.get<Mixed>(ndx);
-        //*value = to_capi(val);
+        auto val = list.get<Mixed>(ndx);
+        *value = to_capi(val);
     });
 }
 
@@ -344,24 +262,43 @@ REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, Nativ
 REALM_EXPORT size_t list_find_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        switch (value.type)
-        {
-        case realm_value_type_e::RLM_TYPE_NULL:
-            throw std::runtime_error("Implement me!!");
-        case realm_value_type_e::RLM_TYPE_BOOL:
+        // TODO: this should eventually use list.find(from_capi(value));
+
+        switch (list.get_type() & ~PropertyType::Collection) {
+        case PropertyType::Bool:
             return list.find(value.boolean);
-        case realm_value_type_e::RLM_TYPE_INT:
+        case PropertyType::Bool | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? util::Optional<bool>(none) : util::Optional<bool>(value.boolean));
+
+        case PropertyType::Int:
             return list.find(value.integer);
-        case realm_value_type_e::RLM_TYPE_FLOAT:
+        case PropertyType::Int | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? util::Optional<int64_t>(none) : util::Optional<int64_t>(value.integer));
+
+        case PropertyType::Float:
             return list.find(value.fnum);
-        case realm_value_type_e::RLM_TYPE_DOUBLE:
+        case PropertyType::Float | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? util::Optional<float>(none) : util::Optional<float>(value.fnum));
+        
+        case PropertyType::Double:
             return list.find(value.dnum);
-        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
+        case PropertyType::Double | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? util::Optional<double>(none) : util::Optional<double>(value.dnum));
+
+        case PropertyType::Date:
             return list.find(from_capi(value.timestamp));
-        case realm_value_type_e::RLM_TYPE_DECIMAL128:
+        case PropertyType::Date | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? Timestamp() : from_capi(value.timestamp));
+
+        case PropertyType::Decimal:
             return list.find(from_capi(value.decimal128));
-        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
+        case PropertyType::Decimal | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? Decimal128(null()): from_capi(value.decimal128));
+        
+        case PropertyType::ObjectId:
             return list.find(from_capi(value.object_id));
+        case PropertyType::ObjectId | PropertyType::Nullable:
+            return list.find(value.type == realm_value_type_e::RLM_TYPE_NULL ? util::Optional<ObjectId>(none) : util::Optional<ObjectId>(from_capi(value.object_id)));
         default:
             REALM_UNREACHABLE();
         }

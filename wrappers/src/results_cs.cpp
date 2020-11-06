@@ -84,10 +84,8 @@ REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, realm_valu
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from Collection", ndx, count);
 
-        throw std::runtime_error("implement me!!");
-
-        //auto val = results.get<Mixed>(ndx);
-        //*value = to_capi(val);
+        auto val = results.get<Mixed>(ndx);
+        *value = to_capi(val);
     });
 }
 
