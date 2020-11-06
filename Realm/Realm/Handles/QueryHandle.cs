@@ -68,8 +68,6 @@ namespace Realms
             public static extern void string_like(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
                         [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
-            // primitive is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void primitive_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
 
