@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -48,6 +48,7 @@ namespace RealmWeaver
         internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
         internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
         internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
+        internal const string GuidTypeName = "System.Guid";
         internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
         internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
         internal const string NullableInt16TypeName = "System.Nullable`1<System.Int16>";
