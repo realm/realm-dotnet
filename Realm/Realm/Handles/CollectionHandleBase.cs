@@ -55,10 +55,6 @@ namespace Realms
 
         protected abstract void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException);
 
-        public abstract string GetStringAtIndex(int index);
-
-        public abstract byte[] GetByteArrayAtIndex(int index);
-
         public abstract int Count();
 
         public abstract ResultsHandle Snapshot();

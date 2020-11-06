@@ -51,10 +51,6 @@ namespace Realms
             public static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
                 [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_string(ObjectHandle handle, IntPtr propertyIndex,
-                IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_link", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_link(ObjectHandle handle, IntPtr propertyIndex, ObjectHandle targetHandle, out NativeException ex);
 
@@ -82,10 +78,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_binary", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_binary(ObjectHandle handle, IntPtr propertyIndex,
                 IntPtr buffer, IntPtr bufferLength, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_binary(ObjectHandle handle, IntPtr propertyIndex,
-                IntPtr buffer, IntPtr bufferLength, [MarshalAs(UnmanagedType.U1)] out bool is_null, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
@@ -206,15 +198,10 @@ namespace Realms
 
         public void SetStringUnique(IntPtr propertyIndex, string value)
         {
-            if (GetString(propertyIndex) != value)
+            if (GetPrimitive(propertyIndex).AsString() != value)
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
-        }
-
-        public string GetString(IntPtr propertyIndex)
-        {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) => NativeMethods.get_string(this, propertyIndex, buffer, length, out isNull, out ex));
         }
 
         public void SetLink(IntPtr propertyIndex, ObjectHandle targetHandle)
@@ -285,12 +272,6 @@ namespace Realms
                     NativeMethods.set_null(this, propertyIndex, out ex);
                 }
             });
-        }
-
-        public byte[] GetByteArray(IntPtr propertyIndex)
-        {
-            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_binary(this, propertyIndex, buffer, bufferLength, out isNull, out ex));
         }
 
         public void RemoveFromRealm(SharedRealmHandle realmHandle)

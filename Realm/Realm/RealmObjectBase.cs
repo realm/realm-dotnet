@@ -212,7 +212,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetString(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).AsString();
         }
 
         protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
@@ -257,7 +257,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).AsBinary();
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -282,7 +282,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex).ToIntegral<T>();
+            var result = _objectHandle.GetPrimitive(propertyIndex).AsIntegral<T>();
             return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
         }
 
@@ -290,7 +290,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex).ToNullableIntegral<T?>();
+            var result = _objectHandle.GetPrimitive(propertyIndex).AsNullableIntegral<T?>();
 
             if (result.HasValue)
             {

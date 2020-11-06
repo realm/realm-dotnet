@@ -238,16 +238,6 @@ REALM_EXPORT void list_get_primitive(List& list, size_t ndx, realm_value_t* valu
     });
 }
 
-REALM_EXPORT size_t list_get_string(List& list, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_string(list, ndx, value, value_len, is_null, ex);
-}
-
-REALM_EXPORT size_t list_get_binary(List& list, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_binary(list, ndx, return_buffer, buffer_size, is_null, ex);
-}
-
 REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {

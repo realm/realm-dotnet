@@ -170,12 +170,6 @@ namespace Realms
 
                         return Operator.Convert<RealmObject, T>((RealmObject)result);
 
-                    case RealmValueType.String:
-                        return Operator.Convert<string, T>(Handle.Value.GetStringAtIndex(index));
-
-                    case RealmValueType.Data:
-                        return Operator.Convert<byte[], T>(Handle.Value.GetByteArrayAtIndex(index));
-
                     default:
                         return Handle.Value.GetPrimitiveAtIndex(index).Get<T>();
                 }

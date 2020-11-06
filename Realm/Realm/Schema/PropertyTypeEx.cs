@@ -112,6 +112,33 @@ namespace Realms.Schema
             }
         }
 
+        public static Type ToType(this PropertyType type)
+        {
+            return type switch
+            {
+                PropertyType.Int => typeof(long),
+                PropertyType.Bool => typeof(bool),
+                PropertyType.String => typeof(string),
+                PropertyType.Data => typeof(byte[]),
+                PropertyType.Date => typeof(DateTimeOffset),
+                PropertyType.Float => typeof(float),
+                PropertyType.Double => typeof(double),
+                PropertyType.Object => typeof(RealmObjectBase),
+                PropertyType.ObjectId => typeof(ObjectId),
+                PropertyType.Decimal => typeof(Decimal128),
+                PropertyType.NullableInt => typeof(long?),
+                PropertyType.NullableBool => typeof(bool?),
+                PropertyType.NullableString => typeof(string),
+                PropertyType.NullableData => typeof(byte[]),
+                PropertyType.NullableDate => typeof(DateTimeOffset?),
+                PropertyType.NullableFloat => typeof(float?),
+                PropertyType.NullableDouble => typeof(double?),
+                PropertyType.NullableObjectId => typeof(ObjectId?),
+                PropertyType.NullableDecimal => typeof(Decimal128?),
+                _ => throw new NotSupportedException($"Unexpected property type: {type}"),
+            };
+        }
+
         public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);

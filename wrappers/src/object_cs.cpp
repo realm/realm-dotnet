@@ -116,39 +116,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT size_t object_get_string(const Object& object, size_t property_ndx, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
-    {
-        StringData field_data = object_get<StringData>(object, property_ndx, ex);
-        if (ex.type != RealmErrorType::NoError) {
-            return -1;
-        }
-
-        if ((is_null = field_data.is_null())) {
-            return 0;
-        }
-
-        return stringdata_to_csharpstringbuffer(field_data, string_buffer, buffer_size);
-    }
-
-    REALM_EXPORT size_t object_get_binary(const Object& object, size_t property_ndx, char* return_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)
-    {
-        BinaryData field_data = object_get<BinaryData>(object, property_ndx, ex);
-        if (ex.type != RealmErrorType::NoError) {
-            return -1;
-        }
-
-        if ((is_null = field_data.is_null())) {
-            return 0;
-        }
-
-        const size_t data_size = field_data.size();
-        if (data_size <= buffer_size) {
-            std::copy(field_data.data(), field_data.data() + data_size, return_buffer);
-        }
-
-        return data_size;
-    }
-
     REALM_EXPORT Results* object_get_backlinks(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&] {

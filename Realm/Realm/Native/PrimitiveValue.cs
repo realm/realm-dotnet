@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using MongoDB.Bson;
 using Realms.Helpers;
 
@@ -49,6 +50,12 @@ namespace Realms.Native
         [FieldOffset(8)]
         [Obsolete("Don't use, please!")]
         private long dontuse;
+
+        [FieldOffset(0)]
+        private StringValue string_value;
+
+        [FieldOffset(0)]
+        private BinaryValue binary_value;
 
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
@@ -152,35 +159,35 @@ namespace Realms.Native
             };
         }
 
-        public bool ToBool() => bool_value;
+        public bool AsBool() => bool_value;
 
-        public bool? ToNullableBool() => Type != RealmValueType.Null ? bool_value : (bool?)null;
+        public bool? AsNullableBool() => Type != RealmValueType.Null ? bool_value : (bool?)null;
 
-        public long ToInt() => int_value;
+        public long AsInt() => int_value;
 
-        public long? ToNullableInt() => Type != RealmValueType.Null ? int_value : (long?)null;
+        public long? AsNullableInt() => Type != RealmValueType.Null ? int_value : (long?)null;
 
-        public T ToIntegral<T>() => Operator.Convert<long, T>(int_value);
+        public T AsIntegral<T>() => Operator.Convert<long, T>(int_value);
 
-        public T ToNullableIntegral<T>() => Operator.Convert<long?, T>(Type != RealmValueType.Null ? int_value : (long?)null);
+        public T AsNullableIntegral<T>() => Operator.Convert<long?, T>(Type != RealmValueType.Null ? int_value : (long?)null);
 
-        public float ToFloat() => float_value;
+        public float AsFloat() => float_value;
 
-        public float? ToNullableFloat() => Type != RealmValueType.Null ? float_value : (float?)null;
+        public float? AsNullableFloat() => Type != RealmValueType.Null ? float_value : (float?)null;
 
-        public double ToDouble() => double_value;
+        public double AsDouble() => double_value;
 
-        public double? ToNullableDouble() => Type != RealmValueType.Null ? double_value : (double?)null;
+        public double? AsNullableDouble() => Type != RealmValueType.Null ? double_value : (double?)null;
 
-        public DateTimeOffset ToDate() => new DateTimeOffset(int_value, TimeSpan.Zero);
+        public DateTimeOffset AsDate() => new DateTimeOffset(int_value, TimeSpan.Zero);
 
-        public DateTimeOffset? ToNullableDate() => Type != RealmValueType.Null ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
+        public DateTimeOffset? AsNullableDate() => Type != RealmValueType.Null ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
 
-        public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
+        public Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
-        public Decimal128? ToNullableDecimal() => Type != RealmValueType.Null ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
+        public Decimal128? AsNullableDecimal() => Type != RealmValueType.Null ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
 
-        public ObjectId ToObjectId()
+        public ObjectId AsObjectId()
         {
             var bytes = new byte[12];
             for (var i = 0; i < 12; i++)
@@ -191,22 +198,56 @@ namespace Realms.Native
             return new ObjectId(bytes);
         }
 
-        public ObjectId? ToNullableObjectId() => Type != RealmValueType.Null ? ToObjectId() : (ObjectId?)null;
+        public ObjectId? AsNullableObjectId() => Type != RealmValueType.Null ? AsObjectId() : (ObjectId?)null;
+
+        public string AsString() => Type != RealmValueType.Null ? Encoding.UTF8.GetString(string_value.data, (int)string_value.size) : null;
+
+        public byte[] AsBinary()
+        {
+            if (Type == RealmValueType.Null)
+            {
+                return null;
+            }
+
+            var bytes = new byte[(int)binary_value.size];
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = binary_value.data[i];
+            }
+
+            return bytes;
+        }
 
         public T Get<T>()
         {
             return Type switch
             {
                 RealmValueType.Null => (T)(object)null,
-                RealmValueType.Bool => Operator.Convert<bool, T>(ToBool()),
-                RealmValueType.Int => ToIntegral<T>(),
-                RealmValueType.Float => Operator.Convert<float, T>(ToFloat()),
-                RealmValueType.Double => Operator.Convert<double, T>(ToDouble()),
-                RealmValueType.Date => Operator.Convert<DateTimeOffset, T>(ToDate()),
-                RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(ToDecimal()),
-                RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(ToObjectId()),
+                RealmValueType.Bool => Operator.Convert<bool, T>(AsBool()),
+                RealmValueType.Int => AsIntegral<T>(),
+                RealmValueType.Float => Operator.Convert<float, T>(AsFloat()),
+                RealmValueType.Double => Operator.Convert<double, T>(AsDouble()),
+                RealmValueType.Date => Operator.Convert<DateTimeOffset, T>(AsDate()),
+                RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(AsDecimal()),
+                RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(AsObjectId()),
+                RealmValueType.String => Operator.Convert<string, T>(AsString()),
+                RealmValueType.Data => Operator.Convert<byte[], T>(AsBinary()),
                 _ => throw new NotSupportedException($"PrimitiveType {Type} is not supported."),
             };
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private unsafe struct StringValue
+        {
+            public byte* data;
+            public IntPtr size;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private unsafe struct BinaryValue
+        {
+            public byte* data;
+            public IntPtr size;
         }
     }
 }

@@ -89,16 +89,6 @@ REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, realm_valu
     });
 }
 
-REALM_EXPORT size_t results_get_string(Results& results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_string(results, ndx, value, value_len, is_null, ex);
-}
-
-REALM_EXPORT size_t results_get_binary(Results& results, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_binary(results, ndx, return_buffer, buffer_size, is_null, ex);
-}
-
 REALM_EXPORT void results_clear(Results& results, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

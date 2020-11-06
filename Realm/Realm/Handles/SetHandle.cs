@@ -65,14 +65,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_primitive(SetHandle handle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_string(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_binary(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
             #endregion
 
             #region add
@@ -229,18 +221,6 @@ namespace Realms
 
         protected override void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
             NativeMethods.get_primitive(this, index, out result, out nativeException);
-
-        public override string GetStringAtIndex(int index)
-        {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
-        }
-
-        public override byte[] GetByteArrayAtIndex(int index)
-        {
-            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
-        }
 
         #endregion
 

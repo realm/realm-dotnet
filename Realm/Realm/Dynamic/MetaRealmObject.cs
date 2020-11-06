@@ -164,13 +164,9 @@ namespace Realms.Dynamic
                     case PropertyType.Date:
                     case PropertyType.Decimal:
                     case PropertyType.ObjectId:
-                        getter = GetGetMethod(DummyHandle.GetPrimitive);
-                        break;
                     case PropertyType.String:
-                        getter = GetGetMethod(DummyHandle.GetString);
-                        break;
                     case PropertyType.Data:
-                        getter = GetGetMethod(DummyHandle.GetByteArray);
+                        getter = GetGetMethod(DummyHandle.GetPrimitive);
                         break;
                     case PropertyType.Object:
                         arguments.Insert(0, Expression.Field(self, RealmObjectRealmField));
@@ -198,7 +194,7 @@ namespace Realms.Dynamic
 
             if (expression.Type == typeof(PrimitiveValue))
             {
-                expression = Expression.Call(expression, PrimitiveValueGetMethod.MakeGenericMethod(property.PropertyInfo.PropertyType));
+                expression = Expression.Call(expression, PrimitiveValueGetMethod.MakeGenericMethod(property.PropertyInfo?.PropertyType ?? property.Type.ToType()));
             }
 
             if (binder.ReturnType != expression.Type)
