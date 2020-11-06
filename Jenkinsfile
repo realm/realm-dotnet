@@ -179,6 +179,31 @@ stage('Package') {
   }
 }
 
+stage('Unity Package') {
+  rlmNode('dotnet && macos') {
+    unstash 'dotnet-source'
+    unstash 'packages'
+
+    def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
+
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
+    dir('Realm/Realm.Unity') {
+      sh "npm version ${packageVersion} --allow-same-version"
+      sh 'npm pack'
+
+      archiveArtifacts "realm.unity-${packageVersion}.tgz"
+      sh "rm realm.unity-${packageVersion}.tgz"
+    }
+
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
+    dir('Realm/Realm.Unity') {
+      sh 'npm pack'
+
+      archiveArtifacts "*.tgz"
+    }
+  }
+}
+
 stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [

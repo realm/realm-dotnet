@@ -18,7 +18,6 @@
 
 using System;
 using System.Linq;
-using System.Management;
 using System.Net.NetworkInformation;
 using System.Runtime.Versioning;
 using System.Text;
@@ -93,17 +92,6 @@ namespace RealmWeaver
 
         private static byte[] GenerateComputerIdentifier()
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32Windows ||
-                Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
-                scope.Connect();
-                var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
-                using var searcher = new ManagementObjectSearcher(scope, query);
-                var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
-                return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
-            }
-
             // Assume OS X if not Windows.
             return NetworkInterface.GetAllNetworkInterfaces()
                                    .Where(n => n.Name == "en0")
@@ -198,8 +186,10 @@ namespace RealmWeaver
 
         private static string SHA256Hash(byte[] bytes)
         {
-            using var sha256 = System.Security.Cryptography.SHA256.Create();
-            return BitConverter.ToString(sha256.ComputeHash(bytes));
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                return BitConverter.ToString(sha256.ComputeHash(bytes));
+            }
         }
 
         private static void ComputeHostOSNameAndVersion(out string name, out string version)

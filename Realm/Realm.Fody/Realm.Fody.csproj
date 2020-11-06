@@ -33,5 +33,21 @@
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Realm.Unity\Editor\Common\Analytics.cs" Link="Common\Analytics.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\ILogger.cs" Link="Common\ILogger.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\ImportedReferences.cs" Link="Common\ImportedReferences.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\RealmCollectionType.cs" Link="Common\RealmCollectionType.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\RealmWeaver.cs" Link="Common\RealmWeaver.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\RealmWeaver.Schema.cs" Link="Common\RealmWeaver.Schema.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Common\WeaveResults.cs" Link="Common\WeaveResults.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Extensions\MethodReferenceExtensions.cs" Link="Extensions\MethodReferenceExtensions.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Extensions\PropertyDefinitionExtensions.cs" Link="Extensions\PropertyDefinitionExtensions.cs" />
+    <Compile Include="..\Realm.Unity\Editor\Extensions\TypeReferenceExtensions.cs" Link="Extensions\TypeReferenceExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
   <Import Project="..\AssemblyInfo.props" />
 </Project>
