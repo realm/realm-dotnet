@@ -398,7 +398,7 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& ta
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, PrimitiveValue& primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, PrimitiveValue primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         switch (primitive.type) {

@@ -42,10 +42,8 @@ namespace Realms
             public static extern IntPtr get_object_for_string_primarykey(TableHandle handle, SharedRealmHandle realmHandle,
                 [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_primitive_primarykey", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_primitive_primarykey(TableHandle handle, SharedRealmHandle realmHandle, IntPtr value, out NativeException ex);
+            public static extern IntPtr get_object_for_primitive_primarykey(TableHandle handle, SharedRealmHandle realmHandle, PrimitiveValue value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -90,8 +88,7 @@ namespace Realms
 
         public unsafe bool TryFind(SharedRealmHandle realmHandle, PrimitiveValue id, out ObjectHandle objectHandle)
         {
-            PrimitiveValue* valuePtr = &id;
-            var result = NativeMethods.get_object_for_primitive_primarykey(this, realmHandle, new IntPtr(valuePtr), out var ex);
+            var result = NativeMethods.get_object_for_primitive_primarykey(this, realmHandle, id, out var ex);
             return TryFindCore(realmHandle, result, ex, out objectHandle);
         }
 

@@ -133,10 +133,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_primitive_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, IntPtr value,
+            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, PrimitiveValue value,
                                                              [MarshalAs(UnmanagedType.U1)] bool update,
                                                              [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
 
@@ -413,8 +411,7 @@ namespace Realms
                     throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
             }
 
-            PrimitiveValue* valuePtr = &primitiveValue;
-            var result = NativeMethods.create_object_unique(this, table, new IntPtr(valuePtr), update, out isNew, out var ex);
+            var result = NativeMethods.create_object_unique(this, table, primitiveValue, update, out isNew, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
         }

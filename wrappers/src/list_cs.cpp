@@ -80,7 +80,7 @@ REALM_EXPORT void list_add_object(List& list, const Object& object_ptr, NativeEx
     });
 }
 
-REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
 #pragma GCC diagnostic push
@@ -168,7 +168,7 @@ REALM_EXPORT void list_set_object(List& list, size_t list_ndx, const Object& obj
     set(list, list_ndx, object_ptr.obj(), ex);
 }
 
-REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
@@ -266,7 +266,7 @@ REALM_EXPORT void list_insert_object(List& list, size_t list_ndx, const Object& 
     insert(list, list_ndx, object_ptr.obj(), ex);
 }
 
-REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
@@ -396,7 +396,7 @@ REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, Nativ
     });
 }
 
-REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
 #pragma GCC diagnostic push

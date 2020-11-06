@@ -112,28 +112,20 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
-            // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_fetch", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void fetch_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
+            public static extern void fetch_api_key(SyncUserHandle handle, AppHandle app, PrimitiveValue id, IntPtr tcs_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_fetch_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern void fetch_api_keys(SyncUserHandle handle, AppHandle app, IntPtr tcs_ptr, out NativeException ex);
 
-            // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_delete", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void delete_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
+            public static extern void delete_api_key(SyncUserHandle handle, AppHandle app, PrimitiveValue id, IntPtr tcs_ptr, out NativeException ex);
 
-            // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_disable", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void disable_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
+            public static extern void disable_api_key(SyncUserHandle handle, AppHandle app, PrimitiveValue id, IntPtr tcs_ptr, out NativeException ex);
 
-            // id is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_api_key_enable", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void enable_api_key(SyncUserHandle handle, AppHandle app, IntPtr id, IntPtr tcs_ptr, out NativeException ex);
+            public static extern void enable_api_key(SyncUserHandle handle, AppHandle app, PrimitiveValue id, IntPtr tcs_ptr, out NativeException ex);
 
             #endregion
 
@@ -308,8 +300,7 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             var primitiveId = PrimitiveValue.ObjectId(id);
-            PrimitiveValue* idPtr = &primitiveId;
-            NativeMethods.fetch_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
+            NativeMethods.fetch_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
         }
 
@@ -324,8 +315,7 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             var primitiveId = PrimitiveValue.ObjectId(id);
-            PrimitiveValue* idPtr = &primitiveId;
-            NativeMethods.delete_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
+            NativeMethods.delete_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
         }
 
@@ -333,8 +323,7 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             var primitiveId = PrimitiveValue.ObjectId(id);
-            PrimitiveValue* idPtr = &primitiveId;
-            NativeMethods.disable_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
+            NativeMethods.disable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
         }
 
@@ -342,8 +331,7 @@ namespace Realms.Sync
         {
             var tcsHandle = GCHandle.Alloc(tcs);
             var primitiveId = PrimitiveValue.ObjectId(id);
-            PrimitiveValue* idPtr = &primitiveId;
-            NativeMethods.enable_api_key(this, app, new IntPtr(idPtr), GCHandle.ToIntPtr(tcsHandle), out var ex);
+            NativeMethods.enable_api_key(this, app, primitiveId, GCHandle.ToIntPtr(tcsHandle), out var ex);
             ex.ThrowIfNecessary(tcsHandle);
         }
 

@@ -81,11 +81,9 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool add_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_primitive", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_primitive(SetHandle handle, IntPtr value, out NativeException ex);
+            public static extern bool add_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_string", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -108,11 +106,9 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool contains_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_primitive", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_primitive(SetHandle handle, IntPtr value, out NativeException ex);
+            public static extern bool contains_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_string", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -131,11 +127,9 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool remove_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_primitive", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_primitive(SetHandle handle, IntPtr value, out NativeException ex);
+            public static extern bool remove_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_string", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -261,8 +255,7 @@ namespace Realms
 
         public unsafe bool Add(PrimitiveValue value)
         {
-            PrimitiveValue* valuePtr = &value;
-            var result = NativeMethods.add_primitive(this, new IntPtr(valuePtr), out var nativeException);
+            var result = NativeMethods.add_primitive(this, value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -303,8 +296,7 @@ namespace Realms
 
         public unsafe bool Contains(PrimitiveValue value)
         {
-            PrimitiveValue* valuePtr = &value;
-            var result = NativeMethods.contains_primitive(this, new IntPtr(valuePtr), out var nativeException);
+            var result = NativeMethods.contains_primitive(this, value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -340,8 +332,7 @@ namespace Realms
 
         public unsafe bool Remove(PrimitiveValue value)
         {
-            PrimitiveValue* valuePtr = &value;
-            var result = NativeMethods.remove_primitive(this, new IntPtr(valuePtr), out var nativeException);
+            var result = NativeMethods.remove_primitive(this, value, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
