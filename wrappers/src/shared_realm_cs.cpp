@@ -398,36 +398,35 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& ta
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, PrimitiveValue primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, realm_value_t primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        switch (primitive.type) {
-        case PropertyType::Int:
-            REALM_ASSERT(primitive.has_value);
+        realm->verify_in_write();
+        const ObjectSchema& object_schema(find_schema(realm, table));
 
-            return create_object_unique(realm, table, primitive.value.int_value, try_update, is_new);
+        const Property& primary_key_property = *object_schema.primary_key_property();
 
-        case PropertyType::Int | PropertyType::Nullable:
-            return create_object_unique(realm, table, primitive.has_value ? util::some<int64_t>(primitive.value.int_value) : null(), try_update, is_new);
+        auto val = from_capi(primitive);
+        auto obj_key = table->find_first(primary_key_property.column_key, val);
 
-        case PropertyType::ObjectId:
-            REALM_ASSERT(primitive.has_value);
-
-            return create_object_unique(realm, table, to_object_id(primitive), try_update, is_new);
-
-        case PropertyType::ObjectId | PropertyType::Nullable:
-            // HACK: https://github.com/realm/realm-core/issues/3919 - this should eventually be
-            //return create_object_unique(realm, table, primitive.has_value ? util::some<ObjectId>(to_object_id(primitive)) : null(), try_update, is_new);
-
-            if (primitive.has_value) {
-                return create_object_unique(realm, table, to_object_id(primitive), try_update, is_new);
-            }
-
-            return create_object_unique(realm, table, util::Optional<int64_t>(), try_update, is_new);
-
-        default:
-            REALM_UNREACHABLE();
+        Obj obj;
+        if (!obj_key) {
+            is_new = true;
+            obj = table->create_object_with_primary_key(val);
         }
+        else if (!try_update) {
+            std::ostringstream string_builder;
+            string_builder << val;
+            throw SetDuplicatePrimaryKeyValueException(object_schema.name,
+                primary_key_property.name,
+                string_builder.str());
+        }
+        else {
+            obj = table->get_object(obj_key);
+            is_new = false;
+        }
+
+        return new Object(realm, object_schema, obj);
     });
 }
 

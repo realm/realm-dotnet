@@ -28,26 +28,255 @@
 namespace realm {
 namespace binding {
 
-struct PrimitiveValue
-{
+typedef enum realm_value_type {
+    RLM_TYPE_NULL,
+    RLM_TYPE_INT,
+    RLM_TYPE_BOOL,
+    RLM_TYPE_STRING,
+    RLM_TYPE_BINARY,
+    RLM_TYPE_TIMESTAMP,
+    RLM_TYPE_FLOAT,
+    RLM_TYPE_DOUBLE,
+    RLM_TYPE_DECIMAL128,
+    RLM_TYPE_OBJECT_ID,
+    RLM_TYPE_LINK,
+    RLM_TYPE_UUID,
+} realm_value_type_e;
+
+typedef struct realm_string {
+    const char* data;
+    size_t size;
+} realm_string_t;
+
+typedef struct realm_binary {
+    const uint8_t* data;
+    size_t size;
+} realm_binary_t;
+
+typedef struct realm_timestamp {
+    int64_t seconds;
+    int32_t nanoseconds;
+} realm_timestamp_t;
+
+typedef struct realm_decimal128 {
+    uint64_t w[2];
+} realm_decimal128_t;
+
+typedef struct realm_link {
+    Object* object;
+} realm_link_t;
+
+typedef struct realm_object_id {
+    uint8_t bytes[12];
+} realm_object_id_t;
+
+typedef struct realm_uuid {
+    uint8_t bytes[16];
+} realm_uuid_t;
+
+typedef struct realm_value {
     union {
-        bool bool_value;
-        int64_t int_value;
-        float float_value;
-        double double_value;
-        realm::Decimal128::Bid128 decimal_bits;
-        uint8_t object_id_bytes[12];
-    } value;
+        int64_t integer;
+        bool boolean;
+        realm_string_t string;
+        realm_binary_t binary;
+        realm_timestamp_t timestamp;
+        float fnum;
+        double dnum;
+        realm_decimal128_t decimal128;
+        realm_object_id_t object_id;
+        realm_uuid_t uuid;
 
-    realm::PropertyType type;
-    bool has_value;
-};
+        realm_link_t link;
 
-inline ObjectId to_object_id(PrimitiveValue primitive)
+        char data[16];
+    };
+    realm_value_type_e type;
+} realm_value_t;
+
+static inline realm_string_t to_capi(StringData data)
+{
+    return realm_string_t{ data.data(), data.size() };
+}
+
+static inline realm_string_t to_capi(const std::string& str)
+{
+    return to_capi(StringData{ str });
+}
+
+static inline std::string capi_to_std(realm_string_t str)
+{
+    if (str.data) {
+        return std::string{ str.data, 0, str.size };
+    }
+    return std::string{};
+}
+
+static inline StringData from_capi(realm_string_t str)
+{
+    return StringData{ str.data, str.size };
+}
+
+static inline realm_binary_t to_capi(BinaryData bin)
+{
+    return realm_binary_t{ reinterpret_cast<const unsigned char*>(bin.data()), bin.size() };
+}
+
+static inline BinaryData from_capi(realm_binary_t bin)
+{
+    return BinaryData{ reinterpret_cast<const char*>(bin.data), bin.size };
+}
+
+static inline realm_timestamp_t to_capi(Timestamp ts)
+{
+    return realm_timestamp_t{ ts.get_seconds(), ts.get_nanoseconds() };
+}
+
+static inline Timestamp from_capi(realm_timestamp_t ts)
+{
+    return Timestamp{ ts.seconds, ts.nanoseconds };
+}
+
+static inline realm_decimal128_t to_capi(const Decimal128& dec)
+{
+    auto raw = dec.raw();
+    return realm_decimal128_t{ {raw->w[0], raw->w[1]} };
+}
+
+static inline Decimal128 from_capi(realm_decimal128_t dec)
+{
+    return Decimal128{ Decimal128::Bid128{{dec.w[0], dec.w[1]}} };
+}
+
+static inline realm_object_id_t to_capi(ObjectId oid)
+{
+    auto bytes = oid.to_bytes();
+    realm_object_id_t result;
+    for (int i = 0; i < 12; i++)
+    {
+        result.bytes[i] = bytes[i];
+    }
+
+    return result;
+}
+
+static inline ObjectId from_capi(realm_object_id_t oid)
 {
     std::array<uint8_t, 12> bytes;
-    std::copy(std::begin(primitive.value.object_id_bytes), std::end(primitive.value.object_id_bytes), bytes.begin());
+    std::copy(std::begin(oid.bytes), std::end(oid.bytes), bytes.begin());
     return ObjectId(std::move(bytes));
+}
+
+static inline Mixed from_capi(realm_value_t val)
+{
+    switch (val.type) {
+    case RLM_TYPE_NULL:
+        return Mixed{};
+    case RLM_TYPE_INT:
+        return Mixed{ val.integer };
+    case RLM_TYPE_BOOL:
+        return Mixed{ val.boolean };
+    case RLM_TYPE_STRING:
+        return Mixed{ from_capi(val.string) };
+    case RLM_TYPE_BINARY:
+        return Mixed{ from_capi(val.binary) };
+    case RLM_TYPE_TIMESTAMP:
+        return Mixed{ from_capi(val.timestamp) };
+    case RLM_TYPE_FLOAT:
+        return Mixed{ val.fnum };
+    case RLM_TYPE_DOUBLE:
+        return Mixed{ val.dnum };
+    case RLM_TYPE_DECIMAL128:
+        return Mixed{ from_capi(val.decimal128) };
+    case RLM_TYPE_OBJECT_ID:
+        return Mixed{ from_capi(val.object_id) };
+    case RLM_TYPE_LINK:
+        return Mixed{ ObjLink{val.link.object->obj().get_table()->get_key(), val.link.object->obj().get_key()} };
+    }
+    REALM_TERMINATE("Invalid realm_value_t");
+}
+
+static inline realm_value_t to_capi(Mixed value)
+{
+    realm_value_t val;
+    if (value.is_null()) {
+        val.type = RLM_TYPE_NULL;
+    }
+    else {
+        switch (value.get_type()) {
+        case type_Int: {
+            val.type = RLM_TYPE_INT;
+            val.integer = value.get<int64_t>();
+            break;
+        }
+        case type_Bool: {
+            val.type = RLM_TYPE_BOOL;
+            val.boolean = value.get<bool>();
+            break;
+        }
+        case type_String: {
+            val.type = RLM_TYPE_STRING;
+            val.string = to_capi(value.get<StringData>());
+            break;
+        }
+        case type_Binary: {
+            val.type = RLM_TYPE_BINARY;
+            val.binary = to_capi(value.get<BinaryData>());
+            break;
+        }
+        case type_Timestamp: {
+            val.type = RLM_TYPE_TIMESTAMP;
+            val.timestamp = to_capi(value.get<Timestamp>());
+            break;
+        }
+        case type_Float: {
+            val.type = RLM_TYPE_FLOAT;
+            val.fnum = value.get<float>();
+            break;
+        }
+        case type_Double: {
+            val.type = RLM_TYPE_DOUBLE;
+            val.dnum = value.get<double>();
+            break;
+        }
+        case type_Decimal: {
+            val.type = RLM_TYPE_DECIMAL128;
+            val.decimal128 = to_capi(value.get<Decimal128>());
+            break;
+        }
+        case type_Link: {
+            REALM_TERMINATE("Not implemented yet");
+        }
+        case type_ObjectId: {
+            val.type = RLM_TYPE_OBJECT_ID;
+            val.object_id = to_capi(value.get<ObjectId>());
+            break;
+        }
+        case type_TypedLink: {
+            val.type = RLM_TYPE_LINK;
+            auto link = value.get<ObjLink>();
+
+            REALM_TERMINATE("Implement me!!");
+            // BLAH!
+            // val.link.target_table = to_capi(link.get_table_key());
+            // val.link.target = to_capi(link.get_obj_key());
+            break;
+        }
+
+        case type_LinkList:
+            [[fallthrough]];
+        case type_Mixed:
+            [[fallthrough]];
+        case type_OldTable:
+            [[fallthrough]];
+        case type_OldDateTime:
+            [[fallthrough]];
+        default:
+            REALM_TERMINATE("Invalid Mixed value type");
+        }
+    }
+
+    return val;
 }
 
 struct StringValue
@@ -75,104 +304,6 @@ struct MarshaledVector
     {
     }
 };
-
-template<typename Collection>
-void collection_get_primitive(Collection& collection, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        const size_t count = collection.size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from Collection", ndx, count);
-
-        value.has_value = true;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-        switch (value.type) {
-        case realm::PropertyType::Bool:
-            value.value.bool_value = collection.template get<bool>(ndx);
-            break;
-        case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
-            auto result = collection.template get<util::Optional<bool>>(ndx);
-            value.has_value = !!result;
-            value.value.bool_value = result.value_or(false);
-            break;
-        }
-        case realm::PropertyType::Int:
-            value.value.int_value = collection.template get<int64_t>(ndx);
-            break;
-        case realm::PropertyType::Int | realm::PropertyType::Nullable: {
-            auto result = collection.template get<util::Optional<int64_t>>(ndx);
-            value.has_value = !!result;
-            value.value.int_value = result.value_or(0);
-            break;
-        }
-        case realm::PropertyType::Float:
-            value.value.float_value = collection.template get<float>(ndx);
-            break;
-        case realm::PropertyType::Float | realm::PropertyType::Nullable: {
-            auto result = collection.template get<util::Optional<float>>(ndx);
-            value.has_value = !!result;
-            value.value.float_value = result.value_or((float)0);
-            break;
-        }
-        case realm::PropertyType::Double:
-            value.value.double_value = collection.template get<double>(ndx);
-            break;
-        case realm::PropertyType::Double | realm::PropertyType::Nullable: {
-            auto result = collection.template get<util::Optional<double>>(ndx);
-            value.has_value = !!result;
-            value.value.double_value = result.value_or((double)0);
-            break;
-        }
-        case realm::PropertyType::Date:
-            value.value.int_value = to_ticks(collection.template get<Timestamp>(ndx));
-            break;
-        case realm::PropertyType::Date | realm::PropertyType::Nullable: {
-            auto result = collection.template get<Timestamp>(ndx);
-            value.has_value = !result.is_null();
-            value.value.int_value = result.is_null() ? 0 : to_ticks(result);
-            break;
-        }
-        case realm::PropertyType::Decimal: {
-            auto result = collection.template get<realm::Decimal128>(ndx);
-            value.value.decimal_bits = *result.raw();
-            break;
-        }
-        case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
-            auto result = collection.template get<realm::Decimal128>(ndx);
-            value.has_value = !result.is_null();
-            if (value.has_value) {
-                value.value.decimal_bits = *result.raw();
-            }
-            break;
-        }
-        case realm::PropertyType::ObjectId: {
-            auto result = collection.template get<realm::ObjectId>(ndx);
-            auto bytes = result.to_bytes();
-            for (int i = 0; i < 12; i++)
-            {
-                value.value.object_id_bytes[i] = bytes[i];
-            }
-            break;
-        }
-        case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
-            auto result = collection.template get<util::Optional<realm::ObjectId>>(ndx);
-            value.has_value = !!result;
-            if (value.has_value) {
-                auto bytes = result.value().to_bytes();
-                for (int i = 0; i < 12; i++)
-                {
-                    value.value.object_id_bytes[i] = bytes[i];
-                }
-            }
-            break;
-        }
-        default:
-            REALM_UNREACHABLE();
-        }
-#pragma GCC diagnostic pop
-    });
-}
 
 template<typename T, typename Collection>
 inline T get(Collection& collection, size_t ndx, NativeException::Marshallable& ex)

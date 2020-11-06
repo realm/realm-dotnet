@@ -21,7 +21,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -43,7 +42,7 @@ namespace Realms
             public static extern void destroy(IntPtr objectHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(ObjectHandle handle, IntPtr propertyIndex, ref PrimitiveValue value, out NativeException ex);
+            public static extern void get_primitive(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_primitive(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
@@ -176,11 +175,9 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public PrimitiveValue GetPrimitive(IntPtr propertyIndex, PropertyType type)
+        public PrimitiveValue GetPrimitive(IntPtr propertyIndex)
         {
-            var result = new PrimitiveValue { Type = type };
-
-            NativeMethods.get_primitive(this, propertyIndex, ref result, out var nativeException);
+            NativeMethods.get_primitive(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
@@ -269,7 +266,7 @@ namespace Realms
 
         public void SetPrimitiveUnique(IntPtr propertyIndex, PrimitiveValue value)
         {
-            if (!GetPrimitive(propertyIndex, value.Type).Equals(value))
+            if (!GetPrimitive(propertyIndex).Equals(value))
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
@@ -302,6 +299,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmList instance will own its handle.")]
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
@@ -309,6 +307,7 @@ namespace Realms
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmSet instance will own its handle.")]
         public RealmSet<T> GetSet<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var setHandle = new SetHandle(Root, GetLinkSet(propertyIndex));

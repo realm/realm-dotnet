@@ -25,7 +25,6 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -46,19 +45,17 @@ namespace Realms
             _setHandle = adoptedSet;
             switch (_argumentType)
             {
-                case PropertyType.Object | PropertyType.Nullable:
+                case RealmValueType.Object:
                     _add = AddObject;
                     _remove = GetObjectExecutor(_setHandle.Remove);
                     _contains = GetObjectExecutor(_setHandle.Contains);
                     break;
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
+                case RealmValueType.String:
                     _add = (item) => _setHandle.Add(Operator.Convert<T, string>(item));
                     _remove = (item) => _setHandle.Remove(Operator.Convert<T, string>(item));
                     _contains = (item) => _setHandle.Contains(Operator.Convert<T, string>(item));
                     break;
-                case PropertyType.Data:
-                case PropertyType.Data | PropertyType.Nullable:
+                case RealmValueType.Data:
                     _add = (item) => _setHandle.Add(Operator.Convert<T, byte[]>(item));
                     _remove = (item) => _setHandle.Remove(Operator.Convert<T, byte[]>(item));
                     _contains = (item) => _setHandle.Contains(Operator.Convert<T, byte[]>(item));

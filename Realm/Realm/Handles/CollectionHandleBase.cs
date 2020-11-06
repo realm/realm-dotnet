@@ -18,7 +18,6 @@
 
 using System;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -46,20 +45,15 @@ namespace Realms
 
         protected abstract IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException);
 
-        public PrimitiveValue GetPrimitiveAtIndex(int index, PropertyType type)
+        public PrimitiveValue GetPrimitiveAtIndex(int index)
         {
-            var result = new PrimitiveValue
-            {
-                Type = type
-            };
-
-            GetPrimitiveAtIndexCore((IntPtr)index, ref result, out var nativeException);
+            GetPrimitiveAtIndexCore((IntPtr)index, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return result;
         }
 
-        protected abstract void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException);
+        protected abstract void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException);
 
         public abstract string GetStringAtIndex(int index);
 

@@ -94,165 +94,26 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_primitive(const Object& object, size_t property_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_primitive(const Object& object, size_t property_ndx, realm_value_t* value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            value.has_value = true;
-            auto column_key = get_column_key(object, property_ndx);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-            switch (value.type) {
-            case realm::PropertyType::Bool:
-                value.value.bool_value = object.obj().get<bool>(std::move(column_key));
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<util::Optional<bool>>(std::move(column_key));
-                value.has_value = !!result;
-                value.value.bool_value = result.value_or(false);
-                break;
-            }
-            case realm::PropertyType::Int:
-                value.value.int_value = object.obj().get<int64_t>(std::move(column_key));
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<util::Optional<int64_t>>(std::move(column_key));
-                value.has_value = !!result;
-                value.value.int_value = result.value_or(0);
-                break;
-            }
-            case realm::PropertyType::Float:
-                value.value.float_value = object.obj().get<float>(std::move(column_key));
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<util::Optional<float>>(std::move(column_key));
-                value.has_value = !!result;
-                value.value.float_value = result.value_or((float)0);
-                break;
-            }
-            case realm::PropertyType::Double:
-                value.value.double_value = object.obj().get<double>(std::move(column_key));
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<util::Optional<double>>(std::move(column_key));
-                value.has_value = !!result;
-                value.value.double_value = result.value_or((double)0);
-                break;
-            }
-            case realm::PropertyType::Date:
-                value.value.int_value = to_ticks(object.obj().get<Timestamp>(std::move(column_key)));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<Timestamp>(std::move(column_key));
-                value.has_value = !result.is_null();
-                value.value.int_value = result.is_null() ? 0 : to_ticks(result);
-                break;
-            }
-            case realm::PropertyType::Decimal: {
-                auto result = object.obj().get<Decimal128>(std::move(column_key));
-                value.value.decimal_bits = *result.raw();
-                break;
-            }
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<Decimal128>(std::move(column_key));
-                value.has_value = !result.is_null();
-                if (value.has_value) {
-                    value.value.decimal_bits = *result.raw();
-                }
-                break;
-            }
-            case realm::PropertyType::ObjectId: {
-                auto result = object.obj().get<ObjectId>(std::move(column_key));
-                auto bytes = result.to_bytes();
-                for (int i = 0; i < 12; i++)
-                {
-                    value.value.object_id_bytes[i] = bytes[i];
-                }
-                break;
-            }
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
-                auto result = object.obj().get<util::Optional<ObjectId>>(std::move(column_key));
-                value.has_value = !!result;
-                if (value.has_value) {
-                    auto bytes = result.value().to_bytes();
-                    for (int i = 0; i < 12; i++)
-                    {
-                        value.value.object_id_bytes[i] = bytes[i];
-                    }
-                }
-                break;
-            }
-            default:
-                REALM_UNREACHABLE();
-            }
-#pragma GCC diagnostic pop
+            auto val = object.obj().get_any(get_column_key(object, property_ndx));
+            *value = to_capi(val);
         });
     }
 
-    REALM_EXPORT void object_set_primitive(const Object& object, size_t property_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_primitive(const Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
 
             auto column_key = get_column_key(object, property_ndx);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-            switch (value.type) {
-            case realm::PropertyType::Bool:
-                object.obj().set(std::move(column_key), value.value.bool_value);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                object.obj().set(std::move(column_key), value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
-                break;
-            case realm::PropertyType::Int:
-                object.obj().set(std::move(column_key), value.value.int_value);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                object.obj().set(std::move(column_key), value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
-                break;
-            case realm::PropertyType::Float:
-                object.obj().set(std::move(column_key), value.value.float_value);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                object.obj().set(std::move(column_key), value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
-                break;
-            case realm::PropertyType::Double:
-                object.obj().set(std::move(column_key), value.value.double_value);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                object.obj().set(std::move(column_key), value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
-                break;
-            case realm::PropertyType::Date:
-                object.obj().set(std::move(column_key), from_ticks(value.value.int_value));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable:
-                object.obj().set(std::move(column_key), value.has_value ? from_ticks(value.value.int_value) : Timestamp());
-                break;
-            case realm::PropertyType::Decimal: {
-                object.obj().set(std::move(column_key), realm::Decimal128(value.value.decimal_bits));
-                break;
-            }
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable: {
-                auto decimal = value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null());
-                object.obj().set(std::move(column_key), decimal);
-                break;
-            }
-            case realm::PropertyType::ObjectId: {
-                object.obj().set(std::move(column_key), to_object_id(value));
-                break;
-            }
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable: {
-                object.obj().set(std::move(column_key), value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
-                break;
-            }
-            default:
-                REALM_UNREACHABLE();
-            }
-#pragma GCC diagnostic pop
-            });
+            auto val = from_capi(value);
+            object.obj().set_any(std::move(column_key), val);
+        });
     }
 
     REALM_EXPORT size_t object_get_string(const Object& object, size_t property_ndx, uint16_t* string_buffer, size_t buffer_size, bool& is_null, NativeException::Marshallable& ex)

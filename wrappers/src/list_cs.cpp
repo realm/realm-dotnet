@@ -80,58 +80,37 @@ REALM_EXPORT void list_add_object(List& list, const Object& object_ptr, NativeEx
     });
 }
 
-REALM_EXPORT void list_add_primitive(List& list, PrimitiveValue value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-        switch (value.type) {
-            case realm::PropertyType::Bool:
-                list.add(value.value.bool_value);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.add(value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
-                break;
-            case realm::PropertyType::Int:
-                list.add(value.value.int_value);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.add(value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
-                break;
-            case realm::PropertyType::Float:
-                list.add(value.value.float_value);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.add(value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
-                break;
-            case realm::PropertyType::Double:
-                list.add(value.value.double_value);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.add(value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
-                break;
-            case realm::PropertyType::Date:
-                list.add(from_ticks(value.value.int_value));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable:
-                list.add(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
-                break;
-            case realm::PropertyType::Decimal:
-                list.add(realm::Decimal128(value.value.decimal_bits));
-                break;
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-                list.add(value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
-                break;
-            case realm::PropertyType::ObjectId:
-                list.add(to_object_id(value));
-                break;
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
-                list.add(value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
-                break;
-            default:
-                REALM_UNREACHABLE();
+        switch (value.type)
+        {
+        case realm_value_type_e::RLM_TYPE_NULL:
+            throw std::runtime_error("Implement me!!");
+        case realm_value_type_e::RLM_TYPE_BOOL:
+            list.add(value.boolean);
+            break;
+        case realm_value_type_e::RLM_TYPE_INT:
+            list.add(value.integer);
+            break;
+        case realm_value_type_e::RLM_TYPE_FLOAT:
+            list.add(value.fnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_DOUBLE:
+            list.add(value.dnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
+            list.add(from_capi(value.timestamp));
+            break;
+        case realm_value_type_e::RLM_TYPE_DECIMAL128:
+            list.add(from_capi(value.decimal128));
+            break;
+        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
+            list.add(from_capi(value.object_id));
+            break;
+        default:
+            REALM_UNREACHABLE();
         }
-#pragma GCC diagnostic pop
     });
 }
 
@@ -168,7 +147,7 @@ REALM_EXPORT void list_set_object(List& list, size_t list_ndx, const Object& obj
     set(list, list_ndx, object_ptr.obj(), ex);
 }
 
-REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
@@ -176,55 +155,34 @@ REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, PrimitiveValue
             throw IndexOutOfRangeException("Set into RealmList", list_ndx, count);
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-        switch (value.type) {
-            case realm::PropertyType::Bool:
-                list.set(list_ndx, value.value.bool_value);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>());
-                break;
-            case realm::PropertyType::Int:
-                list.set(list_ndx, value.value.int_value);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>());
-                break;
-            case realm::PropertyType::Float:
-                list.set(list_ndx, value.value.float_value);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>());
-                break;
-            case realm::PropertyType::Double:
-                list.set(list_ndx, value.value.double_value);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>());
-                break;
-            case realm::PropertyType::Date:
-                list.set(list_ndx, from_ticks(value.value.int_value));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
-                break;
-            case realm::PropertyType::Decimal:
-                list.set(list_ndx, realm::Decimal128(value.value.decimal_bits));
-                break;
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
-                break;
-            case realm::PropertyType::ObjectId:
-                list.set(list_ndx, to_object_id(value));
-                break;
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
-                list.set(list_ndx, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
-                break;
-            default:
-                REALM_UNREACHABLE();
+        switch (value.type)
+        {
+        case realm_value_type_e::RLM_TYPE_NULL:
+            throw std::runtime_error("Implement me!!");
+        case realm_value_type_e::RLM_TYPE_BOOL:
+            list.set(list_ndx, value.boolean);
+            break;
+        case realm_value_type_e::RLM_TYPE_INT:
+            list.add(value.integer);
+            break;
+        case realm_value_type_e::RLM_TYPE_FLOAT:
+            list.set(list_ndx, value.fnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_DOUBLE:
+            list.set(list_ndx, value.dnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
+            list.set(list_ndx, from_capi(value.timestamp));
+            break;
+        case realm_value_type_e::RLM_TYPE_DECIMAL128:
+            list.set(list_ndx, from_capi(value.decimal128));
+            break;
+        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
+            list.set(list_ndx, from_capi(value.object_id));
+            break;
+        default:
+            REALM_UNREACHABLE();
         }
-#pragma GCC diagnostic pop
     });
 }
 
@@ -266,7 +224,7 @@ REALM_EXPORT void list_insert_object(List& list, size_t list_ndx, const Object& 
     insert(list, list_ndx, object_ptr.obj(), ex);
 }
 
-REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
@@ -274,55 +232,34 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, PrimitiveVa
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-        switch (value.type) {
-            case realm::PropertyType::Bool:
-                list.insert(list_ndx, value.value.bool_value);
-                break;
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
-                break;
-            case realm::PropertyType::Int:
-                list.insert(list_ndx, value.value.int_value);
-                break;
-            case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
-                break;
-            case realm::PropertyType::Float:
-                list.insert(list_ndx, value.value.float_value);
-                break;
-            case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
-                break;
-            case realm::PropertyType::Double:
-                list.insert(list_ndx, value.value.double_value);
-                break;
-            case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
-                break;
-            case realm::PropertyType::Date:
-                list.insert(list_ndx, from_ticks(value.value.int_value));
-                break;
-            case realm::PropertyType::Date | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? from_ticks(value.value.int_value) : Timestamp());
-                break;
-            case realm::PropertyType::Decimal:
-                list.insert(list_ndx, realm::Decimal128(value.value.decimal_bits));
-                break;
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
-                break;
-            case realm::PropertyType::ObjectId:
-                list.insert(list_ndx, to_object_id(value));
-                break;
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
-                list.insert(list_ndx, value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
-                break;
-            default:
-                REALM_UNREACHABLE();
+        switch (value.type)
+        {
+        case realm_value_type_e::RLM_TYPE_NULL:
+            throw std::runtime_error("Implement me!!");
+        case realm_value_type_e::RLM_TYPE_BOOL:
+            list.insert(list_ndx, value.boolean);
+            break;
+        case realm_value_type_e::RLM_TYPE_INT:
+            list.insert(list_ndx, value.integer);
+            break;
+        case realm_value_type_e::RLM_TYPE_FLOAT:
+            list.insert(list_ndx, value.fnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_DOUBLE:
+            list.insert(list_ndx, value.dnum);
+            break;
+        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
+            list.insert(list_ndx, from_capi(value.timestamp));
+            break;
+        case realm_value_type_e::RLM_TYPE_DECIMAL128:
+            list.insert(list_ndx, from_capi(value.decimal128));
+            break;
+        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
+            list.insert(list_ndx, from_capi(value.object_id));
+            break;
+        default:
+            REALM_UNREACHABLE();
         }
-#pragma GCC diagnostic pop
     });
 }
 
@@ -370,9 +307,17 @@ REALM_EXPORT Object* list_get_object(List& list, size_t ndx, NativeException::Ma
     });
 }
 
-REALM_EXPORT void list_get_primitive(List& list, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_get_primitive(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
-    collection_get_primitive(list, ndx, value, ex);
+    handle_errors(ex, [&]() {
+        const size_t count = list.size();
+        if (ndx >= count)
+            throw IndexOutOfRangeException("Get from Collection", ndx, count);
+
+        throw std::runtime_error("implement me!!");
+        //auto val = list.get<Mixed>(ndx);
+        //*value = to_capi(val);
+    });
 }
 
 REALM_EXPORT size_t list_get_string(List& list, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
@@ -396,44 +341,30 @@ REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, Nativ
     });
 }
 
-REALM_EXPORT size_t list_find_primitive(List& list, PrimitiveValue value, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch"
-        switch (value.type) {
-            case realm::PropertyType::Bool:
-                return list.find(value.value.bool_value);
-            case realm::PropertyType::Bool | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? util::Optional<bool>(value.value.bool_value) : util::Optional<bool>(none));
-            case realm::PropertyType::Int:
-                return list.find(value.value.int_value);
-            case realm::PropertyType::Int | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? util::Optional<int64_t>(value.value.int_value) : util::Optional<int64_t>(none));
-            case realm::PropertyType::Float:
-                return list.find(value.value.float_value);
-            case realm::PropertyType::Float | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? util::Optional<float>(value.value.float_value) : util::Optional<float>(none));
-            case realm::PropertyType::Double:
-                return list.find(value.value.double_value);
-            case realm::PropertyType::Double | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? util::Optional<double>(value.value.double_value) : util::Optional<double>(none));
-            case realm::PropertyType::Date:
-                return list.find(from_ticks(value.value.int_value));
-            case realm::PropertyType::Date | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? from_ticks(value.value.int_value) : Timestamp());
-            case realm::PropertyType::Decimal:
-                return list.find(realm::Decimal128(value.value.decimal_bits));
-            case realm::PropertyType::Decimal | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? realm::Decimal128(value.value.decimal_bits) : Decimal128(null()));
-            case realm::PropertyType::ObjectId:
-                return list.find(to_object_id(value));
-            case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
-                return list.find(value.has_value ? util::Optional<ObjectId>(to_object_id(value)) : util::Optional<ObjectId>());
-            default:
-                REALM_UNREACHABLE();
+        switch (value.type)
+        {
+        case realm_value_type_e::RLM_TYPE_NULL:
+            throw std::runtime_error("Implement me!!");
+        case realm_value_type_e::RLM_TYPE_BOOL:
+            return list.find(value.boolean);
+        case realm_value_type_e::RLM_TYPE_INT:
+            return list.find(value.integer);
+        case realm_value_type_e::RLM_TYPE_FLOAT:
+            return list.find(value.fnum);
+        case realm_value_type_e::RLM_TYPE_DOUBLE:
+            return list.find(value.dnum);
+        case realm_value_type_e::RLM_TYPE_TIMESTAMP:
+            return list.find(from_capi(value.timestamp));
+        case realm_value_type_e::RLM_TYPE_DECIMAL128:
+            return list.find(from_capi(value.decimal128));
+        case realm_value_type_e::RLM_TYPE_OBJECT_ID:
+            return list.find(from_capi(value.object_id));
+        default:
+            REALM_UNREACHABLE();
         }
-#pragma GCC diagnostic pop
     });
 }
 

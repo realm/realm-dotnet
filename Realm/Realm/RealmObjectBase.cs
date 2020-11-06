@@ -219,7 +219,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName], propertyType).Get<T>();
+            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).Get<T>();
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -282,7 +282,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex, PropertyType.Int).ToIntegral<T>();
+            var result = _objectHandle.GetPrimitive(propertyIndex).ToIntegral<T>();
             return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
         }
 
@@ -290,7 +290,7 @@ namespace Realms
             where T : struct, IFormattable, IComparable<T>
         {
             var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex, PropertyType.NullableInt).ToNullableIntegral<T?>();
+            var result = _objectHandle.GetPrimitive(propertyIndex).ToNullableIntegral<T?>();
 
             if (result.HasValue)
             {
@@ -308,14 +308,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType));
+            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType.ToRealmValueType()));
         }
 
         protected void SetPrimitiveValueUnique<T>(string propertyName, T value, PropertyType propertyType)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType));
+            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType.ToRealmValueType()));
         }
 
         protected void SetStringValue(string propertyName, string value)

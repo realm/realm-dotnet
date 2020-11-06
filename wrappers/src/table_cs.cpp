@@ -96,24 +96,26 @@ REALM_EXPORT Object* table_get_object(TableRef& table, SharedRealm& realm, ObjKe
     });
 }
 
-REALM_EXPORT Object* table_get_object_for_primitive_primarykey(TableRef& table, SharedRealm& realm, PrimitiveValue primitive, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_get_object_for_primitive_primarykey(TableRef& table, SharedRealm& realm, realm_value_t primitive, NativeException::Marshallable& ex)
 {
-    if (!primitive.has_value) {
-        return get_object_for_primarykey(table, realm, null{}, ex);
-    }
+    return handle_errors(ex, [&]() -> Object* {
+        realm->verify_thread();
 
-    switch (primitive.type) {
-    case realm::PropertyType::Int:
-    case realm::PropertyType::Int | realm::PropertyType::Nullable:
-        return get_object_for_primarykey(table, realm, primitive.value.int_value, ex);
+        const std::string object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        auto& object_schema = *realm->schema().find(object_name);
+        if (object_schema.primary_key.empty()) {
+            const std::string name(table->get_name());
+            throw MissingPrimaryKeyException(name);
+        }
 
-    case realm::PropertyType::ObjectId:
-    case realm::PropertyType::ObjectId | realm::PropertyType::Nullable:
-        return get_object_for_primarykey(table, realm, to_object_id(primitive), ex);
+        auto value = from_capi(primitive);
+        const ColKey column_key = object_schema.primary_key_property()->column_key;
+        const ObjKey obj_key = table->find_first(column_key, value);
+        if (!obj_key)
+            return nullptr;
 
-    default:
-        REALM_UNREACHABLE();
-    }
+        return new Object(realm, object_schema, table->get_object(obj_key));
+    });
 }
 
 REALM_EXPORT Object* table_get_object_for_string_primarykey(TableRef& table, SharedRealm& realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)

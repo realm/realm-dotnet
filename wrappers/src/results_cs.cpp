@@ -77,9 +77,18 @@ REALM_EXPORT Object* results_get_object(Results& results, size_t ndx, NativeExce
     });
 }
 
-REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
-    collection_get_primitive(results, ndx, value, ex);
+    handle_errors(ex, [&]() {
+        const size_t count = results.size();
+        if (ndx >= count)
+            throw IndexOutOfRangeException("Get from Collection", ndx, count);
+
+        throw std::runtime_error("implement me!!");
+
+        //auto val = results.get<Mixed>(ndx);
+        //*value = to_capi(val);
+    });
 }
 
 REALM_EXPORT size_t results_get_string(Results& results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)

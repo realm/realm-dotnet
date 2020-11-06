@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using Realms.Helpers;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -76,7 +75,7 @@ namespace Realms
         {
             Argument.NotNull(value, nameof(value));
 
-            if (_argumentType != (PropertyType.Object | PropertyType.Nullable))
+            if (_argumentType != RealmValueType.Object)
             {
                 throw new NotSupportedException("IndexOf on non-object results is not supported.");
             }

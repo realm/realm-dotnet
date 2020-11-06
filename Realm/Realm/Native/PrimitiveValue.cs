@@ -20,7 +20,6 @@ using System;
 using System.Runtime.InteropServices;
 using MongoDB.Bson;
 using Realms.Helpers;
-using Realms.Schema;
 
 namespace Realms.Native
 {
@@ -52,92 +51,59 @@ namespace Realms.Native
         private long dontuse;
 
         [FieldOffset(16)]
-        [MarshalAs(UnmanagedType.U2)]
-        public PropertyType Type;
-
-        [FieldOffset(18)]
         [MarshalAs(UnmanagedType.U1)]
-        private bool has_value;
+        public RealmValueType Type;
 
-        public static PrimitiveValue Bool(bool value)
+        public static PrimitiveValue Null() => new PrimitiveValue
         {
-            return new PrimitiveValue
-            {
-                Type = PropertyType.Bool,
-                has_value = true,
-                bool_value = value
-            };
-        }
-
-        public static PrimitiveValue NullableBool(bool? value) => new PrimitiveValue
-        {
-            Type = PropertyType.NullableBool,
-            has_value = value.HasValue,
-            bool_value = value.GetValueOrDefault()
+            Type = RealmValueType.Null,
         };
+
+        public static PrimitiveValue Bool(bool value) => new PrimitiveValue
+        {
+            Type = RealmValueType.Bool,
+            bool_value = value
+        };
+
+        public static PrimitiveValue NullableBool(bool? value) => value.HasValue ? Bool(value.Value) : Null();
 
         public static PrimitiveValue Int(long value) => new PrimitiveValue
         {
-            Type = PropertyType.Int,
-            has_value = true,
+            Type = RealmValueType.Int,
             int_value = value
         };
 
-        public static PrimitiveValue NullableInt(long? value) => new PrimitiveValue
-        {
-            Type = PropertyType.NullableInt,
-            has_value = value.HasValue,
-            int_value = value.GetValueOrDefault()
-        };
+        public static PrimitiveValue NullableInt(long? value) => value.HasValue ? Int(value.Value) : Null();
 
         public static PrimitiveValue Float(float value) => new PrimitiveValue
         {
-            Type = PropertyType.Float,
-            has_value = true,
+            Type = RealmValueType.Float,
             float_value = value
         };
 
-        public static PrimitiveValue NullableFloat(float? value) => new PrimitiveValue
-        {
-            Type = PropertyType.NullableFloat,
-            has_value = value.HasValue,
-            float_value = value.GetValueOrDefault()
-        };
+        public static PrimitiveValue NullableFloat(float? value) => value.HasValue ? Float(value.Value) : Null();
 
         public static PrimitiveValue Double(double value) => new PrimitiveValue
         {
-            Type = PropertyType.Double,
-            has_value = true,
+            Type = RealmValueType.Double,
             double_value = value
         };
 
-        public static PrimitiveValue NullableDouble(double? value) => new PrimitiveValue
-        {
-            Type = PropertyType.NullableDouble,
-            has_value = value.HasValue,
-            double_value = value.GetValueOrDefault()
-        };
+        public static PrimitiveValue NullableDouble(double? value) => value.HasValue ? Double(value.Value) : Null();
 
         public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
         {
-            Type = PropertyType.Date,
-            has_value = true,
+            Type = RealmValueType.Date,
             int_value = value.ToUniversalTime().Ticks
         };
 
-        public static PrimitiveValue NullableDate(DateTimeOffset? value) => new PrimitiveValue
-        {
-            Type = PropertyType.NullableDate,
-            has_value = value.HasValue,
-            int_value = value.GetValueOrDefault().ToUniversalTime().Ticks
-        };
+        public static PrimitiveValue NullableDate(DateTimeOffset? value) => value.HasValue ? Date(value.Value) : Null();
 
         public static PrimitiveValue Decimal(Decimal128 value)
         {
             var result = new PrimitiveValue
             {
-                Type = PropertyType.Decimal,
-                has_value = true
+                Type = RealmValueType.Decimal128,
             };
 
             result.decimal_bits[0] = value.GetIEEELowBits();
@@ -146,29 +112,13 @@ namespace Realms.Native
             return result;
         }
 
-        public static PrimitiveValue NullableDecimal(Decimal128? value)
-        {
-            var result = new PrimitiveValue
-            {
-                Type = PropertyType.NullableDecimal,
-                has_value = value.HasValue
-            };
-
-            if (value.HasValue)
-            {
-                result.decimal_bits[0] = value.Value.GetIEEELowBits();
-                result.decimal_bits[1] = value.Value.GetIEEEHighBits();
-            }
-
-            return result;
-        }
+        public static PrimitiveValue NullableDecimal(Decimal128? value) => value.HasValue ? Decimal(value.Value) : Null();
 
         public static PrimitiveValue ObjectId(ObjectId value)
         {
             var result = new PrimitiveValue
             {
-                Type = PropertyType.ObjectId,
-                has_value = true
+                Type = RealmValueType.ObjectId,
             };
 
             var objectIdBytes = value.ToByteArray();
@@ -180,75 +130,55 @@ namespace Realms.Native
             return result;
         }
 
-        public static PrimitiveValue NullableObjectId(ObjectId? value)
-        {
-            var result = new PrimitiveValue
-            {
-                Type = PropertyType.NullableObjectId,
-                has_value = value.HasValue
-            };
+        public static PrimitiveValue NullableObjectId(ObjectId? value) => value.HasValue ? ObjectId(value.Value) : Null();
 
-            if (value.HasValue)
+        public static PrimitiveValue Create<T>(T value, RealmValueType type)
+        {
+            if (value is null)
             {
-                var objectIdBytes = value.Value.ToByteArray();
-                for (var i = 0; i < 12; i++)
-                {
-                    result.object_id_bytes[i] = objectIdBytes[i];
-                }
+                return Null();
             }
 
-            return result;
-        }
-
-        public static PrimitiveValue Create<T>(T value, PropertyType type)
-        {
             return type switch
             {
-                PropertyType.Bool => Bool(Operator.Convert<T, bool>(value)),
-                PropertyType.NullableBool => NullableBool(Operator.Convert<T, bool?>(value)),
-                PropertyType.Int => Int(Operator.Convert<T, long>(value)),
-                PropertyType.NullableInt => NullableInt(Operator.Convert<T, long?>(value)),
-                PropertyType.Float => Float(Operator.Convert<T, float>(value)),
-                PropertyType.NullableFloat => NullableFloat(Operator.Convert<T, float?>(value)),
-                PropertyType.Double => Double(Operator.Convert<T, double>(value)),
-                PropertyType.NullableDouble => NullableDouble(Operator.Convert<T, double?>(value)),
-                PropertyType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
-                PropertyType.NullableDate => NullableDate(Operator.Convert<T, DateTimeOffset?>(value)),
-                PropertyType.Decimal => Decimal(Operator.Convert<T, Decimal128>(value)),
-                PropertyType.NullableDecimal => NullableDecimal(Operator.Convert<T, Decimal128?>(value)),
-                PropertyType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
-                PropertyType.NullableObjectId => NullableObjectId(Operator.Convert<T, ObjectId?>(value)),
+                RealmValueType.Bool => Bool(Operator.Convert<T, bool>(value)),
+                RealmValueType.Int => Int(Operator.Convert<T, long>(value)),
+                RealmValueType.Float => Float(Operator.Convert<T, float>(value)),
+                RealmValueType.Double => Double(Operator.Convert<T, double>(value)),
+                RealmValueType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
+                RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
+                RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
                 _ => throw new NotSupportedException($"PrimitiveType {type} is not supported."),
             };
         }
 
         public bool ToBool() => bool_value;
 
-        public bool? ToNullableBool() => has_value ? bool_value : (bool?)null;
+        public bool? ToNullableBool() => Type != RealmValueType.Null ? bool_value : (bool?)null;
 
         public long ToInt() => int_value;
 
-        public long? ToNullableInt() => has_value ? int_value : (long?)null;
+        public long? ToNullableInt() => Type != RealmValueType.Null ? int_value : (long?)null;
 
         public T ToIntegral<T>() => Operator.Convert<long, T>(int_value);
 
-        public T ToNullableIntegral<T>() => Operator.Convert<long?, T>(has_value ? int_value : (long?)null);
+        public T ToNullableIntegral<T>() => Operator.Convert<long?, T>(Type != RealmValueType.Null ? int_value : (long?)null);
 
         public float ToFloat() => float_value;
 
-        public float? ToNullableFloat() => has_value ? float_value : (float?)null;
+        public float? ToNullableFloat() => Type != RealmValueType.Null ? float_value : (float?)null;
 
         public double ToDouble() => double_value;
 
-        public double? ToNullableDouble() => has_value ? double_value : (double?)null;
+        public double? ToNullableDouble() => Type != RealmValueType.Null ? double_value : (double?)null;
 
         public DateTimeOffset ToDate() => new DateTimeOffset(int_value, TimeSpan.Zero);
 
-        public DateTimeOffset? ToNullableDate() => has_value ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
+        public DateTimeOffset? ToNullableDate() => Type != RealmValueType.Null ? new DateTimeOffset(int_value, TimeSpan.Zero) : (DateTimeOffset?)null;
 
         public Decimal128 ToDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
-        public Decimal128? ToNullableDecimal() => has_value ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
+        public Decimal128? ToNullableDecimal() => Type != RealmValueType.Null ? Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]) : (Decimal128?)null;
 
         public ObjectId ToObjectId()
         {
@@ -261,34 +191,20 @@ namespace Realms.Native
             return new ObjectId(bytes);
         }
 
-        public ObjectId? ToNullableObjectId()
-        {
-            if (!has_value)
-            {
-                return null;
-            }
-
-            return ToObjectId();
-        }
+        public ObjectId? ToNullableObjectId() => Type != RealmValueType.Null ? ToObjectId() : (ObjectId?)null;
 
         public T Get<T>()
         {
             return Type switch
             {
-                PropertyType.Bool => Operator.Convert<bool, T>(ToBool()),
-                PropertyType.NullableBool => Operator.Convert<bool?, T>(ToNullableBool()),
-                PropertyType.Int => ToIntegral<T>(),
-                PropertyType.NullableInt => ToNullableIntegral<T>(),
-                PropertyType.Float => Operator.Convert<float, T>(ToFloat()),
-                PropertyType.NullableFloat => Operator.Convert<float?, T>(ToNullableFloat()),
-                PropertyType.Double => Operator.Convert<double, T>(ToDouble()),
-                PropertyType.NullableDouble => Operator.Convert<double?, T>(ToNullableDouble()),
-                PropertyType.Date => Operator.Convert<DateTimeOffset, T>(ToDate()),
-                PropertyType.NullableDate => Operator.Convert<DateTimeOffset?, T>(ToNullableDate()),
-                PropertyType.Decimal => Operator.Convert<Decimal128, T>(ToDecimal()),
-                PropertyType.NullableDecimal => Operator.Convert<Decimal128?, T>(ToNullableDecimal()),
-                PropertyType.ObjectId => Operator.Convert<ObjectId, T>(ToObjectId()),
-                PropertyType.NullableObjectId => Operator.Convert<ObjectId?, T>(ToNullableObjectId()),
+                RealmValueType.Null => (T)(object)null,
+                RealmValueType.Bool => Operator.Convert<bool, T>(ToBool()),
+                RealmValueType.Int => ToIntegral<T>(),
+                RealmValueType.Float => Operator.Convert<float, T>(ToFloat()),
+                RealmValueType.Double => Operator.Convert<double, T>(ToDouble()),
+                RealmValueType.Date => Operator.Convert<DateTimeOffset, T>(ToDate()),
+                RealmValueType.Decimal128 => Operator.Convert<Decimal128, T>(ToDecimal()),
+                RealmValueType.ObjectId => Operator.Convert<ObjectId, T>(ToObjectId()),
                 _ => throw new NotSupportedException($"PrimitiveType {Type} is not supported."),
             };
         }

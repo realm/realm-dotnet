@@ -96,7 +96,7 @@ namespace Realms
             public static extern IntPtr get_object(ListHandle listHandle, IntPtr link_ndx, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(ListHandle listHandle, IntPtr link_ndx, ref PrimitiveValue value, out NativeException ex);
+            public static extern void get_primitive(ListHandle listHandle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_string(ListHandle listHandle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
@@ -187,8 +187,8 @@ namespace Realms
         protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
             NativeMethods.get_object(this, index, out nativeException);
 
-        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_primitive(this, index, ref result, out nativeException);
+        protected override void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_primitive(this, index, out result, out nativeException);
 
         public override string GetStringAtIndex(int index)
         {

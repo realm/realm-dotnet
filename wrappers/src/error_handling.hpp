@@ -69,6 +69,11 @@ class SetDuplicatePrimaryKeyValueException : public std::runtime_error {
 public:
     SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value);
 };
+
+class InvalidSchemaException : public std::runtime_error {
+public:
+    InvalidSchemaException(std::string message) : std::runtime_error(message) {}
+};
     
 class ObjectManagedByAnotherRealmException : public std::runtime_error {
 public:

@@ -96,7 +96,7 @@ namespace Realms
             if (IsManaged)
             {
                 _objectHandle.AddInt64(_propertyIndex, value.ToLong());
-                var result = _objectHandle.GetPrimitive(_propertyIndex, Schema.PropertyType.Int).ToIntegral<T>();
+                var result = _objectHandle.GetPrimitive(_propertyIndex).ToIntegral<T>();
                 return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
             }
 

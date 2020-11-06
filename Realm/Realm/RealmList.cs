@@ -28,7 +28,6 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -57,7 +56,7 @@ namespace Realms
 
             switch (_argumentType)
             {
-                case PropertyType.Object | PropertyType.Nullable:
+                case RealmValueType.Object:
                     _add = GetObjectExecutor(_listHandle.Add, _listHandle.AddEmbedded);
                     _set = GetObjectExecutor(_listHandle.Set, _listHandle.SetEmbedded);
                     _insert = GetObjectExecutor(_listHandle.Insert, _listHandle.InsertEmbedded);
@@ -75,15 +74,13 @@ namespace Realms
                     };
 
                     break;
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
+                case RealmValueType.String:
                     _add = (item) => _listHandle.Add(Operator.Convert<T, string>(item));
                     _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, string>(item));
                     _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, string>(item));
                     _indexOf = (value) => _listHandle.Find(Operator.Convert<T, string>(value));
                     break;
-                case PropertyType.Data:
-                case PropertyType.Data | PropertyType.Nullable:
+                case RealmValueType.Data:
                     _add = (item) => _listHandle.Add(Operator.Convert<T, byte[]>(item));
                     _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, byte[]>(item));
                     _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, byte[]>(item));
