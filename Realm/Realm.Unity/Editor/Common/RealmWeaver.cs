@@ -183,7 +183,7 @@ namespace RealmWeaver
 
             var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name);
+                var analytics = new Analytics(_frameworkName, _moduleDefinition);
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
