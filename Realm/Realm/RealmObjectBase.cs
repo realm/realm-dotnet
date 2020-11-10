@@ -30,7 +30,6 @@ using System.Xml.Serialization;
 using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -212,14 +211,14 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).AsString();
+            return _objectHandle.GetValue(_metadata.PropertyIndices[propertyName]);
         }
 
-        protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
+        protected RealmValue GetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).Get<T>();
+            return _objectHandle.GetValue(_metadata.PropertyIndices[propertyName]);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -253,13 +252,6 @@ namespace Realms
             return null;
         }
 
-        protected byte[] GetByteArrayValue(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return _objectHandle.GetPrimitive(_metadata.PropertyIndices[propertyName]).AsBinary();
-        }
-
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {
@@ -278,58 +270,15 @@ namespace Realms
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
-        protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex).AsIntegral<T>();
-            return new RealmInteger<T>(result, ObjectHandle, propertyIndex);
-        }
-
-        protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            var propertyIndex = _metadata.PropertyIndices[propertyName];
-            var result = _objectHandle.GetPrimitive(propertyIndex).AsNullableIntegral<T?>();
-
-            if (result.HasValue)
-            {
-                return new RealmInteger<T>(result.Value, ObjectHandle, propertyIndex);
-            }
-
-            return null;
-        }
-
         #endregion
 
         #region Setters
 
-        protected void SetPrimitiveValue<T>(string propertyName, T value, PropertyType propertyType)
+        protected void SetValueUnique(string propertyName, RealmValue val)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType.ToRealmValueType()));
-        }
-
-        protected void SetPrimitiveValueUnique<T>(string propertyName, T value, PropertyType propertyType)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Create(value, propertyType.ToRealmValueType()));
-        }
-
-        protected void SetStringValue(string propertyName, string value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        protected void SetStringValueUnique(string propertyName, string value)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetStringUnique(_metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetValueUnique(_metadata.PropertyIndices[propertyName], val);
         }
 
         // Originally a generic fallback, now used only for RealmObjectBase To-One relationship properties
@@ -342,43 +291,11 @@ namespace Realms
             _objectHandle.SetObject(Realm, _metadata.PropertyIndices[propertyName], value);
         }
 
-        protected void SetByteArrayValue(string propertyName, byte[] value)
+        protected void SetValue(string propertyName, RealmValue val)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
-        }
-
-        protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.Int(value.ToLong()));
-        }
-
-        protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetPrimitive(_metadata.PropertyIndices[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
-        }
-
-        protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.Int(value.ToLong()));
-        }
-
-        protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetPrimitiveUnique(_metadata.PropertyIndices[propertyName], PrimitiveValue.NullableInt(value?.ToLong()));
+            _objectHandle.SetValue(_metadata.PropertyIndices[propertyName], val);
         }
 
         #endregion

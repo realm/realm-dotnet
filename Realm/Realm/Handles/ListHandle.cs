@@ -36,13 +36,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_embedded(ListHandle listHandle, out NativeException ex);
 
@@ -56,14 +49,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_primitive(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_set_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr set_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
 
@@ -76,14 +61,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void insert_primitive(ListHandle listHandle, IntPtr targetIndex, PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert_string(ListHandle listHandle, IntPtr targetIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,
-                IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert_binary(ListHandle listHandle, IntPtr targetIndex, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_insert_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr insert_embedded(ListHandle listHandle, IntPtr targetIndex, out NativeException ex);
@@ -107,13 +84,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_primitive(ListHandle listHandle, PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find_string(ListHandle listHandle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_find_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find_binary(ListHandle listHandle, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
 
             #endregion
 
@@ -192,22 +162,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void Add(PrimitiveValue value)
+        public unsafe void Add(RealmValue value)
         {
-            NativeMethods.add_primitive(this, value, out var nativeException);
+            var (primitive, gcHandle) = value.ToNative();
+            NativeMethods.add_primitive(this, primitive, out var nativeException);
+            gcHandle?.Free();
             nativeException.ThrowIfNecessary();
-        }
-
-        public void Add(string value)
-        {
-            NativeMethods.add_string(this, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public unsafe void Add(byte[] value)
-        {
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-                NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
         }
 
         public ObjectHandle AddEmbedded()
@@ -227,22 +187,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void Set(int targetIndex, PrimitiveValue value)
+        public unsafe void Set(int targetIndex, RealmValue value)
         {
-            NativeMethods.set_primitive(this, (IntPtr)targetIndex, value, out var nativeException);
+            var (primitive, gcHandle) = value.ToNative();
+            NativeMethods.set_primitive(this, (IntPtr)targetIndex, primitive, out var nativeException);
+            gcHandle?.Free();
             nativeException.ThrowIfNecessary();
-        }
-
-        public void Set(int targetIndex, string value)
-        {
-            NativeMethods.set_string(this, (IntPtr)targetIndex, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public unsafe void Set(int targetIndex, byte[] value)
-        {
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-                NativeMethods.set_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
         }
 
         public ObjectHandle SetEmbedded(int targetIndex)
@@ -262,22 +212,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void Insert(int targetIndex, PrimitiveValue value)
+        public unsafe void Insert(int targetIndex, RealmValue value)
         {
-            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, value, out var nativeException);
+            var (primitive, gcHandle) = value.ToNative();
+            NativeMethods.insert_primitive(this, (IntPtr)targetIndex, primitive, out var nativeException);
+            gcHandle?.Free();
             nativeException.ThrowIfNecessary();
-        }
-
-        public void Insert(int targetIndex, string value)
-        {
-            NativeMethods.insert_string(this, (IntPtr)targetIndex, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public unsafe void Insert(int targetIndex, byte[] value)
-        {
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-                NativeMethods.insert_binary(this, (IntPtr)targetIndex, buffer, bufferSize, hasValue, out ex));
         }
 
         public ObjectHandle InsertEmbedded(int targetIndex)
@@ -298,28 +238,12 @@ namespace Realms
             return (int)result;
         }
 
-        public unsafe int Find(PrimitiveValue value)
+        public unsafe int Find(RealmValue value)
         {
-            var result = NativeMethods.find_primitive(this, value, out var nativeException);
+            var (primitive, gcHandle) = value.ToNative();
+            var result = NativeMethods.find_primitive(this, primitive, out var nativeException);
+            gcHandle?.Free();
             nativeException.ThrowIfNecessary();
-            return (int)result;
-        }
-
-        public int Find(string value)
-        {
-            var result = NativeMethods.find_string(this, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return (int)result;
-        }
-
-        public unsafe int Find(byte[] value)
-        {
-            var result = IntPtr.Zero;
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-            {
-                result = NativeMethods.find_binary(this, buffer, bufferSize, hasValue, out ex);
-            });
-
             return (int)result;
         }
 

@@ -28,7 +28,7 @@
 namespace realm {
 namespace binding {
 
-typedef enum realm_value_type {
+enum class realm_value_type : unsigned char {
     RLM_TYPE_NULL,
     RLM_TYPE_INT,
     RLM_TYPE_BOOL,
@@ -41,7 +41,7 @@ typedef enum realm_value_type {
     RLM_TYPE_OBJECT_ID,
     RLM_TYPE_LINK,
     RLM_TYPE_UUID,
-} realm_value_type_e;
+};
 
 typedef struct realm_string {
     const char* data;
@@ -91,7 +91,11 @@ typedef struct realm_value {
 
         char data[16];
     };
-    realm_value_type_e type;
+    realm_value_type type;
+
+    bool is_null() {
+        return type == realm_value_type::RLM_TYPE_NULL;
+    }
 } realm_value_t;
 
 static inline realm_string_t to_capi(StringData data)
@@ -167,30 +171,97 @@ static inline ObjectId from_capi(realm_object_id_t oid)
     return ObjectId(std::move(bytes));
 }
 
+static inline realm_value_type to_capi(PropertyType type)
+{
+    switch (type & ~PropertyType::Flags)
+    {
+    case PropertyType::Int:
+        return realm_value_type::RLM_TYPE_INT;
+    case PropertyType::Bool:
+        return realm_value_type::RLM_TYPE_BOOL;
+    case PropertyType::String:
+        return realm_value_type::RLM_TYPE_STRING;
+    case PropertyType::Data:
+        return realm_value_type::RLM_TYPE_BINARY;
+    case PropertyType::Date:
+        return realm_value_type::RLM_TYPE_TIMESTAMP;
+    case PropertyType::Float:
+        return realm_value_type::RLM_TYPE_FLOAT;
+    case PropertyType::Double:
+        return realm_value_type::RLM_TYPE_DOUBLE;
+    case PropertyType::Decimal:
+        return realm_value_type::RLM_TYPE_DECIMAL128;
+    case PropertyType::ObjectId:
+        return realm_value_type::RLM_TYPE_OBJECT_ID;
+    case PropertyType::Object:
+        return realm_value_type::RLM_TYPE_LINK;
+    case PropertyType::UUID:
+        return realm_value_type::RLM_TYPE_UUID;
+    default:
+        REALM_UNREACHABLE();
+    }
+}
+
+static inline std::string to_string(realm_value_type type)
+{
+    switch (type)
+    {
+    case realm_value_type::RLM_TYPE_INT:
+        return "int64";
+    case realm_value_type::RLM_TYPE_BOOL:
+        return "bool";
+    case realm_value_type::RLM_TYPE_STRING:
+        return "string";
+    case realm_value_type::RLM_TYPE_BINARY:
+        return "binary";
+    case realm_value_type::RLM_TYPE_TIMESTAMP:
+        return "date";
+    case realm_value_type::RLM_TYPE_FLOAT:
+        return "float";
+    case realm_value_type::RLM_TYPE_DOUBLE:
+        return "double";
+    case realm_value_type::RLM_TYPE_DECIMAL128:
+        return "decimal";
+    case realm_value_type::RLM_TYPE_OBJECT_ID:
+        return "objectId";
+    case realm_value_type::RLM_TYPE_LINK:
+        return "link";
+    case realm_value_type::RLM_TYPE_UUID:
+        return "uuid";
+    default:
+        REALM_UNREACHABLE();
+    }
+}
+
+static inline std::string to_string(PropertyType type)
+{
+    return to_string(to_capi(type));
+}
+
 static inline Mixed from_capi(realm_value_t val)
 {
     switch (val.type) {
-    case RLM_TYPE_NULL:
+    case realm_value_type::RLM_TYPE_NULL:
         return Mixed{};
-    case RLM_TYPE_INT:
+    case realm_value_type::RLM_TYPE_INT:
         return Mixed{ val.integer };
-    case RLM_TYPE_BOOL:
+    case realm_value_type::RLM_TYPE_BOOL:
         return Mixed{ val.boolean };
-    case RLM_TYPE_STRING:
+    case realm_value_type::RLM_TYPE_STRING:
         return Mixed{ from_capi(val.string) };
-    case RLM_TYPE_BINARY:
+    case realm_value_type::RLM_TYPE_BINARY:
         return Mixed{ from_capi(val.binary) };
-    case RLM_TYPE_TIMESTAMP:
+    case realm_value_type::RLM_TYPE_TIMESTAMP:
         return Mixed{ from_capi(val.timestamp) };
-    case RLM_TYPE_FLOAT:
+    case realm_value_type::RLM_TYPE_FLOAT:
         return Mixed{ val.fnum };
-    case RLM_TYPE_DOUBLE:
+    case realm_value_type::RLM_TYPE_DOUBLE:
         return Mixed{ val.dnum };
-    case RLM_TYPE_DECIMAL128:
+    case realm_value_type::RLM_TYPE_DECIMAL128:
         return Mixed{ from_capi(val.decimal128) };
-    case RLM_TYPE_OBJECT_ID:
+    case realm_value_type::RLM_TYPE_OBJECT_ID:
         return Mixed{ from_capi(val.object_id) };
-    case RLM_TYPE_LINK:
+    case realm_value_type::RLM_TYPE_LINK:
         return Mixed{ ObjLink{val.link.object->obj().get_table()->get_key(), val.link.object->obj().get_key()} };
     }
     REALM_TERMINATE("Invalid realm_value_t");
@@ -200,47 +271,47 @@ static inline realm_value_t to_capi(Mixed value)
 {
     realm_value_t val;
     if (value.is_null()) {
-        val.type = RLM_TYPE_NULL;
+        val.type = realm_value_type::RLM_TYPE_NULL;
     }
     else {
         switch (value.get_type()) {
         case type_Int: {
-            val.type = RLM_TYPE_INT;
+            val.type = realm_value_type::RLM_TYPE_INT;
             val.integer = value.get<int64_t>();
             break;
         }
         case type_Bool: {
-            val.type = RLM_TYPE_BOOL;
+            val.type = realm_value_type::RLM_TYPE_BOOL;
             val.boolean = value.get<bool>();
             break;
         }
         case type_String: {
-            val.type = RLM_TYPE_STRING;
+            val.type = realm_value_type::RLM_TYPE_STRING;
             val.string = to_capi(value.get<StringData>());
             break;
         }
         case type_Binary: {
-            val.type = RLM_TYPE_BINARY;
+            val.type = realm_value_type::RLM_TYPE_BINARY;
             val.binary = to_capi(value.get<BinaryData>());
             break;
         }
         case type_Timestamp: {
-            val.type = RLM_TYPE_TIMESTAMP;
+            val.type = realm_value_type::RLM_TYPE_TIMESTAMP;
             val.timestamp = to_capi(value.get<Timestamp>());
             break;
         }
         case type_Float: {
-            val.type = RLM_TYPE_FLOAT;
+            val.type = realm_value_type::RLM_TYPE_FLOAT;
             val.fnum = value.get<float>();
             break;
         }
         case type_Double: {
-            val.type = RLM_TYPE_DOUBLE;
+            val.type = realm_value_type::RLM_TYPE_DOUBLE;
             val.dnum = value.get<double>();
             break;
         }
         case type_Decimal: {
-            val.type = RLM_TYPE_DECIMAL128;
+            val.type = realm_value_type::RLM_TYPE_DECIMAL128;
             val.decimal128 = to_capi(value.get<Decimal128>());
             break;
         }
@@ -248,12 +319,12 @@ static inline realm_value_t to_capi(Mixed value)
             REALM_TERMINATE("Not implemented yet");
         }
         case type_ObjectId: {
-            val.type = RLM_TYPE_OBJECT_ID;
+            val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
             val.object_id = to_capi(value.get<ObjectId>());
             break;
         }
         case type_TypedLink: {
-            val.type = RLM_TYPE_LINK;
+            val.type = realm_value_type::RLM_TYPE_LINK;
             auto link = value.get<ObjLink>();
 
             REALM_TERMINATE("Implement me!!");

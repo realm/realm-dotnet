@@ -133,14 +133,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_primitive_unique", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_unique", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, PrimitiveValue value,
-                                                             [MarshalAs(UnmanagedType.U1)] bool update,
-                                                             [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_string_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
-                                                             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
                                                              [MarshalAs(UnmanagedType.U1)] bool update,
                                                              [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
 
@@ -380,38 +374,17 @@ namespace Realms
                 throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
             }
 
-            PrimitiveValue primitiveValue;
-
-            switch (pkProperty.Type)
+            RealmValue pkValue = pkProperty.Type.ToRealmValueType() switch
             {
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
-                    var stringKey = (string)primaryKey;
-                    var handle = NativeMethods.create_object_unique(this, table, stringKey, (IntPtr)(stringKey?.Length ?? 0), update, out isNew, out var nativeEx);
-                    nativeEx.ThrowIfNecessary();
-                    return new ObjectHandle(this, handle);
+                RealmValueType.String => (string)primaryKey,
+                RealmValueType.Int => primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey),
+                RealmValueType.ObjectId => (ObjectId?)primaryKey,
+                _ => throw new NotSupportedException($"Primary key of type {pkProperty.Type} is not supported"),
+            };
 
-                case PropertyType.Int:
-                    primitiveValue = PrimitiveValue.Int(Convert.ToInt64(primaryKey));
-                    break;
-
-                case PropertyType.NullableInt:
-                    primitiveValue = PrimitiveValue.NullableInt(primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey));
-                    break;
-
-                case PropertyType.ObjectId:
-                    primitiveValue = PrimitiveValue.ObjectId((ObjectId)primaryKey);
-                    break;
-
-                case PropertyType.NullableObjectId:
-                    primitiveValue = PrimitiveValue.NullableObjectId(primaryKey == null ? (ObjectId?)null : (ObjectId)primaryKey);
-                    break;
-
-                default:
-                    throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
-            }
-
+            var (primitiveValue, gcHandle) = pkValue.ToNative();
             var result = NativeMethods.create_object_unique(this, table, primitiveValue, update, out isNew, out var ex);
+            gcHandle?.Free();
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
         }

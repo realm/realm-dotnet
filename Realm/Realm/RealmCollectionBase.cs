@@ -171,7 +171,7 @@ namespace Realms
                         return Operator.Convert<RealmObject, T>((RealmObject)result);
 
                     default:
-                        return Handle.Value.GetPrimitiveAtIndex(index).Get<T>();
+                        return Handle.Value.GetValueAtIndex(index).As<T>();
                 }
             }
         }

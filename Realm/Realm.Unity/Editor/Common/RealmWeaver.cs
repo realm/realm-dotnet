@@ -61,34 +61,24 @@ namespace RealmWeaver
         internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
 
-        private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
+        private static readonly HashSet<string> _primitiveValueTypes = new HashSet<string>
         {
-            { StringTypeName, "String" },
-            { ByteArrayTypeName, "ByteArray" },
-        };
-
-        private static readonly Dictionary<string, string> _primitiveValueTypes = new Dictionary<string, string>
-        {
-            { CharTypeName, "Int" },
-            { SingleTypeName, "Float" },
-            { DoubleTypeName, "Double" },
-            { BooleanTypeName, "Bool" },
-            { DecimalTypeName, "Decimal" },
-            { Decimal128TypeName, "Decimal" },
-            { ObjectIdTypeName, "ObjectId" },
-            { DateTimeOffsetTypeName, "Date" },
-            { NullableCharTypeName, "NullableInt" },
-            { NullableSingleTypeName, "NullableFloat" },
-            { NullableDoubleTypeName, "NullableDouble" },
-            { NullableBooleanTypeName, "NullableBool" },
-            { NullableDateTimeOffsetTypeName, "NullableDate" },
-            { NullableDecimalTypeName, "NullableDecimal" },
-            { NullableDecimal128TypeName, "NullableDecimal" },
-            { NullableObjectIdTypeName, "NullableObjectId" },
-        };
-
-        private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
-        {
+            CharTypeName,
+            SingleTypeName,
+            DoubleTypeName,
+            BooleanTypeName,
+            DecimalTypeName,
+            Decimal128TypeName,
+            ObjectIdTypeName,
+            DateTimeOffsetTypeName,
+            NullableCharTypeName,
+            NullableSingleTypeName,
+            NullableDoubleTypeName,
+            NullableBooleanTypeName,
+            NullableDateTimeOffsetTypeName,
+            NullableDecimalTypeName,
+            NullableDecimal128TypeName,
+            NullableObjectIdTypeName,
             ByteTypeName,
             Int16TypeName,
             Int32TypeName,
@@ -104,7 +94,9 @@ namespace RealmWeaver
             $"System.Nullable`1<Realms.RealmInteger`1<{ByteTypeName}>>",
             $"System.Nullable`1<Realms.RealmInteger`1<{Int16TypeName}>>",
             $"System.Nullable`1<Realms.RealmInteger`1<{Int32TypeName}>>",
-            $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>"
+            $"System.Nullable`1<Realms.RealmInteger`1<{Int64TypeName}>>",
+            ByteArrayTypeName,
+            StringTypeName
         };
 
         private static readonly IEnumerable<string> _primaryKeyTypes = new[]
@@ -374,20 +366,7 @@ Analytics payload
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
-            if (_typeTable.ContainsKey(prop.PropertyType.FullName))
-            {
-                // If the property is automatic but doesn't have a setter, we should still ignore it.
-                if (prop.SetMethod == null)
-                {
-                    return WeavePropertyResult.Skipped();
-                }
-
-                var realmAccessors = GetAccessors(prop.PropertyType, isPrimaryKey, methodTable);
-
-                ReplaceGetter(prop, columnName, realmAccessors.Getter);
-                ReplaceSetter(prop, backingField, columnName, realmAccessors.Setter);
-            }
-            else if (_primitiveValueTypes.TryGetValue(prop.PropertyType.FullName, out var propertyType))
+            if (_primitiveValueTypes.Contains(prop.PropertyType.FullName))
             {
                 if (prop.SetMethod == null)
                 {
@@ -399,98 +378,19 @@ Analytics payload
 
                 if (!methodTable.TryGetValue(typeId, out var accessors))
                 {
-                    var getter = new GenericInstanceMethod(_references.RealmObject_GetPrimitiveValue) { GenericArguments = { prop.PropertyType } };
-                    var setter = new GenericInstanceMethod(isPrimaryKey ? _references.RealmObject_SetPrimitiveValueUnique : _references.RealmObject_SetPrimitiveValue)
-                    {
-                        GenericArguments = { prop.PropertyType }
-                    };
+                    var getter = _references.RealmObject_GetValue;
+                    var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
                     methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
                 }
 
-                var propertyTypeRef = _references.GetPropertyTypeField(propertyType);
-                ReplaceGetter(prop, columnName, accessors.Getter, propertyTypeRef);
-                ReplaceSetter(prop, backingField, columnName, accessors.Setter, propertyTypeRef);
-            }
-            else if (_realmIntegerBackedTypes.Contains(prop.PropertyType.FullName))
-            {
-                // If the property is automatic but doesn't have a setter, we should still ignore it.
-                if (prop.SetMethod == null)
-                {
-                    return WeavePropertyResult.Skipped();
-                }
-
-                if (!prop.PropertyType.IsRealmInteger(out var isNullable, out var integerType))
-                {
-                    isNullable = prop.PropertyType.IsNullable();
-                    if (isNullable)
-                    {
-                        var genericType = (GenericInstanceType)prop.PropertyType;
-                        integerType = genericType.GenericArguments.Single();
-                    }
-                    else
-                    {
-                        integerType = prop.PropertyType;
-                    }
-                }
-
-                var prefix = isNullable ? "Nullable" : string.Empty;
-                var suffix = isPrimaryKey ? "Unique" : string.Empty;
-
-                var typeId = $"{prefix}{integerType.FullName}{suffix}";
-                if (!methodTable.TryGetValue(typeId, out var accessors))
-                {
-                    var genericGetter = new MethodReference($"Get{prefix}RealmIntegerValue", _moduleDefinition.TypeSystem.Void, _references.RealmObjectBase)
-                    {
-                        HasThis = true,
-                        Parameters = { new ParameterDefinition(_moduleDefinition.TypeSystem.String) }
-                    };
-
-                    var getterGenericParameter = _references.GetRealmIntegerGenericParameter(genericGetter);
-                    genericGetter.GenericParameters.Add(getterGenericParameter);
-
-                    var returnType = _references.RealmIntegerOfT.MakeGenericInstanceType(getterGenericParameter);
-                    if (isNullable)
-                    {
-                        returnType = _references.System_NullableOfT.MakeGenericInstanceType(returnType);
-                    }
-
-                    genericGetter.ReturnType = returnType;
-
-                    var genericSetter = new MethodReference($"Set{prefix}RealmIntegerValue{suffix}", _moduleDefinition.TypeSystem.Void, _references.RealmObjectBase)
-                    {
-                        HasThis = true,
-                        Parameters =
-                    {
-                        new ParameterDefinition(_moduleDefinition.TypeSystem.String),
-                    }
-                    };
-
-                    var setterGenericParameter = _references.GetRealmIntegerGenericParameter(genericSetter);
-                    genericSetter.GenericParameters.Add(setterGenericParameter);
-
-                    var parameterType = _references.RealmIntegerOfT.MakeGenericInstanceType(setterGenericParameter);
-                    if (isNullable)
-                    {
-                        parameterType = _references.System_NullableOfT.MakeGenericInstanceType(parameterType);
-                    }
-
-                    genericSetter.Parameters.Add(new ParameterDefinition(parameterType));
-
-                    var getter = new GenericInstanceMethod(genericGetter) { GenericArguments = { integerType } };
-                    var setter = new GenericInstanceMethod(genericSetter) { GenericArguments = { integerType } };
-                    methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
-                }
-
-                ReplaceRealmIntegerGetter(prop, columnName, accessors.Getter, isNullable, integerType);
-                ReplaceRealmIntegerSetter(prop, backingField, columnName, accessors.Setter, isNullable, integerType);
+                ReplaceGetter(prop, columnName, accessors.Getter, implicitConvert: true);
+                ReplaceSetter(prop, backingField, columnName, accessors.Setter, implicitConvert: true);
             }
             else if (prop.IsCollection(out var collectionType))
             {
                 var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
                 if (!elementType.Resolve().IsValidRealmObjectBaseInheritor(_references) &&
-                    !_realmIntegerBackedTypes.Contains(elementType.FullName) &&
-                    !_typeTable.ContainsKey(elementType.FullName) &&
-                    !_primitiveValueTypes.ContainsKey(elementType.FullName))
+                    !_primitiveValueTypes.Contains(elementType.FullName))
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                 }
@@ -601,40 +501,7 @@ Analytics payload
             return WeavePropertyResult.Success(prop, backingField, isPrimaryKey, isIndexed);
         }
 
-        private Accessors GetAccessors(TypeReference backingType, bool isPrimaryKey, IDictionary<string, Accessors> methodTable)
-        {
-            var typeId = backingType.FullName + (isPrimaryKey ? " unique" : string.Empty);
-
-            if (!_typeTable.TryGetValue(backingType.FullName, out var typeName))
-            {
-                throw new NotSupportedException($"Unable to find {backingType.FullName} in _typeTable. Please report that to help@realm.io");
-            }
-
-            if (!methodTable.TryGetValue(typeId, out var realmAccessors))
-            {
-                var getter = new MethodReference($"Get{typeName}Value", backingType, _references.RealmObjectBase)
-                {
-                    HasThis = true,
-                    Parameters = { new ParameterDefinition(_moduleDefinition.TypeSystem.String) },
-                };
-
-                var setter = new MethodReference($"Set{typeName}Value" + (isPrimaryKey ? "Unique" : string.Empty), _moduleDefinition.TypeSystem.Void, _references.RealmObjectBase)
-                {
-                    HasThis = true,
-                    Parameters =
-                {
-                    new ParameterDefinition(_moduleDefinition.TypeSystem.String),
-                    new ParameterDefinition(backingType)
-                }
-                };
-
-                methodTable[typeId] = realmAccessors = new Accessors { Getter = getter, Setter = setter };
-            }
-
-            return realmAccessors;
-        }
-
-        private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, FieldReference propertyTypeRef = null)
+        private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, bool implicitConvert = false)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -663,78 +530,18 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
             il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
-            if (propertyTypeRef != null)
-            {
-                il.InsertBefore(start, il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
-            }
 
             il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
-            il.InsertBefore(start, il.Create(OpCodes.Ret));
-        }
 
-        private void ReplaceRealmIntegerGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, bool isNullable, TypeReference integerType)
-        {
-            var start = prop.GetMethod.Body.Instructions.First();
-            var il = prop.GetMethod.Body.GetILProcessor();
-
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
-            il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
-            il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
-
-            if (!prop.PropertyType.IsRealmInteger(out _, out _))
+            if (implicitConvert)
             {
-                var convert = _references.RealmIntegerOfT_ConvertToT.MakeHostInstanceGeneric(integerType);
-                if (isNullable)
+                var convertMethod = new MethodReference("op_Implicit", prop.PropertyType, _references.RealmValue)
                 {
-                    var nullableRealmIntegerType = new GenericInstanceType(_references.System_NullableOfT)
-                    {
-                        GenericArguments =
-                    {
-                        new GenericInstanceType(_references.RealmIntegerOfT)
-                        {
-                            GenericArguments = { integerType }
-                        }
-                    }
-                    };
+                    Parameters = { new ParameterDefinition(_references.RealmValue) },
+                    HasThis = false
+                };
 
-                    var localRealmIntegerVariable = new VariableDefinition(nullableRealmIntegerType);
-                    prop.GetMethod.Body.Variables.Add(localRealmIntegerVariable);
-
-                    var localIntegerVariable = new VariableDefinition(prop.PropertyType);
-                    prop.GetMethod.Body.Variables.Add(localIntegerVariable);
-
-                    il.InsertBefore(start, il.Create(OpCodes.Stloc_0));
-                    il.InsertBefore(start, il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable));
-
-                    var hasValue = new MethodReference("get_HasValue", _moduleDefinition.TypeSystem.Boolean, nullableRealmIntegerType) { HasThis = true };
-                    il.InsertBefore(start, il.Create(OpCodes.Call, hasValue));
-
-                    var hasValueBranch = il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable);
-
-                    il.InsertBefore(start, il.Create(OpCodes.Brtrue_S, hasValueBranch));
-                    il.InsertBefore(start, il.Create(OpCodes.Ldloca_S, localIntegerVariable));
-                    il.InsertBefore(start, il.Create(OpCodes.Initobj, prop.PropertyType));
-                    il.InsertBefore(start, il.Create(OpCodes.Ldloc_1));
-                    il.InsertBefore(start, il.Create(OpCodes.Ret));
-
-                    il.InsertBefore(start, hasValueBranch);
-
-                    var concreteRealmIntegerType = _references.RealmIntegerOfT.MakeGenericInstanceType(integerType);
-                    var getValueOrDefault = _references.System_NullableOfT_GetValueOrDefault.MakeHostInstanceGeneric(concreteRealmIntegerType);
-                    il.InsertBefore(start, il.Create(OpCodes.Call, getValueOrDefault));
-                    il.InsertBefore(start, il.Create(OpCodes.Call, convert));
-
-                    var ctor = _references.System_NullableOfT_Ctor.MakeHostInstanceGeneric(integerType);
-                    il.InsertBefore(start, il.Create(OpCodes.Newobj, ctor));
-                }
-                else
-                {
-                    il.InsertBefore(start, il.Create(OpCodes.Call, convert));
-                }
+                il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
             }
 
             il.InsertBefore(start, il.Create(OpCodes.Ret));
@@ -902,7 +709,7 @@ Analytics payload
             // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
-        private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, FieldReference propertyTypeRef = null)
+        private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool implicitConvert = false)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0
@@ -964,93 +771,18 @@ Analytics payload
             il.Append(managedSetStart);
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
-            if (propertyTypeRef != null)
+            if (implicitConvert)
             {
-                il.Append(il.Create(OpCodes.Ldc_I4, (ushort)propertyTypeRef.Resolve().Constant));
+                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(prop.PropertyType) },
+                    HasThis = false
+                };
+
+                il.Append(il.Create(OpCodes.Call, convertMethod));
             }
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
-            il.Append(il.Create(OpCodes.Ret));
-        }
-
-        private void ReplaceRealmIntegerSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool isNullable, TypeReference integerType)
-        {
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
-            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
-            var il = prop.SetMethod.Body.GetILProcessor();
-            prop.SetMethod.Body.Instructions.Clear();
-            prop.SetMethod.Body.Variables.Clear();
-
-            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in.
-            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
-            // the property such that PropertyChanged.Fody won't touch it.
-            if (_references.PropertyChanged_DoNotNotifyAttribute_Constructor != null)
-            {
-                prop.CustomAttributes.Add(new CustomAttribute(_references.PropertyChanged_DoNotNotifyAttribute_Constructor));
-            }
-
-            var managedSetStart = il.Create(OpCodes.Ldarg_0);
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));
-            il.Append(il.Create(OpCodes.Brtrue_S, managedSetStart));
-
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Stfld, backingField));
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldstr, prop.Name));
-            il.Append(il.Create(OpCodes.Call, _references.RealmObject_RaisePropertyChanged));
-            il.Append(il.Create(OpCodes.Ret));
-
-            il.Append(managedSetStart);
-            il.Append(il.Create(OpCodes.Ldstr, columnName));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-
-            var callSetter = il.Create(OpCodes.Call, setValueReference);
-            il.Append(callSetter);
-
-            if (!prop.PropertyType.IsRealmInteger(out _, out _))
-            {
-                var convert = _references.RealmIntegerOfT_ConvertFromT.MakeHostInstanceGeneric(integerType);
-                if (isNullable)
-                {
-                    var realmIntegerType = _references.RealmIntegerOfT.MakeGenericInstanceType(integerType);
-                    var nullableRealmIntegerType = _references.System_NullableOfT.MakeGenericInstanceType(realmIntegerType);
-
-                    var localIntegerVariable = new VariableDefinition(prop.PropertyType);
-                    prop.SetMethod.Body.Variables.Add(localIntegerVariable);
-
-                    var localRealmIntegerVariable = new VariableDefinition(nullableRealmIntegerType);
-                    prop.SetMethod.Body.Variables.Add(localRealmIntegerVariable);
-
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Stloc_0));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Ldloca_S, localIntegerVariable));
-
-                    var hasValue = new MethodReference("get_HasValue", _moduleDefinition.TypeSystem.Boolean, prop.PropertyType) { HasThis = true };
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Call, hasValue));
-
-                    var hasValueBranch = il.Create(OpCodes.Ldloca_S, localIntegerVariable);
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Brtrue_S, hasValueBranch));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Ldloca_S, localRealmIntegerVariable));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Initobj, nullableRealmIntegerType));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Ldloc_1));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Br_S, callSetter));
-
-                    il.InsertBefore(callSetter, hasValueBranch);
-                    var getValueOrDefault = _references.System_NullableOfT_GetValueOrDefault.MakeHostInstanceGeneric(integerType);
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Call, getValueOrDefault));
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Call, convert));
-
-                    var nullableRealmIntegerCtor = _references.System_NullableOfT_Ctor.MakeHostInstanceGeneric(realmIntegerType);
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Newobj, nullableRealmIntegerCtor));
-                }
-                else
-                {
-                    il.InsertBefore(callSetter, il.Create(OpCodes.Call, convert));
-                }
-            }
-
             il.Append(il.Create(OpCodes.Ret));
         }
 

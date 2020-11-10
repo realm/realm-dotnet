@@ -24,7 +24,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
-using Realms.Native;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
@@ -632,35 +631,12 @@ namespace Realms
                 case string stringValue:
                     queryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
                     break;
-                case bool boolValue:
-                    queryHandle.PrimitiveEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Bool(boolValue));
-                    break;
-                case DateTimeOffset dateValue:
-                    queryHandle.PrimitiveEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(dateValue));
-                    break;
-                case byte[] buffer:
-                    if (buffer.Length == 0)
-                    {
-                        // see RealmObjectBase.SetByteArrayValue
-                        queryHandle.BinaryEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)0x1, IntPtr.Zero);
-                        return;
-                    }
-
-                    unsafe
-                    {
-                        fixed (byte* bufferPtr = (byte[])value)
-                        {
-                            queryHandle.BinaryEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
-                        }
-                    }
-
-                    break;
                 case RealmObjectBase obj:
                     queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueEqual);
                     break;
             }
         }
@@ -676,36 +652,13 @@ namespace Realms
                 case string stringValue:
                     queryHandle.StringNotEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
                     break;
-                case bool boolValue:
-                    queryHandle.PrimitiveNotEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Bool(boolValue));
-                    break;
-                case DateTimeOffset date:
-                    queryHandle.PrimitiveNotEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
-                    break;
-                case byte[] buffer:
-                    if (buffer.Length == 0)
-                    {
-                        // see RealmObjectBase.SetByteArrayValue
-                        queryHandle.BinaryNotEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)0x1, IntPtr.Zero);
-                        return;
-                    }
-
-                    unsafe
-                    {
-                        fixed (byte* bufferPtr = (byte[])value)
-                        {
-                            queryHandle.BinaryNotEqual(_realm.SharedRealmHandle, propertyIndex, (IntPtr)bufferPtr, (IntPtr)buffer.Length);
-                        }
-                    }
-
-                    break;
                 case RealmObjectBase obj:
                     queryHandle.Not();
                     queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveNotEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueNotEqual);
                     break;
             }
         }
@@ -715,15 +668,12 @@ namespace Realms
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
-                case DateTimeOffset date:
-                    queryHandle.PrimitiveLess(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
-                    break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveLess);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueLess);
                     break;
             }
         }
@@ -733,15 +683,12 @@ namespace Realms
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
-                case DateTimeOffset date:
-                    queryHandle.PrimitiveLessEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
-                    break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveLessEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueLessEqual);
                     break;
             }
         }
@@ -751,15 +698,12 @@ namespace Realms
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
-                case DateTimeOffset date:
-                    queryHandle.PrimitiveGreater(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
-                    break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveGreater);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueGreater);
                     break;
             }
         }
@@ -769,20 +713,17 @@ namespace Realms
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
             {
-                case DateTimeOffset date:
-                    queryHandle.PrimitiveGreaterEqual(_realm.SharedRealmHandle, propertyIndex, PrimitiveValue.Date(date));
-                    break;
                 case string _:
                 case bool _:
                     throw new Exception($"Unsupported type {value.GetType().Name}");
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
-                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.PrimitiveGreaterEqual);
+                    AddQueryForConvertibleTypes(_realm.SharedRealmHandle, propertyIndex, value, columnType, queryHandle.ValueGreaterEqual);
                     break;
             }
         }
 
-        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, Action<SharedRealmHandle, IntPtr, PrimitiveValue> action)
+        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, Action<SharedRealmHandle, IntPtr, RealmValue> action)
         {
             if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
@@ -799,15 +740,15 @@ namespace Realms
                 columnType == typeof(RealmInteger<int>) ||
                 columnType == typeof(RealmInteger<long>))
             {
-                action(realm, propertyIndex, PrimitiveValue.Int((long)Convert.ChangeType(value, typeof(long))));
+                action(realm, propertyIndex, (long)Convert.ChangeType(value, typeof(long)));
             }
             else if (columnType == typeof(float))
             {
-                action(realm, propertyIndex, PrimitiveValue.Float((float)Convert.ChangeType(value, typeof(float))));
+                action(realm, propertyIndex, (float)Convert.ChangeType(value, typeof(float)));
             }
             else if (columnType == typeof(double))
             {
-                action(realm, propertyIndex, PrimitiveValue.Double((double)Convert.ChangeType(value, typeof(double))));
+                action(realm, propertyIndex, (double)Convert.ChangeType(value, typeof(double)));
             }
             else if (columnType == typeof(Decimal128))
             {
@@ -817,15 +758,27 @@ namespace Realms
                     decimalValue = (Decimal128)Convert.ChangeType(value, typeof(Decimal128));
                 }
 
-                action(realm, propertyIndex, PrimitiveValue.Decimal(decimalValue));
+                action(realm, propertyIndex, decimalValue);
             }
             else if (columnType == typeof(decimal))
             {
-                action(realm, propertyIndex, PrimitiveValue.Decimal((decimal)Convert.ChangeType(value, typeof(decimal))));
+                action(realm, propertyIndex, (decimal)Convert.ChangeType(value, typeof(decimal)));
             }
             else if (columnType == typeof(ObjectId))
             {
-                action(realm, propertyIndex, PrimitiveValue.ObjectId((ObjectId)Convert.ChangeType(value, typeof(ObjectId))));
+                action(realm, propertyIndex, (ObjectId)Convert.ChangeType(value, typeof(ObjectId)));
+            }
+            else if (columnType == typeof(byte[]))
+            {
+                action(realm, propertyIndex, (byte[])value);
+            }
+            else if (columnType == typeof(bool))
+            {
+                action(realm, propertyIndex, (bool)value);
+            }
+            else if (columnType == typeof(DateTimeOffset))
+            {
+                action(realm, propertyIndex, (DateTimeOffset)value);
             }
             else
             {

@@ -24,7 +24,6 @@ using System.Linq.Expressions;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 
 namespace Realms
 {
@@ -50,20 +49,10 @@ namespace Realms
                     _remove = GetObjectExecutor(_setHandle.Remove);
                     _contains = GetObjectExecutor(_setHandle.Contains);
                     break;
-                case RealmValueType.String:
-                    _add = (item) => _setHandle.Add(Operator.Convert<T, string>(item));
-                    _remove = (item) => _setHandle.Remove(Operator.Convert<T, string>(item));
-                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, string>(item));
-                    break;
-                case RealmValueType.Data:
-                    _add = (item) => _setHandle.Add(Operator.Convert<T, byte[]>(item));
-                    _remove = (item) => _setHandle.Remove(Operator.Convert<T, byte[]>(item));
-                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, byte[]>(item));
-                    break;
                 default:
-                    _add = (item) => _setHandle.Add(PrimitiveValue.Create(item, _argumentType));
-                    _remove = (item) => _setHandle.Remove(PrimitiveValue.Create(item, _argumentType));
-                    _contains = (item) => _setHandle.Contains(PrimitiveValue.Create(item, _argumentType));
+                    _add = (item) => _setHandle.Add(Operator.Convert<T, RealmValue>(item));
+                    _remove = (item) => _setHandle.Remove(Operator.Convert<T, RealmValue>(item));
+                    _contains = (item) => _setHandle.Contains(Operator.Convert<T, RealmValue>(item));
                     break;
             }
         }

@@ -109,10 +109,26 @@ extern "C" {
         handle_errors(ex, [&]() {
             verify_can_set(object);
 
-            auto column_key = get_column_key(object, property_ndx);
+            auto prop = get_property(object, property_ndx);
+
+            if (value.is_null() && !is_nullable(prop.type)) {
+                auto schema = object.get_object_schema();
+                throw NotNullableException(schema.name, prop.name);
+            }
+
+            // TODO: replace prop.column_key().get_type() with prop.type
+            if (!value.is_null() && to_capi(prop.type) != value.type &&
+                prop.column_key.get_type() != col_type_Mixed) {
+                auto schema = object.get_object_schema();
+                throw PropertyTypeMismatchException(
+                    schema.name,
+                    schema.persisted_properties[property_ndx].name,
+                    to_string(prop.type),
+                    to_string(value.type));
+            }
 
             auto val = from_capi(value);
-            object.obj().set_any(std::move(column_key), val);
+            object.obj().set_any(prop.column_key, val);
         });
     }
 
@@ -183,17 +199,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_string(Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-    {
-        Utf16StringAccessor str(value, value_len);
-        return object_set<StringData>(object, property_ndx, str, ex);
-    }
-
-    REALM_EXPORT void object_set_binary(Object& object, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
-    {
-        return object_set<BinaryData>(object, property_ndx, BinaryData(value, value_len), ex);
-    }
-
     REALM_EXPORT void object_remove(Object& object, SharedRealm& realm, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
@@ -242,12 +247,13 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_add_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT int64_t object_add_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
 
-            object.obj().add_int(get_column_key(object, property_ndx), value);
+            auto col_key = get_column_key(object, property_ndx);
+            return object.obj().add_int(col_key, value).get<int64_t>(col_key);
         });
     }
 

@@ -23,7 +23,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
 using Realms.Exceptions;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms.Dynamic
@@ -47,8 +46,8 @@ namespace Realms.Dynamic
         private static readonly MethodInfo RealmObjectGetBacklinksForHandle_EmbeddedObject = typeof(DynamicRealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                               .MakeGenericMethod(typeof(DynamicEmbeddedObject));
 
-        private static readonly MethodInfo PrimitiveValueGetMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Get), BindingFlags.Public | BindingFlags.Instance);
-        private static readonly MethodInfo CreatePrimitiveMethod = typeof(PrimitiveValue).GetMethod(nameof(PrimitiveValue.Create), BindingFlags.Public | BindingFlags.Static);
+        private static readonly MethodInfo RealmValueGetMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.As), BindingFlags.Public | BindingFlags.Instance);
+        private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create), BindingFlags.Public | BindingFlags.Static);
 
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
@@ -166,7 +165,7 @@ namespace Realms.Dynamic
                     case PropertyType.ObjectId:
                     case PropertyType.String:
                     case PropertyType.Data:
-                        getter = GetGetMethod(DummyHandle.GetPrimitive);
+                        getter = GetGetMethod(DummyHandle.GetValue);
                         break;
                     case PropertyType.Object:
                         arguments.Insert(0, Expression.Field(self, RealmObjectRealmField));
@@ -192,9 +191,9 @@ namespace Realms.Dynamic
                 }
             }
 
-            if (expression.Type == typeof(PrimitiveValue))
+            if (expression.Type == typeof(RealmValue))
             {
-                expression = Expression.Call(expression, PrimitiveValueGetMethod.MakeGenericMethod(property.PropertyInfo?.PropertyType ?? property.Type.ToType()));
+                expression = Expression.Call(expression, RealmValueGetMethod.MakeGenericMethod(property.PropertyInfo?.PropertyType ?? property.Type.ToType()));
             }
 
             if (binder.ReturnType != expression.Type)
@@ -232,33 +231,19 @@ namespace Realms.Dynamic
                 case RealmValueType.Date:
                 case RealmValueType.Decimal128:
                 case RealmValueType.ObjectId:
-                    argumentType = typeof(PrimitiveValue);
-                    valueExpression = Expression.Call(CreatePrimitiveMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type.ToRealmValueType()) });
-                    if (property.IsPrimaryKey)
-                    {
-                        setter = GetSetMethod<PrimitiveValue>(DummyHandle.SetPrimitiveUnique);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<PrimitiveValue>(DummyHandle.SetPrimitive);
-                    }
-
-                    break;
-                case RealmValueType.String:
-                    argumentType = typeof(string);
-                    if (property.IsPrimaryKey)
-                    {
-                        setter = GetSetMethod<string>(DummyHandle.SetStringUnique);
-                    }
-                    else
-                    {
-                        setter = GetSetMethod<string>(DummyHandle.SetString);
-                    }
-
-                    break;
                 case RealmValueType.Data:
-                    argumentType = typeof(byte[]);
-                    setter = GetSetMethod<byte[]>(DummyHandle.SetByteArray);
+                case RealmValueType.String:
+                    argumentType = typeof(RealmValue);
+                    valueExpression = Expression.Call(CreateRealmValueMethod.MakeGenericMethod(valueExpression.Type), new[] { valueExpression, Expression.Constant(property.Type.ToRealmValueType()) });
+                    if (property.IsPrimaryKey)
+                    {
+                        setter = GetSetMethod<RealmValue>(DummyHandle.SetValueUnique);
+                    }
+                    else
+                    {
+                        setter = GetSetMethod<RealmValue>(DummyHandle.SetValue);
+                    }
+
                     break;
                 case RealmValueType.Object:
                     argumentType = typeof(RealmObjectBase);
@@ -323,9 +308,8 @@ namespace Realms.Dynamic
         }
 
         // GetString(propertyIndex)
-        // GetByteArray(propertyIndex)
         // GetBacklinks(propertyIndex)
-        // GetPrimitive(propertyIndex)
+        // GetValue(propertyIndex)
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
         // GetList(realm, propertyIndex, objectType)

@@ -347,48 +347,6 @@ REALM_EXPORT void shared_realm_write_copy(SharedRealm* realm, uint16_t* path, si
     });
 }
 
-}
-
-inline const ObjectSchema& find_schema(const SharedRealm& realm, ConstTableRef& table)
-{
-    realm->read_group();
-    const StringData object_name(ObjectStore::object_type_for_table_name(table->get_name()));
-    return *realm->schema().find(object_name);
-}
-
-namespace realm
-{
-
-template<class KeyType>
-Object* create_object_unique(const SharedRealm& realm, TableRef& table, const KeyType& key, bool try_update, bool& is_new)
-{
-    realm->verify_in_write();
-    const ObjectSchema& object_schema(find_schema(realm, table));
-
-    const Property& primary_key_property = *object_schema.primary_key_property();
-
-    ObjKey obj_key = table->find_first(primary_key_property.column_key, key);
-    Obj obj;
-
-    if (!obj_key) {
-        is_new = true;
-        obj = table->create_object_with_primary_key(key);
-    } else if (!try_update) {
-        std::ostringstream string_builder;
-        string_builder << key;
-        throw SetDuplicatePrimaryKeyValueException(object_schema.name,
-                                                   primary_key_property.name,
-                                                   string_builder.str());
-    } else {
-        obj = table->get_object(obj_key);
-        is_new = false;
-    }
-
-    return new Object(realm, object_schema, obj);
-}
-
-extern "C" {
-
 REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& table, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -398,13 +356,23 @@ REALM_EXPORT Object* shared_realm_create_object(SharedRealm& realm, TableRef& ta
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRealm& realm, TableRef& table, realm_value_t primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
+REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm, TableRef& table, realm_value_t primitive, bool try_update, bool& is_new, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         realm->verify_in_write();
-        const ObjectSchema& object_schema(find_schema(realm, table));
+        realm->read_group();
+        const StringData object_name(ObjectStore::object_type_for_table_name(table->get_name()));
+        const ObjectSchema& object_schema = *realm->schema().find(object_name);
 
         const Property& primary_key_property = *object_schema.primary_key_property();
+
+        if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
+            throw NotNullableException(object_schema.name, primary_key_property.name);
+        }
+
+        if (!primitive.is_null() && to_capi(primary_key_property.type) != primitive.type) {
+            throw PropertyTypeMismatchException(object_schema.name, primary_key_property.name, to_string(primary_key_property.type), to_string(primitive.type));
+        }
 
         auto val = from_capi(primitive);
         auto obj_key = table->find_first(primary_key_property.column_key, val);
@@ -430,17 +398,6 @@ REALM_EXPORT Object* shared_realm_create_object_primitive_unique(const SharedRea
     });
 }
 
-REALM_EXPORT Object* shared_realm_create_object_string_unique(const SharedRealm& realm, TableRef& table, uint16_t* key_buf, size_t key_len, bool try_update, bool& is_new, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (key_buf == nullptr) {
-            return create_object_unique(realm, table, StringData(), try_update, is_new);
-        }
-
-        Utf16StringAccessor key(key_buf, key_len);
-        return create_object_unique(realm, table, StringData(key), try_update, is_new);
-    });
-}
 
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
@@ -480,5 +437,4 @@ REALM_EXPORT SharedRealm* shared_realm_freeze(const SharedRealm& realm, NativeEx
     });
 }
 
-}
 }

@@ -1098,7 +1098,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, PrimitiveValue.NullableInt(primaryKey), out var objectHandle))
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
             }
@@ -1146,7 +1146,7 @@ namespace Realms
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, PrimitiveValue.NullableObjectId(primaryKey), out var objectHandle))
+            if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
             }
@@ -1677,7 +1677,7 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, PrimitiveValue.NullableInt(primaryKey), out var objectHandle))
+                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
                 {
                     return (RealmObject)_realm.MakeObject(metadata, objectHandle);
                 }
@@ -1725,7 +1725,7 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, PrimitiveValue.NullableObjectId(primaryKey), out var objectHandle))
+                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
                 {
                     return (RealmObject)_realm.MakeObject(metadata, objectHandle);
                 }

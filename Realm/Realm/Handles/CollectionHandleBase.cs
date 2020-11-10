@@ -45,12 +45,12 @@ namespace Realms
 
         protected abstract IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException);
 
-        public PrimitiveValue GetPrimitiveAtIndex(int index)
+        public RealmValue GetValueAtIndex(int index)
         {
             GetPrimitiveAtIndexCore((IntPtr)index, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return result;
+            return new RealmValue(result);
         }
 
         protected abstract void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException);

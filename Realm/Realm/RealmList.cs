@@ -27,7 +27,6 @@ using System.Runtime.CompilerServices;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 
 namespace Realms
 {
@@ -74,23 +73,11 @@ namespace Realms
                     };
 
                     break;
-                case RealmValueType.String:
-                    _add = (item) => _listHandle.Add(Operator.Convert<T, string>(item));
-                    _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, string>(item));
-                    _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, string>(item));
-                    _indexOf = (value) => _listHandle.Find(Operator.Convert<T, string>(value));
-                    break;
-                case RealmValueType.Data:
-                    _add = (item) => _listHandle.Add(Operator.Convert<T, byte[]>(item));
-                    _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, byte[]>(item));
-                    _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, byte[]>(item));
-                    _indexOf = (value) => _listHandle.Find(Operator.Convert<T, byte[]>(value));
-                    break;
                 default:
-                    _add = (item) => _listHandle.Add(PrimitiveValue.Create(item, _argumentType));
-                    _set = (index, item) => _listHandle.Set(index, PrimitiveValue.Create(item, _argumentType));
-                    _insert = (index, item) => _listHandle.Insert(index, PrimitiveValue.Create(item, _argumentType));
-                    _indexOf = (value) => _listHandle.Find(PrimitiveValue.Create(value, _argumentType));
+                    _add = (item) => _listHandle.Add(Operator.Convert<T, RealmValue>(item));
+                    _set = (index, item) => _listHandle.Set(index, Operator.Convert<T, RealmValue>(item));
+                    _insert = (index, item) => _listHandle.Insert(index, Operator.Convert<T, RealmValue>(item));
+                    _indexOf = (value) => _listHandle.Find(Operator.Convert<T, RealmValue>(value));
                     break;
             }
         }

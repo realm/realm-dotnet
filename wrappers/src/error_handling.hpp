@@ -67,7 +67,8 @@ public:
 
 class SetDuplicatePrimaryKeyValueException : public std::runtime_error {
 public:
-    SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value);
+    SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value)
+        : std::runtime_error(util::format("A %1 object already exists with primary key property %2 == '%3'", object_type, property, value)) {}
 };
 
 class InvalidSchemaException : public std::runtime_error {
@@ -79,7 +80,24 @@ class ObjectManagedByAnotherRealmException : public std::runtime_error {
 public:
     ObjectManagedByAnotherRealmException(std::string message) : std::runtime_error(message) {}
 };
-    
+
+class NotNullableException : public std::runtime_error {
+public:
+    NotNullableException(std::string object_type, std::string property)
+        : std::runtime_error(util::format("Attempted to set %1.%2 to null, but it is defined as required.", object_type, property)) {}
+
+    NotNullableException() : std::runtime_error("Attempted to add null to a list of required values") {}
+};
+
+class PropertyTypeMismatchException : public std::runtime_error {
+public:
+    PropertyTypeMismatchException(std::string object_type, std::string property, std::string property_type, std::string actual_type)
+        : std::runtime_error(util::format("Property type mismatch: %1.%2 is of type %3, but the value is of type %4")) {}
+
+    PropertyTypeMismatchException(std::string property_type, std::string actual_type) 
+        : std::runtime_error(util::format("List type mismatch: attempted to add a value of type '%1' to a list that expects '%2'", actual_type, property_type)) {}
+};
+
 REALM_EXPORT NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);

@@ -86,7 +86,7 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected T GetPrimitiveValue<T>(string propertyName, PropertyType propertyType)
+        protected T GetPrimitiveValue<T>(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
             return default(T);
@@ -156,30 +156,6 @@ namespace Realms
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected void SetRealmIntegerValue<T>(string propertyName, RealmInteger<T> value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableRealmIntegerValue<T>(string propertyName, RealmInteger<T>? value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T> value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetNullableRealmIntegerValueUnique<T>(string propertyName, RealmInteger<T>? value)
-            where T : struct, IComparable<T>, IFormattable
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)

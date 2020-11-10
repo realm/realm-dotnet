@@ -95,9 +95,8 @@ namespace Realms
         {
             if (IsManaged)
             {
-                _objectHandle.AddInt64(_propertyIndex, value.ToLong());
-                var result = _objectHandle.GetPrimitive(_propertyIndex).AsIntegral<T>();
-                return new RealmInteger<T>(result, _objectHandle, _propertyIndex);
+                var result = _objectHandle.AddInt64(_propertyIndex, value.ToLong());
+                return new RealmInteger<T>(Operator.Convert<long, T>(result), _objectHandle, _propertyIndex);
             }
 
             throw new NotSupportedException("Increment should only be called on RealmInteger properties of managed objects.");
