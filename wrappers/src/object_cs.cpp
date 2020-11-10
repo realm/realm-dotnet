@@ -191,7 +191,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_primitive(const Object& object, size_t property_ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_primitive(const Object& object, size_t property_ndx, PrimitiveValue value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);

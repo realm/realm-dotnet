@@ -45,10 +45,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_primitive", CallingConvention = CallingConvention.Cdecl)]
             public static extern void get_primitive(ObjectHandle handle, IntPtr propertyIndex, ref PrimitiveValue value, out NativeException ex);
 
-            // value is IntPtr rather than PrimitiveValue due to a bug in .NET Core on Linux and Mac
-            // that causes incorrect marshalling of the struct.
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_primitive(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
+            public static extern void set_primitive(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
@@ -190,8 +188,7 @@ namespace Realms
 
         public unsafe void SetPrimitive(IntPtr propertyIndex, PrimitiveValue value)
         {
-            PrimitiveValue* valuePtr = &value;
-            NativeMethods.set_primitive(this, propertyIndex, new IntPtr(valuePtr), out var nativeException);
+            NativeMethods.set_primitive(this, propertyIndex, value, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

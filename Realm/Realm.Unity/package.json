@@ -1,0 +1,21 @@
+{
+    "name": "realm.unity",
+    "version": "10.1.0",
+    "displayName": "Realm",
+    "description": "Realm is a mobile database: a replacement for SQLite",
+    "unity": "2019.1",
+    "unityRelease": "0b5",
+    "dependencies": {
+    },
+    "keywords": [
+      "database",
+      "persistence",
+      "sqlite",
+      "mongodb"
+    ],
+    "author": {
+      "name": "Realm",
+      "email": "help@realm.io",
+      "url": "https://realm.io"
+    }
+  }

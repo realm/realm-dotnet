@@ -17,8 +17,6 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
 build/
 bld/
 [Bb]in/
@@ -44,7 +42,6 @@ artifacts/
 *_p.c
 *_i.h
 *.ilk
-*.meta
 *.obj
 *.pch
 *.pdb
@@ -191,3 +188,10 @@ NDependOut
 Resource.designer.cs
 FodyWeavers.xsd
 .vscode
+Realm/Realm.Unity/Runtime/**/*.dll
+Realm/Realm.Unity/Runtime/**/*.so
+Realm/Realm.Unity/Runtime/**/*.dylib
+Realm/Realm.Unity/Runtime/**/*.dll.config
+Realm/Realm.Unity/Runtime/**/*.framework/*
+Realm/Realm.Unity/Runtime/Dependencies/*.meta
+Realm/Realm.Unity/Runtime/Dependencies.meta

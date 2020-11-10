@@ -23,6 +23,8 @@ using Mono.Cecil;
 
 namespace RealmWeaver
 {
+#pragma warning disable CS0618 // Type or member is obsolete - Mono.Cecil.TypeSystem is obsolete, but we need it in Unity
+
     internal abstract class ImportedReferences
     {
         public FrameworkName Framework { get; }
@@ -151,9 +153,9 @@ namespace RealmWeaver
 
         protected ModuleDefinition Module { get; }
 
-        protected Fody.TypeSystem Types { get; }
+        protected TypeSystem Types { get; }
 
-        protected ImportedReferences(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName)
+        protected ImportedReferences(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName)
         {
             Module = module;
             Types = types;
@@ -186,7 +188,7 @@ namespace RealmWeaver
                 HasThis = true
             };
 
-            System_NullableOfT_Ctor = new MethodReference(".ctor", Types.VoidReference, System_NullableOfT)
+            System_NullableOfT_Ctor = new MethodReference(".ctor", Types.Void, System_NullableOfT)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(System_NullableOfT.GenericParameters[0]) }
@@ -214,41 +216,41 @@ namespace RealmWeaver
 
         private void InitializeFrameworkMethods()
         {
-            ICollectionOfT_Add = new MethodReference("Add", Types.VoidReference, ICollectionOfT)
+            ICollectionOfT_Add = new MethodReference("Add", Types.Void, ICollectionOfT)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(ICollectionOfT.GenericParameters.Single()) }
             };
 
-            ICollectionOfT_Clear = new MethodReference("Clear", Types.VoidReference, ICollectionOfT) { HasThis = true };
+            ICollectionOfT_Clear = new MethodReference("Clear", Types.Void, ICollectionOfT) { HasThis = true };
 
-            ICollectionOfT_get_Count = new MethodReference("get_Count", Types.Int32Reference, ICollectionOfT) { HasThis = true };
+            ICollectionOfT_get_Count = new MethodReference("get_Count", Types.Int32, ICollectionOfT) { HasThis = true };
 
             IListOfT_get_Item = new MethodReference("get_Item", IListOfT.GenericParameters.Single(), IListOfT)
             {
                 HasThis = true,
-                Parameters = { new ParameterDefinition(Types.Int32Reference) }
+                Parameters = { new ParameterDefinition(Types.Int32) }
             };
 
-            ISetOfT_UnionWith = new MethodReference("UnionWith", Types.VoidReference, ISetOfT)
+            ISetOfT_UnionWith = new MethodReference("UnionWith", Types.Void, ISetOfT)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { ISetOfT.GenericParameters.Single() } }) }
             };
 
-            System_Collections_Generic_ListOfT_Constructor = new MethodReference(".ctor", Types.VoidReference, System_Collections_Generic_ListOfT) { HasThis = true };
+            System_Collections_Generic_ListOfT_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_ListOfT) { HasThis = true };
 
-            System_Collections_Generic_HashSetOfT_Constructor = new MethodReference(".ctor", Types.VoidReference, System_Collections_Generic_HashSetOfT) { HasThis = true };
+            System_Collections_Generic_HashSetOfT_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_HashSetOfT) { HasThis = true };
 
             {
-                System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.VoidReference, System_Linq_Enumerable);
+                System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.Void, System_Linq_Enumerable);
                 var T = new GenericParameter(System_Linq_Enumerable_Empty);
                 System_Linq_Enumerable_Empty.ReturnType = new GenericInstanceType(IEnumerableOfT) { GenericArguments = { T } };
                 System_Linq_Enumerable_Empty.GenericParameters.Add(T);
             }
 
             {
-                System_Linq_Queryable_AsQueryable = new MethodReference("AsQueryable", Types.VoidReference, System_Linq_Queryable);
+                System_Linq_Queryable_AsQueryable = new MethodReference("AsQueryable", Types.Void, System_Linq_Queryable);
                 var T = new GenericParameter(System_Linq_Queryable_AsQueryable);
                 System_Linq_Queryable_AsQueryable.Parameters.Add(new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { T } }));
                 System_Linq_Queryable_AsQueryable.ReturnType = new GenericInstanceType(IQueryableOfT) { GenericArguments = { T } };
@@ -287,43 +289,43 @@ namespace RealmWeaver
             }
 
             {
-                Realm_Add = new MethodReference("Add", Types.VoidReference, Realm) { HasThis = true };
+                Realm_Add = new MethodReference("Add", Types.Void, Realm) { HasThis = true };
                 var T = new GenericParameter(Realm_Add) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 Realm_Add.ReturnType = T;
                 Realm_Add.GenericParameters.Add(T);
                 Realm_Add.Parameters.Add(new ParameterDefinition(T));
-                Realm_Add.Parameters.Add(new ParameterDefinition(Types.BooleanReference));
+                Realm_Add.Parameters.Add(new ParameterDefinition(Types.Boolean));
             }
 
             {
-                Realm_AddCollection = new MethodReference("Add", Types.VoidReference, Realm) { HasThis = true };
+                Realm_AddCollection = new MethodReference("Add", Types.Void, Realm) { HasThis = true };
                 var T = new GenericParameter(Realm_AddCollection) { Constraints = { new GenericParameterConstraint(RealmObject) } };
                 Realm_AddCollection.GenericParameters.Add(T);
                 Realm_AddCollection.Parameters.Add(new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { T } }));
-                Realm_AddCollection.Parameters.Add(new ParameterDefinition(Types.BooleanReference));
+                Realm_AddCollection.Parameters.Add(new ParameterDefinition(Types.Boolean));
             }
 
-            RealmObject_get_IsManaged = new MethodReference("get_IsManaged", Types.BooleanReference, RealmObjectBase) { HasThis = true };
+            RealmObject_get_IsManaged = new MethodReference("get_IsManaged", Types.Boolean, RealmObjectBase) { HasThis = true };
             RealmObject_get_Realm = new MethodReference("get_Realm", Realm, RealmObjectBase) { HasThis = true };
-            RealmObject_RaisePropertyChanged = new MethodReference("RaisePropertyChanged", Types.VoidReference, RealmObjectBase)
+            RealmObject_RaisePropertyChanged = new MethodReference("RaisePropertyChanged", Types.Void, RealmObjectBase)
             {
                 HasThis = true,
-                Parameters = { new ParameterDefinition(Types.StringReference) }
+                Parameters = { new ParameterDefinition(Types.String) }
             };
 
             {
-                RealmObject_GetObjectValue = new MethodReference("GetObjectValue", Types.VoidReference, RealmObjectBase) { HasThis = true };
+                RealmObject_GetObjectValue = new MethodReference("GetObjectValue", Types.Void, RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
                 RealmObject_GetObjectValue.ReturnType = T;
                 RealmObject_GetObjectValue.GenericParameters.Add(T);
-                RealmObject_GetObjectValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetObjectValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
             {
-                RealmObject_SetObjectValue = new MethodReference("SetObjectValue", Types.VoidReference, RealmObjectBase) { HasThis = true };
+                RealmObject_SetObjectValue = new MethodReference("SetObjectValue", Types.Void, RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_SetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
                 RealmObject_SetObjectValue.GenericParameters.Add(T);
-                RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(Types.String));
                 RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(T));
             }
 
@@ -332,7 +334,7 @@ namespace RealmWeaver
                 var T = new GenericParameter(RealmObject_GetListValue);
                 (RealmObject_GetListValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetListValue.GenericParameters.Add(T);
-                RealmObject_GetListValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetListValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
             {
@@ -340,7 +342,7 @@ namespace RealmWeaver
                 var T = new GenericParameter(RealmObject_GetSetValue);
                 (RealmObject_GetSetValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetSetValue.GenericParameters.Add(T);
-                RealmObject_GetSetValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetSetValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
             {
@@ -348,32 +350,32 @@ namespace RealmWeaver
                 var T = new GenericParameter(RealmObject_GetBacklinks) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
                 (RealmObject_GetBacklinks.ReturnType as GenericInstanceType).GenericArguments.Add(T);
                 RealmObject_GetBacklinks.GenericParameters.Add(T);
-                RealmObject_GetBacklinks.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetBacklinks.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
             {
-                RealmObject_GetPrimitiveValue = new MethodReference("GetPrimitiveValue", Types.VoidReference, RealmObjectBase) { HasThis = true };
+                RealmObject_GetPrimitiveValue = new MethodReference("GetPrimitiveValue", Types.Void, RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetPrimitiveValue);
                 RealmObject_GetPrimitiveValue.ReturnType = T;
                 RealmObject_GetPrimitiveValue.GenericParameters.Add(T);
-                RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.String));
                 RealmObject_GetPrimitiveValue.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
             }
 
             {
-                RealmObject_SetPrimitiveValue = new MethodReference("SetPrimitiveValue", Types.VoidReference, RealmObjectBase) { HasThis = true };
+                RealmObject_SetPrimitiveValue = new MethodReference("SetPrimitiveValue", Types.Void, RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_SetPrimitiveValue);
                 RealmObject_SetPrimitiveValue.GenericParameters.Add(T);
-                RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(Types.String));
                 RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(T));
                 RealmObject_SetPrimitiveValue.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
             }
 
             {
-                RealmObject_SetPrimitiveValueUnique = new MethodReference("SetPrimitiveValueUnique", Types.VoidReference, RealmObjectBase) { HasThis = true };
+                RealmObject_SetPrimitiveValueUnique = new MethodReference("SetPrimitiveValueUnique", Types.Void, RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_SetPrimitiveValueUnique);
                 RealmObject_SetPrimitiveValueUnique.GenericParameters.Add(T);
-                RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(Types.StringReference));
+                RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(Types.String));
                 RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(T));
                 RealmObject_SetPrimitiveValueUnique.Parameters.Add(new ParameterDefinition(RealmSchema_PropertyType));
             }
@@ -381,30 +383,30 @@ namespace RealmWeaver
             IRealmObjectHelper = new TypeReference("Realms.Weaving", "IRealmObjectHelper", Module, realmAssembly);
 
             PreserveAttribute = new TypeReference("Realms", "PreserveAttribute", Module, realmAssembly);
-            PreserveAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, PreserveAttribute) { HasThis = true };
-            PreserveAttribute_ConstructorWithParams = new MethodReference(".ctor", Types.VoidReference, PreserveAttribute)
+            PreserveAttribute_Constructor = new MethodReference(".ctor", Types.Void, PreserveAttribute) { HasThis = true };
+            PreserveAttribute_ConstructorWithParams = new MethodReference(".ctor", Types.Void, PreserveAttribute)
             {
                 HasThis = true,
-                Parameters = { new ParameterDefinition(Types.BooleanReference), new ParameterDefinition(Types.BooleanReference) }
+                Parameters = { new ParameterDefinition(Types.Boolean), new ParameterDefinition(Types.Boolean) }
             };
 
             WovenAttribute = new TypeReference("Realms", "WovenAttribute", Module, realmAssembly);
-            WovenAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, WovenAttribute)
+            WovenAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenAttribute)
             {
                 HasThis = true,
                 Parameters = { new ParameterDefinition(System_Type) }
             };
 
             WovenAssemblyAttribute = new TypeReference("Realms", "WovenAssemblyAttribute", Module, realmAssembly);
-            WovenAssemblyAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, WovenAssemblyAttribute) { HasThis = true };
+            WovenAssemblyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenAssemblyAttribute) { HasThis = true };
 
             WovenPropertyAttribute = new TypeReference("Realms", "WovenPropertyAttribute", Module, realmAssembly);
-            WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, WovenPropertyAttribute) { HasThis = true };
+            WovenPropertyAttribute_Constructor = new MethodReference(".ctor", Types.Void, WovenPropertyAttribute) { HasThis = true };
 
             ExplicitAttribute = new TypeReference("Realms", "ExplicitAttribute", Module, realmAssembly);
 
             var realmSchema = new TypeReference("Realms.Schema", "RealmSchema", Module, realmAssembly);
-            RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.VoidReference, realmSchema) { HasThis = false };
+            RealmSchema_AddDefaultTypes = new MethodReference("AddDefaultTypes", Types.Void, realmSchema) { HasThis = false };
             {
                 var ienumerableOfType = new GenericInstanceType(IEnumerableOfT)
                 {
@@ -418,7 +420,7 @@ namespace RealmWeaver
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
         {
             PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, propertyChangedAssembly);
-            PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.VoidReference, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
+            PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
         }
 
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)
@@ -474,7 +476,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETFramework(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETFramework(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -507,7 +509,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NETPortable(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NETPortable(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Linq.Expressions"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -540,7 +542,7 @@ namespace RealmWeaver
 
             public override TypeReference ISetOfT { get; }
 
-            public NetStandard2(ModuleDefinition module, Fody.TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
+            public NetStandard2(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, Module.TypeSystem.CoreLibrary);
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
@@ -559,10 +561,8 @@ namespace RealmWeaver
             }
         }
 
-        public static ImportedReferences Create(ModuleWeaver weaver, FrameworkName frameworkName)
+        public static ImportedReferences Create(ModuleDefinition module, FrameworkName frameworkName)
         {
-            var module = weaver.ModuleDefinition;
-
             ImportedReferences references;
             switch (frameworkName.Identifier)
             {
@@ -570,23 +570,23 @@ namespace RealmWeaver
                 case "Xamarin.iOS":
                 case "MonoAndroid":
                 case "Xamarin.Mac":
-                    references = new NETFramework(module, weaver.TypeSystem, frameworkName);
+                    references = new NETFramework(module, module.TypeSystem, frameworkName);
                     break;
                 case ".NETStandard":
                     if (frameworkName.Version >= new Version(2, 0))
                     {
-                        references = new NetStandard2(module, weaver.TypeSystem, frameworkName);
+                        references = new NetStandard2(module, module.TypeSystem, frameworkName);
                     }
                     else
                     {
-                        references = new NETPortable(module, weaver.TypeSystem, frameworkName);
+                        references = new NETPortable(module, module.TypeSystem, frameworkName);
                     }
 
                     break;
                 case ".NETPortable":
                 case ".NETCore":
                 case ".NETCoreApp":
-                    references = new NETPortable(module, weaver.TypeSystem, frameworkName);
+                    references = new NETPortable(module, module.TypeSystem, frameworkName);
                     break;
                 default:
                     throw new Exception($"Unsupported target framework: {frameworkName}");
@@ -608,4 +608,6 @@ namespace RealmWeaver
             return references;
         }
     }
+
+#pragma warning restore CS0618 // Type or member is obsolete
 }

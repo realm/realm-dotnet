@@ -25,7 +25,7 @@ using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using RealmWeaver;
-using static ModuleWeaver;
+using static RealmWeaver.Weaver;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class PropertyDefinitionExtensions
