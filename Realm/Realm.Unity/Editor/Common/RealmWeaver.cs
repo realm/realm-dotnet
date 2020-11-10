@@ -166,7 +166,7 @@ namespace RealmWeaver
         public WeaveModuleResult Execute()
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            //// Debugger.Launch();
+            //// System.Diagnostics.Debugger.Launch();
 
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
