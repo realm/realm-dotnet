@@ -41,8 +41,7 @@ internal static class PropertyDefinitionExtensions
         Int32TypeName,
         Int64TypeName,
         BooleanTypeName,
-        DateTimeOffsetTypeName,
-        GuidTypeName,
+        DateTimeOffsetTypeName
     };
 
     internal static bool IsAutomatic(this PropertyDefinition property)
@@ -131,11 +130,6 @@ internal static class PropertyDefinitionExtensions
     internal static bool IsObjectId(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == ObjectIdTypeName;
-    }
-
-    internal static bool IsGuid(this PropertyDefinition property)
-    {
-        return property.PropertyType.FullName == GuidTypeName;
     }
 
     internal static bool IsString(this PropertyDefinition property)
