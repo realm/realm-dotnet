@@ -49,4 +49,24 @@ internal static class MethodReferenceExtensions
 
         return reference;
     }
+
+    public static bool HasSameNameAs(this MethodReference @this, MethodReference other)
+    {
+        if (@this is null || other is null)
+        {
+            return false;
+        }
+
+        return @this.FullName == other.FullName;
+    }
+
+    public static bool ConstructsSameAs(this MethodReference @this, MethodReference other)
+    {
+        if (@this is null || other is null)
+        {
+            return false;
+        }
+
+        return @this.DeclaringType.FullName == other.DeclaringType.FullName;
+    }
 }

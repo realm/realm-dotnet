@@ -22,6 +22,7 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Runtime.Versioning;
 using System.Text;
+using Mono.Cecil;
 
 namespace RealmWeaver
 {
@@ -64,6 +65,7 @@ namespace RealmWeaver
       ""Binding"": ""dotnet"",
       ""Language"": ""c#"",
       ""Framework"": ""xamarin"",
+      ""Sync Enabled"": ""%SYNC_ENABLED%"",
       ""Realm Version"": ""%REALM_VERSION%"",
       ""Host OS Type"": ""%OS_TYPE%"",
       ""Host OS Version"": ""%OS_VERSION%"",
@@ -73,6 +75,7 @@ namespace RealmWeaver
 }";
 
         private readonly FrameworkName _frameworkName;
+        private readonly bool _isSyncEnabled;
         private readonly string _anonymizedAppID;
 
         private static string AnonymizedUserID
@@ -123,6 +126,7 @@ namespace RealmWeaver
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", _anonymizedAppID)
 
+                    .Replace("%SYNC_ENABLED%", _isSyncEnabled.ToString())
                     // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
@@ -133,10 +137,68 @@ namespace RealmWeaver
             }
         }
 
-        internal Analytics(FrameworkName frameworkName, string moduleName)
+        internal Analytics(FrameworkName frameworkName, ModuleDefinition moduleDefinition)
         {
-            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleName));
+            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleDefinition.Name));
             _frameworkName = frameworkName;
+            _isSyncEnabled = IsUsingSync(moduleDefinition);
+        }
+
+        private static bool IsUsingSync(ModuleDefinition moduleDefinition)
+        {
+            var realmAssembly = moduleDefinition.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
+            var syncType = new TypeReference("Realms.Sync", "SyncConfiguration", moduleDefinition, realmAssembly);
+            var syncTypeCtor = new MethodReference(".ctor", moduleDefinition.TypeSystem.Void, syncType);
+
+            if (!(realmAssembly is null))
+            {
+                try
+                {
+                    return SearchMethodOccurrence(moduleDefinition, syncTypeCtor);
+                }
+                catch (ArgumentNullException e)
+                {
+                    return false;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool SearchMethodOccurrence(ModuleDefinition moduleDefinition, MethodReference method)
+        {
+            _ = moduleDefinition ?? throw new ArgumentNullException(nameof(moduleDefinition));
+            _ = method ?? throw new ArgumentNullException(nameof(method));
+
+            var allTypes = moduleDefinition.GetTypes().ToArray();
+
+            foreach (var type in allTypes)
+            {
+                foreach (var m in type.Methods)
+                {
+                    if (m.HasBody &&
+                        m.Body.Instructions.Any(il =>
+                        {
+                            if (il.OpCode == Mono.Cecil.Cil.OpCodes.Newobj)
+                            {
+                                var mRef = il.Operand as MethodReference;
+                                if (!(mRef is null) && mRef.ConstructsSameAs(method))
+                                {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         internal string SubmitAnalytics()
@@ -147,14 +209,29 @@ namespace RealmWeaver
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-            var request = System.Net.HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
+
+            // this will need to go when mixPanel won't be used anymore
+            SendRequest(
+                "https://api.mixpanel.com/track/?data=",
+                base64Payload,
+                "&ip=1");
+
+            SendRequest(
+                "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=",
+                base64Payload,
+                string.Empty);
+#endif
+
+            return payload;
+        }
+
+        private static void SendRequest(string prefixAddr, string payload, string suffixAddr)
+        {
+            var request = System.Net.HttpWebRequest.CreateHttp(new Uri(prefixAddr + payload + suffixAddr));
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
             request.GetResponse();
-#endif
-
-            return payload;
         }
 
         private void ComputeTargetOSNameAndVersion(out string name, out string version)

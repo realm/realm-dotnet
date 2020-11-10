@@ -176,7 +176,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver
 
         var submitAnalytics = Task.Run(() =>
         {
-            var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition.Name);
+            var analytics = new RealmWeaver.Analytics(frameworkName, ModuleDefinition);
             try
             {
                 var payload = analytics.SubmitAnalytics();
