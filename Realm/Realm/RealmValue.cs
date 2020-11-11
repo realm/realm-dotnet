@@ -25,6 +25,7 @@ using Realms.Native;
 
 namespace Realms
 {
+    [Preserve(AllMembers = true)]
     public struct RealmValue
     {
         private PrimitiveValue _primitiveValue;
