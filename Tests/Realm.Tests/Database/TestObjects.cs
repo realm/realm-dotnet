@@ -51,6 +51,8 @@ namespace Realms.Tests
 
         public ObjectId ObjectIdProperty { get; set; }
 
+        public Guid GuidProperty { get; set; }
+
         [Required]
         public string RequiredStringProperty { get; set; }
 
@@ -81,6 +83,8 @@ namespace Realms.Tests
         public Decimal128? NullableDecimal128Property { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
+
+        public Guid? NullableGuidProperty { get; set; }
     }
 
     public class DecimalsObject : RealmObject
@@ -336,7 +340,14 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId StringProperty { get; set; }
+        public ObjectId ObjectIdProperty { get; set; }
+    }
+
+    public class PrimaryKeyGuidObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public Guid GuidProperty { get; set; }
     }
 
     public class PrimaryKeyNullableCharObject : RealmObject
@@ -378,7 +389,14 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public ObjectId? StringProperty { get; set; }
+        public ObjectId? ObjectIdProperty { get; set; }
+    }
+
+    public class PrimaryKeyNullableGuidObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public Guid? GuidProperty { get; set; }
     }
 
     public class ClassWithUnqueryableMembers : RealmObject
