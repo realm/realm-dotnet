@@ -143,6 +143,13 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableObjectId(ObjectId? value) => value.HasValue ? ObjectId(value.Value) : Null();
 
+        public static PrimitiveValue Guid(Guid value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static PrimitiveValue NullableGuid(Guid? value) => value.HasValue ? Guid(value.Value) : Null();
+
         public static PrimitiveValue Data(IntPtr dataPtr, int size)
         {
             return new PrimitiveValue
@@ -202,6 +209,11 @@ namespace Realms.Native
             }
 
             return new ObjectId(bytes);
+        }
+
+        public Guid AsGuid()
+        {
+            throw new NotImplementedException();
         }
 
         public string AsString() => Encoding.UTF8.GetString(string_value.data, (int)string_value.size);
