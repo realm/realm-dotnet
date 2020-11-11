@@ -15,6 +15,8 @@
 
 ### Internal
 * Using Sync 10.1.0 and Core 10.1.0.
+* Analytics is now also upload to S3 service
+* Analytics now also reports if Sync functionality is in use
 
 ## 10.0.0-beta.2 (2020-11-04)
 ------------------
