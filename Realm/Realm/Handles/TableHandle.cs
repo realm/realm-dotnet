@@ -38,12 +38,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_object(TableHandle table, SharedRealmHandle realm, ObjectKey objectKey, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_string_primarykey(TableHandle handle, SharedRealmHandle realmHandle,
-                [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_primitive_primarykey", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object_for_primitive_primarykey(TableHandle handle, SharedRealmHandle realmHandle, PrimitiveValue value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_object_for_primarykey", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_object_for_primarykey(TableHandle handle, SharedRealmHandle realmHandle, PrimitiveValue value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore SA1121 // Use built-in type alias
@@ -80,30 +76,20 @@ namespace Realms
             return new ObjectHandle(realmHandle, result);
         }
 
-        public bool TryFind(SharedRealmHandle realmHandle, string id, out ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.get_object_for_string_primarykey(this, realmHandle, id, (IntPtr)(id?.Length ?? 0), out var ex);
-            return TryFindCore(realmHandle, result, ex, out objectHandle);
-        }
-
         public unsafe bool TryFind(SharedRealmHandle realmHandle, RealmValue id, out ObjectHandle objectHandle)
         {
             var (primitiveValue, gcHandle) = id.ToNative();
-            var result = NativeMethods.get_object_for_primitive_primarykey(this, realmHandle, primitiveValue, out var ex);
+            var result = NativeMethods.get_object_for_primarykey(this, realmHandle, primitiveValue, out var ex);
             gcHandle?.Free();
-            return TryFindCore(realmHandle, result, ex, out objectHandle);
-        }
+            ex.ThrowIfNecessary();
 
-        private static bool TryFindCore(SharedRealmHandle realmHandle, IntPtr objectPtr, NativeException nativeException, out ObjectHandle objectHandle)
-        {
-            nativeException.ThrowIfNecessary();
-            if (objectPtr == IntPtr.Zero)
+            if (result == IntPtr.Zero)
             {
                 objectHandle = null;
                 return false;
             }
 
-            objectHandle = new ObjectHandle(realmHandle, objectPtr);
+            objectHandle = new ObjectHandle(realmHandle, result);
             return true;
         }
     }

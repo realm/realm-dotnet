@@ -35,18 +35,6 @@
 using namespace realm;
 using namespace realm::binding;
 
-template<typename T>
-inline T get(Results& results, size_t ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        const size_t count = results.size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
-
-        return results.get<T>(ndx);
-    });
-}
-
 extern "C" {
 
 REALM_EXPORT void results_destroy(Results* results)

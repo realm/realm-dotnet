@@ -181,7 +181,7 @@ REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, Nativ
 REALM_EXPORT size_t list_find_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        // This doesn't use EnsureTypes to allow List<string>.Find(null) to return false
+        // This doesn't use ensure_types to allow List<string>.Find(null) to return false
         if (value.is_null() && !is_nullable(list.get_type())) {
             return (size_t)-1;
         }
