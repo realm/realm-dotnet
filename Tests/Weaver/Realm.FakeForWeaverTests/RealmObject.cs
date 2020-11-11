@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -76,36 +74,20 @@ namespace Realms
             }
         }
 
-        protected void SetPrimitiveValue<T>(string propertyName, T value, PropertyType propertyType)
+        protected void SetValue(string propertyName, RealmValue value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected void SetPrimitiveValueUnique<T>(string propertyName, T value, PropertyType propertyType)
+        protected void SetValueUnique(string propertyName, RealmValue value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected T GetPrimitiveValue<T>(string propertyName)
+        protected RealmValue GetValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return default(T);
-        }
-
-        protected string GetStringValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return string.Empty;
-        }
-
-        protected void SetStringValue(string propertyName, string value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
-        protected void SetStringValueUnique(string propertyName, string value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+            return new RealmValue();
         }
 
         protected IList<T> GetListValue<T>(string propertyName)
@@ -136,17 +118,6 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected byte[] GetByteArrayValue(string propertyName)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return new byte[0];
-        }
-
-        protected void SetByteArrayValue(string propertyName, byte[] value)
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
-        }
-
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -156,20 +127,6 @@ namespace Realms
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected RealmInteger<T> GetRealmIntegerValue<T>(string propertyName)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return default(RealmInteger<T>);
-        }
-
-        protected RealmInteger<T>? GetNullableRealmIntegerValue<T>(string propertyName)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return null;
         }
     }
 }

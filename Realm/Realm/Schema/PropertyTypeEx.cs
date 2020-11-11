@@ -139,6 +139,24 @@ namespace Realms.Schema
             };
         }
 
+        public static RealmValueType ToRealmValueType(this PropertyType type)
+        {
+            return type.UnderlyingType() switch
+            {
+                PropertyType.Int => RealmValueType.Int,
+                PropertyType.Bool => RealmValueType.Bool,
+                PropertyType.String => RealmValueType.String,
+                PropertyType.Data => RealmValueType.Data,
+                PropertyType.Date => RealmValueType.Date,
+                PropertyType.Float => RealmValueType.Float,
+                PropertyType.Double => RealmValueType.Double,
+                PropertyType.Object => RealmValueType.Object,
+                PropertyType.ObjectId => RealmValueType.ObjectId,
+                PropertyType.Decimal => RealmValueType.Decimal128,
+                _ => throw new NotSupportedException($"The type {type} can't be mapped to RealmValueType."),
+            };
+        }
+
         public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);
 
         public static bool IsNullable(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Nullable);

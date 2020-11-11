@@ -13,6 +13,7 @@
     <Compile Include="..\..\..\Realm\Realm\Attributes\PreserveAttribute.cs" Link="Attributes\PreserveAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\PrimaryKeyAttribute.cs" Link="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\RequiredAttribute.cs" Link="Attributes\RequiredAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\RealmValueType.cs" Link="RealmValueType.cs" />
     <Compile Include="..\..\..\Realm\Realm\Schema\PropertyType.cs" Link="PropertyType.cs" />
     <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\ExplicitAttribute.cs">
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup Label="References">
+    <PackageReference Include="MongoDB.Bson" Version="2.11.4" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>
 

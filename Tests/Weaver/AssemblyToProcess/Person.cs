@@ -107,12 +107,12 @@ namespace AssemblyToProcess
         {
             get
             {
-                return GetStringValue("Address");
+                return GetValue("Address");
             }
 
             set
             {
-                SetStringValue("Address", value);
+                SetValue("Address", value);
             }
         }
 
