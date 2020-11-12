@@ -171,6 +171,25 @@ static inline ObjectId from_capi(realm_object_id_t oid)
     return ObjectId(std::move(bytes));
 }
 
+static inline realm_uuid_t to_capi(UUID uuid)
+{
+    auto bytes = uuid.to_bytes();
+    realm_uuid_t result;
+    for (int i = 0; i < 16; i++)
+    {
+        result.bytes[i] = bytes[i];
+    }
+
+    return result;
+}
+
+static inline UUID from_capi(realm_uuid_t uuid)
+{
+    std::array<uint8_t, 16> bytes;
+    std::copy(std::begin(uuid.bytes), std::end(uuid.bytes), bytes.begin());
+    return UUID(std::move(bytes));
+}
+
 static inline realm_value_type to_capi(PropertyType type)
 {
     switch (type & ~PropertyType::Flags)
@@ -261,6 +280,8 @@ static inline Mixed from_capi(realm_value_t val)
         return Mixed{ from_capi(val.decimal128) };
     case realm_value_type::RLM_TYPE_OBJECT_ID:
         return Mixed{ from_capi(val.object_id) };
+    case realm_value_type::RLM_TYPE_UUID:
+        return Mixed{ from_capi(val.uuid) };
     case realm_value_type::RLM_TYPE_LINK:
         REALM_TERMINATE("Can't use from_capi on values containing links.");
     }
@@ -341,6 +362,11 @@ static inline realm_value_t to_capi(Mixed value)
         case type_ObjectId: {
             val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
             val.object_id = to_capi(value.get<ObjectId>());
+            break;
+        }
+        case type_UUID: {
+            val.type = realm_value_type::RLM_TYPE_UUID;
+            val.uuid = to_capi(value.get<UUID>());
             break;
         }
         case type_LinkList:
