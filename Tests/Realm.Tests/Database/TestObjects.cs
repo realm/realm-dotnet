@@ -385,7 +385,6 @@ namespace Realms.Tests
     {
         public string RealPropertyToSatisfyWeaver { get; set; }
 
-        [SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This is intentionally a public field.")]
         public string PublicField;
 
         [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance method.")]
