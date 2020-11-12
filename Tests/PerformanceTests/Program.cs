@@ -4,6 +4,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Portability.Cpu;
 using BenchmarkDotNet.Reports;
@@ -19,14 +20,14 @@ namespace PerformanceTests
             var defaultConfig = DefaultConfig.Instance;
             var config = new ManualConfig()
                 .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
-                .AddExporter(new JenkinsHtmlExporter())
                 .AddLogger(defaultConfig.GetLoggers().ToArray())
                 .AddAnalyser(defaultConfig.GetAnalysers().ToArray())
                 .AddValidator(defaultConfig.GetValidators().ToArray())
                 .WithUnionRule(defaultConfig.UnionRule)
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
-                .AddDiagnoser(MemoryDiagnoser.Default);
+                .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.Full);
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
         }

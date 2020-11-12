@@ -349,6 +349,7 @@ stage('Test') {
           """.trim()
 
           archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.html"
+          archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.md"
         }
       }
     }
