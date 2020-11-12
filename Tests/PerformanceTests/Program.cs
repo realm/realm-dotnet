@@ -6,6 +6,7 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Portability.Cpu;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -27,6 +28,7 @@ namespace PerformanceTests
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
+                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.Full);
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
