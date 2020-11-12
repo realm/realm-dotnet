@@ -921,7 +921,8 @@ Analytics payload
                                               property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                               property.IsDecimal() ||
                                               property.IsDecimal128() ||
-                                              property.IsObjectId();
+                                              property.IsObjectId() ||
+                                              property.IsGuid();
 
                         // If the property is non-nullable, we want the following code to execute:
                         // if (!skipDefaults || castInstance.field != default(fieldType))

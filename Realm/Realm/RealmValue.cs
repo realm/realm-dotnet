@@ -154,6 +154,7 @@ namespace Realms
                 RealmValueType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
                 RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
+                RealmValueType.Guid => Guid(Operator.Convert<T, Guid>(value)),
                 RealmValueType.Object => Object(Operator.Convert<T, RealmObjectBase>(value)),
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
@@ -636,6 +637,7 @@ namespace Realms
                 RealmValueType.Double => AsDouble(),
                 RealmValueType.Decimal128 => AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId(),
+                RealmValueType.Guid => AsGuid(),
                 RealmValueType.Object => AsRealmObject(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
