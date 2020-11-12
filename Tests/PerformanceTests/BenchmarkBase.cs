@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Bogus;
 using Realms;
 
 namespace PerformanceTests
@@ -8,6 +9,7 @@ namespace PerformanceTests
     public abstract class BenchmarkBase
     {
         protected Realm _realm;
+        protected Faker _faker = new Faker();
 
         [GlobalSetup]
         public void Setup()

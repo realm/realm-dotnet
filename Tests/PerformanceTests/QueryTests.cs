@@ -37,6 +37,13 @@ namespace PerformanceTests
             return _realm.All<QueryClass>().Where(c => c.BoolValue == expectedBool).Count();
         }
 
+        [Benchmark]
+        public object Enumerate()
+        {
+            var expectedBool = _executionCounter++ % 2 == 0;
+            return _realm.All<QueryClass>().Where(c => c.BoolValue == expectedBool).ToArray();
+        }
+
         private class QueryClass : RealmObject
         {
             public string StringValue { get; set; }
