@@ -47,6 +47,9 @@ namespace Realms.Native
         [FieldOffset(0)]
         private fixed byte object_id_bytes[12];
 
+        [FieldOffset(0)]
+        private fixed byte guid_bytes[16];
+
         // Without this padding, .NET fails to marshal the decimal_bits array correctly and the second element is always 0.
         [FieldOffset(8)]
         [Obsolete("Don't use, please!")]
@@ -145,7 +148,18 @@ namespace Realms.Native
 
         public static PrimitiveValue Guid(Guid value)
         {
-            throw new NotImplementedException();
+            var result = new PrimitiveValue
+            {
+                Type = RealmValueType.Guid,
+            };
+
+            var guidBytes = value.ToByteArray();
+            for (int i = 0; i < 16; i++)
+            {
+                result.guid_bytes[i] = guidBytes[i];
+            }
+
+            return result;
         }
 
         public static PrimitiveValue NullableGuid(Guid? value) => value.HasValue ? Guid(value.Value) : Null();
@@ -213,7 +227,13 @@ namespace Realms.Native
 
         public Guid AsGuid()
         {
-            throw new NotImplementedException();
+            var bytes = new byte[16];
+            for (var i = 0; i < 16; i++)
+            {
+                bytes[i] = object_id_bytes[i];
+            }
+
+            return new Guid(bytes);
         }
 
         public string AsString() => Encoding.UTF8.GetString(string_value.data, (int)string_value.size);

@@ -132,6 +132,11 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.FullName == ObjectIdTypeName;
     }
 
+    internal static bool IsGuid(this PropertyDefinition property)
+    {
+        return property.PropertyType.FullName == GuidTypeName;
+    }
+
     internal static bool IsString(this PropertyDefinition property)
     {
         return property.PropertyType.FullName == StringTypeName;
