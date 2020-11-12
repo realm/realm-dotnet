@@ -50,24 +50,13 @@ internal static class MethodReferenceExtensions
         return reference;
     }
 
-    public static bool HasSameSignatureAs(this MethodReference @this, MethodReference other)
+    public static bool ConstructsType(this MethodReference @this, TypeReference type)
     {
-        if (@this is null || other is null)
+        if (@this is null)
         {
             return false;
         }
 
-        return @this.FullName == other.FullName;
-    }
-
-    public static bool ConstructsSameAs(this MethodReference @this, MethodReference other)
-    {
-        if (@this is null || other is null)
-        {
-            return false;
-        }
-
-        return @this.DeclaringType.FullName == other.DeclaringType.FullName &&
-            @this.Name == other.Name;
+        return @this.DeclaringType.IsSameAs(type) && @this.Name == ".ctor";
     }
 }

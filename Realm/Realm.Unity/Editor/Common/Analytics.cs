@@ -126,9 +126,9 @@ namespace RealmWeaver
             }
         }
 
-        internal Analytics(FrameworkName frameworkName, ModuleDefinition moduleDefinition, bool isUsingSync)
+        internal Analytics(FrameworkName frameworkName, string moduleName, bool isUsingSync)
         {
-            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleDefinition.Name));
+            _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleName));
             _frameworkName = frameworkName;
             _isSyncEnabled = isUsingSync;
         }

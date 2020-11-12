@@ -135,7 +135,6 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
         private readonly FrameworkName _frameworkName;
-        private readonly bool _isUsingSync;
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
@@ -162,7 +161,6 @@ namespace RealmWeaver
             _logger = logger;
             _frameworkName = frameworkName;
             _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
-            _isUsingSync = IsUsingSync();
         }
 
         public WeaveModuleResult Execute()
@@ -185,7 +183,7 @@ namespace RealmWeaver
 
             var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition, _isUsingSync);
+                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name, IsUsingSync());
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
@@ -1510,17 +1508,17 @@ Analytics payload
         {
             try
             {
-                return SearchMethodOccurrence(_references.SyncConfiguration_Constructor);
+                return IsMethodUsed(_references.SyncConfiguration);
             }
-            catch (ArgumentNullException)
+            catch
             {
                 return false;
             }
         }
 
-        private bool SearchMethodOccurrence(MethodReference method)
+        private bool IsMethodUsed(TypeReference type)
         {
-            _ = method ?? throw new ArgumentNullException(nameof(method));
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             return _moduleDefinition.GetTypes()
                        .SelectMany(t => t.Methods)
@@ -1528,7 +1526,7 @@ Analytics payload
                        .SelectMany(m => m.Body.Instructions)
                        .Any(i => i.OpCode == OpCodes.Newobj &&
                                  i.Operand is MethodReference mRef &&
-                                 mRef.ConstructsSameAs(method));
+                                 mRef.ConstructsType(type));
         }
 
         private struct Accessors
