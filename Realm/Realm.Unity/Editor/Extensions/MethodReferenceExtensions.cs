@@ -50,7 +50,7 @@ internal static class MethodReferenceExtensions
         return reference;
     }
 
-    public static bool HasSameNameAs(this MethodReference @this, MethodReference other)
+    public static bool HasSameSignatureAs(this MethodReference @this, MethodReference other)
     {
         if (@this is null || other is null)
         {
@@ -67,6 +67,7 @@ internal static class MethodReferenceExtensions
             return false;
         }
 
-        return @this.DeclaringType.FullName == other.DeclaringType.FullName;
+        return @this.DeclaringType.FullName == other.DeclaringType.FullName &&
+            @this.Name == other.Name;
     }
 }

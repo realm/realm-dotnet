@@ -135,6 +135,7 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
         private readonly FrameworkName _frameworkName;
+        private readonly bool _isUsingSync;
 
         private IEnumerable<TypeDefinition> GetMatchingTypes()
         {
@@ -161,6 +162,7 @@ namespace RealmWeaver
             _logger = logger;
             _frameworkName = frameworkName;
             _references = ImportedReferences.Create(_moduleDefinition, _frameworkName);
+            _isUsingSync = IsUsingSync();
         }
 
         public WeaveModuleResult Execute()
@@ -183,7 +185,7 @@ namespace RealmWeaver
 
             var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition);
+                var analytics = new Analytics(_frameworkName, _moduleDefinition, _isUsingSync);
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
@@ -1502,6 +1504,31 @@ Analytics payload
             realmObjectType.NestedTypes.Add(helperType);
 
             return helperType;
+        }
+
+        private bool IsUsingSync()
+        {
+            try
+            {
+                return SearchMethodOccurrence(_references.SyncConfiguration_Constructor);
+            }
+            catch (ArgumentNullException)
+            {
+                return false;
+            }
+        }
+
+        private bool SearchMethodOccurrence(MethodReference method)
+        {
+            _ = method ?? throw new ArgumentNullException(nameof(method));
+
+            return _moduleDefinition.GetTypes()
+                       .SelectMany(t => t.Methods)
+                       .Where(m => m.HasBody)
+                       .SelectMany(m => m.Body.Instructions)
+                       .Any(i => i.OpCode == OpCodes.Newobj &&
+                                 i.Operand is MethodReference mRef &&
+                                 mRef.ConstructsSameAs(method));
         }
 
         private struct Accessors

@@ -115,6 +115,7 @@ namespace RealmWeaver
                     .Replace("%APP_ID%", _anonymizedAppID)
 
                     .Replace("%SYNC_ENABLED%", _isSyncEnabled.ToString())
+
                     // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
@@ -125,68 +126,11 @@ namespace RealmWeaver
             }
         }
 
-        internal Analytics(FrameworkName frameworkName, ModuleDefinition moduleDefinition)
+        internal Analytics(FrameworkName frameworkName, ModuleDefinition moduleDefinition, bool isUsingSync)
         {
             _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleDefinition.Name));
             _frameworkName = frameworkName;
-            _isSyncEnabled = IsUsingSync(moduleDefinition);
-        }
-
-        private static bool IsUsingSync(ModuleDefinition moduleDefinition)
-        {
-            var realmAssembly = moduleDefinition.AssemblyReferences.SingleOrDefault(r => r.Name == "Realm");
-            var syncType = new TypeReference("Realms.Sync", "SyncConfiguration", moduleDefinition, realmAssembly);
-            var syncTypeCtor = new MethodReference(".ctor", moduleDefinition.TypeSystem.Void, syncType);
-
-            if (!(realmAssembly is null))
-            {
-                try
-                {
-                    return SearchMethodOccurrence(moduleDefinition, syncTypeCtor);
-                }
-                catch (ArgumentNullException e)
-                {
-                    return false;
-                }
-                catch
-                {
-                    throw;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool SearchMethodOccurrence(ModuleDefinition moduleDefinition, MethodReference method)
-        {
-            _ = moduleDefinition ?? throw new ArgumentNullException(nameof(moduleDefinition));
-            _ = method ?? throw new ArgumentNullException(nameof(method));
-
-            var allTypes = moduleDefinition.GetTypes().ToArray();
-
-            foreach (var type in allTypes)
-            {
-                foreach (var m in type.Methods)
-                {
-                    if (m.HasBody &&
-                        m.Body.Instructions.Any(il =>
-                        {
-                            if (il.OpCode == Mono.Cecil.Cil.OpCodes.Newobj)
-                            {
-                                var mRef = il.Operand as MethodReference;
-                                if (!(mRef is null) && mRef.ConstructsSameAs(method))
-                                {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            _isSyncEnabled = isUsingSync;
         }
 
         internal string SubmitAnalytics()

@@ -151,6 +151,8 @@ namespace RealmWeaver
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
 
+        public MethodReference SyncConfiguration_Constructor { get; private set; }
+
         protected ModuleDefinition Module { get; }
 
         protected TypeSystem Types { get; }
@@ -415,6 +417,9 @@ namespace RealmWeaver
 
                 RealmSchema_AddDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
             }
+
+            var syncConfType = new TypeReference("Realms.Sync", "SyncConfiguration", Module, realmAssembly);
+            SyncConfiguration_Constructor = new MethodReference(".ctor", Types.Void, syncConfType);
         }
 
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
