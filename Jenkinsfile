@@ -336,6 +336,21 @@ stage('Test') {
           reportTests 'TestResults.Weaver.xml'
         }
       }
+    },
+    'Benchmarks': {
+      rlmNode('dotnet && windows') {
+        unstash 'dotnet-source'
+        dir('Realm/packages') { unstash 'packages' }
+
+        dir('Tests/PerformanceTests') {
+          bat """
+            dotnet build -c ${configuration} -f net461 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
+            dotnet run -c ${configuration} -f net461 --no-build -- -f * -j short
+          """.trim()
+
+          archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.html"
+        }
+      }
     }
   ]
 
