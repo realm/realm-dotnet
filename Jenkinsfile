@@ -8,11 +8,6 @@ def AndroidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
-enum DotNetCoreFramework {
-  netcoreapp20,
-  net5
-}
-
 String versionSuffix = ''
 
 stage('Checkout') {
@@ -330,12 +325,12 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('macos && dotnet', DotNetCoreFramework.netcoreapp20),
-    '.NET Core Linux': NetCoreTest('docker', DotNetCoreFramework.netcoreapp20),
-    '.NET Core Windows': NetCoreTest('windows && dotnet', DotNetCoreFramework.netcoreapp20),
-    '.NET 5 macOS': NetCoreTest('macos && net5', DotNetCoreFramework.net5),
-    '.NET 5 Linux': NetCoreTest('docker && net5', DotNetCoreFramework.net5),
-    '.NET 5 Windows': NetCoreTest('windows && net5', DotNetCoreFramework.net5),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp2.0'),
+    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
+    '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
+    '.NET 5 Linux': NetCoreTest('docker && net5', 'net5.0'),
+    '.NET 5 Windows': NetCoreTest('windows && net5', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
@@ -352,17 +347,16 @@ stage('Test') {
   }
 }
 
-def NetCoreTest(String nodeName, DotNetCoreFramework targetFramework) {
+def NetCoreTest(String nodeName, String targetFramework) {
   return {
     rlmNode(nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
-      String tfmCode = ConvertToTfm(targetFramework)
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f ${tfmCode} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
-        dotnet run -c ${configuration} -f ${tfmCode} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
+        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
@@ -454,31 +448,14 @@ boolean shouldPublishPackage() {
   return env.BRANCH_NAME == 'master'
 }
 
-// https://docs.microsoft.com/en-us/dotnet/standard/frameworks
-def String ConvertToTfm(DotNetCoreFramework framework) {
-  String tfm = "breakBuildIfNotSet"
-  switch(targetFramework) {
-    case DotNetCoreFramework.netcoreapp20:
-      tfm = "netcoreapp2.0"
-    break
-    case DotNetCoreFramework.net5:
-      tfm = "net5.0"
-    break
-    default:
-      echo ".NET framework ${framework.ToString()} not supported by the pipeline, yet"
-    break
-    }
-  return tfm
-}
-
 def String DetermineDockerImg(DotNetCoreFramework framework) {
-  String dockerImg = "breakBuildIfNotSet"
+  String dockerImg = 'breakBuildIfNotSet'
   switch(targetFramework) {
-    case DotNetCoreFramework.netcoreapp20:
-      dockerImg = "mcr.microsoft.com/dotnet/sdk:2.0"
+    case 'netcoreapp2.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/sdk:2.0'
     break
-    case DotNetCoreFramework.net5:
-      dockerImg = "mcr.microsoft.com/dotnet/sdk:5.0"
+    case 'net5.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
     break
     default:
       echo ".NET framework ${framework.ToString()} not supported by the pipeline, yet"
