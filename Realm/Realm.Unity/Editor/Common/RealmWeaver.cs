@@ -1518,8 +1518,6 @@ Analytics payload
 
         private bool IsMethodUsed(TypeReference type)
         {
-            _ = type ?? throw new ArgumentNullException(nameof(type));
-
             return _moduleDefinition.GetTypes()
                        .SelectMany(t => t.Methods)
                        .Where(m => m.HasBody)
