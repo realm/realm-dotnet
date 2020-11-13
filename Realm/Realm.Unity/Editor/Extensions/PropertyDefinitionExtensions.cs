@@ -41,7 +41,8 @@ internal static class PropertyDefinitionExtensions
         Int32TypeName,
         Int64TypeName,
         BooleanTypeName,
-        DateTimeOffsetTypeName
+        DateTimeOffsetTypeName,
+        GuidTypeName,
     };
 
     internal static bool IsAutomatic(this PropertyDefinition property)
