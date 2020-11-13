@@ -448,7 +448,7 @@ boolean shouldPublishPackage() {
   return env.BRANCH_NAME == 'master'
 }
 
-def String DetermineDockerImg(DotNetCoreFramework framework) {
+def String DetermineDockerImg(String targetFramework) {
   String dockerImg = 'breakBuildIfNotSet'
   switch(targetFramework) {
     case 'netcoreapp2.0':
