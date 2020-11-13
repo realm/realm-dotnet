@@ -154,7 +154,7 @@ namespace Realms.Native
             };
 
             var guidBytes = value.ToByteArray();
-            for (int i = 0; i < 16; i++)
+            for (var i = 0; i < 16; i++)
             {
                 result.guid_bytes[i] = guidBytes[i];
             }
