@@ -329,8 +329,8 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
     '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
-    '.NET 5 Linux': NetCoreTest('docker && net5', 'net5.0'),
-    '.NET 5 Windows': NetCoreTest('windows && net5', 'net5.0'),
+    '.NET 5 Linux': NetCoreTest('docker && dotnet', 'net5.0'),
+    '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
@@ -452,7 +452,7 @@ def String DetermineDockerImg(String targetFramework) {
   String dockerImg = 'breakBuildIfNotSet'
   switch(targetFramework) {
     case 'netcoreapp2.0':
-      dockerImg = 'mcr.microsoft.com/dotnet/sdk:2.0'
+      dockerImg = 'mcr.microsoft.com/dotnet/core/sdk:2.1'
     break
     case 'net5.0':
       dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
