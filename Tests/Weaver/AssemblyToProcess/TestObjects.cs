@@ -53,8 +53,6 @@ namespace AssemblyToProcess
         public ObjectId ObjectIdProperty { get; set; }
 
         public Guid GuidProperty { get; set; }
-
-
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
