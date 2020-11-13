@@ -27,7 +27,6 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr tableHandle, out NativeException ex);
@@ -42,7 +41,6 @@ namespace Realms
             public static extern IntPtr get_object_for_primarykey(TableHandle handle, SharedRealmHandle realmHandle, PrimitiveValue value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         [Preserve]
@@ -78,9 +76,9 @@ namespace Realms
 
         public unsafe bool TryFind(SharedRealmHandle realmHandle, RealmValue id, out ObjectHandle objectHandle)
         {
-            var (primitiveValue, gcHandle) = id.ToNative();
+            var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primarykey(this, realmHandle, primitiveValue, out var ex);
-            gcHandle?.Free();
+            handles?.Dispose();
             ex.ThrowIfNecessary();
 
             if (result == IntPtr.Zero)

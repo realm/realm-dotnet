@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -139,7 +140,7 @@ namespace Realms
             };
         }
 
-        internal (PrimitiveValue Value, GCHandle? GCHandle) ToNative()
+        internal (PrimitiveValue Value, HandlesToCleanup? Handles) ToNative()
         {
             switch (Type)
             {
@@ -149,10 +150,10 @@ namespace Realms
                         return (PrimitiveValue.Null(), null);
                     }
 
-                    // TODO-niki: use memory pool to avoid allocating/deallocating all the time
-                    var bytes = Encoding.UTF8.GetBytes(_stringValue);
-                    var stringHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    return (PrimitiveValue.String(stringHandle.AddrOfPinnedObject(), bytes.Length), stringHandle);
+                    var buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(_stringValue.Length));
+                    var bytes = Encoding.UTF8.GetBytes(_stringValue, 0, _stringValue.Length, buffer, 0);
+                    var stringHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                    return (PrimitiveValue.String(stringHandle.AddrOfPinnedObject(), bytes), new HandlesToCleanup(stringHandle, buffer));
                 case RealmValueType.Data:
                     if (_dataValue == null)
                     {
@@ -160,7 +161,7 @@ namespace Realms
                     }
 
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
-                    return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), handle);
+                    return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 default:
                     return (_primitiveValue, null);
             }
@@ -475,6 +476,27 @@ namespace Realms
             if (Type != type)
             {
                 throw new InvalidOperationException($"Can't cast to {target} since the underlying value is {Type}");
+            }
+        }
+
+        internal struct HandlesToCleanup
+        {
+            private readonly GCHandle _handle;
+            private readonly byte[] _buffer;
+
+            public HandlesToCleanup(GCHandle handle, byte[] buffer = null)
+            {
+                _handle = handle;
+                _buffer = buffer;
+            }
+
+            public void Dispose()
+            {
+                _handle.Free();
+                if (_buffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(_buffer);
+                }
             }
         }
     }

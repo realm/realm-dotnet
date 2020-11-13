@@ -166,9 +166,9 @@ namespace Realms
 
         public void SetValue(IntPtr propertyIndex, RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             NativeMethods.set_primitive(this, propertyIndex, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
@@ -234,7 +234,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmList instance will own its handle.")]
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
@@ -242,7 +241,6 @@ namespace Realms
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmSet instance will own its handle.")]
         public RealmSet<T> GetSet<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var setHandle = new SetHandle(Root, GetLinkSet(propertyIndex));

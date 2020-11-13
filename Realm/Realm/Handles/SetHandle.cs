@@ -208,9 +208,9 @@ namespace Realms
 
         public unsafe bool Add(RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             var result = NativeMethods.add_primitive(this, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -235,9 +235,9 @@ namespace Realms
 
         public unsafe bool Contains(RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             var result = NativeMethods.contains_primitive(this, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -255,9 +255,9 @@ namespace Realms
 
         public unsafe bool Remove(RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             var result = NativeMethods.remove_primitive(this, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }

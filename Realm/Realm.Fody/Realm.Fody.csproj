@@ -15,7 +15,7 @@
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="6.*" PrivateAssets="All" />
     <PackageReference Include="System.Management" Version="4.5.0" PrivateAssets="Build;Compile;Runtime" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

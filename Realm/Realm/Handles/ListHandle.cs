@@ -164,9 +164,9 @@ namespace Realms
 
         public unsafe void Add(RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             NativeMethods.add_primitive(this, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
@@ -189,9 +189,9 @@ namespace Realms
 
         public unsafe void Set(int targetIndex, RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             NativeMethods.set_primitive(this, (IntPtr)targetIndex, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
@@ -214,9 +214,9 @@ namespace Realms
 
         public unsafe void Insert(int targetIndex, RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             NativeMethods.insert_primitive(this, (IntPtr)targetIndex, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
@@ -240,9 +240,9 @@ namespace Realms
 
         public unsafe int Find(RealmValue value)
         {
-            var (primitive, gcHandle) = value.ToNative();
+            var (primitive, handles) = value.ToNative();
             var result = NativeMethods.find_primitive(this, primitive, out var nativeException);
-            gcHandle?.Free();
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return (int)result;
         }
