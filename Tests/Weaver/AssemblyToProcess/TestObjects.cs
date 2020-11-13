@@ -94,7 +94,6 @@ namespace AssemblyToProcess
         public ObjectId? NullableObjectIdProperty { get; set; }
 
         public Guid? NullableGuidProperty { get; set; }
-
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
