@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.Versioning;
 using System.Text;
+using Mono.Cecil;
 
 namespace RealmWeaver
 {
@@ -63,6 +64,7 @@ namespace RealmWeaver
       ""Binding"": ""dotnet"",
       ""Language"": ""c#"",
       ""Framework"": ""xamarin"",
+      ""Sync Enabled"": ""%SYNC_ENABLED%"",
       ""Realm Version"": ""%REALM_VERSION%"",
       ""Host OS Type"": ""%OS_TYPE%"",
       ""Host OS Version"": ""%OS_VERSION%"",
@@ -72,6 +74,7 @@ namespace RealmWeaver
 }";
 
         private readonly FrameworkName _frameworkName;
+        private readonly bool _isSyncEnabled;
         private readonly string _anonymizedAppID;
 
         private static string AnonymizedUserID
@@ -111,6 +114,8 @@ namespace RealmWeaver
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", _anonymizedAppID)
 
+                    .Replace("%SYNC_ENABLED%", _isSyncEnabled.ToString())
+
                     // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
 
@@ -121,10 +126,11 @@ namespace RealmWeaver
             }
         }
 
-        internal Analytics(FrameworkName frameworkName, string moduleName)
+        internal Analytics(FrameworkName frameworkName, string moduleName, bool isUsingSync)
         {
             _anonymizedAppID = SHA256Hash(Encoding.UTF8.GetBytes(moduleName));
             _frameworkName = frameworkName;
+            _isSyncEnabled = isUsingSync;
         }
 
         internal string SubmitAnalytics()
@@ -135,14 +141,29 @@ namespace RealmWeaver
             // Debugger.Launch();
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-            var request = System.Net.HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
+
+            // this will need to go when mixPanel won't be used anymore
+            SendRequest(
+                "https://api.mixpanel.com/track/?data=",
+                base64Payload,
+                "&ip=1");
+
+            SendRequest(
+                "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=",
+                base64Payload,
+                string.Empty);
+#endif
+
+            return payload;
+        }
+
+        private static void SendRequest(string prefixAddr, string payload, string suffixAddr)
+        {
+            var request = System.Net.HttpWebRequest.CreateHttp(new Uri(prefixAddr + payload + suffixAddr));
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
             request.GetResponse();
-#endif
-
-            return payload;
         }
 
         private void ComputeTargetOSNameAndVersion(out string name, out string version)
