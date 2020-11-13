@@ -213,7 +213,7 @@ stage('Test') {
   Map props = [ Configuration: configuration, UseRealmNupkgsWithVersion: packageVersion ]
   def jobs = [
     'Xamarin iOS': {
-      rlmNode('xamarin.ios && net5') {
+      rlmNode('xamarin.ios') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -230,7 +230,7 @@ stage('Test') {
       }
     },
     'Xamarin macOS': {
-      rlmNode('xamarin.mac && net5') {
+      rlmNode('xamarin.mac') {
         unstash 'dotnet-source'
         dir('Realm/packages') { unstash 'packages' }
 
@@ -330,9 +330,12 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('dotnet && macos'),
-    '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', DotNetCoreFramework.netcoreapp20),
+    '.NET Core Linux': NetCoreTest('docker', DotNetCoreFramework.netcoreapp20),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', DotNetCoreFramework.netcoreapp20),
+    '.NET 5 macOS': NetCoreTest('macos && net5', DotNetCoreFramework.net5),
+    '.NET 5 Linux': NetCoreTest('docker && net5', DotNetCoreFramework.net5),
+    '.NET 5 Windows': NetCoreTest('windows && net5', DotNetCoreFramework.net5),
     'Weaver': {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
