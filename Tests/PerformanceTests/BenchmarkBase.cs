@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -30,6 +31,11 @@ namespace PerformanceTests
 
         protected Realm _realm;
 
+        static BenchmarkBase()
+        {
+            Randomizer.Seed = new Random(12345);
+        }
+
         [GlobalSetup]
         public void Setup()
         {
@@ -40,6 +46,8 @@ namespace PerformanceTests
         [GlobalCleanup]
         public void Cleanup()
         {
+            CleanupCore();
+
             _realm.Dispose();
 
             for (var i = 0; i < 10; i++)
@@ -57,6 +65,10 @@ namespace PerformanceTests
         }
 
         protected virtual void SeedData()
+        {
+        }
+
+        protected virtual void CleanupCore()
         {
         }
     }
