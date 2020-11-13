@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MongoDB.Bson;
 
 namespace Realms
@@ -30,6 +30,8 @@ namespace Realms
         public static explicit operator Decimal128(RealmValue val) => default;
 
         public static explicit operator ObjectId(RealmValue val) => default;
+        
+        public static explicit operator Guid(RealmValue val) => default;
 
         public static explicit operator char?(RealmValue val) => default;
 
@@ -54,6 +56,8 @@ namespace Realms
         public static explicit operator Decimal128?(RealmValue val) => default;
 
         public static explicit operator ObjectId?(RealmValue val) => default;
+        
+        public static explicit operator Guid?(RealmValue val) => default;
 
         public static explicit operator RealmInteger<byte>(RealmValue val) => default;
 
@@ -101,6 +105,8 @@ namespace Realms
 
         public static implicit operator RealmValue(ObjectId val) => default;
 
+        public static implicit operator RealmValue(Guid val) => default;
+
         public static implicit operator RealmValue(char? val) => default;
 
         public static implicit operator RealmValue(byte? val) => default;
@@ -124,6 +130,8 @@ namespace Realms
         public static implicit operator RealmValue(Decimal128? val) => default;
 
         public static implicit operator RealmValue(ObjectId? val) => default;
+
+        public static implicit operator RealmValue(Guid? val) => default;
 
         public static implicit operator RealmValue(RealmInteger<byte> val) => default;
 
