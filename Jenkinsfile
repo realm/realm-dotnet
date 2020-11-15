@@ -344,8 +344,8 @@ stage('Test') {
 
         dir('Tests/PerformanceTests') {
           bat """
-            dotnet build -c ${configuration} -f net461 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
-            dotnet run -c ${configuration} -f net461 --no-build -- -f * -j short
+            dotnet build -c ${configuration} -f net5.0 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
+            dotnet run -c ${configuration} -f net5.0 --no-build -- -f *
           """.trim()
 
           archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.html"

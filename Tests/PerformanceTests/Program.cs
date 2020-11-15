@@ -23,11 +23,13 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Portability.Cpu;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
 using Perfolizer.Horology;
 
 namespace PerformanceTests
@@ -46,6 +48,7 @@ namespace PerformanceTests
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
+                .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance))
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.Full);
 
