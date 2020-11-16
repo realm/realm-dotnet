@@ -215,7 +215,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
-                  properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v2.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
@@ -232,7 +232,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.XamarinMac') {
           msbuild restore: true,
-                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFrameworkVersion: 'v2.0' ] << props
           dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
             sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
           }
@@ -329,7 +329,7 @@ stage('Test') {
     '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
     '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
     '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
-    '.NET 5 Linux': NetCoreTest('docker && dotnet', 'net5.0'),
+    '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
     '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
