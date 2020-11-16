@@ -39,7 +39,7 @@ namespace Realms.Helpers
 
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
-            /**
+            /*
              * This is special cased due to a bug in the Xamarin.iOS interpreter. When value
              * is null, we end up with a NRE with the following stacktrace:
              *

@@ -61,10 +61,12 @@ namespace Realms
 
                 internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
 
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
 
+                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
                 internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
@@ -190,24 +192,22 @@ namespace Realms
                     return Expression.Constant(_coreQueryHandle.Count() > 0);
                 }
 
-                if (node.Method.Name.StartsWith(nameof(Queryable.First)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.First), StringComparison.OrdinalIgnoreCase))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    using (var rh = MakeResultsForQuery())
+                    using var rh = MakeResultsForQuery();
+                    if (rh.TryGetObjectAtIndex(0, out var firstObject))
                     {
-                        if (rh.TryGetObjectAtIndex(0, out var firstObject))
-                        {
-                            return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
-                        }
-                        else if (node.Method.Name == nameof(Queryable.First))
-                        {
-                            throw new InvalidOperationException("Sequence contains no matching element");
-                        }
-                        else
-                        {
-                            Debug.Assert(node.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
-                            return Expression.Constant(null);
-                        }
+                        return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
+                    }
+                    else if (node.Method.Name == nameof(Queryable.First))
+                    {
+                        throw new InvalidOperationException("Sequence contains no matching element");
+                    }
+                    else
+                    {
+                        Debug.Assert(node.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
+                        return Expression.Constant(null);
                     }
                 }
 
@@ -230,35 +230,33 @@ namespace Realms
                 */
 
                 // same as unsorted First with extra checks
-                if (node.Method.Name.StartsWith(nameof(Queryable.Single)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.Single), StringComparison.OrdinalIgnoreCase))
                 {
                     RecurseToWhereOrRunLambda(node);
-                    using (var rh = MakeResultsForQuery())
+                    using var rh = MakeResultsForQuery();
+                    var count = rh.Count();
+                    if (count == 0)
                     {
-                        var count = rh.Count();
-                        if (count == 0)
+                        if (node.Method.Name == nameof(Queryable.Single))
                         {
-                            if (node.Method.Name == nameof(Queryable.Single))
-                            {
-                                throw new InvalidOperationException("Sequence contains no matching element");
-                            }
+                            throw new InvalidOperationException("Sequence contains no matching element");
+                        }
 
-                            Debug.Assert(node.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
-                            return Expression.Constant(null);
-                        }
-                        else if (count > 1)
-                        {
-                            throw new InvalidOperationException("Sequence contains more than one matching element");
-                        }
-                        else
-                        {
-                            rh.TryGetObjectAtIndex(0, out var firstObject);
-                            return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
-                        }
+                        Debug.Assert(node.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
+                        return Expression.Constant(null);
+                    }
+                    else if (count > 1)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
+                    else
+                    {
+                        rh.TryGetObjectAtIndex(0, out var firstObject);
+                        return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
                     }
                 }
 
-                if (node.Method.Name.StartsWith(nameof(Queryable.Last)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.Last), StringComparison.OrdinalIgnoreCase))
                 {
                     RecurseToWhereOrRunLambda(node);
 
@@ -286,7 +284,7 @@ namespace Realms
                     return Expression.Constant(null);
                 }
 
-                if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
+                if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt), StringComparison.OrdinalIgnoreCase))
                 {
                     Visit(node.Arguments.First());
                     if (!TryExtractConstantValue(node.Arguments.Last(), out object argument) || argument.GetType() != typeof(int))
@@ -393,7 +391,7 @@ namespace Realms
 
                 if (queryMethod != null)
                 {
-                    member = member ?? node.Object as MemberExpression;
+                    member ??= node.Object as MemberExpression;
 
                     if (member == null)
                     {

@@ -16,20 +16,77 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms
 {
+    /// <summary>
+    /// Represents the type of a value stored in a <see cref="RealmValue"/> property.
+    /// </summary>
     public enum RealmValueType : byte
     {
+        /// <summary>
+        /// The value is <c>null</c>.
+        /// </summary>
         Null,
+
+        /// <summary>
+        /// The value is a <see cref="long"/>.
+        /// </summary>
+        /// <remarks>
+        /// For performance reasons, all integers, as well as <see cref="char"/>, in Realm are stored as 64-bit values.
+        /// You can still cast it to the narrower types using <see cref="RealmValue.AsByte"/>, <see cref="RealmValue.AsShort"/>,
+        /// <see cref="RealmValue.AsInt"/>, or <see cref="RealmValue.AsChar"/>.
+        /// </remarks>
         Int,
+
+        /// <summary>
+        /// The value represents a <see cref="bool"/>.
+        /// </summary>
         Bool,
+
+        /// <summary>
+        /// The value represents a non-null <see cref="string"/>.
+        /// </summary>
         String,
+
+        /// <summary>
+        /// The value represents a non-null byte array.
+        /// </summary>
         Data,
+
+        /// <summary>
+        /// The value represents a <see cref="DateTimeOffset"/>.
+        /// </summary>
         Date,
+
+        /// <summary>
+        /// The value represents a <see cref="float"/>.
+        /// </summary>
         Float,
+
+        /// <summary>
+        /// The value represents a <see cref="double"/>.
+        /// </summary>
         Double,
+
+        /// <summary>
+        /// The value represents a <see cref="MongoDB.Bson.Decimal128"/>.
+        /// </summary>
+        /// <remarks>
+        /// For performance reasons, all decimals in Realm are stored as 128-bit values.
+        /// You can still cast it to the 96-bit <see cref="decimal"/> using <see cref="RealmValue.AsDecimal"/>.
+        /// </remarks>
         Decimal128,
+
+        /// <summary>
+        /// The value represents a <see cref="MongoDB.Bson.ObjectId"/>.
+        /// </summary>
         ObjectId,
+
+        /// <summary>
+        /// The value represents a link to another object.
+        /// </summary>
         Object,
     }
 }
