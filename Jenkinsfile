@@ -215,7 +215,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
-                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v2.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v1.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
