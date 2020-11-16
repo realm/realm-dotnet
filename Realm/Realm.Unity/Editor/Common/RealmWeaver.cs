@@ -877,6 +877,7 @@ Analytics payload
                     copyToRealm.Body.Variables.Add(new VariableDefinition(_moduleDefinition.ImportReference(prop.Field.FieldType)));
                 }
 
+                copyToRealm.Body.InitLocals = true;
                 var il = copyToRealm.Body.GetILProcessor();
                 il.Append(il.Create(OpCodes.Ldarg_1));
                 il.Append(il.Create(OpCodes.Castclass, _moduleDefinition.ImportReference(realmObjectType)));
@@ -1154,7 +1155,7 @@ Analytics payload
                     il.Append(il.Create(OpCodes.Ldloc_0));
                     il.Append(il.Create(OpCodes.Call, propertyGetterMethodReference));
                     il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
-                    il.Append(il.Create(OpCodes.Callvirt, _references.ISetOfT_UnionWith));
+                    il.Append(il.Create(OpCodes.Callvirt, _references.ISetOfT_UnionWith.MakeHostInstanceGeneric(elementType)));
 
                     var setterEnd = il.Create(OpCodes.Nop);
                     il.Append(setterEnd);
@@ -1189,6 +1190,8 @@ Analytics payload
 
                 if (pkProperty != null)
                 {
+                    getPrimaryKeyValue.Body.InitLocals = true;
+
                     il.Emit(OpCodes.Ldarg_1);
                     il.Emit(OpCodes.Castclass, _moduleDefinition.ImportReference(realmObjectType));
                     il.Emit(OpCodes.Stloc_0);
