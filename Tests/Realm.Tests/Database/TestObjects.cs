@@ -118,6 +118,8 @@ namespace Realms.Tests
 
         public IList<ObjectId> ObjectIdList { get; }
 
+        public IList<Guid> GuidList { get; }
+
         public IList<string> StringList { get; }
 
         public IList<byte[]> ByteArrayList { get; }
@@ -147,6 +149,8 @@ namespace Realms.Tests
         public IList<Decimal128?> NullableDecimal128List { get; }
 
         public IList<ObjectId?> NullableObjectIdList { get; }
+
+        public IList<Guid?> NullableGuidList { get; }
 
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 

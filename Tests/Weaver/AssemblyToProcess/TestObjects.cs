@@ -125,6 +125,8 @@ namespace AssemblyToProcess
 
         public IList<ObjectId> ObjectIdList { get; }
 
+        public IList<Guid> GuidList { get; }
+
         public IList<char?> NullableCharList { get; }
 
         public IList<byte?> NullableByteList { get; }
@@ -148,6 +150,8 @@ namespace AssemblyToProcess
         public IList<Decimal128?> NullableDecimal128List { get; }
 
         public IList<ObjectId?> NullableObjectIdList { get; }
+
+        public IList<Guid?> NullableGuidList { get; }
 
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 

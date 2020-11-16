@@ -302,6 +302,33 @@ namespace Realms.Tests.Database
             }
         }
 
+        private static readonly IEnumerable<Guid?[]> _guidValues = new[]
+        {
+            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c") },
+            new Guid?[] { null },
+            new Guid?[] { Guid.Empty, Guid.NewGuid() },
+            new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.NewGuid(), null},
+        };
+
+        public static IEnumerable<object> GuidTestValues()
+        {
+            yield return new object[] { null };
+            var values = _guidValues.Select(v => v.Where(b => b.HasValue).Select(b => b.Value).ToArray());
+            foreach (var value in values.Where(a => a.Any()))
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
+        public static IEnumerable<object> NullableGuidTestValues()
+        {
+            yield return new object[] { null };
+            foreach (var value in _guidValues)
+            {
+                yield return new object[] { value.ToArray() };
+            }
+        }
+
         private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
         {
             new DateTimeOffset?[] { DateTimeOffset.UtcNow.AddDays(-4) },
@@ -438,6 +465,12 @@ namespace Realms.Tests.Database
             RunManagedTests(obj => obj.ObjectIdList, values);
         }
 
+        [TestCaseSource(nameof(GuidTestValues))]
+        public void Test_ManagedGuidList(Guid[] values)
+        {
+            RunManagedTests(obj => obj.GuidList, values);
+        }
+
         [TestCaseSource(nameof(DateTestValues))]
         public void Test_ManagedDateTimeOffsetList(DateTimeOffset[] values)
         {
@@ -526,6 +559,12 @@ namespace Realms.Tests.Database
         public void Test_ManagedNullableObjectIdList(ObjectId?[] values)
         {
             RunManagedTests(obj => obj.NullableObjectIdList, values);
+        }
+
+        [TestCaseSource(nameof(NullableGuidTestValues))]
+        public void Test_ManagedNullableGuidList(Guid?[] values)
+        {
+            RunManagedTests(obj => obj.NullableGuidList, values);
         }
 
         [TestCaseSource(nameof(NullableDateTestValues))]
@@ -889,6 +928,12 @@ namespace Realms.Tests.Database
             RunUnmanagedTests(obj => obj.ObjectIdList, values);
         }
 
+        [TestCaseSource(nameof(GuidTestValues))]
+        public void Test_UnmanagedGuidList(Guid[] values)
+        {
+            RunUnmanagedTests(obj => obj.GuidList, values);
+        }
+
         [TestCaseSource(nameof(DateTestValues))]
         public void Test_UnmanagedDateTimeOffsetList(DateTimeOffset[] values)
         {
@@ -974,9 +1019,15 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
-        public void Test_UnmanagedONullablebjectIdList(ObjectId?[] values)
+        public void Test_UnmanagedNullableObjectIdList(ObjectId?[] values)
         {
             RunUnmanagedTests(obj => obj.NullableObjectIdList, values);
+        }
+
+        [TestCaseSource(nameof(NullableGuidTestValues))]
+        public void Test_UnmanagedNullableGuidList(Guid?[] values)
+        {
+            RunUnmanagedTests(obj => obj.NullableGuidList, values);
         }
 
         [TestCaseSource(nameof(NullableDateTestValues))]
