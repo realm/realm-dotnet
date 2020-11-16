@@ -353,9 +353,11 @@ def NetCoreTest(String nodeName, String targetFramework) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
+      def addNet5Framework = targetFramework == 'net5.0'
+
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=true
+        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
         dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
