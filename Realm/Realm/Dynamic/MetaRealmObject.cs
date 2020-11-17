@@ -47,7 +47,7 @@ namespace Realms.Dynamic
                                                                                               .MakeGenericMethod(typeof(DynamicEmbeddedObject));
 
         private static readonly MethodInfo RealmValueGetMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.As), BindingFlags.Public | BindingFlags.Instance);
-        private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create), BindingFlags.Public | BindingFlags.Static);
+        private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create), BindingFlags.NonPublic | BindingFlags.Static);
 
         private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
 
