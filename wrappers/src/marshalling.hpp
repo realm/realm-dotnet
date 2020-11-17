@@ -154,7 +154,7 @@ static inline Decimal128 from_capi(realm_decimal128_t dec)
 
 static inline realm_object_id_t to_capi(ObjectId oid)
 {
-    auto& bytes = oid.to_bytes();
+    const auto& bytes = oid.to_bytes();
     realm_object_id_t result;
     for (int i = 0; i < 12; i++)
     {
@@ -173,7 +173,7 @@ static inline ObjectId from_capi(realm_object_id_t oid)
 
 static inline realm_uuid_t to_capi(UUID uuid)
 {
-    auto& bytes = uuid.to_bytes();
+    const auto& bytes = uuid.to_bytes();
     realm_uuid_t result;
     for (int i = 0; i < 16; i++)
     {
