@@ -48,10 +48,6 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            // temp
-            Intent.PutExtra("headless", true);
-            Intent.PutExtra("resultPath", Path.Combine(ApplicationContext.GetExternalFilesDir(null).AbsolutePath, "RealmTests", "TestResults.Android.xml"));
-
             if (Intent.GetBooleanExtra("headless", false))
             {
                 options.AutoRun = true;
