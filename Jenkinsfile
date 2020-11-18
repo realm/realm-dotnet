@@ -348,7 +348,6 @@ stage('Test') {
             dotnet run -c ${configuration} -f net5.0 --no-build -- -f *
           """.trim()
 
-          archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.html"
           archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.md"
         }
       }
