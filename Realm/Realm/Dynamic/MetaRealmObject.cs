@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
+using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Native;
 using Realms.Schema;
@@ -36,6 +37,9 @@ namespace Realms.Dynamic
 
         private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObjectBase).GetField("_realm", PrivateBindingFlags);
         private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObjectBase).GetField("_objectHandle", PrivateBindingFlags);
+        private static readonly FieldInfo RealmObjectMetadataField = typeof(RealmObjectBase).GetField("_metadata", PrivateBindingFlags);
+        private static readonly FieldInfo ObjectMetadataSchemaField = typeof(RealmObjectBase.Metadata).GetField(nameof(RealmObjectBase.Metadata.Schema), PrivateBindingFlags);
+        private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
 
         private static readonly MethodInfo RealmObjectGetBacklinksForHandle_RealmObject = typeof(DynamicRealmObject).GetMethod("GetBacklinksForHandle", PrivateBindingFlags)
                                                                                             .MakeGenericMethod(typeof(DynamicRealmObject));
@@ -62,6 +66,7 @@ namespace Realms.Dynamic
                 return base.BindGetMember(binder);
             }
 
+            var self = GetLimitedSelf();
             var arguments = new List<Expression>();
             MethodInfo getter = null;
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
@@ -71,54 +76,22 @@ namespace Realms.Dynamic
             }
             else if (property.Type.IsArray())
             {
-                arguments.Add(Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Field(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 switch (property.Type.UnderlyingType())
                 {
                     case PropertyType.Int:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<long?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<long>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<long?>) : GetGetMethod(DummyHandle.GetList<long>);
                         break;
                     case PropertyType.Bool:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<bool?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<bool>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<bool?>) : GetGetMethod(DummyHandle.GetList<bool>);
                         break;
                     case PropertyType.Float:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<float?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<float>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<float?>) : GetGetMethod(DummyHandle.GetList<float>);
                         break;
                     case PropertyType.Double:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<double?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<double>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<double?>) : GetGetMethod(DummyHandle.GetList<double>);
                         break;
                     case PropertyType.String:
                         getter = GetGetMethod(DummyHandle.GetList<string>);
@@ -127,15 +100,13 @@ namespace Realms.Dynamic
                         getter = GetGetMethod(DummyHandle.GetList<byte[]>);
                         break;
                     case PropertyType.Date:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<DateTimeOffset?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetList<DateTimeOffset>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetList<DateTimeOffset>);
+                        break;
+                    case PropertyType.ObjectId:
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<ObjectId?>) : GetGetMethod(DummyHandle.GetList<ObjectId>);
+                        break;
+                    case PropertyType.Decimal:
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Decimal128?>) : GetGetMethod(DummyHandle.GetList<Decimal128>);
                         break;
                     case PropertyType.Object:
                         getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetList<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetList<DynamicRealmObject>);
@@ -144,54 +115,22 @@ namespace Realms.Dynamic
             }
             else if (property.Type.IsSet())
             {
-                arguments.Add(Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                arguments.Add(Expression.Field(self, RealmObjectRealmField));
                 arguments.Add(Expression.Constant(_metadata.PropertyIndices[property.Name]));
                 arguments.Add(Expression.Constant(property.ObjectType, typeof(string)));
                 switch (property.Type.UnderlyingType())
                 {
                     case PropertyType.Int:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<long?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<long>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<long?>) : GetGetMethod(DummyHandle.GetSet<long>);
                         break;
                     case PropertyType.Bool:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<bool?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<bool>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<bool?>) : GetGetMethod(DummyHandle.GetSet<bool>);
                         break;
                     case PropertyType.Float:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<float?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<float>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<float?>) : GetGetMethod(DummyHandle.GetSet<float>);
                         break;
                     case PropertyType.Double:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<double?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<double>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<double?>) : GetGetMethod(DummyHandle.GetSet<double>);
                         break;
                     case PropertyType.String:
                         getter = GetGetMethod(DummyHandle.GetSet<string>);
@@ -200,18 +139,16 @@ namespace Realms.Dynamic
                         getter = GetGetMethod(DummyHandle.GetSet<byte[]>);
                         break;
                     case PropertyType.Date:
-                        if (property.Type.IsNullable())
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>);
-                        }
-                        else
-                        {
-                            getter = GetGetMethod(DummyHandle.GetSet<DateTimeOffset>);
-                        }
-
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetSet<DateTimeOffset>);
                         break;
                     case PropertyType.Object:
                         getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetSet<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetSet<DynamicRealmObject>);
+                        break;
+                    case PropertyType.ObjectId:
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<ObjectId?>) : GetGetMethod(DummyHandle.GetSet<ObjectId>);
+                        break;
+                    case PropertyType.Decimal:
+                        getter = property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Decimal128?>) : GetGetMethod(DummyHandle.GetSet<Decimal128>);
                         break;
                 }
             }
@@ -237,7 +174,7 @@ namespace Realms.Dynamic
                         getter = GetGetMethod(DummyHandle.GetByteArray);
                         break;
                     case PropertyType.Object:
-                        arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                        arguments.Insert(0, Expression.Field(self, RealmObjectRealmField));
                         arguments.Add(Expression.Constant(property.ObjectType));
 
                         getter = IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetObject<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetObject<DynamicRealmObject>);
@@ -245,14 +182,12 @@ namespace Realms.Dynamic
                 }
             }
 
-            var self = GetLimitedSelf();
             var instance = Expression.Field(self, RealmObjectObjectHandleField);
             Expression expression = Expression.Call(instance, getter, arguments);
 
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
-                var relatedMeta = _realm.Metadata[property.ObjectType];
-                if (relatedMeta.Schema.IsEmbedded)
+                if (IsTargetEmbedded(property))
                 {
                     expression = Expression.Call(self, RealmObjectGetBacklinksForHandle_EmbeddedObject, Expression.Constant(binder.Name), expression);
                 }
@@ -274,7 +209,17 @@ namespace Realms.Dynamic
 
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, _metadata.Schema.IsEmbedded ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject));
             var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
-            return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
+            var argumentShouldBeTheSameType = BindingRestrictions.GetExpressionRestriction(
+                Expression.Equal(
+                    Expression.Constant(_metadata.Schema.Name),
+                    Expression.Property(
+                        Expression.Field(
+                            Expression.Field(
+                                self,
+                                RealmObjectMetadataField),
+                            ObjectMetadataSchemaField),
+                        SchemaGetNameProperty)));
+            return new DynamicMetaObject(expression, GetBindingRestrictions(self));
         }
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
@@ -292,6 +237,7 @@ namespace Realms.Dynamic
             MethodInfo setter = null;
             Type argumentType = null;
 
+            var self = GetLimitedSelf();
             var valueExpression = value.Expression;
             switch (property.Type.UnderlyingType())
             {
@@ -333,7 +279,7 @@ namespace Realms.Dynamic
                     break;
                 case PropertyType.Object:
                     argumentType = typeof(RealmObjectBase);
-                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Field(self, RealmObjectRealmField));
                     setter = GetSetMethod<RealmObjectBase>(DummyHandle.SetObject);
                     break;
             }
@@ -345,11 +291,26 @@ namespace Realms.Dynamic
 
             arguments.Add(valueExpression);
 
-            var expression = Expression.Block(Expression.Call(Expression.Field(GetLimitedSelf(), RealmObjectObjectHandleField), setter, arguments), Expression.Default(binder.ReturnType));
+            var expression = Expression.Block(Expression.Call(Expression.Field(self, RealmObjectObjectHandleField), setter, arguments), Expression.Default(binder.ReturnType));
+            return new DynamicMetaObject(expression, GetBindingRestrictions(self));
+        }
 
+        private BindingRestrictions GetBindingRestrictions(Expression self)
+        {
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, _metadata.Schema.IsEmbedded ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(GetLimitedSelf(), RealmObjectRealmField), _realm);
-            return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
+            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
+            var argumentShouldBeTheSameType = BindingRestrictions.GetExpressionRestriction(
+                Expression.Equal(
+                    Expression.Constant(_metadata.Schema.Name),
+                    Expression.Property(
+                        Expression.Field(
+                            Expression.Field(
+                                self,
+                                RealmObjectMetadataField),
+                            ObjectMetadataSchemaField),
+                        SchemaGetNameProperty)));
+
+            return argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm).Merge(argumentShouldBeTheSameType);
         }
 
         public override IEnumerable<string> GetDynamicMemberNames()
