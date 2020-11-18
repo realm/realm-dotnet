@@ -18,12 +18,15 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Android.App;
 using Android.OS;
 using NUnit.Runner;
 using NUnit.Runner.Services;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
+
+using Environment = Android.OS.Environment;
 
 namespace Realms.Tests.Android
 {
@@ -45,19 +48,25 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
+            // temp
+            Intent.PutExtra("headless", true);
+            Intent.PutExtra("resultPath", Path.Combine(ApplicationContext.GetExternalFilesDir(null).AbsolutePath, "RealmTests", "TestResults.Android.xml"));
+
             if (Intent.GetBooleanExtra("headless", false))
             {
-                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-                options.XmlTransformFile = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
+                options.ResultFilePath = Intent.GetStringExtra("resultPath");
                 options.OnCompletedCallback = () =>
                 {
                     Console.WriteLine("Activity finished...");
                     OnFinished(Result.Ok);
                     Finish();
+
+                    TestHelpers.TransformTestResults(options.ResultFilePath);
+
+                    return Task.CompletedTask;
                 };
-                options.ResultFilePath = Intent.GetStringExtra("resultPath");
             }
 
             nunit.Options = options;
