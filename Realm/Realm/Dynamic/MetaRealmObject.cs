@@ -207,18 +207,6 @@ namespace Realms.Dynamic
                 expression = Expression.Convert(expression, binder.ReturnType);
             }
 
-            var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, _metadata.Schema.IsEmbedded ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(self, RealmObjectRealmField), _realm);
-            var argumentShouldBeTheSameType = BindingRestrictions.GetExpressionRestriction(
-                Expression.Equal(
-                    Expression.Constant(_metadata.Schema.Name),
-                    Expression.Property(
-                        Expression.Field(
-                            Expression.Field(
-                                self,
-                                RealmObjectMetadataField),
-                            ObjectMetadataSchemaField),
-                        SchemaGetNameProperty)));
             return new DynamicMetaObject(expression, GetBindingRestrictions(self));
         }
 
