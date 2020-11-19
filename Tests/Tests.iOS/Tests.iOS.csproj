@@ -29,7 +29,7 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.runner.iOS --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--nosymbolstrip --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -40,7 +40,7 @@
     <MtouchLink>Full</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
     <ConsolePause>false</ConsolePause>
-    <MtouchExtraArgs>--linkskip=nunit.runner.iOS --linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
+    <MtouchExtraArgs>--linkskip=nunit.framework --linkskip=Realm.Tests --nolinkaway</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -132,7 +132,7 @@
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="PCLStorage" Version="1.0.2" />
     <PackageReference Include="NUnit.Xamarin.Realm">
-      <Version>3.12.0</Version>
+      <Version>3.12.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
