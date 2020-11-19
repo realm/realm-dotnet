@@ -4,6 +4,12 @@ jobs:
   string-benchmark:
     runs-on: windows-latest
     steps:
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+      - name: Restore from cache and run vcpkg
+        uses: lukka/run-vcpkg@v5
+        with:
+          vcpkgArguments: '@.\.gituhub\workflows\response_file.txt'
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build wrappers
