@@ -11,7 +11,7 @@ jobs:
       - name: Restore from cache and run vcpkg
         uses: lukka/run-vcpkg@v5
         with:
-          vcpkgArguments: '@.\.github\workflows\response_file.txt'
+          vcpkgArguments: '@<github.workspace>\.github\workflows\response_file.txt'
           vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
       - name: Build wrappers
         run: .\wrappers\build.ps1 Windows -Configuration Debug -Platforms Win32
