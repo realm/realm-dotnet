@@ -55,12 +55,10 @@ namespace Realms.Tests.Android
                 options.ResultFilePath = Intent.GetStringExtra("resultPath");
                 options.OnCompletedCallback = () =>
                 {
+                    TestHelpers.TransformTestResults(options.ResultFilePath);
                     Console.WriteLine("Activity finished...");
                     OnFinished(Result.Ok);
                     Finish();
-
-                    TestHelpers.TransformTestResults(options.ResultFilePath);
-
                     return Task.CompletedTask;
                 };
             }
