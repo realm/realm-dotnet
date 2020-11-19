@@ -50,7 +50,7 @@ namespace PerformanceTests
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance))
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.Full);
+                .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.FullCompressed); //TODO FP remove the jenkins exporter
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
         }

@@ -1,0 +1,10 @@
+name: benchmark-test
+on: push
+jobs:
+  string-benchmark:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run benchmarks
+        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
