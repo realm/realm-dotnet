@@ -7,8 +7,8 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Display the current location
-        run: get-location
-        shell: powershell
+        run: cd
+        shell: cmd
       - name: Restore from cache and run vcpkg
         uses: lukka/run-vcpkg@v5
         with:
