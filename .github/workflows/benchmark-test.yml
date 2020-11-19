@@ -6,9 +6,9 @@ jobs:
     steps:
       - name: Get CMake
         uses: lukka/get-cmake@latest
-      - name: Display the path
-        run: echo %PATH%
-        shell: cmd
+      - name: Display the current location
+        run: get-location
+        shell: powershell
       - name: Restore from cache and run vcpkg
         uses: lukka/run-vcpkg@v5
         with:
