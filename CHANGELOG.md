@@ -5,7 +5,9 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
+  The issue manifests itself when different classes have persisted properties with the same name and could result in the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`.
+  This could only happen when using the dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other than .NET Core 3.x/.NET 5.
 
 ### Enhancements
 * None
@@ -17,6 +19,7 @@
 * Using Sync 10.1.0 and Core 10.1.0.
 * Submit Analytics to S3/Segment in addition to Mixpanel
 * Analytics now also reports if Sync functionality is in use
+* SDK is now also tested against .net5
 
 ## 10.0.0-beta.2 (2020-11-04)
 ------------------

@@ -215,7 +215,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
-                  properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v1.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
@@ -232,7 +232,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.XamarinMac') {
           msbuild restore: true,
-                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFrameworkVersion: 'v2.0' ] << props
           dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
             sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
           }
@@ -325,9 +325,12 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('dotnet && macos'),
-    '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp2.0'),
+    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
+    '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
+    '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
+    '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
@@ -360,23 +363,25 @@ stage('Test') {
   }
 }
 
-def NetCoreTest(String nodeName) {
+def NetCoreTest(String nodeName, String targetFramework) {
   return {
     rlmNode(nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
+      def addNet5Framework = targetFramework == 'net5.0'
+
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
-        dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
+        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
 
       if (isUnix()) {
         if (nodeName == 'docker') {
-          def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+          def test_runner_image = docker.image(DetermineDockerImg(targetFramework))
           test_runner_image.pull()
           withRealmCloud(version: '2020-10-12', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
@@ -459,6 +464,22 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 
 boolean shouldPublishPackage() {
   return env.BRANCH_NAME == 'master'
+}
+
+def String DetermineDockerImg(String targetFramework) {
+  String dockerImg = 'breakBuildIfNotSet'
+  switch(targetFramework) {
+    case 'netcoreapp2.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/core/sdk:2.1'
+    break
+    case 'net5.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
+    break
+    default:
+      echo ".NET framework ${framework.ToString()} not supported by the pipeline, yet"
+    break
+  }
+  return dockerImg
 }
 
 // Required due to JENKINS-27421
