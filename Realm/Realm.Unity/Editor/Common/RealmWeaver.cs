@@ -166,7 +166,7 @@ namespace RealmWeaver
         public WeaveModuleResult Execute()
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            //// Debugger.Launch();
+            //// System.Diagnostics.Debugger.Launch();
 
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -183,7 +183,7 @@ namespace RealmWeaver
 
             var submitAnalytics = Task.Run(() =>
             {
-                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name);
+                var analytics = new Analytics(_frameworkName, _moduleDefinition.Name, IsUsingSync());
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
@@ -1502,6 +1502,29 @@ Analytics payload
             realmObjectType.NestedTypes.Add(helperType);
 
             return helperType;
+        }
+
+        private bool IsUsingSync()
+        {
+            try
+            {
+                return IsMethodUsed(_references.SyncConfiguration);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsMethodUsed(TypeReference type)
+        {
+            return _moduleDefinition.GetTypes()
+                       .SelectMany(t => t.Methods)
+                       .Where(m => m.HasBody)
+                       .SelectMany(m => m.Body.Instructions)
+                       .Any(i => i.OpCode == OpCodes.Newobj &&
+                                 i.Operand is MethodReference mRef &&
+                                 mRef.ConstructsType(type));
         }
 
         private struct Accessors

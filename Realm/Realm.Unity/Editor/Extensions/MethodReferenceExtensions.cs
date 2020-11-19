@@ -49,4 +49,9 @@ internal static class MethodReferenceExtensions
 
         return reference;
     }
+
+    public static bool ConstructsType(this MethodReference @this, TypeReference type)
+    {
+        return @this.DeclaringType.IsSameAs(type) && @this.Name == ".ctor";
+    }
 }
