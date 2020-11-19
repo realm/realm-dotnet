@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Foundation;
 using NUnit.Runner;
 using NUnit.Runner.Services;
@@ -48,7 +49,6 @@ namespace Realms.Tests.iOS
             {
                 options.AutoRun = true;
                 options.CreateXmlResultFile = true;
-                options.TerminateAfterExecution = true;
 
                 var hasResultsPath = false;
                 for (var i = 0; i < arguments.Length; i++)
@@ -66,8 +66,16 @@ namespace Realms.Tests.iOS
                     throw new Exception("You must provide path to store test results with --resultpath path/to/results.xml");
                 }
 
-                TestHelpers.CopyBundledFileToDocuments("nunit3-junit.xslt", "nunit3-junit.xslt");
-                options.XmlTransformFile = Realms.RealmConfigurationBase.GetPathToRealm("nunit3-junit.xslt");
+                options.OnCompletedCallback = () =>
+                {
+                    TestHelpers.TransformTestResults(options.ResultFilePath);
+
+                    var selector = new ObjCRuntime.Selector("terminateWithSuccess");
+                    UIApplication.SharedApplication.PerformSelector(selector, UIApplication.SharedApplication, 0);
+
+                    return Task.CompletedTask;
+                };
+
             }
 
             nunit.Options = options;
