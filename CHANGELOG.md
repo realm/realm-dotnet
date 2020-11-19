@@ -10,7 +10,7 @@
   This could only happen when using the dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other than .NET Core 3.x/.NET 5.
 
 ### Enhancements
-* SDK is now also tested against .net5.
+* None
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
@@ -19,6 +19,7 @@
 * Using Sync 10.1.0 and Core 10.1.0.
 * Submit Analytics to S3/Segment in addition to Mixpanel
 * Analytics now also reports if Sync functionality is in use
+* SDK is now also tested against .net5
 
 ## 10.0.0-beta.2 (2020-11-04)
 ------------------
