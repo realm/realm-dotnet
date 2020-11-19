@@ -5,10 +5,12 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
+  The issue manifests itself when different classes have persisted properties with the same name and could result in the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`.
+  This could only happen when using the dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other than .NET Core 3.x/.NET 5.
 
 ### Enhancements
-* None
+* SDK is now also tested against .net5.
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
