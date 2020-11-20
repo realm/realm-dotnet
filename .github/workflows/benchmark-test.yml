@@ -10,18 +10,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      - name: Download previous benchmark data
-        uses: actions/cache@v2
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
       - name: Download previously built wrappers
         id: wrapper-cache
         uses: actions/cache@v2
         with:
-          path: .\wrappers\build\Windows\Release-Win32\
+          path: .\wrappers\build\Windows\
           # This needs to be changed to something meaningful
-          key: wrap-release 
+          key: wrap-all 
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Restore from cache and run vcpkg
@@ -37,28 +32,4 @@ jobs:
       - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-      - name: Run benchmarks
-        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
-      - name: Save artifacts
-        # Not mandatory, but maybe it's good to do it?
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-results
-          # Could be put in an environmental variable
-          path: .\BenchmarkDotNet.Artifacts\results
-      # Download previous benchmark result from cache (if exists)    
-      - name: Store benchmark results
-        uses: Happypig375/github-action-benchmark@v1.8.2
-        with:
-          tool: 'benchmarkdotnet'
-          # Where the output from the benchmark tool is stored
-          output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.QueryTests-report-full-compressed.json
-          # Where the previous data file is stored
-          external-data-json-path: ./cache/benchmark-data.json
-          # Workflow will not fail when an alert happens (default value, just as a reminder)
-          fail-on-alert: false
-          # Branch for gh pages
-          gh-pages-branch: ${{env.gh-pages-branch}}
-      - name: Push benchmark result
-        run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
     
