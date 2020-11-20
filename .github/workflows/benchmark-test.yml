@@ -13,8 +13,10 @@ jobs:
       - name: Restore from cache and run vcpkg
         uses: lukka/run-vcpkg@v5
         with:
+          # Contains the list of packages and the triplet
           vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
           vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
+          # If the cache key is the same, it does not execute
           appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
         env:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
@@ -23,9 +25,28 @@ jobs:
       - name: Run benchmarks
         run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
       - name: Save artifacts
+        # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
           name: test-results
+          # Could be put in an environmental variable
           path: .\BenchmarkDotNet.Artifacts\results
-
+      # Download previous benchmark result from cache (if exists)
+      - name: Download previous benchmark data
+        uses: actions/cache@v1
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark          
+      - name: Store benchmark results
+        uses: Happypig375/github-action-benchmark@v1.8.2
+        with:
+          tool: 'benchmarkdotnet'
+          # Where the output from the benchmark tool is stored
+          output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.QueryTests-report-full-compressed.json
+          # Where the previous data file is stored
+          external-data-json-path: ./cache/benchmark-data.json
+          # Workflow will not fail when an alert happens (default value, just as a reminder)
+          fail-on-alert: false
+      - name: Push benchmark result
+        run: git push 'https://you:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/you/repo-name.git' gh-pages:gh-pages
     
