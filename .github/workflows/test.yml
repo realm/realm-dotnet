@@ -1,0 +1,17 @@
+name: test_action
+on: push
+jobs:
+  string-benchmark:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Print location
+        run: get-location
+        shell: powershell
+      - name: Print location
+        run: get-ChildItem "env:"
+        shell: powershell
+
+
+    
