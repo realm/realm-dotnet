@@ -50,7 +50,7 @@ jobs:
           # Workflow will not fail when an alert happens (default value, just as a reminder)
           fail-on-alert: false
           # Branch for gh pages
-          gh-pages-branch: ${{gh-pages-branch}}
+          gh-pages-branch: ${{env.gh-pages-branch}}
       - name: Push benchmark result
-        run: git push 'https://github.com/realm/realm-dotnet.git' ${{gh-pages-branch}}:${{gh-pages-branch}}
+        run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
     
