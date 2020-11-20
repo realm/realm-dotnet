@@ -24,9 +24,9 @@
 #include "sync/sync_user.hpp"
 #include "sync/sync_session.hpp"
 #include "sync/app.hpp"
-#include "sync/remote_mongo_client.hpp"
-#include "sync/remote_mongo_database.hpp"
-#include "sync/remote_mongo_collection.hpp"
+#include "sync/mongo_client.hpp"
+#include "sync/mongo_database.hpp"
+#include "sync/mongo_collection.hpp"
 #include "app_cs.hpp"
 
 using namespace realm;
