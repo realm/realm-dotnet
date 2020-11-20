@@ -1,7 +1,7 @@
 name: benchmark-test
 on: push
 jobs:
-  string-benchmark:
+  query-benchmark:
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -26,6 +26,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: test-results
-          path: .\Tests\PerformanceTests\BenchmarkDotNet.Artifacts\results
+          path: .\BenchmarkDotNet.Artifacts\results
 
     
