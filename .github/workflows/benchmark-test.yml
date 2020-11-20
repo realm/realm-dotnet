@@ -7,7 +7,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          submodules: 'true'
+          submodules: 'recursive'
       - name: Get CMake
         uses: lukka/get-cmake@latest
       - name: Restore from cache and run vcpkg

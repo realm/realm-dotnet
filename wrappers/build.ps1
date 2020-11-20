@@ -42,11 +42,6 @@ $Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"
 $cmake = Join-Path $vs.InstallationPath -ChildPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
 $cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUILD_TYPE=$Configuration", "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=$Toolchain"
 
-write-output "VS - $vs"
-write-output "CMAKE - $cmake"
-write-output "CMAKEARGS - $cmakeArgs"  #TODO FP For testing
-
-
 if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
 } else {
