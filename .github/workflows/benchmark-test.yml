@@ -3,13 +3,44 @@ on: push
 env:
   gh-pages-branch: fp/benchmark-gh-pages-test
 jobs:
+  build-wrappers:
+    runs-on: windows-latest
+    steps:
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: .\wrappers\build\Windows\Release-Win32\
+          # This needs to be changed to something meaningful
+          key: wrapper-windows-release-32
+      - name: Checkout code
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Get CMake
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        uses: lukka/get-cmake@latest
+      - name: Restore from cache and run vcpkg
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        uses: lukka/run-vcpkg@v5
+        with:
+          # Contains the list of packages and the triplet
+          vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
+          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
+          # If the cache key is the same, it does not execute
+          appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
+        env:
+          vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
+      - name: Build wrappers Release
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
   query-benchmark:
+    needs: [build-wrappers]
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
       - name: Download previous benchmark data
         uses: actions/cache@v2
         with:
@@ -21,28 +52,7 @@ jobs:
         with:
           path: .\wrappers\build\Windows\Release-Win32\
           # This needs to be changed to something meaningful
-          key: wrap-all
-      - name: Get CMake
-        uses: lukka/get-cmake@latest
-      - name: Restore from cache and run vcpkg
-        uses: lukka/run-vcpkg@v5
-        with:
-          # Contains the list of packages and the triplet
-          vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
-          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
-          # If the cache key is the same, it does not execute
-          appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
-        env:
-          vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
-      - name: Build wrappers Debug
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: .\wrappers\build.ps1 Windows -Configuration Debug -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-      - name: Build wrappers Release
-        if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-      - name: Print wrappers content
-        run: Tree .\wrappers\build /f
-        shell: powershell
+          key: wrapper-windows-release-32
       - name: Run benchmarks
         run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
       - name: Save artifacts
@@ -67,4 +77,3 @@ jobs:
           gh-pages-branch: ${{env.gh-pages-branch}}
       - name: Push benchmark result
         run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
-    
