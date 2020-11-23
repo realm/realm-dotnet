@@ -78,6 +78,8 @@ jobs:
       - name: Git status
         run: git status
       - name: Git branches
-        run: git --no-pager branch -a
+        run: |
+          git fetch
+          git --no-pager branch -a
       - name: Push benchmark result
         run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
