@@ -1,16 +1,28 @@
 name: benchmark-test
 on: push
+env:
+  gh-pages-branch: fp/benchmark-gh-pages-test
 jobs:
-  query-benchmark:
+  build-wrappers:
     runs-on: windows-latest
     steps:
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: .\wrappers\build\Windows\Release-x64\
+          # This needs to be changed to something meaningful
+          key: wrapper-windows-release-64
       - name: Checkout code
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
       - name: Get CMake
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: lukka/get-cmake@latest
       - name: Restore from cache and run vcpkg
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v5
         with:
           # Contains the list of packages and the triplet
@@ -20,8 +32,27 @@ jobs:
           appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
         env:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
-      - name: Build wrappers
-        run: .\wrappers\build.ps1 Windows -Configuration Debug -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+      - name: Build wrappers Release
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+  query-benchmark:
+    needs: [build-wrappers]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download previous benchmark data
+        uses: actions/cache@v2
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: .\wrappers\build\Windows\Release-x64\
+          # This needs to be changed to something meaningful
+          key: wrapper-windows-release-64
       - name: Run benchmarks
         run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
       - name: Save artifacts
@@ -31,12 +62,7 @@ jobs:
           name: test-results
           # Could be put in an environmental variable
           path: .\BenchmarkDotNet.Artifacts\results
-      # Download previous benchmark result from cache (if exists)
-      - name: Download previous benchmark data
-        uses: actions/cache@v1
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark          
+      # Download previous benchmark result from cache (if exists)    
       - name: Store benchmark results
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
@@ -47,6 +73,7 @@ jobs:
           external-data-json-path: ./cache/benchmark-data.json
           # Workflow will not fail when an alert happens (default value, just as a reminder)
           fail-on-alert: false
+          # Branch for gh pages
+          gh-pages-branch: ${{env.gh-pages-branch}}
       - name: Push benchmark result
-        run: git push 'https://you:${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/you/repo-name.git' gh-pages:gh-pages
-    
+        run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
