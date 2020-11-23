@@ -75,11 +75,5 @@ jobs:
           fail-on-alert: false
           # Branch for gh pages
           gh-pages-branch: ${{env.gh-pages-branch}}
-      - name: Git status
-        run: git status
-      - name: Git branches
-        run: |
-          git fetch
-          git --no-pager branch -a
-      - name: Push benchmark result
-        run: git push 'https://github.com/realm/realm-dotnet.git' ${{env.gh-pages-branch}}:${{env.gh-pages-branch}}
+          auto-push: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
