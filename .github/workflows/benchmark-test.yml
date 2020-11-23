@@ -41,11 +41,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Download previous benchmark data
-        uses: actions/cache@v2
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
       - name: Download previously built wrappers
         id: wrapper-cache
         uses: actions/cache@v2
@@ -69,8 +64,6 @@ jobs:
           tool: 'benchmarkdotnet'
           # Where the output from the benchmark tool is stored
           output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.QueryTests-report-full-compressed.json
-          # Where the previous data file is stored
-          external-data-json-path: ./cache/benchmark-data.json
           # Workflow will not fail when an alert happens (default value, just as a reminder)
           fail-on-alert: false
           # Branch for gh pages
