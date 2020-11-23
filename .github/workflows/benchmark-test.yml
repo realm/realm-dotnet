@@ -54,7 +54,7 @@ jobs:
           # This needs to be changed to something meaningful
           key: wrapper-windows-release-32
       - name: Run benchmarks
-        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
+        run:  dotnet run -r win-x86 -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
