@@ -1,4 +1,4 @@
 zlib
 openssl
 --triplet
-x86-windows-static
+x64-windows-static
