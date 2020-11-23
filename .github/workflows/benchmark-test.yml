@@ -10,9 +10,9 @@ jobs:
         id: wrapper-cache
         uses: actions/cache@v2
         with:
-          path: .\wrappers\build\Windows\Release-Win32\
+          path: .\wrappers\build\Windows\Release-x64\
           # This needs to be changed to something meaningful
-          key: wrapper-windows-release-32
+          key: wrapper-windows-release-64
       - name: Checkout code
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms Win32 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
   query-benchmark:
     needs: [build-wrappers]
     runs-on: windows-latest
@@ -50,11 +50,11 @@ jobs:
         id: wrapper-cache
         uses: actions/cache@v2
         with:
-          path: .\wrappers\build\Windows\Release-Win32\
+          path: .\wrappers\build\Windows\Release-x64\
           # This needs to be changed to something meaningful
-          key: wrapper-windows-release-32
+          key: wrapper-windows-release-64
       - name: Run benchmarks
-        run:  dotnet run -r win-x86 -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
+        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
