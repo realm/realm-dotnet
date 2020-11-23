@@ -8,12 +8,12 @@ jobs:
   build-wrappers:
     runs-on: windows-latest
     steps:
-      - name: Download previously built wrappers
+      - name: Check if cache contains wrappers already
         id: wrapper-cache
         uses: actions/cache@v2
         with:
           path: .\wrappers\build\Windows\Release-x64\
-          # This needs to be changed to something meaningful
+          # This needs to be changed to something meaningful, and that changes if the wrappers change.
           key: wrapper-windows-release-64
       - name: Checkout code
         # If there is a cache hit, no need to do any of the following steps. Unfortunately there is no way to cancel the rest of the job.
