@@ -1,7 +1,8 @@
 name: benchmark-test
 on: push
 env:
-  gh-pages-branch: fp/benchmark-gh-pages-test
+  # This could be something else, but if we do we need to change the default branch for pages in the repository settings
+  gh-pages-branch: gh-pages
 jobs:
   build-wrappers:
     runs-on: windows-latest
