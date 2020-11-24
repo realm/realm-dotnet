@@ -14,7 +14,9 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Print hashfiles
-        run: write-output ${{hashfiles('.\wrappers')}}
+        run: write-output ${{hashfiles('.\wrappers\**')}}
+      - name: Exit
+        run: exit 1
       - name: Check if cache contains wrappers already
         id: wrapper-cache
         uses: actions/cache@v2
