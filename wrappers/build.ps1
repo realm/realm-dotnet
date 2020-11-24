@@ -11,7 +11,6 @@
      limitations under the License.
 #>
 
-
 param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
