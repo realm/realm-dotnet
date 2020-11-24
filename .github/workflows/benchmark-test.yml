@@ -3,8 +3,6 @@ on:
   # To enable running it manually, possibility of adding parameters
   workflow_dispatch:
   push:
-    branches:
-      - main
   pull_request:    
 env:
   # Branch for Github Pages
