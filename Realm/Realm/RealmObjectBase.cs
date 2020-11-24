@@ -205,20 +205,27 @@ namespace Realms
 
 #pragma warning disable SA1600 // Elements should be documented
 
-        #region Getters
-
-        protected string GetStringValue(string propertyName)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            return _objectHandle.GetValue(_metadata.PropertyIndices[propertyName]);
-        }
-
         protected RealmValue GetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return _objectHandle.GetValue(_metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetValue(propertyName, _metadata, _realm);
+        }
+
+        protected void SetValue(string propertyName, RealmValue val)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            var propertyIndex = _metadata.PropertyIndices[propertyName];
+
+            _objectHandle.SetValue(propertyIndex, val, _realm);
+        }
+
+        protected void SetValueUnique(string propertyName, RealmValue val)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetValueUnique(_metadata.PropertyIndices[propertyName], val);
         }
 
         protected internal IList<T> GetListValue<T>(string propertyName)
@@ -235,21 +242,6 @@ namespace Realms
 
             _metadata.Schema.TryFindProperty(propertyName, out var property);
             return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
-        }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        protected T GetObjectValue<T>(string propertyName)
-            where T : RealmObjectBase
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            if (_objectHandle.TryGetLink(_metadata.PropertyIndices[propertyName], out var objectHandle))
-            {
-                _metadata.Schema.TryFindProperty(propertyName, out var property);
-                return (T)_realm.MakeObject(_realm.Metadata[property.ObjectType], objectHandle);
-            }
-
-            return null;
         }
 
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
@@ -269,36 +261,6 @@ namespace Realms
 
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
-
-        #endregion
-
-        #region Setters
-
-        protected void SetValueUnique(string propertyName, RealmValue val)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetValueUnique(_metadata.PropertyIndices[propertyName], val);
-        }
-
-        // Originally a generic fallback, now used only for RealmObjectBase To-One relationship properties
-        // most other properties handled with woven type-specific setters above
-        protected void SetObjectValue<T>(string propertyName, T value)
-            where T : RealmObjectBase
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetObject(Realm, _metadata.PropertyIndices[propertyName], value);
-        }
-
-        protected void SetValue(string propertyName, RealmValue val)
-        {
-            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
-
-            _objectHandle.SetValue(_metadata.PropertyIndices[propertyName], val);
-        }
-
-        #endregion
 
 #pragma warning restore SA1600 // Elements should be documented
 

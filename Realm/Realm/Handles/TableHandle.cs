@@ -74,7 +74,7 @@ namespace Realms
             return new ObjectHandle(realmHandle, result);
         }
 
-        public unsafe bool TryFind(SharedRealmHandle realmHandle, RealmValue id, out ObjectHandle objectHandle)
+        public unsafe bool TryFind(SharedRealmHandle realmHandle, in RealmValue id, out ObjectHandle objectHandle)
         {
             var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primarykey(this, realmHandle, primitiveValue, out var ex);

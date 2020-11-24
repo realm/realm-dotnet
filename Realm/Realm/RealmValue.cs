@@ -49,14 +49,15 @@ namespace Realms
     /// </code>
     /// </example>
     [Preserve(AllMembers = true)]
-    public struct RealmValue
+    public readonly struct RealmValue : IEquatable<RealmValue>
     {
-        private PrimitiveValue _primitiveValue;
-        private string _stringValue;
-        private byte[] _dataValue;
+        private readonly PrimitiveValue _primitiveValue;
+        private readonly string _stringValue;
+        private readonly byte[] _dataValue;
+        private readonly RealmObjectBase _objectValue;
 
-        private ObjectHandle _objectHandle;
-        private IntPtr _propertyIndex;
+        private readonly ObjectHandle _objectHandle;
+        private readonly IntPtr _propertyIndex;
 
         /// <summary>
         /// Gets the <see cref="RealmValueType"/> stored in this value.
@@ -71,7 +72,7 @@ namespace Realms
         /// <value>The <see cref="RealmValueType"/> of the current value in the database.</value>
         public RealmValueType Type { get; }
 
-        internal RealmValue(PrimitiveValue primitive, ObjectHandle handle = default, IntPtr propertyIndex = default)
+        internal RealmValue(PrimitiveValue primitive, ObjectHandle handle = default, IntPtr propertyIndex = default) : this()
         {
             Type = primitive.Type;
             _objectHandle = handle;
@@ -80,41 +81,35 @@ namespace Realms
             switch (Type)
             {
                 case RealmValueType.Data:
-                    _primitiveValue = default;
                     _dataValue = primitive.AsBinary();
-                    _stringValue = default;
                     break;
                 case RealmValueType.String:
-                    _primitiveValue = default;
-                    _dataValue = default;
                     _stringValue = primitive.AsString();
                     break;
+                case RealmValueType.Object:
+                    throw new NotSupportedException("Use RealmValue(RealmObject) instead.");
                 default:
                     _primitiveValue = primitive;
-                    _dataValue = default;
-                    _stringValue = default;
                     break;
             }
         }
 
-        internal RealmValue(byte[] data)
+        internal RealmValue(byte[] data) : this()
         {
             Type = data == null ? RealmValueType.Null : RealmValueType.Data;
             _dataValue = data;
-            _primitiveValue = default;
-            _stringValue = default;
-            _objectHandle = default;
-            _propertyIndex = default;
         }
 
-        internal RealmValue(string value)
+        internal RealmValue(string value) : this()
         {
             Type = value == null ? RealmValueType.Null : RealmValueType.String;
             _stringValue = value;
-            _dataValue = default;
-            _primitiveValue = default;
-            _objectHandle = default;
-            _propertyIndex = default;
+        }
+
+        internal RealmValue(RealmObjectBase obj) : this()
+        {
+            Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
+            _objectValue = obj;
         }
 
         internal static RealmValue Null() => new RealmValue(PrimitiveValue.Null());
@@ -137,6 +132,8 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
+        private static RealmValue Object(RealmObjectBase value) => new RealmValue(value);
+
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
             if (value is null)
@@ -155,6 +152,7 @@ namespace Realms
                 RealmValueType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
                 RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
+                RealmValueType.Object => Object(Operator.Convert<T, RealmObjectBase>(value)),
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
         }
@@ -181,6 +179,8 @@ namespace Realms
 
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
+                case RealmValueType.Object:
+                    return (PrimitiveValue.Object(_objectValue?.ObjectHandle), null);
                 default:
                     return (_primitiveValue, null);
             }
@@ -214,8 +214,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns>A 16-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsShortRealmInteger"/>
-        public short AsShort()
+        /// <seealso cref="AsInt16RealmInteger"/>
+        public short AsInt16()
         {
             EnsureType("short", RealmValueType.Int);
             return (short)_primitiveValue.AsInt();
@@ -226,8 +226,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns>A 32-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsIntRealmInteger"/>
-        public int AsInt()
+        /// <seealso cref="AsInt32RealmInteger"/>
+        public int AsInt32()
         {
             EnsureType("int", RealmValueType.Int);
             return (int)_primitiveValue.AsInt();
@@ -238,8 +238,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns>A 64-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsLongRealmInteger"/>
-        public long AsLong()
+        /// <seealso cref="AsInt64RealmInteger"/>
+        public long AsInt64()
         {
             EnsureType("long", RealmValueType.Int);
             return _primitiveValue.AsInt();
@@ -337,8 +337,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns> An 16-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsShort"/>
-        public RealmInteger<short> AsShortRealmInteger() => new RealmInteger<short>(AsShort(), _objectHandle, _propertyIndex);
+        /// <seealso cref="AsInt16"/>
+        public RealmInteger<short> AsInt16RealmInteger() => new RealmInteger<short>(AsInt16(), _objectHandle, _propertyIndex);
 
         /// <summary>
         /// Returns the stored value as a <see cref="RealmInteger{T}"/>. It offers Increment/Decrement API that preserve intent when merging
@@ -346,8 +346,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns> An 32-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsInt"/>
-        public RealmInteger<int> AsIntRealmInteger() => new RealmInteger<int>(AsInt(), _objectHandle, _propertyIndex);
+        /// <seealso cref="AsInt32"/>
+        public RealmInteger<int> AsInt32RealmInteger() => new RealmInteger<int>(AsInt32(), _objectHandle, _propertyIndex);
 
         /// <summary>
         /// Returns the stored value as a <see cref="RealmInteger{T}"/>. It offers Increment/Decrement API that preserve intent when merging
@@ -355,8 +355,8 @@ namespace Realms
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/>.</exception>
         /// <returns> An 64-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsLong"/>
-        public RealmInteger<long> AsLongRealmInteger() => new RealmInteger<long>(AsLong(), _objectHandle, _propertyIndex);
+        /// <seealso cref="AsInt64"/>
+        public RealmInteger<long> AsInt64RealmInteger() => new RealmInteger<long>(AsInt64(), _objectHandle, _propertyIndex);
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="char"/>.
@@ -384,8 +384,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns>A nullable 16-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableShortRealmInteger"/>
-        public short? AsNullableShort() => Type == RealmValueType.Null ? null : (short?)AsShort();
+        /// <seealso cref="AsNullableInt16RealmInteger"/>
+        public short? AsNullableInt16() => Type == RealmValueType.Null ? null : (short?)AsInt16();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="int"/>.
@@ -394,8 +394,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns>A nullable 32-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableIntRealmInteger"/>
-        public int? AsNullableInt() => Type == RealmValueType.Null ? null : (int?)AsInt();
+        /// <seealso cref="AsNullableInt32RealmInteger"/>
+        public int? AsNullableInt32() => Type == RealmValueType.Null ? null : (int?)AsInt32();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="long"/>.
@@ -404,8 +404,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns>A nullable 64-bit integer representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableLongRealmInteger"/>
-        public long? AsNullableLong() => Type == RealmValueType.Null ? null : (long?)AsLong();
+        /// <seealso cref="AsNullableInt64RealmInteger"/>
+        public long? AsNullableInt64() => Type == RealmValueType.Null ? null : (long?)AsInt64();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="RealmInteger{T}"/>. It offers Increment/Decrement API that preserve intent when merging
@@ -426,8 +426,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns> A nullable 16-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableShort"/>
-        public RealmInteger<short>? AsNullableShortRealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<short>?)AsShortRealmInteger();
+        /// <seealso cref="AsNullableInt16"/>
+        public RealmInteger<short>? AsNullableInt16RealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<short>?)AsInt16RealmInteger();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="RealmInteger{T}"/>. It offers Increment/Decrement API that preserve intent when merging
@@ -437,8 +437,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns> A nullable 32-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableInt"/>
-        public RealmInteger<int>? AsNullableIntRealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<int>?)AsIntRealmInteger();
+        /// <seealso cref="AsNullableInt32"/>
+        public RealmInteger<int>? AsNullableInt32RealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<int>?)AsInt32RealmInteger();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="RealmInteger{T}"/>. It offers Increment/Decrement API that preserve intent when merging
@@ -448,8 +448,8 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Int"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns> A nullable 64-bit <see cref="RealmInteger{T}"/> representing the value stored in the database.</returns>
-        /// <seealso cref="AsNullableLong"/>
-        public RealmInteger<long>? AsNullableLongRealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<long>?)AsLongRealmInteger();
+        /// <seealso cref="AsNullableInt64"/>
+        public RealmInteger<long>? AsNullableInt64RealmInteger() => Type == RealmValueType.Null ? null : (RealmInteger<long>?)AsInt64RealmInteger();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="float"/>.
@@ -555,6 +555,39 @@ namespace Realms
         }
 
         /// <summary>
+        /// Returns the stored value as a <see cref="RealmObjectBase"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the underlying value is not of type <see cref="RealmValueType.Object"/> or <see cref="RealmValueType.Null"/>.
+        /// </exception>
+        /// <returns>
+        /// A <see cref="RealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
+        /// </returns>
+        public RealmObjectBase AsRealmObject() => AsRealmObject<RealmObjectBase>();
+
+        /// <summary>
+        /// Returns the stored value as a <typeparamref name="T"/> which inherits from <see cref="RealmObjectBase"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the underlying value is not of type <see cref="RealmValueType.Object"/> or <see cref="RealmValueType.Null"/>.
+        /// </exception>
+        /// <typeparam name="T">The type of the object stored in the database.</typeparam>
+        /// <returns>
+        /// A <see cref="RealmObjectBase"/> instance representing the value stored in the database. It will be <c>null</c> if <see cref="Type"/> is <see cref="RealmValueType.Null"/>.
+        /// </returns>
+        public T AsRealmObject<T>()
+            where T : RealmObjectBase
+        {
+            if (Type == RealmValueType.Null)
+            {
+                return null;
+            }
+
+            EnsureType("object", RealmValueType.Object);
+            return (T)_objectValue;
+        }
+
+        /// <summary>
         /// Returns the stored value converted to <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type to which to convert the value.</typeparam>
@@ -564,7 +597,7 @@ namespace Realms
         {
             if (Type == RealmValueType.Int)
             {
-                return Operator.Convert<long, T>(AsLong());
+                return Operator.Convert<long, T>(AsInt64());
             }
 
             if (Type == RealmValueType.Decimal128)
@@ -584,7 +617,7 @@ namespace Realms
             return Type switch
             {
                 RealmValueType.Null => null,
-                RealmValueType.Int => AsLong(),
+                RealmValueType.Int => AsInt64(),
                 RealmValueType.Bool => AsBool(),
                 RealmValueType.String => AsString(),
                 RealmValueType.Data => AsData(),
@@ -593,7 +626,7 @@ namespace Realms
                 RealmValueType.Double => AsDouble(),
                 RealmValueType.Decimal128 => AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId(),
-                RealmValueType.Object => throw new NotImplementedException(),
+                RealmValueType.Object => AsRealmObject(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
@@ -604,15 +637,54 @@ namespace Realms
         /// <returns>A string describing the value.</returns>
         public override string ToString() => AsAny()?.ToString() ?? "<null>";
 
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (!(obj is RealmValue val))
+            {
+                return false;
+            }
+
+            return Equals(val);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = -1285871140;
+                hashCode = (hashCode * -1521134295) + Type.GetHashCode();
+
+                var valueHashCode = Type switch
+                {
+                    RealmValueType.Int => AsInt64().GetHashCode(),
+                    RealmValueType.Bool => AsBool().GetHashCode(),
+                    RealmValueType.String => AsString().GetHashCode(),
+                    RealmValueType.Data => AsData().GetHashCode(),
+                    RealmValueType.Date => AsDate().GetHashCode(),
+                    RealmValueType.Float => AsFloat().GetHashCode(),
+                    RealmValueType.Double => AsDouble().GetHashCode(),
+                    RealmValueType.Decimal128 => AsDecimal128().GetHashCode(),
+                    RealmValueType.ObjectId => AsObjectId().GetHashCode(),
+                    RealmValueType.Object => AsRealmObject().GetHashCode(),
+                    _ => 0,
+                };
+
+                hashCode = (hashCode * -1521134295) + valueHashCode;
+                return hashCode;
+            }
+        }
+
         public static implicit operator char(RealmValue val) => val.AsChar();
 
         public static implicit operator byte(RealmValue val) => val.AsByte();
 
-        public static implicit operator short(RealmValue val) => val.AsShort();
+        public static implicit operator short(RealmValue val) => val.AsInt16();
 
-        public static implicit operator int(RealmValue val) => val.AsInt();
+        public static implicit operator int(RealmValue val) => val.AsInt32();
 
-        public static implicit operator long(RealmValue val) => val.AsLong();
+        public static implicit operator long(RealmValue val) => val.AsInt64();
 
         public static implicit operator float(RealmValue val) => val.AsFloat();
 
@@ -632,11 +704,11 @@ namespace Realms
 
         public static implicit operator byte?(RealmValue val) => val.AsNullableByte();
 
-        public static implicit operator short?(RealmValue val) => val.AsNullableShort();
+        public static implicit operator short?(RealmValue val) => val.AsNullableInt16();
 
-        public static implicit operator int?(RealmValue val) => val.AsNullableInt();
+        public static implicit operator int?(RealmValue val) => val.AsNullableInt32();
 
-        public static implicit operator long?(RealmValue val) => val.AsNullableLong();
+        public static implicit operator long?(RealmValue val) => val.AsNullableInt64();
 
         public static implicit operator float?(RealmValue val) => val.AsNullableFloat();
 
@@ -654,23 +726,25 @@ namespace Realms
 
         public static implicit operator RealmInteger<byte>(RealmValue val) => val.AsByteRealmInteger();
 
-        public static implicit operator RealmInteger<short>(RealmValue val) => val.AsShortRealmInteger();
+        public static implicit operator RealmInteger<short>(RealmValue val) => val.AsInt16RealmInteger();
 
-        public static implicit operator RealmInteger<int>(RealmValue val) => val.AsIntRealmInteger();
+        public static implicit operator RealmInteger<int>(RealmValue val) => val.AsInt32RealmInteger();
 
-        public static implicit operator RealmInteger<long>(RealmValue val) => val.AsLongRealmInteger();
+        public static implicit operator RealmInteger<long>(RealmValue val) => val.AsInt64RealmInteger();
 
         public static implicit operator RealmInteger<byte>?(RealmValue val) => val.AsNullableByteRealmInteger();
 
-        public static implicit operator RealmInteger<short>?(RealmValue val) => val.AsNullableShortRealmInteger();
+        public static implicit operator RealmInteger<short>?(RealmValue val) => val.AsNullableInt16RealmInteger();
 
-        public static implicit operator RealmInteger<int>?(RealmValue val) => val.AsNullableIntRealmInteger();
+        public static implicit operator RealmInteger<int>?(RealmValue val) => val.AsNullableInt32RealmInteger();
 
-        public static implicit operator RealmInteger<long>?(RealmValue val) => val.AsNullableLongRealmInteger();
+        public static implicit operator RealmInteger<long>?(RealmValue val) => val.AsNullableInt64RealmInteger();
 
         public static implicit operator byte[](RealmValue val) => val.AsData();
 
         public static implicit operator string(RealmValue val) => val.AsString();
+
+        public static implicit operator RealmObjectBase(RealmValue val) => val.AsRealmObject();
 
         public static implicit operator RealmValue(char val) => Int(val);
 
@@ -740,6 +814,8 @@ namespace Realms
 
         public static implicit operator RealmValue(string val) => String(val);
 
+        public static implicit operator RealmValue(RealmObjectBase val) => Object(val);
+
         private void EnsureType(string target, RealmValueType type)
         {
             if (Type != type)
@@ -767,6 +843,44 @@ namespace Realms
                     ArrayPool<byte>.Shared.Return(_buffer);
                 }
             }
+        }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>true if the current object is equal to the other parameter; otherwise, false.</returns>
+        public bool Equals(RealmValue other)
+        {
+            if (other.Type != Type)
+            {
+                return false;
+            }
+
+            return Type switch
+            {
+                RealmValueType.Int => AsInt64() == other.AsInt64(),
+                RealmValueType.Bool => AsBool() == other.AsBool(),
+                RealmValueType.String => AsString() == other.AsString(),
+                RealmValueType.Data => AsData() == other.AsData(),
+                RealmValueType.Date => AsDate() == other.AsDate(),
+                RealmValueType.Float => AsFloat() == other.AsFloat(),
+                RealmValueType.Double => AsDouble() == other.AsDouble(),
+                RealmValueType.Decimal128 => AsDecimal128() == other.AsDecimal128(),
+                RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
+                RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
+                _ => false,
+            };
+        }
+
+        public static bool operator ==(RealmValue left, RealmValue right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(RealmValue left, RealmValue right)
+        {
+            return !(left == right);
         }
     }
 }

@@ -36,15 +36,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr resultsHandle);
 
-            #region get
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object(ResultsHandle results, IntPtr index, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(ResultsHandle results, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
-
-            #endregion
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_value(ResultsHandle results, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr count(ResultsHandle results, out NativeException ex);
@@ -115,15 +108,8 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        #region GetAtIndex
-
-        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
-            NativeMethods.get_object(this, index, out nativeException);
-
-        protected override void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_primitive(this, index, out result, out nativeException);
-
-        #endregion
+        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_value(this, index, out result, out nativeException);
 
         public override int Count()
         {

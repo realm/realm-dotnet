@@ -238,7 +238,7 @@ static inline std::string to_string(PropertyType type)
     return to_string(to_capi(type));
 }
 
-static inline Mixed from_capi(realm_value_t val)
+static inline Mixed from_capi(realm_value_t val, bool isMixed)
 {
     switch (val.type) {
     case realm_value_type::RLM_TYPE_NULL:
@@ -262,12 +262,17 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_OBJECT_ID:
         return Mixed{ from_capi(val.object_id) };
     case realm_value_type::RLM_TYPE_LINK:
+        if (!isMixed)
+        {
+            return Mixed{ val.link.object->obj().get_key() };
+        }
+
         return Mixed{ ObjLink{val.link.object->obj().get_table()->get_key(), val.link.object->obj().get_key()} };
     }
     REALM_TERMINATE("Invalid realm_value_t");
 }
 
-static inline realm_value_t to_capi(Mixed value)
+static inline realm_value_t to_capi(Mixed value, SharedRealm realm, StringData object_type)
 {
     realm_value_t val;
     if (value.is_null()) {
@@ -316,7 +321,9 @@ static inline realm_value_t to_capi(Mixed value)
             break;
         }
         case type_Link: {
-            REALM_TERMINATE("Not implemented yet");
+            val.type = realm_value_type::RLM_TYPE_LINK;
+            val.link.object = new Object(realm, object_type, value.get<ObjKey>());
+            break;
         }
         case type_ObjectId: {
             val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
@@ -325,15 +332,12 @@ static inline realm_value_t to_capi(Mixed value)
         }
         case type_TypedLink: {
             val.type = realm_value_type::RLM_TYPE_LINK;
-            auto link = value.get<ObjLink>();
 
-            REALM_TERMINATE("Implement me!!");
-            // BLAH!
-            // val.link.target_table = to_capi(link.get_table_key());
-            // val.link.target = to_capi(link.get_obj_key());
+            auto link = value.get<ObjLink>();
+            auto obj = realm->read_group().get_table(link.get_table_key())->get_object(link.get_obj_key());
+            val.link.object = new Object(realm, std::move(obj));
             break;
         }
-
         case type_LinkList:
             [[fallthrough]];
         case type_Mixed:

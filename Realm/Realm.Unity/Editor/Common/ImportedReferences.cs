@@ -99,10 +99,6 @@ namespace RealmWeaver
 
         public MethodReference RealmObject_RaisePropertyChanged { get; private set; }
 
-        public MethodReference RealmObject_GetObjectValue { get; private set; }
-
-        public MethodReference RealmObject_SetObjectValue { get; private set; }
-
         public MethodReference RealmObject_GetListValue { get; private set; }
 
         public MethodReference RealmObject_GetSetValue { get; private set; }
@@ -289,22 +285,6 @@ namespace RealmWeaver
                 HasThis = true,
                 Parameters = { new ParameterDefinition(Types.String) }
             };
-
-            {
-                RealmObject_GetObjectValue = new MethodReference("GetObjectValue", Types.Void, RealmObjectBase) { HasThis = true };
-                var T = new GenericParameter(RealmObject_GetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
-                RealmObject_GetObjectValue.ReturnType = T;
-                RealmObject_GetObjectValue.GenericParameters.Add(T);
-                RealmObject_GetObjectValue.Parameters.Add(new ParameterDefinition(Types.String));
-            }
-
-            {
-                RealmObject_SetObjectValue = new MethodReference("SetObjectValue", Types.Void, RealmObjectBase) { HasThis = true };
-                var T = new GenericParameter(RealmObject_SetObjectValue) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
-                RealmObject_SetObjectValue.GenericParameters.Add(T);
-                RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(Types.String));
-                RealmObject_SetObjectValue.Parameters.Add(new ParameterDefinition(T));
-            }
 
             {
                 RealmObject_GetListValue = new MethodReference("GetListValue", new GenericInstanceType(IListOfT), RealmObjectBase) { HasThis = true };

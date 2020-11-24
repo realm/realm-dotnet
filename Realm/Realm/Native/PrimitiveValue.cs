@@ -58,6 +58,9 @@ namespace Realms.Native
         [FieldOffset(0)]
         private BinaryValue data_value;
 
+        [FieldOffset(0)]
+        private LinkValue link_value;
+
         [FieldOffset(16)]
         [MarshalAs(UnmanagedType.U1)]
         public RealmValueType Type;
@@ -166,6 +169,18 @@ namespace Realms.Native
             };
         }
 
+        public static PrimitiveValue Object(ObjectHandle handle)
+        {
+            return new PrimitiveValue
+            {
+                Type = handle == null ? RealmValueType.Null : RealmValueType.Object,
+                link_value = new LinkValue
+                {
+                    object_ptr = handle?.DangerousGetHandle() ?? IntPtr.Zero
+                }
+            };
+        }
+
         public bool AsBool() => bool_value;
 
         public long AsInt() => int_value;
@@ -207,6 +222,8 @@ namespace Realms.Native
             return bytes;
         }
 
+        public ObjectHandle AsObject(RealmHandle root) => new ObjectHandle(root, link_value.object_ptr);
+
         [StructLayout(LayoutKind.Sequential)]
         private unsafe struct StringValue
         {
@@ -219,6 +236,12 @@ namespace Realms.Native
         {
             public byte* data;
             public IntPtr size;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct LinkValue
+        {
+            public IntPtr object_ptr;
         }
     }
 }

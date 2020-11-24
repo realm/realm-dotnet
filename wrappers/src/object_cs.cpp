@@ -31,16 +31,6 @@ using namespace realm;
 using namespace realm::binding;
 
 template <typename T>
-inline T object_get(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        verify_can_get(object);
-
-        return object.obj().get<T>(get_column_key(object, property_ndx));
-    });
-}
-
-template <typename T>
 inline void object_set(Object& object, size_t property_ndx, const T& value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -63,28 +53,6 @@ extern "C" {
         delete object;
     }
 
-    REALM_EXPORT void object_get_key(const Object& object, ObjKey& key, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            key = object.obj().get_key();
-        });
-    }
-
-    REALM_EXPORT Object* object_get_link(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() -> Object* {
-            verify_can_get(object);
-
-            const Obj link_obj = object.obj().get_linked_object(get_column_key(object, property_ndx));
-            if (!link_obj)
-                return nullptr;
-
-            const std::string target_name(ObjectStore::object_type_for_table_name(link_obj.get_table()->get_name()));
-            auto& target_schema = *object.realm()->schema().find(target_name);
-            return new Object(object.realm(), target_schema, link_obj);
-        });
-    }
-
     REALM_EXPORT List* object_get_list(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() -> List* {
@@ -94,17 +62,18 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_get_primitive(const Object& object, size_t property_ndx, realm_value_t* value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_get_value(const Object& object, size_t property_ndx, realm_value_t* value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            auto val = object.obj().get_any(get_column_key(object, property_ndx));
-            *value = to_capi(val);
+            auto prop = get_property(object, property_ndx);
+            auto val = object.obj().get_any(prop.column_key);
+            *value = to_capi(val, object.get_realm(), prop.object_type);
         });
     }
 
-    REALM_EXPORT void object_set_primitive(const Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_value(const Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -112,14 +81,14 @@ extern "C" {
             auto prop = get_property(object, property_ndx);
 
             if (value.is_null() && !is_nullable(prop.type)) {
-                auto schema = object.get_object_schema();
+                auto& schema = object.get_object_schema();
                 throw NotNullableException(schema.name, prop.name);
             }
 
             // TODO: replace prop.column_key().get_type() with prop.type
             if (!value.is_null() && to_capi(prop.type) != value.type &&
                 prop.column_key.get_type() != col_type_Mixed) {
-                auto schema = object.get_object_schema();
+                auto& schema = object.get_object_schema();
                 throw PropertyTypeMismatchException(
                     schema.name,
                     schema.persisted_properties[property_ndx].name,
@@ -127,7 +96,7 @@ extern "C" {
                     to_string(value.type));
             }
 
-            auto val = from_capi(value);
+            auto val = from_capi(value, prop.column_key.get_type() == ColumnType::col_type_Mixed);
             object.obj().set_any(prop.column_key, val);
         });
     }
@@ -167,11 +136,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
-    {
-        return object_set<ObjKey>(object, property_ndx, target_object.obj().get_key(), ex);
-    }
-
     REALM_EXPORT Object* object_create_embedded(Object& parent, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
@@ -179,11 +143,6 @@ extern "C" {
 
             return new Object(parent.realm(), parent.obj().create_and_set_linked_object(get_column_key(parent, property_ndx)));
         });
-    }
-
-    REALM_EXPORT void object_clear_link(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
-    {
-        return object_set<ObjKey>(object, property_ndx, null_key, ex);
     }
 
     REALM_EXPORT void object_set_null(Object& object, size_t property_ndx, NativeException::Marshallable& ex)

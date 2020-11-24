@@ -152,7 +152,6 @@ namespace Realms
             return chain.ToArray();
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             if (node.Method.DeclaringType == typeof(Queryable))
@@ -196,19 +195,7 @@ namespace Realms
                 {
                     RecurseToWhereOrRunLambda(node);
                     using var rh = MakeResultsForQuery();
-                    if (rh.TryGetObjectAtIndex(0, out var firstObject))
-                    {
-                        return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
-                    }
-                    else if (node.Method.Name == nameof(Queryable.First))
-                    {
-                        throw new InvalidOperationException("Sequence contains no matching element");
-                    }
-                    else
-                    {
-                        Debug.Assert(node.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
-                        return Expression.Constant(null);
-                    }
+                    return GetObjectAtIndex(0, rh, node.Method.Name);
                 }
 
                 /*
@@ -245,43 +232,34 @@ namespace Realms
                         Debug.Assert(node.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
                         return Expression.Constant(null);
                     }
-                    else if (count > 1)
+
+                    if (count > 1)
                     {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     }
-                    else
-                    {
-                        rh.TryGetObjectAtIndex(0, out var firstObject);
-                        return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
-                    }
+
+                    return GetObjectAtIndex(0, rh, node.Method.Name);
                 }
 
                 if (node.Method.Name.StartsWith(nameof(Queryable.Last), StringComparison.OrdinalIgnoreCase))
                 {
                     RecurseToWhereOrRunLambda(node);
 
-                    ObjectHandle lastObject = null;
-                    using (var rh = MakeResultsForQuery())
+                    using var rh = MakeResultsForQuery();
+
+                    var count = rh.Count();
+                    if (count == 0)
                     {
-                        var lastIndex = rh.Count() - 1;
-                        if (lastIndex >= 0)
+                        if (node.Method.Name == nameof(Queryable.Last))
                         {
-                            rh.TryGetObjectAtIndex(lastIndex, out lastObject);
+                            throw new InvalidOperationException("Sequence contains no matching element");
                         }
+
+                        Debug.Assert(node.Method.Name == nameof(Queryable.LastOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.LastOrDefault)}.");
+                        return Expression.Constant(null);
                     }
 
-                    if (lastObject != null)
-                    {
-                        return Expression.Constant(_realm.MakeObject(_metadata, lastObject));
-                    }
-
-                    if (node.Method.Name == nameof(Queryable.Last))
-                    {
-                        throw new InvalidOperationException("Sequence contains no matching element");
-                    }
-
-                    Debug.Assert(node.Method.Name == nameof(Queryable.LastOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.LastOrDefault)}.");
-                    return Expression.Constant(null);
+                    return GetObjectAtIndex(count - 1, rh, node.Method.Name);
                 }
 
                 if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt), StringComparison.OrdinalIgnoreCase))
@@ -292,25 +270,10 @@ namespace Realms
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single integer constant argument or closure variable");
                     }
 
-                    ObjectHandle objectHandle;
                     var index = (int)argument;
-                    using (var rh = MakeResultsForQuery())
-                    {
-                        rh.TryGetObjectAtIndex(index, out objectHandle);
-                    }
+                    using var rh = MakeResultsForQuery();
 
-                    if (objectHandle != null)
-                    {
-                        return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
-                    }
-
-                    if (node.Method.Name == nameof(Queryable.ElementAt))
-                    {
-                        throw new ArgumentOutOfRangeException("index");
-                    }
-
-                    Debug.Assert(node.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {node.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
-                    return Expression.Constant(null);
+                    return GetObjectAtIndex(index, rh, node.Method.Name);
                 }
             }
 
@@ -617,6 +580,39 @@ namespace Realms
             return node;
         }
 
+        private enum OutOfRangeBehavior
+        {
+            Throw,
+            Ignore,
+            Convert
+        }
+
+        private Expression GetObjectAtIndex(int index, ResultsHandle rh, string methodName)
+        {
+            try
+            {
+                var val = rh.GetValueAtIndex(index, _metadata, _realm);
+                return Expression.Constant(val.AsRealmObject());
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                if (methodName.EndsWith("OrDefault", StringComparison.OrdinalIgnoreCase))
+                {
+                    // For First/Last/Single/ElemetAtOrDefault - ignore
+                    return Expression.Constant(null);
+                }
+
+                if (methodName == nameof(Queryable.ElementAt))
+                {
+                    // ElementAt should rethrow the ArgumentOutOfRangeException.
+                    throw;
+                }
+
+                // All the rest should throw an InvalidOperationException.
+                throw new InvalidOperationException("Sequence contains no matching element", ex);
+            }
+        }
+
         private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
@@ -628,9 +624,6 @@ namespace Realms
                     break;
                 case string stringValue:
                     queryHandle.StringEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
-                    break;
-                case RealmObjectBase obj:
-                    queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
@@ -649,10 +642,6 @@ namespace Realms
                     break;
                 case string stringValue:
                     queryHandle.StringNotEqual(_realm.SharedRealmHandle, propertyIndex, stringValue, caseSensitive: true);
-                    break;
-                case RealmObjectBase obj:
-                    queryHandle.Not();
-                    queryHandle.ObjectEqual(_realm.SharedRealmHandle, propertyIndex, obj.ObjectHandle);
                     break;
                 default:
                     // The other types aren't handled by the switch because of potential compiler applied conversions
@@ -721,7 +710,9 @@ namespace Realms
             }
         }
 
-        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, Action<SharedRealmHandle, IntPtr, RealmValue> action)
+        private delegate void QueryAction(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value);
+
+        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, QueryAction action)
         {
             if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
@@ -777,6 +768,10 @@ namespace Realms
             else if (columnType == typeof(DateTimeOffset))
             {
                 action(realm, propertyIndex, (DateTimeOffset)value);
+            }
+            else if (typeof(RealmObjectBase).IsAssignableFrom(columnType))
+            {
+                action(realm, propertyIndex, (RealmObjectBase)value);
             }
             else
             {

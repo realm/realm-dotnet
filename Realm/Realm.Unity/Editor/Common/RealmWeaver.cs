@@ -193,9 +193,6 @@ Analytics payload
                 }
             });
 
-            // Cache of getter and setter methods for the various types.
-            var methodTable = new Dictionary<string, Accessors>();
-
             var matchingTypes = GetMatchingTypes().ToArray();
             var WeavePropertyResults = new List<WeaveTypeResult>();
 
@@ -203,7 +200,7 @@ Analytics payload
             {
                 try
                 {
-                    return WeaveType(type, methodTable);
+                    return WeaveType(type);
                 }
                 catch (Exception e)
                 {
@@ -222,7 +219,7 @@ Analytics payload
             return WeaveModuleResult.Success(weaveResults);
         }
 
-        private WeaveTypeResult WeaveType(TypeDefinition type, Dictionary<string, Accessors> methodTable)
+        private WeaveTypeResult WeaveType(TypeDefinition type)
         {
             _logger.Debug("Weaving " + type.Name);
 
@@ -231,7 +228,7 @@ Analytics payload
             {
                 try
                 {
-                    var weaveResult = WeaveProperty(prop, type, methodTable);
+                    var weaveResult = WeaveProperty(prop, type);
                     if (weaveResult.Woven)
                     {
                         persistedProperties.Add(weaveResult);
@@ -318,7 +315,7 @@ Analytics payload
             return WeaveTypeResult.Success(type.Name, persistedProperties);
         }
 
-        private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Accessors> methodTable)
+        private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type)
         {
             var columnName = prop.Name;
             var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
@@ -373,18 +370,10 @@ Analytics payload
                     return WeavePropertyResult.Skipped();
                 }
 
-                var suffix = isPrimaryKey ? "Unique" : string.Empty;
-                var typeId = $"{prop.PropertyType.FullName}{suffix}";
+                var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
 
-                if (!methodTable.TryGetValue(typeId, out var accessors))
-                {
-                    var getter = _references.RealmObject_GetValue;
-                    var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
-                    methodTable[typeId] = accessors = new Accessors { Getter = getter, Setter = setter };
-                }
-
-                ReplaceGetter(prop, columnName, accessors.Getter, implicitConvert: true);
-                ReplaceSetter(prop, backingField, columnName, accessors.Setter, implicitConvert: true);
+                ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
+                ReplaceSetter(prop, backingField, columnName, setter);
             }
             else if (prop.IsCollection(out var collectionType))
             {
@@ -433,10 +422,8 @@ Analytics payload
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
                 // with casting in the _realmObject methods, should just work
-                ReplaceGetter(prop, columnName,
-                              new GenericInstanceMethod(_references.RealmObject_GetObjectValue) { GenericArguments = { prop.PropertyType } });
-                ReplaceSetter(prop, backingField, columnName,
-                              new GenericInstanceMethod(_references.RealmObject_SetObjectValue) { GenericArguments = { prop.PropertyType } });
+                ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
+                ReplaceSetter(prop, backingField, columnName, _references.RealmObject_SetValue);
             }
             else if (prop.IsIQueryable())
             {
@@ -501,7 +488,7 @@ Analytics payload
             return WeavePropertyResult.Success(prop, backingField, isPrimaryKey, isIndexed);
         }
 
-        private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference, bool implicitConvert = false)
+        private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -513,14 +500,21 @@ Analytics payload
             ////   2: brfalse.s 7
             ////   3: ldarg.0
             ////   4: ldstr <columnName>
-            ////   5: call Realms.RealmObject.GetValue<T>
-            ////   6: ret
-            ////   7: ldarg.0
-            ////   8: ldfld <backingField>
-            ////   9: ret
+            ////   5: call Realms.RealmObject.GetValue
+            ////   6: call op_implicit prop.PropertyType
+            ////   7: ret
+            ////   8: ldarg.0
+            ////   9: ldfld <backingField>
+            ////  10: ret
             //// This is roughly equivalent to:
             ////   if (!base.IsManaged) return this.<backingField>;
-            ////   return base.GetValue<T>(<columnName>);
+            ////   return base.GetValue(<columnName>);
+            ////
+            //// For RealmObject targets, there's no implicit conversion from RealmValue to
+            //// prop.PropertyType, so we convert implicitly to RealmObjectBase, then cast.
+            //// This is roughly equivalent to:
+            ////   if (!base.IsManaged) return this.<backingField>;
+            ////   return (TargetType)*(RealmObjectBase)*base.GetValue(<columnName>);
 
             var start = prop.GetMethod.Body.Instructions.First();
             var il = prop.GetMethod.Body.GetILProcessor();
@@ -533,15 +527,24 @@ Analytics payload
 
             il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
 
-            if (implicitConvert)
+            var convertType = prop.PropertyType;
+            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
-                var convertMethod = new MethodReference("op_Implicit", prop.PropertyType, _references.RealmValue)
-                {
-                    Parameters = { new ParameterDefinition(_references.RealmValue) },
-                    HasThis = false
-                };
+                convertType = _references.RealmObjectBase;
+            }
 
-                il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+            var convertMethod = new MethodReference("op_Implicit", convertType, _references.RealmValue)
+            {
+                Parameters = { new ParameterDefinition(_references.RealmValue) },
+                HasThis = false
+            };
+
+            il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+
+            // This only happens when we have a relationship - explicitly cast.
+            if (convertType != prop.PropertyType)
+            {
+                il.InsertBefore(start, il.Create(OpCodes.Castclass, prop.PropertyType));
             }
 
             il.InsertBefore(start, il.Create(OpCodes.Ret));
@@ -709,7 +712,7 @@ Analytics payload
             // TODO prop.SetMethod.Body.OptimizeMacros();
         }
 
-        private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool implicitConvert = false)
+        private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0
@@ -771,16 +774,20 @@ Analytics payload
             il.Append(managedSetStart);
             il.Append(il.Create(OpCodes.Ldstr, columnName));
             il.Append(il.Create(OpCodes.Ldarg_1));
-            if (implicitConvert)
-            {
-                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
-                {
-                    Parameters = { new ParameterDefinition(prop.PropertyType) },
-                    HasThis = false
-                };
 
-                il.Append(il.Create(OpCodes.Call, convertMethod));
+            var convertType = prop.PropertyType;
+            if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
+            {
+                convertType = _references.RealmObjectBase;
             }
+
+            var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+            {
+                Parameters = { new ParameterDefinition(convertType) },
+                HasThis = false
+            };
+
+            il.Append(il.Create(OpCodes.Call, convertMethod));
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
             il.Append(il.Create(OpCodes.Ret));
@@ -1260,13 +1267,6 @@ Analytics payload
                        .Any(i => i.OpCode == OpCodes.Newobj &&
                                  i.Operand is MethodReference mRef &&
                                  mRef.ConstructsType(type));
-        }
-
-        private struct Accessors
-        {
-            public MethodReference Getter;
-
-            public MethodReference Setter;
         }
     }
 }

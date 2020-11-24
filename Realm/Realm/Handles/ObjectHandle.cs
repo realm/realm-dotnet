@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Native;
@@ -35,29 +34,17 @@ namespace Realms
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_valid(ObjectHandle objectHandle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_key", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_key(ObjectHandle objectHandle, out ObjectKey key, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr objectHandle);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_value(ObjectHandle handle, IntPtr propertyIndex, out PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_primitive(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void set_link(ObjectHandle handle, IntPtr propertyIndex, ObjectHandle targetHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_value(ObjectHandle handle, IntPtr propertyIndex, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_clear_link", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -156,47 +143,48 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public RealmValue GetValue(IntPtr propertyIndex)
+        public RealmValue GetValue(string propertyName, RealmObjectBase.Metadata metadata, Realm realm)
         {
-            NativeMethods.get_primitive(this, propertyIndex, out var result, out var nativeException);
+            var propertyIndex = metadata.PropertyIndices[propertyName];
+            NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new RealmValue(result, this, propertyIndex);
-        }
-
-        public void SetValue(IntPtr propertyIndex, RealmValue value)
-        {
-            var (primitive, handles) = value.ToNative();
-            NativeMethods.set_primitive(this, propertyIndex, primitive, out var nativeException);
-            handles?.Dispose();
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void SetLink(IntPtr propertyIndex, ObjectHandle targetHandle)
-        {
-            NativeMethods.set_link(this, propertyIndex, targetHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void ClearLink(IntPtr propertyIndex)
-        {
-            NativeMethods.clear_link(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public bool TryGetLink(IntPtr propertyIndex, out ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.get_link(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            if (result == IntPtr.Zero)
+            if (result.Type != RealmValueType.Object)
             {
-                objectHandle = null;
-                return false;
+                return new RealmValue(result, this, propertyIndex);
             }
 
-            objectHandle = new ObjectHandle(Root, result);
-            return true;
+            var objectHandle = result.AsObject(Root);
+            metadata.Schema.TryFindProperty(propertyName, out var property);
+            return new RealmValue(realm.MakeObject(realm.Metadata[property.ObjectType], objectHandle));
+        }
+
+        public void SetValue(IntPtr propertyIndex, in RealmValue value, Realm realm)
+        {
+            // We need to special-handle objects because they need to be managed before we can set them.
+            if (value.Type == RealmValueType.Object)
+            {
+                switch (value.AsRealmObject())
+                {
+                    case RealmObject realmObj when !realmObj.IsManaged:
+                        realm.Add(realmObj);
+                        break;
+                    case EmbeddedObject embeddedObj:
+                        if (embeddedObj.IsManaged)
+                        {
+                            throw new RealmException("Can't link to an embedded object that is already managed.");
+                        }
+
+                        var handle = CreateEmbeddedObjectForProperty(propertyIndex);
+                        realm.ManageEmbedded(embeddedObj, handle);
+                        return;
+                }
+            }
+
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.set_value(this, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
+            nativeException.ThrowIfNecessary();
         }
 
         public IntPtr GetLinkList(IntPtr propertyIndex)
@@ -220,9 +208,13 @@ namespace Realms
             return result;
         }
 
-        public void SetValueUnique(IntPtr propertyIndex, RealmValue value)
+        public void SetValueUnique(IntPtr propertyIndex, in RealmValue value)
         {
-            if (!GetValue(propertyIndex).Equals(value))
+            NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            var currentValue = new RealmValue(result, this, propertyIndex);
+
+            if (!currentValue.Equals(value))
             {
                 throw new InvalidOperationException("Once set, primary key properties may not be modified.");
             }
@@ -236,8 +228,8 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
+            var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
@@ -246,49 +238,6 @@ namespace Realms
             var setHandle = new SetHandle(Root, GetLinkSet(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmSet<T>(realm, setHandle, metadata);
-        }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        public T GetObject<T>(Realm realm, IntPtr propertyIndex, string objectType)
-            where T : RealmObjectBase
-        {
-            if (TryGetLink(propertyIndex, out var objectHandle))
-            {
-                return (T)realm.MakeObject(realm.Metadata[objectType], objectHandle);
-            }
-
-            return null;
-        }
-
-        public void SetObject(Realm realm, IntPtr propertyIndex, RealmObjectBase @object)
-        {
-            if (@object == null)
-            {
-                ClearLink(propertyIndex);
-            }
-            else if (@object is RealmObject realmObj)
-            {
-                if (!realmObj.IsManaged)
-                {
-                    realm.Add(realmObj);
-                }
-
-                SetLink(propertyIndex, realmObj.ObjectHandle);
-            }
-            else if (@object is EmbeddedObject embeddedObj)
-            {
-                if (embeddedObj.IsManaged)
-                {
-                    throw new RealmException("Can't link to an embedded object that is already managed.");
-                }
-
-                var handle = CreateEmbeddedObjectForProperty(propertyIndex);
-                realm.ManageEmbedded(embeddedObj, handle);
-            }
-            else
-            {
-                throw new NotSupportedException($"Tried to add an object of type {@object.GetType().FullName} which does not inherit from RealmObject or EmbeddedObject");
-            }
         }
 
         public ObjectHandle CreateEmbeddedObjectForProperty(IntPtr propertyIndex)
@@ -334,13 +283,6 @@ namespace Realms
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, callback, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(this, result);
-        }
-
-        public ObjectKey GetKey()
-        {
-            NativeMethods.get_key(this, out var result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
         }
 
         public ObjectHandle Freeze(SharedRealmHandle frozenRealmHandle)

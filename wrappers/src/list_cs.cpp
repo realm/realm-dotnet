@@ -44,19 +44,12 @@ namespace {
 
 extern "C" {
 
-REALM_EXPORT void list_add_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        list.add(object_ptr.obj());
-    });
-}
-
-REALM_EXPORT void list_add_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         ensure_types(list, value);
 
-        list.add(from_capi(value));
+        list.add(from_capi(value, false));
     });
 }
 
@@ -67,30 +60,17 @@ REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable
     });
 }
 
-REALM_EXPORT void list_set_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        const size_t count = list.size();
-        if (list_ndx >= count) {
-            throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
-        }
-
-        list.set(list_ndx, object_ptr.obj());
-    });
-
-}
-
-REALM_EXPORT void list_set_primitive(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         ensure_types(list, value);
         
         const size_t count = list.size();
         if (list_ndx >= count) {
-            throw IndexOutOfRangeException("Set into RealmList", list_ndx, count);
+            throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
         }
 
-        list.set(list_ndx, from_capi(value));
+        list.set(list_ndx, from_capi(value, false));
     });
 }
 
@@ -106,19 +86,7 @@ REALM_EXPORT Object* list_set_embedded(List& list, size_t list_ndx, NativeExcept
     });
 }
 
-REALM_EXPORT void list_insert_object(List& list, size_t list_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        const size_t count = list.size();
-        if (list_ndx > count) {
-            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
-        }
-
-        list.insert(list_ndx, object_ptr.obj());
-    });
-}
-
-REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         ensure_types(list, value);
@@ -128,7 +96,7 @@ REALM_EXPORT void list_insert_primitive(List& list, size_t list_ndx, realm_value
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
         }
 
-        list.insert(list_ndx, from_capi(value));
+        list.insert(list_ndx, from_capi(value, false));
     });
 }
 
@@ -144,41 +112,21 @@ REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeExc
     });
 }
 
-REALM_EXPORT Object* list_get_object(List& list, size_t ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> Object* {
-        const size_t count = list.size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
-
-        return new Object(list.get_realm(), list.get_object_schema(), list.get(ndx));
-    });
-}
-
-REALM_EXPORT void list_get_primitive(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
+REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         const size_t count = list.size();
         if (ndx >= count)
-            throw IndexOutOfRangeException("Get from Collection", ndx, count);
+            throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
         auto val = list.get<Mixed>(ndx);
-        *value = to_capi(val);
+        
+        std::string object_type = list.get_type() == PropertyType::Object ? list.get_object_schema().name : "";
+        *value = to_capi(val, list.get_realm(), std::move(object_type));
     });
 }
 
-REALM_EXPORT size_t list_find_object(List& list, const Object& object_ptr, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (list.get_realm() != object_ptr.realm()) {
-            throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
-        }
-
-        return list.find(object_ptr.obj());
-    });
-}
-
-REALM_EXPORT size_t list_find_primitive(List& list, realm_value_t value, NativeException::Marshallable& ex)
+REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         // This doesn't use ensure_types to allow List<string>.Find(null) to return false
@@ -238,6 +186,13 @@ REALM_EXPORT size_t list_find_primitive(List& list, realm_value_t value, NativeE
         case PropertyType::String | PropertyType::Nullable:
             return list.find(value.is_null() ? StringData() : from_capi(value.string));
 
+        case PropertyType::Object:
+        case PropertyType::Object | PropertyType::Nullable:
+            if (list.get_realm() != value.link.object->realm()) {
+                throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+            }
+
+            return list.find(value.link.object->obj());
         default:
             REALM_UNREACHABLE();
         }

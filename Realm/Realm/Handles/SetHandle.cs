@@ -57,55 +57,20 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(SetHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
-            #region get
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_value(SetHandle handle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object(SetHandle handle, IntPtr link_ndx, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(SetHandle handle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
-
-            #endregion
-
-            #region add
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_object", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
+            public static extern bool add_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_primitive", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
+            public static extern bool contains_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_embedded", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern IntPtr add_embedded(SetHandle handle, out NativeException ex);
-
-            #endregion
-
-            #region find
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_object", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_primitive", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
-
-            #endregion
-
-            #region remove
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_object", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_primitive", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
-
-            #endregion
+            public static extern bool remove_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -187,81 +152,34 @@ namespace Realms
             return new SetHandle(frozenRealmHandle, result);
         }
 
-        #region GetAtIndex
+        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_value(this, index, out result, out nativeException);
 
-        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
-            NativeMethods.get_object(this, index, out nativeException);
-
-        protected override void GetPrimitiveAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_primitive(this, index, out result, out nativeException);
-
-        #endregion
-
-        #region Add
-
-        public bool Add(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.add_object(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Add(RealmValue value)
+        public unsafe bool Add(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
-            var result = NativeMethods.add_primitive(this, primitive, out var nativeException);
+            var result = NativeMethods.add_value(this, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public ObjectHandle AddEmbedded()
-        {
-            var result = NativeMethods.add_embedded(this, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
-        }
-
-        #endregion
-
-        #region Find
-
-        public bool Contains(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.contains_object(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Contains(RealmValue value)
+        public unsafe bool Contains(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
-            var result = NativeMethods.contains_primitive(this, primitive, out var nativeException);
+            var result = NativeMethods.contains_value(this, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        #endregion
-
-        #region Remove
-
-        public bool Remove(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.remove_object(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Remove(RealmValue value)
+        public unsafe bool Remove(in RealmValue value)
         {
             var (primitive, handles) = value.ToNative();
-            var result = NativeMethods.remove_primitive(this, primitive, out var nativeException);
+            var result = NativeMethods.remove_value(this, primitive, out var nativeException);
             handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
-
-        #endregion
     }
 }

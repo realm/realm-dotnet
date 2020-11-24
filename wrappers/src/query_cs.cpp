@@ -155,6 +155,9 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
         case realm_value_type::RLM_TYPE_BINARY:
             query.equal(std::move(col_key), from_capi(primitive.binary));
             break;
+        case realm_value_type::RLM_TYPE_LINK:
+            query.links_to(std::move(col_key), primitive.link.object->obj().get_key());
+            break;
         }
     });
 }
@@ -189,6 +192,9 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
             break;
         case realm_value_type::RLM_TYPE_BINARY:
             query.not_equal(std::move(col_key), from_capi(primitive.binary));
+            break;
+        case realm_value_type::RLM_TYPE_LINK:
+            query.Not().links_to(std::move(col_key), primitive.link.object->obj().get_key());
             break;
         }
     });
@@ -315,13 +321,6 @@ REALM_EXPORT void query_primitive_greater_equal(Query& query, SharedRealm& realm
             query.greater_equal(std::move(col_key), from_capi(primitive.object_id));
             break;
         }
-    });
-}
-
-REALM_EXPORT void query_object_equal(Query& query, SharedRealm& realm, size_t property_index, Object& object, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        query.links_to(get_key_for_prop(query, realm, property_index), object.obj().get_key());
     });
 }
 

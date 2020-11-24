@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace Realms
 {
-    public struct RealmValue
+    public readonly struct RealmValue
     {
         public RealmValueType Type { get; }
 

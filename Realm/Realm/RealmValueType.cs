@@ -35,8 +35,8 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// For performance reasons, all integers, as well as <see cref="char"/>, in Realm are stored as 64-bit values.
-        /// You can still cast it to the narrower types using <see cref="RealmValue.AsByte"/>, <see cref="RealmValue.AsShort"/>,
-        /// <see cref="RealmValue.AsInt"/>, or <see cref="RealmValue.AsChar"/>.
+        /// You can still cast it to the narrower types using <see cref="RealmValue.AsByte"/>, <see cref="RealmValue.AsInt16"/>,
+        /// <see cref="RealmValue.AsInt32"/>, or <see cref="RealmValue.AsChar"/>.
         /// </remarks>
         Int,
 

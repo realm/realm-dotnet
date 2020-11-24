@@ -154,25 +154,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                switch (_argumentType)
-                {
-                    case RealmValueType.Object:
-                        if (!Handle.Value.TryGetObjectAtIndex(index, out var objectHandle))
-                        {
-                            throw new ArgumentOutOfRangeException(nameof(index));
-                        }
-
-                        var result = Realm.MakeObject(Metadata, objectHandle);
-                        if (_isEmbedded)
-                        {
-                            return Operator.Convert<EmbeddedObject, T>((EmbeddedObject)result);
-                        }
-
-                        return Operator.Convert<RealmObject, T>((RealmObject)result);
-
-                    default:
-                        return Handle.Value.GetValueAtIndex(index).As<T>();
-                }
+                return Handle.Value.GetValueAtIndex(index, Metadata, Realm).As<T>();
             }
         }
 
