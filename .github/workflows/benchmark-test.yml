@@ -1,6 +1,6 @@
 name: benchmark
 on:
-  # To enable running it manually, possibility of adding parameters
+  # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
   pull_request:    
@@ -17,6 +17,7 @@ jobs:
         run: |
           echo "$GITHUB_CONTEXT"
       - name: Exit
+        if: github.event_name == 'push'
         run: exit 1
       - name: Checkout code
         uses: actions/checkout@v2
