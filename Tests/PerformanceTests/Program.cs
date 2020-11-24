@@ -16,21 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Linq;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
-using BenchmarkDotNet.Portability.Cpu;
-using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using Perfolizer.Horology;
 
 namespace PerformanceTests
 {
@@ -49,33 +41,9 @@ namespace PerformanceTests
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance))
-                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.FullCompressed); //TODO FP remove the jenkins exporter
+                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical));
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
-        }
-
-        // This is needed because the Jenkins user does not have permissions to use System.Management.ManagementObjectSearcher.
-        // There's no public API to prevent BenchmarkDotNet from looking it up, so when building the summary, we get an access
-        // denied exception. This uses reflection to replace the HostEnvironmentInfo.CpuInfo lazy with one that returns a mock
-        // CpuInfo. Since this is the first exporter being run, it will modify the summary for the rest, so we don't need to
-        // fiddle with them. Once we move to Github actions, this can be removed.
-        private class JenkinsHtmlExporter : HtmlExporter
-        {
-            private CpuInfo _mockCpuInfo = new CpuInfo("MockIntel(R) Core(TM) i7-6700HQ CPU 2.60GHz",
-                                              physicalProcessorCount: 1,
-                                              physicalCoreCount: 4,
-                                              logicalCoreCount: 8,
-                                              nominalFrequency: Frequency.FromMHz(3100),
-                                              maxFrequency: Frequency.FromMHz(3100),
-                                              minFrequency: Frequency.FromMHz(3100));
-
-            public override void ExportToLog(Summary summary, ILogger logger)
-            {
-                var cpuInfoProp = typeof(HostEnvironmentInfo).GetProperty(nameof(HostEnvironmentInfo.CpuInfo));
-                cpuInfoProp.SetValue(summary.HostEnvironmentInfo, new Lazy<CpuInfo>(() => _mockCpuInfo));
-                base.ExportToLog(summary, logger);
-            }
         }
     }
 }
