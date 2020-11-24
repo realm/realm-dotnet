@@ -1,5 +1,11 @@
 name: benchmark
-on: push
+on:
+  # To enable running it manually, possibility of adding parameters
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:    
 env:
   # Branch for Github Pages
   gh-pages-branch: gh-pages
@@ -7,6 +13,13 @@ jobs:
   build-wrappers:
     runs-on: windows-latest
     steps:
+      - name: Print content of github
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
+      - name: Exit
+        run: exit 1
       - name: Checkout code
         uses: actions/checkout@v2
         with:
