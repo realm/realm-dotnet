@@ -1,10 +1,9 @@
-name: benchmark-test
+name: benchmark
 on: push
 env:
-  # This could be something else, but if we do we need to change the default branch for pages in the repository settings
+  # Branch for Github Pages
   gh-pages-branch: gh-pages
 jobs:
-  #Having two jobs simplifies things,:
   build-wrappers:
     runs-on: windows-latest
     steps:
@@ -36,7 +35,7 @@ jobs:
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
-  query-benchmark:
+  execute-benchmarks:
     needs: [build-wrappers]
     runs-on: windows-latest
     steps:
@@ -51,13 +50,17 @@ jobs:
           path: .\wrappers\build\Windows\Release-x64\
           # This needs to be changed to something meaningful
           key: wrapper-windows-release-64-${{hashfiles('.\wrappers\**')}}
+      - name: Check cache hit
+        # If there is no cache hit, just fail
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: exit 1
       - name: Run benchmarks
-        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
+        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f *
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
-          name: test-results
+          name: benchmark-results
           # Could be put in an environmental variable
           path: .\BenchmarkDotNet.Artifacts\results
       # Download previous benchmark result from cache (if exists)    
@@ -67,9 +70,8 @@ jobs:
           tool: 'benchmarkdotnet'
           # Where the output from the benchmark tool is stored
           output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.QueryTests-report-full-compressed.json
-          # Workflow will not fail when an alert happens (default value, just as a reminder)
+          # Workflow will not fail when an alert happens
           fail-on-alert: false
-          # Branch for gh pages
           gh-pages-branch: ${{env.gh-pages-branch}}
           auto-push: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
