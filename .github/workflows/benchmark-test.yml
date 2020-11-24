@@ -3,7 +3,8 @@ on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
-  pull_request:    
+    branches:
+      - master
 env:
   # Branch for Github Pages
   gh-pages-branch: gh-pages
@@ -11,16 +12,6 @@ jobs:
   build-wrappers:
     runs-on: windows-latest
     steps:
-      - name: Print content of github (FOR TESTING)
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-      - name: Show error
-        run: echo "::error ::Something went wrong"
-      - name: Exit
-        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'performance')
-        run: exit 1
       - name: Checkout code
         uses: actions/checkout@v2
         with:
