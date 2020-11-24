@@ -3,8 +3,6 @@ on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
-    branches:
-      - master
   pull_request:    
 env:
   # Branch for Github Pages
