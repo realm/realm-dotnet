@@ -1,4 +1,4 @@
-name: benchmark
+name: benchmark-linux
 on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
