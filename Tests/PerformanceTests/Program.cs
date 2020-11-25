@@ -19,6 +19,8 @@
 using System.Linq;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
@@ -41,7 +43,8 @@ namespace PerformanceTests
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance))
-                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical));
+                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
+                .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
         }
