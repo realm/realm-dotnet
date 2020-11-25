@@ -1,4 +1,4 @@
-name: benchmark
+name: benchmark-windows
 on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
@@ -59,7 +59,7 @@ jobs:
         run: exit 1
       - name: Run benchmarks
         run:  |
-          dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f QueryTests
+          dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f * --join
           rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
