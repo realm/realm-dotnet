@@ -238,7 +238,7 @@ static inline std::string to_string(PropertyType type)
     return to_string(to_capi(type));
 }
 
-static inline Mixed from_capi(realm_value_t val, bool isMixed)
+static inline Mixed from_capi(realm_value_t val)
 {
     switch (val.type) {
     case realm_value_type::RLM_TYPE_NULL:
@@ -262,17 +262,31 @@ static inline Mixed from_capi(realm_value_t val, bool isMixed)
     case realm_value_type::RLM_TYPE_OBJECT_ID:
         return Mixed{ from_capi(val.object_id) };
     case realm_value_type::RLM_TYPE_LINK:
-        if (!isMixed)
-        {
-            return Mixed{ val.link.object->obj().get_key() };
-        }
-
-        return Mixed{ ObjLink{val.link.object->obj().get_table()->get_key(), val.link.object->obj().get_key()} };
+        REALM_TERMINATE("Can't use from_capi on values containing links.");
     }
     REALM_TERMINATE("Invalid realm_value_t");
 }
 
-static inline realm_value_t to_capi(Mixed value, SharedRealm realm, StringData object_type)
+static inline Mixed from_capi(Object* obj, bool isMixedColumn)
+{
+    if (!isMixedColumn)
+    {
+        return Mixed{ obj->obj().get_key() };
+    }
+
+    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
+
+}
+
+static inline realm_value_t to_capi(Object* obj)
+{
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_LINK;
+    val.link.object = obj;
+    return val;
+}
+
+static inline realm_value_t to_capi(Mixed value)
 {
     realm_value_t val;
     if (value.is_null()) {
@@ -320,22 +334,13 @@ static inline realm_value_t to_capi(Mixed value, SharedRealm realm, StringData o
             val.decimal128 = to_capi(value.get<Decimal128>());
             break;
         }
-        case type_Link: {
-            val.type = realm_value_type::RLM_TYPE_LINK;
-            val.link.object = new Object(realm, object_type, value.get<ObjKey>());
-            break;
-        }
+        case type_TypedLink:
+            [[fallthrough]];
+        case type_Link:
+            REALM_TERMINATE("Can't use to_capi on values containing links.");
         case type_ObjectId: {
             val.type = realm_value_type::RLM_TYPE_OBJECT_ID;
             val.object_id = to_capi(value.get<ObjectId>());
-            break;
-        }
-        case type_TypedLink: {
-            val.type = realm_value_type::RLM_TYPE_LINK;
-
-            auto link = value.get<ObjLink>();
-            auto obj = realm->read_group().get_table(link.get_table_key())->get_object(link.get_obj_key());
-            val.link.object = new Object(realm, std::move(obj));
             break;
         }
         case type_LinkList:

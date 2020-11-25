@@ -95,9 +95,8 @@ REALM_EXPORT Object* table_get_object_for_primarykey(TableRef& table, SharedReal
             throw PropertyTypeMismatchException(object_schema.name, primary_key_property.name, to_string(primary_key_property.type), to_string(primitive.type));
         }
 
-        auto value = from_capi(primitive, false);
         const ColKey column_key = object_schema.primary_key_property()->column_key;
-        const ObjKey obj_key = table->find_first(column_key, value);
+        const ObjKey obj_key = table->find_first(column_key, from_capi(primitive));
         if (!obj_key)
             return nullptr;
 

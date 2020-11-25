@@ -68,8 +68,24 @@ extern "C" {
             verify_can_get(object);
 
             auto prop = get_property(object, property_ndx);
-            auto val = object.obj().get_any(prop.column_key);
-            *value = to_capi(val, object.get_realm(), prop.object_type);
+            switch (prop.type & ~PropertyType::Flags) {
+            case PropertyType::Object: {
+                const Obj link_obj = object.obj().get_linked_object(prop.column_key);
+                if (link_obj) {
+                    auto& target_schema = *object.realm()->schema().find(prop.object_type);
+                    *value = to_capi(new Object(object.realm(), target_schema, std::move(link_obj)));
+                }
+                else {
+                    value->type = realm_value_type::RLM_TYPE_NULL;
+                }
+            } break;
+            case PropertyType::Mixed:
+                throw std::invalid_argument("Mixed properties not supported yet.");
+            default:
+                auto val = object.obj().get_any(prop.column_key);
+                *value = to_capi(std::move(val));
+                break;
+            }
         });
     }
 
@@ -96,8 +112,21 @@ extern "C" {
                     to_string(value.type));
             }
 
-            auto val = from_capi(value, prop.column_key.get_type() == ColumnType::col_type_Mixed);
-            object.obj().set_any(prop.column_key, val);
+            switch (prop.type & ~PropertyType::Flags) {
+            case PropertyType::Object:
+                if (value.type == realm_value_type::RLM_TYPE_NULL) {
+                    object.obj().set_null(prop.column_key);
+                }
+                else {
+                    object.obj().set(prop.column_key, value.link.object->obj().get_key());
+                }
+                break;
+            case PropertyType::Mixed:
+                throw std::invalid_argument("Mixed properties not supported yet.");
+            default:
+                object.obj().set_any(prop.column_key, std::move(from_capi(value)));
+                break;
+            }
         });
     }
 

@@ -44,15 +44,6 @@ namespace {
 
 extern "C" {
 
-REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        ensure_types(list, value);
-
-        list.add(from_capi(value, false));
-    });
-}
-
 REALM_EXPORT Object* list_add_embedded(List& list, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -70,7 +61,14 @@ REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t valu
             throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
         }
 
-        list.set(list_ndx, from_capi(value, false));
+        switch (value.type) {
+        case realm_value_type::RLM_TYPE_LINK:
+            list.set(list_ndx, value.link.object->obj());
+            break;
+        default:
+            list.set_any(list_ndx, from_capi(value));
+            break;
+        }
     });
 }
 
@@ -91,13 +89,24 @@ REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t v
     handle_errors(ex, [&]() {
         ensure_types(list, value);
 
-        const size_t count = list.size();
-        if (list_ndx > count) {
-            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, count);
+        if (list_ndx > list.size()) {
+            throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
         }
 
-        list.insert(list_ndx, from_capi(value, false));
+        switch (value.type) {
+        case realm_value_type::RLM_TYPE_LINK:
+            list.insert(list_ndx, value.link.object->obj());
+            break;
+        default:
+            list.insert_any(list_ndx, from_capi(value));
+            break;
+        }
     });
+}
+
+REALM_EXPORT void list_add_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
+{
+    list_insert_value(list, list.size(), value, ex);
 }
 
 REALM_EXPORT Object* list_insert_embedded(List& list, size_t list_ndx, NativeException::Marshallable& ex)
@@ -119,10 +128,16 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
-        auto val = list.get<Mixed>(ndx);
-        
-        std::string object_type = list.get_type() == PropertyType::Object ? list.get_object_schema().name : "";
-        *value = to_capi(val, list.get_realm(), std::move(object_type));
+        switch (list.get_type() & ~PropertyType::Flags) {
+        case PropertyType::Object:
+            *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), list.get(ndx)));
+            break;
+        case PropertyType::Mixed:
+            REALM_TERMINATE("Mixed not supported yet");
+        default:
+            *value = to_capi(list.get_any(ndx));
+            break;
+        }
     });
 }
 
@@ -139,62 +154,15 @@ REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeExcep
             throw PropertyTypeMismatchException(to_string(list.get_type()), to_string(value.type));
         }
 
-        // TODO: this should eventually use list.find(from_capi(value));
-        switch (list.get_type() & ~PropertyType::Collection) {
-        case PropertyType::Bool:
-            return list.find(value.boolean);
-        case PropertyType::Bool | PropertyType::Nullable:
-            return list.find(value.is_null() ? util::Optional<bool>(none) : util::Optional<bool>(value.boolean));
-
-        case PropertyType::Int:
-            return list.find(value.integer);
-        case PropertyType::Int | PropertyType::Nullable:
-            return list.find(value.is_null() ? util::Optional<int64_t>(none) : util::Optional<int64_t>(value.integer));
-
-        case PropertyType::Float:
-            return list.find(value.fnum);
-        case PropertyType::Float | PropertyType::Nullable:
-            return list.find(value.is_null() ? util::Optional<float>(none) : util::Optional<float>(value.fnum));
-        
-        case PropertyType::Double:
-            return list.find(value.dnum);
-        case PropertyType::Double | PropertyType::Nullable:
-            return list.find(value.is_null() ? util::Optional<double>(none) : util::Optional<double>(value.dnum));
-
-        case PropertyType::Date:
-            return list.find(from_capi(value.timestamp));
-        case PropertyType::Date | PropertyType::Nullable:
-            return list.find(value.is_null() ? Timestamp() : from_capi(value.timestamp));
-
-        case PropertyType::Decimal:
-            return list.find(from_capi(value.decimal128));
-        case PropertyType::Decimal | PropertyType::Nullable:
-            return list.find(value.is_null() ? Decimal128(null()): from_capi(value.decimal128));
-        
-        case PropertyType::ObjectId:
-            return list.find(from_capi(value.object_id));
-        case PropertyType::ObjectId | PropertyType::Nullable:
-            return list.find(value.is_null() ? util::Optional<ObjectId>(none) : util::Optional<ObjectId>(from_capi(value.object_id)));
-
-        case PropertyType::Data:
-            return list.find(from_capi(value.binary));
-        case PropertyType::Data | PropertyType::Nullable:
-            return list.find(value.is_null() ? BinaryData() : from_capi(value.binary));
-
-        case PropertyType::String:
-            return list.find(from_capi(value.string));
-        case PropertyType::String | PropertyType::Nullable:
-            return list.find(value.is_null() ? StringData() : from_capi(value.string));
-
-        case PropertyType::Object:
-        case PropertyType::Object | PropertyType::Nullable:
+        switch (value.type) {
+        case realm_value_type::RLM_TYPE_LINK:
             if (list.get_realm() != value.link.object->realm()) {
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
 
             return list.find(value.link.object->obj());
         default:
-            REALM_UNREACHABLE();
+            return list.find_any(from_capi(value));
         }
     });
 }

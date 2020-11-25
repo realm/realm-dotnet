@@ -374,7 +374,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
             throw PropertyTypeMismatchException(object_schema.name, primary_key_property.name, to_string(primary_key_property.type), to_string(primitive.type));
         }
 
-        auto val = from_capi(primitive, false);
+        auto val = from_capi(primitive);
         auto obj_key = table->find_first(primary_key_property.column_key, val);
 
         Obj obj;
