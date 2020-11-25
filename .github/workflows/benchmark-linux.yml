@@ -43,11 +43,11 @@ jobs:
         run: exit 1
       - name: Run benchmarks
         run:  |
-          dotnet run -p ./Tests/PerformanceTests/ run -c Release -- -f * --join
+          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework netcoreapp3.1 -- -f * --join
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results
           # Could be put in an environmental variable
-          path: .\BenchmarkDotNet.Artifacts\results
+          path: ./BenchmarkDotNet.Artifacts/results
