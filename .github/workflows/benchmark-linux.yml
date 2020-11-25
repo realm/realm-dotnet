@@ -25,7 +25,7 @@ jobs:
         run: ./wrappers/build.sh 
   execute-benchmarks:
     needs: [build-wrappers]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -35,15 +35,14 @@ jobs:
         id: wrapper-cache
         uses: actions/cache@v2
         with:
-          path: .\wrappers\build\
-          # This needs to be changed to something meaningful
-          key: wrapper-linux-${{hashfiles('.\wrappers\**')}}
+          path: ./wrappers/build/
+          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
       - name: Check cache hit
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
       - name: Run benchmarks
-        run:  dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f *
+        run:  dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f *
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
