@@ -60,7 +60,7 @@ jobs:
       - name: Run benchmarks
         run:  |
           dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f *
-          rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" --newname "benchmark-output.json"
+          rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
