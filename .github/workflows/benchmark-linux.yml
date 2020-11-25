@@ -22,7 +22,7 @@ jobs:
           key: wrapper-linux-${{hashfiles('.\wrappers\**')}}
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: .\wrappers\build.ps1 
+        run: .\wrappers\build.sh 
   execute-benchmarks:
     needs: [build-wrappers]
     runs-on: windows-latest
