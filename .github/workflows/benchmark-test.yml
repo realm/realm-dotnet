@@ -3,6 +3,8 @@ on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
+    branches: 
+      - master
 env:
   # Branch for Github Pages
   gh-pages-branch: gh-pages
@@ -67,7 +69,7 @@ jobs:
           # Could be put in an environmental variable
           path: .\BenchmarkDotNet.Artifacts\results
       # Download previous benchmark result from cache (if exists)    
-      - name: Store benchmark results - 1
+      - name: Store benchmark results
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
           tool: 'benchmarkdotnet'
@@ -77,26 +79,4 @@ jobs:
           fail-on-alert: false
           gh-pages-branch: ${{env.gh-pages-branch}}
           auto-push: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Store benchmark results - 2
-        uses: Happypig375/github-action-benchmark@v1.8.2
-        with:
-          tool: 'benchmarkdotnet'
-          # Where the output from the benchmark tool is stored
-          output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.StringTests-report-full-compressed.json
-          # Workflow will not fail when an alert happens
-          fail-on-alert: false
-          gh-pages-branch: ${{env.gh-pages-branch}}
-          auto-push: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Store benchmark results - 3
-        uses: Happypig375/github-action-benchmark@v1.8.2
-        with:
-          tool: 'benchmarkdotnet'
-          # Where the output from the benchmark tool is stored
-          output-file-path: .\BenchmarkDotNet.Artifacts\results\PerformanceTests.WriteTests-report-full-compressed.json
-          # Workflow will not fail when an alert happens
-          fail-on-alert: false
-          gh-pages-branch: ${{env.gh-pages-branch}}
-          auto-push: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}         
+          github-token: ${{ secrets.GITHUB_TOKEN }}      
