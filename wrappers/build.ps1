@@ -22,7 +22,7 @@ param(
     [Parameter(Position=0)]
     [string]$Target = 'Windows',
 
-    [Switch]$NoRebuild
+    [Switch]$Incremental
 )
 
 Push-Location $PSScriptRoot
@@ -63,12 +63,12 @@ function triplet([string]$target, [string]$platform) {
 }
 
 foreach ($platform in $Platforms) {
-    if (-Not $NoRebuild) {
+    if (-Not $Incremental) {
         Remove-Item .\cmake\$Target\$Configuration-$platform -Recurse -Force -ErrorAction Ignore
     }
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
-    if (-Not $NoRebuild) {
+    if (-Not $Incremental) {
         & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -DVCPKG_TARGET_TRIPLET="$(triplet -target $Target -platform $platform)"
     }
     
