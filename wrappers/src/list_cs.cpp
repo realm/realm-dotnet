@@ -35,8 +35,7 @@ namespace {
             throw NotNullableException();
         }
 
-        // TODO: add list.get_type() != PropertyType::Mixed
-        if (!value.is_null() && to_capi(list.get_type()) != value.type) {
+        if (!value.is_null() && list.get_type() != PropertyType::Mixed && to_capi(list.get_type()) != value.type) {
             throw PropertyTypeMismatchException(to_string(list.get_type()), to_string(value.type));
         }
     }
@@ -61,13 +60,17 @@ REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t valu
             throw IndexOutOfRangeException("Set in RealmList", list_ndx, count);
         }
 
-        switch (value.type) {
-        case realm_value_type::RLM_TYPE_LINK:
-            list.set(list_ndx, value.link.object->obj());
-            break;
-        default:
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
+            // For Mixed, we need ObjLink, otherwise, ObjKey
+            if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
+                list.set_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+            }
+            else {
+                list.set(list_ndx, value.link.object->obj());
+            }
+        }
+        else {
             list.set_any(list_ndx, from_capi(value));
-            break;
         }
     });
 }
@@ -93,13 +96,17 @@ REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t v
             throw IndexOutOfRangeException("Insert into RealmList", list_ndx, list.size());
         }
 
-        switch (value.type) {
-        case realm_value_type::RLM_TYPE_LINK:
-            list.insert(list_ndx, value.link.object->obj());
-            break;
-        default:
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
+            // For Mixed, we need ObjLink, otherwise, ObjKey
+            if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
+                list.insert_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+            }
+            else {
+                list.insert(list_ndx, value.link.object->obj());
+            }
+        }
+        else {
             list.insert_any(list_ndx, from_capi(value));
-            break;
         }
     });
 }
@@ -128,15 +135,17 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", ndx, count);
 
-        switch (list.get_type() & ~PropertyType::Flags) {
-        case PropertyType::Object:
+        if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             *value = to_capi(new Object(list.get_realm(), list.get_object_schema(), list.get(ndx)));
-            break;
-        case PropertyType::Mixed:
-            REALM_TERMINATE("Mixed not supported yet");
-        default:
-            *value = to_capi(list.get_any(ndx));
-            break;
+        }
+        else {
+            auto val = list.get_any(ndx);
+            if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+                *value = to_capi(new Object(list.get_realm(), val.get<ObjLink>()));
+            }
+            else {
+                *value = to_capi(std::move(val));
+            }
         }
     });
 }
@@ -144,26 +153,29 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
 REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        auto list_type = list.get_type();
         // This doesn't use ensure_types to allow List<string>.Find(null) to return false
-        if (value.is_null() && !is_nullable(list.get_type())) {
+        if (value.is_null() && !is_nullable(list_type)) {
             return (size_t)-1;
         }
         
-        // TODO: add list.get_type() != PropertyType::Mixed
-        if (!value.is_null() && to_capi(list.get_type()) != value.type) {
-            throw PropertyTypeMismatchException(to_string(list.get_type()), to_string(value.type));
+        if (!value.is_null() && list_type != PropertyType::Mixed && to_capi(list_type) != value.type) {
+            throw PropertyTypeMismatchException(to_string(list_type), to_string(value.type));
         }
 
-        switch (value.type) {
-        case realm_value_type::RLM_TYPE_LINK:
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
             if (list.get_realm() != value.link.object->realm()) {
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
 
+            if ((list_type & PropertyType::Flags) == PropertyType::Mixed) {
+                return list.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+            }
+
             return list.find(value.link.object->obj());
-        default:
-            return list.find_any(from_capi(value));
         }
+
+        return list.find_any(from_capi(value));
     });
 }
 

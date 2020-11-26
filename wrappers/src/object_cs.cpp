@@ -68,23 +68,23 @@ extern "C" {
             verify_can_get(object);
 
             auto prop = get_property(object, property_ndx);
-            switch (prop.type & ~PropertyType::Flags) {
-            case PropertyType::Object: {
+            if ((prop.type & ~PropertyType::Flags) == PropertyType::Object) {
                 const Obj link_obj = object.obj().get_linked_object(prop.column_key);
                 if (link_obj) {
-                    auto& target_schema = *object.realm()->schema().find(prop.object_type);
-                    *value = to_capi(new Object(object.realm(), target_schema, std::move(link_obj)));
+                    *value = to_capi(new Object(object.realm(), link_obj));
                 }
                 else {
                     value->type = realm_value_type::RLM_TYPE_NULL;
                 }
-            } break;
-            case PropertyType::Mixed:
-                throw std::invalid_argument("Mixed properties not supported yet.");
-            default:
+            }
+            else {
                 auto val = object.obj().get_any(prop.column_key);
-                *value = to_capi(std::move(val));
-                break;
+                if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+                    *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
+                }
+                else {
+                    *value = to_capi(std::move(val));
+                }
             }
         });
     }
@@ -112,20 +112,17 @@ extern "C" {
                     to_string(value.type));
             }
 
-            switch (prop.type & ~PropertyType::Flags) {
-            case PropertyType::Object:
-                if (value.type == realm_value_type::RLM_TYPE_NULL) {
-                    object.obj().set_null(prop.column_key);
+            if (value.type == realm_value_type::RLM_TYPE_LINK) {
+                // For Mixed, we need ObjLink, otherwise, ObjKey
+                if ((prop.type & ~PropertyType::Flags) == PropertyType::Mixed) {
+                    object.obj().set_any(prop.column_key, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
                 }
                 else {
                     object.obj().set(prop.column_key, value.link.object->obj().get_key());
                 }
-                break;
-            case PropertyType::Mixed:
-                throw std::invalid_argument("Mixed properties not supported yet.");
-            default:
-                object.obj().set_any(prop.column_key, std::move(from_capi(value)));
-                break;
+            }
+            else {
+                object.obj().set_any(prop.column_key, from_capi(value));
             }
         });
     }

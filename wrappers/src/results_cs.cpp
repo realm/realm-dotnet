@@ -60,15 +60,17 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
 
-        switch (results.get_type() & ~PropertyType::Flags) {
-        case PropertyType::Object:
+        if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
             *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), results.get(ndx)));
-            break;
-        case PropertyType::Mixed:
-            REALM_TERMINATE("Mixed not supported yet");
-        default:
-            *value = to_capi(results.get_any(ndx));
-            break;
+        }
+        else {
+            auto val = results.get_any(ndx);
+            if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+                *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
+            }
+            else {
+                *value = to_capi(std::move(val));
+            }
         }
     });
 }
