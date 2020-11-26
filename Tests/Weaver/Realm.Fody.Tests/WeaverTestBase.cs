@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Fody;
 
@@ -25,7 +24,6 @@ namespace RealmWeaver
 {
     extern alias realm;
 
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1304:NonPrivateReadonlyFieldsMustBeginWithUpperCaseLetter")]
     public abstract class WeaverTestBase
     {
         protected readonly List<string> _warnings = new List<string>();

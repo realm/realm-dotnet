@@ -362,7 +362,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetObjectValue(propertyName = \"PrimaryNumber\", value = AssemblyToProcess.PhoneNumber)"
+                "RealmObject.SetValue(propertyName = \"PrimaryNumber\", value = Realms.RealmValue)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, "PrimaryNumber"), Is.Null);
         }
@@ -381,7 +381,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.GetObjectValue(propertyName = \"PrimaryNumber\")"
+                "RealmObject.GetValue(propertyName = \"PrimaryNumber\")"
             }));
         }
 

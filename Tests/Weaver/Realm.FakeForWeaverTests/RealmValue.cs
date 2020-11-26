@@ -75,6 +75,8 @@ namespace Realms
 
         public static implicit operator string(RealmValue val) => default;
 
+        public static implicit operator RealmObjectBase(RealmValue val) => default;
+
         public static implicit operator RealmValue(char val) => default;
 
         public static implicit operator RealmValue(byte val) => default;
@@ -142,5 +144,7 @@ namespace Realms
         public static implicit operator RealmValue(byte[] val) => default;
 
         public static implicit operator RealmValue(string val) => default;
+
+        public static implicit operator RealmValue(RealmObjectBase val) => default;
     }
 }
