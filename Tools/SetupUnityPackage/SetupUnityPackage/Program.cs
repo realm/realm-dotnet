@@ -65,6 +65,10 @@ namespace SetupUnityPackage
             {
                 { "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll", "Dependencies/System.Runtime.CompilerServices.Unsafe.dll" },
             },
+            ["System.Buffers"] = new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/System.Buffers.dll", "Dependencies/System.Buffers.dll" },
+            },
         };
 
         public static async Task Main(string[] args)
@@ -93,14 +97,18 @@ namespace SetupUnityPackage
 
                 foreach (var package in realmDependencies)
                 {
+                    var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
                     if (_packageMaps.TryGetValue(package.Id, out var fileMap))
                     {
-                        var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
                         Console.WriteLine($"Including {package.Id}@{packageVersion}");
                         var path = await DownloadPackage(package.Id, packageVersion);
                         await CopyBinaries(path, fileMap);
 
                         Console.WriteLine($"Included {fileMap.Count} files from {package.Id}@{packageVersion}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it's not included in packageMaps");
                     }
                 }
 
