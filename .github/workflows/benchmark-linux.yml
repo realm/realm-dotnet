@@ -46,7 +46,7 @@ jobs:
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
       - name: Print tree
-        run: tree /home/runner/work/realm-dotnet/realm-dotnet/Realm/Realm
+        run: ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
       - name: Run benchmarks
         run:  |
           dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f * --join
