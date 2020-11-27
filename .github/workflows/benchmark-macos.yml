@@ -1,14 +1,14 @@
-name: benchmark-linux
+name: benchmark-macos
 on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
-  #push: For testing...
+  push:
 env:
   # Branch for Github Pages
   gh-pages-branch: gh-pages
 jobs:
   build-wrappers:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -19,13 +19,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./wrappers/build/
-          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+          key: wrapper-macos-${{hashfiles('./wrappers/**')}}
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
   execute-benchmarks:
     needs: [build-wrappers]
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Install .NET 5.0
         uses: actions/setup-dotnet@v1
@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./wrappers/build/
-          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+          key: wrapper-macos-${{hashfiles('./wrappers/**')}}
       - name: Check cache hit
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
@@ -48,7 +48,7 @@ jobs:
       - name: Run benchmarks
       # We need to use the quotes on Linux, otherwise it substitutes the wildcard with all the files in the folder
         run:  |
-          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
+          sudo dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
