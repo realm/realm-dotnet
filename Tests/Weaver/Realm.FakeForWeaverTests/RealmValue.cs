@@ -7,75 +7,75 @@ namespace Realms
     {
         public RealmValueType Type { get; }
 
-        public static implicit operator char(RealmValue val) => default;
+        public static explicit operator char(RealmValue val) => default;
 
-        public static implicit operator byte(RealmValue val) => default;
+        public static explicit operator byte(RealmValue val) => default;
 
-        public static implicit operator short(RealmValue val) => default;
+        public static explicit operator short(RealmValue val) => default;
 
-        public static implicit operator int(RealmValue val) => default;
+        public static explicit operator int(RealmValue val) => default;
 
-        public static implicit operator long(RealmValue val) => default;
+        public static explicit operator long(RealmValue val) => default;
 
-        public static implicit operator float(RealmValue val) => default;
+        public static explicit operator float(RealmValue val) => default;
 
-        public static implicit operator double(RealmValue val) => default;
+        public static explicit operator double(RealmValue val) => default;
 
-        public static implicit operator bool(RealmValue val) => default;
+        public static explicit operator bool(RealmValue val) => default;
 
-        public static implicit operator DateTimeOffset(RealmValue val) => default;
+        public static explicit operator DateTimeOffset(RealmValue val) => default;
 
-        public static implicit operator decimal(RealmValue val) => default;
+        public static explicit operator decimal(RealmValue val) => default;
 
-        public static implicit operator Decimal128(RealmValue val) => default;
+        public static explicit operator Decimal128(RealmValue val) => default;
 
-        public static implicit operator ObjectId(RealmValue val) => default;
+        public static explicit operator ObjectId(RealmValue val) => default;
 
-        public static implicit operator char?(RealmValue val) => default;
+        public static explicit operator char?(RealmValue val) => default;
 
-        public static implicit operator byte?(RealmValue val) => default;
+        public static explicit operator byte?(RealmValue val) => default;
 
-        public static implicit operator short?(RealmValue val) => default;
+        public static explicit operator short?(RealmValue val) => default;
 
-        public static implicit operator int?(RealmValue val) => default;
+        public static explicit operator int?(RealmValue val) => default;
 
-        public static implicit operator long?(RealmValue val) => default;
+        public static explicit operator long?(RealmValue val) => default;
 
-        public static implicit operator float?(RealmValue val) => default;
+        public static explicit operator float?(RealmValue val) => default;
 
-        public static implicit operator double?(RealmValue val) => default;
+        public static explicit operator double?(RealmValue val) => default;
 
-        public static implicit operator bool?(RealmValue val) => default;
+        public static explicit operator bool?(RealmValue val) => default;
 
-        public static implicit operator DateTimeOffset?(RealmValue val) => default;
+        public static explicit operator DateTimeOffset?(RealmValue val) => default;
 
-        public static implicit operator decimal?(RealmValue val) => default;
+        public static explicit operator decimal?(RealmValue val) => default;
 
-        public static implicit operator Decimal128?(RealmValue val) => default;
+        public static explicit operator Decimal128?(RealmValue val) => default;
 
-        public static implicit operator ObjectId?(RealmValue val) => default;
+        public static explicit operator ObjectId?(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<byte>(RealmValue val) => default;
+        public static explicit operator RealmInteger<byte>(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<short>(RealmValue val) => default;
+        public static explicit operator RealmInteger<short>(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<int>(RealmValue val) => default;
+        public static explicit operator RealmInteger<int>(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<long>(RealmValue val) => default;
+        public static explicit operator RealmInteger<long>(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<byte>?(RealmValue val) => default;
+        public static explicit operator RealmInteger<byte>?(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<short>?(RealmValue val) => default;
+        public static explicit operator RealmInteger<short>?(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<int>?(RealmValue val) => default;
+        public static explicit operator RealmInteger<int>?(RealmValue val) => default;
 
-        public static implicit operator RealmInteger<long>?(RealmValue val) => default;
+        public static explicit operator RealmInteger<long>?(RealmValue val) => default;
 
-        public static implicit operator byte[](RealmValue val) => default;
+        public static explicit operator byte[](RealmValue val) => default;
 
-        public static implicit operator string(RealmValue val) => default;
+        public static explicit operator string(RealmValue val) => default;
 
-        public static implicit operator RealmObjectBase(RealmValue val) => default;
+        public static explicit operator RealmObjectBase(RealmValue val) => default;
 
         public static implicit operator RealmValue(char val) => default;
 

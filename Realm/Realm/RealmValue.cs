@@ -676,75 +676,75 @@ namespace Realms
             }
         }
 
-        public static implicit operator char(RealmValue val) => val.AsChar();
+        public static explicit operator char(RealmValue val) => val.AsChar();
 
-        public static implicit operator byte(RealmValue val) => val.AsByte();
+        public static explicit operator byte(RealmValue val) => val.AsByte();
 
-        public static implicit operator short(RealmValue val) => val.AsInt16();
+        public static explicit operator short(RealmValue val) => val.AsInt16();
 
-        public static implicit operator int(RealmValue val) => val.AsInt32();
+        public static explicit operator int(RealmValue val) => val.AsInt32();
 
-        public static implicit operator long(RealmValue val) => val.AsInt64();
+        public static explicit operator long(RealmValue val) => val.AsInt64();
 
-        public static implicit operator float(RealmValue val) => val.AsFloat();
+        public static explicit operator float(RealmValue val) => val.AsFloat();
 
-        public static implicit operator double(RealmValue val) => val.AsDouble();
+        public static explicit operator double(RealmValue val) => val.AsDouble();
 
-        public static implicit operator bool(RealmValue val) => val.AsBool();
+        public static explicit operator bool(RealmValue val) => val.AsBool();
 
-        public static implicit operator DateTimeOffset(RealmValue val) => val.AsDate();
+        public static explicit operator DateTimeOffset(RealmValue val) => val.AsDate();
 
-        public static implicit operator decimal(RealmValue val) => val.AsDecimal();
+        public static explicit operator decimal(RealmValue val) => val.AsDecimal();
 
-        public static implicit operator Decimal128(RealmValue val) => val.AsDecimal128();
+        public static explicit operator Decimal128(RealmValue val) => val.AsDecimal128();
 
-        public static implicit operator ObjectId(RealmValue val) => val.AsObjectId();
+        public static explicit operator ObjectId(RealmValue val) => val.AsObjectId();
 
-        public static implicit operator char?(RealmValue val) => val.AsNullableChar();
+        public static explicit operator char?(RealmValue val) => val.AsNullableChar();
 
-        public static implicit operator byte?(RealmValue val) => val.AsNullableByte();
+        public static explicit operator byte?(RealmValue val) => val.AsNullableByte();
 
-        public static implicit operator short?(RealmValue val) => val.AsNullableInt16();
+        public static explicit operator short?(RealmValue val) => val.AsNullableInt16();
 
-        public static implicit operator int?(RealmValue val) => val.AsNullableInt32();
+        public static explicit operator int?(RealmValue val) => val.AsNullableInt32();
 
-        public static implicit operator long?(RealmValue val) => val.AsNullableInt64();
+        public static explicit operator long?(RealmValue val) => val.AsNullableInt64();
 
-        public static implicit operator float?(RealmValue val) => val.AsNullableFloat();
+        public static explicit operator float?(RealmValue val) => val.AsNullableFloat();
 
-        public static implicit operator double?(RealmValue val) => val.AsNullableDouble();
+        public static explicit operator double?(RealmValue val) => val.AsNullableDouble();
 
-        public static implicit operator bool?(RealmValue val) => val.AsNullableBool();
+        public static explicit operator bool?(RealmValue val) => val.AsNullableBool();
 
-        public static implicit operator DateTimeOffset?(RealmValue val) => val.AsNullableDate();
+        public static explicit operator DateTimeOffset?(RealmValue val) => val.AsNullableDate();
 
-        public static implicit operator decimal?(RealmValue val) => val.AsNullableDecimal();
+        public static explicit operator decimal?(RealmValue val) => val.AsNullableDecimal();
 
-        public static implicit operator Decimal128?(RealmValue val) => val.AsNullableDecimal128();
+        public static explicit operator Decimal128?(RealmValue val) => val.AsNullableDecimal128();
 
-        public static implicit operator ObjectId?(RealmValue val) => val.AsNullableObjectId();
+        public static explicit operator ObjectId?(RealmValue val) => val.AsNullableObjectId();
 
-        public static implicit operator RealmInteger<byte>(RealmValue val) => val.AsByteRealmInteger();
+        public static explicit operator RealmInteger<byte>(RealmValue val) => val.AsByteRealmInteger();
 
-        public static implicit operator RealmInteger<short>(RealmValue val) => val.AsInt16RealmInteger();
+        public static explicit operator RealmInteger<short>(RealmValue val) => val.AsInt16RealmInteger();
 
-        public static implicit operator RealmInteger<int>(RealmValue val) => val.AsInt32RealmInteger();
+        public static explicit operator RealmInteger<int>(RealmValue val) => val.AsInt32RealmInteger();
 
-        public static implicit operator RealmInteger<long>(RealmValue val) => val.AsInt64RealmInteger();
+        public static explicit operator RealmInteger<long>(RealmValue val) => val.AsInt64RealmInteger();
 
-        public static implicit operator RealmInteger<byte>?(RealmValue val) => val.AsNullableByteRealmInteger();
+        public static explicit operator RealmInteger<byte>?(RealmValue val) => val.AsNullableByteRealmInteger();
 
-        public static implicit operator RealmInteger<short>?(RealmValue val) => val.AsNullableInt16RealmInteger();
+        public static explicit operator RealmInteger<short>?(RealmValue val) => val.AsNullableInt16RealmInteger();
 
-        public static implicit operator RealmInteger<int>?(RealmValue val) => val.AsNullableInt32RealmInteger();
+        public static explicit operator RealmInteger<int>?(RealmValue val) => val.AsNullableInt32RealmInteger();
 
-        public static implicit operator RealmInteger<long>?(RealmValue val) => val.AsNullableInt64RealmInteger();
+        public static explicit operator RealmInteger<long>?(RealmValue val) => val.AsNullableInt64RealmInteger();
 
-        public static implicit operator byte[](RealmValue val) => val.AsData();
+        public static explicit operator byte[](RealmValue val) => val.AsData();
 
-        public static implicit operator string(RealmValue val) => val.AsString();
+        public static explicit operator string(RealmValue val) => val.AsString();
 
-        public static implicit operator RealmObjectBase(RealmValue val) => val.AsRealmObject();
+        public static explicit operator RealmObjectBase(RealmValue val) => val.AsRealmObject();
 
         public static implicit operator RealmValue(char val) => Int(val);
 

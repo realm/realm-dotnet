@@ -107,7 +107,7 @@ namespace AssemblyToProcess
         {
             get
             {
-                return GetValue("Address");
+                return (string)GetValue("Address");
             }
 
             set

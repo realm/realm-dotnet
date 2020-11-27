@@ -501,7 +501,7 @@ Analytics payload
             ////   3: ldarg.0
             ////   4: ldstr <columnName>
             ////   5: call Realms.RealmObject.GetValue
-            ////   6: call op_implicit prop.PropertyType
+            ////   6: call op_explicit prop.PropertyType
             ////   7: ret
             ////   8: ldarg.0
             ////   9: ldfld <backingField>
@@ -533,7 +533,7 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            var convertMethod = new MethodReference("op_Implicit", convertType, _references.RealmValue)
+            var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
             {
                 Parameters = { new ParameterDefinition(_references.RealmValue) },
                 HasThis = false
