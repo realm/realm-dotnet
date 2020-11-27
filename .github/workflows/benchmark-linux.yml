@@ -48,7 +48,7 @@ jobs:
       - name: Run benchmarks
       # We need to use the quotes on Linux, otherwise it substitutes the wildcard with all the files in the folder
         run:  |
-          sudo dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
+          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
