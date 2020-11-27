@@ -24,9 +24,12 @@ namespace SetupUnityPackage
 
         [Option('f', "include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
         public bool IncludeDependencies { get; set; }
+
+        [Option("skip-validation", Default = false, Required = false, HelpText = "Specify whether to skip validating the list of dependencies. Only used when include-dependencies is true.")]
+        public bool SkipValidation { get; set; }
     }
 
-    public class Program
+    public static class Program
     {
         private const string RealmPackageId = "Realm";
         private const string RealmPackagaName = "realm.unity";
@@ -71,6 +74,14 @@ namespace SetupUnityPackage
             },
         };
 
+        private static readonly ISet<string> _ignoredDependencies = new HashSet<string>
+        {
+            "Microsoft.CSharp",
+            "Realm.Fody",
+            "Fody",
+            "System.Dynamic.Runtime",
+        };
+
         public static async Task Main(string[] args)
         {
             await Parser.Default.ParseArguments<Options>(args)
@@ -106,9 +117,14 @@ namespace SetupUnityPackage
 
                         Console.WriteLine($"Included {fileMap.Count} files from {package.Id}@{packageVersion}");
                     }
-                    else
+                    else if (_ignoredDependencies.Contains(package.Id))
                     {
-                        Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it's not included in packageMaps");
+                        Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it's not included in {nameof(_packageMaps)}");
+                    }
+                    else if (!opts.SkipValidation)
+                    {
+                        Console.WriteLine($"Error: package {package.Id} was not found either in {nameof(_packageMaps)} or {nameof(_ignoredDependencies)}. Suppress error with -skip-validation.");
+                        Environment.Exit(1);
                     }
                 }
 
@@ -119,6 +135,29 @@ namespace SetupUnityPackage
                 foreach (var file in Directory.EnumerateFiles(metaFilesPath, "*.*", SearchOption.AllDirectories))
                 {
                     File.Copy(file, Path.Combine(targetBasePath, Path.GetRelativePath(metaFilesPath, file)), overwrite: true);
+                }
+
+                if (!opts.SkipValidation)
+                {
+                    var dependenciesPath = Path.Combine(targetBasePath, "Dependencies");
+                    var expectedFiles = Directory.EnumerateFiles(dependenciesPath, "*.dll")
+                        .Select(f => $"{f}.meta")
+                        .ToHashSet();
+
+                    expectedFiles.SymmetricExceptWith(Directory.EnumerateFiles(dependenciesPath, "*.dll.meta"));
+
+                    if (expectedFiles.Any())
+                    {
+                        Console.WriteLine($"Error: the .dll or the .dll meta for the following files was missing in {dependenciesPath}:");
+
+                        foreach (var file in expectedFiles)
+                        {
+                            Console.WriteLine($"\t{Path.GetFileNameWithoutExtension(file)}");
+                        }
+
+                        Console.WriteLine("Suppress error with -skip-validation.");
+                        Environment.Exit(2);
+                    }
                 }
             }
 
