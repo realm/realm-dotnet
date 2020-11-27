@@ -22,7 +22,7 @@ jobs:
           key: wrapper-macos-${{hashfiles('./wrappers/**')}}
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
+        run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh
   execute-benchmarks:
     needs: [build-wrappers]
     runs-on: macos-latest
