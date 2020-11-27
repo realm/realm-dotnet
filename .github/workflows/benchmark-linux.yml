@@ -47,7 +47,7 @@ jobs:
         run: exit 1
       - name: Run benchmarks
         run:  |
-          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f * --join
+          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
