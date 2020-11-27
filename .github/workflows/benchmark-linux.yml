@@ -45,6 +45,12 @@ jobs:
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
+      - name: Print content
+        run: |
+          ls ./wrappers/build/
+          ls ./wrappers/build/Linux
+          ls ./wrappers/build/Linux/Debug
+          ls ./wrappers/build/Linux/Release
       - name: Run benchmarks
       # We need to use the quotes on Linux, otherwise it substitutes the wildcard with all the files in the folder
         run:  |
