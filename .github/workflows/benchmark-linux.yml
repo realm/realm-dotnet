@@ -45,10 +45,6 @@ jobs:
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
-      - name: Print tree
-        run: ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
-      - name: Print content folder
-        run: ls /home/runner/work/realm-dotnet/realm-dotnet/Realm/Realm/Properties/
       - name: Run benchmarks
         run:  |
           dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f * --join
