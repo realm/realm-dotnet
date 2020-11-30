@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -30,6 +31,27 @@ namespace Realms
         public const string DLL_NAME = "realm-wrappers";
 
         private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
+        {
+            if (TryGetUWPFolder(out var folder) ||
+                TryGetPersonalFolder(out folder) ||
+                TryGetUnityFolder(out folder) ||
+                TryGetFallbackFolder(out folder))
+            {
+                return folder;
+            }
+
+            throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
+        });
+
+        private static string _customStorageFolder;
+
+        public static string DefaultStorageFolder
+        {
+            get => _customStorageFolder ?? _defaultStorageFolder.Value;
+            set => _customStorageFolder = value;
+        }
+
+        private static bool TryGetUWPFolder(out string folder)
         {
             try
             {
@@ -44,59 +66,106 @@ namespace Realms
 
                     var currentApplicationData = currentProperty.GetValue(null);
                     var localFolder = localFolderProperty.GetValue(currentApplicationData);
-                    return (string)pathProperty.GetValue(localFolder);
+                    var result = (string)pathProperty.GetValue(localFolder);
+                    if (IsDirectoryWritable(result))
+                    {
+                        folder = result;
+                        return true;
+                    }
                 }
             }
             catch
             {
+            }
+
+            folder = null;
+            return false;
+        }
+
+        private static bool TryGetPersonalFolder(out string folder)
+        {
+            try
+            {
+                var result = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                if (IsDirectoryWritable(result))
+                {
+                    folder = result;
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            folder = null;
+            return false;
+        }
+
+        private static bool TryGetUnityFolder(out string folder)
+        {
+            try
+            {
+                var androidJNI = Type.GetType("UnityEngine.AndroidJNI, UnityEngine.AndroidJNIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                var unityApplication = Type.GetType("UnityEngine.Application, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+                if (unityApplication != null)
+                {
+                    var persistentDataPathProperty = unityApplication.GetProperty("persistentDataPath", BindingFlags.Static | BindingFlags.Public);
+                    var persistentDataPath = (string)persistentDataPathProperty.GetValue(null);
+                    if (IsDirectoryWritable(persistentDataPath))
+                    {
+                        folder = persistentDataPath;
+                        return true;
+                    }
+
+                    // If we got unwriteable folder 
+                }
+            }
+            catch
+            {
+            }
+
+            folder = null;
+            return false;
+        }
+
+        private static bool TryGetFallbackFolder(out string folder)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            if (IsDirectoryWritable(currentDirectory))
+            {
+                folder = Path.Combine(currentDirectory, "Documents");
+                Directory.CreateDirectory(folder);
+                return true;
+            }
+
+            folder = null;
+            return false;
+        }
+
+        private static bool IsDirectoryWritable(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            if (!Directory.Exists(path))
+            {
+                return false;
             }
 
             try
             {
-                return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
+                {
+                }
+
+                return true;
             }
             catch
             {
+                return false;
             }
-
-            var currentDirectory = Directory.GetCurrentDirectory();
-            if (!IsDirectoryWritable(currentDirectory))
-            {
-                throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
-            }
-
-            var folder = Path.Combine(currentDirectory, "Documents");
-            Directory.CreateDirectory(folder);
-            return folder;
-
-            static bool IsDirectoryWritable(string path)
-            {
-                if (!Directory.Exists(path))
-                {
-                    return false;
-                }
-
-                try
-                {
-                    using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
-                    {
-                    }
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        });
-
-        private static string _customStorageFolder;
-
-        public static string DefaultStorageFolder
-        {
-            get => _customStorageFolder ?? _defaultStorageFolder.Value;
-            set => _customStorageFolder = value;
         }
     }
 }
