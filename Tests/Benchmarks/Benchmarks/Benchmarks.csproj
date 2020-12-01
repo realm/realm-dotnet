@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <DisableFody>true</DisableFody>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,10 +14,12 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1.1466" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\PerformanceTests\PerformanceTests.csproj">
       <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
   </ItemGroup>
 </Project>
