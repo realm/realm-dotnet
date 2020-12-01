@@ -186,7 +186,7 @@ stage('Unity Package') {
 
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath}"
     dir('Realm/Realm.Unity') {
       sh "npm version ${packageVersion} --allow-same-version"
       sh 'npm pack'
@@ -195,7 +195,7 @@ stage('Unity Package') {
       sh "rm realm.unity-${packageVersion}.tgz"
     }
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} -f"
     dir('Realm/Realm.Unity') {
       sh 'npm pack'
 

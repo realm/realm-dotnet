@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -51,43 +50,59 @@ namespace Realms
             set => _customStorageFolder = value;
         }
 
-        private static bool TryGetUWPFolder(out string folder)
+        private static bool TryGetUWPFolder(out string folder) => TryGetDatabaseFolder(() =>
         {
-            try
+            // On UWP, the sandbox folder is obtained by:
+            // ApplicationData.Current.LocalFolder.Path
+            var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
+            if (applicationData == null)
             {
-                // On UWP, the sandbox folder is obtained by:
-                // ApplicationData.Current.LocalFolder.Path
-                var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
-                if (applicationData != null)
-                {
-                    var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
-                    var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
-                    var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
-
-                    var currentApplicationData = currentProperty.GetValue(null);
-                    var localFolder = localFolderProperty.GetValue(currentApplicationData);
-                    var result = (string)pathProperty.GetValue(localFolder);
-                    if (IsDirectoryWritable(result))
-                    {
-                        folder = result;
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
+                return null;
             }
 
-            folder = null;
-            return false;
-        }
+            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
+            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
+            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+
+            var currentApplicationData = currentProperty.GetValue(null);
+            var localFolder = localFolderProperty.GetValue(currentApplicationData);
+            return (string)pathProperty.GetValue(localFolder);
+        }, out folder);
 
         private static bool TryGetPersonalFolder(out string folder)
+            => TryGetDatabaseFolder(() => Environment.GetFolderPath(Environment.SpecialFolder.Personal), out folder);
+
+        private static bool TryGetUnityFolder(out string folder) => TryGetDatabaseFolder(() =>
+        {
+            var fileHelper = Type.GetType("UnityUtils.FileHelper, UnityUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
+            if (fileHelper != null)
+            {
+                var getInternalStorage = fileHelper.GetMethod("GetInternalStorage", BindingFlags.Public | BindingFlags.Static);
+                return (string)getInternalStorage.Invoke(null, null);
+            }
+
+            return null;
+        }, out folder);
+
+        private static bool TryGetFallbackFolder(out string folder) => TryGetDatabaseFolder(() =>
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            if (!IsDirectoryWritable(currentDirectory))
+            {
+                return null;
+            }
+
+            var docsFolder = Path.Combine(currentDirectory, "Documents");
+            Directory.CreateDirectory(docsFolder);
+            return docsFolder;
+        }, out folder);
+
+        private static bool TryGetDatabaseFolder(Func<string> getter, out string folder)
         {
             try
             {
-                var result = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                if (IsDirectoryWritable(result))
+                var result = getter();
+                if (result != null && IsDirectoryWritable(result))
                 {
                     folder = result;
                     return true;
@@ -95,47 +110,6 @@ namespace Realms
             }
             catch
             {
-            }
-
-            folder = null;
-            return false;
-        }
-
-        private static bool TryGetUnityFolder(out string folder)
-        {
-            try
-            {
-                var androidJNI = Type.GetType("UnityEngine.AndroidJNI, UnityEngine.AndroidJNIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-                var unityApplication = Type.GetType("UnityEngine.Application, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
-                if (unityApplication != null)
-                {
-                    var persistentDataPathProperty = unityApplication.GetProperty("persistentDataPath", BindingFlags.Static | BindingFlags.Public);
-                    var persistentDataPath = (string)persistentDataPathProperty.GetValue(null);
-                    if (IsDirectoryWritable(persistentDataPath))
-                    {
-                        folder = persistentDataPath;
-                        return true;
-                    }
-
-                    // If we got unwriteable folder 
-                }
-            }
-            catch
-            {
-            }
-
-            folder = null;
-            return false;
-        }
-
-        private static bool TryGetFallbackFolder(out string folder)
-        {
-            var currentDirectory = Directory.GetCurrentDirectory();
-            if (IsDirectoryWritable(currentDirectory))
-            {
-                folder = Path.Combine(currentDirectory, "Documents");
-                Directory.CreateDirectory(folder);
-                return true;
             }
 
             folder = null;
