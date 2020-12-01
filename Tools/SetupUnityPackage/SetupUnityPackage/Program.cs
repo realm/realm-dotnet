@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -127,19 +128,12 @@ namespace SetupUnityPackage
 
             UpdatePackageJson(opts.IncludeDependencies);
 
-            if (opts.Pack)
+            if (opts.Pack || true)
             {
                 Console.WriteLine("Preparing npm package...");
 
-                var npmRunner = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "cmd",
-                    WorkingDirectory = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..")),
-                    RedirectStandardInput = true,
-                });
-
-                npmRunner.StandardInput.WriteLine($"npm version {version} --allow-same-version & npm pack & exit");
-                npmRunner.WaitForExit();
+                RunNpm($"version {version} --allow-same-version");
+                RunNpm($"pack");
             }
         }
 
@@ -241,6 +235,31 @@ namespace SetupUnityPackage
 
             contents = contents.Replace($"\"name\": \"{maybeSourceName}\"", $"\"name\": \"{targetName}\"");
             File.WriteAllText(packageJsonPath, contents);
+        }
+
+        private static void RunNpm(string command)
+        {
+            string fileName;
+            string arguments;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                fileName = "cmd";
+                arguments = $"npm {command}";
+            }
+            else
+            {
+                fileName = "npm";
+                arguments = command;
+            }
+
+            var npmRunner = Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                WorkingDirectory = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..")),
+                Arguments = arguments
+            });
+
+            npmRunner.WaitForExit();
         }
     }
 }
