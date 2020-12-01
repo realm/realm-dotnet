@@ -128,7 +128,7 @@ namespace SetupUnityPackage
 
             UpdatePackageJson(opts.IncludeDependencies);
 
-            if (opts.Pack || true)
+            if (opts.Pack)
             {
                 Console.WriteLine("Preparing npm package...");
 
@@ -244,7 +244,7 @@ namespace SetupUnityPackage
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 fileName = "cmd";
-                arguments = $"npm {command}";
+                arguments = $"/c npm {command}";
             }
             else
             {
@@ -256,7 +256,7 @@ namespace SetupUnityPackage
             {
                 FileName = fileName,
                 WorkingDirectory = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..")),
-                Arguments = arguments
+                Arguments = arguments,
             });
 
             npmRunner.WaitForExit();
