@@ -46,16 +46,14 @@ namespace RealmWeaver
 
         private static dynamic GetAutoPropertyBackingFieldValue(object o, string propertyName)
         {
-            var propertyField = ((Type)o.GetType())
-                .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
             var fieldValue = propertyField.GetValue(o);
             return fieldValue;
         }
 
         private static void SetAutoPropertyBackingFieldValue(object o, string propertyName, object propertyValue)
         {
-            var propertyField = ((Type)o.GetType())
-                .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
             propertyField.SetValue(o, propertyValue);
         }
 
@@ -88,55 +86,7 @@ namespace RealmWeaver
             return weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" });
         }
 
-        private static string GetCoreMethodName(string type)
-        {
-            type = type.Replace("Counter", string.Empty);
-            if (_realmIntegerBackedTypes.Contains(type))
-            {
-                return (type.StartsWith("Nullable") ? "Nullable" : string.Empty) + "RealmInteger";
-            }
-
-            if (_primitiveValueTypes.Contains(type))
-            {
-                return "Primitive";
-            }
-
-            return type;
-        }
-
         #endregion helpers
-
-        private static readonly IEnumerable<string> _realmIntegerBackedTypes = new[]
-        {
-            "Byte",
-            "Int16",
-            "Int32",
-            "Int64",
-            "NullableByte",
-            "NullableInt16",
-            "NullableInt32",
-            "NullableInt64"
-        };
-
-        private static readonly IEnumerable<string> _primitiveValueTypes = new[]
-        {
-            "Char",
-            "Single",
-            "Double",
-            "Boolean",
-            "DateTimeOffset",
-            "Decimal",
-            "Decimal128",
-            "ObjectId",
-            "NullableChar",
-            "NullableSingle",
-            "NullableDouble",
-            "NullableBoolean",
-            "NullableDateTimeOffset",
-            "NullableDecimal",
-            "NullableDecimal128",
-            "NullableObjectId",
-        };
 
         public enum PropertyChangedWeaver
         {
@@ -297,7 +247,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                $"RealmObject.Get{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\")"
+                $"RealmObject.GetValue(propertyName = \"{propertyName}\")"
             }));
         }
 
@@ -316,7 +266,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                $"RealmObject.Set{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
+                $"RealmObject.SetValue(propertyName = \"{propertyName}\", value = Realms.RealmValue)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -345,7 +295,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                $"RealmObject.Set{GetCoreMethodName(typeName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
+                $"RealmObject.SetValue(propertyName = \"{propertyName}\", value = Realms.RealmValue)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
             Assert.That(eventRaised, Is.False);
@@ -392,7 +342,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                $"RealmObject.Set{GetCoreMethodName(typeName)}ValueUnique(propertyName = \"{propertyName}\", value = {propertyValue})"
+                $"RealmObject.SetValueUnique(propertyName = \"{propertyName}\", value = Realms.RealmValue)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -412,7 +362,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetObjectValue(propertyName = \"PrimaryNumber\", value = AssemblyToProcess.PhoneNumber)"
+                "RealmObject.SetValue(propertyName = \"PrimaryNumber\", value = Realms.RealmValue)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, "PrimaryNumber"), Is.Null);
         }
@@ -431,7 +381,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.GetObjectValue(propertyName = \"PrimaryNumber\")"
+                "RealmObject.GetValue(propertyName = \"PrimaryNumber\")"
             }));
         }
 
@@ -473,7 +423,7 @@ namespace RealmWeaver
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com)"
+                "RealmObject.SetValue(propertyName = \"Email\", value = Realms.RealmValue)"
             }));
         }
 
@@ -610,7 +560,7 @@ namespace RealmWeaver
             {
                 "IsManaged",
                 "IsManaged",
-                $"RealmObject.Set{GetCoreMethodName(propertyName)}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
+                $"RealmObject.SetValue(propertyName = \"{propertyName}\", value = Realms.RealmValue)"
             }));
         }
 
@@ -650,7 +600,7 @@ namespace RealmWeaver
                                            return new[]
                                            {
                                                "IsManaged",
-                                               $"RealmObject.Set{GetCoreMethodName(p.Name)}Value(propertyName = \"{p.Name}\", value = )"
+                                               $"RealmObject.SetValue(propertyName = \"{p.Name}\", value = Realms.RealmValue)"
                                            };
                                        })
                                        .ToList();
@@ -672,7 +622,7 @@ namespace RealmWeaver
 
             var propertyType = objectType.GetProperty(type + "Property").PropertyType;
             var defaultValue = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
-            Assert.That(instance.LogList, Does.Not.Contain($"RealmObject.Set{GetCoreMethodName(type)}ValueUnique(propertyName = \"{type}Property\", value = {defaultValue})"));
+            Assert.That(instance.LogList, Does.Not.Contain($"RealmObject.SetValueUnique(propertyName = \"{type}Property\", value = Realms.RealmValue)"));
         }
 
         [TestCase("RequiredObject", true)]
@@ -694,7 +644,7 @@ namespace RealmWeaver
                                            return new[]
                                            {
                                                "IsManaged",
-                                               $"RealmObject.Set{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                               $"RealmObject.SetValue(propertyName = \"{p.Name}\", value = Realms.RealmValue)"
                                            };
                                        })
                                        .ToList();

@@ -34,14 +34,6 @@
 using namespace realm::app;
 
 namespace realm {
-
-    SetDuplicatePrimaryKeyValueException::SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value)
-        : std::runtime_error(util::format(
-            "A %1 object already exists with primary key property %2 == '%3'",
-        object_type, property, value))
-    {}
-
-
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     @warning if you update these codes also update the matching RealmExceptionCodes.cs
@@ -118,6 +110,12 @@ namespace realm {
         }
         catch (const ObjectManagedByAnotherRealmException& e) {
             return { RealmErrorType::ObjectManagedByAnotherRealm, e.what() };
+        }
+        catch (const NotNullableException& e) {
+            return { RealmErrorType::NotNullableProperty, e.what() };
+        }
+        catch (const PropertyTypeMismatchException& e) {
+            return { RealmErrorType::PropertyMismatch, e.what() };
         }
         catch (const AppError& e) {
             if (e.is_client_error()) {

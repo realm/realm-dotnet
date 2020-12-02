@@ -18,7 +18,6 @@
 
 using System;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -30,40 +29,21 @@ namespace Realms
         {
         }
 
-        public bool TryGetObjectAtIndex(int index, out ObjectHandle objectHandle)
+        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
         {
-            var result = GetObjectAtIndexCore((IntPtr)index, out var nativeException);
+            GetValueAtIndexCore((IntPtr)index, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
-            if (result == IntPtr.Zero)
+
+            if (result.Type != RealmValueType.Object)
             {
-                objectHandle = null;
-                return false;
+                return new RealmValue(result);
             }
 
-            objectHandle = new ObjectHandle(Root, result);
-            return true;
+            var objectHandle = result.AsObject(Root);
+            return new RealmValue(realm.MakeObject(metadata, objectHandle));
         }
 
-        protected abstract IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException);
-
-        public PrimitiveValue GetPrimitiveAtIndex(int index, PropertyType type)
-        {
-            var result = new PrimitiveValue
-            {
-                Type = type
-            };
-
-            GetPrimitiveAtIndexCore((IntPtr)index, ref result, out var nativeException);
-            nativeException.ThrowIfNecessary();
-
-            return result;
-        }
-
-        protected abstract void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException);
-
-        public abstract string GetStringAtIndex(int index);
-
-        public abstract byte[] GetByteArrayAtIndex(int index);
+        protected abstract void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException);
 
         public abstract int Count();
 

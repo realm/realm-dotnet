@@ -20,3 +20,4 @@
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObjectBase._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.Realm._realmChanged")]
+[assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The values of the enum represent types.", Scope = "type", Target = "~T:Realms.RealmValueType")]
