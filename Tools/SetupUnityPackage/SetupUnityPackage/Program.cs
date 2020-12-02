@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -11,19 +13,23 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using UnityUtils;
 
 namespace SetupUnityPackage
 {
     public class Options
     {
-        [Option('p', "path", Required = false, HelpText = "Use a local NuGet package.")]
+        [Option("path", Required = false, HelpText = "Use a local NuGet package.")]
         public string Path { get; set; }
 
-        [Option('v', "nuget-version", Required = false, HelpText = "Specify an explicit version of the package to use.")]
+        [Option("nuget-version", Required = false, HelpText = "Specify an explicit version of the package to use.")]
         public string Version { get; set; }
 
-        [Option('f', "include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
+        [Option("include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
         public bool IncludeDependencies { get; set; }
+
+        [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
+        public bool Pack { get; set; }
 
         [Option("skip-validation", Default = false, Required = false, HelpText = "Specify whether to skip validating the list of dependencies. Only used when include-dependencies is true.")]
         public bool SkipValidation { get; set; }
@@ -102,6 +108,12 @@ namespace SetupUnityPackage
 
             Console.WriteLine($"Included {_packageMaps[RealmPackageId].Count} files from {RealmPackageId}@{version}");
 
+            Console.WriteLine("Inluding UnityUtils");
+
+            var targetPath = Path.Combine(GetUnityPackagePath(), "UnityUtils.dll");
+            File.Copy(GetUnityUtilsPath(), targetPath, overwrite: true);
+            Console.WriteLine($"Included 1 file from UnityUtils@{typeof(FileHelper).Assembly.GetName().Version.ToString(3)}");
+
             if (opts.IncludeDependencies)
             {
                 Console.WriteLine("Including dependencies");
@@ -162,6 +174,14 @@ namespace SetupUnityPackage
             }
 
             UpdatePackageJson(opts.IncludeDependencies);
+
+            if (opts.Pack)
+            {
+                Console.WriteLine("Preparing npm package...");
+
+                RunNpm($"version {version} --allow-same-version");
+                RunNpm($"pack");
+            }
         }
 
         private static async Task<string> DownloadPackage(string packageId, string version)
@@ -222,13 +242,23 @@ namespace SetupUnityPackage
             }
         }
 
-        private static string GetUnityPackagePath()
+        private static string GetSolutionFolder()
         {
             var pattern = Path.Combine("Tools", "SetupUnityPackage", "SetupUnityPackage");
+            return _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
+        }
 
-            var basePath = _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
+        private static string GetUnityPackagePath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Runtime");
 
-            return Path.Combine(basePath, "Realm", "Realm.Unity", "Runtime");
+        private static string GetUnityUtilsPath()
+        {
+#if DEBUG
+            var targetFolder = "Debug";
+#else
+            var targetFolder = "Release";
+#endif
+
+            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityUtils", "bin", targetFolder, "netstandard2.0", "UnityUtils.dll");
         }
 
         private static void UpdatePackageJson(bool includesDependencies)
@@ -252,6 +282,31 @@ namespace SetupUnityPackage
 
             contents = contents.Replace($"\"name\": \"{maybeSourceName}\"", $"\"name\": \"{targetName}\"");
             File.WriteAllText(packageJsonPath, contents);
+        }
+
+        private static void RunNpm(string command)
+        {
+            string fileName;
+            string arguments;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                fileName = "cmd";
+                arguments = $"/c npm {command}";
+            }
+            else
+            {
+                fileName = "npm";
+                arguments = command;
+            }
+
+            var npmRunner = Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                WorkingDirectory = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..")),
+                Arguments = arguments,
+            });
+
+            npmRunner.WaitForExit();
         }
     }
 }

@@ -197,3 +197,4 @@ Realm/Realm.Unity/Runtime/**/*.framework/*
 Realm/Realm.Unity/Runtime/Dependencies/*.meta
 Realm/Realm.Unity/Runtime/Dependencies.meta
 Tests/PerformanceTests/BenchmarkDotNet.Artifacts/
+Realm/Realm.Unity/**/*.tgz
