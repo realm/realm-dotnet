@@ -232,7 +232,9 @@ namespace SetupUnityPackage
                 var unityPath = GetUnityPackagePath();
                 foreach (var kvp in fileMap)
                 {
-                    packageReader.ExtractFile(kvp.Key, Path.Combine(unityPath, kvp.Value), NullLogger.Instance);
+                    var targetPath = Path.Combine(unityPath, kvp.Value);
+                    File.Delete(targetPath);
+                    packageReader.ExtractFile(kvp.Key, targetPath, NullLogger.Instance);
                 }
 
                 var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);

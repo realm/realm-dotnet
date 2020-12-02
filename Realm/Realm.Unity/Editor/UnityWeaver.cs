@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -44,9 +45,42 @@ namespace RealmWeaver
         {
             CompilationPipeline.assemblyCompilationFinished -= CompilationComplete;
             CompilationPipeline.assemblyCompilationFinished += CompilationComplete;
+
+            _ = WeaveExistingAssemblies();
+        }
+
+        private static async Task WeaveExistingAssemblies()
+        {
+            // When the weaver loads and this method is invoked, it's likely that scripts
+            // have already been compiled, which means that starting the game immediately
+            // will result in Unity running unwoven code. Call RequestScriptCompilation
+            // to avoid that.
+            while (true)
+            {
+                await Task.Delay(1000);
+
+                try
+                {
+                    var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
+                    foreach (var assembly in playerAssemblies)
+                    {
+                        WeaveAssembly(assembly.outputPath, logOnSkip: false);
+                    }
+
+                    break;
+                }
+                catch
+                {
+                }
+            }
         }
 
         private static void CompilationComplete(string assemblyPath, CompilerMessage[] compilerMessages)
+        {
+            WeaveAssembly(assemblyPath);
+        }
+
+        private static void WeaveAssembly(string assemblyPath, bool logOnSkip = true)
         {
             if (string.IsNullOrEmpty(assemblyPath))
             {
@@ -76,7 +110,10 @@ namespace RealmWeaver
 
                     moduleDefinition.Write(WriterParameters);
 
-                    logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                    if (logOnSkip || results.SkipReason == null)
+                    {
+                        logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
+                    }
                 }
 
                 // save any changes to our weavedAssembly objects
