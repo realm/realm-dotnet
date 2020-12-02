@@ -50,7 +50,7 @@ namespace SetupUnityPackage
                 { "lib/netstandard2.0/Realm.dll", "Realm.dll" },
                 { "native/ios/Realm.dll.config", "Realm.dll.config" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "iOS/realm-wrappers.framework/realm-wrappers" },
-                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/info.plist" },
+                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/Info.plist" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Linux/librealm-wrappers.so" },
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Android/armeabi-v7a/librealm-wrappers.so" },
