@@ -140,7 +140,7 @@ REALM_EXPORT void list_get_value(List& list, size_t ndx, realm_value_t* value, N
         }
         else {
             auto val = list.get_any(ndx);
-            if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+            if (!val.is_null() && val.get_type() == type_TypedLink) {
                 *value = to_capi(new Object(list.get_realm(), val.get<ObjLink>()));
             }
             else {

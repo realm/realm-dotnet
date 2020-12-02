@@ -65,7 +65,7 @@ REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t*
         }
         else {
             auto val = results.get_any(ndx);
-            if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+            if (!val.is_null() && val.get_type() == type_TypedLink) {
                 *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
             }
             else {

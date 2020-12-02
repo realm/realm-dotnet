@@ -328,7 +328,7 @@ REALM_EXPORT void query_null_equal(Query& query, SharedRealm& realm, size_t prop
 {
     handle_errors(ex, [&]() {
         auto col_key = get_key_for_prop(query, realm, property_index);
-        if (query.get_table()->get_column_type(col_key) == DataType::type_Link) {
+        if (query.get_table()->get_column_type(col_key) == type_Link) {
             query.and_query(query.get_table()->column<Link>(col_key).is_null());
         }
         else {
@@ -341,7 +341,7 @@ REALM_EXPORT void query_null_not_equal(Query& query, SharedRealm& realm, size_t 
 {
     handle_errors(ex, [&]() {
         auto col_key = get_key_for_prop(query, realm, property_index);
-        if (query.get_table()->get_column_type(col_key) == DataType::type_Link) {
+        if (query.get_table()->get_column_type(col_key) == type_Link) {
             query.and_query(query.get_table()->column<Link>(col_key).is_not_null());
         }
         else {

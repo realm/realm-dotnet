@@ -79,7 +79,7 @@ extern "C" {
             }
             else {
                 auto val = object.obj().get_any(prop.column_key);
-                if (!val.is_null() && val.get_type() == DataType::type_TypedLink) {
+                if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(new Object(object.realm(), val.get<ObjLink>()));
                 }
                 else {
