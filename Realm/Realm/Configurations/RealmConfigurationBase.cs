@@ -88,7 +88,7 @@ namespace Realms
                 optionalPath = Path.Combine(InteropConfig.DefaultStorageFolder, optionalPath);
             }
 
-            if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);
             }

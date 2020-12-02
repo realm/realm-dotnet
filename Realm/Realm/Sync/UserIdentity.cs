@@ -48,10 +48,13 @@ namespace Realms.Sync
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            var hashCode = -1285871140;
-            hashCode = (hashCode * -1521134295) + (Id?.GetHashCode() ?? 0);
-            hashCode = (hashCode * -1521134295) + Provider.GetHashCode();
-            return hashCode;
+            unchecked
+            {
+                var hashCode = -1285871140;
+                hashCode = (hashCode * -1521134295) + (Id?.GetHashCode() ?? 0);
+                hashCode = (hashCode * -1521134295) + Provider.GetHashCode();
+                return hashCode;
+            }
         }
 
         /// <summary>

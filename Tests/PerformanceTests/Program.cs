@@ -48,7 +48,7 @@ namespace PerformanceTests
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance))
+                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 .AddExporter(new JenkinsHtmlExporter(), MarkdownExporter.GitHub, JsonExporter.Full);
 

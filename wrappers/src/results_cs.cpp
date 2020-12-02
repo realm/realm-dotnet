@@ -35,18 +35,6 @@
 using namespace realm;
 using namespace realm::binding;
 
-template<typename T>
-inline T get(Results& results, size_t ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        const size_t count = results.size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
-
-        return results.get<T>(ndx);
-    });
-}
-
 extern "C" {
 
 REALM_EXPORT void results_destroy(Results* results)
@@ -63,33 +51,28 @@ REALM_EXPORT bool results_is_same_internal_results(Results* lhs, Results* rhs, N
     });
 }
 
-REALM_EXPORT Object* results_get_object(Results& results, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
-        try {
-            results.get_realm()->verify_thread();
+    handle_errors(ex, [&]() {
+        results.get_realm()->verify_thread();
 
-            return new Object(results.get_realm(), results.get_object_schema(), results.get(ndx));
+        const size_t count = results.size();
+        if (ndx >= count)
+            throw IndexOutOfRangeException("Get from RealmResults", ndx, count);
+
+        if ((results.get_type() & ~PropertyType::Flags) == PropertyType::Object) {
+            *value = to_capi(new Object(results.get_realm(), results.get_object_schema(), results.get(ndx)));
         }
-        catch (std::out_of_range) {
-            return static_cast<Object*>(nullptr);
+        else {
+            auto val = results.get_any(ndx);
+            if (!val.is_null() && val.get_type() == type_TypedLink) {
+                *value = to_capi(new Object(results.get_realm(), val.get<ObjLink>()));
+            }
+            else {
+                *value = to_capi(std::move(val));
+            }
         }
     });
-}
-
-REALM_EXPORT void results_get_primitive(Results& results, size_t ndx, PrimitiveValue& value, NativeException::Marshallable& ex)
-{
-    collection_get_primitive(results, ndx, value, ex);
-}
-
-REALM_EXPORT size_t results_get_string(Results& results, size_t ndx, uint16_t* value, size_t value_len, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_string(results, ndx, value, value_len, is_null, ex);
-}
-
-REALM_EXPORT size_t results_get_binary(Results& results, size_t ndx, char* return_buffer, size_t buffer_size, bool* is_null, NativeException::Marshallable& ex)
-{
-    return collection_get_binary(results, ndx, return_buffer, buffer_size, is_null, ex);
 }
 
 REALM_EXPORT void results_clear(Results& results, SharedRealm& realm, NativeException::Marshallable& ex)

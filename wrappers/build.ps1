@@ -20,7 +20,9 @@ param(
 
     [ValidateSet('Windows', 'WindowsStore')]
     [Parameter(Position=0)]
-    [string]$Target = 'Windows'
+    [string]$Target = 'Windows',
+
+    [Switch]$Incremental
 )
 
 Push-Location $PSScriptRoot
@@ -61,10 +63,15 @@ function triplet([string]$target, [string]$platform) {
 }
 
 foreach ($platform in $Platforms) {
-    Remove-Item .\cmake\$Target\$Configuration-$platform -Recurse -Force -ErrorAction Ignore
+    if (-Not $Incremental) {
+        Remove-Item .\cmake\$Target\$Configuration-$platform -Recurse -Force -ErrorAction Ignore
+    }
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
-    & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -DVCPKG_TARGET_TRIPLET="$(triplet -target $Target -platform $platform)"
+    if (-Not $Incremental) {
+        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -DVCPKG_TARGET_TRIPLET="$(triplet -target $Target -platform $platform)"
+    }
+    
     & $cmake --build . --target install --config $Configuration
     Pop-Location
 }

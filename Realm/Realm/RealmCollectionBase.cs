@@ -25,9 +25,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Realms.Exceptions;
 using Realms.Helpers;
-using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -39,7 +37,7 @@ namespace Realms
           IRealmCollection<T>,
           IThreadConfined
     {
-        protected static readonly PropertyType _argumentType = typeof(T).ToPropertyType(out _);
+        protected static readonly RealmValueType _argumentType = typeof(T).ToPropertyType(out _).ToRealmValueType();
         protected static readonly bool _isEmbedded = typeof(T).IsEmbeddedObject();
 
         private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
@@ -156,33 +154,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                switch (_argumentType)
-                {
-                    case PropertyType.Object | PropertyType.Nullable:
-                        if (!Handle.Value.TryGetObjectAtIndex(index, out var objectHandle))
-                        {
-                            throw new ArgumentOutOfRangeException(nameof(index));
-                        }
-
-                        var result = Realm.MakeObject(Metadata, objectHandle);
-                        if (_isEmbedded)
-                        {
-                            return Operator.Convert<EmbeddedObject, T>((EmbeddedObject)result);
-                        }
-
-                        return Operator.Convert<RealmObject, T>((RealmObject)result);
-
-                    case PropertyType.String:
-                    case PropertyType.String | PropertyType.Nullable:
-                        return Operator.Convert<string, T>(Handle.Value.GetStringAtIndex(index));
-
-                    case PropertyType.Data:
-                    case PropertyType.Data | PropertyType.Nullable:
-                        return Operator.Convert<byte[], T>(Handle.Value.GetByteArrayAtIndex(index));
-
-                    default:
-                        return Handle.Value.GetPrimitiveAtIndex(index, _argumentType).Get<T>();
-                }
+                return Handle.Value.GetValueAtIndex(index, Metadata, Realm).As<T>();
             }
         }
 

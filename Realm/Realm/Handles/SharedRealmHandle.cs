@@ -36,7 +36,6 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void NotifyRealmCallback(IntPtr stateHandle);
@@ -133,14 +132,8 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, TableHandle table, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_primitive_unique", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_unique", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table, PrimitiveValue value,
-                                                             [MarshalAs(UnmanagedType.U1)] bool update,
-                                                             [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object_string_unique", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_object_unique(SharedRealmHandle sharedRealm, TableHandle table,
-                                                             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen,
                                                              [MarshalAs(UnmanagedType.U1)] bool update,
                                                              [MarshalAs(UnmanagedType.U1)] out bool is_new, out NativeException ex);
 
@@ -162,7 +155,6 @@ namespace Realms
             public static extern IntPtr freeze(SharedRealmHandle sharedRealm, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         static unsafe SharedRealmHandle()
@@ -323,29 +315,14 @@ namespace Realms
             }
 
             NativeException nativeException;
-            IntPtr result;
-            switch (reference.ReferenceType)
+            var result = reference.ReferenceType switch
             {
-                case ThreadSafeReference.Type.Object:
-                    result = NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException);
-                    break;
-
-                case ThreadSafeReference.Type.List:
-                    result = NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException);
-                    break;
-
-                case ThreadSafeReference.Type.Query:
-                    result = NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException);
-                    break;
-
-                case ThreadSafeReference.Type.Set:
-                    result = NativeMethods.resolve_set_reference(this, reference.Handle, out nativeException);
-                    break;
-
-                default:
-                    throw new NotSupportedException();
-            }
-
+                ThreadSafeReference.Type.Object => NativeMethods.resolve_object_reference(this, reference.Handle, out nativeException),
+                ThreadSafeReference.Type.List => NativeMethods.resolve_list_reference(this, reference.Handle, out nativeException),
+                ThreadSafeReference.Type.Query => NativeMethods.resolve_query_reference(this, reference.Handle, out nativeException),
+                ThreadSafeReference.Type.Set => NativeMethods.resolve_set_reference(this, reference.Handle, out nativeException),
+                _ => throw new NotSupportedException(),
+            };
             nativeException.ThrowIfNecessary();
 
             reference.Handle.Close();
@@ -380,38 +357,17 @@ namespace Realms
                 throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
             }
 
-            PrimitiveValue primitiveValue;
-
-            switch (pkProperty.Type)
+            RealmValue pkValue = pkProperty.Type.ToRealmValueType() switch
             {
-                case PropertyType.String:
-                case PropertyType.String | PropertyType.Nullable:
-                    var stringKey = (string)primaryKey;
-                    var handle = NativeMethods.create_object_unique(this, table, stringKey, (IntPtr)(stringKey?.Length ?? 0), update, out isNew, out var nativeEx);
-                    nativeEx.ThrowIfNecessary();
-                    return new ObjectHandle(this, handle);
+                RealmValueType.String => (string)primaryKey,
+                RealmValueType.Int => primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey),
+                RealmValueType.ObjectId => (ObjectId?)primaryKey,
+                _ => throw new NotSupportedException($"Primary key of type {pkProperty.Type} is not supported"),
+            };
 
-                case PropertyType.Int:
-                    primitiveValue = PrimitiveValue.Int(Convert.ToInt64(primaryKey));
-                    break;
-
-                case PropertyType.NullableInt:
-                    primitiveValue = PrimitiveValue.NullableInt(primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey));
-                    break;
-
-                case PropertyType.ObjectId:
-                    primitiveValue = PrimitiveValue.ObjectId((ObjectId)primaryKey);
-                    break;
-
-                case PropertyType.NullableObjectId:
-                    primitiveValue = PrimitiveValue.NullableObjectId(primaryKey == null ? (ObjectId?)null : (ObjectId)primaryKey);
-                    break;
-
-                default:
-                    throw new NotSupportedException($"Unexpected primary key of type: {pkProperty.Type}");
-            }
-
+            var (primitiveValue, handles) = pkValue.ToNative();
             var result = NativeMethods.create_object_unique(this, table, primitiveValue, update, out isNew, out var ex);
+            handles?.Dispose();
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
         }

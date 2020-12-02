@@ -121,6 +121,16 @@ namespace Realms.Schema
         NullableBool = Bool | Nullable,
 
         /// <summary>
+        /// A shorthand for PropertyType.String | PropertyType.Nullable.
+        /// </summary>
+        NullableString = String | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Data | PropertyType.Nullable.
+        /// </summary>
+        NullableData = Data | Nullable,
+
+        /// <summary>
         /// A shorthand for PropertyType.Float | PropertyType.Nullable.
         /// </summary>
         NullableFloat = Float | Nullable,
