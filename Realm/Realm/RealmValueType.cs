@@ -88,6 +88,10 @@ namespace Realms
         /// The value represents a link to another object.
         /// </summary>
         Object,
+
+        /// <summary>
+        /// The value represents a <see cref="Guid"/>.
+        /// </summary>
         Guid,
     }
 }
