@@ -27,7 +27,6 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Pdb;
 using UnityEditor;
 using UnityEditor.Compilation;
-using UnityEngine;
 
 namespace RealmWeaver
 {
@@ -64,7 +63,7 @@ namespace RealmWeaver
                     var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
                     foreach (var assembly in playerAssemblies)
                     {
-                        WeaveAssembly(assembly.outputPath, logOnSkip: false);
+                        WeaveAssembly(assembly.outputPath);
                     }
 
                     break;
@@ -80,7 +79,7 @@ namespace RealmWeaver
             WeaveAssembly(assemblyPath);
         }
 
-        private static void WeaveAssembly(string assemblyPath, bool logOnSkip = true)
+        private static void WeaveAssembly(string assemblyPath)
         {
             if (string.IsNullOrEmpty(assemblyPath))
             {
@@ -110,13 +109,15 @@ namespace RealmWeaver
 
                     moduleDefinition.Write(WriterParameters);
 
-                    if (logOnSkip || results.SkipReason == null)
+                    // Unity creates an entry in the build console for each item, so let's not pollute it.
+                    if (results.SkipReason == null)
                     {
                         logger.Info($"[{name}] Weaving completed in {timer.ElapsedMilliseconds} ms.{Environment.NewLine}{results}");
                     }
                 }
 
                 // save any changes to our weavedAssembly objects
+                // TODO: verify we need to do this
                 AssetDatabase.SaveAssets();
             }
             catch (Exception ex)
