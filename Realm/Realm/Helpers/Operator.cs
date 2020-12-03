@@ -39,6 +39,35 @@ namespace Realms.Helpers
 
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
+            if (typeof(TResult) == typeof(RealmValue))
+            {
+                /* This is special cased due to a bug in the Xamarin.iOS interpreter. When value
+                 * is null, we end up with a NRE with the following stacktrace:
+                 *
+                 * <System.NullReferenceException: Object reference not set to an instance of an object
+                 * at System.Linq.Expressions.Interpreter.LightLambda.Run1[T0,TRet] (T0 arg0) [0x00038] in <ee28ffe65f2e47a98ea97b07327fb8f4>:0
+                 * at (wrapper delegate-invoke) System.Func`2[System.String,Realms.RealmValue].invoke_TResult_T(string)
+                 * at Realms.Helpers.Operator.Convert[TFrom,TResult] (TFrom value) [0x00005] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 * at Realms.RealmList`1[T].<.ctor>b__5_1 (T item) [0x00000] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 * at Realms.RealmList`1[T].Add (T item) [0x00000] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 *
+                 * May or may not be related to https://github.com/mono/mono/issues/15852.
+                 */
+                if (value is null)
+                {
+                    return Convert<RealmValue, TResult>(RealmValue.Null());
+                }
+
+                /* This is another special case where `value` is inheritable from RealmObjectBase. There's
+                 * no direct conversion from T to RealmValue, but there's conversion if we go through RealmObjectBase.
+                 */
+
+                if (value is RealmObjectBase robj)
+                {
+                    return Convert<RealmValue, TResult>(robj);
+                }
+            }
+
             return GenericOperator<TFrom, TResult>.Convert(value);
         }
 

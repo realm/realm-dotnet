@@ -14,6 +14,9 @@
     <Folder Include="MetaFiles\Dependencies\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UnityUtils\UnityUtils.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="MetaFiles\Dependencies.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -21,6 +24,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="MetaFiles\Dependencies\Remotion.Linq.dll.meta">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MetaFiles\Dependencies\System.Buffers.dll.meta">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="MetaFiles\Dependencies\System.Runtime.CompilerServices.Unsafe.dll.meta">

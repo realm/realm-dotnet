@@ -24,7 +24,6 @@ using Realms;
 
 namespace AssemblyToProcess
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class AllTypesObject : RealmObject
     {
         public char CharProperty { get; set; }

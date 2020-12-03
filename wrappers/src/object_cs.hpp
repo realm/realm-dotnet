@@ -44,7 +44,11 @@ namespace realm {
         object.realm()->verify_in_write();
     }
 
+    inline const Property get_property(const Object& object, const size_t property_index) {
+        return object.get_object_schema().persisted_properties[property_index];
+    }
+
     inline const ColKey get_column_key(const Object& object, const size_t property_index) {
-         return object.get_object_schema().persisted_properties[property_index].column_key;
+         return get_property(object, property_index).column_key;
     }
 }

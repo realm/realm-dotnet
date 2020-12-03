@@ -90,6 +90,7 @@ nCrunchTemp_*
 *.ncrunchsolution
 # NuGet Packages
 *.nupkg
+!dependencies/*.nupkg
 # The packages folder can be ignored because of Package Restore
 **/packages/*
 # except build/, which is used as an MSBuild target.
@@ -196,3 +197,4 @@ Realm/Realm.Unity/Runtime/**/*.framework/*
 Realm/Realm.Unity/Runtime/Dependencies/*.meta
 Realm/Realm.Unity/Runtime/Dependencies.meta
 Tests/PerformanceTests/BenchmarkDotNet.Artifacts/
+Realm/Realm.Unity/**/*.tgz

@@ -76,6 +76,10 @@ namespace realm {
      
         RealmDotNetExceptionDuringMigration = 30,
 
+        NotNullableProperty = 31,
+        
+        PropertyMismatch = 32,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,

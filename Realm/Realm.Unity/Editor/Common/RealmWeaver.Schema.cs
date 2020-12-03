@@ -182,7 +182,7 @@ namespace RealmWeaver
 
             // Attempt to filter out Unity assemblies - we're adding the Version(0.0.0.0)
             // as a best effort attempt to avoid filtering out legitimate user assemblies.
-            if (assembly.Name == "UnityEditor" || assembly.Name.StartsWith("UnityEngine") || assembly.Name.StartsWith("Unity."))
+            if (assembly.Name == "UnityEditor" || assembly.Name.StartsWith("UnityEngine", StringComparison.OrdinalIgnoreCase) || assembly.Name.StartsWith("Unity.", StringComparison.OrdinalIgnoreCase))
             {
                 return assembly.Version == default(Version);
             }

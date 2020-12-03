@@ -57,90 +57,20 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_freeze", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr freeze(SetHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
-            #region get
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void get_value(SetHandle handle, IntPtr link_ndx, out PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_object(SetHandle handle, IntPtr link_ndx, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_primitive", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_primitive(SetHandle handle, IntPtr link_ndx, ref PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_string", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_string(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_binary", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_binary(SetHandle handle, IntPtr link_ndx, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] out bool isNull, out NativeException ex);
-
-            #endregion
-
-            #region add
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_object", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
+            public static extern bool add_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_primitive", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
+            public static extern bool contains_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_string", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_value", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_string(SetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLength, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_binary", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool add_binary(SetHandle handle, IntPtr buffer, IntPtr bufferLength,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_embedded", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern IntPtr add_embedded(SetHandle handle, out NativeException ex);
-
-            #endregion
-
-            #region find
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_object", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_primitive", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_string", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_string(SetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_contains_binary", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool contains_binary(SetHandle handle, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
-
-            #endregion
-
-            #region remove
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_object", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_object(SetHandle handle, ObjectHandle objectHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_primitive", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_primitive(SetHandle handle, PrimitiveValue value, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_string", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_string(SetHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_remove_binary", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove_binary(SetHandle handle, IntPtr buffer, IntPtr bufsize,
-                [MarshalAs(UnmanagedType.U1)] bool has_value, out NativeException ex);
-
-            #endregion
+            public static extern bool remove_value(SetHandle handle, PrimitiveValue value, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -222,137 +152,34 @@ namespace Realms
             return new SetHandle(frozenRealmHandle, result);
         }
 
-        #region GetAtIndex
+        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
+            NativeMethods.get_value(this, index, out result, out nativeException);
 
-        protected override IntPtr GetObjectAtIndexCore(IntPtr index, out NativeException nativeException) =>
-            NativeMethods.get_object(this, index, out nativeException);
-
-        protected override void GetPrimitiveAtIndexCore(IntPtr index, ref PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_primitive(this, index, ref result, out nativeException);
-
-        public override string GetStringAtIndex(int index)
+        public unsafe bool Add(in RealmValue value)
         {
-            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_string(this, (IntPtr)index, buffer, length, out isNull, out ex));
-        }
-
-        public override byte[] GetByteArrayAtIndex(int index)
-        {
-            return MarshalHelpers.GetByteArray((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
-                NativeMethods.get_binary(this, (IntPtr)index, buffer, bufferLength, out isNull, out ex));
-        }
-
-        #endregion
-
-        #region Add
-
-        public bool Add(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.add_object(this, objectHandle, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            var result = NativeMethods.add_value(this, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public unsafe bool Add(PrimitiveValue value)
+        public unsafe bool Contains(in RealmValue value)
         {
-            var result = NativeMethods.add_primitive(this, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            var result = NativeMethods.contains_value(this, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public bool Add(string value)
+        public unsafe bool Remove(in RealmValue value)
         {
-            var result = NativeMethods.add_string(this, value, value.IntPtrLength(), out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            var result = NativeMethods.remove_value(this, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
             return result;
         }
-
-        public unsafe bool Add(byte[] value)
-        {
-            var result = false;
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-                result = NativeMethods.add_binary(this, buffer, bufferSize, hasValue, out ex));
-
-            return result;
-        }
-
-        public ObjectHandle AddEmbedded()
-        {
-            var result = NativeMethods.add_embedded(this, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
-        }
-
-        #endregion
-
-        #region Find
-
-        public bool Contains(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.contains_object(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Contains(PrimitiveValue value)
-        {
-            var result = NativeMethods.contains_primitive(this, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public bool Contains(string value)
-        {
-            var result = NativeMethods.contains_string(this, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Contains(byte[] value)
-        {
-            var result = false;
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-            {
-                result = NativeMethods.contains_binary(this, buffer, bufferSize, hasValue, out ex);
-            });
-
-            return result;
-        }
-
-        #endregion
-
-        #region Remove
-
-        public bool Remove(ObjectHandle objectHandle)
-        {
-            var result = NativeMethods.remove_object(this, objectHandle, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Remove(PrimitiveValue value)
-        {
-            var result = NativeMethods.remove_primitive(this, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public bool Remove(string value)
-        {
-            var result = NativeMethods.remove_string(this, value, value.IntPtrLength(), out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public unsafe bool Remove(byte[] value)
-        {
-            var result = false;
-            MarshalHelpers.SetByteArray(value, (IntPtr buffer, IntPtr bufferSize, bool hasValue, out NativeException ex) =>
-                result = NativeMethods.remove_binary(this, buffer, bufferSize, hasValue, out ex));
-
-            return result;
-        }
-
-        #endregion
     }
 }
