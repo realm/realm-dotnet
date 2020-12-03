@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -53,34 +54,43 @@ namespace RealmWeaver
             // have already been compiled, which means that starting the game immediately
             // will result in Unity running unwoven code. Call WeaveAssembly for each one
             // just in case.
-            while (true)
+            try
             {
+                // Sleep for a second to give the editor time to load. Without it, we get errors
+                // in the console similar to "Unity extensions are not yet initialized..."
                 await Task.Delay(1000);
 
-                try
+                var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
+                foreach (var assembly in playerAssemblies)
                 {
-                    var playerAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.Player);
-                    foreach (var assembly in playerAssemblies)
-                    {
-                        WeaveAssembly(assembly.outputPath);
-                    }
-
-                    break;
+                    await WeaveAssembly(assembly.outputPath);
                 }
-                catch
-                {
-                }
+            }
+            catch
+            {
             }
         }
 
         private static void CompilationComplete(string assemblyPath, CompilerMessage[] compilerMessages)
         {
-            WeaveAssembly(assemblyPath);
+            _ = WeaveAssembly(assemblyPath);
         }
 
-        private static void WeaveAssembly(string assemblyPath)
+        private static async Task WeaveAssembly(string assemblyPath)
         {
             if (string.IsNullOrEmpty(assemblyPath))
+            {
+                return;
+            }
+
+            // Yield to give the editor opportunity to load its extensions. Without it, on startup we
+            // get errors in the console similar to "Unity extensions are not yet initialized..."
+            await Task.Yield();
+
+            var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
+                                  .FirstOrDefault(p => p.outputPath == assemblyPath);
+
+            if (assembly == null)
             {
                 return;
             }
@@ -93,7 +103,7 @@ namespace RealmWeaver
                 var timer = new Stopwatch();
                 timer.Start();
 
-                var (moduleDefinition, fileStream) = WeaverAssemblyResolver.Resolve(assemblyPath);
+                var (moduleDefinition, fileStream) = WeaverAssemblyResolver.Resolve(assembly);
                 if (moduleDefinition == null)
                 {
                     return;
