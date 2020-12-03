@@ -20,6 +20,8 @@ jobs:
         with:
           path: ./wrappers/build/
           key: wrapper-ios-${{hashfiles('./wrappers/**')}}
+      - name: Trying to use old build system
+        run: defaults write com.apple.dt.Xcode UseModernBuildSystem -bool NO
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: ./build-ios.sh --configuration=Release
