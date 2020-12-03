@@ -46,7 +46,7 @@ jobs:
         run: exit 1
       - name: Run benchmarks
         run:  |
-          msbuild -p:Platform=iPhoneSimulator \restore
+          msbuild -p:Platform=iPhoneSimulator /restore
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
