@@ -24,7 +24,8 @@ jobs:
         run: brew install zlib
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
-        run: ./wrappers/build-ios.sh --configuration=Release
+        run: ./build-ios.sh --configuration=Release
+        working-directory: ./wrappers
   execute-benchmarks:
     needs: [build-wrappers]
     runs-on: macos-latest
