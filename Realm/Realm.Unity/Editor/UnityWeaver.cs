@@ -44,16 +44,15 @@ namespace RealmWeaver
         {
             CompilationPipeline.assemblyCompilationFinished -= CompilationComplete;
             CompilationPipeline.assemblyCompilationFinished += CompilationComplete;
-
             _ = WeaveExistingAssemblies();
         }
 
         private static async Task WeaveExistingAssemblies()
         {
-            // When the weaver loads and this method is invoked, it's likely that scripts
+            // When the weaver loads for the first time, it's likely that scripts
             // have already been compiled, which means that starting the game immediately
-            // will result in Unity running unwoven code. Call RequestScriptCompilation
-            // to avoid that.
+            // will result in Unity running unwoven code. Call WeaveAssembly for each one
+            // just in case.
             while (true)
             {
                 await Task.Delay(1000);
