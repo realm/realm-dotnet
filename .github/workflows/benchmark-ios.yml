@@ -20,8 +20,6 @@ jobs:
         with:
           path: ./wrappers/build/
           key: wrapper-ios-${{hashfiles('./wrappers/**')}}
-      - name: Install zlib
-        run: brew install zlib
       - name: Build wrappers Release
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: ./build-ios.sh --configuration=Release
