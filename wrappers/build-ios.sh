@@ -6,6 +6,8 @@ REALM_CMAKE_CONFIGURATION=Debug
 EXTRA_CMAKE_ARGS=""
 export REALM_CMAKE_SUBPLATFORM=iOS
 
+OBJROOT="$OBJROOT/DependentBuilds"
+
 for i in "$@"
 do
 case $i in
