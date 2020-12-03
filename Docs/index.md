@@ -22,9 +22,9 @@ To see what is supported, refer to the [LINQ Support](linqsupport.md) page.
 
 Documentation
 -------------
-The documentation can be found at [realm.io/docs/dotnet/latest](https://realm.io/docs/dotnet/latest/).
+The documentation can be found at [https://docs.mongodb.com/realm/dotnet](https://docs.mongodb.com/realm/dotnet).
 
-The API reference is located at [realm.io/docs/dotnet/latest/api](https://realm.io/docs/dotnet/latest/api/).
+The API reference is located at [https://docs.mongodb.com/realm-sdks/dotnet/latest/](https://docs.mongodb.com/realm-sdks/dotnet/latest/).
 
 Source
 ------
