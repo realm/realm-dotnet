@@ -22,7 +22,7 @@ param(
     [Parameter(Position=0)]
     [string]$Target = 'Windows',
 
-    [string]$Toolchain = 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake'
+    [string]$Toolchain = 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake',
 
     [Switch]$Incremental
 )
