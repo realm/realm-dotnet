@@ -82,6 +82,9 @@ namespace Realms.Schema
                 case Type _ when type == typeof(ObjectId):
                     return PropertyType.ObjectId | nullabilityModifier;
 
+                case Type _ when type == typeof(Guid):
+                    return PropertyType.Guid | nullabilityModifier;
+
                 case Type _ when type.IsRealmObject() || type.IsEmbeddedObject():
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
@@ -126,6 +129,7 @@ namespace Realms.Schema
                 PropertyType.Object => typeof(RealmObjectBase),
                 PropertyType.ObjectId => typeof(ObjectId),
                 PropertyType.Decimal => typeof(Decimal128),
+                PropertyType.Guid => typeof(Guid),
                 PropertyType.NullableInt => typeof(long?),
                 PropertyType.NullableBool => typeof(bool?),
                 PropertyType.NullableString => typeof(string),
@@ -135,6 +139,7 @@ namespace Realms.Schema
                 PropertyType.NullableDouble => typeof(double?),
                 PropertyType.NullableObjectId => typeof(ObjectId?),
                 PropertyType.NullableDecimal => typeof(Decimal128?),
+                PropertyType.NullableGuid => typeof(Guid?),
                 _ => throw new NotSupportedException($"Unexpected property type: {type}"),
             };
         }
@@ -153,6 +158,7 @@ namespace Realms.Schema
                 PropertyType.Object => RealmValueType.Object,
                 PropertyType.ObjectId => RealmValueType.ObjectId,
                 PropertyType.Decimal => RealmValueType.Decimal128,
+                PropertyType.Guid => RealmValueType.Guid,
                 _ => throw new NotSupportedException($"The type {type} can't be mapped to RealmValueType."),
             };
         }

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -48,6 +48,7 @@ namespace RealmWeaver
         internal const string Decimal128TypeName = "MongoDB.Bson.Decimal128";
         internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
         internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
+        internal const string GuidTypeName = "System.Guid";
         internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
         internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
         internal const string NullableInt16TypeName = "System.Nullable`1<System.Int16>";
@@ -60,6 +61,7 @@ namespace RealmWeaver
         internal const string NullableDecimal128TypeName = "System.Nullable`1<MongoDB.Bson.Decimal128>";
         internal const string NullableDateTimeOffsetTypeName = "System.Nullable`1<System.DateTimeOffset>";
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
+        internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
 
         private static readonly HashSet<string> _primitiveValueTypes = new HashSet<string>
         {
@@ -70,6 +72,7 @@ namespace RealmWeaver
             DecimalTypeName,
             Decimal128TypeName,
             ObjectIdTypeName,
+            GuidTypeName,
             DateTimeOffsetTypeName,
             NullableCharTypeName,
             NullableSingleTypeName,
@@ -79,6 +82,7 @@ namespace RealmWeaver
             NullableDecimalTypeName,
             NullableDecimal128TypeName,
             NullableObjectIdTypeName,
+            NullableGuidTypeName,
             ByteTypeName,
             Int16TypeName,
             Int32TypeName,
@@ -108,12 +112,14 @@ namespace RealmWeaver
             Int32TypeName,
             Int64TypeName,
             ObjectIdTypeName,
+            GuidTypeName,
             NullableCharTypeName,
             NullableByteTypeName,
             NullableInt16TypeName,
             NullableInt32TypeName,
             NullableInt64TypeName,
             NullableObjectIdTypeName,
+            NullableGuidTypeName
         };
 
         private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
@@ -915,7 +921,8 @@ Analytics payload
                                               property.PropertyType.IsRealmInteger(out _, out _) || // structs are not implicitly falsy/truthy so the IL is significantly different; we can optimize this case in the future
                                               property.IsDecimal() ||
                                               property.IsDecimal128() ||
-                                              property.IsObjectId();
+                                              property.IsObjectId() ||
+                                              property.IsGuid();
 
                         // If the property is non-nullable, we want the following code to execute:
                         // if (!skipDefaults || castInstance.field != default(fieldType))

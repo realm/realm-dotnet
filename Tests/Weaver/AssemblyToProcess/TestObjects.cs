@@ -52,6 +52,8 @@ namespace AssemblyToProcess
 
         public ObjectId ObjectIdProperty { get; set; }
 
+        public Guid GuidProperty { get; set; }
+
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -91,6 +93,8 @@ namespace AssemblyToProcess
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
+
+        public Guid? NullableGuidProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -122,6 +126,8 @@ namespace AssemblyToProcess
 
         public IList<ObjectId> ObjectIdList { get; }
 
+        public IList<Guid> GuidList { get; }
+
         public IList<char?> NullableCharList { get; }
 
         public IList<byte?> NullableByteList { get; }
@@ -145,6 +151,8 @@ namespace AssemblyToProcess
         public IList<Decimal128?> NullableDecimal128List { get; }
 
         public IList<ObjectId?> NullableObjectIdList { get; }
+
+        public IList<Guid?> NullableGuidList { get; }
 
         public IList<RealmInteger<byte>> ByteCounterList { get; }
 
@@ -302,6 +310,13 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyGuidObject : RealmObject
+    {
+        [PrimaryKey]
+        public Guid GuidProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
@@ -341,6 +356,13 @@ namespace AssemblyToProcess
     {
         [PrimaryKey]
         public ObjectId? ObjectIdProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableGuidObject : RealmObject
+    {
+        [PrimaryKey]
+        public Guid? GuidProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -394,6 +416,8 @@ namespace AssemblyToProcess
 
         public ObjectId ObjectIdProperty { get; set; }
 
+        public Guid GuidProperty { get; set; }
+
         public char? NullableCharProperty { get; set; }
 
         public byte? NullableByteProperty { get; set; }
@@ -433,5 +457,7 @@ namespace AssemblyToProcess
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         public ObjectId? NullableObjectIdProperty { get; set; }
+
+        public Guid? NullableGuidProperty { get; set; }
     }
 }

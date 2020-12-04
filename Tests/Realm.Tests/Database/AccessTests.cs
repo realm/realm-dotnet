@@ -68,6 +68,8 @@ namespace Realms.Tests.Database
             new object[] { "Decimal128Property", Decimal128.Zero },
             new object[] { "ObjectIdProperty", ObjectId.Empty },
             new object[] { "ObjectIdProperty", new ObjectId("5f63e882536de46d71877979") },
+            new object[] { "GuidProperty", Guid.Empty },
+            new object[] { "GuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") },
         };
 
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
@@ -108,7 +110,8 @@ namespace Realms.Tests.Database
             new object[] { "StringProperty", "hello" },
             new object[] { "StringProperty", string.Empty },
             new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
-            new object[] { "NullableObjectIdProperty", new ObjectId("5f63e882536de46d71877979") }
+            new object[] { "NullableObjectIdProperty", new ObjectId("5f63e882536de46d71877979") },
+            new object[] { "NullableGuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") }
         };
 
         [Test]
@@ -172,6 +175,7 @@ namespace Realms.Tests.Database
             Assert.That(obj.DecimalProperty, Is.EqualTo(default(decimal)));
             Assert.That(obj.Decimal128Property, Is.EqualTo(default(Decimal128)));
             Assert.That(obj.ObjectIdProperty, Is.EqualTo(default(ObjectId)));
+            Assert.That(obj.GuidProperty, Is.EqualTo(default(Guid)));
             Assert.That(obj.NullableBooleanProperty, Is.EqualTo(default(bool?)));
             Assert.That(obj.NullableByteProperty, Is.EqualTo(default(byte?)));
             Assert.That(obj.NullableCharProperty, Is.EqualTo(default(char?)));
@@ -184,6 +188,7 @@ namespace Realms.Tests.Database
             Assert.That(obj.NullableDecimalProperty, Is.EqualTo(default(decimal?)));
             Assert.That(obj.NullableDecimal128Property, Is.EqualTo(default(Decimal128?)));
             Assert.That(obj.NullableObjectIdProperty, Is.EqualTo(default(ObjectId?)));
+            Assert.That(obj.NullableGuidProperty, Is.EqualTo(default(Guid?)));
         }
     }
 }

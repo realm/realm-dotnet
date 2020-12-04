@@ -757,6 +757,10 @@ namespace Realms
             {
                 action(realm, propertyIndex, (ObjectId)Convert.ChangeType(value, typeof(ObjectId)));
             }
+            else if (columnType == typeof(Guid))
+            {
+                action(realm, propertyIndex, (Guid)Convert.ChangeType(value, typeof(Guid)));
+            }
             else if (columnType == typeof(byte[]))
             {
                 action(realm, propertyIndex, (byte[])value);

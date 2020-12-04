@@ -152,6 +152,9 @@ REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.equal(std::move(col_key), from_capi(primitive.object_id));
             break;
+        case realm_value_type::RLM_TYPE_UUID:
+            query.equal(std::move(col_key), from_capi(primitive.uuid));
+            break;        
         case realm_value_type::RLM_TYPE_BINARY:
             query.equal(std::move(col_key), from_capi(primitive.binary));
             break;
@@ -190,6 +193,9 @@ REALM_EXPORT void query_primitive_not_equal(Query& query, SharedRealm& realm, si
         case realm_value_type::RLM_TYPE_OBJECT_ID:
             query.not_equal(std::move(col_key), from_capi(primitive.object_id));
             break;
+        case realm_value_type::RLM_TYPE_UUID:
+            query.not_equal(std::move(col_key), from_capi(primitive.uuid));
+            break;        
         case realm_value_type::RLM_TYPE_BINARY:
             query.not_equal(std::move(col_key), from_capi(primitive.binary));
             break;

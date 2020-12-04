@@ -1118,6 +1118,18 @@ namespace Realms
         public T Find<T>(ObjectId? primaryKey)
             where T : RealmObject => FindCore<T>(primaryKey);
 
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns><c>null</c> or an object matching the primary key.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">
+        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// </exception>
+        public T Find<T>(Guid? primaryKey)
+            where T : RealmObject => FindCore<T>(primaryKey);
+
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         private T FindCore<T>(RealmValue primaryKey)
             where T : RealmObject
@@ -1675,6 +1687,19 @@ namespace Realms
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
             public dynamic Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
+
+            /// <summary>
+            /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+            /// </summary>
+            /// <param name="className">Name of class in dynamic situation.</param>
+            /// <param name="primaryKey">
+            /// Primary key to be matched exactly, same as an == search.
+            /// </param>
+            /// <returns><c>null</c> or an object matching the primary key.</returns>
+            /// <exception cref="RealmClassLacksPrimaryKeyException">
+            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// </exception>
+            public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
             private dynamic FindCore(string className, RealmValue primaryKey)

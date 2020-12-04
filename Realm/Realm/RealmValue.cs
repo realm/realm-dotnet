@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -128,6 +128,8 @@ namespace Realms
 
         private static RealmValue ObjectId(ObjectId value) => new RealmValue(PrimitiveValue.ObjectId(value));
 
+        private static RealmValue Guid(Guid value) => new RealmValue(PrimitiveValue.Guid(value));
+
         private static RealmValue Data(byte[] value) => new RealmValue(value);
 
         private static RealmValue String(string value) => new RealmValue(value);
@@ -152,6 +154,7 @@ namespace Realms
                 RealmValueType.Date => Date(Operator.Convert<T, DateTimeOffset>(value)),
                 RealmValueType.Decimal128 => Decimal(Operator.Convert<T, Decimal128>(value)),
                 RealmValueType.ObjectId => ObjectId(Operator.Convert<T, ObjectId>(value)),
+                RealmValueType.Guid => Guid(Operator.Convert<T, Guid>(value)),
                 RealmValueType.Object => Object(Operator.Convert<T, RealmObjectBase>(value)),
                 _ => throw new NotSupportedException($"RealmValueType {type} is not supported."),
             };
@@ -320,6 +323,17 @@ namespace Realms
         {
             EnsureType("ObjectId", RealmValueType.ObjectId);
             return _primitiveValue.AsObjectId();
+        }
+
+        /// <summary>
+        /// Returns the stored value as a <see cref="System.Guid"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the underlying value is not of type <see cref="RealmValueType.Guid"/>.</exception>
+        /// <returns>A Guid representing the value stored in the database.</returns>
+        public Guid AsGuid()
+        {
+            EnsureType("Guid", RealmValueType.Guid);
+            return _primitiveValue.AsGuid();
         }
 
         /// <summary>
@@ -515,6 +529,15 @@ namespace Realms
         public ObjectId? AsNullableObjectId() => Type == RealmValueType.Null ? null : (ObjectId?)AsObjectId();
 
         /// <summary>
+        /// Returns the stored value as a nullable <see cref="System.Guid"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the underlying value is not of type <see cref="RealmValueType.Guid"/> or <see cref="RealmValueType.Null"/>.
+        /// </exception>
+        /// <returns>A nullable Guid representing the value stored in the database.</returns>
+        public Guid? AsNullableGuid() => Type == RealmValueType.Null ? null : (Guid?)AsGuid();
+
+        /// <summary>
         /// Returns the stored value as an array of bytes.
         /// </summary>
         /// <exception cref="InvalidOperationException">
@@ -626,6 +649,7 @@ namespace Realms
                 RealmValueType.Double => AsDouble(),
                 RealmValueType.Decimal128 => AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId(),
+                RealmValueType.Guid => AsGuid(),
                 RealmValueType.Object => AsRealmObject(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
@@ -700,6 +724,8 @@ namespace Realms
 
         public static explicit operator ObjectId(RealmValue val) => val.AsObjectId();
 
+        public static explicit operator Guid(RealmValue val) => val.AsGuid();
+
         public static explicit operator char?(RealmValue val) => val.AsNullableChar();
 
         public static explicit operator byte?(RealmValue val) => val.AsNullableByte();
@@ -723,6 +749,8 @@ namespace Realms
         public static explicit operator Decimal128?(RealmValue val) => val.AsNullableDecimal128();
 
         public static explicit operator ObjectId?(RealmValue val) => val.AsNullableObjectId();
+
+        public static explicit operator Guid?(RealmValue val) => val.AsNullableGuid();
 
         public static explicit operator RealmInteger<byte>(RealmValue val) => val.AsByteRealmInteger();
 
@@ -770,6 +798,8 @@ namespace Realms
 
         public static implicit operator RealmValue(ObjectId val) => ObjectId(val);
 
+        public static implicit operator RealmValue(Guid val) => Guid(val);
+
         public static implicit operator RealmValue(char? val) => val == null ? Null() : Int(val.Value);
 
         public static implicit operator RealmValue(byte? val) => val == null ? Null() : Int(val.Value);
@@ -793,6 +823,8 @@ namespace Realms
         public static implicit operator RealmValue(Decimal128? val) => val == null ? Null() : Decimal(val.Value);
 
         public static implicit operator RealmValue(ObjectId? val) => val == null ? Null() : ObjectId(val.Value);
+
+        public static implicit operator RealmValue(Guid? val) => val == null ? Null() : Guid(val.Value);
 
         public static implicit operator RealmValue(RealmInteger<byte> val) => Int(val);
 

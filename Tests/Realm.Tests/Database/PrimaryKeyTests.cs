@@ -36,6 +36,7 @@ namespace Realms.Tests.Database
             Int,
             String,
             ObjectId,
+            Guid
         }
 
         public static object[] PKTestCases =
@@ -63,6 +64,9 @@ namespace Realms.Tests.Database
             new object[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
             new object[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
             new object[] { typeof(PrimaryKeyNullableObjectIdObject), null, PKType.ObjectId },
+            new object[] { typeof(PrimaryKeyGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
+            new object[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
+            new object[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
         };
 
         [TestCaseSource(nameof(PKTestCases))]
@@ -138,6 +142,9 @@ namespace Realms.Tests.Database
                 case PKType.ObjectId:
                     return _realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
 
+                case PKType.Guid:
+                    return _realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");
             }
@@ -172,6 +179,7 @@ namespace Realms.Tests.Database
                 PKType.Int => typeof(long?),
                 PKType.String => typeof(string),
                 PKType.ObjectId => typeof(ObjectId?),
+                PKType.Guid => typeof(Guid?),
                 _ => throw new NotSupportedException(),
             };
 
@@ -190,6 +198,7 @@ namespace Realms.Tests.Database
             Assert.That(() => _realm.Find<Person>("Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
             Assert.That(() => _realm.Find<Person>(42), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
             Assert.That(() => _realm.Find<Person>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.Find<Person>(Guid.NewGuid()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]
@@ -198,6 +207,7 @@ namespace Realms.Tests.Database
             Assert.That(() => _realm.DynamicApi.Find("Person", "Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
             Assert.That(() => _realm.DynamicApi.Find("Person", 23), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
             Assert.That(() => _realm.DynamicApi.Find("Person", ObjectId.GenerateNewId()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
+            Assert.That(() => _realm.DynamicApi.Find("Person", Guid.NewGuid()), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
         }
 
         [Test]

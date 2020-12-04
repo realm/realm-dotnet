@@ -362,6 +362,7 @@ namespace Realms
                 RealmValueType.String => (string)primaryKey,
                 RealmValueType.Int => primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey),
                 RealmValueType.ObjectId => (ObjectId?)primaryKey,
+                RealmValueType.Guid => (Guid?)primaryKey,
                 _ => throw new NotSupportedException($"Primary key of type {pkProperty.Type} is not supported"),
             };
 
