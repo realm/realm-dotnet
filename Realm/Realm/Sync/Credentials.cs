@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -44,9 +45,9 @@ namespace Realms.Sync
             Facebook = 1,
 
             /// <summary>
-            /// OAuth2-based mechanism for logging in with an existing Google account.
+            /// Mechanism for logging in with an existing Google account using an auth code.
             /// </summary>
-            Google = 2,
+            GoogleAuthCode = 2,
 
             /// <summary>
             /// OAuth2-based mechanism for logging in with an Apple ID.
@@ -80,6 +81,11 @@ namespace Realms.Sync
             ServerApiKey = 8,
 
             /// <summary>
+            /// Mechanism for logging in with an existing Google account using an id token.
+            /// </summary>
+            GoogleIdToken = 9,
+
+            /// <summary>
             /// A provider that is not among the well known provider types. This is most likely the result of the server
             /// introducing a new provider type that this version of the SDK doesn't know about.
             /// </summary>
@@ -107,16 +113,24 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates credentials representing a login using a Google access token.
+        /// Creates credentials representing a login using a Google account.
         /// </summary>
-        /// <param name="authCode">The auth code representing the Google user.</param>
+        /// <param name="credential">The credential representing the Google user.</param>
+        /// <param name="type">The type of the credential.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Google.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/google/">Google Authentication Docs</seealso>
-        public static Credentials Google(string authCode)
+        public static Credentials Google(string credential, GoogleCredentialType type)
         {
-            Argument.NotNull(authCode, nameof(authCode));
+            Argument.NotNull(credential, nameof(credential));
 
-            return new Credentials(AuthProvider.Google, authCode);
+            var providerType = type switch
+            {
+                GoogleCredentialType.AuthCode => AuthProvider.GoogleAuthCode,
+                GoogleCredentialType.IdToken => AuthProvider.GoogleIdToken,
+                _ => throw new ArgumentException($"Invalid value for {nameof(GoogleCredentialType)}: {type}", nameof(type)),
+            };
+
+            return new Credentials(providerType, credential);
         }
 
         /// <summary>

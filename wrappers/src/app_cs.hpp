@@ -64,9 +64,24 @@ namespace binding {
         }
     };
 
+    // This is a copy of AuthProvider because we need the extra enum
+    // value for GOOGLE_ID_TOKEN.
+    enum class AuthProviderDotNet {
+        ANONYMOUS = 0,
+        FACEBOOK = 1,
+        GOOGLE = 2,
+        APPLE = 3,
+        CUSTOM = 4,
+        USERNAME_PASSWORD = 5,
+        FUNCTION = 6,
+        USER_API_KEY = 7,
+        SERVER_API_KEY = 8,
+        GOOGLE_ID_TOKEN = 9,
+    };
+
     struct Credentials
     {
-        AuthProvider provider;
+        AuthProviderDotNet provider;
 
         uint16_t* token;
         size_t token_len;
@@ -77,30 +92,34 @@ namespace binding {
         AppCredentials to_app_credentials() {
             switch (provider)
             {
-            case AuthProvider::ANONYMOUS:
+            case AuthProviderDotNet::ANONYMOUS:
                 return AppCredentials::anonymous();
 
-            case AuthProvider::FACEBOOK:
+            case AuthProviderDotNet::FACEBOOK:
                 return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::GOOGLE:
-                return AppCredentials::google(Utf16StringAccessor(token, token_len));
-            case AuthProvider::APPLE:
+            case AuthProviderDotNet::GOOGLE:
+                return AppCredentials::google(AuthCode{ Utf16StringAccessor(token, token_len).to_string() });
+
+            case AuthProviderDotNet::GOOGLE_ID_TOKEN:
+                return AppCredentials::google(IdToken{ Utf16StringAccessor(token, token_len).to_string() });
+
+            case AuthProviderDotNet::APPLE:
                 return AppCredentials::apple(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::CUSTOM:
+            case AuthProviderDotNet::CUSTOM:
                 return AppCredentials::custom(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::USERNAME_PASSWORD:
+            case AuthProviderDotNet::USERNAME_PASSWORD:
                 return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
 
-            case AuthProvider::FUNCTION:
+            case AuthProviderDotNet::FUNCTION:
                 return AppCredentials::function(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::USER_API_KEY:
+            case AuthProviderDotNet::USER_API_KEY:
                 return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::SERVER_API_KEY:
+            case AuthProviderDotNet::SERVER_API_KEY:
                 return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
 
             default:
