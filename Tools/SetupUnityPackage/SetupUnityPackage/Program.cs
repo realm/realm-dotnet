@@ -50,7 +50,7 @@ namespace SetupUnityPackage
                 { "lib/netstandard2.0/Realm.dll", "Realm.dll" },
                 { "native/ios/Realm.dll.config", "Realm.dll.config" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "iOS/realm-wrappers.framework/realm-wrappers" },
-                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/info.plist" },
+                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/Info.plist" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Linux/librealm-wrappers.so" },
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Android/armeabi-v7a/librealm-wrappers.so" },
@@ -232,7 +232,9 @@ namespace SetupUnityPackage
                 var unityPath = GetUnityPackagePath();
                 foreach (var kvp in fileMap)
                 {
-                    packageReader.ExtractFile(kvp.Key, Path.Combine(unityPath, kvp.Value), NullLogger.Instance);
+                    var targetPath = Path.Combine(unityPath, kvp.Value);
+                    File.Delete(targetPath);
+                    packageReader.ExtractFile(kvp.Key, targetPath, NullLogger.Instance);
                 }
 
                 var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
