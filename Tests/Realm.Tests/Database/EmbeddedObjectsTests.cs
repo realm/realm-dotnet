@@ -101,7 +101,7 @@ namespace Realms.Tests.Database
 
             foreach (var prop in properties)
             {
-                Assert.That(prop.GetValue(parent.AllTypesObject), Is.EqualTo(prop.GetValue(copy)));
+                Assert.That(prop.GetValue(parent.AllTypesObject), Is.EqualTo(prop.GetValue(copy)), $"Expected {prop.Name} to have value {prop.GetValue(copy)} but was {prop.GetValue(parent.AllTypesObject)}");
             }
         }
 

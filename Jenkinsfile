@@ -186,19 +186,14 @@ stage('Unity Package') {
 
     def packagePath = findFiles(glob: "Realm.${packageVersion}.nupkg")[0].path
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath}"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --pack"
     dir('Realm/Realm.Unity') {
-      sh "npm version ${packageVersion} --allow-same-version"
-      sh 'npm pack'
-
       archiveArtifacts "realm.unity-${packageVersion}.tgz"
       sh "rm realm.unity-${packageVersion}.tgz"
     }
 
-    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- -p ${packagePath} -f"
+    sh "dotnet run --project Tools/SetupUnityPackage/SetupUnityPackage/ -- --path ${packagePath} --include-dependencies --pack"
     dir('Realm/Realm.Unity') {
-      sh 'npm pack'
-
       archiveArtifacts "*.tgz"
     }
   }
@@ -215,7 +210,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.iOS') {
           msbuild restore: true,
-                  properties: [ Platform: 'iPhoneSimulator', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ Platform: 'iPhoneSimulator', TargetFrameworkVersion: 'v1.0', RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
           dir("bin/iPhoneSimulator/${configuration}") {
             runSimulator('Tests.iOS.app', 'io.realm.dotnettests', "--headless --resultpath ${env.WORKSPACE}/temp/TestResults.iOS.xml")
           }
@@ -232,7 +227,7 @@ stage('Test') {
         sh 'mkdir -p temp'
         dir('Tests/Tests.XamarinMac') {
           msbuild restore: true,
-                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config" ] << props
+                  properties: [ RestoreConfigFile: "${env.WORKSPACE}/Tests/Test.NuGet.config", TargetFrameworkVersion: 'v2.0' ] << props
           dir("bin/${configuration}/Tests.XamarinMac.app/Contents") {
             sh "MacOS/Tests.XamarinMac --headless --labels=All --result=${env.WORKSPACE}/temp/TestResults.macOS.xml"
           }
@@ -255,54 +250,54 @@ stage('Test') {
         }
       }
       // The android tests fail on CI due to a CompilerServices.Unsafe issue. Uncomment when resolved
-      // rlmNode('android-hub') {
-      //   unstash 'android-tests'
+      rlmNode('android-hub') {
+        unstash 'android-tests'
 
-      //   lock("${env.NODE_NAME}-android") {
-      //     boolean archiveLog = true
+        lock("${env.NODE_NAME}-android") {
+          boolean archiveLog = true
 
-      //     try {
-      //       // start logcat
-      //       sh '''
-      //         adb logcat -c
-      //         adb logcat -v time > "logcat.txt" &
-      //         echo $! > logcat.pid
-      //       '''
+          try {
+            // start logcat
+            sh '''
+              adb logcat -c
+              adb logcat -v time > "logcat.txt" &
+              echo $! > logcat.pid
+            '''
 
-      //       sh '''
-      //         adb uninstall io.realm.xamarintests
-      //         adb install io.realm.xamarintests-Signed.apk
-      //         adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
-      //         adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
-      //       '''
+            sh '''
+              adb uninstall io.realm.xamarintests
+              adb install io.realm.xamarintests-Signed.apk
+              adb shell pm grant io.realm.xamarintests android.permission.READ_EXTERNAL_STORAGE
+              adb shell pm grant io.realm.xamarintests android.permission.WRITE_EXTERNAL_STORAGE
+            '''
 
-      //       def instrumentationOutput = sh script: '''
-      //         adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
-      //         adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.Android.xml
-      //         adb shell rm /sdcard/Realmtests/TestResults.Android.xml
-      //       ''', returnStdout: true
+            def instrumentationOutput = sh script: '''
+              adb shell am instrument -w -r io.realm.xamarintests/.TestRunner
+              adb pull /storage/sdcard0/RealmTests/TestResults.Android.xml TestResults.Android.xml
+              adb shell rm /sdcard/Realmtests/TestResults.Android.xml
+            ''', returnStdout: true
 
-      //       def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
-      //       if (result.INSTRUMENTATION_CODE != '-1') {
-      //         echo instrumentationOutput
-      //         error result.INSTRUMENTATION_RESULT
-      //       }
-      //       archiveLog = false
-      //     } finally {
-      //       // stop logcat
-      //       sh 'kill `cat logcat.pid`'
-      //       if (archiveLog) {
-      //         zip([
-      //           zipFile: 'android-logcat.zip',
-      //           archive: true,
-      //           glob: 'logcat.txt'
-      //         ])
-      //       }
-      //     }
-      //   }
+            def result = readProperties text: instrumentationOutput.trim().replaceAll(': ', '=')
+            if (result.INSTRUMENTATION_CODE != '-1') {
+              echo instrumentationOutput
+              error result.INSTRUMENTATION_RESULT
+            }
+            archiveLog = false
+          } finally {
+            // stop logcat
+            sh 'kill `cat logcat.pid`'
+            if (archiveLog) {
+              zip([
+                zipFile: 'android-logcat.zip',
+                archive: true,
+                glob: 'logcat.txt'
+              ])
+            }
+          }
+        }
 
-      //   junit 'TestResults.Android.xml'
-      // }
+        junit 'TestResults.Android.xml'
+      }
     },
     '.NET Framework Windows': {
       rlmNode('windows && dotnet') {
@@ -325,31 +320,18 @@ stage('Test') {
         }
       }
     },
-    '.NET Core macOS': NetCoreTest('dotnet && macos'),
-    '.NET Core Linux': NetCoreTest('docker'),
-    '.NET Core Windows': NetCoreTest('windows && dotnet'),
+    '.NET Core macOS': NetCoreTest('macos && dotnet', 'netcoreapp2.0'),
+    '.NET Core Linux': NetCoreTest('docker', 'netcoreapp2.0'),
+    '.NET Core Windows': NetCoreTest('windows && dotnet', 'netcoreapp2.0'),
+    '.NET 5 macOS': NetCoreTest('macos && net5', 'net5.0'),
+    '.NET 5 Linux': NetCoreTest('docker', 'net5.0'),
+    '.NET 5 Windows': NetCoreTest('windows && dotnet', 'net5.0'),
     'Weaver': {
       rlmNode('dotnet && windows') {
         unstash 'dotnet-source'
         dir('Tests/Weaver/Realm.Fody.Tests') {
           bat "dotnet run -f netcoreapp2.0 -c ${configuration} --result=TestResults.Weaver.xml --labels=After"
           reportTests 'TestResults.Weaver.xml'
-        }
-      }
-    },
-    'Benchmarks': {
-      rlmNode('dotnet && windows') {
-        unstash 'dotnet-source'
-        dir('Realm/packages') { unstash 'packages' }
-
-        dir('Tests/PerformanceTests') {
-          bat """
-            dotnet build -c ${configuration} -f net5.0 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
-            dotnet run -c ${configuration} -f net5.0 --no-build -- -f *
-          """.trim()
-
-          archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.html"
-          archiveArtifacts "BenchmarkDotNet.Artifacts/results/*.md"
         }
       }
     }
@@ -360,25 +342,27 @@ stage('Test') {
   }
 }
 
-def NetCoreTest(String nodeName) {
+def NetCoreTest(String nodeName, String targetFramework) {
   return {
     rlmNode(nodeName) {
       unstash 'dotnet-source'
       dir('Realm/packages') { unstash 'packages' }
 
+      def addNet5Framework = targetFramework == 'net5.0'
+
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
-        dotnet build -c ${configuration} -f netcoreapp20 -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion}
-        dotnet run -c ${configuration} -f netcoreapp20 --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
+        dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
+        dotnet run -c ${configuration} -f ${targetFramework} --no-build -- --labels=After --result=${env.WORKSPACE}/TestResults.NetCore.xml
       """.trim()
 
       String appLocation = "${env.WORKSPACE}/Tests/TestApps/dotnet-integration-tests"
 
       if (isUnix()) {
         if (nodeName == 'docker') {
-          def test_runner_image = docker.image('mcr.microsoft.com/dotnet/core/sdk:2.1')
+          def test_runner_image = docker.image(DetermineDockerImg(targetFramework))
           test_runner_image.pull()
-          withRealmCloud(version: '2020-10-12', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
+          withRealmCloud(version: '2020-12-02', appsToImport: ["dotnet-integration-tests": appLocation]) { networkName ->
             test_runner_image.inside("--network=${networkName}") {
               def appId = sh script: "cat ${appLocation}/app_id", returnStdout: true
 
@@ -459,6 +443,22 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 
 boolean shouldPublishPackage() {
   return env.BRANCH_NAME == 'master'
+}
+
+def String DetermineDockerImg(String targetFramework) {
+  String dockerImg = 'breakBuildIfNotSet'
+  switch(targetFramework) {
+    case 'netcoreapp2.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/core/sdk:2.1'
+    break
+    case 'net5.0':
+      dockerImg = 'mcr.microsoft.com/dotnet/sdk:5.0'
+    break
+    default:
+      echo ".NET framework ${framework.ToString()} not supported by the pipeline, yet"
+    break
+  }
+  return dockerImg
 }
 
 // Required due to JENKINS-27421

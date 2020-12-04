@@ -86,6 +86,11 @@ namespace Realms.Schema
         Decimal = 11,
 
         /// <summary>
+        /// 128 bit UUID property.
+        /// </summary>
+        Guid = 12,
+
+        /// <summary>
         /// A required property. Can be combined with other values.
         /// </summary>
         Required = 0,
@@ -121,6 +126,16 @@ namespace Realms.Schema
         NullableBool = Bool | Nullable,
 
         /// <summary>
+        /// A shorthand for PropertyType.String | PropertyType.Nullable.
+        /// </summary>
+        NullableString = String | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Data | PropertyType.Nullable.
+        /// </summary>
+        NullableData = Data | Nullable,
+
+        /// <summary>
         /// A shorthand for PropertyType.Float | PropertyType.Nullable.
         /// </summary>
         NullableFloat = Float | Nullable,
@@ -144,5 +159,10 @@ namespace Realms.Schema
         /// A shorthand for PropertyType.Decimal | PropertyType.Nullable.
         /// </summary>
         NullableDecimal = Decimal | Nullable,
+
+        /// <summary>
+        /// A shorthand for PropertyType.Guid | PropertyType.Nullable.
+        /// </summary>
+        NullableGuid = Guid | Nullable,
     }
 }

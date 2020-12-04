@@ -72,6 +72,12 @@ namespace AssemblyToProcess
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class GuidProperty : RealmObject
+    {
+        public Guid Guid { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NullableProperties : RealmObject
     {
         public char? Char { get; set; }
@@ -97,6 +103,9 @@ namespace AssemblyToProcess
         public bool? Boolean { get; set; }
 
         public ObjectId? ObjectId { get; set; }
+
+        public Guid? Guid { get; set; }
+
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

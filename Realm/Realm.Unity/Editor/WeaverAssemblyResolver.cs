@@ -45,17 +45,9 @@ namespace RealmWeaver
             }
         }
 
-        public static (ModuleDefinition, IDisposable) Resolve(string assemblyPath)
+        public static (ModuleDefinition, IDisposable) Resolve(Assembly assembly)
         {
-            var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
-                                              .FirstOrDefault(p => p.outputPath == assemblyPath);
-
-            if (assembly == null)
-            {
-                return (null, null);
-            }
-
-            var absolutePath = GetAbsolutePath(assemblyPath);
+            var absolutePath = GetAbsolutePath(assembly.outputPath);
 
             if (!File.Exists(absolutePath))
             {
@@ -64,7 +56,7 @@ namespace RealmWeaver
 
             var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(assembly.compilerOptions.ApiCompatibilityLevel);
 
-            var assemblyStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.ReadWrite);
+            var assemblyStream = new FileStream(assembly.outputPath, FileMode.Open, FileAccess.ReadWrite);
             var module = ModuleDefinition.ReadModule(assemblyStream, new ReaderParameters
             {
                 ReadingMode = ReadingMode.Immediate,
@@ -108,27 +100,9 @@ namespace RealmWeaver
 
         private AssemblyDefinition FindAssemblyDefinition(string fullName, ReaderParameters parameters)
         {
-            var playerAss = CompilationPipeline.GetAssemblies(AssembliesType.Player);
-            var editorAss = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
-
-            var test1 = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(fullName);
-            var platforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
-            var precompiled = CompilationPipeline.GetPrecompiledAssemblyNames();
-            var test = CompilationPipeline.GetSystemAssemblyDirectories(UnityEditor.ApiCompatibilityLevel.NET_Standard_2_0);
-            var paths = CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All);
-
-            //if (_cache.TryGetValue(fullName, out var assemblyDefinition))
-            //{
-            //    return assemblyDefinition;
-            //}
-
             if (_appDomainAssemblyLocations.TryGetValue(fullName, out var location))
             {
-                var assemblyDefinition = parameters != null ? AssemblyDefinition.ReadAssembly(location, parameters) : AssemblyDefinition.ReadAssembly(location);
-
-                //_cache[fullName] = assemblyDefinition;
-
-                return assemblyDefinition;
+                return parameters != null ? AssemblyDefinition.ReadAssembly(location, parameters) : AssemblyDefinition.ReadAssembly(location);
             }
 
             return null;

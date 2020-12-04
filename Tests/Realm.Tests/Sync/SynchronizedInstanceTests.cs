@@ -51,15 +51,19 @@ namespace Realms.Tests.Sync
 
                 using (var realm = GetRealm(config))
                 {
+                    var session = GetSession(realm);
+                    session.Stop();
                     if (populate)
                     {
                         AddDummyData(realm, singleTransaction: false);
                     }
+
+                    session.CloseHandle();
                 }
 
                 var initialSize = new FileInfo(config.DatabasePath).Length;
 
-                var attempts = 20;
+                var attempts = 200;
 
                 // Give core a chance to close the Realm
                 while (!Realm.Compact(config) && (attempts-- > 0))
@@ -67,10 +71,10 @@ namespace Realms.Tests.Sync
                     await Task.Delay(50);
                 }
 
-                Assert.That(attempts > 0);
+                Assert.That(attempts, Is.GreaterThan(0));
 
                 var finalSize = new FileInfo(config.DatabasePath).Length;
-                Assert.That(initialSize >= finalSize);
+                Assert.That(initialSize, Is.GreaterThanOrEqualTo(finalSize));
 
                 using (var realm = GetRealm(config))
                 {

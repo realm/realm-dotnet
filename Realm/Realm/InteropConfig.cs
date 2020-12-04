@@ -31,64 +31,15 @@ namespace Realms
 
         private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
         {
-            try
+            if (TryGetUWPFolder(out var folder) ||
+                TryGetPersonalFolder(out folder) ||
+                TryGetUnityFolder(out folder) ||
+                TryGetFallbackFolder(out folder))
             {
-                // On UWP, the sandbox folder is obtained by:
-                // ApplicationData.Current.LocalFolder.Path
-                var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
-                if (applicationData != null)
-                {
-                    var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
-                    var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
-                    var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
-
-                    var currentApplicationData = currentProperty.GetValue(null);
-                    var localFolder = localFolderProperty.GetValue(currentApplicationData);
-                    return (string)pathProperty.GetValue(localFolder);
-                }
-            }
-            catch
-            {
+                return folder;
             }
 
-            try
-            {
-                return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            }
-            catch
-            {
-            }
-
-            var currentDirectory = Directory.GetCurrentDirectory();
-            if (!IsDirectoryWritable(currentDirectory))
-            {
-                throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
-            }
-
-            var folder = Path.Combine(currentDirectory, "Documents");
-            Directory.CreateDirectory(folder);
-            return folder;
-
-            static bool IsDirectoryWritable(string path)
-            {
-                if (!Directory.Exists(path))
-                {
-                    return false;
-                }
-
-                try
-                {
-                    using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
-                    {
-                    }
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
+            throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
         });
 
         private static string _customStorageFolder;
@@ -97,6 +48,98 @@ namespace Realms
         {
             get => _customStorageFolder ?? _defaultStorageFolder.Value;
             set => _customStorageFolder = value;
+        }
+
+        private static bool TryGetUWPFolder(out string folder) => TryGetDatabaseFolder(() =>
+        {
+            // On UWP, the sandbox folder is obtained by:
+            // ApplicationData.Current.LocalFolder.Path
+            var applicationData = Type.GetType("Windows.Storage.ApplicationData, Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime");
+            if (applicationData == null)
+            {
+                return null;
+            }
+
+            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
+            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
+            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+
+            var currentApplicationData = currentProperty.GetValue(null);
+            var localFolder = localFolderProperty.GetValue(currentApplicationData);
+            return (string)pathProperty.GetValue(localFolder);
+        }, out folder);
+
+        private static bool TryGetPersonalFolder(out string folder)
+            => TryGetDatabaseFolder(() => Environment.GetFolderPath(Environment.SpecialFolder.Personal), out folder);
+
+        private static bool TryGetUnityFolder(out string folder) => TryGetDatabaseFolder(() =>
+        {
+            var fileHelper = Type.GetType("UnityUtils.FileHelper, UnityUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
+            if (fileHelper != null)
+            {
+                var getInternalStorage = fileHelper.GetMethod("GetInternalStorage", BindingFlags.Public | BindingFlags.Static);
+                return (string)getInternalStorage.Invoke(null, null);
+            }
+
+            return null;
+        }, out folder);
+
+        private static bool TryGetFallbackFolder(out string folder) => TryGetDatabaseFolder(() =>
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            if (!IsDirectoryWritable(currentDirectory))
+            {
+                return null;
+            }
+
+            var docsFolder = Path.Combine(currentDirectory, "Documents");
+            Directory.CreateDirectory(docsFolder);
+            return docsFolder;
+        }, out folder);
+
+        private static bool TryGetDatabaseFolder(Func<string> getter, out string folder)
+        {
+            try
+            {
+                var result = getter();
+                if (result != null && IsDirectoryWritable(result))
+                {
+                    folder = result;
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            folder = null;
+            return false;
+        }
+
+        private static bool IsDirectoryWritable(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            if (!Directory.Exists(path))
+            {
+                return false;
+            }
+
+            try
+            {
+                using (File.Create(Path.Combine(path, Path.GetRandomFileName()), 1, FileOptions.DeleteOnClose))
+                {
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

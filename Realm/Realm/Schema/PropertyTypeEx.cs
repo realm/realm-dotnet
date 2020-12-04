@@ -82,6 +82,9 @@ namespace Realms.Schema
                 case Type _ when type == typeof(ObjectId):
                     return PropertyType.ObjectId | nullabilityModifier;
 
+                case Type _ when type == typeof(Guid):
+                    return PropertyType.Guid | nullabilityModifier;
+
                 case Type _ when type.IsRealmObject() || type.IsEmbeddedObject():
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
@@ -110,6 +113,54 @@ namespace Realms.Schema
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
             }
+        }
+
+        public static Type ToType(this PropertyType type)
+        {
+            return type switch
+            {
+                PropertyType.Int => typeof(long),
+                PropertyType.Bool => typeof(bool),
+                PropertyType.String => typeof(string),
+                PropertyType.Data => typeof(byte[]),
+                PropertyType.Date => typeof(DateTimeOffset),
+                PropertyType.Float => typeof(float),
+                PropertyType.Double => typeof(double),
+                PropertyType.Object => typeof(RealmObjectBase),
+                PropertyType.ObjectId => typeof(ObjectId),
+                PropertyType.Decimal => typeof(Decimal128),
+                PropertyType.Guid => typeof(Guid),
+                PropertyType.NullableInt => typeof(long?),
+                PropertyType.NullableBool => typeof(bool?),
+                PropertyType.NullableString => typeof(string),
+                PropertyType.NullableData => typeof(byte[]),
+                PropertyType.NullableDate => typeof(DateTimeOffset?),
+                PropertyType.NullableFloat => typeof(float?),
+                PropertyType.NullableDouble => typeof(double?),
+                PropertyType.NullableObjectId => typeof(ObjectId?),
+                PropertyType.NullableDecimal => typeof(Decimal128?),
+                PropertyType.NullableGuid => typeof(Guid?),
+                _ => throw new NotSupportedException($"Unexpected property type: {type}"),
+            };
+        }
+
+        public static RealmValueType ToRealmValueType(this PropertyType type)
+        {
+            return type.UnderlyingType() switch
+            {
+                PropertyType.Int => RealmValueType.Int,
+                PropertyType.Bool => RealmValueType.Bool,
+                PropertyType.String => RealmValueType.String,
+                PropertyType.Data => RealmValueType.Data,
+                PropertyType.Date => RealmValueType.Date,
+                PropertyType.Float => RealmValueType.Float,
+                PropertyType.Double => RealmValueType.Double,
+                PropertyType.Object => RealmValueType.Object,
+                PropertyType.ObjectId => RealmValueType.ObjectId,
+                PropertyType.Decimal => RealmValueType.Decimal128,
+                PropertyType.Guid => RealmValueType.Guid,
+                _ => throw new NotSupportedException($"The type {type} can't be mapped to RealmValueType."),
+            };
         }
 
         public static bool IsComputed(this PropertyType propertyType) => propertyType == (PropertyType.LinkingObjects | PropertyType.Array);

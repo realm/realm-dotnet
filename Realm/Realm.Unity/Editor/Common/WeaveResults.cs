@@ -53,7 +53,8 @@ namespace RealmWeaver
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"{Types.Length} types were woven:");
+            var wovenMessage = Types.Length == 1 ? "class was" : "classes were";
+            sb.AppendLine($"{Types.Length} {wovenMessage} woven:");
             foreach (var type in Types)
             {
                 sb.AppendLine(type.ToString());

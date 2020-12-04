@@ -5,10 +5,12 @@
 * None
 
 ### Fixed
-* None
+* Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
+  The issue manifests itself when different classes have persisted properties with the same name and could result in the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`.
+  This could only happen when using the dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other than .NET Core 3.x/.NET 5.
 
 ### Enhancements
-* None
+* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
@@ -17,6 +19,7 @@
 * Using Sync 10.1.0 and Core 10.1.0.
 * Submit Analytics to S3/Segment in addition to Mixpanel
 * Analytics now also reports if Sync functionality is in use
+* SDK is now also tested against .net5
 
 ## 10.0.0-beta.2 (2020-11-04)
 ------------------
@@ -61,7 +64,7 @@
 * Added `User.GetPushClient` exposing an API for registering a device for push notifications.
 * Change `SyncConfiguration` to accept partition value instead of a server Uri. Partition values can currently be of types `string`, `long`, or `ObjectId`. Opening a realm by partition value is the equivalent of previously opening a realm by URL. In this case, partitions are meant to be more closely associated with your data. E.g., if you are a large retailer with multiple locations, the partition key can be the store Id and you each Realm will only contain data related to the specified store.
 * Add support for the Decimal128 data type. This is a 128-bit IEEE 754 decimal floating point number. Properties of this type can be declared either as `MongoDB.Bson.Decimal128` type or the built-in `decimal` type. Note that .NET's built-in decimal is 96-bit, so it cannot represent the full range of numbers, representable by `Decimal128`. (PR [#2014](https://github.com/realm/realm-dotnet/pull/2014))
-* Add support for the `ObjectId` data type. This is a 12 byte unique identifier that is common as a document id in MongoDB databases. It can be used a primary key. (PR [#2035](https://github.com/realm/realm-dotnet/pull/2035))
+* Add support for the `ObjectId` data type. This is a 12 byte unique identifier that is common as a document id in MongoDB databases. It can be used as primary key. (PR [#2035](https://github.com/realm/realm-dotnet/pull/2035))
 * Add support for embedded objects. Embedded objects are objects which are owned by a single parent object, and are deleted when that parent object is deleted or their parent no longer references them. Embedded objects are declared by subclassing `EmbeddedObject` instead of `RealmObject`. Reassigning an embedded object is not allowed and neither is linking to it from multiple parents. Querying for embedded objects directly is also disallowed as they should be viewed as complex structures belonging to their parents as opposed to standalone objects. A trivial example is:
 
   ```csharp
