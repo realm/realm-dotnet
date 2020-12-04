@@ -22,6 +22,8 @@ param(
     [Parameter(Position=0)]
     [string]$Target = 'Windows',
 
+    [string]$Toolchain = 'c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake',
+
     [Switch]$Incremental
 )
 
@@ -40,7 +42,7 @@ $vs = Get-VSSetupInstance | Select-VSSetupInstance -Product * -Latest -Require M
 $Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"
 
 $cmake = Join-Path $vs.InstallationPath -ChildPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUILD_TYPE=$Configuration", "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=c:\\src\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", "-DCMAKE_BUILD_TYPE=$Configuration", "-DCMAKE_SYSTEM_NAME=$Target", "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", "-DCMAKE_TOOLCHAIN_FILE=$Toolchain"
 
 if ($Target -eq 'WindowsStore') {
     $cmakeArgs += "-DCMAKE_SYSTEM_VERSION='10.0'"
