@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .\wrappers\build\Windows\Release-x64\
-          key: wrapper-windows-release-64-${{hashfiles('.\wrappers\**')}}
+          key: wrapper-windows-${{hashfiles('.\wrappers\**')}}
       - name: Get CMake
         # If there is a cache hit, no need to do any of the following steps. Unfortunately there is no way to cancel the rest of the job.
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
@@ -31,14 +31,14 @@ jobs:
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         uses: lukka/run-vcpkg@v5
         with:
-          # Contains the list of packages and the triplet. If we need more than one triplet, we can't use the file it seems
+          # Contains the list of packages and the triplet. If we need more than one triplet, we need to pass it with command line arguments
           vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
           vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
           # If the cache key is the same, it does not execute
           appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
         env:
           vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
-      - name: Build wrappers Release
+      - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
   build-wrappers-linux:
@@ -54,7 +54,7 @@ jobs:
         with:
           path: ./wrappers/build/
           key: wrapper-linux-${{hashfiles('./wrappers/**')}}
-      - name: Build wrappers Release
+      - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
   build-wrappers-macos:
@@ -70,7 +70,7 @@ jobs:
         with:
           path: ./wrappers/build/
           key: wrapper-macos-${{hashfiles('./wrappers/**')}}
-      - name: Build wrappers Release
+      - name: Build wrappers
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh
   execute-benchmarks-windows:
@@ -86,8 +86,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .\wrappers\build\Windows\Release-x64\
-          # This needs to be changed to something meaningful
-          key: wrapper-windows-release-64-${{hashfiles('.\wrappers\**')}}
+          key: wrapper-windows-${{hashfiles('.\wrappers\**')}}
       - name: Check cache hit
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
@@ -101,7 +100,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-windows
-          # Could be put in an environmental variable
           path: .\BenchmarkDotNet.Artifacts\results
       # Download previous benchmark result from cache (if exists)    
       - name: Store benchmark results
@@ -134,7 +132,6 @@ jobs:
           path: ./wrappers/build/
           key: wrapper-linux-${{hashfiles('./wrappers/**')}}
       - name: Check cache hit
-        # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
       - name: Run benchmarks
@@ -142,11 +139,9 @@ jobs:
         run:  |
           dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
       - name: Save artifacts
-        # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-linux
-          # Could be put in an environmental variable
           path: ./BenchmarkDotNet.Artifacts/results
   execute-benchmarks-macos:
     needs: [build-wrappers-macos]
@@ -167,17 +162,13 @@ jobs:
           path: ./wrappers/build/
           key: wrapper-macos-${{hashfiles('./wrappers/**')}}
       - name: Check cache hit
-        # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
       - name: Run benchmarks
-      # We need to use the quotes on Linux, otherwise it substitutes the wildcard with all the files in the folder
         run:  |
           sudo dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
       - name: Save artifacts
-        # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-macos
-          # Could be put in an environmental variable
           path: ./BenchmarkDotNet.Artifacts/results
