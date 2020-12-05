@@ -29,8 +29,8 @@ namespace Realms
     /// <remarks>
     /// <see cref="RealmInteger{T}"/> is implicitly convertible to and from T/>.
     /// <br/>
-    /// Calling <see cref="Increment"/> on a managed <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>'s property must be done in a write
-    /// transaction. When calling <see cref="Increment"/> on a <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> property, it will increment
+    /// Calling <see cref="Increment()"/> on a managed <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>'s property must be done in a write
+    /// transaction. When calling <see cref="Increment()"/> on a <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> property, it will increment
     /// the property's value in the database, so the change will be reflected the next time this property is accessed.
     /// </remarks>
     /// <typeparam name="T">

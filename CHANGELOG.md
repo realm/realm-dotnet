@@ -6,11 +6,18 @@
 
 ### Fixed
 * Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
-  The issue manifests itself when different classes have persisted properties with the same name and could result in the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`.
-  This could only happen when using the dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other than .NET Core 3.x/.NET 5.
+  The issue manifests itself when different classes have persisted properties with the same name and could result in
+  the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`. This could only happen when using the
+  dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other
+  than .NET Core 3.x/.NET 5.
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+* Optimized the internal code that handles conversions between types. This should result in a minor performance increase
+for most data operations that should be most noticeable on Ahead-of-Time compiled platforms, such as iOS/UWP. Due to the
+nature of the change, it's possible that conversions that previously happened automatically when working with dynamic objects
+no longer do. If you encounter a `NotSupportedException` with the message `No conversion exists from *type A* to *type B*`
+and believe this is a bug, please open a Github Issue. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
@@ -20,6 +27,7 @@
 * Submit Analytics to S3/Segment in addition to Mixpanel
 * Analytics now also reports if Sync functionality is in use
 * SDK is now also tested against .net5
+* Replaced Expressions-based Operator with T4. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
 
 ## 10.0.0-beta.2 (2020-11-04)
 ------------------
