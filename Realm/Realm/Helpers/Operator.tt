@@ -34,7 +34,7 @@ namespace Realms.Helpers
     [Preserve]
     internal static class Operator
     {
-        private static IDictionary<(Type, Type), Type> _valueConverters = new Dictionary<(Type, Type), Type>
+        private static IDictionary<(Type, Type), IConverter> _valueConverters = new Dictionary<(Type, Type), IConverter>
         {
 <#
             var realmValueContents = GetFileContents("..\\RealmValue.cs");
@@ -42,7 +42,7 @@ namespace Realms.Helpers
             foreach (var type in implicitToRealmValueTypes)
             {
 #>
-            [(typeof(<#= type #>), typeof(RealmValue))] = typeof(<#= ToFriendlyMethodName(type) #>RealmValueConverter),
+            [(typeof(<#= type #>), typeof(RealmValue))] = new <#= ToFriendlyMethodName(type) #>RealmValueConverter(),
 <#
             }
 
@@ -50,21 +50,21 @@ namespace Realms.Helpers
             foreach (var type in explicitFromRealmValueTypes)
             {
 #>
-            [(typeof(RealmValue), typeof(<#= type #>))] = typeof(RealmValue<#= ToFriendlyMethodName(type) #>Converter),
+            [(typeof(RealmValue), typeof(<#= type #>))] = new RealmValue<#= ToFriendlyMethodName(type) #>Converter(),
 <#
             }
 
             foreach (var tuple in GenerateIntegralTypeMatrix())
             {
 #>
-            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = typeof(<#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter),
+            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = new <#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter(),
 <#
             }
 
             foreach (var tuple in GenerateDecimalTypeMatrix())
             {
 #>
-            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = typeof(<#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter),
+            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = new <#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter(),
 <#
             }
 #>
@@ -118,9 +118,9 @@ namespace Realms.Helpers
                 {
                     _converter = (ISpecializedConverter<TSource, TTarget>)new UnaryConverter<TSource>();
                 }
-                else if (_valueConverters.TryGetValue((sourceType, targetType), out var converterType))
+                else if (_valueConverters.TryGetValue((sourceType, targetType), out var converter))
                 {
-                    _converter = (ISpecializedConverter<TSource, TTarget>)Activator.CreateInstance(converterType);
+                    _converter = (ISpecializedConverter<TSource, TTarget>)converter;
                 }
                 else if (targetType.IsAssignableFrom(sourceType) || sourceType == typeof(object))
                 {
@@ -133,11 +133,34 @@ namespace Realms.Helpers
             }
         }
 
-        private interface ISpecializedConverter<TSource, TTarget>
+        /// <summary>
+        /// An interface representing a converter - used primarily to guarantee type safety of the
+        /// generated <see cref="_valueConverters"/> dictionary.
+        /// </summary>
+        private interface IConverter
+        {
+        }
+
+        /// <summary>
+        /// Interface representing a concrete converter from <typeparamref name="TSource"/>
+        /// to <typeparamref name="TTarget"/>. For most types there will be exactly one concrete
+        /// implementation, but there may be cases, such as <see cref="InheritanceConverter{TSource, TTarget}"/>
+        /// where a single converter type can handle multiple source/target types.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
+        private interface ISpecializedConverter<TSource, TTarget> : IConverter
         {
             TTarget Convert(TSource source);
         }
 
+        /// <summary>
+        /// A converter that will throw whenever <see cref="ISpecializedConverter{TSource, TTarget}.Convert(TSource)"/>
+        /// is called. This is used to handle cases where there is no conversion from <typeparamref name="TSource"/> to
+        /// <typeparamref name="TTarget"/>.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class ThrowingConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
         {
             public TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
