@@ -1,6 +1,7 @@
-﻿////////////////////////////////////////////////////////////////////////////
+﻿
+////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,25 +18,272 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
-using System.Linq.Expressions;
+using System.Collections.Generic;
 using MongoDB.Bson;
 
 namespace Realms.Helpers
 {
-    // Heavily based on https://web.archive.org/web/20181011184205/http://www.yoda.arachsys.com/csharp/miscutil/index.html
+    [Preserve]
     internal static class Operator
     {
-        [Preserve]
-        static Operator()
+        private static IDictionary<(Type, Type), Type> _valueConverters = new Dictionary<(Type, Type), Type>
         {
-            _ = (decimal)new Decimal128(123);
-        }
-
-        public static T Add<T>(T first, T second)
-        {
-            return GenericOperator<T, T>.Add(first, second);
-        }
+            [(typeof(char), typeof(RealmValue))] = typeof(CharRealmValueConverter),
+            [(typeof(byte), typeof(RealmValue))] = typeof(ByteRealmValueConverter),
+            [(typeof(short), typeof(RealmValue))] = typeof(ShortRealmValueConverter),
+            [(typeof(int), typeof(RealmValue))] = typeof(IntRealmValueConverter),
+            [(typeof(long), typeof(RealmValue))] = typeof(LongRealmValueConverter),
+            [(typeof(float), typeof(RealmValue))] = typeof(FloatRealmValueConverter),
+            [(typeof(double), typeof(RealmValue))] = typeof(DoubleRealmValueConverter),
+            [(typeof(bool), typeof(RealmValue))] = typeof(BoolRealmValueConverter),
+            [(typeof(DateTimeOffset), typeof(RealmValue))] = typeof(DateTimeOffsetRealmValueConverter),
+            [(typeof(decimal), typeof(RealmValue))] = typeof(DecimalRealmValueConverter),
+            [(typeof(Decimal128), typeof(RealmValue))] = typeof(Decimal128RealmValueConverter),
+            [(typeof(ObjectId), typeof(RealmValue))] = typeof(ObjectIdRealmValueConverter),
+            [(typeof(Guid), typeof(RealmValue))] = typeof(GuidRealmValueConverter),
+            [(typeof(char?), typeof(RealmValue))] = typeof(NullableCharRealmValueConverter),
+            [(typeof(byte?), typeof(RealmValue))] = typeof(NullableByteRealmValueConverter),
+            [(typeof(short?), typeof(RealmValue))] = typeof(NullableShortRealmValueConverter),
+            [(typeof(int?), typeof(RealmValue))] = typeof(NullableIntRealmValueConverter),
+            [(typeof(long?), typeof(RealmValue))] = typeof(NullableLongRealmValueConverter),
+            [(typeof(float?), typeof(RealmValue))] = typeof(NullableFloatRealmValueConverter),
+            [(typeof(double?), typeof(RealmValue))] = typeof(NullableDoubleRealmValueConverter),
+            [(typeof(bool?), typeof(RealmValue))] = typeof(NullableBoolRealmValueConverter),
+            [(typeof(DateTimeOffset?), typeof(RealmValue))] = typeof(NullableDateTimeOffsetRealmValueConverter),
+            [(typeof(decimal?), typeof(RealmValue))] = typeof(NullableDecimalRealmValueConverter),
+            [(typeof(Decimal128?), typeof(RealmValue))] = typeof(NullableDecimal128RealmValueConverter),
+            [(typeof(ObjectId?), typeof(RealmValue))] = typeof(NullableObjectIdRealmValueConverter),
+            [(typeof(Guid?), typeof(RealmValue))] = typeof(NullableGuidRealmValueConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmValue))] = typeof(RealmIntegerByteRealmValueConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmValue))] = typeof(RealmIntegerShortRealmValueConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmValue))] = typeof(RealmIntegerIntRealmValueConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmValue))] = typeof(RealmIntegerLongRealmValueConverter),
+            [(typeof(RealmInteger<byte>?), typeof(RealmValue))] = typeof(NullableRealmIntegerByteRealmValueConverter),
+            [(typeof(RealmInteger<short>?), typeof(RealmValue))] = typeof(NullableRealmIntegerShortRealmValueConverter),
+            [(typeof(RealmInteger<int>?), typeof(RealmValue))] = typeof(NullableRealmIntegerIntRealmValueConverter),
+            [(typeof(RealmInteger<long>?), typeof(RealmValue))] = typeof(NullableRealmIntegerLongRealmValueConverter),
+            [(typeof(byte[]), typeof(RealmValue))] = typeof(ByteArrayRealmValueConverter),
+            [(typeof(string), typeof(RealmValue))] = typeof(StringRealmValueConverter),
+            [(typeof(RealmObjectBase), typeof(RealmValue))] = typeof(RealmObjectBaseRealmValueConverter),
+            [(typeof(RealmValue), typeof(char))] = typeof(RealmValueCharConverter),
+            [(typeof(RealmValue), typeof(byte))] = typeof(RealmValueByteConverter),
+            [(typeof(RealmValue), typeof(short))] = typeof(RealmValueShortConverter),
+            [(typeof(RealmValue), typeof(int))] = typeof(RealmValueIntConverter),
+            [(typeof(RealmValue), typeof(long))] = typeof(RealmValueLongConverter),
+            [(typeof(RealmValue), typeof(float))] = typeof(RealmValueFloatConverter),
+            [(typeof(RealmValue), typeof(double))] = typeof(RealmValueDoubleConverter),
+            [(typeof(RealmValue), typeof(bool))] = typeof(RealmValueBoolConverter),
+            [(typeof(RealmValue), typeof(DateTimeOffset))] = typeof(RealmValueDateTimeOffsetConverter),
+            [(typeof(RealmValue), typeof(decimal))] = typeof(RealmValueDecimalConverter),
+            [(typeof(RealmValue), typeof(Decimal128))] = typeof(RealmValueDecimal128Converter),
+            [(typeof(RealmValue), typeof(ObjectId))] = typeof(RealmValueObjectIdConverter),
+            [(typeof(RealmValue), typeof(Guid))] = typeof(RealmValueGuidConverter),
+            [(typeof(RealmValue), typeof(char?))] = typeof(RealmValueNullableCharConverter),
+            [(typeof(RealmValue), typeof(byte?))] = typeof(RealmValueNullableByteConverter),
+            [(typeof(RealmValue), typeof(short?))] = typeof(RealmValueNullableShortConverter),
+            [(typeof(RealmValue), typeof(int?))] = typeof(RealmValueNullableIntConverter),
+            [(typeof(RealmValue), typeof(long?))] = typeof(RealmValueNullableLongConverter),
+            [(typeof(RealmValue), typeof(float?))] = typeof(RealmValueNullableFloatConverter),
+            [(typeof(RealmValue), typeof(double?))] = typeof(RealmValueNullableDoubleConverter),
+            [(typeof(RealmValue), typeof(bool?))] = typeof(RealmValueNullableBoolConverter),
+            [(typeof(RealmValue), typeof(DateTimeOffset?))] = typeof(RealmValueNullableDateTimeOffsetConverter),
+            [(typeof(RealmValue), typeof(decimal?))] = typeof(RealmValueNullableDecimalConverter),
+            [(typeof(RealmValue), typeof(Decimal128?))] = typeof(RealmValueNullableDecimal128Converter),
+            [(typeof(RealmValue), typeof(ObjectId?))] = typeof(RealmValueNullableObjectIdConverter),
+            [(typeof(RealmValue), typeof(Guid?))] = typeof(RealmValueNullableGuidConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<byte>))] = typeof(RealmValueRealmIntegerByteConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<short>))] = typeof(RealmValueRealmIntegerShortConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<int>))] = typeof(RealmValueRealmIntegerIntConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<long>))] = typeof(RealmValueRealmIntegerLongConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<byte>?))] = typeof(RealmValueNullableRealmIntegerByteConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<short>?))] = typeof(RealmValueNullableRealmIntegerShortConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<int>?))] = typeof(RealmValueNullableRealmIntegerIntConverter),
+            [(typeof(RealmValue), typeof(RealmInteger<long>?))] = typeof(RealmValueNullableRealmIntegerLongConverter),
+            [(typeof(RealmValue), typeof(byte[]))] = typeof(RealmValueByteArrayConverter),
+            [(typeof(RealmValue), typeof(string))] = typeof(RealmValueStringConverter),
+            [(typeof(RealmValue), typeof(RealmObjectBase))] = typeof(RealmValueRealmObjectBaseConverter),
+            [(typeof(char), typeof(char?))] = typeof(CharNullableCharConverter),
+            [(typeof(char), typeof(byte?))] = typeof(CharNullableByteConverter),
+            [(typeof(char), typeof(short?))] = typeof(CharNullableShortConverter),
+            [(typeof(char), typeof(int?))] = typeof(CharNullableIntConverter),
+            [(typeof(char), typeof(long?))] = typeof(CharNullableLongConverter),
+            [(typeof(char), typeof(RealmInteger<byte>?))] = typeof(CharNullableRealmIntegerByteConverter),
+            [(typeof(char), typeof(RealmInteger<short>?))] = typeof(CharNullableRealmIntegerShortConverter),
+            [(typeof(char), typeof(RealmInteger<int>?))] = typeof(CharNullableRealmIntegerIntConverter),
+            [(typeof(char), typeof(RealmInteger<long>?))] = typeof(CharNullableRealmIntegerLongConverter),
+            [(typeof(byte), typeof(char?))] = typeof(ByteNullableCharConverter),
+            [(typeof(byte), typeof(byte?))] = typeof(ByteNullableByteConverter),
+            [(typeof(byte), typeof(short?))] = typeof(ByteNullableShortConverter),
+            [(typeof(byte), typeof(int?))] = typeof(ByteNullableIntConverter),
+            [(typeof(byte), typeof(long?))] = typeof(ByteNullableLongConverter),
+            [(typeof(byte), typeof(RealmInteger<byte>?))] = typeof(ByteNullableRealmIntegerByteConverter),
+            [(typeof(byte), typeof(RealmInteger<short>?))] = typeof(ByteNullableRealmIntegerShortConverter),
+            [(typeof(byte), typeof(RealmInteger<int>?))] = typeof(ByteNullableRealmIntegerIntConverter),
+            [(typeof(byte), typeof(RealmInteger<long>?))] = typeof(ByteNullableRealmIntegerLongConverter),
+            [(typeof(short), typeof(char?))] = typeof(ShortNullableCharConverter),
+            [(typeof(short), typeof(byte?))] = typeof(ShortNullableByteConverter),
+            [(typeof(short), typeof(short?))] = typeof(ShortNullableShortConverter),
+            [(typeof(short), typeof(int?))] = typeof(ShortNullableIntConverter),
+            [(typeof(short), typeof(long?))] = typeof(ShortNullableLongConverter),
+            [(typeof(short), typeof(RealmInteger<byte>?))] = typeof(ShortNullableRealmIntegerByteConverter),
+            [(typeof(short), typeof(RealmInteger<short>?))] = typeof(ShortNullableRealmIntegerShortConverter),
+            [(typeof(short), typeof(RealmInteger<int>?))] = typeof(ShortNullableRealmIntegerIntConverter),
+            [(typeof(short), typeof(RealmInteger<long>?))] = typeof(ShortNullableRealmIntegerLongConverter),
+            [(typeof(int), typeof(char?))] = typeof(IntNullableCharConverter),
+            [(typeof(int), typeof(byte?))] = typeof(IntNullableByteConverter),
+            [(typeof(int), typeof(short?))] = typeof(IntNullableShortConverter),
+            [(typeof(int), typeof(int?))] = typeof(IntNullableIntConverter),
+            [(typeof(int), typeof(long?))] = typeof(IntNullableLongConverter),
+            [(typeof(int), typeof(RealmInteger<byte>?))] = typeof(IntNullableRealmIntegerByteConverter),
+            [(typeof(int), typeof(RealmInteger<short>?))] = typeof(IntNullableRealmIntegerShortConverter),
+            [(typeof(int), typeof(RealmInteger<int>?))] = typeof(IntNullableRealmIntegerIntConverter),
+            [(typeof(int), typeof(RealmInteger<long>?))] = typeof(IntNullableRealmIntegerLongConverter),
+            [(typeof(long), typeof(char?))] = typeof(LongNullableCharConverter),
+            [(typeof(long), typeof(byte?))] = typeof(LongNullableByteConverter),
+            [(typeof(long), typeof(short?))] = typeof(LongNullableShortConverter),
+            [(typeof(long), typeof(int?))] = typeof(LongNullableIntConverter),
+            [(typeof(long), typeof(long?))] = typeof(LongNullableLongConverter),
+            [(typeof(long), typeof(RealmInteger<byte>?))] = typeof(LongNullableRealmIntegerByteConverter),
+            [(typeof(long), typeof(RealmInteger<short>?))] = typeof(LongNullableRealmIntegerShortConverter),
+            [(typeof(long), typeof(RealmInteger<int>?))] = typeof(LongNullableRealmIntegerIntConverter),
+            [(typeof(long), typeof(RealmInteger<long>?))] = typeof(LongNullableRealmIntegerLongConverter),
+            [(typeof(RealmInteger<byte>), typeof(char?))] = typeof(RealmIntegerByteNullableCharConverter),
+            [(typeof(RealmInteger<byte>), typeof(byte?))] = typeof(RealmIntegerByteNullableByteConverter),
+            [(typeof(RealmInteger<byte>), typeof(short?))] = typeof(RealmIntegerByteNullableShortConverter),
+            [(typeof(RealmInteger<byte>), typeof(int?))] = typeof(RealmIntegerByteNullableIntConverter),
+            [(typeof(RealmInteger<byte>), typeof(long?))] = typeof(RealmIntegerByteNullableLongConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<byte>?))] = typeof(RealmIntegerByteNullableRealmIntegerByteConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<short>?))] = typeof(RealmIntegerByteNullableRealmIntegerShortConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<int>?))] = typeof(RealmIntegerByteNullableRealmIntegerIntConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<long>?))] = typeof(RealmIntegerByteNullableRealmIntegerLongConverter),
+            [(typeof(RealmInteger<short>), typeof(char?))] = typeof(RealmIntegerShortNullableCharConverter),
+            [(typeof(RealmInteger<short>), typeof(byte?))] = typeof(RealmIntegerShortNullableByteConverter),
+            [(typeof(RealmInteger<short>), typeof(short?))] = typeof(RealmIntegerShortNullableShortConverter),
+            [(typeof(RealmInteger<short>), typeof(int?))] = typeof(RealmIntegerShortNullableIntConverter),
+            [(typeof(RealmInteger<short>), typeof(long?))] = typeof(RealmIntegerShortNullableLongConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<byte>?))] = typeof(RealmIntegerShortNullableRealmIntegerByteConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<short>?))] = typeof(RealmIntegerShortNullableRealmIntegerShortConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<int>?))] = typeof(RealmIntegerShortNullableRealmIntegerIntConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<long>?))] = typeof(RealmIntegerShortNullableRealmIntegerLongConverter),
+            [(typeof(RealmInteger<int>), typeof(char?))] = typeof(RealmIntegerIntNullableCharConverter),
+            [(typeof(RealmInteger<int>), typeof(byte?))] = typeof(RealmIntegerIntNullableByteConverter),
+            [(typeof(RealmInteger<int>), typeof(short?))] = typeof(RealmIntegerIntNullableShortConverter),
+            [(typeof(RealmInteger<int>), typeof(int?))] = typeof(RealmIntegerIntNullableIntConverter),
+            [(typeof(RealmInteger<int>), typeof(long?))] = typeof(RealmIntegerIntNullableLongConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<byte>?))] = typeof(RealmIntegerIntNullableRealmIntegerByteConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<short>?))] = typeof(RealmIntegerIntNullableRealmIntegerShortConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<int>?))] = typeof(RealmIntegerIntNullableRealmIntegerIntConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<long>?))] = typeof(RealmIntegerIntNullableRealmIntegerLongConverter),
+            [(typeof(RealmInteger<long>), typeof(char?))] = typeof(RealmIntegerLongNullableCharConverter),
+            [(typeof(RealmInteger<long>), typeof(byte?))] = typeof(RealmIntegerLongNullableByteConverter),
+            [(typeof(RealmInteger<long>), typeof(short?))] = typeof(RealmIntegerLongNullableShortConverter),
+            [(typeof(RealmInteger<long>), typeof(int?))] = typeof(RealmIntegerLongNullableIntConverter),
+            [(typeof(RealmInteger<long>), typeof(long?))] = typeof(RealmIntegerLongNullableLongConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<byte>?))] = typeof(RealmIntegerLongNullableRealmIntegerByteConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<short>?))] = typeof(RealmIntegerLongNullableRealmIntegerShortConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<int>?))] = typeof(RealmIntegerLongNullableRealmIntegerIntConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<long>?))] = typeof(RealmIntegerLongNullableRealmIntegerLongConverter),
+            [(typeof(char), typeof(byte))] = typeof(CharByteConverter),
+            [(typeof(char), typeof(short))] = typeof(CharShortConverter),
+            [(typeof(char), typeof(int))] = typeof(CharIntConverter),
+            [(typeof(char), typeof(long))] = typeof(CharLongConverter),
+            [(typeof(char), typeof(RealmInteger<byte>))] = typeof(CharRealmIntegerByteConverter),
+            [(typeof(char), typeof(RealmInteger<short>))] = typeof(CharRealmIntegerShortConverter),
+            [(typeof(char), typeof(RealmInteger<int>))] = typeof(CharRealmIntegerIntConverter),
+            [(typeof(char), typeof(RealmInteger<long>))] = typeof(CharRealmIntegerLongConverter),
+            [(typeof(byte), typeof(char))] = typeof(ByteCharConverter),
+            [(typeof(byte), typeof(short))] = typeof(ByteShortConverter),
+            [(typeof(byte), typeof(int))] = typeof(ByteIntConverter),
+            [(typeof(byte), typeof(long))] = typeof(ByteLongConverter),
+            [(typeof(byte), typeof(RealmInteger<byte>))] = typeof(ByteRealmIntegerByteConverter),
+            [(typeof(byte), typeof(RealmInteger<short>))] = typeof(ByteRealmIntegerShortConverter),
+            [(typeof(byte), typeof(RealmInteger<int>))] = typeof(ByteRealmIntegerIntConverter),
+            [(typeof(byte), typeof(RealmInteger<long>))] = typeof(ByteRealmIntegerLongConverter),
+            [(typeof(short), typeof(char))] = typeof(ShortCharConverter),
+            [(typeof(short), typeof(byte))] = typeof(ShortByteConverter),
+            [(typeof(short), typeof(int))] = typeof(ShortIntConverter),
+            [(typeof(short), typeof(long))] = typeof(ShortLongConverter),
+            [(typeof(short), typeof(RealmInteger<byte>))] = typeof(ShortRealmIntegerByteConverter),
+            [(typeof(short), typeof(RealmInteger<short>))] = typeof(ShortRealmIntegerShortConverter),
+            [(typeof(short), typeof(RealmInteger<int>))] = typeof(ShortRealmIntegerIntConverter),
+            [(typeof(short), typeof(RealmInteger<long>))] = typeof(ShortRealmIntegerLongConverter),
+            [(typeof(int), typeof(char))] = typeof(IntCharConverter),
+            [(typeof(int), typeof(byte))] = typeof(IntByteConverter),
+            [(typeof(int), typeof(short))] = typeof(IntShortConverter),
+            [(typeof(int), typeof(long))] = typeof(IntLongConverter),
+            [(typeof(int), typeof(RealmInteger<byte>))] = typeof(IntRealmIntegerByteConverter),
+            [(typeof(int), typeof(RealmInteger<short>))] = typeof(IntRealmIntegerShortConverter),
+            [(typeof(int), typeof(RealmInteger<int>))] = typeof(IntRealmIntegerIntConverter),
+            [(typeof(int), typeof(RealmInteger<long>))] = typeof(IntRealmIntegerLongConverter),
+            [(typeof(long), typeof(char))] = typeof(LongCharConverter),
+            [(typeof(long), typeof(byte))] = typeof(LongByteConverter),
+            [(typeof(long), typeof(short))] = typeof(LongShortConverter),
+            [(typeof(long), typeof(int))] = typeof(LongIntConverter),
+            [(typeof(long), typeof(RealmInteger<byte>))] = typeof(LongRealmIntegerByteConverter),
+            [(typeof(long), typeof(RealmInteger<short>))] = typeof(LongRealmIntegerShortConverter),
+            [(typeof(long), typeof(RealmInteger<int>))] = typeof(LongRealmIntegerIntConverter),
+            [(typeof(long), typeof(RealmInteger<long>))] = typeof(LongRealmIntegerLongConverter),
+            [(typeof(RealmInteger<byte>), typeof(char))] = typeof(RealmIntegerByteCharConverter),
+            [(typeof(RealmInteger<byte>), typeof(byte))] = typeof(RealmIntegerByteByteConverter),
+            [(typeof(RealmInteger<byte>), typeof(short))] = typeof(RealmIntegerByteShortConverter),
+            [(typeof(RealmInteger<byte>), typeof(int))] = typeof(RealmIntegerByteIntConverter),
+            [(typeof(RealmInteger<byte>), typeof(long))] = typeof(RealmIntegerByteLongConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<short>))] = typeof(RealmIntegerByteRealmIntegerShortConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<int>))] = typeof(RealmIntegerByteRealmIntegerIntConverter),
+            [(typeof(RealmInteger<byte>), typeof(RealmInteger<long>))] = typeof(RealmIntegerByteRealmIntegerLongConverter),
+            [(typeof(RealmInteger<short>), typeof(char))] = typeof(RealmIntegerShortCharConverter),
+            [(typeof(RealmInteger<short>), typeof(byte))] = typeof(RealmIntegerShortByteConverter),
+            [(typeof(RealmInteger<short>), typeof(short))] = typeof(RealmIntegerShortShortConverter),
+            [(typeof(RealmInteger<short>), typeof(int))] = typeof(RealmIntegerShortIntConverter),
+            [(typeof(RealmInteger<short>), typeof(long))] = typeof(RealmIntegerShortLongConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<byte>))] = typeof(RealmIntegerShortRealmIntegerByteConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<int>))] = typeof(RealmIntegerShortRealmIntegerIntConverter),
+            [(typeof(RealmInteger<short>), typeof(RealmInteger<long>))] = typeof(RealmIntegerShortRealmIntegerLongConverter),
+            [(typeof(RealmInteger<int>), typeof(char))] = typeof(RealmIntegerIntCharConverter),
+            [(typeof(RealmInteger<int>), typeof(byte))] = typeof(RealmIntegerIntByteConverter),
+            [(typeof(RealmInteger<int>), typeof(short))] = typeof(RealmIntegerIntShortConverter),
+            [(typeof(RealmInteger<int>), typeof(int))] = typeof(RealmIntegerIntIntConverter),
+            [(typeof(RealmInteger<int>), typeof(long))] = typeof(RealmIntegerIntLongConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<byte>))] = typeof(RealmIntegerIntRealmIntegerByteConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<short>))] = typeof(RealmIntegerIntRealmIntegerShortConverter),
+            [(typeof(RealmInteger<int>), typeof(RealmInteger<long>))] = typeof(RealmIntegerIntRealmIntegerLongConverter),
+            [(typeof(RealmInteger<long>), typeof(char))] = typeof(RealmIntegerLongCharConverter),
+            [(typeof(RealmInteger<long>), typeof(byte))] = typeof(RealmIntegerLongByteConverter),
+            [(typeof(RealmInteger<long>), typeof(short))] = typeof(RealmIntegerLongShortConverter),
+            [(typeof(RealmInteger<long>), typeof(int))] = typeof(RealmIntegerLongIntConverter),
+            [(typeof(RealmInteger<long>), typeof(long))] = typeof(RealmIntegerLongLongConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<byte>))] = typeof(RealmIntegerLongRealmIntegerByteConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<short>))] = typeof(RealmIntegerLongRealmIntegerShortConverter),
+            [(typeof(RealmInteger<long>), typeof(RealmInteger<int>))] = typeof(RealmIntegerLongRealmIntegerIntConverter),
+            [(typeof(float), typeof(float?))] = typeof(FloatNullableFloatConverter),
+            [(typeof(float), typeof(double?))] = typeof(FloatNullableDoubleConverter),
+            [(typeof(float), typeof(decimal?))] = typeof(FloatNullableDecimalConverter),
+            [(typeof(float), typeof(Decimal128?))] = typeof(FloatNullableDecimal128Converter),
+            [(typeof(double), typeof(float?))] = typeof(DoubleNullableFloatConverter),
+            [(typeof(double), typeof(double?))] = typeof(DoubleNullableDoubleConverter),
+            [(typeof(double), typeof(decimal?))] = typeof(DoubleNullableDecimalConverter),
+            [(typeof(double), typeof(Decimal128?))] = typeof(DoubleNullableDecimal128Converter),
+            [(typeof(decimal), typeof(float?))] = typeof(DecimalNullableFloatConverter),
+            [(typeof(decimal), typeof(double?))] = typeof(DecimalNullableDoubleConverter),
+            [(typeof(decimal), typeof(decimal?))] = typeof(DecimalNullableDecimalConverter),
+            [(typeof(decimal), typeof(Decimal128?))] = typeof(DecimalNullableDecimal128Converter),
+            [(typeof(Decimal128), typeof(float?))] = typeof(Decimal128NullableFloatConverter),
+            [(typeof(Decimal128), typeof(double?))] = typeof(Decimal128NullableDoubleConverter),
+            [(typeof(Decimal128), typeof(decimal?))] = typeof(Decimal128NullableDecimalConverter),
+            [(typeof(Decimal128), typeof(Decimal128?))] = typeof(Decimal128NullableDecimal128Converter),
+            [(typeof(float), typeof(double))] = typeof(FloatDoubleConverter),
+            [(typeof(float), typeof(decimal))] = typeof(FloatDecimalConverter),
+            [(typeof(float), typeof(Decimal128))] = typeof(FloatDecimal128Converter),
+            [(typeof(double), typeof(float))] = typeof(DoubleFloatConverter),
+            [(typeof(double), typeof(decimal))] = typeof(DoubleDecimalConverter),
+            [(typeof(double), typeof(Decimal128))] = typeof(DoubleDecimal128Converter),
+            [(typeof(decimal), typeof(float))] = typeof(DecimalFloatConverter),
+            [(typeof(decimal), typeof(double))] = typeof(DecimalDoubleConverter),
+            [(typeof(decimal), typeof(Decimal128))] = typeof(DecimalDecimal128Converter),
+            [(typeof(Decimal128), typeof(float))] = typeof(Decimal128FloatConverter),
+            [(typeof(Decimal128), typeof(double))] = typeof(Decimal128DoubleConverter),
+            [(typeof(Decimal128), typeof(decimal))] = typeof(Decimal128DecimalConverter),
+        };
 
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
@@ -61,7 +309,6 @@ namespace Realms.Helpers
                 /* This is another special case where `value` is inheritable from RealmObjectBase. There's
                  * no direct conversion from T to RealmValue, but there's conversion if we go through RealmObjectBase.
                  */
-
                 if (value is RealmObjectBase robj)
                 {
                     return Convert<RealmValue, TResult>(robj);
@@ -71,95 +318,1343 @@ namespace Realms.Helpers
             return GenericOperator<TFrom, TResult>.Convert(value);
         }
 
-        private static class GenericOperator<T1, T2>
+        private static class GenericOperator<TSource, TTarget>
         {
-            private static readonly Lazy<Func<T1, T2, T1>> _add;
-            private static readonly Lazy<Func<T1, T2>> _convert;
+            private static readonly ISpecializedConverter<TSource, TTarget> _converter;
 
-            public static Func<T1, T2, T1> Add => _add.Value;
-
-            public static Func<T1, T2> Convert => _convert.Value;
+            public static TTarget Convert(TSource value) => _converter.Convert(value);
 
             static GenericOperator()
             {
-                _add = new Lazy<Func<T1, T2, T1>>(CreateAdd);
-                _convert = new Lazy<Func<T1, T2>>(CreateConvert);
-            }
+                var sourceType = typeof(TSource);
+                var targetType = typeof(TTarget);
 
-            private static Func<T1, T2, T1> CreateAdd()
-            {
-                var lhs = Expression.Parameter(typeof(T1), "lhs");
-                var rhs = Expression.Parameter(typeof(T2), "rhs");
-                try
+                if (sourceType == targetType)
                 {
-                    if (typeof(T1) == typeof(byte))
-                    {
-                        // Add is not defined for byte...
-                        var addExpression = Expression.Add(Expression.Convert(lhs, typeof(int)), Expression.Convert(rhs, typeof(int)));
-                        return Expression.Lambda<Func<T1, T2, T1>>(Expression.Convert(addExpression, typeof(byte)), lhs, rhs).Compile();
-                    }
-
-                    return Expression.Lambda<Func<T1, T2, T1>>(Expression.Add(lhs, rhs), lhs, rhs).Compile();
+                    _converter = (ISpecializedConverter<TSource, TTarget>)new UnaryConverter<TSource>();
                 }
-                catch (Exception ex)
+                else if (_valueConverters.TryGetValue((sourceType, targetType), out var converterType))
                 {
-                    var message = ex.Message;
-                    return (_, __) => { throw new InvalidOperationException(message); };
+                    _converter = (ISpecializedConverter<TSource, TTarget>)Activator.CreateInstance(converterType);
                 }
-            }
-
-            private static Func<T1, T2> CreateConvert()
-            {
-                var input = Expression.Parameter(typeof(T1), "input");
-                try
+                else if (targetType.IsAssignableFrom(sourceType) || sourceType == typeof(object))
                 {
-                    Expression convertFrom = input;
-                    var typeOfT1 = typeof(T1);
-                    var isT1Nullable = false;
-                    if (typeOfT1.IsClosedGeneric(typeof(Nullable<>), out var arguments))
-                    {
-                        typeOfT1 = arguments.Single();
-                        isT1Nullable = true;
-                    }
-
-                    if (typeOfT1.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
-                    {
-                        var intermediateType = arguments.Single();
-                        if (isT1Nullable)
-                        {
-                            intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
-                        }
-
-                        convertFrom = Expression.Convert(input, intermediateType);
-                    }
-
-                    var typeOfT2 = typeof(T2);
-                    var isT2Nullable = false;
-                    if (typeOfT2.IsClosedGeneric(typeof(Nullable<>), out arguments))
-                    {
-                        typeOfT2 = arguments.Single();
-                        isT2Nullable = true;
-                    }
-
-                    if (typeOfT2.IsClosedGeneric(typeof(RealmInteger<>), out arguments))
-                    {
-                        var intermediateType = arguments.Single();
-                        if (isT2Nullable)
-                        {
-                            intermediateType = typeof(Nullable<>).MakeGenericType(intermediateType);
-                        }
-
-                        convertFrom = Expression.Convert(input, intermediateType);
-                    }
-
-                    return Expression.Lambda<Func<T1, T2>>(Expression.Convert(convertFrom, typeof(T2)), input).Compile();
+                    _converter = new InheritanceConverter<TSource, TTarget>();
                 }
-                catch (Exception ex)
+                else
                 {
-                    var msg = ex.Message; // avoid capture of ex itself
-                    return _ => { throw new InvalidOperationException(msg); };
+                    _converter = new ThrowingConverter<TSource, TTarget>();
                 }
             }
         }
+
+        private interface ISpecializedConverter<TSource, TTarget>
+        {
+            TTarget Convert(TSource source);
+        }
+
+        private class ThrowingConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
+        {
+            public TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+        }
+
+        private class UnaryConverter<T> : ISpecializedConverter<T, T>
+        {
+            public T Convert(T source) => source;
+        }
+
+        private class InheritanceConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
+        {
+            public TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+        }
+
+#region ToRealmValue Converters
+
+        public class CharRealmValueConverter : ISpecializedConverter<char, RealmValue>
+        {
+            public RealmValue Convert(char value) => value;
+        }
+
+        public class ByteRealmValueConverter : ISpecializedConverter<byte, RealmValue>
+        {
+            public RealmValue Convert(byte value) => value;
+        }
+
+        public class ShortRealmValueConverter : ISpecializedConverter<short, RealmValue>
+        {
+            public RealmValue Convert(short value) => value;
+        }
+
+        public class IntRealmValueConverter : ISpecializedConverter<int, RealmValue>
+        {
+            public RealmValue Convert(int value) => value;
+        }
+
+        public class LongRealmValueConverter : ISpecializedConverter<long, RealmValue>
+        {
+            public RealmValue Convert(long value) => value;
+        }
+
+        public class FloatRealmValueConverter : ISpecializedConverter<float, RealmValue>
+        {
+            public RealmValue Convert(float value) => value;
+        }
+
+        public class DoubleRealmValueConverter : ISpecializedConverter<double, RealmValue>
+        {
+            public RealmValue Convert(double value) => value;
+        }
+
+        public class BoolRealmValueConverter : ISpecializedConverter<bool, RealmValue>
+        {
+            public RealmValue Convert(bool value) => value;
+        }
+
+        public class DateTimeOffsetRealmValueConverter : ISpecializedConverter<DateTimeOffset, RealmValue>
+        {
+            public RealmValue Convert(DateTimeOffset value) => value;
+        }
+
+        public class DecimalRealmValueConverter : ISpecializedConverter<decimal, RealmValue>
+        {
+            public RealmValue Convert(decimal value) => value;
+        }
+
+        public class Decimal128RealmValueConverter : ISpecializedConverter<Decimal128, RealmValue>
+        {
+            public RealmValue Convert(Decimal128 value) => value;
+        }
+
+        public class ObjectIdRealmValueConverter : ISpecializedConverter<ObjectId, RealmValue>
+        {
+            public RealmValue Convert(ObjectId value) => value;
+        }
+
+        public class GuidRealmValueConverter : ISpecializedConverter<Guid, RealmValue>
+        {
+            public RealmValue Convert(Guid value) => value;
+        }
+
+        public class NullableCharRealmValueConverter : ISpecializedConverter<char?, RealmValue>
+        {
+            public RealmValue Convert(char? value) => value;
+        }
+
+        public class NullableByteRealmValueConverter : ISpecializedConverter<byte?, RealmValue>
+        {
+            public RealmValue Convert(byte? value) => value;
+        }
+
+        public class NullableShortRealmValueConverter : ISpecializedConverter<short?, RealmValue>
+        {
+            public RealmValue Convert(short? value) => value;
+        }
+
+        public class NullableIntRealmValueConverter : ISpecializedConverter<int?, RealmValue>
+        {
+            public RealmValue Convert(int? value) => value;
+        }
+
+        public class NullableLongRealmValueConverter : ISpecializedConverter<long?, RealmValue>
+        {
+            public RealmValue Convert(long? value) => value;
+        }
+
+        public class NullableFloatRealmValueConverter : ISpecializedConverter<float?, RealmValue>
+        {
+            public RealmValue Convert(float? value) => value;
+        }
+
+        public class NullableDoubleRealmValueConverter : ISpecializedConverter<double?, RealmValue>
+        {
+            public RealmValue Convert(double? value) => value;
+        }
+
+        public class NullableBoolRealmValueConverter : ISpecializedConverter<bool?, RealmValue>
+        {
+            public RealmValue Convert(bool? value) => value;
+        }
+
+        public class NullableDateTimeOffsetRealmValueConverter : ISpecializedConverter<DateTimeOffset?, RealmValue>
+        {
+            public RealmValue Convert(DateTimeOffset? value) => value;
+        }
+
+        public class NullableDecimalRealmValueConverter : ISpecializedConverter<decimal?, RealmValue>
+        {
+            public RealmValue Convert(decimal? value) => value;
+        }
+
+        public class NullableDecimal128RealmValueConverter : ISpecializedConverter<Decimal128?, RealmValue>
+        {
+            public RealmValue Convert(Decimal128? value) => value;
+        }
+
+        public class NullableObjectIdRealmValueConverter : ISpecializedConverter<ObjectId?, RealmValue>
+        {
+            public RealmValue Convert(ObjectId? value) => value;
+        }
+
+        public class NullableGuidRealmValueConverter : ISpecializedConverter<Guid?, RealmValue>
+        {
+            public RealmValue Convert(Guid? value) => value;
+        }
+
+        public class RealmIntegerByteRealmValueConverter : ISpecializedConverter<RealmInteger<byte>, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerShortRealmValueConverter : ISpecializedConverter<RealmInteger<short>, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerIntRealmValueConverter : ISpecializedConverter<RealmInteger<int>, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerLongRealmValueConverter : ISpecializedConverter<RealmInteger<long>, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<long> value) => value;
+        }
+
+        public class NullableRealmIntegerByteRealmValueConverter : ISpecializedConverter<RealmInteger<byte>?, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<byte>? value) => value;
+        }
+
+        public class NullableRealmIntegerShortRealmValueConverter : ISpecializedConverter<RealmInteger<short>?, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<short>? value) => value;
+        }
+
+        public class NullableRealmIntegerIntRealmValueConverter : ISpecializedConverter<RealmInteger<int>?, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<int>? value) => value;
+        }
+
+        public class NullableRealmIntegerLongRealmValueConverter : ISpecializedConverter<RealmInteger<long>?, RealmValue>
+        {
+            public RealmValue Convert(RealmInteger<long>? value) => value;
+        }
+
+        public class ByteArrayRealmValueConverter : ISpecializedConverter<byte[], RealmValue>
+        {
+            public RealmValue Convert(byte[] value) => value;
+        }
+
+        public class StringRealmValueConverter : ISpecializedConverter<string, RealmValue>
+        {
+            public RealmValue Convert(string value) => value;
+        }
+
+        public class RealmObjectBaseRealmValueConverter : ISpecializedConverter<RealmObjectBase, RealmValue>
+        {
+            public RealmValue Convert(RealmObjectBase value) => value;
+        }
+#endregion
+
+#region FromRealmValue Converters
+
+        public class RealmValueCharConverter : ISpecializedConverter<RealmValue, char>
+        {
+            public char Convert(RealmValue value) => (char)value;
+        }
+
+        public class RealmValueByteConverter : ISpecializedConverter<RealmValue, byte>
+        {
+            public byte Convert(RealmValue value) => (byte)value;
+        }
+
+        public class RealmValueShortConverter : ISpecializedConverter<RealmValue, short>
+        {
+            public short Convert(RealmValue value) => (short)value;
+        }
+
+        public class RealmValueIntConverter : ISpecializedConverter<RealmValue, int>
+        {
+            public int Convert(RealmValue value) => (int)value;
+        }
+
+        public class RealmValueLongConverter : ISpecializedConverter<RealmValue, long>
+        {
+            public long Convert(RealmValue value) => (long)value;
+        }
+
+        public class RealmValueFloatConverter : ISpecializedConverter<RealmValue, float>
+        {
+            public float Convert(RealmValue value) => (float)value;
+        }
+
+        public class RealmValueDoubleConverter : ISpecializedConverter<RealmValue, double>
+        {
+            public double Convert(RealmValue value) => (double)value;
+        }
+
+        public class RealmValueBoolConverter : ISpecializedConverter<RealmValue, bool>
+        {
+            public bool Convert(RealmValue value) => (bool)value;
+        }
+
+        public class RealmValueDateTimeOffsetConverter : ISpecializedConverter<RealmValue, DateTimeOffset>
+        {
+            public DateTimeOffset Convert(RealmValue value) => (DateTimeOffset)value;
+        }
+
+        public class RealmValueDecimalConverter : ISpecializedConverter<RealmValue, decimal>
+        {
+            public decimal Convert(RealmValue value) => (decimal)value;
+        }
+
+        public class RealmValueDecimal128Converter : ISpecializedConverter<RealmValue, Decimal128>
+        {
+            public Decimal128 Convert(RealmValue value) => (Decimal128)value;
+        }
+
+        public class RealmValueObjectIdConverter : ISpecializedConverter<RealmValue, ObjectId>
+        {
+            public ObjectId Convert(RealmValue value) => (ObjectId)value;
+        }
+
+        public class RealmValueGuidConverter : ISpecializedConverter<RealmValue, Guid>
+        {
+            public Guid Convert(RealmValue value) => (Guid)value;
+        }
+
+        public class RealmValueNullableCharConverter : ISpecializedConverter<RealmValue, char?>
+        {
+            public char? Convert(RealmValue value) => (char?)value;
+        }
+
+        public class RealmValueNullableByteConverter : ISpecializedConverter<RealmValue, byte?>
+        {
+            public byte? Convert(RealmValue value) => (byte?)value;
+        }
+
+        public class RealmValueNullableShortConverter : ISpecializedConverter<RealmValue, short?>
+        {
+            public short? Convert(RealmValue value) => (short?)value;
+        }
+
+        public class RealmValueNullableIntConverter : ISpecializedConverter<RealmValue, int?>
+        {
+            public int? Convert(RealmValue value) => (int?)value;
+        }
+
+        public class RealmValueNullableLongConverter : ISpecializedConverter<RealmValue, long?>
+        {
+            public long? Convert(RealmValue value) => (long?)value;
+        }
+
+        public class RealmValueNullableFloatConverter : ISpecializedConverter<RealmValue, float?>
+        {
+            public float? Convert(RealmValue value) => (float?)value;
+        }
+
+        public class RealmValueNullableDoubleConverter : ISpecializedConverter<RealmValue, double?>
+        {
+            public double? Convert(RealmValue value) => (double?)value;
+        }
+
+        public class RealmValueNullableBoolConverter : ISpecializedConverter<RealmValue, bool?>
+        {
+            public bool? Convert(RealmValue value) => (bool?)value;
+        }
+
+        public class RealmValueNullableDateTimeOffsetConverter : ISpecializedConverter<RealmValue, DateTimeOffset?>
+        {
+            public DateTimeOffset? Convert(RealmValue value) => (DateTimeOffset?)value;
+        }
+
+        public class RealmValueNullableDecimalConverter : ISpecializedConverter<RealmValue, decimal?>
+        {
+            public decimal? Convert(RealmValue value) => (decimal?)value;
+        }
+
+        public class RealmValueNullableDecimal128Converter : ISpecializedConverter<RealmValue, Decimal128?>
+        {
+            public Decimal128? Convert(RealmValue value) => (Decimal128?)value;
+        }
+
+        public class RealmValueNullableObjectIdConverter : ISpecializedConverter<RealmValue, ObjectId?>
+        {
+            public ObjectId? Convert(RealmValue value) => (ObjectId?)value;
+        }
+
+        public class RealmValueNullableGuidConverter : ISpecializedConverter<RealmValue, Guid?>
+        {
+            public Guid? Convert(RealmValue value) => (Guid?)value;
+        }
+
+        public class RealmValueRealmIntegerByteConverter : ISpecializedConverter<RealmValue, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(RealmValue value) => (RealmInteger<byte>)value;
+        }
+
+        public class RealmValueRealmIntegerShortConverter : ISpecializedConverter<RealmValue, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(RealmValue value) => (RealmInteger<short>)value;
+        }
+
+        public class RealmValueRealmIntegerIntConverter : ISpecializedConverter<RealmValue, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(RealmValue value) => (RealmInteger<int>)value;
+        }
+
+        public class RealmValueRealmIntegerLongConverter : ISpecializedConverter<RealmValue, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(RealmValue value) => (RealmInteger<long>)value;
+        }
+
+        public class RealmValueNullableRealmIntegerByteConverter : ISpecializedConverter<RealmValue, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(RealmValue value) => (RealmInteger<byte>?)value;
+        }
+
+        public class RealmValueNullableRealmIntegerShortConverter : ISpecializedConverter<RealmValue, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(RealmValue value) => (RealmInteger<short>?)value;
+        }
+
+        public class RealmValueNullableRealmIntegerIntConverter : ISpecializedConverter<RealmValue, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(RealmValue value) => (RealmInteger<int>?)value;
+        }
+
+        public class RealmValueNullableRealmIntegerLongConverter : ISpecializedConverter<RealmValue, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(RealmValue value) => (RealmInteger<long>?)value;
+        }
+
+        public class RealmValueByteArrayConverter : ISpecializedConverter<RealmValue, byte[]>
+        {
+            public byte[] Convert(RealmValue value) => (byte[])value;
+        }
+
+        public class RealmValueStringConverter : ISpecializedConverter<RealmValue, string>
+        {
+            public string Convert(RealmValue value) => (string)value;
+        }
+
+        public class RealmValueRealmObjectBaseConverter : ISpecializedConverter<RealmValue, RealmObjectBase>
+        {
+            public RealmObjectBase Convert(RealmValue value) => (RealmObjectBase)value;
+        }
+#endregion
+
+#region Integral Converters
+
+        public class CharNullableCharConverter : ISpecializedConverter<char, char?>
+        {
+            public char? Convert(char value) => (char)value;
+        }
+
+        public class CharNullableByteConverter : ISpecializedConverter<char, byte?>
+        {
+            public byte? Convert(char value) => (byte)value;
+        }
+
+        public class CharNullableShortConverter : ISpecializedConverter<char, short?>
+        {
+            public short? Convert(char value) => (short)value;
+        }
+
+        public class CharNullableIntConverter : ISpecializedConverter<char, int?>
+        {
+            public int? Convert(char value) => value;
+        }
+
+        public class CharNullableLongConverter : ISpecializedConverter<char, long?>
+        {
+            public long? Convert(char value) => value;
+        }
+
+        public class CharNullableRealmIntegerByteConverter : ISpecializedConverter<char, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(char value) => (byte)value;
+        }
+
+        public class CharNullableRealmIntegerShortConverter : ISpecializedConverter<char, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(char value) => (short)value;
+        }
+
+        public class CharNullableRealmIntegerIntConverter : ISpecializedConverter<char, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(char value) => value;
+        }
+
+        public class CharNullableRealmIntegerLongConverter : ISpecializedConverter<char, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(char value) => value;
+        }
+
+        public class ByteNullableCharConverter : ISpecializedConverter<byte, char?>
+        {
+            public char? Convert(byte value) => (char)value;
+        }
+
+        public class ByteNullableByteConverter : ISpecializedConverter<byte, byte?>
+        {
+            public byte? Convert(byte value) => value;
+        }
+
+        public class ByteNullableShortConverter : ISpecializedConverter<byte, short?>
+        {
+            public short? Convert(byte value) => value;
+        }
+
+        public class ByteNullableIntConverter : ISpecializedConverter<byte, int?>
+        {
+            public int? Convert(byte value) => value;
+        }
+
+        public class ByteNullableLongConverter : ISpecializedConverter<byte, long?>
+        {
+            public long? Convert(byte value) => value;
+        }
+
+        public class ByteNullableRealmIntegerByteConverter : ISpecializedConverter<byte, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(byte value) => value;
+        }
+
+        public class ByteNullableRealmIntegerShortConverter : ISpecializedConverter<byte, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(byte value) => value;
+        }
+
+        public class ByteNullableRealmIntegerIntConverter : ISpecializedConverter<byte, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(byte value) => value;
+        }
+
+        public class ByteNullableRealmIntegerLongConverter : ISpecializedConverter<byte, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(byte value) => value;
+        }
+
+        public class ShortNullableCharConverter : ISpecializedConverter<short, char?>
+        {
+            public char? Convert(short value) => (char)value;
+        }
+
+        public class ShortNullableByteConverter : ISpecializedConverter<short, byte?>
+        {
+            public byte? Convert(short value) => (byte)value;
+        }
+
+        public class ShortNullableShortConverter : ISpecializedConverter<short, short?>
+        {
+            public short? Convert(short value) => value;
+        }
+
+        public class ShortNullableIntConverter : ISpecializedConverter<short, int?>
+        {
+            public int? Convert(short value) => value;
+        }
+
+        public class ShortNullableLongConverter : ISpecializedConverter<short, long?>
+        {
+            public long? Convert(short value) => value;
+        }
+
+        public class ShortNullableRealmIntegerByteConverter : ISpecializedConverter<short, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(short value) => (byte)value;
+        }
+
+        public class ShortNullableRealmIntegerShortConverter : ISpecializedConverter<short, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(short value) => value;
+        }
+
+        public class ShortNullableRealmIntegerIntConverter : ISpecializedConverter<short, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(short value) => value;
+        }
+
+        public class ShortNullableRealmIntegerLongConverter : ISpecializedConverter<short, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(short value) => value;
+        }
+
+        public class IntNullableCharConverter : ISpecializedConverter<int, char?>
+        {
+            public char? Convert(int value) => (char)value;
+        }
+
+        public class IntNullableByteConverter : ISpecializedConverter<int, byte?>
+        {
+            public byte? Convert(int value) => (byte)value;
+        }
+
+        public class IntNullableShortConverter : ISpecializedConverter<int, short?>
+        {
+            public short? Convert(int value) => (short)value;
+        }
+
+        public class IntNullableIntConverter : ISpecializedConverter<int, int?>
+        {
+            public int? Convert(int value) => value;
+        }
+
+        public class IntNullableLongConverter : ISpecializedConverter<int, long?>
+        {
+            public long? Convert(int value) => value;
+        }
+
+        public class IntNullableRealmIntegerByteConverter : ISpecializedConverter<int, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(int value) => (byte)value;
+        }
+
+        public class IntNullableRealmIntegerShortConverter : ISpecializedConverter<int, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(int value) => (short)value;
+        }
+
+        public class IntNullableRealmIntegerIntConverter : ISpecializedConverter<int, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(int value) => value;
+        }
+
+        public class IntNullableRealmIntegerLongConverter : ISpecializedConverter<int, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(int value) => value;
+        }
+
+        public class LongNullableCharConverter : ISpecializedConverter<long, char?>
+        {
+            public char? Convert(long value) => (char)value;
+        }
+
+        public class LongNullableByteConverter : ISpecializedConverter<long, byte?>
+        {
+            public byte? Convert(long value) => (byte)value;
+        }
+
+        public class LongNullableShortConverter : ISpecializedConverter<long, short?>
+        {
+            public short? Convert(long value) => (short)value;
+        }
+
+        public class LongNullableIntConverter : ISpecializedConverter<long, int?>
+        {
+            public int? Convert(long value) => (int)value;
+        }
+
+        public class LongNullableLongConverter : ISpecializedConverter<long, long?>
+        {
+            public long? Convert(long value) => value;
+        }
+
+        public class LongNullableRealmIntegerByteConverter : ISpecializedConverter<long, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(long value) => (byte)value;
+        }
+
+        public class LongNullableRealmIntegerShortConverter : ISpecializedConverter<long, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(long value) => (short)value;
+        }
+
+        public class LongNullableRealmIntegerIntConverter : ISpecializedConverter<long, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(long value) => (int)value;
+        }
+
+        public class LongNullableRealmIntegerLongConverter : ISpecializedConverter<long, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(long value) => value;
+        }
+
+        public class RealmIntegerByteNullableCharConverter : ISpecializedConverter<RealmInteger<byte>, char?>
+        {
+            public char? Convert(RealmInteger<byte> value) => (char)(byte)value;
+        }
+
+        public class RealmIntegerByteNullableByteConverter : ISpecializedConverter<RealmInteger<byte>, byte?>
+        {
+            public byte? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableShortConverter : ISpecializedConverter<RealmInteger<byte>, short?>
+        {
+            public short? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableIntConverter : ISpecializedConverter<RealmInteger<byte>, int?>
+        {
+            public int? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableLongConverter : ISpecializedConverter<RealmInteger<byte>, long?>
+        {
+            public long? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(RealmInteger<byte> value) => (byte)value;
+        }
+
+        public class RealmIntegerByteNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(RealmInteger<byte> value) => (short)value;
+        }
+
+        public class RealmIntegerByteNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(RealmInteger<byte> value) => (int)value;
+        }
+
+        public class RealmIntegerByteNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(RealmInteger<byte> value) => (long)value;
+        }
+
+        public class RealmIntegerShortNullableCharConverter : ISpecializedConverter<RealmInteger<short>, char?>
+        {
+            public char? Convert(RealmInteger<short> value) => (char)(short)value;
+        }
+
+        public class RealmIntegerShortNullableByteConverter : ISpecializedConverter<RealmInteger<short>, byte?>
+        {
+            public byte? Convert(RealmInteger<short> value) => (byte)value;
+        }
+
+        public class RealmIntegerShortNullableShortConverter : ISpecializedConverter<RealmInteger<short>, short?>
+        {
+            public short? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableIntConverter : ISpecializedConverter<RealmInteger<short>, int?>
+        {
+            public int? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableLongConverter : ISpecializedConverter<RealmInteger<short>, long?>
+        {
+            public long? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(RealmInteger<short> value) => (byte)value;
+        }
+
+        public class RealmIntegerShortNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(RealmInteger<short> value) => (short)value;
+        }
+
+        public class RealmIntegerShortNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(RealmInteger<short> value) => (int)value;
+        }
+
+        public class RealmIntegerShortNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(RealmInteger<short> value) => (long)value;
+        }
+
+        public class RealmIntegerIntNullableCharConverter : ISpecializedConverter<RealmInteger<int>, char?>
+        {
+            public char? Convert(RealmInteger<int> value) => (char)value;
+        }
+
+        public class RealmIntegerIntNullableByteConverter : ISpecializedConverter<RealmInteger<int>, byte?>
+        {
+            public byte? Convert(RealmInteger<int> value) => (byte)value;
+        }
+
+        public class RealmIntegerIntNullableShortConverter : ISpecializedConverter<RealmInteger<int>, short?>
+        {
+            public short? Convert(RealmInteger<int> value) => (short)value;
+        }
+
+        public class RealmIntegerIntNullableIntConverter : ISpecializedConverter<RealmInteger<int>, int?>
+        {
+            public int? Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntNullableLongConverter : ISpecializedConverter<RealmInteger<int>, long?>
+        {
+            public long? Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntNullableRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(RealmInteger<int> value) => (byte)value;
+        }
+
+        public class RealmIntegerIntNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(RealmInteger<int> value) => (short)value;
+        }
+
+        public class RealmIntegerIntNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(RealmInteger<int> value) => (int)value;
+        }
+
+        public class RealmIntegerIntNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(RealmInteger<int> value) => (long)value;
+        }
+
+        public class RealmIntegerLongNullableCharConverter : ISpecializedConverter<RealmInteger<long>, char?>
+        {
+            public char? Convert(RealmInteger<long> value) => (char)value;
+        }
+
+        public class RealmIntegerLongNullableByteConverter : ISpecializedConverter<RealmInteger<long>, byte?>
+        {
+            public byte? Convert(RealmInteger<long> value) => (byte)value;
+        }
+
+        public class RealmIntegerLongNullableShortConverter : ISpecializedConverter<RealmInteger<long>, short?>
+        {
+            public short? Convert(RealmInteger<long> value) => (short)value;
+        }
+
+        public class RealmIntegerLongNullableIntConverter : ISpecializedConverter<RealmInteger<long>, int?>
+        {
+            public int? Convert(RealmInteger<long> value) => (int)value;
+        }
+
+        public class RealmIntegerLongNullableLongConverter : ISpecializedConverter<RealmInteger<long>, long?>
+        {
+            public long? Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongNullableRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<byte>?>
+        {
+            public RealmInteger<byte>? Convert(RealmInteger<long> value) => (byte)value;
+        }
+
+        public class RealmIntegerLongNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<short>?>
+        {
+            public RealmInteger<short>? Convert(RealmInteger<long> value) => (short)value;
+        }
+
+        public class RealmIntegerLongNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<int>?>
+        {
+            public RealmInteger<int>? Convert(RealmInteger<long> value) => (int)value;
+        }
+
+        public class RealmIntegerLongNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<long>?>
+        {
+            public RealmInteger<long>? Convert(RealmInteger<long> value) => (long)value;
+        }
+
+        public class CharByteConverter : ISpecializedConverter<char, byte>
+        {
+            public byte Convert(char value) => (byte)value;
+        }
+
+        public class CharShortConverter : ISpecializedConverter<char, short>
+        {
+            public short Convert(char value) => (short)value;
+        }
+
+        public class CharIntConverter : ISpecializedConverter<char, int>
+        {
+            public int Convert(char value) => value;
+        }
+
+        public class CharLongConverter : ISpecializedConverter<char, long>
+        {
+            public long Convert(char value) => value;
+        }
+
+        public class CharRealmIntegerByteConverter : ISpecializedConverter<char, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(char value) => (byte)value;
+        }
+
+        public class CharRealmIntegerShortConverter : ISpecializedConverter<char, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(char value) => (short)value;
+        }
+
+        public class CharRealmIntegerIntConverter : ISpecializedConverter<char, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(char value) => value;
+        }
+
+        public class CharRealmIntegerLongConverter : ISpecializedConverter<char, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(char value) => value;
+        }
+
+        public class ByteCharConverter : ISpecializedConverter<byte, char>
+        {
+            public char Convert(byte value) => (char)value;
+        }
+
+        public class ByteShortConverter : ISpecializedConverter<byte, short>
+        {
+            public short Convert(byte value) => value;
+        }
+
+        public class ByteIntConverter : ISpecializedConverter<byte, int>
+        {
+            public int Convert(byte value) => value;
+        }
+
+        public class ByteLongConverter : ISpecializedConverter<byte, long>
+        {
+            public long Convert(byte value) => value;
+        }
+
+        public class ByteRealmIntegerByteConverter : ISpecializedConverter<byte, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(byte value) => value;
+        }
+
+        public class ByteRealmIntegerShortConverter : ISpecializedConverter<byte, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(byte value) => value;
+        }
+
+        public class ByteRealmIntegerIntConverter : ISpecializedConverter<byte, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(byte value) => value;
+        }
+
+        public class ByteRealmIntegerLongConverter : ISpecializedConverter<byte, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(byte value) => value;
+        }
+
+        public class ShortCharConverter : ISpecializedConverter<short, char>
+        {
+            public char Convert(short value) => (char)value;
+        }
+
+        public class ShortByteConverter : ISpecializedConverter<short, byte>
+        {
+            public byte Convert(short value) => (byte)value;
+        }
+
+        public class ShortIntConverter : ISpecializedConverter<short, int>
+        {
+            public int Convert(short value) => value;
+        }
+
+        public class ShortLongConverter : ISpecializedConverter<short, long>
+        {
+            public long Convert(short value) => value;
+        }
+
+        public class ShortRealmIntegerByteConverter : ISpecializedConverter<short, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(short value) => (byte)value;
+        }
+
+        public class ShortRealmIntegerShortConverter : ISpecializedConverter<short, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(short value) => value;
+        }
+
+        public class ShortRealmIntegerIntConverter : ISpecializedConverter<short, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(short value) => value;
+        }
+
+        public class ShortRealmIntegerLongConverter : ISpecializedConverter<short, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(short value) => value;
+        }
+
+        public class IntCharConverter : ISpecializedConverter<int, char>
+        {
+            public char Convert(int value) => (char)value;
+        }
+
+        public class IntByteConverter : ISpecializedConverter<int, byte>
+        {
+            public byte Convert(int value) => (byte)value;
+        }
+
+        public class IntShortConverter : ISpecializedConverter<int, short>
+        {
+            public short Convert(int value) => (short)value;
+        }
+
+        public class IntLongConverter : ISpecializedConverter<int, long>
+        {
+            public long Convert(int value) => value;
+        }
+
+        public class IntRealmIntegerByteConverter : ISpecializedConverter<int, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(int value) => (byte)value;
+        }
+
+        public class IntRealmIntegerShortConverter : ISpecializedConverter<int, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(int value) => (short)value;
+        }
+
+        public class IntRealmIntegerIntConverter : ISpecializedConverter<int, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(int value) => value;
+        }
+
+        public class IntRealmIntegerLongConverter : ISpecializedConverter<int, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(int value) => value;
+        }
+
+        public class LongCharConverter : ISpecializedConverter<long, char>
+        {
+            public char Convert(long value) => (char)value;
+        }
+
+        public class LongByteConverter : ISpecializedConverter<long, byte>
+        {
+            public byte Convert(long value) => (byte)value;
+        }
+
+        public class LongShortConverter : ISpecializedConverter<long, short>
+        {
+            public short Convert(long value) => (short)value;
+        }
+
+        public class LongIntConverter : ISpecializedConverter<long, int>
+        {
+            public int Convert(long value) => (int)value;
+        }
+
+        public class LongRealmIntegerByteConverter : ISpecializedConverter<long, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(long value) => (byte)value;
+        }
+
+        public class LongRealmIntegerShortConverter : ISpecializedConverter<long, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(long value) => (short)value;
+        }
+
+        public class LongRealmIntegerIntConverter : ISpecializedConverter<long, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(long value) => (int)value;
+        }
+
+        public class LongRealmIntegerLongConverter : ISpecializedConverter<long, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(long value) => value;
+        }
+
+        public class RealmIntegerByteCharConverter : ISpecializedConverter<RealmInteger<byte>, char>
+        {
+            public char Convert(RealmInteger<byte> value) => (char)(byte)value;
+        }
+
+        public class RealmIntegerByteByteConverter : ISpecializedConverter<RealmInteger<byte>, byte>
+        {
+            public byte Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteShortConverter : ISpecializedConverter<RealmInteger<byte>, short>
+        {
+            public short Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteIntConverter : ISpecializedConverter<RealmInteger<byte>, int>
+        {
+            public int Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteLongConverter : ISpecializedConverter<RealmInteger<byte>, long>
+        {
+            public long Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(RealmInteger<byte> value) => (short)value;
+        }
+
+        public class RealmIntegerByteRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(RealmInteger<byte> value) => (int)value;
+        }
+
+        public class RealmIntegerByteRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(RealmInteger<byte> value) => (long)value;
+        }
+
+        public class RealmIntegerShortCharConverter : ISpecializedConverter<RealmInteger<short>, char>
+        {
+            public char Convert(RealmInteger<short> value) => (char)(short)value;
+        }
+
+        public class RealmIntegerShortByteConverter : ISpecializedConverter<RealmInteger<short>, byte>
+        {
+            public byte Convert(RealmInteger<short> value) => (byte)value;
+        }
+
+        public class RealmIntegerShortShortConverter : ISpecializedConverter<RealmInteger<short>, short>
+        {
+            public short Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortIntConverter : ISpecializedConverter<RealmInteger<short>, int>
+        {
+            public int Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortLongConverter : ISpecializedConverter<RealmInteger<short>, long>
+        {
+            public long Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(RealmInteger<short> value) => (byte)value;
+        }
+
+        public class RealmIntegerShortRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(RealmInteger<short> value) => (int)value;
+        }
+
+        public class RealmIntegerShortRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(RealmInteger<short> value) => (long)value;
+        }
+
+        public class RealmIntegerIntCharConverter : ISpecializedConverter<RealmInteger<int>, char>
+        {
+            public char Convert(RealmInteger<int> value) => (char)value;
+        }
+
+        public class RealmIntegerIntByteConverter : ISpecializedConverter<RealmInteger<int>, byte>
+        {
+            public byte Convert(RealmInteger<int> value) => (byte)value;
+        }
+
+        public class RealmIntegerIntShortConverter : ISpecializedConverter<RealmInteger<int>, short>
+        {
+            public short Convert(RealmInteger<int> value) => (short)value;
+        }
+
+        public class RealmIntegerIntIntConverter : ISpecializedConverter<RealmInteger<int>, int>
+        {
+            public int Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntLongConverter : ISpecializedConverter<RealmInteger<int>, long>
+        {
+            public long Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(RealmInteger<int> value) => (byte)value;
+        }
+
+        public class RealmIntegerIntRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(RealmInteger<int> value) => (short)value;
+        }
+
+        public class RealmIntegerIntRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<long>>
+        {
+            public RealmInteger<long> Convert(RealmInteger<int> value) => (long)value;
+        }
+
+        public class RealmIntegerLongCharConverter : ISpecializedConverter<RealmInteger<long>, char>
+        {
+            public char Convert(RealmInteger<long> value) => (char)value;
+        }
+
+        public class RealmIntegerLongByteConverter : ISpecializedConverter<RealmInteger<long>, byte>
+        {
+            public byte Convert(RealmInteger<long> value) => (byte)value;
+        }
+
+        public class RealmIntegerLongShortConverter : ISpecializedConverter<RealmInteger<long>, short>
+        {
+            public short Convert(RealmInteger<long> value) => (short)value;
+        }
+
+        public class RealmIntegerLongIntConverter : ISpecializedConverter<RealmInteger<long>, int>
+        {
+            public int Convert(RealmInteger<long> value) => (int)value;
+        }
+
+        public class RealmIntegerLongLongConverter : ISpecializedConverter<RealmInteger<long>, long>
+        {
+            public long Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<byte>>
+        {
+            public RealmInteger<byte> Convert(RealmInteger<long> value) => (byte)value;
+        }
+
+        public class RealmIntegerLongRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<short>>
+        {
+            public RealmInteger<short> Convert(RealmInteger<long> value) => (short)value;
+        }
+
+        public class RealmIntegerLongRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<int>>
+        {
+            public RealmInteger<int> Convert(RealmInteger<long> value) => (int)value;
+        }
+
+#endregion
+
+#region Decimal Converters
+
+        public class FloatNullableFloatConverter : ISpecializedConverter<float, float?>
+        {
+            public float? Convert(float value) => value;
+        }
+
+        public class FloatNullableDoubleConverter : ISpecializedConverter<float, double?>
+        {
+            public double? Convert(float value) => value;
+        }
+
+        public class FloatNullableDecimalConverter : ISpecializedConverter<float, decimal?>
+        {
+            public decimal? Convert(float value) => (decimal)value;
+        }
+
+        public class FloatNullableDecimal128Converter : ISpecializedConverter<float, Decimal128?>
+        {
+            public Decimal128? Convert(float value) => (Decimal128)value;
+        }
+
+        public class DoubleNullableFloatConverter : ISpecializedConverter<double, float?>
+        {
+            public float? Convert(double value) => (float)value;
+        }
+
+        public class DoubleNullableDoubleConverter : ISpecializedConverter<double, double?>
+        {
+            public double? Convert(double value) => value;
+        }
+
+        public class DoubleNullableDecimalConverter : ISpecializedConverter<double, decimal?>
+        {
+            public decimal? Convert(double value) => (decimal)value;
+        }
+
+        public class DoubleNullableDecimal128Converter : ISpecializedConverter<double, Decimal128?>
+        {
+            public Decimal128? Convert(double value) => (Decimal128)value;
+        }
+
+        public class DecimalNullableFloatConverter : ISpecializedConverter<decimal, float?>
+        {
+            public float? Convert(decimal value) => (float)value;
+        }
+
+        public class DecimalNullableDoubleConverter : ISpecializedConverter<decimal, double?>
+        {
+            public double? Convert(decimal value) => (double)value;
+        }
+
+        public class DecimalNullableDecimalConverter : ISpecializedConverter<decimal, decimal?>
+        {
+            public decimal? Convert(decimal value) => value;
+        }
+
+        public class DecimalNullableDecimal128Converter : ISpecializedConverter<decimal, Decimal128?>
+        {
+            public Decimal128? Convert(decimal value) => value;
+        }
+
+        public class Decimal128NullableFloatConverter : ISpecializedConverter<Decimal128, float?>
+        {
+            public float? Convert(Decimal128 value) => (float)value;
+        }
+
+        public class Decimal128NullableDoubleConverter : ISpecializedConverter<Decimal128, double?>
+        {
+            public double? Convert(Decimal128 value) => (double)value;
+        }
+
+        public class Decimal128NullableDecimalConverter : ISpecializedConverter<Decimal128, decimal?>
+        {
+            public decimal? Convert(Decimal128 value) => (decimal)value;
+        }
+
+        public class Decimal128NullableDecimal128Converter : ISpecializedConverter<Decimal128, Decimal128?>
+        {
+            public Decimal128? Convert(Decimal128 value) => value;
+        }
+
+        public class FloatDoubleConverter : ISpecializedConverter<float, double>
+        {
+            public double Convert(float value) => value;
+        }
+
+        public class FloatDecimalConverter : ISpecializedConverter<float, decimal>
+        {
+            public decimal Convert(float value) => (decimal)value;
+        }
+
+        public class FloatDecimal128Converter : ISpecializedConverter<float, Decimal128>
+        {
+            public Decimal128 Convert(float value) => (Decimal128)value;
+        }
+
+        public class DoubleFloatConverter : ISpecializedConverter<double, float>
+        {
+            public float Convert(double value) => (float)value;
+        }
+
+        public class DoubleDecimalConverter : ISpecializedConverter<double, decimal>
+        {
+            public decimal Convert(double value) => (decimal)value;
+        }
+
+        public class DoubleDecimal128Converter : ISpecializedConverter<double, Decimal128>
+        {
+            public Decimal128 Convert(double value) => (Decimal128)value;
+        }
+
+        public class DecimalFloatConverter : ISpecializedConverter<decimal, float>
+        {
+            public float Convert(decimal value) => (float)value;
+        }
+
+        public class DecimalDoubleConverter : ISpecializedConverter<decimal, double>
+        {
+            public double Convert(decimal value) => (double)value;
+        }
+
+        public class DecimalDecimal128Converter : ISpecializedConverter<decimal, Decimal128>
+        {
+            public Decimal128 Convert(decimal value) => value;
+        }
+
+        public class Decimal128FloatConverter : ISpecializedConverter<Decimal128, float>
+        {
+            public float Convert(Decimal128 value) => (float)value;
+        }
+
+        public class Decimal128DoubleConverter : ISpecializedConverter<Decimal128, double>
+        {
+            public double Convert(Decimal128 value) => (double)value;
+        }
+
+        public class Decimal128DecimalConverter : ISpecializedConverter<Decimal128, decimal>
+        {
+            public decimal Convert(Decimal128 value) => (decimal)value;
+        }
+
+#endregion
     }
 }

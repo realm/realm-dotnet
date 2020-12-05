@@ -33,6 +33,10 @@
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
+    <None Update="Helpers\Operator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Operator.cs</LastGenOutput>
+    </None>
     <!-- iOS -->
     <None Update="ios-dllmap.config" Pack="true" PackagePath="native\ios\$(AssemblyName).dll.config" />
     <None Include="..\..\wrappers\build\iOS\$(Configuration)\realm-wrappers.framework\*">
@@ -100,6 +104,26 @@
       <PackagePath>runtimes\win10-arm\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\ARM\%(Filename)%(Extension)</Link>
     </None>
+    <None Include="Helpers\Operator.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Operator.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Helpers\GenericOperator.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GenericOperator.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Helpers\Operator.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Operator.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="..\AssemblyInfo.props " />
   <Import Project="..\Realm.Fody\InSolutionWeaver.props" />

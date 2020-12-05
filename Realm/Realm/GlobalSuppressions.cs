@@ -21,3 +21,4 @@
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObjectBase._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.Realm._realmChanged")]
 [assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The values of the enum represent types.", Scope = "type", Target = "~T:Realms.RealmValueType")]
+[assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Doesn't need docs", Scope = "type", Target = "~T:Realms.Helpers.Operator.ISpecializedConverter`2")]

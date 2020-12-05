@@ -1,0 +1,380 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Collections.Generic;
+using MongoDB.Bson;
+
+namespace Realms.Helpers
+{
+    [Preserve]
+    internal static class Operator
+    {
+        private static IDictionary<(Type, Type), Type> _valueConverters = new Dictionary<(Type, Type), Type>
+        {
+<#
+            var realmValueContents = GetFileContents("..\\RealmValue.cs");
+            var implicitToRealmValueTypes = GetMatchedGroups(realmValueContents, _implicitTypeToRealmValueRegex, "fromType");
+            foreach (var type in implicitToRealmValueTypes)
+            {
+#>
+            [(typeof(<#= type #>), typeof(RealmValue))] = typeof(<#= ToFriendlyMethodName(type) #>RealmValueConverter),
+<#
+            }
+
+            var explicitFromRealmValueTypes = GetMatchedGroups(realmValueContents, _explicitRealmValueToTypeRegex, "toType");
+            foreach (var type in explicitFromRealmValueTypes)
+            {
+#>
+            [(typeof(RealmValue), typeof(<#= type #>))] = typeof(RealmValue<#= ToFriendlyMethodName(type) #>Converter),
+<#
+            }
+
+            foreach (var tuple in GenerateIntegralTypeMatrix())
+            {
+#>
+            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = typeof(<#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter),
+<#
+            }
+
+            foreach (var tuple in GenerateDecimalTypeMatrix())
+            {
+#>
+            [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = typeof(<#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter),
+<#
+            }
+#>
+        };
+
+        public static TResult Convert<TFrom, TResult>(TFrom value)
+        {
+            if (typeof(TResult) == typeof(RealmValue))
+            {
+                /* This is special cased due to a bug in the Xamarin.iOS interpreter. When value
+                 * is null, we end up with a NRE with the following stacktrace:
+                 *
+                 * <System.NullReferenceException: Object reference not set to an instance of an object
+                 * at System.Linq.Expressions.Interpreter.LightLambda.Run1[T0,TRet] (T0 arg0) [0x00038] in <ee28ffe65f2e47a98ea97b07327fb8f4>:0
+                 * at (wrapper delegate-invoke) System.Func`2[System.String,Realms.RealmValue].invoke_TResult_T(string)
+                 * at Realms.Helpers.Operator.Convert[TFrom,TResult] (TFrom value) [0x00005] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 * at Realms.RealmList`1[T].<.ctor>b__5_1 (T item) [0x00000] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 * at Realms.RealmList`1[T].Add (T item) [0x00000] in <675c1cc840764fcb9ab78b319ccfeee3>:0
+                 *
+                 * May or may not be related to https://github.com/mono/mono/issues/15852.
+                 */
+                if (value is null)
+                {
+                    return Convert<RealmValue, TResult>(RealmValue.Null());
+                }
+
+                /* This is another special case where `value` is inheritable from RealmObjectBase. There's
+                 * no direct conversion from T to RealmValue, but there's conversion if we go through RealmObjectBase.
+                 */
+                if (value is RealmObjectBase robj)
+                {
+                    return Convert<RealmValue, TResult>(robj);
+                }
+            }
+
+            return GenericOperator<TFrom, TResult>.Convert(value);
+        }
+
+        private static class GenericOperator<TSource, TTarget>
+        {
+            private static readonly ISpecializedConverter<TSource, TTarget> _converter;
+
+            public static TTarget Convert(TSource value) => _converter.Convert(value);
+
+            static GenericOperator()
+            {
+                var sourceType = typeof(TSource);
+                var targetType = typeof(TTarget);
+
+                if (sourceType == targetType)
+                {
+                    _converter = (ISpecializedConverter<TSource, TTarget>)new UnaryConverter<TSource>();
+                }
+                else if (_valueConverters.TryGetValue((sourceType, targetType), out var converterType))
+                {
+                    _converter = (ISpecializedConverter<TSource, TTarget>)Activator.CreateInstance(converterType);
+                }
+                else if (targetType.IsAssignableFrom(sourceType) || sourceType == typeof(object))
+                {
+                    _converter = new InheritanceConverter<TSource, TTarget>();
+                }
+                else
+                {
+                    _converter = new ThrowingConverter<TSource, TTarget>();
+                }
+            }
+        }
+
+        private interface ISpecializedConverter<TSource, TTarget>
+        {
+            TTarget Convert(TSource source);
+        }
+
+        private class ThrowingConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
+        {
+            public TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+        }
+
+        private class UnaryConverter<T> : ISpecializedConverter<T, T>
+        {
+            public T Convert(T source) => source;
+        }
+
+        private class InheritanceConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
+        {
+            public TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+        }
+
+#region ToRealmValue Converters
+<#
+            foreach (var type in implicitToRealmValueTypes)
+            {
+#>
+
+        public class <#= ToFriendlyMethodName(type) #>RealmValueConverter : ISpecializedConverter<<#= type #>, RealmValue>
+        {
+            public RealmValue Convert(<#= type #> value) => value;
+        }
+<#
+            }
+#>
+#endregion
+
+#region FromRealmValue Converters
+<#
+            foreach (var type in explicitFromRealmValueTypes)
+            {
+#>
+
+        public class RealmValue<#= ToFriendlyMethodName(type) #>Converter : ISpecializedConverter<RealmValue, <#= type #>>
+        {
+            public <#= type #> Convert(RealmValue value) => (<#= type #>)value;
+        }
+<#
+            }
+#>
+#endregion
+
+#region Integral Converters
+<#
+            foreach (var tuple in GenerateIntegralTypeMatrix())
+            {
+#>
+
+        public class <#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter : ISpecializedConverter<<#= tuple.Item1 #>, <#= tuple.Item2#>>
+        {
+            public <#= tuple.Item2 #> Convert(<#= tuple.Item1 #> value) => <#= tuple.Item3 #>value;
+        }
+<#
+            }
+#>
+
+#endregion
+
+#region Decimal Converters
+<#
+            foreach (var tuple in GenerateDecimalTypeMatrix())
+            {
+#>
+
+        public class <#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter : ISpecializedConverter<<#= tuple.Item1 #>, <#= tuple.Item2#>>
+        {
+            public <#= tuple.Item2 #> Convert(<#= tuple.Item1 #> value) => <#= tuple.Item3 #>value;
+        }
+<#
+            }
+#>
+
+#endregion
+    }
+}
+<#+
+    private static readonly Regex _implicitTypeToRealmValueRegex = new Regex(@"public static implicit operator RealmValue\((?<fromType>\S*)");
+    private static readonly Regex _explicitRealmValueToTypeRegex = new Regex(@"public static explicit operator (?<toType>[^\(]*)\(RealmValue");
+
+    private abstract class NumericTypeInfo
+    {
+        public string Name { get; }
+
+        public int Size { get; }
+
+        public NumericTypeInfo(string name, int size)
+        {
+            Name = name;
+            Size = size;
+        }
+    }
+
+    private class DecimalTypeInfo : NumericTypeInfo
+    {
+        public bool IsDecimal { get; }
+
+        public DecimalTypeInfo(string name, int size, bool isDecimal)
+            : base(name, size)
+        {
+            IsDecimal = isDecimal;
+        }
+    }
+
+    private class IntegralTypeInfo : NumericTypeInfo
+    {
+        public string BackingType { get; }
+
+        public bool IsRealmInteger { get { return Name != BackingType; } }
+
+        public IntegralTypeInfo(string name, string backingType, int size)
+            : base(name, size)
+        {
+            BackingType = backingType;
+        }
+    }
+
+    private static readonly IntegralTypeInfo[] _integralTypes =
+    {
+        new IntegralTypeInfo("char", "char", 1),
+        new IntegralTypeInfo("byte", "byte", 1),
+        new IntegralTypeInfo("short", "short", 2),
+        new IntegralTypeInfo("int", "int", 4),
+        new IntegralTypeInfo("long", "long", 8),
+        new IntegralTypeInfo("RealmInteger<byte>", "byte", 1),
+        new IntegralTypeInfo("RealmInteger<short>", "short", 2),
+        new IntegralTypeInfo("RealmInteger<int>", "int", 4),
+        new IntegralTypeInfo("RealmInteger<long>", "long", 8),
+    };
+
+    private static readonly DecimalTypeInfo[] _decimalTypes =
+    {
+        new DecimalTypeInfo("float", 4, false),
+        new DecimalTypeInfo("double", 8, false),
+        new DecimalTypeInfo("decimal", 12, true),
+        new DecimalTypeInfo("Decimal128", 16, true),
+    };
+
+    private IEnumerable<Tuple<string, string, string>> GenerateIntegralTypeMatrix()
+    {
+        foreach (var nullable in new[] { true, false })
+        {
+            foreach (var fromType in _integralTypes)
+            {
+                foreach (var toType in _integralTypes)
+                {
+                    if (fromType.Name == toType.Name && !nullable)
+                    {
+                        continue;
+                    }
+
+                    var conversion = "";
+                    if (toType.Name == "char" && fromType.Size < 4)
+                    {
+                        conversion = "(" + toType.BackingType + ")";
+
+                        if (fromType.IsRealmInteger)
+                        {
+                            conversion += "(" + fromType.BackingType + ")";
+                        }
+                    }
+                    else if (fromType.Name == "char" && toType.Size < 4)
+                    {
+                        conversion = "(" + toType.BackingType + ")";
+                    }
+                    else if ((fromType.IsRealmInteger && toType.IsRealmInteger) || fromType.Size > toType.Size)
+                    {
+                        conversion = "(" + toType.BackingType + ")";
+                    }
+                    
+                    yield return Tuple.Create(fromType.Name, toType.Name + (nullable ? "?" : ""), conversion);
+                }
+            }
+        }
+    }
+
+    private IEnumerable<Tuple<string, string, string>> GenerateDecimalTypeMatrix()
+    {
+        foreach (var nullable in new[] { true, false })
+        {
+            foreach (var fromType in _decimalTypes)
+            {
+                foreach (var toType in _decimalTypes)
+                {
+                    if (fromType.Name == toType.Name && !nullable)
+                    {
+                        continue;
+                    }
+
+                    var conversion = "";
+                    if (fromType.Size > toType.Size || fromType.IsDecimal != toType.IsDecimal)
+                    {
+                        conversion = "(" + toType.Name + ")";
+                    }
+                    
+                    yield return Tuple.Create(fromType.Name, toType.Name + (nullable ? "?" : ""), conversion);
+                }
+            }
+        }
+    }
+
+    private IEnumerable<string> GetMatchedGroups(string target, Regex regex, string groupName)
+    {
+        return regex.Matches(target)
+                .Cast<Match>()
+                .Select(m => m.Groups[groupName].Value);
+    }
+
+    private string GetFileContents(string relativePath)
+    {
+        var realmValuePath = Path.Combine(Path.GetDirectoryName(this.Host.TemplateFile), relativePath);
+        return File.ReadAllText(realmValuePath);
+    }
+
+    private string ToPascalCase(string identifier)
+    {
+        return identifier.First().ToString().ToUpper() + identifier.Substring(1);
+    }
+
+    private string ToFriendlyMethodName(string type)
+    {
+        type = type.Replace("[]", "Array");
+
+        if (type.EndsWith("?"))
+        {
+            return "Nullable" + ToFriendlyMethodName(type.Replace("?", ""));
+        }
+
+        var angleBraceOpen = type.IndexOf('<');
+        var angleBraceClose = type.IndexOf('>');
+        if (angleBraceOpen > -1)
+        {
+            type = type.Substring(0, angleBraceOpen) + ToPascalCase(type.Substring(angleBraceOpen + 1, angleBraceClose - angleBraceOpen - 1));
+        }
+
+        return ToPascalCase(type);
+    }
+#>
