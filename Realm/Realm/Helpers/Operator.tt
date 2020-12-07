@@ -6,7 +6,6 @@
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
@@ -31,6 +30,11 @@ using MongoDB.Bson;
 
 namespace Realms.Helpers
 {
+    /// <summary>
+    /// A class that exposes a set of methods that we know are defined on a generic argument
+    /// but there's no way to express them via the C# generic constraint system. It is generated
+    /// by T4 transforming Operator.tt.
+    /// </summary>
     [Preserve]
     internal static class Operator
     {
@@ -61,7 +65,7 @@ namespace Realms.Helpers
 <#
             }
 
-            foreach (var tuple in GenerateDecimalTypeMatrix())
+            foreach (var tuple in GenerateFloatingPointTypeMatrix())
             {
 #>
             [(typeof(<#= tuple.Item1 #>), typeof(<#= tuple.Item2 #>))] = new <#= ToFriendlyMethodName(tuple.Item1) #><#= ToFriendlyMethodName(tuple.Item2) #>Converter(),
@@ -70,6 +74,24 @@ namespace Realms.Helpers
 #>
         };
 
+        /// <summary>
+        /// Efficiently convert a <typeparamref name="TFrom"/> value to <typeparamref name="TResult"/>.
+        /// It is intended to be used when we want to convert to or from a generic where we don't
+        /// know the exact type, but we know that a conversion exists.
+        /// </summary>
+        /// <remarks>
+        /// In synthetic benchmarks it performs about
+        /// two orders of magnitude faster than Convert.ChangeType. It is about 4 times slower than a direct cast
+        /// when the types are known, but about an order of magnitude faster than a cast that involves boxing to
+        /// object.
+        /// <br/>
+        /// It makes use of implicit and explicit conversion operators defined on types to convert between
+        /// numeric types, which means that we can use it both for downcasting and upcasting numeric types.
+        /// </remarks>
+        /// <typeparam name="TFrom">The type from which to convert.</typeparam>
+        /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
+        /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
+        /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
             if (typeof(TResult) == typeof(RealmValue))
@@ -103,6 +125,14 @@ namespace Realms.Helpers
             return GenericOperator<TFrom, TResult>.Convert(value);
         }
 
+        /// <summary>
+        /// An operator that exposes a method to convert from <typeparamref name="TSource"/>
+        /// to <typeparamref name="TTarget"/>. Upon constructing the closed generic type, the static
+        /// constructor will instantiate a <see cref="ISpecializedConverter{TSource, TTarget}"/> and
+        /// assign it to a static field for the duration of the application domain.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private static class GenericOperator<TSource, TTarget>
         {
             private static readonly ISpecializedConverter<TSource, TTarget> _converter;
@@ -166,17 +196,29 @@ namespace Realms.Helpers
             public TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
+        /// <summary>
+        /// A converter that converts from the type to itself. There are cases where we don't know what the source or
+        /// the target type is, so we need to convert, just in case.
+        /// </summary>
+        /// <typeparam name="T">The type of both the source and the target.</typeparam>
         private class UnaryConverter<T> : ISpecializedConverter<T, T>
         {
             public T Convert(T source) => source;
         }
 
+        /// <summary>
+        /// A converter that converts from a type to its base type. This is typically needed
+        /// when we want to cast from a RealmObject inheritor to RealmObjectBase or when we
+        /// get passed <see cref="object"/>.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class InheritanceConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
         {
             public TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
-#region ToRealmValue Converters
+        #region ToRealmValue Converters
 <#
             foreach (var type in implicitToRealmValueTypes)
             {
@@ -189,9 +231,9 @@ namespace Realms.Helpers
 <#
             }
 #>
-#endregion
+        #endregion ToRealmValue Converters
 
-#region FromRealmValue Converters
+        #region FromRealmValue Converters
 <#
             foreach (var type in explicitFromRealmValueTypes)
             {
@@ -204,9 +246,9 @@ namespace Realms.Helpers
 <#
             }
 #>
-#endregion
+        #endregion FromRealmValue Converters
 
-#region Integral Converters
+        #region Integral Converters
 <#
             foreach (var tuple in GenerateIntegralTypeMatrix())
             {
@@ -220,11 +262,11 @@ namespace Realms.Helpers
             }
 #>
 
-#endregion
+        #endregion Integral Converters
 
-#region Decimal Converters
+        #region Floating Point Converters
 <#
-            foreach (var tuple in GenerateDecimalTypeMatrix())
+            foreach (var tuple in GenerateFloatingPointTypeMatrix())
             {
 #>
 
@@ -236,7 +278,7 @@ namespace Realms.Helpers
             }
 #>
 
-#endregion
+        #endregion Floating Point Converters
     }
 }
 <#+
@@ -249,18 +291,18 @@ namespace Realms.Helpers
 
         public int Size { get; }
 
-        public NumericTypeInfo(string name, int size)
+        protected NumericTypeInfo(string name, int size)
         {
             Name = name;
             Size = size;
         }
     }
 
-    private class DecimalTypeInfo : NumericTypeInfo
+    private class FloatingPointTypeInfo : NumericTypeInfo
     {
         public bool IsDecimal { get; }
 
-        public DecimalTypeInfo(string name, int size, bool isDecimal)
+        public FloatingPointTypeInfo(string name, int size, bool isDecimal)
             : base(name, size)
         {
             IsDecimal = isDecimal;
@@ -293,12 +335,12 @@ namespace Realms.Helpers
         new IntegralTypeInfo("RealmInteger<long>", "long", 8),
     };
 
-    private static readonly DecimalTypeInfo[] _decimalTypes =
+    private static readonly FloatingPointTypeInfo[] _floatingPointTypes =
     {
-        new DecimalTypeInfo("float", 4, false),
-        new DecimalTypeInfo("double", 8, false),
-        new DecimalTypeInfo("decimal", 12, true),
-        new DecimalTypeInfo("Decimal128", 16, true),
+        new FloatingPointTypeInfo("float", 4, false),
+        new FloatingPointTypeInfo("double", 8, false),
+        new FloatingPointTypeInfo("decimal", 12, true),
+        new FloatingPointTypeInfo("Decimal128", 16, true),
     };
 
     private IEnumerable<Tuple<string, string, string>> GenerateIntegralTypeMatrix()
@@ -339,13 +381,13 @@ namespace Realms.Helpers
         }
     }
 
-    private IEnumerable<Tuple<string, string, string>> GenerateDecimalTypeMatrix()
+    private IEnumerable<Tuple<string, string, string>> GenerateFloatingPointTypeMatrix()
     {
         foreach (var nullable in new[] { true, false })
         {
-            foreach (var fromType in _decimalTypes)
+            foreach (var fromType in _floatingPointTypes)
             {
-                foreach (var toType in _decimalTypes)
+                foreach (var toType in _floatingPointTypes)
                 {
                     if (fromType.Name == toType.Name && !nullable)
                     {
@@ -353,6 +395,8 @@ namespace Realms.Helpers
                     }
 
                     var conversion = "";
+                    
+                    // Conversions between float/double and decimal/Decimal128 are always explicit.
                     if (fromType.Size > toType.Size || fromType.IsDecimal != toType.IsDecimal)
                     {
                         conversion = "(" + toType.Name + ")";

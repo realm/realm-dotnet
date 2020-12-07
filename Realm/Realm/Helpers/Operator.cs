@@ -1,5 +1,4 @@
-﻿
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -23,6 +22,11 @@ using MongoDB.Bson;
 
 namespace Realms.Helpers
 {
+    /// <summary>
+    /// A class that exposes a set of methods that we know are defined on a generic argument
+    /// but there's no way to express them via the C# generic constraint system. It is generated
+    /// by T4 transforming Operator.tt.
+    /// </summary>
     [Preserve]
     internal static class Operator
     {
@@ -285,6 +289,24 @@ namespace Realms.Helpers
             [(typeof(Decimal128), typeof(decimal))] = new Decimal128DecimalConverter(),
         };
 
+        /// <summary>
+        /// Efficiently convert a <typeparamref name="TFrom"/> value to <typeparamref name="TResult"/>.
+        /// It is intended to be used when we want to convert to or from a generic where we don't
+        /// know the exact type, but we know that a conversion exists.
+        /// </summary>
+        /// <remarks>
+        /// In synthetic benchmarks it performs about
+        /// two orders of magnitude faster than Convert.ChangeType. It is about 4 times slower than a direct cast
+        /// when the types are known, but about an order of magnitude faster than a cast that involves boxing to
+        /// object.
+        /// <br/>
+        /// It makes use of implicit and explicit conversion operators defined on types to convert between
+        /// numeric types, which means that we can use it both for downcasting and upcasting numeric types.
+        /// </remarks>
+        /// <typeparam name="TFrom">The type from which to convert.</typeparam>
+        /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
+        /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
+        /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
         public static TResult Convert<TFrom, TResult>(TFrom value)
         {
             if (typeof(TResult) == typeof(RealmValue))
@@ -318,6 +340,14 @@ namespace Realms.Helpers
             return GenericOperator<TFrom, TResult>.Convert(value);
         }
 
+        /// <summary>
+        /// An operator that exposes a method to convert from <typeparamref name="TSource"/>
+        /// to <typeparamref name="TTarget"/>. Upon constructing the closed generic type, the static
+        /// constructor will instantiate a <see cref="ISpecializedConverter{TSource, TTarget}"/> and
+        /// assign it to a static field for the duration of the application domain.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private static class GenericOperator<TSource, TTarget>
         {
             private static readonly ISpecializedConverter<TSource, TTarget> _converter;
@@ -381,17 +411,29 @@ namespace Realms.Helpers
             public TTarget Convert(TSource source) => throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
+        /// <summary>
+        /// A converter that converts from the type to itself. There are cases where we don't know what the source or
+        /// the target type is, so we need to convert, just in case.
+        /// </summary>
+        /// <typeparam name="T">The type of both the source and the target.</typeparam>
         private class UnaryConverter<T> : ISpecializedConverter<T, T>
         {
             public T Convert(T source) => source;
         }
 
+        /// <summary>
+        /// A converter that converts from a type to its base type. This is typically needed
+        /// when we want to cast from a RealmObject inheritor to RealmObjectBase or when we
+        /// get passed <see cref="object"/>.
+        /// </summary>
+        /// <typeparam name="TSource">The type from which to convert.</typeparam>
+        /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class InheritanceConverter<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
         {
             public TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new NotSupportedException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
-#region ToRealmValue Converters
+        #region ToRealmValue Converters
 
         public class CharRealmValueConverter : ISpecializedConverter<char, RealmValue>
         {
@@ -577,9 +619,9 @@ namespace Realms.Helpers
         {
             public RealmValue Convert(RealmObjectBase value) => value;
         }
-#endregion
+        #endregion ToRealmValue Converters
 
-#region FromRealmValue Converters
+        #region FromRealmValue Converters
 
         public class RealmValueCharConverter : ISpecializedConverter<RealmValue, char>
         {
@@ -765,9 +807,9 @@ namespace Realms.Helpers
         {
             public RealmObjectBase Convert(RealmValue value) => (RealmObjectBase)value;
         }
-#endregion
+        #endregion FromRealmValue Converters
 
-#region Integral Converters
+        #region Integral Converters
 
         public class CharNullableCharConverter : ISpecializedConverter<char, char?>
         {
@@ -1534,9 +1576,9 @@ namespace Realms.Helpers
             public RealmInteger<int> Convert(RealmInteger<long> value) => (int)value;
         }
 
-#endregion
+        #endregion Integral Converters
 
-#region Decimal Converters
+        #region Floating Point Converters
 
         public class FloatNullableFloatConverter : ISpecializedConverter<float, float?>
         {
@@ -1678,6 +1720,6 @@ namespace Realms.Helpers
             public decimal Convert(Decimal128 value) => (decimal)value;
         }
 
-#endregion
+        #endregion Floating Point Converters
     }
 }
