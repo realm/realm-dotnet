@@ -19,6 +19,9 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.Scripting;
+
+[assembly: AlwaysLinkAssembly]
 
 namespace UnityUtils
 {
