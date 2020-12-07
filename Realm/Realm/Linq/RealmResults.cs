@@ -80,7 +80,7 @@ namespace Realms
                 throw new NotSupportedException("IndexOf on non-object results is not supported.");
             }
 
-            var obj = Operator.Convert<T, RealmObjectBase>(value);
+            var obj = value as RealmObjectBase;
             if (!obj.IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
