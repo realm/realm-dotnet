@@ -121,10 +121,8 @@ namespace RealmWeaver
 
             if (!(_references.RuntimeInitializeOnLoadAttribute_Unity is null))
             {
-                _logger.Warning("*** unityEngine wasn't null");
                 initialize.CustomAttributes.Add(new CustomAttribute(_references.RuntimeInitializeOnLoadAttribute_Unity_Constructor));
             }
-            else _logger.Warning("*** unityEngine WAS NULL!!!");
 
             initialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             initializerType.Methods.Add(initialize);
