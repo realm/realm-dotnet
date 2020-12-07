@@ -1235,7 +1235,7 @@ namespace Realms.Helpers
 
         public class RealmIntegerByteNullableRealmIntegerByteConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<byte>?>
         {
-            public RealmInteger<byte>? Convert(RealmInteger<byte> value) => (byte)value;
+            public RealmInteger<byte>? Convert(RealmInteger<byte> value) => value;
         }
 
         public class RealmIntegerByteNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<short>?>
@@ -1305,7 +1305,7 @@ namespace Realms.Helpers
 
         public class RealmIntegerShortNullableRealmIntegerShortConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<short>?>
         {
-            public RealmInteger<short>? Convert(RealmInteger<short> value) => (short)value;
+            public RealmInteger<short>? Convert(RealmInteger<short> value) => value;
         }
 
         public class RealmIntegerShortNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<int>?>
@@ -1375,7 +1375,7 @@ namespace Realms.Helpers
 
         public class RealmIntegerIntNullableRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<int>?>
         {
-            public RealmInteger<int>? Convert(RealmInteger<int> value) => (int)value;
+            public RealmInteger<int>? Convert(RealmInteger<int> value) => value;
         }
 
         public class RealmIntegerIntNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<long>?>
@@ -1445,7 +1445,7 @@ namespace Realms.Helpers
 
         public class RealmIntegerLongNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<long>?>
         {
-            public RealmInteger<long>? Convert(RealmInteger<long> value) => (long)value;
+            public RealmInteger<long>? Convert(RealmInteger<long> value) => value;
         }
 
         public class RealmIntegerLongNullableFloatConverter : ISpecializedConverter<RealmInteger<long>, float?>

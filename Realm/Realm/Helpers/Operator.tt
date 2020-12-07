@@ -370,7 +370,7 @@ namespace Realms.Helpers
                     {
                         conversion = "(" + toType.BackingType + ")";
                     }
-                    else if ((fromType.IsRealmInteger && toType.IsRealmInteger) || fromType.Size > toType.Size)
+                    else if ((fromType.IsRealmInteger && toType.IsRealmInteger && fromType.Size != toType.Size) || fromType.Size > toType.Size)
                     {
                         conversion = "(" + toType.BackingType + ")";
                     }
