@@ -115,6 +115,10 @@ namespace Realms.Helpers
             [(typeof(char), typeof(RealmInteger<short>?))] = new CharNullableRealmIntegerShortConverter(),
             [(typeof(char), typeof(RealmInteger<int>?))] = new CharNullableRealmIntegerIntConverter(),
             [(typeof(char), typeof(RealmInteger<long>?))] = new CharNullableRealmIntegerLongConverter(),
+            [(typeof(char), typeof(float?))] = new CharNullableFloatConverter(),
+            [(typeof(char), typeof(double?))] = new CharNullableDoubleConverter(),
+            [(typeof(char), typeof(decimal?))] = new CharNullableDecimalConverter(),
+            [(typeof(char), typeof(Decimal128?))] = new CharNullableDecimal128Converter(),
             [(typeof(byte), typeof(char?))] = new ByteNullableCharConverter(),
             [(typeof(byte), typeof(byte?))] = new ByteNullableByteConverter(),
             [(typeof(byte), typeof(short?))] = new ByteNullableShortConverter(),
@@ -124,6 +128,10 @@ namespace Realms.Helpers
             [(typeof(byte), typeof(RealmInteger<short>?))] = new ByteNullableRealmIntegerShortConverter(),
             [(typeof(byte), typeof(RealmInteger<int>?))] = new ByteNullableRealmIntegerIntConverter(),
             [(typeof(byte), typeof(RealmInteger<long>?))] = new ByteNullableRealmIntegerLongConverter(),
+            [(typeof(byte), typeof(float?))] = new ByteNullableFloatConverter(),
+            [(typeof(byte), typeof(double?))] = new ByteNullableDoubleConverter(),
+            [(typeof(byte), typeof(decimal?))] = new ByteNullableDecimalConverter(),
+            [(typeof(byte), typeof(Decimal128?))] = new ByteNullableDecimal128Converter(),
             [(typeof(short), typeof(char?))] = new ShortNullableCharConverter(),
             [(typeof(short), typeof(byte?))] = new ShortNullableByteConverter(),
             [(typeof(short), typeof(short?))] = new ShortNullableShortConverter(),
@@ -133,6 +141,10 @@ namespace Realms.Helpers
             [(typeof(short), typeof(RealmInteger<short>?))] = new ShortNullableRealmIntegerShortConverter(),
             [(typeof(short), typeof(RealmInteger<int>?))] = new ShortNullableRealmIntegerIntConverter(),
             [(typeof(short), typeof(RealmInteger<long>?))] = new ShortNullableRealmIntegerLongConverter(),
+            [(typeof(short), typeof(float?))] = new ShortNullableFloatConverter(),
+            [(typeof(short), typeof(double?))] = new ShortNullableDoubleConverter(),
+            [(typeof(short), typeof(decimal?))] = new ShortNullableDecimalConverter(),
+            [(typeof(short), typeof(Decimal128?))] = new ShortNullableDecimal128Converter(),
             [(typeof(int), typeof(char?))] = new IntNullableCharConverter(),
             [(typeof(int), typeof(byte?))] = new IntNullableByteConverter(),
             [(typeof(int), typeof(short?))] = new IntNullableShortConverter(),
@@ -142,6 +154,10 @@ namespace Realms.Helpers
             [(typeof(int), typeof(RealmInteger<short>?))] = new IntNullableRealmIntegerShortConverter(),
             [(typeof(int), typeof(RealmInteger<int>?))] = new IntNullableRealmIntegerIntConverter(),
             [(typeof(int), typeof(RealmInteger<long>?))] = new IntNullableRealmIntegerLongConverter(),
+            [(typeof(int), typeof(float?))] = new IntNullableFloatConverter(),
+            [(typeof(int), typeof(double?))] = new IntNullableDoubleConverter(),
+            [(typeof(int), typeof(decimal?))] = new IntNullableDecimalConverter(),
+            [(typeof(int), typeof(Decimal128?))] = new IntNullableDecimal128Converter(),
             [(typeof(long), typeof(char?))] = new LongNullableCharConverter(),
             [(typeof(long), typeof(byte?))] = new LongNullableByteConverter(),
             [(typeof(long), typeof(short?))] = new LongNullableShortConverter(),
@@ -151,6 +167,10 @@ namespace Realms.Helpers
             [(typeof(long), typeof(RealmInteger<short>?))] = new LongNullableRealmIntegerShortConverter(),
             [(typeof(long), typeof(RealmInteger<int>?))] = new LongNullableRealmIntegerIntConverter(),
             [(typeof(long), typeof(RealmInteger<long>?))] = new LongNullableRealmIntegerLongConverter(),
+            [(typeof(long), typeof(float?))] = new LongNullableFloatConverter(),
+            [(typeof(long), typeof(double?))] = new LongNullableDoubleConverter(),
+            [(typeof(long), typeof(decimal?))] = new LongNullableDecimalConverter(),
+            [(typeof(long), typeof(Decimal128?))] = new LongNullableDecimal128Converter(),
             [(typeof(RealmInteger<byte>), typeof(char?))] = new RealmIntegerByteNullableCharConverter(),
             [(typeof(RealmInteger<byte>), typeof(byte?))] = new RealmIntegerByteNullableByteConverter(),
             [(typeof(RealmInteger<byte>), typeof(short?))] = new RealmIntegerByteNullableShortConverter(),
@@ -160,6 +180,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<short>?))] = new RealmIntegerByteNullableRealmIntegerShortConverter(),
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<int>?))] = new RealmIntegerByteNullableRealmIntegerIntConverter(),
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<long>?))] = new RealmIntegerByteNullableRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<byte>), typeof(float?))] = new RealmIntegerByteNullableFloatConverter(),
+            [(typeof(RealmInteger<byte>), typeof(double?))] = new RealmIntegerByteNullableDoubleConverter(),
+            [(typeof(RealmInteger<byte>), typeof(decimal?))] = new RealmIntegerByteNullableDecimalConverter(),
+            [(typeof(RealmInteger<byte>), typeof(Decimal128?))] = new RealmIntegerByteNullableDecimal128Converter(),
             [(typeof(RealmInteger<short>), typeof(char?))] = new RealmIntegerShortNullableCharConverter(),
             [(typeof(RealmInteger<short>), typeof(byte?))] = new RealmIntegerShortNullableByteConverter(),
             [(typeof(RealmInteger<short>), typeof(short?))] = new RealmIntegerShortNullableShortConverter(),
@@ -169,6 +193,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<short>), typeof(RealmInteger<short>?))] = new RealmIntegerShortNullableRealmIntegerShortConverter(),
             [(typeof(RealmInteger<short>), typeof(RealmInteger<int>?))] = new RealmIntegerShortNullableRealmIntegerIntConverter(),
             [(typeof(RealmInteger<short>), typeof(RealmInteger<long>?))] = new RealmIntegerShortNullableRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<short>), typeof(float?))] = new RealmIntegerShortNullableFloatConverter(),
+            [(typeof(RealmInteger<short>), typeof(double?))] = new RealmIntegerShortNullableDoubleConverter(),
+            [(typeof(RealmInteger<short>), typeof(decimal?))] = new RealmIntegerShortNullableDecimalConverter(),
+            [(typeof(RealmInteger<short>), typeof(Decimal128?))] = new RealmIntegerShortNullableDecimal128Converter(),
             [(typeof(RealmInteger<int>), typeof(char?))] = new RealmIntegerIntNullableCharConverter(),
             [(typeof(RealmInteger<int>), typeof(byte?))] = new RealmIntegerIntNullableByteConverter(),
             [(typeof(RealmInteger<int>), typeof(short?))] = new RealmIntegerIntNullableShortConverter(),
@@ -178,6 +206,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<int>), typeof(RealmInteger<short>?))] = new RealmIntegerIntNullableRealmIntegerShortConverter(),
             [(typeof(RealmInteger<int>), typeof(RealmInteger<int>?))] = new RealmIntegerIntNullableRealmIntegerIntConverter(),
             [(typeof(RealmInteger<int>), typeof(RealmInteger<long>?))] = new RealmIntegerIntNullableRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<int>), typeof(float?))] = new RealmIntegerIntNullableFloatConverter(),
+            [(typeof(RealmInteger<int>), typeof(double?))] = new RealmIntegerIntNullableDoubleConverter(),
+            [(typeof(RealmInteger<int>), typeof(decimal?))] = new RealmIntegerIntNullableDecimalConverter(),
+            [(typeof(RealmInteger<int>), typeof(Decimal128?))] = new RealmIntegerIntNullableDecimal128Converter(),
             [(typeof(RealmInteger<long>), typeof(char?))] = new RealmIntegerLongNullableCharConverter(),
             [(typeof(RealmInteger<long>), typeof(byte?))] = new RealmIntegerLongNullableByteConverter(),
             [(typeof(RealmInteger<long>), typeof(short?))] = new RealmIntegerLongNullableShortConverter(),
@@ -187,6 +219,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<long>), typeof(RealmInteger<short>?))] = new RealmIntegerLongNullableRealmIntegerShortConverter(),
             [(typeof(RealmInteger<long>), typeof(RealmInteger<int>?))] = new RealmIntegerLongNullableRealmIntegerIntConverter(),
             [(typeof(RealmInteger<long>), typeof(RealmInteger<long>?))] = new RealmIntegerLongNullableRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<long>), typeof(float?))] = new RealmIntegerLongNullableFloatConverter(),
+            [(typeof(RealmInteger<long>), typeof(double?))] = new RealmIntegerLongNullableDoubleConverter(),
+            [(typeof(RealmInteger<long>), typeof(decimal?))] = new RealmIntegerLongNullableDecimalConverter(),
+            [(typeof(RealmInteger<long>), typeof(Decimal128?))] = new RealmIntegerLongNullableDecimal128Converter(),
             [(typeof(char), typeof(byte))] = new CharByteConverter(),
             [(typeof(char), typeof(short))] = new CharShortConverter(),
             [(typeof(char), typeof(int))] = new CharIntConverter(),
@@ -195,6 +231,10 @@ namespace Realms.Helpers
             [(typeof(char), typeof(RealmInteger<short>))] = new CharRealmIntegerShortConverter(),
             [(typeof(char), typeof(RealmInteger<int>))] = new CharRealmIntegerIntConverter(),
             [(typeof(char), typeof(RealmInteger<long>))] = new CharRealmIntegerLongConverter(),
+            [(typeof(char), typeof(float))] = new CharFloatConverter(),
+            [(typeof(char), typeof(double))] = new CharDoubleConverter(),
+            [(typeof(char), typeof(decimal))] = new CharDecimalConverter(),
+            [(typeof(char), typeof(Decimal128))] = new CharDecimal128Converter(),
             [(typeof(byte), typeof(char))] = new ByteCharConverter(),
             [(typeof(byte), typeof(short))] = new ByteShortConverter(),
             [(typeof(byte), typeof(int))] = new ByteIntConverter(),
@@ -203,6 +243,10 @@ namespace Realms.Helpers
             [(typeof(byte), typeof(RealmInteger<short>))] = new ByteRealmIntegerShortConverter(),
             [(typeof(byte), typeof(RealmInteger<int>))] = new ByteRealmIntegerIntConverter(),
             [(typeof(byte), typeof(RealmInteger<long>))] = new ByteRealmIntegerLongConverter(),
+            [(typeof(byte), typeof(float))] = new ByteFloatConverter(),
+            [(typeof(byte), typeof(double))] = new ByteDoubleConverter(),
+            [(typeof(byte), typeof(decimal))] = new ByteDecimalConverter(),
+            [(typeof(byte), typeof(Decimal128))] = new ByteDecimal128Converter(),
             [(typeof(short), typeof(char))] = new ShortCharConverter(),
             [(typeof(short), typeof(byte))] = new ShortByteConverter(),
             [(typeof(short), typeof(int))] = new ShortIntConverter(),
@@ -211,6 +255,10 @@ namespace Realms.Helpers
             [(typeof(short), typeof(RealmInteger<short>))] = new ShortRealmIntegerShortConverter(),
             [(typeof(short), typeof(RealmInteger<int>))] = new ShortRealmIntegerIntConverter(),
             [(typeof(short), typeof(RealmInteger<long>))] = new ShortRealmIntegerLongConverter(),
+            [(typeof(short), typeof(float))] = new ShortFloatConverter(),
+            [(typeof(short), typeof(double))] = new ShortDoubleConverter(),
+            [(typeof(short), typeof(decimal))] = new ShortDecimalConverter(),
+            [(typeof(short), typeof(Decimal128))] = new ShortDecimal128Converter(),
             [(typeof(int), typeof(char))] = new IntCharConverter(),
             [(typeof(int), typeof(byte))] = new IntByteConverter(),
             [(typeof(int), typeof(short))] = new IntShortConverter(),
@@ -219,6 +267,10 @@ namespace Realms.Helpers
             [(typeof(int), typeof(RealmInteger<short>))] = new IntRealmIntegerShortConverter(),
             [(typeof(int), typeof(RealmInteger<int>))] = new IntRealmIntegerIntConverter(),
             [(typeof(int), typeof(RealmInteger<long>))] = new IntRealmIntegerLongConverter(),
+            [(typeof(int), typeof(float))] = new IntFloatConverter(),
+            [(typeof(int), typeof(double))] = new IntDoubleConverter(),
+            [(typeof(int), typeof(decimal))] = new IntDecimalConverter(),
+            [(typeof(int), typeof(Decimal128))] = new IntDecimal128Converter(),
             [(typeof(long), typeof(char))] = new LongCharConverter(),
             [(typeof(long), typeof(byte))] = new LongByteConverter(),
             [(typeof(long), typeof(short))] = new LongShortConverter(),
@@ -227,6 +279,10 @@ namespace Realms.Helpers
             [(typeof(long), typeof(RealmInteger<short>))] = new LongRealmIntegerShortConverter(),
             [(typeof(long), typeof(RealmInteger<int>))] = new LongRealmIntegerIntConverter(),
             [(typeof(long), typeof(RealmInteger<long>))] = new LongRealmIntegerLongConverter(),
+            [(typeof(long), typeof(float))] = new LongFloatConverter(),
+            [(typeof(long), typeof(double))] = new LongDoubleConverter(),
+            [(typeof(long), typeof(decimal))] = new LongDecimalConverter(),
+            [(typeof(long), typeof(Decimal128))] = new LongDecimal128Converter(),
             [(typeof(RealmInteger<byte>), typeof(char))] = new RealmIntegerByteCharConverter(),
             [(typeof(RealmInteger<byte>), typeof(byte))] = new RealmIntegerByteByteConverter(),
             [(typeof(RealmInteger<byte>), typeof(short))] = new RealmIntegerByteShortConverter(),
@@ -235,6 +291,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<short>))] = new RealmIntegerByteRealmIntegerShortConverter(),
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<int>))] = new RealmIntegerByteRealmIntegerIntConverter(),
             [(typeof(RealmInteger<byte>), typeof(RealmInteger<long>))] = new RealmIntegerByteRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<byte>), typeof(float))] = new RealmIntegerByteFloatConverter(),
+            [(typeof(RealmInteger<byte>), typeof(double))] = new RealmIntegerByteDoubleConverter(),
+            [(typeof(RealmInteger<byte>), typeof(decimal))] = new RealmIntegerByteDecimalConverter(),
+            [(typeof(RealmInteger<byte>), typeof(Decimal128))] = new RealmIntegerByteDecimal128Converter(),
             [(typeof(RealmInteger<short>), typeof(char))] = new RealmIntegerShortCharConverter(),
             [(typeof(RealmInteger<short>), typeof(byte))] = new RealmIntegerShortByteConverter(),
             [(typeof(RealmInteger<short>), typeof(short))] = new RealmIntegerShortShortConverter(),
@@ -243,6 +303,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<short>), typeof(RealmInteger<byte>))] = new RealmIntegerShortRealmIntegerByteConverter(),
             [(typeof(RealmInteger<short>), typeof(RealmInteger<int>))] = new RealmIntegerShortRealmIntegerIntConverter(),
             [(typeof(RealmInteger<short>), typeof(RealmInteger<long>))] = new RealmIntegerShortRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<short>), typeof(float))] = new RealmIntegerShortFloatConverter(),
+            [(typeof(RealmInteger<short>), typeof(double))] = new RealmIntegerShortDoubleConverter(),
+            [(typeof(RealmInteger<short>), typeof(decimal))] = new RealmIntegerShortDecimalConverter(),
+            [(typeof(RealmInteger<short>), typeof(Decimal128))] = new RealmIntegerShortDecimal128Converter(),
             [(typeof(RealmInteger<int>), typeof(char))] = new RealmIntegerIntCharConverter(),
             [(typeof(RealmInteger<int>), typeof(byte))] = new RealmIntegerIntByteConverter(),
             [(typeof(RealmInteger<int>), typeof(short))] = new RealmIntegerIntShortConverter(),
@@ -251,6 +315,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<int>), typeof(RealmInteger<byte>))] = new RealmIntegerIntRealmIntegerByteConverter(),
             [(typeof(RealmInteger<int>), typeof(RealmInteger<short>))] = new RealmIntegerIntRealmIntegerShortConverter(),
             [(typeof(RealmInteger<int>), typeof(RealmInteger<long>))] = new RealmIntegerIntRealmIntegerLongConverter(),
+            [(typeof(RealmInteger<int>), typeof(float))] = new RealmIntegerIntFloatConverter(),
+            [(typeof(RealmInteger<int>), typeof(double))] = new RealmIntegerIntDoubleConverter(),
+            [(typeof(RealmInteger<int>), typeof(decimal))] = new RealmIntegerIntDecimalConverter(),
+            [(typeof(RealmInteger<int>), typeof(Decimal128))] = new RealmIntegerIntDecimal128Converter(),
             [(typeof(RealmInteger<long>), typeof(char))] = new RealmIntegerLongCharConverter(),
             [(typeof(RealmInteger<long>), typeof(byte))] = new RealmIntegerLongByteConverter(),
             [(typeof(RealmInteger<long>), typeof(short))] = new RealmIntegerLongShortConverter(),
@@ -259,6 +327,10 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<long>), typeof(RealmInteger<byte>))] = new RealmIntegerLongRealmIntegerByteConverter(),
             [(typeof(RealmInteger<long>), typeof(RealmInteger<short>))] = new RealmIntegerLongRealmIntegerShortConverter(),
             [(typeof(RealmInteger<long>), typeof(RealmInteger<int>))] = new RealmIntegerLongRealmIntegerIntConverter(),
+            [(typeof(RealmInteger<long>), typeof(float))] = new RealmIntegerLongFloatConverter(),
+            [(typeof(RealmInteger<long>), typeof(double))] = new RealmIntegerLongDoubleConverter(),
+            [(typeof(RealmInteger<long>), typeof(decimal))] = new RealmIntegerLongDecimalConverter(),
+            [(typeof(RealmInteger<long>), typeof(Decimal128))] = new RealmIntegerLongDecimal128Converter(),
             [(typeof(float), typeof(float?))] = new FloatNullableFloatConverter(),
             [(typeof(float), typeof(double?))] = new FloatNullableDoubleConverter(),
             [(typeof(float), typeof(decimal?))] = new FloatNullableDecimalConverter(),
@@ -856,6 +928,26 @@ namespace Realms.Helpers
             public RealmInteger<long>? Convert(char value) => value;
         }
 
+        public class CharNullableFloatConverter : ISpecializedConverter<char, float?>
+        {
+            public float? Convert(char value) => value;
+        }
+
+        public class CharNullableDoubleConverter : ISpecializedConverter<char, double?>
+        {
+            public double? Convert(char value) => value;
+        }
+
+        public class CharNullableDecimalConverter : ISpecializedConverter<char, decimal?>
+        {
+            public decimal? Convert(char value) => value;
+        }
+
+        public class CharNullableDecimal128Converter : ISpecializedConverter<char, Decimal128?>
+        {
+            public Decimal128? Convert(char value) => value;
+        }
+
         public class ByteNullableCharConverter : ISpecializedConverter<byte, char?>
         {
             public char? Convert(byte value) => (char)value;
@@ -899,6 +991,26 @@ namespace Realms.Helpers
         public class ByteNullableRealmIntegerLongConverter : ISpecializedConverter<byte, RealmInteger<long>?>
         {
             public RealmInteger<long>? Convert(byte value) => value;
+        }
+
+        public class ByteNullableFloatConverter : ISpecializedConverter<byte, float?>
+        {
+            public float? Convert(byte value) => value;
+        }
+
+        public class ByteNullableDoubleConverter : ISpecializedConverter<byte, double?>
+        {
+            public double? Convert(byte value) => value;
+        }
+
+        public class ByteNullableDecimalConverter : ISpecializedConverter<byte, decimal?>
+        {
+            public decimal? Convert(byte value) => value;
+        }
+
+        public class ByteNullableDecimal128Converter : ISpecializedConverter<byte, Decimal128?>
+        {
+            public Decimal128? Convert(byte value) => value;
         }
 
         public class ShortNullableCharConverter : ISpecializedConverter<short, char?>
@@ -946,6 +1058,26 @@ namespace Realms.Helpers
             public RealmInteger<long>? Convert(short value) => value;
         }
 
+        public class ShortNullableFloatConverter : ISpecializedConverter<short, float?>
+        {
+            public float? Convert(short value) => value;
+        }
+
+        public class ShortNullableDoubleConverter : ISpecializedConverter<short, double?>
+        {
+            public double? Convert(short value) => value;
+        }
+
+        public class ShortNullableDecimalConverter : ISpecializedConverter<short, decimal?>
+        {
+            public decimal? Convert(short value) => value;
+        }
+
+        public class ShortNullableDecimal128Converter : ISpecializedConverter<short, Decimal128?>
+        {
+            public Decimal128? Convert(short value) => value;
+        }
+
         public class IntNullableCharConverter : ISpecializedConverter<int, char?>
         {
             public char? Convert(int value) => (char)value;
@@ -989,6 +1121,26 @@ namespace Realms.Helpers
         public class IntNullableRealmIntegerLongConverter : ISpecializedConverter<int, RealmInteger<long>?>
         {
             public RealmInteger<long>? Convert(int value) => value;
+        }
+
+        public class IntNullableFloatConverter : ISpecializedConverter<int, float?>
+        {
+            public float? Convert(int value) => value;
+        }
+
+        public class IntNullableDoubleConverter : ISpecializedConverter<int, double?>
+        {
+            public double? Convert(int value) => value;
+        }
+
+        public class IntNullableDecimalConverter : ISpecializedConverter<int, decimal?>
+        {
+            public decimal? Convert(int value) => value;
+        }
+
+        public class IntNullableDecimal128Converter : ISpecializedConverter<int, Decimal128?>
+        {
+            public Decimal128? Convert(int value) => value;
         }
 
         public class LongNullableCharConverter : ISpecializedConverter<long, char?>
@@ -1036,6 +1188,26 @@ namespace Realms.Helpers
             public RealmInteger<long>? Convert(long value) => value;
         }
 
+        public class LongNullableFloatConverter : ISpecializedConverter<long, float?>
+        {
+            public float? Convert(long value) => value;
+        }
+
+        public class LongNullableDoubleConverter : ISpecializedConverter<long, double?>
+        {
+            public double? Convert(long value) => value;
+        }
+
+        public class LongNullableDecimalConverter : ISpecializedConverter<long, decimal?>
+        {
+            public decimal? Convert(long value) => value;
+        }
+
+        public class LongNullableDecimal128Converter : ISpecializedConverter<long, Decimal128?>
+        {
+            public Decimal128? Convert(long value) => value;
+        }
+
         public class RealmIntegerByteNullableCharConverter : ISpecializedConverter<RealmInteger<byte>, char?>
         {
             public char? Convert(RealmInteger<byte> value) => (char)(byte)value;
@@ -1079,6 +1251,26 @@ namespace Realms.Helpers
         public class RealmIntegerByteNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<byte>, RealmInteger<long>?>
         {
             public RealmInteger<long>? Convert(RealmInteger<byte> value) => (long)value;
+        }
+
+        public class RealmIntegerByteNullableFloatConverter : ISpecializedConverter<RealmInteger<byte>, float?>
+        {
+            public float? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableDoubleConverter : ISpecializedConverter<RealmInteger<byte>, double?>
+        {
+            public double? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableDecimalConverter : ISpecializedConverter<RealmInteger<byte>, decimal?>
+        {
+            public decimal? Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteNullableDecimal128Converter : ISpecializedConverter<RealmInteger<byte>, Decimal128?>
+        {
+            public Decimal128? Convert(RealmInteger<byte> value) => (byte)value;
         }
 
         public class RealmIntegerShortNullableCharConverter : ISpecializedConverter<RealmInteger<short>, char?>
@@ -1126,6 +1318,26 @@ namespace Realms.Helpers
             public RealmInteger<long>? Convert(RealmInteger<short> value) => (long)value;
         }
 
+        public class RealmIntegerShortNullableFloatConverter : ISpecializedConverter<RealmInteger<short>, float?>
+        {
+            public float? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableDoubleConverter : ISpecializedConverter<RealmInteger<short>, double?>
+        {
+            public double? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableDecimalConverter : ISpecializedConverter<RealmInteger<short>, decimal?>
+        {
+            public decimal? Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortNullableDecimal128Converter : ISpecializedConverter<RealmInteger<short>, Decimal128?>
+        {
+            public Decimal128? Convert(RealmInteger<short> value) => (short)value;
+        }
+
         public class RealmIntegerIntNullableCharConverter : ISpecializedConverter<RealmInteger<int>, char?>
         {
             public char? Convert(RealmInteger<int> value) => (char)value;
@@ -1169,6 +1381,26 @@ namespace Realms.Helpers
         public class RealmIntegerIntNullableRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<int>, RealmInteger<long>?>
         {
             public RealmInteger<long>? Convert(RealmInteger<int> value) => (long)value;
+        }
+
+        public class RealmIntegerIntNullableFloatConverter : ISpecializedConverter<RealmInteger<int>, float?>
+        {
+            public float? Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntNullableDoubleConverter : ISpecializedConverter<RealmInteger<int>, double?>
+        {
+            public double? Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntNullableDecimalConverter : ISpecializedConverter<RealmInteger<int>, decimal?>
+        {
+            public decimal? Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntNullableDecimal128Converter : ISpecializedConverter<RealmInteger<int>, Decimal128?>
+        {
+            public Decimal128? Convert(RealmInteger<int> value) => (int)value;
         }
 
         public class RealmIntegerLongNullableCharConverter : ISpecializedConverter<RealmInteger<long>, char?>
@@ -1216,6 +1448,26 @@ namespace Realms.Helpers
             public RealmInteger<long>? Convert(RealmInteger<long> value) => (long)value;
         }
 
+        public class RealmIntegerLongNullableFloatConverter : ISpecializedConverter<RealmInteger<long>, float?>
+        {
+            public float? Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongNullableDoubleConverter : ISpecializedConverter<RealmInteger<long>, double?>
+        {
+            public double? Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongNullableDecimalConverter : ISpecializedConverter<RealmInteger<long>, decimal?>
+        {
+            public decimal? Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongNullableDecimal128Converter : ISpecializedConverter<RealmInteger<long>, Decimal128?>
+        {
+            public Decimal128? Convert(RealmInteger<long> value) => (long)value;
+        }
+
         public class CharByteConverter : ISpecializedConverter<char, byte>
         {
             public byte Convert(char value) => (byte)value;
@@ -1254,6 +1506,26 @@ namespace Realms.Helpers
         public class CharRealmIntegerLongConverter : ISpecializedConverter<char, RealmInteger<long>>
         {
             public RealmInteger<long> Convert(char value) => value;
+        }
+
+        public class CharFloatConverter : ISpecializedConverter<char, float>
+        {
+            public float Convert(char value) => value;
+        }
+
+        public class CharDoubleConverter : ISpecializedConverter<char, double>
+        {
+            public double Convert(char value) => value;
+        }
+
+        public class CharDecimalConverter : ISpecializedConverter<char, decimal>
+        {
+            public decimal Convert(char value) => value;
+        }
+
+        public class CharDecimal128Converter : ISpecializedConverter<char, Decimal128>
+        {
+            public Decimal128 Convert(char value) => value;
         }
 
         public class ByteCharConverter : ISpecializedConverter<byte, char>
@@ -1296,6 +1568,26 @@ namespace Realms.Helpers
             public RealmInteger<long> Convert(byte value) => value;
         }
 
+        public class ByteFloatConverter : ISpecializedConverter<byte, float>
+        {
+            public float Convert(byte value) => value;
+        }
+
+        public class ByteDoubleConverter : ISpecializedConverter<byte, double>
+        {
+            public double Convert(byte value) => value;
+        }
+
+        public class ByteDecimalConverter : ISpecializedConverter<byte, decimal>
+        {
+            public decimal Convert(byte value) => value;
+        }
+
+        public class ByteDecimal128Converter : ISpecializedConverter<byte, Decimal128>
+        {
+            public Decimal128 Convert(byte value) => value;
+        }
+
         public class ShortCharConverter : ISpecializedConverter<short, char>
         {
             public char Convert(short value) => (char)value;
@@ -1334,6 +1626,26 @@ namespace Realms.Helpers
         public class ShortRealmIntegerLongConverter : ISpecializedConverter<short, RealmInteger<long>>
         {
             public RealmInteger<long> Convert(short value) => value;
+        }
+
+        public class ShortFloatConverter : ISpecializedConverter<short, float>
+        {
+            public float Convert(short value) => value;
+        }
+
+        public class ShortDoubleConverter : ISpecializedConverter<short, double>
+        {
+            public double Convert(short value) => value;
+        }
+
+        public class ShortDecimalConverter : ISpecializedConverter<short, decimal>
+        {
+            public decimal Convert(short value) => value;
+        }
+
+        public class ShortDecimal128Converter : ISpecializedConverter<short, Decimal128>
+        {
+            public Decimal128 Convert(short value) => value;
         }
 
         public class IntCharConverter : ISpecializedConverter<int, char>
@@ -1376,6 +1688,26 @@ namespace Realms.Helpers
             public RealmInteger<long> Convert(int value) => value;
         }
 
+        public class IntFloatConverter : ISpecializedConverter<int, float>
+        {
+            public float Convert(int value) => value;
+        }
+
+        public class IntDoubleConverter : ISpecializedConverter<int, double>
+        {
+            public double Convert(int value) => value;
+        }
+
+        public class IntDecimalConverter : ISpecializedConverter<int, decimal>
+        {
+            public decimal Convert(int value) => value;
+        }
+
+        public class IntDecimal128Converter : ISpecializedConverter<int, Decimal128>
+        {
+            public Decimal128 Convert(int value) => value;
+        }
+
         public class LongCharConverter : ISpecializedConverter<long, char>
         {
             public char Convert(long value) => (char)value;
@@ -1414,6 +1746,26 @@ namespace Realms.Helpers
         public class LongRealmIntegerLongConverter : ISpecializedConverter<long, RealmInteger<long>>
         {
             public RealmInteger<long> Convert(long value) => value;
+        }
+
+        public class LongFloatConverter : ISpecializedConverter<long, float>
+        {
+            public float Convert(long value) => value;
+        }
+
+        public class LongDoubleConverter : ISpecializedConverter<long, double>
+        {
+            public double Convert(long value) => value;
+        }
+
+        public class LongDecimalConverter : ISpecializedConverter<long, decimal>
+        {
+            public decimal Convert(long value) => value;
+        }
+
+        public class LongDecimal128Converter : ISpecializedConverter<long, Decimal128>
+        {
+            public Decimal128 Convert(long value) => value;
         }
 
         public class RealmIntegerByteCharConverter : ISpecializedConverter<RealmInteger<byte>, char>
@@ -1456,6 +1808,26 @@ namespace Realms.Helpers
             public RealmInteger<long> Convert(RealmInteger<byte> value) => (long)value;
         }
 
+        public class RealmIntegerByteFloatConverter : ISpecializedConverter<RealmInteger<byte>, float>
+        {
+            public float Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteDoubleConverter : ISpecializedConverter<RealmInteger<byte>, double>
+        {
+            public double Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteDecimalConverter : ISpecializedConverter<RealmInteger<byte>, decimal>
+        {
+            public decimal Convert(RealmInteger<byte> value) => value;
+        }
+
+        public class RealmIntegerByteDecimal128Converter : ISpecializedConverter<RealmInteger<byte>, Decimal128>
+        {
+            public Decimal128 Convert(RealmInteger<byte> value) => (byte)value;
+        }
+
         public class RealmIntegerShortCharConverter : ISpecializedConverter<RealmInteger<short>, char>
         {
             public char Convert(RealmInteger<short> value) => (char)(short)value;
@@ -1494,6 +1866,26 @@ namespace Realms.Helpers
         public class RealmIntegerShortRealmIntegerLongConverter : ISpecializedConverter<RealmInteger<short>, RealmInteger<long>>
         {
             public RealmInteger<long> Convert(RealmInteger<short> value) => (long)value;
+        }
+
+        public class RealmIntegerShortFloatConverter : ISpecializedConverter<RealmInteger<short>, float>
+        {
+            public float Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortDoubleConverter : ISpecializedConverter<RealmInteger<short>, double>
+        {
+            public double Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortDecimalConverter : ISpecializedConverter<RealmInteger<short>, decimal>
+        {
+            public decimal Convert(RealmInteger<short> value) => value;
+        }
+
+        public class RealmIntegerShortDecimal128Converter : ISpecializedConverter<RealmInteger<short>, Decimal128>
+        {
+            public Decimal128 Convert(RealmInteger<short> value) => (short)value;
         }
 
         public class RealmIntegerIntCharConverter : ISpecializedConverter<RealmInteger<int>, char>
@@ -1536,6 +1928,26 @@ namespace Realms.Helpers
             public RealmInteger<long> Convert(RealmInteger<int> value) => (long)value;
         }
 
+        public class RealmIntegerIntFloatConverter : ISpecializedConverter<RealmInteger<int>, float>
+        {
+            public float Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntDoubleConverter : ISpecializedConverter<RealmInteger<int>, double>
+        {
+            public double Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntDecimalConverter : ISpecializedConverter<RealmInteger<int>, decimal>
+        {
+            public decimal Convert(RealmInteger<int> value) => value;
+        }
+
+        public class RealmIntegerIntDecimal128Converter : ISpecializedConverter<RealmInteger<int>, Decimal128>
+        {
+            public Decimal128 Convert(RealmInteger<int> value) => (int)value;
+        }
+
         public class RealmIntegerLongCharConverter : ISpecializedConverter<RealmInteger<long>, char>
         {
             public char Convert(RealmInteger<long> value) => (char)value;
@@ -1574,6 +1986,26 @@ namespace Realms.Helpers
         public class RealmIntegerLongRealmIntegerIntConverter : ISpecializedConverter<RealmInteger<long>, RealmInteger<int>>
         {
             public RealmInteger<int> Convert(RealmInteger<long> value) => (int)value;
+        }
+
+        public class RealmIntegerLongFloatConverter : ISpecializedConverter<RealmInteger<long>, float>
+        {
+            public float Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongDoubleConverter : ISpecializedConverter<RealmInteger<long>, double>
+        {
+            public double Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongDecimalConverter : ISpecializedConverter<RealmInteger<long>, decimal>
+        {
+            public decimal Convert(RealmInteger<long> value) => value;
+        }
+
+        public class RealmIntegerLongDecimal128Converter : ISpecializedConverter<RealmInteger<long>, Decimal128>
+        {
+            public Decimal128 Convert(RealmInteger<long> value) => (long)value;
         }
 
         #endregion Integral Converters

@@ -377,6 +377,20 @@ namespace Realms.Helpers
                     
                     yield return Tuple.Create(fromType.Name, toType.Name + (nullable ? "?" : ""), conversion);
                 }
+
+                foreach (var toType in _floatingPointTypes)
+                {
+                    var conversion = "";
+
+                    // Decimal128 doesn't implicitly convert from RealmInteger, so we need to explicitly
+                    // cast to the backing type, from which an implicit conversion is defined.
+                    if (toType.Name == "Decimal128" && fromType.IsRealmInteger)
+                    {
+                        conversion = "(" + fromType.BackingType +")";
+                    }
+
+                    yield return Tuple.Create(fromType.Name, toType.Name + (nullable ? "?" : ""), conversion);
+                }
             }
         }
     }
