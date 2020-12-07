@@ -21,14 +21,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Pdb;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -138,7 +134,18 @@ namespace RealmWeaver
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            var referencePaths = report.files.Select(f => f.path).ToArray();
+            // This is a bit hacky - we need actual references, not directories, containing references, so we pass folder/dummy.dll
+            // knowing that dummy.dll will be stripped.
+            var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(ApiCompatibilityLevel.NET_Standard_2_0).Select(d => Path.Combine(d, "dummy.dll"));
+            var referencePaths = systemAssemblies
+                .Concat(report.files.Select(f => f.path))
+                .ToArray();
+
+            var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
+            foreach (var file in assembliesToWeave)
+            {
+                WeaveAssemblyCore(file.path, referencePaths);
+            }
 
             if (report.summary.platform == BuildTarget.iOS)
             {
@@ -156,12 +163,6 @@ namespace RealmWeaver
                         realmResolutionResult.SaveModuleUpdates();
                     }
                 }
-            }
-
-            var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            foreach (var file in assembliesToWeave)
-            {
-                WeaveAssemblyCore(file.path, referencePaths);
             }
         }
 
