@@ -95,12 +95,10 @@ jobs:
           dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f * --join
           rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
       - name: Save artifacts
-        # Not mandatory, but maybe it's good to do it?
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-windows
           path: .\BenchmarkDotNet.Artifacts\results
-      # Download previous benchmark result from cache (if exists)    
       - name: Store benchmark results
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:

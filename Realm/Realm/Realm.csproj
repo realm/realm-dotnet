@@ -30,7 +30,7 @@
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\realm.rd.xml" />
+    <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
     <Content Include="RealmWrappersReferences.props" Pack="true" PackagePath="build\Realm.props" />
     <!-- iOS -->
