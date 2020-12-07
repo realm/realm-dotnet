@@ -119,14 +119,13 @@ namespace RealmWeaver
                 HasThis = false
             };
 
-#if UNITY_IOS || ENABLE_IL2CPP
-            var isUnityEngineAvailable = _moduleDefinition.AssemblyReferences.Any(a => a.Name.Contains("UnityEngine"));
-            if (isUnityEngineAvailable)
+            if (!(_references.RuntimeInitializeOnLoadAttribute_Unity is null))
             {
-                var attributeConstructor = _moduleDefinition.ImportReference(typeof(UnityEngine.RuntimeInitializeOnLoadMethodAttribute).GetConstructor(Type.EmptyTypes));
-                initialize.CustomAttributes.Add(new CustomAttribute(attributeConstructor));
+                _logger.Warning("*** unityEngine wasn't null");
+                initialize.CustomAttributes.Add(new CustomAttribute(_references.RuntimeInitializeOnLoadAttribute_Unity_Constructor));
             }
-#endif
+            else _logger.Warning("*** unityEngine WAS NULL!!!");
+
             initialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             initializerType.Methods.Add(initialize);
             _moduleDefinition.Types.Add(initializerType);
