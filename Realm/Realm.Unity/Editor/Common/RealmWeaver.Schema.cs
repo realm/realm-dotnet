@@ -119,9 +119,9 @@ namespace RealmWeaver
                 HasThis = false
             };
 
-            if (!(_references.RuntimeInitializeOnLoadAttribute_Unity is null))
+            if (_references.UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor != null)
             {
-                initialize.CustomAttributes.Add(new CustomAttribute(_references.RuntimeInitializeOnLoadAttribute_Unity_Constructor));
+                initialize.CustomAttributes.Add(new CustomAttribute(_references.UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor));
             }
 
             initialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));

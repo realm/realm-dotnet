@@ -143,9 +143,7 @@ namespace RealmWeaver
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
 
-        public MethodReference RuntimeInitializeOnLoadAttribute_Unity_Constructor { get; private set; }
-
-        public TypeReference RuntimeInitializeOnLoadAttribute_Unity { get; private set; }
+        public MethodReference UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor { get; private set; }
 
         public TypeReference SyncConfiguration { get; private set; }
 
@@ -205,7 +203,7 @@ namespace RealmWeaver
             };
 
             var UnityEngine = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "UnityEngine.CoreModule");
-            if (!(UnityEngine is null))
+            if (UnityEngine != null)
             {
                 InitializeRuntimeInitAttribute_Unity(UnityEngine);
             }
@@ -379,8 +377,8 @@ namespace RealmWeaver
 
         private void InitializeRuntimeInitAttribute_Unity(AssemblyNameReference unityEngineAssembly)
         {
-            RuntimeInitializeOnLoadAttribute_Unity = new TypeReference("UnityEngine.CoreModule", "RuntimeInitializeOnLoadMethodAttribute", Module, unityEngineAssembly);
-            RuntimeInitializeOnLoadAttribute_Unity_Constructor = new MethodReference(".ctor", Types.Void, RuntimeInitializeOnLoadAttribute_Unity) { HasThis = true };
+            var unityEngine_runtimeInitializeOnLoadAttribute = new TypeReference("UnityEngine.CoreModule", "RuntimeInitializeOnLoadMethodAttribute", Module, unityEngineAssembly);
+            UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor = new MethodReference(".ctor", Types.Void, unityEngine_runtimeInitializeOnLoadAttribute) { HasThis = true };
         }
 
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
