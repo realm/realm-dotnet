@@ -143,6 +143,8 @@ namespace RealmWeaver
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
 
+        public MethodReference UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor { get; private set; }
+
         public TypeReference SyncConfiguration { get; private set; }
 
         protected ModuleDefinition Module { get; }
@@ -199,6 +201,12 @@ namespace RealmWeaver
                 HasThis = false,
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
+
+            var UnityEngine = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "UnityEngine.CoreModule");
+            if (UnityEngine != null)
+            {
+                InitializeRuntimeInitAttribute_Unity(UnityEngine);
+            }
 
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
             var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
@@ -365,6 +373,12 @@ namespace RealmWeaver
             }
 
             SyncConfiguration = new TypeReference("Realms.Sync", "SyncConfiguration", Module, realmAssembly);
+        }
+
+        private void InitializeRuntimeInitAttribute_Unity(AssemblyNameReference unityEngineAssembly)
+        {
+            var unityEngine_runtimeInitializeOnLoadAttribute = new TypeReference("UnityEngine.CoreModule", "RuntimeInitializeOnLoadMethodAttribute", Module, unityEngineAssembly);
+            UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor = new MethodReference(".ctor", Types.Void, unityEngine_runtimeInitializeOnLoadAttribute) { HasThis = true };
         }
 
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
