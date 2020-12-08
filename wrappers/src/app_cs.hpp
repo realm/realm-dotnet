@@ -64,62 +64,53 @@ namespace binding {
         }
     };
 
-    // This is a copy of AuthProvider because we need the extra enum
-    // value for GOOGLE_ID_TOKEN.
-    enum class AuthProviderDotNet {
-        ANONYMOUS = 0,
-        FACEBOOK = 1,
-        GOOGLE = 2,
-        APPLE = 3,
-        CUSTOM = 4,
-        USERNAME_PASSWORD = 5,
-        FUNCTION = 6,
-        USER_API_KEY = 7,
-        SERVER_API_KEY = 8,
-        GOOGLE_ID_TOKEN = 9,
-    };
-
     struct Credentials
     {
-        AuthProviderDotNet provider;
+        AuthProvider provider;
 
         uint16_t* token;
         size_t token_len;
 
-        uint16_t* password;
-        size_t password_len;
+        uint16_t* additional_info;
+        size_t additional_info_len;
 
         AppCredentials to_app_credentials() {
             switch (provider)
             {
-            case AuthProviderDotNet::ANONYMOUS:
+            case AuthProvider::ANONYMOUS:
                 return AppCredentials::anonymous();
 
-            case AuthProviderDotNet::FACEBOOK:
+            case AuthProvider::FACEBOOK:
                 return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
 
-            case AuthProviderDotNet::GOOGLE:
-                return AppCredentials::google(AuthCode{ Utf16StringAccessor(token, token_len).to_string() });
+            case AuthProvider::GOOGLE: {
+                Utf16StringAccessor google_credential_type(additional_info, additional_info_len);
+                if (google_credential_type == "AuthCode") {
+                    return AppCredentials::google(AuthCode{ Utf16StringAccessor(token, token_len).to_string() });
+                }
 
-            case AuthProviderDotNet::GOOGLE_ID_TOKEN:
-                return AppCredentials::google(IdToken{ Utf16StringAccessor(token, token_len).to_string() });
+                if (google_credential_type == "IdToken") {
+                    return AppCredentials::google(IdToken{ Utf16StringAccessor(token, token_len).to_string() });
+                }
 
-            case AuthProviderDotNet::APPLE:
+                realm::util::terminate("Invalid google credential type", __FILE__, __LINE__);
+            }
+            case AuthProvider::APPLE:
                 return AppCredentials::apple(Utf16StringAccessor(token, token_len));
 
-            case AuthProviderDotNet::CUSTOM:
+            case AuthProvider::CUSTOM:
                 return AppCredentials::custom(Utf16StringAccessor(token, token_len));
 
-            case AuthProviderDotNet::USERNAME_PASSWORD:
-                return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
+            case AuthProvider::USERNAME_PASSWORD:
+                return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(additional_info, additional_info_len));
 
-            case AuthProviderDotNet::FUNCTION:
+            case AuthProvider::FUNCTION:
                 return AppCredentials::function(Utf16StringAccessor(token, token_len));
 
-            case AuthProviderDotNet::USER_API_KEY:
+            case AuthProvider::USER_API_KEY:
                 return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
 
-            case AuthProviderDotNet::SERVER_API_KEY:
+            case AuthProvider::SERVER_API_KEY:
                 return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
 
             default:

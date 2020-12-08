@@ -26,13 +26,11 @@ namespace Realms.Sync
         /// <summary>
         /// A credential representing an auth code.
         /// </summary>
-        /// <seealso cref="Credentials.AuthProvider.GoogleAuthCode"/>
         AuthCode,
 
         /// <summary>
         /// A credential representing an Id token.
         /// </summary>
-        /// <seealso cref="Credentials.AuthProvider.GoogleIdToken"/>
         IdToken,
     }
 }
