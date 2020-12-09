@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>UnityUtils</PackageId>
+    <Version>1.0.0</Version>
+    <Company>Realm Inc.</Company>
+    <Description>Utils to support the Realm SDK in Unity projects</Description>
+    <Copyright>Apache License, Version 2.0</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
