@@ -90,7 +90,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCase(1000000), TestExplicit]
-        public void BindingSetValuePerformanceTest(int count)
+        public void BindingSetValuePerformanceTest(int count) //This seems to be the same of ObjectTests.SetPropertyValue
         {
             Console.WriteLine($"Binding-based performance check for {count:n} entries: Set value -------------");
 
@@ -142,21 +142,6 @@ namespace Realms.Tests.Database
             });
             sw.Stop();
             Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
-
-            sw.Restart();
-            _realm.Write(() =>
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    _realm.Add(new MiniPerson
-                    {
-                        Name = objects[i].Name,
-                        IsInteresting = objects[i].IsInteresting
-                    });
-                }
-            });
-
-            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
         }
 
         [TestCase(100000), TestExplicit]
@@ -184,21 +169,6 @@ namespace Realms.Tests.Database
             });
             sw.Stop();
             Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
-
-            sw.Restart();
-            _realm.Write(() =>
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    _realm.Add(new Person
-                    {
-                        FirstName = objects[i].FirstName,
-                        IsInteresting = objects[i].IsInteresting
-                    });
-                }
-            });
-
-            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
         }
     }
 
