@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.0.0-beta.3 (2020-12-10)
 ------------------
 
 ### Breaking Changes
@@ -18,7 +18,6 @@ objects with the same primary key. (Core upgrade)
 * Fixed a bug that could lead to a crash when refreshing the user's custom data. (Core upgrade)
 
 ### Enhancements
-* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
 * Added support of OpenID Connect credential for the Google authentication provider. (Issue [#2108](https://github.com/realm/realm-dotnet/issues/2108))
 * Optimized the internal code that handles conversions between types. This should result in a minor performance increase
 for most data operations that should be most noticeable on Ahead-of-Time compiled platforms, such as iOS/UWP. Due to the
