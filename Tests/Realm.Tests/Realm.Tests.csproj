@@ -88,4 +88,9 @@
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Database\RealmValueTests.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
