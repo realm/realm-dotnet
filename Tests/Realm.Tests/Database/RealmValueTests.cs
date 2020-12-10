@@ -22,9 +22,9 @@ using NUnit.Framework;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class RealmValueTests : RealmInstanceTest
+    public class AARealmValueTests : RealmInstanceTest //TODO for testing
     {
-        public RealmValueTests()
+        public AARealmValueTests()
         {
         }
 

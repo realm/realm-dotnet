@@ -49,6 +49,7 @@ namespace RealmWeaver
         internal const string ObjectIdTypeName = "MongoDB.Bson.ObjectId";
         internal const string DateTimeOffsetTypeName = "System.DateTimeOffset";
         internal const string GuidTypeName = "System.Guid";
+        internal const string RealmValueTypeName = "Realms.RealmValue";
         internal const string NullableCharTypeName = "System.Nullable`1<System.Char>";
         internal const string NullableByteTypeName = "System.Nullable`1<System.Byte>";
         internal const string NullableInt16TypeName = "System.Nullable`1<System.Int16>";
@@ -72,8 +73,9 @@ namespace RealmWeaver
             DecimalTypeName,
             Decimal128TypeName,
             ObjectIdTypeName,
-            GuidTypeName,
             DateTimeOffsetTypeName,
+            GuidTypeName,
+            RealmValueTypeName,
             NullableCharTypeName,
             NullableSingleTypeName,
             NullableDoubleTypeName,
@@ -569,13 +571,16 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+            if (prop.PropertyType.FullName != RealmValueTypeName)  //TODO FP A test
             {
-                Parameters = { new ParameterDefinition(_references.RealmValue) },
-                HasThis = false
-            };
+                var convertMethod = new MethodReference("op_Explicit", convertType, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(_references.RealmValue) },
+                    HasThis = false
+                };
 
-            il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+                il.InsertBefore(start, il.Create(OpCodes.Call, convertMethod));
+            }
 
             // This only happens when we have a relationship - explicitly cast.
             if (convertType != prop.PropertyType)
@@ -764,13 +769,16 @@ Analytics payload
                 convertType = _references.RealmObjectBase;
             }
 
-            var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+            if (prop.PropertyType.FullName != RealmValueTypeName)  //TODO FP A test
             {
-                Parameters = { new ParameterDefinition(convertType) },
-                HasThis = false
-            };
+                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
+                {
+                    Parameters = { new ParameterDefinition(convertType) },
+                    HasThis = false
+                };
 
-            il.Append(il.Create(OpCodes.Call, convertMethod));
+                il.Append(il.Create(OpCodes.Call, convertMethod));
+            }
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
             il.Append(il.Create(OpCodes.Ret));

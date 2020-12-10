@@ -90,6 +90,9 @@ namespace Realms.Schema
         /// </summary>
         Guid = 12,
 
+        //FP TEST
+        RealmValue = 13,
+
         /// <summary>
         /// A required property. Can be combined with other values.
         /// </summary>

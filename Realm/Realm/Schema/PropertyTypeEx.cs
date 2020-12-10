@@ -85,6 +85,9 @@ namespace Realms.Schema
                 case Type _ when type == typeof(Guid):
                     return PropertyType.Guid | nullabilityModifier;
 
+                case Type _ when type == typeof(RealmValue):
+                    return PropertyType.RealmValue;
+
                 case Type _ when type.IsRealmObject() || type.IsEmbeddedObject():
                     objectType = type;
                     return PropertyType.Object | PropertyType.Nullable;
