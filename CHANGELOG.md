@@ -2,7 +2,8 @@
 ------------------
 
 ### Breaking Changes
-* None
+* `Credentials.Google(string)` now has an additional argument of type `GoogleCredentialType`. The available types are `IdToken`
+and `AuthCode` and specify  what type of credential the passed string represents.
 
 ### Fixed
 * Fixed a bug that could cause incorrect property values to be read during a migration for apps running on .NET Core 3.0 or newer.
@@ -10,9 +11,15 @@
   the wrong property being accessed - e.g. `foo.Name` could return `foo.Bar`. This could only happen when using the
   dynamic API during a migration and does not affect apps that use the strongly typed API or run on platforms other
   than .NET Core 3.x/.NET 5.
+* Fixed an issue that would cause deadlocks on Windows systems when 3 or more processes were listening for notifications on the same Realm file. (Core upgrade)
+* Fixed a bug that would prevent eventual consistency during conflict resolution. Affected clients would experience data divergence
+and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for
+objects with the same primary key. (Core upgrade)
+* Fixed a bug that could lead to a crash when refreshing the user's custom data. (Core upgrade)
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+* Added support of OpenID Connect credential for the Google authentication provider. (Issue [#2108](https://github.com/realm/realm-dotnet/issues/2108))
 * Optimized the internal code that handles conversions between types. This should result in a minor performance increase
 for most data operations that should be most noticeable on Ahead-of-Time compiled platforms, such as iOS/UWP. Due to the
 nature of the change, it's possible that conversions that previously happened automatically when working with dynamic objects
@@ -23,10 +30,11 @@ and believe this is a bug, please open a Github Issue. (PR [#2149](https://githu
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Sync 10.1.0 and Core 10.1.0.
-* Submit Analytics to S3/Segment in addition to Mixpanel
-* Analytics now also reports if Sync functionality is in use
-* SDK is now also tested against .net5
+* Using Core 10.3.0.
+* Submit Analytics to S3/Segment in addition to Mixpanel.
+* Analytics now also reports if Sync functionality is in use.
+* SDK is now also tested against .NET 5.
+* This release uses monorepo releases that bundle Core, Sync, and OS.
 * Replaced Expressions-based Operator with T4. (PR [#2149](https://github.com/realm/realm-dotnet/pull/2149))
 
 ## 10.0.0-beta.2 (2020-11-04)

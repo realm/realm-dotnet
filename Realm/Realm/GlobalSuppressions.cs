@@ -13,6 +13,7 @@
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native structs use snake_case fields.", Scope = "type", Target = "~T:Realms.NativeException")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:Use built-in type alias", Justification = "Native structs use verbose names.", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native structs use snake_case fields.", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
+[assembly: SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Private struct fields are important for correct offsets while marshalling", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Native methods are snake_case.", Scope = "type", Target = "~T:Realms.SynchronizationContextScheduler")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Native methods are snake_case.", Scope = "type", Target = "~T:Realms.SynchronizationContextScheduler")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Will be a breaking change to rename.", Scope = "type", Target = "~T:Realms.Schema.Property")]

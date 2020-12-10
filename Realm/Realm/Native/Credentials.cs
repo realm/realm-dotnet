@@ -40,15 +40,15 @@ namespace Realms.Sync.Native
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string password;
-        private IntPtr password_len;
+        private string additional_info;
+        private IntPtr additional_info_len;
 
-        internal string Password
+        internal string AdditionalInfo
         {
             set
             {
-                password = value;
-                password_len = (IntPtr)(value?.Length ?? 0);
+                additional_info = value;
+                additional_info_len = (IntPtr)(value?.Length ?? 0);
             }
         }
     }

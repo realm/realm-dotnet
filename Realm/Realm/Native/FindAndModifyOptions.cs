@@ -29,27 +29,9 @@ namespace Realms.Native
         private string projection_buf;
         private IntPtr projection_len;
 
-        internal string Projection
-        {
-            set
-            {
-                projection_buf = value;
-                projection_len = (IntPtr)(value?.Length ?? 0);
-            }
-        }
-
         [MarshalAs(UnmanagedType.LPWStr)]
         private string sort_buf;
         private IntPtr sort_len;
-
-        internal string Sort
-        {
-            set
-            {
-                sort_buf = value;
-                sort_len = (IntPtr)(value?.Length ?? 0);
-            }
-        }
 
         [MarshalAs(UnmanagedType.U1)]
         private bool upsert;
