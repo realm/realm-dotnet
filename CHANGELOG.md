@@ -1,3 +1,20 @@
+## vNext (TBD)
+------------------
+### Breaking Changes
+* None
+
+### Fixed
+* None
+
+### Enhancements
+* Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+
+### Compatibility
+* Realm Studio: 10.0.0 or later.
+
+### Internal
+* Using Core 10.3.0.
+
 ## 10.0.0-beta.3 (2020-12-10)
 ------------------
 
@@ -16,6 +33,7 @@ and `AuthCode` and specify  what type of credential the passed string represents
 and potentially consistency errors as a result if they experienced conflict resolution between cycles of Create-Erase-Create for
 objects with the same primary key. (Core upgrade)
 * Fixed a bug that could lead to a crash when refreshing the user's custom data. (Core upgrade)
+* Fixed a bug that could cause an assertion `n != realm::npos` when integrating changesets from the server. (Core upgrade)
 
 ### Enhancements
 * Added support of OpenID Connect credential for the Google authentication provider. (Issue [#2108](https://github.com/realm/realm-dotnet/issues/2108))

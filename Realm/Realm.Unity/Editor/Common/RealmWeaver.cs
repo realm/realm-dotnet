@@ -72,6 +72,7 @@ namespace RealmWeaver
             DecimalTypeName,
             Decimal128TypeName,
             ObjectIdTypeName,
+            GuidTypeName,
             DateTimeOffsetTypeName,
             NullableCharTypeName,
             NullableSingleTypeName,
@@ -111,6 +112,7 @@ namespace RealmWeaver
             Int32TypeName,
             Int64TypeName,
             ObjectIdTypeName,
+            GuidTypeName,
             NullableCharTypeName,
             NullableByteTypeName,
             NullableInt16TypeName,
@@ -391,11 +393,6 @@ Analytics payload
                 if (prop.SetMethod != null)
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has a setter but its type is a {collectionType} which only supports getters.");
-                }
-
-                if (collectionType == RealmCollectionType.ISet)
-                {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a {collectionType} which is not yet supported.");
                 }
 
                 switch (collectionType)
