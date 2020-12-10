@@ -75,6 +75,9 @@ namespace Realms.Schema
         /// </summary>
         LinkingObjects = 8,
 
+        //FP TEST
+        Mixed = 9,
+
         /// <summary>
         /// 96 bit ObjectID property.
         /// </summary>
@@ -89,9 +92,6 @@ namespace Realms.Schema
         /// 128 bit UUID property.
         /// </summary>
         Guid = 12,
-
-        //FP TEST
-        RealmValue = 13,
 
         /// <summary>
         /// A required property. Can be combined with other values.
