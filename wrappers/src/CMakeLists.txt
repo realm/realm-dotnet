@@ -2,6 +2,7 @@ set(SOURCES
     debug.cpp
     error_handling.cpp
     list_cs.cpp
+    set_cs.cpp
     marshalling.cpp
     object_cs.cpp
     query_cs.cpp
@@ -37,6 +38,8 @@ set(HEADERS
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     add_compile_options(-Wno-missing-prototypes)
 endif()
+
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 
 add_library(realm-wrappers SHARED ${SOURCES} ${HEADERS})
 set_target_properties(realm-wrappers PROPERTIES
