@@ -70,10 +70,7 @@ namespace Realms
             return _setHandle.Remove(realmValue);
         }
 
-        public override int IndexOf(T value)
-        {
-            throw new NotSupportedException();
-        }
+        public override int IndexOf(T value) => throw new NotSupportedException();
 
         public override bool Contains(T value)
         {
@@ -93,7 +90,7 @@ namespace Realms
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmSet<T>(realm, (SetHandle)handle, Metadata);
 
-        internal override CollectionHandleBase CreateHandle() => _setHandle;
+        internal override CollectionHandleBase GetOrCreateHandle() => _setHandle;
 
         #region Set methods
 

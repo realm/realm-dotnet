@@ -58,7 +58,7 @@ namespace Realms
 
         internal override RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmResults<T>(realm, (ResultsHandle)handle, Metadata);
 
-        internal override CollectionHandleBase CreateHandle()
+        internal override CollectionHandleBase GetOrCreateHandle()
         {
             if (_handle != null)
             {

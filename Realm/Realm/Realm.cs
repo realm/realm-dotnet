@@ -1224,6 +1224,30 @@ namespace Realms
         }
 
         /// <summary>
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.Dictionary{String, RealmValue}"/> was first created,
+        /// but resolved for the current Realm for this thread.
+        /// </summary>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IDictionary{String, RealmValue}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <returns>
+        /// A thread-confined instance of the original <see cref="IDictionary{String, RealmValue}"/> resolved for the current thread or <c>null</c>
+        /// if the set's parent object has been deleted after the reference was created.
+        /// </returns>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Set instance will own its handle.")]
+        public IDictionary<string, RealmValue> ResolveReference(ThreadSafeReference.Dictionary<string, RealmValue> reference)
+        {
+            Argument.NotNull(reference, nameof(reference));
+
+            var dictionaryPtr = SharedRealmHandle.ResolveReference(reference);
+            var dictionaryHandle = new DictionaryHandle(SharedRealmHandle, dictionaryPtr);
+            if (!dictionaryHandle.IsValid)
+            {
+                return null;
+            }
+
+            return new RealmDictionary(this, dictionaryHandle);
+        }
+
+        /// <summary>
         /// Returns the same query as the one referenced when the <see cref="ThreadSafeReference.Query{T}"/> was first created,
         /// but resolved for the current Realm for this thread.
         /// </summary>

@@ -50,7 +50,7 @@ namespace Realms
             _listHandle = adoptedList;
         }
 
-        internal override CollectionHandleBase CreateHandle() => _listHandle;
+        internal override CollectionHandleBase GetOrCreateHandle() => _listHandle;
 
         ListHandle IRealmList.NativeHandle => _listHandle;
 

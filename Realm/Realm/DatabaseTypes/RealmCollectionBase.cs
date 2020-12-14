@@ -132,7 +132,7 @@ namespace Realms
         internal RealmCollectionBase(Realm realm, RealmObjectBase.Metadata metadata)
         {
             Realm = realm;
-            Handle = new Lazy<CollectionHandleBase>(CreateHandle);
+            Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
         }
 
@@ -141,7 +141,7 @@ namespace Realms
             UnsubscribeFromNotifications();
         }
 
-        internal abstract CollectionHandleBase CreateHandle();
+        internal abstract CollectionHandleBase GetOrCreateHandle();
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 

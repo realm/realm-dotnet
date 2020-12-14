@@ -286,7 +286,7 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_UUID:
         return Mixed{ from_capi(val.uuid) };
     case realm_value_type::RLM_TYPE_LINK:
-        REALM_TERMINATE("Can't use from_capi on values containing links.");
+        return from_capi(val.link.object, true);
     }
     REALM_TERMINATE("Invalid realm_value_t");
 }

@@ -74,7 +74,7 @@ namespace Realms
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
         /// <param name="list">The list you want to create a frozen copy of.</param>
-        /// <typeparam name="T">Type of the objects in the list.</typeparam>
+        /// <typeparam name="T">Type of the elements in the list.</typeparam>
         /// <returns>A frozen copy of this list.</returns>
         public static IList<T> Freeze<T>(this IList<T> list)
         {
@@ -103,7 +103,7 @@ namespace Realms
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
         /// <param name="query">The query you want to create a frozen copy of.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> in the query.</typeparam>
+        /// <typeparam name="T">The type of the elements in the query.</typeparam>
         /// <returns>A frozen copy of this query.</returns>
         public static IQueryable<T> Freeze<T>(this IQueryable<T> query)
             where T : RealmObjectBase
@@ -133,7 +133,7 @@ namespace Realms
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
         /// <param name="set">The set you want to create a frozen copy of.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> in the set.</typeparam>
+        /// <typeparam name="T">The type of the elements in the set.</typeparam>
         /// <returns>A frozen copy of this set.</returns>
         public static ISet<T> Freeze<T>(this ISet<T> set)
         {
@@ -145,6 +145,34 @@ namespace Realms
             }
 
             throw new RealmException("Unmanaged sets cannot be frozen.");
+        }
+
+        /// <summary>
+        /// Creates a frozen snapshot of this dictionary. The frozen copy can be read from any thread. If the dictionary is
+        /// not managed, a <see cref="RealmException"/> will be thrown.
+        /// <para/>
+        /// Freezing a dictionary also creates a frozen Realm which has its own lifecycle, but if the live Realm that spawned the
+        /// original set is fully closed (i.e. all instances across all threads are closed), the frozen Realm and
+        /// dictionary will be closed as well.
+        /// <para/>
+        /// Frozen dictionaries can be read and iterated as normal, but trying to mutate it in any way or attempting to subscribe for notifications will
+        /// throw a <see cref="RealmFrozenException"/>.
+        /// <para/>
+        /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
+        /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
+        /// </summary>
+        /// <param name="dictionary">The dictionary you want to create a frozen copy of.</param>
+        /// <returns>A frozen copy of this dictionary.</returns>
+        public static IDictionary<string, RealmValue> Freeze(this IDictionary<string, RealmValue> dictionary)
+        {
+            Argument.NotNull(dictionary, nameof(dictionary));
+
+            if (dictionary is RealmDictionary realmDictionary)
+            {
+                return (RealmDictionary)realmDictionary.Freeze();
+            }
+
+            throw new RealmException("Unmanaged dictionaries cannot be frozen.");
         }
     }
 }

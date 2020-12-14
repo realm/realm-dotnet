@@ -40,6 +40,11 @@ namespace Realms
             }
 
             var objectHandle = result.AsObject(Root);
+            if (metadata == null)
+            {
+                throw new NotImplementedException("Mixed objects are not supported yet.");
+            }
+
             return new RealmValue(realm.MakeObject(metadata, objectHandle));
         }
 
