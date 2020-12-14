@@ -27,8 +27,6 @@ namespace Realms
     {
         public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
 
-        public delegate void NativeCollectionSetter(IntPtr buffer, IntPtr bufferLength, bool hasValue, out NativeException ex);
-
         public static string GetString(NativeCollectionGetter getter)
         {
             // TODO: rework to use GetCollection
