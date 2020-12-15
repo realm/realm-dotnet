@@ -75,7 +75,6 @@ namespace RealmWeaver
             ObjectIdTypeName,
             DateTimeOffsetTypeName,
             GuidTypeName,
-            RealmValueTypeName,
             NullableCharTypeName,
             NullableSingleTypeName,
             NullableDoubleTypeName,
@@ -388,6 +387,16 @@ Analytics payload
 
                 ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
                 ReplaceSetter(prop, backingField, columnName, setter);
+            }
+            else if (prop.PropertyType.Name == RealmValueTypeName)
+            {
+                if (prop.SetMethod == null)
+                {
+                    return WeavePropertyResult.Skipped();
+                }
+
+                ReplaceGetter(prop, columnName, _references.RealmObject_GetValue);
+                ReplaceSetter(prop, backingField, columnName, _references.RealmObject_SetValue);
             }
             else if (prop.IsCollection(out var collectionType))
             {
