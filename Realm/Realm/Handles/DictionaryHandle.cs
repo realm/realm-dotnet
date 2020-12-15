@@ -158,7 +158,7 @@ namespace Realms
             return new DictionaryHandle(frozenRealmHandle, result);
         }
 
-        public bool TryGet(string key, Realm realm, out RealmValue value)
+        public bool TryGet(string key, RealmObjectBase.Metadata metadata, Realm realm, out RealmValue value)
         {
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
@@ -179,10 +179,7 @@ namespace Realms
             else
             {
                 var objectHandle = result.AsObject(Root);
-
-                // TODO: lookup the object metadata from the type in the Realm
-                value = new RealmValue(realm.MakeObject(metadata: null, objectHandle));
-                throw new NotImplementedException("Object values are not implemented yet.");
+                value = new RealmValue(realm.MakeObject(metadata, objectHandle));
             }
 
             return true;
@@ -193,13 +190,13 @@ namespace Realms
 
         public unsafe void Set(string key, in RealmValue value)
         {
-            var (primitive, handles) = value.ToNative();
+            var (primitive, valueHandles) = value.ToNative();
 
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
             NativeMethods.set_value(this, primitiveKey, primitive, out var nativeException);
-            handles?.Dispose();
+            valueHandles?.Dispose();
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
         }

@@ -52,6 +52,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_set", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_set(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_dictionary", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_dictionary(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_int64", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 add_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
@@ -201,6 +204,13 @@ namespace Realms
             return result;
         }
 
+        public IntPtr GetRealmDictionary(IntPtr propertyIndex)
+        {
+            var result = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
         public long AddInt64(IntPtr propertyIndex, long value)
         {
             var result = NativeMethods.add_int64(this, propertyIndex, value, out var nativeException);
@@ -238,6 +248,13 @@ namespace Realms
             var setHandle = new SetHandle(Root, GetRealmSet(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmSet<T>(realm, setHandle, metadata);
+        }
+
+        public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, IntPtr propertyIndex, string objectType)
+        {
+            var dictionaryHandle = new DictionaryHandle(Root, GetRealmDictionary(propertyIndex));
+            var metadata = objectType == null ? null : realm.Metadata[objectType];
+            return new RealmDictionary<TValue>(realm, dictionaryHandle, metadata);
         }
 
         public ObjectHandle CreateEmbeddedObjectForProperty(IntPtr propertyIndex)

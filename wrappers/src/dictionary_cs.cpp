@@ -50,6 +50,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
 {
     return handle_errors(ex, [&]() {
         auto val = dictionary.get<Mixed>(from_capi(key.string));
+        // TODO: this should use try_get
         throw new std::exception("dictionary doesn't expose get(string) yet.");
         return false;
     });

@@ -1203,7 +1203,7 @@ namespace Realms
         /// but resolved for the current Realm for this thread.
         /// </summary>
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="ISet{T}"/> to resolve in this <see cref="Realm"/>.</param>
-        /// <typeparam name="T">The type of the objects, contained in the collection.</typeparam>
+        /// <typeparam name="T">The type of the elements, contained in the collection.</typeparam>
         /// <returns>
         /// A thread-confined instance of the original <see cref="ISet{T}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
@@ -1224,16 +1224,17 @@ namespace Realms
         }
 
         /// <summary>
-        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.Dictionary{String, RealmValue}"/> was first created,
+        /// Returns the same collection as the one referenced when the <see cref="ThreadSafeReference.Dictionary{TValue}"/> was first created,
         /// but resolved for the current Realm for this thread.
         /// </summary>
-        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IDictionary{String, RealmValue}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IDictionary{String, TValue}"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
         /// <returns>
-        /// A thread-confined instance of the original <see cref="IDictionary{String, RealmValue}"/> resolved for the current thread or <c>null</c>
+        /// A thread-confined instance of the original <see cref="IDictionary{String, TValue}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Set instance will own its handle.")]
-        public IDictionary<string, RealmValue> ResolveReference(ThreadSafeReference.Dictionary<string, RealmValue> reference)
+        public IDictionary<string, TValue> ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1244,7 +1245,7 @@ namespace Realms
                 return null;
             }
 
-            return new RealmDictionary(this, dictionaryHandle);
+            return new RealmDictionary<TValue>(this, dictionaryHandle);
         }
 
         /// <summary>

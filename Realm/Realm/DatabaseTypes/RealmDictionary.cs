@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -30,37 +31,37 @@ namespace Realms
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
     [DebuggerDisplay("Count = {Count}")]
-    public class RealmDictionary : RealmCollectionBase<KeyValuePair<string, RealmValue>>, IDictionary<string, RealmValue>, IDynamicMetaObjectProvider
+    public class RealmDictionary<TValue> : RealmCollectionBase<KeyValuePair<string, TValue>>, IDictionary<string, TValue>, IDynamicMetaObjectProvider
     {
         private readonly DictionaryHandle _dictionaryHandle;
 
-        public RealmValue this[string key]
+        public TValue this[string key]
         {
             get
             {
                 if (_dictionaryHandle.TryGet(key, Realm, out var result))
                 {
-                    return result;
+                    return Operator.Convert<RealmValue, TValue>(result);
                 }
 
                 throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
             }
-            set => _dictionaryHandle.Set(key, value);
+            set => _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
         }
 
         public ICollection<string> Keys => throw new System.NotImplementedException();
 
-        public ICollection<RealmValue> Values => throw new System.NotImplementedException();
+        public ICollection<TValue> Values => throw new System.NotImplementedException();
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary)
-            : base(realm, metadata: null)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, RealmObjectBase.Metadata metadata)
+            : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;
         }
 
-        public void Add(string key, RealmValue value) => _dictionaryHandle.Add(key, value);
+        public void Add(string key, TValue value) => _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
 
-        public void Add(KeyValuePair<string, RealmValue> item) => _dictionaryHandle.Add(item.Key, item.Value);
+        public void Add(KeyValuePair<string, TValue> item) => _dictionaryHandle.Add(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
 
         public bool ContainsKey(string key) => _dictionaryHandle.ContainsKey(key);
 
@@ -69,15 +70,25 @@ namespace Realms
             throw new NotImplementedException();
         }
 
-        public override int IndexOf(KeyValuePair<string, RealmValue> value) => throw new NotSupportedException();
+        public override int IndexOf(KeyValuePair<string, TValue> value) => throw new NotSupportedException();
 
         public bool Remove(string key) => _dictionaryHandle.Remove(key);
 
-        public bool Remove(KeyValuePair<string, RealmValue> item) => _dictionaryHandle.Remove(item.Key);
+        public bool Remove(KeyValuePair<string, TValue> item) => _dictionaryHandle.Remove(item.Key);
 
-        public bool TryGetValue(string key, out RealmValue value) => _dictionaryHandle.TryGet(key, Realm, out value);
+        public bool TryGetValue(string key, out TValue value)
+        {
+            if (_dictionaryHandle.TryGet(key, Realm, out var realmValue))
+            {
+                value = Operator.Convert<RealmValue, TValue>(realmValue);
+                return true;
+            }
 
-        internal override RealmCollectionBase<KeyValuePair<string, RealmValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary(realm, (DictionaryHandle)handle);
+            value = default;
+            return false;
+        }
+
+        internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
     }
