@@ -810,7 +810,7 @@ Analytics payload
                     *foreach* non-list woven property in castInstance's schema
                     *if* castInstace.field is a RealmObject descendant
                         castInstance.Realm.Add(castInstance.field, update);
-                        castInstance.Field = castInstance.field;
+                        castInstance.Property = castInstance.Field;
                     *else if* property is PK
                         *do nothing*
                     *else if* property is [Required] or nullable
