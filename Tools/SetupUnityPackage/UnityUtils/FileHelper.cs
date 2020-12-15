@@ -49,7 +49,7 @@ namespace UnityUtils
 
                     path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
 
-                    //if (!string.IsNullOrEmpty(Thread.CurrentThread.Name) || !Thread.CurrentThread.Name.Contains("main"))
+                    //if ( * it's not the main thread * )
                     //{
                     //    // TODO this should be done only when not in the main thread. Though, figuring out if this is executing on the main thread isn't granted,
                     //    // it'll need an instance of unity thread taken at Start() and passed through
