@@ -377,7 +377,7 @@ namespace RealmWeaver
 
         private void InitializeRuntimeInitAttribute_Unity(AssemblyNameReference unityEngineAssembly)
         {
-            var unityEngine_runtimeInitializeOnLoadAttribute = new TypeReference("UnityEngine.CoreModule", "RuntimeInitializeOnLoadMethodAttribute", Module, unityEngineAssembly);
+            var unityEngine_runtimeInitializeOnLoadAttribute = new TypeReference("UnityEngine", "RuntimeInitializeOnLoadMethodAttribute", Module, unityEngineAssembly);
             UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor = new MethodReference(".ctor", Types.Void, unityEngine_runtimeInitializeOnLoadAttribute) { HasThis = true };
         }
 
