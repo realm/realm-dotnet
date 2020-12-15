@@ -107,6 +107,25 @@ namespace Realms
                 config = RealmConfiguration.DefaultConfiguration;
             }
 
+            RealmSchema schema = GetSchema(config);
+
+            return config.CreateRealmAsync(schema, cancellationToken);
+        }
+
+        internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
+        {
+            Argument.NotNull(config, nameof(config));
+
+            if (schema == null)
+            {
+                schema = GetSchema(config);
+            }
+
+            return config.CreateRealm(schema);
+        }
+
+        internal static RealmSchema GetSchema(RealmConfigurationBase config)
+        {
             RealmSchema schema;
             if (config.ObjectClasses != null)
             {
@@ -121,26 +140,7 @@ namespace Realms
                 schema = RealmSchema.Default;
             }
 
-            return config.CreateRealmAsync(schema, cancellationToken);
-        }
-
-        internal static Realm GetInstance(RealmConfigurationBase config, RealmSchema schema)
-        {
-            Argument.NotNull(config, nameof(config));
-
-            if (schema == null)
-            {
-                if (config.ObjectClasses != null)
-                {
-                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
-                }
-                else
-                {
-                    schema = config.IsDynamic ? RealmSchema.Empty : RealmSchema.Default;
-                }
-            }
-
-            return config.CreateRealm(schema);
+            return schema;
         }
 
         /// <summary>
