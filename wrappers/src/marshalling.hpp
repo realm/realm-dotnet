@@ -177,7 +177,7 @@ static inline ObjectId from_capi(realm_object_id_t oid)
 static inline realm_uuid_t to_capi(UUID uuid)
 {
     const auto& bytes = uuid.to_bytes();
-    realm_uuid_t result;
+    realm_uuid_t result{};
     for (int i = 0; i < 16; i++)
     {
         result.bytes[i] = bytes[i];
@@ -312,7 +312,7 @@ static inline realm_value_t to_capi(Object* obj)
 
 static inline realm_value_t to_capi(Mixed value)
 {
-    realm_value_t val;
+    realm_value_t val{};
     if (value.is_null()) {
         val.type = realm_value_type::RLM_TYPE_NULL;
     }

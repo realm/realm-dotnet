@@ -54,10 +54,10 @@ REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, rea
 REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Mixed mixed_value;
-        if (dictionary.try_get_any(from_capi(key.string), &mixed_value))
+        auto mixed_value = dictionary.try_get_any(from_capi(key.string));
+        if (mixed_value)
         {
-            *value = to_capi(mixed_value);
+            *value = to_capi(mixed_value.value());
             return true;
         }
 
@@ -65,7 +65,6 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
     });
 }
 
-// TODO: this should use Dictionary::get_dictionary_element
 REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictionary, size_t ndx, realm_value_t* key, realm_value_t* value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -73,14 +72,9 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
         if (ndx >= count)
             throw IndexOutOfRangeException("Get from RealmDictionary", ndx, count);
 
-        throw new std::exception("dictionary doesn't expose get_dictionary_element(index) yet.");
-        //auto val = dictionary.get(ndx);
-        //if (!val.is_null() && val.get_type() == type_TypedLink) {
-        //    *value = to_capi(new Object(dictionary.get_realm(), val.get<ObjLink>()));
-        //}
-        //else {
-        //    *value = to_capi(std::move(val));
-        //}
+        auto pair = dictionary.get_pair(ndx);
+        *key = to_capi(Mixed(pair.first));
+        *value = to_capi(pair.second);
     });
 }
 
