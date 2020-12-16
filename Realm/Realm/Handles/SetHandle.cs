@@ -35,7 +35,7 @@ namespace Realms
             public static extern IntPtr size(SetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_destroy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void destroy(IntPtr listInternalHandle);
+            public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, NotificationCallbackDelegate callback, out NativeException ex);
@@ -48,7 +48,7 @@ namespace Realms
             public static extern IntPtr get_thread_safe_reference(SetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_snapshot", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr snapshot(SetHandle list, out NativeException ex);
+            public static extern IntPtr snapshot(SetHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -85,8 +85,11 @@ namespace Realms
             }
         }
 
+        protected override SnapshotDelegate SnapshotCore { get; }
+
         public SetHandle(RealmHandle root, IntPtr handle) : base(root, handle)
         {
+            SnapshotCore = (out NativeException ex) => NativeMethods.snapshot(this, out ex);
         }
 
         protected override void Unbind()
@@ -122,14 +125,6 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle Snapshot()
-        {
-            var ptr = NativeMethods.snapshot(this, out var ex);
-            ex.ThrowIfNecessary();
-
-            return new ResultsHandle(Root ?? this, ptr);
-        }
-
         public override ResultsHandle GetFilteredResults(string query)
         {
             throw new NotImplementedException("Sets can't be filtered yet.");
@@ -152,8 +147,12 @@ namespace Realms
             return new SetHandle(frozenRealmHandle, result);
         }
 
-        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_value(this, index, out result, out nativeException);
+        public RealmValue GetValueAtIndex(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        {
+            NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
+            ex.ThrowIfNecessary();
+            return ToRealmValue(result, metadata, realm);
+        }
 
         public unsafe bool Add(in RealmValue value)
         {

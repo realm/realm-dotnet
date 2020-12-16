@@ -17,13 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Realms.Helpers;
 
 namespace Realms
 {
-    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection
+    // Note: we need ICollection<T> implementation to allow Results to be used for RealmDictionary.Keys, RealmDictionary.Values.
+    // The regular array implements ICollection<T> so we're not doing anything particularly unusual here.
+    internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection, ICollection<T>
     {
         private readonly ResultsHandle _handle;
 
@@ -71,6 +74,8 @@ namespace Realms
             return qv.MakeResultsForQuery();
         }
 
+        protected override T GetValueAtIndex(int index) => _handle.GetValueAtIndex(index, Metadata, Realm).As<T>();
+
         public override int IndexOf(T value)
         {
             Argument.NotNull(value, nameof(value));
@@ -88,6 +93,10 @@ namespace Realms
 
             return ResultsHandle.Find(obj.ObjectHandle);
         }
+
+        void ICollection<T>.Add(T item) => throw new NotSupportedException("Adding elements to the Results collection is not supported.");
+
+        bool ICollection<T>.Remove(T item) => throw new NotSupportedException("Removing elements from the Results collection is not supported.");
     }
 
     /// <summary>

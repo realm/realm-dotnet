@@ -154,14 +154,8 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                return Handle.Value.GetValueAtIndex(index, Metadata, Realm).As<T>();
+                return GetValueAtIndex(index);
             }
-        }
-
-        public RealmCollectionBase<T> Snapshot()
-        {
-            var handle = Handle.Value.Snapshot();
-            return new RealmResults<T>(Realm, handle, Metadata);
         }
 
         internal RealmResults<T> GetFilteredResults(string query)
@@ -187,6 +181,8 @@ namespace Realms
 
             return new NotificationToken(this, callback);
         }
+
+        protected abstract T GetValueAtIndex(int index);
 
         private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
         {
@@ -455,7 +451,7 @@ namespace Realms
             internal Enumerator(RealmCollectionBase<T> parent)
             {
                 _index = -1;
-                _enumerating = parent.Snapshot();
+                _enumerating = parent.Handle.Value.CanSnapshot ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
             public T Current => _enumerating[_index];

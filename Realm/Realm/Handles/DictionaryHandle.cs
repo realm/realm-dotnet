@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -47,9 +48,6 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_thread_safe_reference", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_thread_safe_reference(DictionaryHandle handle, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_snapshot", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr snapshot(DictionaryHandle list, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(DictionaryHandle handle, out NativeException ex);
@@ -58,7 +56,7 @@ namespace Realms
             public static extern IntPtr freeze(DictionaryHandle handle, SharedRealmHandle frozen_realm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_at_index", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void get_value_at_index(DictionaryHandle handle, IntPtr index, out PrimitiveValue value, out NativeException ex);
+            public static extern void get_at_index(DictionaryHandle handle, IntPtr index, out PrimitiveValue key, out PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_try_get", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -77,6 +75,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_remove", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool remove(DictionaryHandle handle, PrimitiveValue value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_values", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_values(DictionaryHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
         }
@@ -128,14 +132,6 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override ResultsHandle Snapshot()
-        {
-            var ptr = NativeMethods.snapshot(this, out var ex);
-            ex.ThrowIfNecessary();
-
-            return new ResultsHandle(Root ?? this, ptr);
-        }
-
         public override ResultsHandle GetFilteredResults(string query)
         {
             throw new NotImplementedException("Dictionaries can't be filtered yet.");
@@ -179,14 +175,25 @@ namespace Realms
             else
             {
                 var objectHandle = result.AsObject(Root);
+
+                if (metadata == null)
+                {
+                    throw new NotImplementedException("Mixed objects are not supported yet.");
+                }
+
                 value = new RealmValue(realm.MakeObject(metadata, objectHandle));
             }
 
             return true;
         }
 
-        protected override void GetValueAtIndexCore(IntPtr index, out PrimitiveValue result, out NativeException nativeException) =>
-            NativeMethods.get_value_at_index(this, index, out result, out nativeException);
+        public KeyValuePair<string, TValue> GetValueAtIndex<TValue>(int index, RealmObjectBase.Metadata metadata, Realm realm)
+        {
+            NativeMethods.get_at_index(this, (IntPtr)index, out var key, out var primitiveValue, out var ex);
+            ex.ThrowIfNecessary();
+            var value = ToRealmValue(primitiveValue, metadata, realm);
+            return new KeyValuePair<string, TValue>(key.AsString(), value.As<TValue>());
+        }
 
         public unsafe void Set(string key, in RealmValue value)
         {
@@ -236,6 +243,20 @@ namespace Realms
             nativeException.ThrowIfNecessary();
 
             return result;
+        }
+
+        public ResultsHandle GetValues()
+        {
+            var resultsPtr = NativeMethods.get_values(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(Root ?? this, resultsPtr);
+        }
+
+        public ResultsHandle GetKeys()
+        {
+            var resultsPtr = NativeMethods.get_keys(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new ResultsHandle(Root ?? this, resultsPtr);
         }
     }
 }

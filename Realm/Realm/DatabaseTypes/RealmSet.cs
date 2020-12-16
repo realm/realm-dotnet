@@ -92,6 +92,8 @@ namespace Realms
 
         internal override CollectionHandleBase GetOrCreateHandle() => _setHandle;
 
+        protected override T GetValueAtIndex(int index) => _setHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
+
         #region Set methods
 
         public void ExceptWith(IEnumerable<T> other)

@@ -162,14 +162,15 @@ namespace Realms
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
         /// <param name="dictionary">The dictionary you want to create a frozen copy of.</param>
+        /// <typeparam name="TValue">The type of the values stored in the dictionary.</typeparam>
         /// <returns>A frozen copy of this dictionary.</returns>
-        public static IDictionary<string, RealmValue> Freeze(this IDictionary<string, RealmValue> dictionary)
+        public static IDictionary<string, TValue> Freeze<TValue>(this IDictionary<string, TValue> dictionary)
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
-            if (dictionary is RealmDictionary realmDictionary)
+            if (dictionary is RealmDictionary<TValue> realmDictionary)
             {
-                return (RealmDictionary)realmDictionary.Freeze();
+                return (RealmDictionary<TValue>)realmDictionary.Freeze();
             }
 
             throw new RealmException("Unmanaged dictionaries cannot be frozen.");

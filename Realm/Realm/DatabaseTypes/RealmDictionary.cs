@@ -39,7 +39,7 @@ namespace Realms
         {
             get
             {
-                if (_dictionaryHandle.TryGet(key, Realm, out var result))
+                if (_dictionaryHandle.TryGet(key, Metadata, Realm, out var result))
                 {
                     return Operator.Convert<RealmValue, TValue>(result);
                 }
@@ -49,9 +49,23 @@ namespace Realms
             set => _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
         }
 
-        public ICollection<string> Keys => throw new System.NotImplementedException();
+        public ICollection<string> Keys
+        {
+            get
+            {
+                var resultsHandle = _dictionaryHandle.GetKeys();
+                return new RealmResults<string>(Realm, resultsHandle, Metadata);
+            }
+        }
 
-        public ICollection<TValue> Values => throw new System.NotImplementedException();
+        public ICollection<TValue> Values
+        {
+            get
+            {
+                var resultsHandle = _dictionaryHandle.GetValues();
+                return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+            }
+        }
 
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, RealmObjectBase.Metadata metadata)
             : base(realm, metadata)
@@ -78,7 +92,7 @@ namespace Realms
 
         public bool TryGetValue(string key, out TValue value)
         {
-            if (_dictionaryHandle.TryGet(key, Realm, out var realmValue))
+            if (_dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
             {
                 value = Operator.Convert<RealmValue, TValue>(realmValue);
                 return true;
@@ -91,5 +105,7 @@ namespace Realms
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);
 
         internal override CollectionHandleBase GetOrCreateHandle() => _dictionaryHandle;
+
+        protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Metadata, Realm);
     }
 }
