@@ -119,6 +119,11 @@ namespace RealmWeaver
                 HasThis = false
             };
 
+            if (_references.UnityEngine_PreserveAttribute_Constructor != null)
+            {
+                initialize.CustomAttributes.Add(new CustomAttribute(_references.UnityEngine_PreserveAttribute_Constructor));
+            }
+
             initialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             initializerType.Methods.Add(initialize);
             _moduleDefinition.Types.Add(initializerType);
