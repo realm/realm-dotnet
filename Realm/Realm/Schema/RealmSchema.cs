@@ -20,9 +20,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -40,7 +42,7 @@ namespace Realms.Schema
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(_defaultTypes));
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => GetDefaultSchema(_defaultTypes));
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>
@@ -148,6 +150,35 @@ namespace Realms.Schema
             }
 
             return builder.Build();
+        }
+
+        internal static RealmSchema GetDefaultSchema(HashSet<Type> types)
+        {
+            if (types.Count == 0)
+            {
+                // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
+                // so we manually do what .Net like frameworks usually do with module initializers
+                try
+                {
+                    var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    var moduleInitializers = new List<Type>();
+                    foreach (var a in allAssemblies)
+                    {
+                        var initializer = a.GetType("RealmModuleInitializer");
+                        if (initializer != null)
+                        {
+                            moduleInitializers.Add(initializer);
+                        }
+                    }
+
+                    moduleInitializers.ForEach(m => m.GetMethod("Initialize").Invoke(null, null));
+                }
+                catch
+                {
+                }
+            }
+
+            return CreateSchemaForClasses(types);
         }
 
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
