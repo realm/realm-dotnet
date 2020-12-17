@@ -42,7 +42,7 @@ namespace Realms.Schema
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => GetDefaultSchema(_defaultTypes));
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => GetSchema(_defaultTypes));
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Realms.Schema
             return builder.Build();
         }
 
-        internal static RealmSchema GetDefaultSchema(HashSet<Type> types)
+        internal static RealmSchema GetSchema(HashSet<Type> types)
         {
             if (types.Count == 0)
             {

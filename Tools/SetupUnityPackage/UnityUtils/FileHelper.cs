@@ -52,11 +52,11 @@ namespace UnityUtils
 
                         path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
 
-                    // if not on the unity thread
-                    if (Thread.CurrentThread.ManagedThreadId != 1)
-                    {
-                        AndroidJNI.DetachCurrentThread();
-                    }
+                        // if not on the unity thread
+                        if (Thread.CurrentThread.ManagedThreadId != 1)
+                        {
+                            AndroidJNI.DetachCurrentThread();
+                        }
 
                     }
                 }
