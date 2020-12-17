@@ -46,7 +46,6 @@ namespace Realms.Tests.Database
                 _realm.Add(rvo);
             });
 
-            var retrievedValue = _realm.Find<RealmValueObject>(1).RealmValue.AsInt16();
             Assert.That(_realm.Find<RealmValueObject>(1).RealmValue.AsInt16(), Is.EqualTo(integerValue));
         }
 

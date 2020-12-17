@@ -154,6 +154,11 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.FullName == StringTypeName;
     }
 
+    internal static bool IsMixed(this PropertyDefinition property)
+    {
+        return property.PropertyType.FullName == RealmValueTypeName;
+    }
+
     internal static bool IsDescendantOf(this PropertyDefinition property, TypeReference other)
     {
         return property.PropertyType.Resolve().BaseType.IsSameAs(other);
