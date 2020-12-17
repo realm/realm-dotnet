@@ -38,26 +38,33 @@ namespace UnityUtils
             // On Android persistentDataPath returns the external folder, where the app may not have permissions to write.
             // we use reflection to call File.getAbsolutePath(currentActivity.getFilesDir())
             var path = string.Empty;
-            if (AndroidJNI.AttachCurrentThread() == 0)
+
+            try
             {
-                using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-                using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+                if (AndroidJNI.AttachCurrentThread() == 0)
                 {
-                    var getFilesDir = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("android/content/ContextWrapper"), "getFilesDir", "()Ljava/io/File;");
-                    var internalFilesDir = AndroidJNI.CallObjectMethod(currentActivity.GetRawObject(), getFilesDir, Array.Empty<jvalue>());
-                    var getAbsolutePath = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("java/io/File"), "getAbsolutePath", "()Ljava/lang/String;");
+                    using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                    using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+                    {
+                        var getFilesDir = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("android/content/ContextWrapper"), "getFilesDir", "()Ljava/io/File;");
+                        var internalFilesDir = AndroidJNI.CallObjectMethod(currentActivity.GetRawObject(), getFilesDir, Array.Empty<jvalue>());
+                        var getAbsolutePath = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("java/io/File"), "getAbsolutePath", "()Ljava/lang/String;");
 
-                    path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
+                        path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
 
-                    //if ( * it's not the main thread * )
-                    //{
-                    //    // TODO this should be done only when not in the main thread. Though, figuring out if this is executing on the main thread isn't granted,
-                    //    // it'll need an instance of unity thread taken at Start() and passed through
-                    //    AndroidJNI.DetachCurrentThread();
-                    //}
+                    // if not on the unity thread
+                    if (Thread.CurrentThread.ManagedThreadId != 1)
+                    {
+                        AndroidJNI.DetachCurrentThread();
+                    }
 
+                    }
                 }
             }
+            catch
+            {
+            }
+
             return path;
         }
     }
