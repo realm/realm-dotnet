@@ -143,8 +143,6 @@ namespace RealmWeaver
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
 
-        public MethodReference UnityEngine_PreserveAttribute_Constructor { get; private set; }
-
         public TypeReference SyncConfiguration { get; private set; }
 
         protected ModuleDefinition Module { get; }
@@ -201,12 +199,6 @@ namespace RealmWeaver
                 HasThis = false,
                 Parameters = { new ParameterDefinition(runtimeTypeHandle) }
             };
-
-            var UnityEngine = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "UnityEngine.CoreModule");
-            if (UnityEngine != null)
-            {
-                InitializeUnityAttributes(UnityEngine);
-            }
 
             // If the assembly has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
             var PropertyChanged_Fody = Module.AssemblyReferences.SingleOrDefault(a => a.Name == "PropertyChanged");
@@ -379,12 +371,6 @@ namespace RealmWeaver
         {
             PropertyChanged_DoNotNotifyAttribute = new TypeReference("PropertyChanged", "DoNotNotifyAttribute", Module, propertyChangedAssembly);
             PropertyChanged_DoNotNotifyAttribute_Constructor = new MethodReference(".ctor", Types.Void, PropertyChanged_DoNotNotifyAttribute) { HasThis = true };
-        }
-
-        private void InitializeUnityAttributes(AssemblyNameReference unityEngineAssembly)
-        {
-            var unityEngine_preserveAttribute = new TypeReference("UnityEngine.Scripting", "PreserveAttribute", Module, unityEngineAssembly);
-            UnityEngine_PreserveAttribute_Constructor = new MethodReference(".ctor", Types.Void, unityEngine_preserveAttribute) { HasThis = true };
         }
 
         protected AssemblyNameReference GetOrAddFrameworkReference(string assemblyName)
