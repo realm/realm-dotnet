@@ -42,7 +42,7 @@ namespace Realms.Schema
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => GetSchema());
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(GetSchema);
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>
@@ -161,11 +161,12 @@ namespace Realms.Schema
                 try
                 {
                     var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(a => a.GetType("RealmModuleInitializer") != null);
+                        .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
+                        .Where(method => method != null);
 
-                    foreach (var m in moduleInitializers)
+                    foreach (var moduleInitializer in moduleInitializers)
                     {
-                        m.GetType("RealmModuleInitializer").GetMethod("Initialize")?.Invoke(null, null);
+                        moduleInitializer.Invoke(null, null);
                     }
                 }
                 catch
