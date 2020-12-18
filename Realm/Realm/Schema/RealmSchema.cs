@@ -157,7 +157,7 @@ namespace Realms.Schema
             if (_defaultTypes.Count == 0)
             {
                 // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
-                // so we manually do what .Net like frameworks usually do with module initializers
+                // so we manually do what .Net-like frameworks usually do with module initializers
                 try
                 {
                     var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()

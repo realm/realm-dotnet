@@ -28,8 +28,6 @@ namespace UnityUtils
         [RuntimeInitializeOnLoadMethod]
         public static string GetInternalStorage()
         {
-            Debug.LogWarning($"thread name = {Thread.CurrentThread.Name}");
-
             if (Application.platform != RuntimePlatform.Android)
             {
                 return Application.persistentDataPath;
