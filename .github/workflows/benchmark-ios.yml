@@ -30,11 +30,6 @@ jobs:
     needs: [build-wrappers]
     runs-on: macos-latest
     steps:
-      #It seems that from December 15 MacOs machines should have .NET 5 by default
-      - name: Install .NET 5.0
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
       - name: Checkout code
         uses: actions/checkout@v2
         with:
