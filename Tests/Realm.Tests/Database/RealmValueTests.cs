@@ -63,6 +63,62 @@ namespace Realms.Tests.Database
          * 
          */
 
+        [Test]
+        public void RealmValue_IntA()
+        {
+            int value = 10;
+            RealmValue rv = value;
+
+            Assert.That(rv == value);
+            Assert.That((int)rv, Is.EqualTo(value));
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Int));
+            Assert.That(rv.AsInt32(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableInt32(), Is.EqualTo(value));
+            Assert.That(rv.AsInt32RealmInteger(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableInt32RealmInteger(), Is.EqualTo(value));
+            Assert.That(rv.AsInt16(), Is.EqualTo(value));
+            // ... As for 32
+            Assert.That(rv.AsInt64(), Is.EqualTo(value));
+            // ... As for 32
+            Assert.That(rv.AsChar(), Is.EqualTo(value));
+        }
+
+        public void RealmValue_Int<T>(T value)
+        {
+            RealmValue rv = value;
+
+            Assert.That(rv == value);
+            Assert.That((int)rv, Is.EqualTo(value));
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Int));
+            Assert.That(rv.AsInt32(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableInt32(), Is.EqualTo(value));
+            Assert.That(rv.AsInt32RealmInteger(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableInt32RealmInteger(), Is.EqualTo(value));
+            Assert.That(rv.AsInt16(), Is.EqualTo(value));
+            // ... As for 32
+            Assert.That(rv.AsInt64(), Is.EqualTo(value));
+            // ... As for 32
+            Assert.That(rv.AsChar(), Is.EqualTo(value));
+        }
+
+        [Test]
+        public void RealmValue_IntB()
+        {
+            int value = 10;
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new RealmValueObject
+                {
+                    Id = 1,
+                    RealmValue = value
+                });
+            });
+
+            var ob = _realm.Find<RealmValueObject>(1);
+
+            Assert.That(ob.RealmValue == value);
+        }
 
         private class RealmValueObject : RealmObject
         {
