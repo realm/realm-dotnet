@@ -71,8 +71,8 @@ namespace binding {
         uint16_t* token;
         size_t token_len;
 
-        uint16_t* password;
-        size_t password_len;
+        uint16_t* additional_info;
+        size_t additional_info_len;
 
         AppCredentials to_app_credentials() {
             switch (provider)
@@ -83,8 +83,18 @@ namespace binding {
             case AuthProvider::FACEBOOK:
                 return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::GOOGLE:
-                return AppCredentials::google(Utf16StringAccessor(token, token_len));
+            case AuthProvider::GOOGLE: {
+                Utf16StringAccessor google_credential_type(additional_info, additional_info_len);
+                if (google_credential_type == "AuthCode") {
+                    return AppCredentials::google(AuthCode{ Utf16StringAccessor(token, token_len).to_string() });
+                }
+
+                if (google_credential_type == "IdToken") {
+                    return AppCredentials::google(IdToken{ Utf16StringAccessor(token, token_len).to_string() });
+                }
+
+                realm::util::terminate("Invalid google credential type", __FILE__, __LINE__);
+            }
             case AuthProvider::APPLE:
                 return AppCredentials::apple(Utf16StringAccessor(token, token_len));
 
@@ -92,7 +102,7 @@ namespace binding {
                 return AppCredentials::custom(Utf16StringAccessor(token, token_len));
 
             case AuthProvider::USERNAME_PASSWORD:
-                return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(password, password_len));
+                return AppCredentials::username_password(Utf16StringAccessor(token, token_len), Utf16StringAccessor(additional_info, additional_info_len));
 
             case AuthProvider::FUNCTION:
                 return AppCredentials::function(Utf16StringAccessor(token, token_len));

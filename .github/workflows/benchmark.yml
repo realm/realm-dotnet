@@ -1,0 +1,171 @@
+name: benchmark
+on:
+  # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
+  workflow_dispatch:
+  push:
+    branches:
+      -master
+env:
+  # Branch for Github Pages
+  gh-pages-branch: gh-pages
+jobs:
+  build-wrappers-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Check if cache contains wrappers already
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: .\wrappers\build\Windows\Release-x64\
+          key: wrapper-windows-${{hashfiles('.\wrappers\**')}}
+      - name: Get CMake
+        # If there is a cache hit, no need to do any of the following steps. Unfortunately there is no way to cancel the rest of the job.
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        uses: lukka/get-cmake@latest
+      - name: Restore from cache and run vcpkg
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        uses: lukka/run-vcpkg@v5
+        with:
+          # Contains the list of packages and the triplet. If we need more than one triplet, we need to pass it with command line arguments
+          vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
+          vcpkgGitCommitId: ec6fe06e8da05a8157dc8581fa96b36b571c1bd5
+          # If the cache key is the same, it does not execute
+          appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
+        env:
+          vcpkgResponseFile: '${{ github.workspace }}\.github\workflows\response_file.txt'
+      - name: Build wrappers
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: .\wrappers\build.ps1 Windows -Configuration Release -Platforms x64 -Toolchain "${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake"
+  build-wrappers-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Check if cache contains wrappers already
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+      - name: Build wrappers
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build.sh
+  build-wrappers-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Check if cache contains wrappers already
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-macos-${{hashfiles('./wrappers/**')}}
+      - name: Build wrappers
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: REALM_CMAKE_CONFIGURATION=Release ./wrappers/build-macos.sh
+  execute-benchmarks-windows:
+    needs: [build-wrappers-windows]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: .\wrappers\build\Windows\Release-x64\
+          key: wrapper-windows-${{hashfiles('.\wrappers\**')}}
+      - name: Check cache hit
+        # If there is no cache hit, just fail
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: exit 1
+      - name: Run benchmarks
+        run:  |
+          dotnet run -p .\Tests\PerformanceTests\ run -c Release --framework net5.0 -- -f * --join
+          rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results-windows
+          path: .\BenchmarkDotNet.Artifacts\results
+      - name: Store benchmark results
+        uses: Happypig375/github-action-benchmark@v1.8.2
+        with:
+          tool: 'benchmarkdotnet'
+          # Where the output from the benchmark tool is stored
+          output-file-path: .\BenchmarkDotNet.Artifacts\results\benchmark-output.json
+          # Workflow will not fail when an alert happens
+          fail-on-alert: false
+          gh-pages-branch: ${{env.gh-pages-branch}}
+          auto-push: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}      
+  execute-benchmarks-linux:
+    needs: [build-wrappers-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install .NET 5.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-linux-${{hashfiles('./wrappers/**')}}
+      - name: Check cache hit
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: exit 1
+      - name: Run benchmarks
+      # We need to use the quotes on Linux, otherwise it substitutes the wildcard with all the files in the folder
+        run:  |
+          dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results-linux
+          path: ./BenchmarkDotNet.Artifacts/results
+  execute-benchmarks-macos:
+    needs: [build-wrappers-macos]
+    runs-on: macos-latest
+    steps:
+      - name: Install .NET 5.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Download previously built wrappers
+        id: wrapper-cache
+        uses: actions/cache@v2
+        with:
+          path: ./wrappers/build/
+          key: wrapper-macos-${{hashfiles('./wrappers/**')}}
+      - name: Check cache hit
+        if: steps.wrapper-cache.outputs.cache-hit != 'true'
+        run: exit 1
+      - name: Run benchmarks
+        run:  |
+          sudo dotnet run -p ./Tests/PerformanceTests/ run -c Release --framework net5.0 -- -f "*" --join
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results-macos
+          path: ./BenchmarkDotNet.Artifacts/results

@@ -13,6 +13,7 @@
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native structs use snake_case fields.", Scope = "type", Target = "~T:Realms.NativeException")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:Use built-in type alias", Justification = "Native structs use verbose names.", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native structs use snake_case fields.", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
+[assembly: SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Private struct fields are important for correct offsets while marshalling", Scope = "namespaceanddescendants", Target = "Realms.Sync.Native")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Native methods are snake_case.", Scope = "type", Target = "~T:Realms.SynchronizationContextScheduler")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Native methods are snake_case.", Scope = "type", Target = "~T:Realms.SynchronizationContextScheduler")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Will be a breaking change to rename.", Scope = "type", Target = "~T:Realms.Schema.Property")]
@@ -20,3 +21,5 @@
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmCollectionBase`1._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.RealmObjectBase._propertyChanged")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is the private event", Scope = "member", Target = "~E:Realms.Realm._realmChanged")]
+[assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The values of the enum represent types.", Scope = "type", Target = "~T:Realms.RealmValueType")]
+[assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Doesn't need docs", Scope = "type", Target = "~T:Realms.Helpers.Operator.ISpecializedConverter`2")]

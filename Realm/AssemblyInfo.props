@@ -9,7 +9,7 @@
     <owners>realmnuget</owners>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/realm/realm-dotnet</PackageProjectUrl>
-    <PackageIconUrl>https://realm.io/img/favicon-32x32.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>Realm database db persistence sqlite</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageOutputPath>$(MsBuildThisFileDirectory)packages</PackageOutputPath>
@@ -22,5 +22,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <None Include="..\..\icon.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 </Project>

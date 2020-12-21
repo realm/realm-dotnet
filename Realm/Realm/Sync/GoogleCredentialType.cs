@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017 Realm Inc.
+// Copyright 2020 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,32 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using Realms;
-using Realms.Helpers;
-
-internal static class RealmIntegerExtensions
+namespace Realms.Sync
 {
-    public static long? ToLong<T>(this RealmInteger<T>? integer)
-        where T : struct, IComparable<T>, IFormattable
+    /// <summary>
+    /// The type of the Google credential.
+    /// </summary>
+    public enum GoogleCredentialType
     {
-        if (integer.HasValue)
-        {
-            return integer.Value.ToLong();
-        }
+        /// <summary>
+        /// A credential representing an auth code.
+        /// </summary>
+        AuthCode,
 
-        return null;
-    }
-
-    public static long ToLong<T>(this RealmInteger<T> integer)
-        where T : struct, IComparable<T>, IFormattable
-    {
-        return ToLong((T)integer);
-    }
-
-    public static long ToLong<T>(this T integer)
-        where T : struct, IComparable<T>, IFormattable
-    {
-        return Operator.Convert<T, long>(integer);
+        /// <summary>
+        /// A credential representing an Id token.
+        /// </summary>
+        IdToken,
     }
 }

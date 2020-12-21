@@ -119,6 +119,11 @@ namespace RealmWeaver
                 HasThis = false
             };
 
+            if (_references.UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor != null)
+            {
+                initialize.CustomAttributes.Add(new CustomAttribute(_references.UnityEngine_RuntimeInitializeOnLoadAttribute_Constructor));
+            }
+
             initialize.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             initializerType.Methods.Add(initialize);
             _moduleDefinition.Types.Add(initializerType);
@@ -182,7 +187,7 @@ namespace RealmWeaver
 
             // Attempt to filter out Unity assemblies - we're adding the Version(0.0.0.0)
             // as a best effort attempt to avoid filtering out legitimate user assemblies.
-            if (assembly.Name == "UnityEditor" || assembly.Name.StartsWith("UnityEngine") || assembly.Name.StartsWith("Unity."))
+            if (assembly.Name == "UnityEditor" || assembly.Name.StartsWith("UnityEngine", StringComparison.OrdinalIgnoreCase) || assembly.Name.StartsWith("Unity.", StringComparison.OrdinalIgnoreCase))
             {
                 return assembly.Version == default(Version);
             }

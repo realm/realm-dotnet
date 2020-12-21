@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -11,22 +13,29 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using UnityUtils;
 
 namespace SetupUnityPackage
 {
     public class Options
     {
-        [Option('p', "path", Required = false, HelpText = "Use a local NuGet package.")]
+        [Option("path", Required = false, HelpText = "Use a local NuGet package.")]
         public string Path { get; set; }
 
-        [Option('v', "nuget-version", Required = false, HelpText = "Specify an explicit version of the package to use.")]
+        [Option("nuget-version", Required = false, HelpText = "Specify an explicit version of the package to use.")]
         public string Version { get; set; }
 
-        [Option('f', "include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
+        [Option("include-dependencies", Default = false, Required = false, HelpText = "Specify whether dependencies should be bundled too.")]
         public bool IncludeDependencies { get; set; }
+
+        [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
+        public bool Pack { get; set; }
+
+        [Option("skip-validation", Default = false, Required = false, HelpText = "Specify whether to skip validating the list of dependencies. Only used when include-dependencies is true.")]
+        public bool SkipValidation { get; set; }
     }
 
-    public class Program
+    public static class Program
     {
         private const string RealmPackageId = "Realm";
         private const string RealmPackagaName = "realm.unity";
@@ -41,7 +50,7 @@ namespace SetupUnityPackage
                 { "lib/netstandard2.0/Realm.dll", "Realm.dll" },
                 { "native/ios/Realm.dll.config", "Realm.dll.config" },
                 { "native/ios/universal/realm-wrappers.framework/realm-wrappers", "iOS/realm-wrappers.framework/realm-wrappers" },
-                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/info.plist" },
+                { "native/ios/universal/realm-wrappers.framework/Info.plist", "iOS/realm-wrappers.framework/Info.plist" },
                 { "runtimes/osx-x64/native/librealm-wrappers.dylib", "macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Linux/librealm-wrappers.so" },
                 { "native/android/armeabi-v7a/librealm-wrappers.so", "Android/armeabi-v7a/librealm-wrappers.so" },
@@ -65,6 +74,18 @@ namespace SetupUnityPackage
             {
                 { "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll", "Dependencies/System.Runtime.CompilerServices.Unsafe.dll" },
             },
+            ["System.Buffers"] = new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/System.Buffers.dll", "Dependencies/System.Buffers.dll" },
+            },
+        };
+
+        private static readonly ISet<string> _ignoredDependencies = new HashSet<string>
+        {
+            "Microsoft.CSharp",
+            "Realm.Fody",
+            "Fody",
+            "System.Dynamic.Runtime",
         };
 
         public static async Task Main(string[] args)
@@ -87,20 +108,35 @@ namespace SetupUnityPackage
 
             Console.WriteLine($"Included {_packageMaps[RealmPackageId].Count} files from {RealmPackageId}@{version}");
 
+            Console.WriteLine("Inluding UnityUtils");
+
+            var targetPath = Path.Combine(GetUnityPackagePath(), "UnityUtils.dll");
+            File.Copy(GetUnityUtilsPath(), targetPath, overwrite: true);
+            Console.WriteLine($"Included 1 file from UnityUtils@{typeof(FileHelper).Assembly.GetName().Version.ToString(3)}");
+
             if (opts.IncludeDependencies)
             {
                 Console.WriteLine("Including dependencies");
 
                 foreach (var package in realmDependencies)
                 {
+                    var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
                     if (_packageMaps.TryGetValue(package.Id, out var fileMap))
                     {
-                        var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
                         Console.WriteLine($"Including {package.Id}@{packageVersion}");
                         var path = await DownloadPackage(package.Id, packageVersion);
                         await CopyBinaries(path, fileMap);
 
                         Console.WriteLine($"Included {fileMap.Count} files from {package.Id}@{packageVersion}");
+                    }
+                    else if (_ignoredDependencies.Contains(package.Id))
+                    {
+                        Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it's not included in {nameof(_packageMaps)}");
+                    }
+                    else if (!opts.SkipValidation)
+                    {
+                        Console.WriteLine($"Error: package {package.Id} was not found either in {nameof(_packageMaps)} or {nameof(_ignoredDependencies)}. Suppress error with -skip-validation.");
+                        Environment.Exit(1);
                     }
                 }
 
@@ -112,9 +148,40 @@ namespace SetupUnityPackage
                 {
                     File.Copy(file, Path.Combine(targetBasePath, Path.GetRelativePath(metaFilesPath, file)), overwrite: true);
                 }
+
+                if (!opts.SkipValidation)
+                {
+                    var dependenciesPath = Path.Combine(targetBasePath, "Dependencies");
+                    var expectedFiles = Directory.EnumerateFiles(dependenciesPath, "*.dll")
+                        .Select(f => $"{f}.meta")
+                        .ToHashSet();
+
+                    expectedFiles.SymmetricExceptWith(Directory.EnumerateFiles(dependenciesPath, "*.dll.meta"));
+
+                    if (expectedFiles.Any())
+                    {
+                        Console.WriteLine($"Error: the .dll or the .dll meta for the following files was missing in {dependenciesPath}:");
+
+                        foreach (var file in expectedFiles)
+                        {
+                            Console.WriteLine($"\t{Path.GetFileNameWithoutExtension(file)}");
+                        }
+
+                        Console.WriteLine("Suppress error with -skip-validation.");
+                        Environment.Exit(2);
+                    }
+                }
             }
 
             UpdatePackageJson(opts.IncludeDependencies);
+
+            if (opts.Pack)
+            {
+                Console.WriteLine("Preparing npm package...");
+
+                RunNpm($"version {version} --allow-same-version");
+                RunNpm($"pack");
+            }
         }
 
         private static async Task<string> DownloadPackage(string packageId, string version)
@@ -165,7 +232,9 @@ namespace SetupUnityPackage
                 var unityPath = GetUnityPackagePath();
                 foreach (var kvp in fileMap)
                 {
-                    packageReader.ExtractFile(kvp.Key, Path.Combine(unityPath, kvp.Value), NullLogger.Instance);
+                    var targetPath = Path.Combine(unityPath, kvp.Value);
+                    File.Delete(targetPath);
+                    packageReader.ExtractFile(kvp.Key, targetPath, NullLogger.Instance);
                 }
 
                 var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
@@ -175,13 +244,23 @@ namespace SetupUnityPackage
             }
         }
 
-        private static string GetUnityPackagePath()
+        private static string GetSolutionFolder()
         {
             var pattern = Path.Combine("Tools", "SetupUnityPackage", "SetupUnityPackage");
+            return _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
+        }
 
-            var basePath = _buildFolder.Substring(0, _buildFolder.IndexOf(pattern));
+        private static string GetUnityPackagePath() => Path.Combine(GetSolutionFolder(), "Realm", "Realm.Unity", "Runtime");
 
-            return Path.Combine(basePath, "Realm", "Realm.Unity", "Runtime");
+        private static string GetUnityUtilsPath()
+        {
+#if DEBUG
+            var targetFolder = "Debug";
+#else
+            var targetFolder = "Release";
+#endif
+
+            return Path.Combine(GetSolutionFolder(), "Tools", "SetupUnityPackage", "UnityUtils", "bin", targetFolder, "netstandard2.0", "UnityUtils.dll");
         }
 
         private static void UpdatePackageJson(bool includesDependencies)
@@ -205,6 +284,31 @@ namespace SetupUnityPackage
 
             contents = contents.Replace($"\"name\": \"{maybeSourceName}\"", $"\"name\": \"{targetName}\"");
             File.WriteAllText(packageJsonPath, contents);
+        }
+
+        private static void RunNpm(string command)
+        {
+            string fileName;
+            string arguments;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                fileName = "cmd";
+                arguments = $"/c npm {command}";
+            }
+            else
+            {
+                fileName = "npm";
+                arguments = command;
+            }
+
+            var npmRunner = Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                WorkingDirectory = Path.GetFullPath(Path.Combine(GetUnityPackagePath(), "..")),
+                Arguments = arguments,
+            });
+
+            npmRunner.WaitForExit();
         }
     }
 }

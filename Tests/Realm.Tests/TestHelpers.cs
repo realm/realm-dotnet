@@ -144,13 +144,13 @@ namespace Realms.Tests
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
-            where T : struct, IComparable<T>, IFormattable
+            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
         {
             return values?.Select(v => new RealmInteger<T>(v)).ToArray();
         }
 
         public static RealmInteger<T>?[] ToInteger<T>(this T?[] values)
-            where T : struct, IComparable<T>, IFormattable
+            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
         {
             return values?.Select(v => v == null ? (RealmInteger<T>?)null : new RealmInteger<T>(v.Value)).ToArray();
         }

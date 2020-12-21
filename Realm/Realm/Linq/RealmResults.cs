@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using Realms.Helpers;
-using Realms.Schema;
 
 namespace Realms
 {
@@ -76,12 +75,12 @@ namespace Realms
         {
             Argument.NotNull(value, nameof(value));
 
-            if (_argumentType != (PropertyType.Object | PropertyType.Nullable))
+            if (_argumentType != RealmValueType.Object)
             {
                 throw new NotSupportedException("IndexOf on non-object results is not supported.");
             }
 
-            var obj = Operator.Convert<T, RealmObjectBase>(value);
+            var obj = value as RealmObjectBase;
             if (!obj.IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));

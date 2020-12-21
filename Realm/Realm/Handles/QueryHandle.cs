@@ -36,37 +36,30 @@ namespace Realms
         private static class NativeMethods
         {
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable SA1121 // Use built-in type alias
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void binary_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr buffer, IntPtr bufferLength, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void binary_not_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, IntPtr buffer, IntPtr bufferLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_contains", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_contains(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_starts_with", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_starts_with(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                        PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_ends_with", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_ends_with(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                        PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                        PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_not_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                        PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_like", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_like(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
+                        PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void primitive_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
@@ -85,9 +78,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_greater_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void primitive_greater_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_object_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void query_object_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_null_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void null_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, out NativeException ex);
@@ -117,7 +107,6 @@ namespace Realms
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, SortDescriptorHandle sortDescriptor, out NativeException ex);
 
 #pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore SA1121 // Use built-in type alias
         }
 
         public QueryHandle(RealmHandle root, IntPtr handle) : base(root, handle)
@@ -129,117 +118,123 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public void BinaryEqual(SharedRealmHandle realm, IntPtr propertyIndex, IntPtr buffer, IntPtr bufferLength)
-        {
-            NativeMethods.binary_equal(this, realm, propertyIndex, buffer, bufferLength, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void BinaryNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, IntPtr buffer, IntPtr bufferLength)
-        {
-            NativeMethods.binary_not_equal(this, realm, propertyIndex, buffer, bufferLength, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
         /// <summary>
         /// If the user hasn't specified it, should be caseSensitive=true.
         /// </summary>
-        public void StringContains(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringContains(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
-            NativeMethods.string_contains(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_contains(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
         /// <summary>
         /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
         /// </summary>
-        public void StringStartsWith(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringStartsWith(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
-            NativeMethods.string_starts_with(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_starts_with(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
         /// <summary>
         /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
         /// </summary>
-        public void StringEndsWith(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringEndsWith(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
-            NativeMethods.string_ends_with(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_ends_with(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
         /// <summary>
         /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
         /// </summary>
-        public void StringEqual(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
-            NativeMethods.string_equal(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_equal(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
         /// <summary>
         /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
         /// </summary>
-        public void StringNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
-            NativeMethods.string_not_equal(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_not_equal(this, realm, propertyIndex, primitive, caseSensitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringLike(SharedRealmHandle realm, IntPtr propertyIndex, string value, bool caseSensitive)
+        public void StringLike(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value, bool caseSensitive)
         {
             NativeException nativeException;
-            if (value == null)
+            if (value.Type == RealmValueType.Null)
             {
                 NativeMethods.null_equal(this, realm, propertyIndex, out nativeException);
             }
             else
             {
-                NativeMethods.string_like(this, realm, propertyIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
+                var (primitive, handles) = value.ToNative();
+                NativeMethods.string_like(this, realm, propertyIndex, primitive, caseSensitive, out nativeException);
+                handles?.Dispose();
             }
 
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_equal(this, realm, propertyIndex, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_equal(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueNotEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_not_equal(this, realm, propertyIndex, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_not_equal(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveLess(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueLess(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_less(this, realm, propertyIndex, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_less(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueLessEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_less_equal(this, realm, propertyIndex, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_less_equal(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveGreater(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueGreater(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_greater(this, realm, propertyIndex, value, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_greater(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 
-        public unsafe void PrimitiveGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, PrimitiveValue value)
+        public unsafe void ValueGreaterEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
         {
-            NativeMethods.primitive_greater_equal(this, realm, propertyIndex, value, out var nativeException);
-            nativeException.ThrowIfNecessary();
-        }
-
-        public void ObjectEqual(SharedRealmHandle realm, IntPtr propertyIndex, ObjectHandle objectHandle)
-        {
-            NativeMethods.query_object_equal(this, realm, propertyIndex, objectHandle, out var nativeException);
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.primitive_greater_equal(this, realm, propertyIndex, primitive, out var nativeException);
+            handles?.Dispose();
             nativeException.ThrowIfNecessary();
         }
 

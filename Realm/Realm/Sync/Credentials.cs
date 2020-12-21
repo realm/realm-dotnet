@@ -44,7 +44,7 @@ namespace Realms.Sync
             Facebook = 1,
 
             /// <summary>
-            /// OAuth2-based mechanism for logging in with an existing Google account.
+            /// Mechanism for logging in with an existing Google account using an auth code or Id token.
             /// </summary>
             Google = 2,
 
@@ -107,16 +107,16 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates credentials representing a login using a Google access token.
+        /// Creates credentials representing a login using a Google account.
         /// </summary>
-        /// <param name="authCode">The auth code representing the Google user.</param>
+        /// <param name="credential">The credential representing the Google user.</param>
+        /// <param name="type">The type of the credential.</param>
         /// <returns>A Credentials that can be used to authenticate a user with Google.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/google/">Google Authentication Docs</seealso>
-        public static Credentials Google(string authCode)
+        public static Credentials Google(string credential, GoogleCredentialType type)
         {
-            Argument.NotNull(authCode, nameof(authCode));
-
-            return new Credentials(AuthProvider.Google, authCode);
+            Argument.NotNull(credential, nameof(credential));
+            return new Credentials(AuthProvider.Google, credential, type.ToString());
         }
 
         /// <summary>
@@ -218,13 +218,13 @@ namespace Realms.Sync
 
         internal string Token { get; }
 
-        internal string Password { get; }
+        internal string AdditionalInfo { get; }
 
-        private Credentials(AuthProvider provider, string token = null, string password = null)
+        private Credentials(AuthProvider provider, string token = null, string additionalInfo = null)
         {
             Provider = provider;
             Token = token;
-            Password = password;
+            AdditionalInfo = additionalInfo;
         }
 
         internal Native.Credentials ToNative()
@@ -233,7 +233,7 @@ namespace Realms.Sync
             {
                 provider = Provider,
                 Token = Token,
-                Password = Password,
+                AdditionalInfo = AdditionalInfo,
             };
         }
     }

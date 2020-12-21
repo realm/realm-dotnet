@@ -44,6 +44,9 @@ namespace Realms.Exceptions
 
         RealmDotNetExceptionDuringMigration = 30,
 
+        NotNullableProperty = 31,
+        PropertyMismatch = 32,
+
         AppClientError = 50,
         AppCustomError = 51,
         AppHttpError = 52,

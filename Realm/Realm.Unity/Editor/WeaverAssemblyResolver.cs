@@ -22,116 +22,131 @@ using System.IO;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
-using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace RealmWeaver
 {
-    public class WeaverAssemblyResolver : BaseAssemblyResolver
+    public class ResolutionResult : IDisposable
     {
-        private readonly IDictionary<string, string> _appDomainAssemblyLocations = new Dictionary<string, string>();
-        private readonly IDictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
+        private readonly WeaverAssemblyResolver _resolver;
+        private readonly FileStream _fileStream;
+        private readonly WriterParameters _writerParameters;
 
-        private WeaverAssemblyResolver(string[] references)
+        public ModuleDefinition Module { get; }
+
+        public ResolutionResult(ModuleDefinition module, FileStream fileStream, WeaverAssemblyResolver resolver, bool writeSymbols)
         {
-            foreach (var reference in references)
-            {
-                AddSearchDirectory(reference);
-            }
+            Module = module;
+            _resolver = resolver;
+            _fileStream = fileStream;
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.ReflectionOnly && !a.IsDynamic))
+            _writerParameters = new WriterParameters();
+            if (writeSymbols)
             {
-                _appDomainAssemblyLocations[assembly.FullName] = assembly.Location;
+                _writerParameters.WriteSymbols = true;
+                _writerParameters.SymbolWriterProvider = new PdbWriterProvider();
             }
         }
 
-        public static (ModuleDefinition, IDisposable) Resolve(string assemblyPath)
+        public void SaveModuleUpdates()
         {
-            var assembly = CompilationPipeline.GetAssemblies(AssembliesType.Player)
-                                              .FirstOrDefault(p => p.outputPath == assemblyPath);
+            Module.Write(_writerParameters);
+        }
 
-            if (assembly == null)
+        public void Dispose()
+        {
+            Module.Dispose();
+            _fileStream.Dispose();
+            _resolver.Dispose();
+        }
+    }
+
+    public class WeaverAssemblyResolver : BaseAssemblyResolver
+    {
+        private readonly IDictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
+
+        private WeaverAssemblyResolver(IEnumerable<string> references)
+        {
+            var referenceDirectories = references.Select(Path.GetDirectoryName).Distinct().ToArray();
+            foreach (var reference in referenceDirectories)
             {
-                return (null, null);
+                AddSearchDirectory(reference);
+            }
+        }
+
+        public static ResolutionResult Resolve(string assemblyPath, IEnumerable<string> references)
+        {
+            if (assemblyPath == null)
+            {
+                return null;
             }
 
             var absolutePath = GetAbsolutePath(assemblyPath);
 
             if (!File.Exists(absolutePath))
             {
-                return (null, null);
+                return null;
             }
 
-            var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(assembly.compilerOptions.ApiCompatibilityLevel);
-
-            var assemblyStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.ReadWrite);
-            var module = ModuleDefinition.ReadModule(assemblyStream, new ReaderParameters
+            var assemblyStream = new FileStream(absolutePath, FileMode.Open, FileAccess.ReadWrite);
+            var resolver = new WeaverAssemblyResolver(references);
+            var readerParameters = new ReaderParameters
             {
                 ReadingMode = ReadingMode.Immediate,
                 ReadWrite = true,
-                AssemblyResolver = new WeaverAssemblyResolver(systemAssemblies),
-                ReadSymbols = true,
-                SymbolReaderProvider = new PdbReaderProvider()
-            });
+                AssemblyResolver = resolver,
+                ReadSymbols = false,
+            };
 
-            return (module, assemblyStream);
+            var hasDebugInfo = File.Exists(absolutePath.Replace(".dll", ".pdb"));
+            if (hasDebugInfo)
+            {
+                readerParameters.ReadSymbols = true;
+                readerParameters.SymbolReaderProvider = new PdbReaderProvider();
+            }
+
+            var module = ModuleDefinition.ReadModule(assemblyStream, readerParameters);
+
+            return new ResolutionResult(module, assemblyStream, resolver, hasDebugInfo);
         }
 
         private static string GetAbsolutePath(string assemblyPath)
         {
+            if (File.Exists(assemblyPath))
+            {
+                return assemblyPath;
+            }
+
             return Path.Combine(Application.dataPath, "..", assemblyPath);
         }
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
-            if (_cache.TryGetValue(name.FullName, out var assemblyDef))
+            if (!_cache.TryGetValue(name.FullName, out var assemblyDef))
             {
-                return assemblyDef;
+                try
+                {
+                    assemblyDef = base.Resolve(name, parameters);
+                    _cache[name.FullName] = assemblyDef;
+                }
+                catch
+                {
+                }
             }
 
-            try
-            {
-                assemblyDef = base.Resolve(name, parameters);
-            }
-            catch
-            {
-            }
-
-            if (assemblyDef == null)
-            {
-                assemblyDef = FindAssemblyDefinition(name.FullName, parameters);
-            }
-
-            _cache[name.FullName] = assemblyDef;
             return assemblyDef;
         }
 
-        private AssemblyDefinition FindAssemblyDefinition(string fullName, ReaderParameters parameters)
+        protected override void Dispose(bool disposing)
         {
-            var playerAss = CompilationPipeline.GetAssemblies(AssembliesType.Player);
-            var editorAss = CompilationPipeline.GetAssemblies(AssembliesType.Editor);
-
-            var test1 = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(fullName);
-            var platforms = CompilationPipeline.GetAssemblyDefinitionPlatforms();
-            var precompiled = CompilationPipeline.GetPrecompiledAssemblyNames();
-            var test = CompilationPipeline.GetSystemAssemblyDirectories(UnityEditor.ApiCompatibilityLevel.NET_Standard_2_0);
-            var paths = CompilationPipeline.GetPrecompiledAssemblyPaths(CompilationPipeline.PrecompiledAssemblySources.All);
-
-            //if (_cache.TryGetValue(fullName, out var assemblyDefinition))
-            //{
-            //    return assemblyDefinition;
-            //}
-
-            if (_appDomainAssemblyLocations.TryGetValue(fullName, out var location))
+            foreach (var kvp in _cache)
             {
-                var assemblyDefinition = parameters != null ? AssemblyDefinition.ReadAssembly(location, parameters) : AssemblyDefinition.ReadAssembly(location);
-
-                //_cache[fullName] = assemblyDefinition;
-
-                return assemblyDefinition;
+                kvp.Value.Dispose();
             }
 
-            return null;
+            _cache.Clear();
+
+            base.Dispose(disposing);
         }
     }
 }

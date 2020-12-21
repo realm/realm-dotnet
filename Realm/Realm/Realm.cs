@@ -1091,20 +1091,8 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T Find<T>(long? primaryKey)
-            where T : RealmObject
-        {
-            ThrowIfDisposed();
-
-            var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, PrimitiveValue.NullableInt(primaryKey), out var objectHandle))
-            {
-                return (T)MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
+            where T : RealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -1115,38 +1103,41 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         public T Find<T>(string primaryKey)
+            where T : RealmObject => FindCore<T>(primaryKey);
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns><c>null</c> or an object matching the primary key.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">
+        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// </exception>
+        public T Find<T>(ObjectId? primaryKey)
+            where T : RealmObject => FindCore<T>(primaryKey);
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns><c>null</c> or an object matching the primary key.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">
+        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// </exception>
+        public T Find<T>(Guid? primaryKey)
+            where T : RealmObject => FindCore<T>(primaryKey);
+
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
+        private T FindCore<T>(RealmValue primaryKey)
             where T : RealmObject
         {
             ThrowIfDisposed();
 
             var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
             if (metadata.Table.TryFind(SharedRealmHandle, primaryKey, out var objectHandle))
-            {
-                return (T)MakeObject(metadata, objectHandle);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Fast lookup of an object from a class which has a PrimaryKey property.
-        /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
-        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
-        /// <returns><c>null</c> or an object matching the primary key.</returns>
-        /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
-        /// </exception>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        public T Find<T>(ObjectId? primaryKey)
-            where T : RealmObject
-        {
-            ThrowIfDisposed();
-
-            var metadata = Metadata[typeof(T).GetTypeInfo().GetMappedOrOriginalName()];
-            if (metadata.Table.TryFind(SharedRealmHandle, PrimitiveValue.NullableObjectId(primaryKey), out var objectHandle))
             {
                 return (T)MakeObject(metadata, objectHandle);
             }
@@ -1671,19 +1662,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            public RealmObject Find(string className, long? primaryKey)
-            {
-                _realm.ThrowIfDisposed();
-
-                var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, PrimitiveValue.NullableInt(primaryKey), out var objectHandle))
-                {
-                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
-                }
-
-                return null;
-            }
+            public dynamic Find(string className, long? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1694,19 +1673,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            public dynamic Find(string className, string primaryKey)
-            {
-                _realm.ThrowIfDisposed();
-
-                var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
-                {
-                    return _realm.MakeObject(metadata, objectHandle);
-                }
-
-                return null;
-            }
+            public dynamic Find(string className, string primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1719,15 +1686,30 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
+            public dynamic Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
+
+            /// <summary>
+            /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+            /// </summary>
+            /// <param name="className">Name of class in dynamic situation.</param>
+            /// <param name="primaryKey">
+            /// Primary key to be matched exactly, same as an == search.
+            /// </param>
+            /// <returns><c>null</c> or an object matching the primary key.</returns>
+            /// <exception cref="RealmClassLacksPrimaryKeyException">
+            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// </exception>
+            public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
+
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            public RealmObject Find(string className, ObjectId? primaryKey)
+            private dynamic FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
-                if (metadata.Table.TryFind(_realm.SharedRealmHandle, PrimitiveValue.NullableObjectId(primaryKey), out var objectHandle))
+                if (metadata.Table.TryFind(_realm.SharedRealmHandle, primaryKey, out var objectHandle))
                 {
-                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
+                    return _realm.MakeObject(metadata, objectHandle);
                 }
 
                 return null;
