@@ -17,9 +17,6 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1.1466" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PerformanceTests\PerformanceTests.csproj">
-      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
   </ItemGroup>
 </Project>
