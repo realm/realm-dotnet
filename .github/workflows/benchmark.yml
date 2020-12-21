@@ -114,10 +114,10 @@ jobs:
     needs: [build-wrappers-linux]
     runs-on: ubuntu-latest
     steps:
-      - name: Install .NET 5.0
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
+      #- name: Install .NET 5.0
+      #  uses: actions/setup-dotnet@v1
+      #  with:
+      #    dotnet-version: '5.0.x'
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -144,10 +144,10 @@ jobs:
     needs: [build-wrappers-macos]
     runs-on: macos-latest
     steps:
-      - name: Install .NET 5.0
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
+      #- name: Install .NET 5.0
+      #  uses: actions/setup-dotnet@v1
+      #  with:
+      #    dotnet-version: '5.0.x'
       - name: Checkout code
         uses: actions/checkout@v2
         with:
