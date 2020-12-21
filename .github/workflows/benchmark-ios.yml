@@ -46,7 +46,7 @@ jobs:
         run: exit 1
       - name: Run benchmarks
         run:  |
-          dotnet build -p:Platform=iPhoneSimulator /p:RestoreAdditionalProjectSources=https://ci.appveyor.com/nuget/benchmarkdotnet /restore 
+          dotnet build -restore /p:RestoreAdditionalProjectSources=https://ci.appveyor.com/nuget/benchmarkdotnet /p:Platform=iPhoneSimulator
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Save artifacts
         # Not mandatory, but maybe it's good to do it?
