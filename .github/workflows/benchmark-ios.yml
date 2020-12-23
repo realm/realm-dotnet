@@ -48,5 +48,5 @@ jobs:
         run: dotnet restore Realm.sln
       - name: Build Benchmark project
         run:  |
-          msbuild -p:Platform=iPhoneSimulator /p:RestoreAdditionalProjectSources=https://ci.appveyor.com/nuget/benchmarkdotnet /restore
+          msbuild -p:Platform=iPhoneSimulator
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
