@@ -49,10 +49,10 @@ jobs:
       - name: Build Realm
         run: dotnet build
         working-directory: ./Realm/Realm
-      - name: Build Realm
+      - name: Build Realm.Fody
         run: dotnet build
         working-directory: ./Realm/Realm.Fody
       - name: Build Benchmark project
         run:  |
-          msbuild -p:Platform=iPhoneSimulator
+          msbuild -p:Platform=iPhoneSimulator /restore
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
