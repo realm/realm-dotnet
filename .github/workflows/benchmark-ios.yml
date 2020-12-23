@@ -46,6 +46,12 @@ jobs:
         run: exit 1
       - name: Restore Nuget packages
         run: dotnet restore Realm.sln
+      - name: Build Realm
+        run: dotnet build
+        working-directory: ./Realm/Realm
+      - name: Build Realm
+        run: dotnet build
+        working-directory: ./Realm/Realm.Fody
       - name: Build Benchmark project
         run:  |
           msbuild -p:Platform=iPhoneSimulator
