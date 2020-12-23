@@ -44,14 +44,9 @@ jobs:
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
-      - name: Run benchmarks
+      - name: Restore Nuget packages
+        run: dotnet restore
+      - name: Build Benchmark project
         run:  |
           msbuild -p:Platform=iPhoneSimulator /p:RestoreAdditionalProjectSources=https://ci.appveyor.com/nuget/benchmarkdotnet /restore
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
-      - name: Save artifacts
-        # Not mandatory, but maybe it's good to do it?
-        uses: actions/upload-artifact@v2
-        with:
-          name: benchmark-results
-          # Could be put in an environmental variable
-          path: ./BenchmarkDotNet.Artifacts/results
