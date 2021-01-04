@@ -77,7 +77,6 @@ typedef struct realm_uuid {
 typedef struct realm_value {
     union {
         int64_t integer;
-        bool boolean;
         realm_string_t string;
         realm_binary_t binary;
         realm_timestamp_t timestamp;
@@ -95,6 +94,10 @@ typedef struct realm_value {
 
     bool is_null() {
         return type == realm_value_type::RLM_TYPE_NULL;
+    }
+
+    bool boolean() {
+        return integer == 1;
     }
 } realm_value_t;
 
@@ -265,7 +268,7 @@ static inline Mixed from_capi(realm_value_t val)
     case realm_value_type::RLM_TYPE_INT:
         return Mixed{ val.integer };
     case realm_value_type::RLM_TYPE_BOOL:
-        return Mixed{ val.boolean };
+        return Mixed{ val.boolean() };
     case realm_value_type::RLM_TYPE_STRING:
         return Mixed{ from_capi(val.string) };
     case realm_value_type::RLM_TYPE_BINARY:
@@ -322,7 +325,7 @@ static inline realm_value_t to_capi(Mixed value)
         }
         case type_Bool: {
             val.type = realm_value_type::RLM_TYPE_BOOL;
-            val.boolean = value.get<bool>();
+            val.integer = value.get<bool>() ? 1 : 0;
             break;
         }
         case type_String: {
