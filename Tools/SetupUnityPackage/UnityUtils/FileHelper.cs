@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-using System;
-using System.Threading;
 using UnityEngine;
 
 namespace UnityUtils
@@ -39,24 +37,11 @@ namespace UnityUtils
 
             try
             {
-                if (AndroidJNI.AttachCurrentThread() == 0)
+                using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
                 {
-                    using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-                    using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-                    {
-                        var getFilesDir = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("android/content/ContextWrapper"), "getFilesDir", "()Ljava/io/File;");
-                        var internalFilesDir = AndroidJNI.CallObjectMethod(currentActivity.GetRawObject(), getFilesDir, Array.Empty<jvalue>());
-                        var getAbsolutePath = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("java/io/File"), "getAbsolutePath", "()Ljava/lang/String;");
-
-                        path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
-
-                        // if not on the unity thread
-                        if (Thread.CurrentThread.ManagedThreadId != 1)
-                        {
-                            AndroidJNI.DetachCurrentThread();
-                        }
-
-                    }
+                    var filesDir = currentActivity.Call<AndroidJavaObject>("getFilesDir");
+                    path = filesDir.Call<string>("getAbsolutePath");
                 }
             }
             catch
