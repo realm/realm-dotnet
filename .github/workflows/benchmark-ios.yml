@@ -52,7 +52,10 @@ jobs:
       - name: Build Realm.Fody
         run: dotnet build
         working-directory: ./Realm/Realm.Fody
+      - name: Build PerformanceTest
+        run: dotnet build
+        working-directory: ./Tests/Benchmarks/PerformanceTests
       - name: Build Benchmark project
         run:  |
-          msbuild -p:Platform=iPhoneSimulator /restore
+          msbuild -p:Platform=iPhoneSimulator
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
