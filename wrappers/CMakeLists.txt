@@ -46,6 +46,9 @@ if(APPLE)
   endif()
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(/DWIN32_LEAN_AND_MEAN)
+  add_compile_options(
+      /MP # Enable multi-processor compilation
+  )
 
   # always produce a PDB
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")

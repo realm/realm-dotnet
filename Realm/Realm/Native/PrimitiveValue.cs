@@ -29,10 +29,6 @@ namespace Realms.Native
     internal unsafe struct PrimitiveValue
     {
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.U1)]
-        private bool bool_value;
-
-        [FieldOffset(0)]
         private long int_value;
 
         [FieldOffset(0)]
@@ -76,7 +72,7 @@ namespace Realms.Native
         public static PrimitiveValue Bool(bool value) => new PrimitiveValue
         {
             Type = RealmValueType.Bool,
-            bool_value = value
+            int_value = value ? 1 : 0,
         };
 
         public static PrimitiveValue NullableBool(bool? value) => value.HasValue ? Bool(value.Value) : Null();
@@ -202,7 +198,7 @@ namespace Realms.Native
             };
         }
 
-        public bool AsBool() => bool_value;
+        public bool AsBool() => int_value == 1;
 
         public long AsInt() => int_value;
 
