@@ -44,17 +44,6 @@ jobs:
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
-      - name: Restore Nuget packages
-        run: dotnet restore Realm.sln
-      - name: Build Realm
-        run: dotnet build
-        working-directory: ./Realm/Realm
-      - name: Build Realm.Fody
-        run: dotnet build
-        working-directory: ./Realm/Realm.Fody
-      - name: Build PerformanceTest
-        run: dotnet build
-        working-directory: ./Tests/Benchmarks/PerformanceTests
       - name: Build Benchmark project
         run:  |
           msbuild -p:Platform=iPhoneSimulator
