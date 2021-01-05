@@ -192,7 +192,7 @@ namespace Realms.Tests.Database
             return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
         }
 
-        //[Test]
+        [Test]
         //[TestCase(typeof(char), 'a')]
         //[TestCase(typeof(PrimaryKeyByteObject), (byte)5)]
         //[TestCase(typeof(PrimaryKeyInt16Object), (short)13)]
