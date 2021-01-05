@@ -90,10 +90,14 @@ jobs:
         # If there is no cache hit, just fail
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
+      - name: Build benchmarks
+        run: dotnet build -c Release /p:AddNet5Framework=true --framework net5.0
+        working-directory:  .\Tests\Benchmarks\PerformanceTests\
       - name: Run benchmarks
         run:  |
-          dotnet run -p .\Tests\Benchmarks\PerformanceTests\ run -c Release --framework net5.0 -- -f * --join
+          dotnet run --no-build --framework net5.0 -c Release  -- -f "*" --join
           rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
+        working-directory:  .\Tests\Benchmarks\PerformanceTests\
       - name: Save artifacts
         uses: actions/upload-artifact@v2
         with:
