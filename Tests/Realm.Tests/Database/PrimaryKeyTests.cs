@@ -192,6 +192,28 @@ namespace Realms.Tests.Database
             return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
         }
 
+        //[Test]
+        //[TestCase(typeof(char), 'a')]
+        //[TestCase(typeof(PrimaryKeyByteObject), (byte)5)]
+        //[TestCase(typeof(PrimaryKeyInt16Object), (short)13)]
+        //[TestCase(typeof(PrimaryKeyInt32Object), 42)]
+        //[TestCase(typeof(PrimaryKeyInt64Object), 76L)]
+        //[TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
+        public void ExceptionIfMismatchingPKType(Type objectType, object pkValue)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new IntPrimaryKeyWithValueObject
+                {
+                    Id = 42
+                });
+            });
+
+            // unfortunately there's no specific realm exception for this.
+            // the message can be found at PROJ-ROOT/wrappers/src/error_handling.hpp
+            Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>('a'), Throws.TypeOf<RealmException>());
+        }
+
         [Test]
         public void ExceptionIfNoPrimaryKeyDeclared()
         {
