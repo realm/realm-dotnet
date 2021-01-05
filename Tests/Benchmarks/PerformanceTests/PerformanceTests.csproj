@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType Condition="$(TargetFramework) == 'net5.0'">Exe</OutputType>
-    <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(AddNet5Framework)' == 'true'">$(TargetFrameworks);net5.0</TargetFrameworks>
     <CodeAnalysisRuleSet>../../../global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>8.0</LangVersion>
