@@ -52,5 +52,5 @@ jobs:
         working-directory: ./Realm/Realm.Fody
       - name: Build Benchmark project
         run:  |
-          msbuild -p:Platform=iPhoneSimulator -p:Configuration=Release -p:RestoreConfigFile="../../Test.NuGet.config" /restore
+          msbuild -p:Platform=iPhoneSimulator -p:Configuration=Release /restore
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
