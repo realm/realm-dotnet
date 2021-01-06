@@ -92,23 +92,23 @@ jobs:
         run: exit 1
       - name: Build benchmarks
         run: dotnet build -c Release /p:AddNet5Framework=true --framework net5.0
-        working-directory:  .\Tests\Benchmarks\PerformanceTests\
+        working-directory:  ./Tests/Benchmarks/PerformanceTests/
       - name: Run benchmarks
         run:  |
           dotnet run --no-build --framework net5.0 -c Release  -- -f "QueryTests" --join
-          rename-item -path ".\BenchmarkDotNet.Artifacts\results\*.json" -newname "benchmark-output.json"
-        working-directory:  .\Tests\Benchmarks\PerformanceTests\
+          rename-item -path "./BenchmarkDotNet.Artifacts/results/*.json" -newname "benchmark-output.json"
+        working-directory:  ./Tests/Benchmarks/PerformanceTests/
       - name: Save artifacts
         uses: actions/upload-artifact@v2
         with:
           name: benchmark-results-windows
-          path: .\BenchmarkDotNet.Artifacts\results
+          path: ./BenchmarkDotNet.Artifacts/results
       - name: Store benchmark results
         uses: Happypig375/github-action-benchmark@v1.8.2
         with:
           tool: 'benchmarkdotnet'
           # Where the output from the benchmark tool is stored
-          output-file-path: .\Tests\Benchmarks\PerformanceTests\BenchmarkDotNet.Artifacts\results\benchmark-output.json
+          output-file-path: ./Tests/Benchmarks/PerformanceTests/BenchmarkDotNet.Artifacts/results/benchmark-output.json
           # Workflow will not fail when an alert happens
           fail-on-alert: false
           gh-pages-branch: ${{env.gh-pages-branch}}
