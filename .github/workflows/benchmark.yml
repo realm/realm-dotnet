@@ -108,12 +108,12 @@ jobs:
         with:
           tool: 'benchmarkdotnet'
           # Where the output from the benchmark tool is stored
-          output-file-path: .\BenchmarkDotNet.Artifacts\results\benchmark-output.json
+          output-file-path: .\Tests\Benchmarks\PerformanceTests\BenchmarkDotNet.Artifacts\results\benchmark-output.json
           # Workflow will not fail when an alert happens
           fail-on-alert: false
           gh-pages-branch: ${{env.gh-pages-branch}}
           auto-push: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}      
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   execute-benchmarks-linux:
     needs: [build-wrappers-linux]
     runs-on: ubuntu-latest
