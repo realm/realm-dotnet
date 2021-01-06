@@ -137,7 +137,6 @@ jobs:
       - name: Run benchmarks
         run:  |
           dotnet run --no-build --framework net5.0 -c Release  -- -f "QueryTests" --join
-          rename-item -path "./BenchmarkDotNet.Artifacts/results/*.json" -newname "benchmark-output.json"
         working-directory:  ./Tests/Benchmarks/PerformanceTests/
       - name: Save artifacts
         uses: actions/upload-artifact@v2
@@ -167,7 +166,6 @@ jobs:
       - name: Run benchmarks
         run:  |
           dotnet run --no-build --framework net5.0 -c Release  -- -f "QueryTests" --join
-          rename-item -path "./BenchmarkDotNet.Artifacts/results/*.json" -newname "benchmark-output.json"
         working-directory:  ./Tests/Benchmarks/PerformanceTests/
       - name: Save artifacts
         uses: actions/upload-artifact@v2
