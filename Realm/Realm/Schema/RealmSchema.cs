@@ -20,9 +20,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Realms.Helpers;
 
 namespace Realms.Schema
@@ -40,7 +42,7 @@ namespace Realms.Schema
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() => CreateSchemaForClasses(_defaultTypes));
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(GetSchema);
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         /// <summary>
@@ -148,6 +150,31 @@ namespace Realms.Schema
             }
 
             return builder.Build();
+        }
+
+        internal static RealmSchema GetSchema()
+        {
+            if (_defaultTypes.Count == 0)
+            {
+                // this was introduced because Unity's IL2CPP won't behave as expected with module initializers
+                // so we manually do what .Net-like frameworks usually do with module initializers
+                try
+                {
+                    var moduleInitializers = AppDomain.CurrentDomain.GetAssemblies()
+                        .Select(assembly => assembly.GetType("RealmModuleInitializer")?.GetMethod("Initialize"))
+                        .Where(method => method != null);
+
+                    foreach (var moduleInitializer in moduleInitializers)
+                    {
+                        moduleInitializer.Invoke(null, null);
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return CreateSchemaForClasses(_defaultTypes);
         }
 
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)

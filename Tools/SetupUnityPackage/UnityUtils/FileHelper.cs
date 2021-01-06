@@ -17,13 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 
-using System;
 using UnityEngine;
 
 namespace UnityUtils
 {
     public static class FileHelper
     {
+        [RuntimeInitializeOnLoadMethod]
         public static string GetInternalStorage()
         {
             if (Application.platform != RuntimePlatform.Android)
@@ -36,12 +36,8 @@ namespace UnityUtils
             using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
             {
-                var getFilesDir = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("android/content/ContextWrapper"), "getFilesDir", "()Ljava/io/File;");
-                var internalFilesDir = AndroidJNI.CallObjectMethod(currentActivity.GetRawObject(), getFilesDir, Array.Empty<jvalue>());
-                var getAbsolutePath = AndroidJNIHelper.GetMethodID(AndroidJNI.FindClass("java/io/File"), "getAbsolutePath", "()Ljava/lang/String;");
-
-                var path = AndroidJNI.CallStringMethod(internalFilesDir, getAbsolutePath, Array.Empty<jvalue>());
-                return path ?? $"/data/data/{Application.identifier}/files";
+                var filesDir = currentActivity.Call<AndroidJavaObject>("getFilesDir");
+                return filesDir.Call<string>("getAbsolutePath");
             }
         }
     }
