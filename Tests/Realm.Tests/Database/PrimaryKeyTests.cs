@@ -193,6 +193,14 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ExceptionIfMismatchingPKType()
+        {
+            Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+        }
+
+        [Test]
         public void ExceptionIfNoPrimaryKeyDeclared()
         {
             Assert.That(() => _realm.Find<Person>("Zaphod"), Throws.TypeOf<RealmClassLacksPrimaryKeyException>());
