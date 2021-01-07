@@ -10,9 +10,10 @@ namespace Benchmarks
         {
             InitializeComponent();
 
-            var vm = new MainPageViewModel();
-
-            MainPage = new MainPage();
+            MainPage = new MainPage
+            {
+                BindingContext = new MainPageViewModel()
+            };
         }
 
         protected override void OnStart()
