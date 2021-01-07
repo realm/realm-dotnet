@@ -1,5 +1,5 @@
-﻿using Benchmarks.ViewModel;
-using Benchmarks.View;
+﻿using Benchmarks.View;
+using Benchmarks.ViewModel;
 using Xamarin.Forms;
 
 namespace Benchmarks
