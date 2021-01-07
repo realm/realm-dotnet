@@ -198,6 +198,38 @@ namespace Realms.Tests.Database
             Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
             Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
             Assert.That(() => _realm.Find<IntPrimaryKeyWithValueObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyCharObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyCharObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyCharObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyByteObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyByteObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyByteObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyInt16Object>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt16Object>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt16Object>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyInt32Object>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt32Object>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt32Object>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyInt64Object>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt64Object>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyInt64Object>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyStringObject>(42), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyStringObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyStringObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyGuidObject>(42), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyGuidObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyGuidObject>(ObjectId.GenerateNewId()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+
+            Assert.That(() => _realm.Find<PrimaryKeyObjectIdObject>(42), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyObjectIdObject>("42"), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
+            Assert.That(() => _realm.Find<PrimaryKeyObjectIdObject>(Guid.NewGuid()), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
         }
 
         [Test]
