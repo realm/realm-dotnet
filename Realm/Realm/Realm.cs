@@ -1094,6 +1094,9 @@ namespace Realms
         public T Find<T>(long? primaryKey)
             where T : RealmObject => FindCore<T>(primaryKey);
 
+        public T Find<T>(char? primaryKey)
+            where T : RealmObject => FindCore<T>(primaryKey);
+
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
