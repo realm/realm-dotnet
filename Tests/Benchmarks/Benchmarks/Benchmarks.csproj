@@ -20,4 +20,8 @@
     <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
     <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="View\" />
+    <Folder Include="ViewModel\" />
+  </ItemGroup>
 </Project>
