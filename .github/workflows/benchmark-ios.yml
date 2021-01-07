@@ -45,10 +45,10 @@ jobs:
         if: steps.wrapper-cache.outputs.cache-hit != 'true'
         run: exit 1
       - name: Build Realm
-        run: dotnet build
+        run: dotnet build --configuration Release
         working-directory: ./Realm/Realm
       - name: Build Realm.Fody
-        run: dotnet build
+        run: dotnet build --configuration Release
         working-directory: ./Realm/Realm.Fody
       - name: Build Benchmark project
         run:  |
