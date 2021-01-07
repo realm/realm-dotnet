@@ -1,14 +1,16 @@
-﻿using System;
+﻿using Benchmarks.ViewModel;
+using Benchmarks.View;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace Benchmarks
 {
     public partial class App : Application
     {
-        public App()
+        public App(string[] args)
         {
             InitializeComponent();
+
+            var vm = new MainPageViewModel();
 
             MainPage = new MainPage();
         }

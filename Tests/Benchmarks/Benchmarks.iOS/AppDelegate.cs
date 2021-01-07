@@ -1,4 +1,6 @@
-﻿using Foundation;
+﻿using System;
+using System.Linq;
+using Foundation;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -20,10 +22,16 @@ namespace Benchmarks.iOS
         //
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+
+            var arguments = NSProcessInfo.ProcessInfo.Arguments;
+            var index = Array.IndexOf(arguments, "--benchmark-arguments");
+            var benchmarkArguments = arguments.Skip(index + 1).ToArray();
+
             Forms.Init();
-            LoadApplication(new App());
+            LoadApplication(new App(benchmarkArguments));
 
             return base.FinishedLaunching(app, options);
+
         }
     }
 }
