@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Helpers;
 
@@ -183,6 +184,52 @@ namespace Realms
         {
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
             return realmResults.GetFilteredResults(predicate);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+        public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
+            => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
+        public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
+            => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
+
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        {
+            Argument.NotNull(target, nameof(target));
+
+            if (!skipDefaults || source != null)
+            {
+                target.Clear();
+            }
+
+            var realm = ((IRealmCollection<T>)target).Realm;
+
+            if (source != null)
+            {
+                foreach (var item in source)
+                {
+                    var value = valueGetter(item);
+                    if (value is RealmObject obj && obj != null)
+                    {
+                        realm.Add(obj, update);
+                    }
+                    else if (value is RealmValue val && val.Type == RealmValueType.Object)
+                    {
+                        var wrappedObj = val.AsRealmObject();
+                        if (wrappedObj is RealmObject robj)
+                        {
+                            realm.Add(robj, update);
+                        }
+                    }
+
+                    target.Add(item);
+                }
+            }
         }
     }
 }

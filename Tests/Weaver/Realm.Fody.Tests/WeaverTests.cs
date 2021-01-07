@@ -534,7 +534,10 @@ namespace RealmWeaver
                 "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Boolean.",
                 "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.DateTimeOffset.",
                 "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on AssemblyToProcess.Person.",
-                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>."
+                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
+                "RealmSetWithSetter.People has a setter but its type is a ISet which only supports getters.",
+                "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
+                "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

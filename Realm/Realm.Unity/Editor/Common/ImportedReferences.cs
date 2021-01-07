@@ -45,6 +45,8 @@ namespace RealmWeaver
 
         public abstract TypeReference ISetOfT { get; }
 
+        public abstract TypeReference IDictionaryOfTKeyTValue { get; }
+
         public MethodReference ISetOfT_UnionWith { get; private set; }
 
         public abstract TypeReference IQueryableOfT { get; }
@@ -60,6 +62,10 @@ namespace RealmWeaver
         public abstract TypeReference System_Collections_Generic_HashSetOfT { get; }
 
         public MethodReference System_Collections_Generic_HashSetOfT_Constructor { get; private set; }
+
+        public abstract TypeReference System_Collections_Generic_DictionaryOfTKeyTValue { get; }
+
+        public MethodReference System_Collections_Generic_DictionaryOfTKeyTValue_Constructor { get; private set; }
 
         public abstract TypeReference System_Linq_Enumerable { get; }
 
@@ -103,6 +109,8 @@ namespace RealmWeaver
 
         public MethodReference RealmObject_GetSetValue { get; private set; }
 
+        public MethodReference RealmObject_GetDictionaryValue { get; private set; }
+
         public MethodReference RealmObject_GetBacklinks { get; private set; }
 
         public TypeReference RealmValue { get; private set; }
@@ -145,9 +153,13 @@ namespace RealmWeaver
 
         public TypeReference SyncConfiguration { get; private set; }
 
+        public MethodReference CollectionExtensions_PopulateCollection { get; private set; }
+
+        public MethodReference CollectionExtensions_PopulateDictionary { get; private set; }
+
         protected ModuleDefinition Module { get; }
 
-        protected TypeSystem Types { get; }
+        public TypeSystem Types { get; }
 
         protected ImportedReferences(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName)
         {
@@ -236,6 +248,8 @@ namespace RealmWeaver
 
             System_Collections_Generic_HashSetOfT_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_HashSetOfT) { HasThis = true };
 
+            System_Collections_Generic_DictionaryOfTKeyTValue_Constructor = new MethodReference(".ctor", Types.Void, System_Collections_Generic_DictionaryOfTKeyTValue) { HasThis = true };
+
             {
                 System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.Void, System_Linq_Enumerable);
                 var T = new GenericParameter(System_Linq_Enumerable_Empty);
@@ -303,6 +317,15 @@ namespace RealmWeaver
             }
 
             {
+                RealmObject_GetDictionaryValue = new MethodReference("GetDictionaryValue", new GenericInstanceType(IDictionaryOfTKeyTValue), RealmObjectBase) { HasThis = true };
+                var TValue = new GenericParameter(RealmObject_GetSetValue);
+                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType).GenericArguments.Add(Types.String);
+                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType).GenericArguments.Add(TValue);
+                RealmObject_GetDictionaryValue.GenericParameters.Add(TValue);
+                RealmObject_GetDictionaryValue.Parameters.Add(new ParameterDefinition(Types.String));
+            }
+
+            {
                 RealmObject_GetBacklinks = new MethodReference("GetBacklinks", new GenericInstanceType(IQueryableOfT), RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetBacklinks) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
                 (RealmObject_GetBacklinks.ReturnType as GenericInstanceType).GenericArguments.Add(T);
@@ -365,6 +388,27 @@ namespace RealmWeaver
             }
 
             SyncConfiguration = new TypeReference("Realms.Sync", "SyncConfiguration", Module, realmAssembly);
+
+            var collectionExtensions = new TypeReference("Realms", "CollectionExtensions", Module, realmAssembly);
+            CollectionExtensions_PopulateCollection = new MethodReference("PopulateCollection", Types.Void, collectionExtensions) { HasThis = false };
+            {
+                var T = new GenericParameter(CollectionExtensions_PopulateCollection);
+                CollectionExtensions_PopulateCollection.GenericParameters.Add(T);
+                CollectionExtensions_PopulateCollection.Parameters.Add(new ParameterDefinition(new GenericInstanceType(ICollectionOfT) { GenericArguments = { T } }));
+                CollectionExtensions_PopulateCollection.Parameters.Add(new ParameterDefinition(new GenericInstanceType(ICollectionOfT) { GenericArguments = { T } }));
+                CollectionExtensions_PopulateCollection.Parameters.Add(new ParameterDefinition(Types.Boolean));
+                CollectionExtensions_PopulateCollection.Parameters.Add(new ParameterDefinition(Types.Boolean));
+            }
+
+            CollectionExtensions_PopulateDictionary = new MethodReference("PopulateCollection", Types.Void, collectionExtensions) { HasThis = false };
+            {
+                var T = new GenericParameter(CollectionExtensions_PopulateDictionary);
+                CollectionExtensions_PopulateDictionary.GenericParameters.Add(T);
+                CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(new GenericInstanceType(IDictionaryOfTKeyTValue) { GenericArguments = { Types.String, T } }));
+                CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(new GenericInstanceType(IDictionaryOfTKeyTValue) { GenericArguments = { Types.String, T } }));
+                CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
+                CollectionExtensions_PopulateDictionary.Parameters.Add(new ParameterDefinition(Types.Boolean));
+            }
         }
 
         private void InitializePropertyChanged_Fody(AssemblyNameReference propertyChangedAssembly)
@@ -405,16 +449,24 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_HashSetOfT { get; }
 
+            public override TypeReference System_Collections_Generic_DictionaryOfTKeyTValue { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
 
             public override TypeReference ISetOfT { get; }
 
+            public override TypeReference IDictionaryOfTKeyTValue { get; }
+
             public NETFramework(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
+
+                IDictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "IDictionary`2", Module, GetOrAddFrameworkReference("System"));
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
 
                 ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System"));
                 ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
@@ -424,6 +476,10 @@ namespace RealmWeaver
 
                 System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Core"));
                 System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
+
+                System_Collections_Generic_DictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "Dictionary`2", Module, GetOrAddFrameworkReference("System.Core"));
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Core"));
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Core"));
@@ -438,11 +494,15 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_HashSetOfT { get; }
 
+            public override TypeReference System_Collections_Generic_DictionaryOfTKeyTValue { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
 
             public override TypeReference ISetOfT { get; }
+
+            public override TypeReference IDictionaryOfTKeyTValue { get; }
 
             public NETPortable(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
@@ -452,11 +512,19 @@ namespace RealmWeaver
                 ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
                 ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
+                IDictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "IDictionary`2", Module, Module.TypeSystem.CoreLibrary);
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, GetOrAddFrameworkReference("System.Collections"));
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
 
                 System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Collections"));
                 System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
+
+                System_Collections_Generic_DictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "Dictionary`2", Module, GetOrAddFrameworkReference("System.Collections"));
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, GetOrAddFrameworkReference("System.Linq"));
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, GetOrAddFrameworkReference("System.Linq.Queryable"));
@@ -471,11 +539,15 @@ namespace RealmWeaver
 
             public override TypeReference System_Collections_Generic_HashSetOfT { get; }
 
+            public override TypeReference System_Collections_Generic_DictionaryOfTKeyTValue { get; }
+
             public override TypeReference System_Linq_Enumerable { get; }
 
             public override TypeReference System_Linq_Queryable { get; }
 
             public override TypeReference ISetOfT { get; }
+
+            public override TypeReference IDictionaryOfTKeyTValue { get; }
 
             public NetStandard2(ModuleDefinition module, TypeSystem types, FrameworkName frameworkName) : base(module, types, frameworkName)
             {
@@ -485,11 +557,19 @@ namespace RealmWeaver
                 ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, Module.TypeSystem.CoreLibrary);
                 ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
 
+                IDictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "IDictionary`2", Module, Module.TypeSystem.CoreLibrary);
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
 
                 System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
+
+                System_Collections_Generic_DictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "Dictionary`2", Module, Module.TypeSystem.CoreLibrary);
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
+                System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
 
                 System_Linq_Enumerable = new TypeReference("System.Linq", "Enumerable", Module, Module.TypeSystem.CoreLibrary);
                 System_Linq_Queryable = new TypeReference("System.Linq", "Queryable", Module, Module.TypeSystem.CoreLibrary);

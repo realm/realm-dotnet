@@ -216,6 +216,14 @@ namespace Realms
             return _objectHandle.GetSet<T>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
         }
 
+        protected internal IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _metadata.Schema.TryFindProperty(propertyName, out var property);
+            return _objectHandle.GetDictionary<TValue>(_realm, _metadata.PropertyIndices[propertyName], property.ObjectType);
+        }
+
         protected IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : RealmObjectBase
         {

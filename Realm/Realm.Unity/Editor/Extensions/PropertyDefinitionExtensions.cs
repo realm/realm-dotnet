@@ -60,6 +60,11 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("ISet`1", "System.Collections.Generic");
     }
 
+    internal static bool IsIDictionary(this PropertyDefinition property)
+    {
+        return property.IsType("IDictionary`2", "System.Collections.Generic");
+    }
+
     internal static bool IsCollection(this PropertyDefinition property, out RealmCollectionType collectionType)
     {
         if (property.IsISet())
@@ -71,6 +76,12 @@ internal static class PropertyDefinitionExtensions
         if (property.IsIList())
         {
             collectionType = RealmCollectionType.IList;
+            return true;
+        }
+
+        if (property.IsIDictionary())
+        {
+            collectionType = RealmCollectionType.IDictionary;
             return true;
         }
 

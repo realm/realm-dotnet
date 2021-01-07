@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson;
 using Realms;
 
@@ -97,7 +96,6 @@ namespace AssemblyToProcess
         public Guid? NullableGuidProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ListsObject : RealmObject
     {
         public IList<char> CharList { get; }
@@ -171,7 +169,6 @@ namespace AssemblyToProcess
         public IList<RealmInteger<long>?> NullableInt64CounterList { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class SetsObject : RealmObject
     {
         public ISet<char> CharSet { get; }
@@ -241,7 +238,75 @@ namespace AssemblyToProcess
         public ISet<RealmInteger<long>?> NullableInt64CounterSet { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class DictionariesObject : RealmObject
+    {
+        public IDictionary<string, char> CharDictionary { get; }
+
+        public IDictionary<string, byte> ByteDictionary { get; }
+
+        public IDictionary<string, short> Int16Dictionary { get; }
+
+        public IDictionary<string, int> Int32Dictionary { get; }
+
+        public IDictionary<string, long> Int64Dictionary { get; }
+
+        public IDictionary<string, float> SingleDictionary { get; }
+
+        public IDictionary<string, double> DoubleDictionary { get; }
+
+        public IDictionary<string, bool> BooleanDictionary { get; }
+
+        public IDictionary<string, string> StringDictionary { get; }
+
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDictionary { get; }
+
+        public IDictionary<string, decimal> DecimalDictionary { get; }
+
+        public IDictionary<string, Decimal128> Decimal128Dictionary { get; }
+
+        public IDictionary<string, ObjectId> ObjectIdDictionary { get; }
+
+        public IDictionary<string, char?> NullableCharDictionary { get; }
+
+        public IDictionary<string, byte?> NullableByteDictionary { get; }
+
+        public IDictionary<string, short?> NullableInt16Dictionary { get; }
+
+        public IDictionary<string, int?> NullableInt32Dictionary { get; }
+
+        public IDictionary<string, long?> NullableInt64Dictionary { get; }
+
+        public IDictionary<string, float?> NullableSingleDictionary { get; }
+
+        public IDictionary<string, double?> NullableDoubleDictionary { get; }
+
+        public IDictionary<string, bool?> NullableBooleanDictionary { get; }
+
+        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDictionary { get; }
+
+        public IDictionary<string, decimal?> NullableDecimalDictionary { get; }
+
+        public IDictionary<string, Decimal128?> NullableDecimal128Dictionary { get; }
+
+        public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; }
+
+        public IDictionary<string, RealmInteger<byte>> ByteCounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<short>> Int16CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<int>> Int32CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<long>> Int64CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<byte>?> NullableByteCounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<short>?> NullableInt16CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDictionary { get; }
+
+        public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDictionary { get; }
+    }
+
     public class MixOfCollectionsObject : RealmObject
     {
         [PrimaryKey]
@@ -258,114 +323,104 @@ namespace AssemblyToProcess
         public ISet<AllTypesObject> ObjectSet { get; }
 
         public ISet<EmbeddedAllTypesObject> EmbeddedSet { get; }
+
+        public IDictionary<string, int> IntegersDictionary { get; }
+
+        public IDictionary<string, AllTypesObject> ObjectDictionary { get; }
+
+        public IDictionary<string, EmbeddedAllTypesObject> EmbeddedDictionary { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
         public char CharProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         public byte ByteProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         public short Int16Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         public int Int32Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         public long Int64Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
         public string StringProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyObjectIdObject : RealmObject
     {
         [PrimaryKey]
         public ObjectId ObjectIdProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyGuidObject : RealmObject
     {
         [PrimaryKey]
         public Guid GuidProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableCharObject : RealmObject
     {
         [PrimaryKey]
         public char? CharProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableByteObject : RealmObject
     {
         [PrimaryKey]
         public byte? ByteProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt16Object : RealmObject
     {
         [PrimaryKey]
         public short? Int16Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt32Object : RealmObject
     {
         [PrimaryKey]
         public int? Int32Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableInt64Object : RealmObject
     {
         [PrimaryKey]
         public long? Int64Property { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableObjectIdObject : RealmObject
     {
         [PrimaryKey]
         public ObjectId? ObjectIdProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyNullableGuidObject : RealmObject
     {
         [PrimaryKey]
         public Guid? GuidProperty { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class GetterOnlyUnsupportedProperty : RealmObject
     {
         public int IntPropety { get; set; }
@@ -379,7 +434,6 @@ namespace AssemblyToProcess
         }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ObjectWithEmbeddedProperties : RealmObject
     {
         public EmbeddedAllTypesObject AllTypesObject { get; set; }
@@ -387,7 +441,6 @@ namespace AssemblyToProcess
         public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class EmbeddedAllTypesObject : EmbeddedObject
     {
         public char CharProperty { get; set; }

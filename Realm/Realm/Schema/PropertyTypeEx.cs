@@ -110,6 +110,8 @@ namespace Realms.Schema
                     }
 
                     return setResult;
+                case Type _ when type.IsClosedGeneric(typeof(IDictionary<,>), out var typeArguments):
+                    return PropertyType.Dictionary | typeArguments.Last().ToPropertyType(out objectType);
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
             }
@@ -170,6 +172,10 @@ namespace Realms.Schema
         public static bool IsArray(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Array);
 
         public static bool IsSet(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Set);
+
+        public static bool IsDictionary(this PropertyType propertyType) => propertyType.HasFlag(PropertyType.Dictionary);
+
+        public static bool IsCollection(this PropertyType propertyType) => propertyType.IsArray() || propertyType.IsSet() || propertyType.IsDictionary();
 
         public static PropertyType UnderlyingType(this PropertyType propertyType) => propertyType & ~PropertyType.Flags;
     }
