@@ -127,10 +127,12 @@ REALM_EXPORT bool realm_dictionary_get_is_valid(const object_store::Dictionary& 
     });
 }
 
+// TODO: this should not return nullptr, but blocked on https://github.com/realm/realm-core/issues/4258
 REALM_EXPORT ThreadSafeReference* realm_dictionary_get_thread_safe_reference(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new ThreadSafeReference(dictionary);
+        // return new ThreadSafeReference(dictionary);
+        return nullptr;
     });
 }
 

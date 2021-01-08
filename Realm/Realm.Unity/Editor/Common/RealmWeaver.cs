@@ -998,11 +998,11 @@ Analytics payload
 
                     if (collectionType == RealmCollectionType.IDictionary)
                     {
-                        il.Append(il.Create(OpCodes.Call, _references.CollectionExtensions_PopulateDictionary));
+                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.CollectionExtensions_PopulateDictionary) { GenericArguments = { elementType } }));
                     }
                     else
                     {
-                        il.Append(il.Create(OpCodes.Call, _references.CollectionExtensions_PopulateCollection));
+                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_references.CollectionExtensions_PopulateCollection) { GenericArguments = { elementType } }));
                     }
                 }
 

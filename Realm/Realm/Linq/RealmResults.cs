@@ -74,7 +74,7 @@ namespace Realms
             return qv.MakeResultsForQuery();
         }
 
-        protected override T GetValueAtIndex(int index) => _handle.GetValueAtIndex(index, Metadata, Realm).As<T>();
+        protected override T GetValueAtIndex(int index) => ResultsHandle.GetValueAtIndex(index, Metadata, Realm).As<T>();
 
         public override int IndexOf(T value)
         {

@@ -260,6 +260,16 @@ static inline std::string to_string(PropertyType type)
     return to_string(to_capi(type));
 }
 
+static inline Mixed from_capi(Object* obj, bool isMixedColumn)
+{
+    if (!isMixedColumn)
+    {
+        return Mixed{ obj->obj().get_key() };
+    }
+
+    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
+}
+
 static inline Mixed from_capi(realm_value_t val)
 {
     switch (val.type) {
@@ -289,17 +299,6 @@ static inline Mixed from_capi(realm_value_t val)
         return from_capi(val.link.object, true);
     }
     REALM_TERMINATE("Invalid realm_value_t");
-}
-
-static inline Mixed from_capi(Object* obj, bool isMixedColumn)
-{
-    if (!isMixedColumn)
-    {
-        return Mixed{ obj->obj().get_key() };
-    }
-
-    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
-
 }
 
 static inline realm_value_t to_capi(Object* obj)
