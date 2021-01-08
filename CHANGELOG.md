@@ -6,7 +6,9 @@
 ### Fixed
 * Worked around an issue with the .NET Native compiler (used in UWP projects) that would result in the following exception being thrown in Release: `Incompatible MarshalAs detected in parameter named 'value'. Please refer to MCG's warning message for more information.`. (Issue [#2169](https://github.com/realm/realm-dotnet/issues/2169))
 * Fixed an issue where Sync connections would fail on Windows due to `SSL server certificate rejected`. (Core upgrade)
-* Fixed an issue with deleting and recreating objects with embedded objects.
+* Fixed an issue with deleting and recreating objects with embedded objects. (Core upgrade)
+* Fix implementation of InterprocessCondVar on Windows to not hang in the face of process death. (Core upgrade)
+* Fix a race condition which would lead to "uncaught exception in notifier thread: N5realm15InvalidTableRefE: transaction_ended" and a crash when the source Realm was closed or invalidated at a very specific time during the first run of a collection notifier (Core upgrade)
 
 ### Enhancements
 * None
@@ -15,7 +17,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.3.2.
+* Using Core 10.3.2 + parts of Core 10.vnext.
 
 ## 10.0.0-beta.3 (2020-12-10)
 ------------------
