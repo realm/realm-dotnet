@@ -17,7 +17,7 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.3.2 + parts of Core 10.vnext.
+* Using Core 10.3.2 + parts of Core 10.vnext (fdc8e95b3c14b1e107af175c00904c8bb9a130f3).
 
 ## 10.0.0-beta.3 (2020-12-10)
 ------------------
