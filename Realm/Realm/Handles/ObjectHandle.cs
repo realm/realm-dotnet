@@ -187,14 +187,14 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr GetLinkList(IntPtr propertyIndex)
+        public IntPtr GetRealmList(IntPtr propertyIndex)
         {
             var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public IntPtr GetLinkSet(IntPtr propertyIndex)
+        public IntPtr GetRealmSet(IntPtr propertyIndex)
         {
             var result = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -229,13 +229,13 @@ namespace Realms
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
             var metadata = objectType == null ? null : realm.Metadata[objectType];
-            var listHandle = new ListHandle(Root, GetLinkList(propertyIndex));
+            var listHandle = new ListHandle(Root, GetRealmList(propertyIndex));
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
         public RealmSet<T> GetSet<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var setHandle = new SetHandle(Root, GetLinkSet(propertyIndex));
+            var setHandle = new SetHandle(Root, GetRealmSet(propertyIndex));
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmSet<T>(realm, setHandle, metadata);
         }

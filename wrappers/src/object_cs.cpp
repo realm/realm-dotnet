@@ -55,10 +55,19 @@ extern "C" {
 
     REALM_EXPORT List* object_get_list(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
-        return handle_errors(ex, [&]() -> List* {
+        return handle_errors(ex, [&]() {
             verify_can_get(object);
 
             return new List(object.realm(), object.obj(), get_column_key(object, property_ndx));
+        });
+    }
+
+    REALM_EXPORT object_store::Set* object_get_set(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            verify_can_get(object);
+
+            return new object_store::Set(object.realm(), object.obj(), get_column_key(object, property_ndx));
         });
     }
 
