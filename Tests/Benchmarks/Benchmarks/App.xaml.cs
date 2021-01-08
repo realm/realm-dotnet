@@ -12,7 +12,7 @@ namespace Benchmarks
 
             MainPage = new MainPage
             {
-                BindingContext = new MainPageViewModel()
+                BindingContext = new MainPageViewModel(args)
             };
         }
 

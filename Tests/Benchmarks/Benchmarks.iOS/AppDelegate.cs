@@ -22,13 +22,10 @@ namespace Benchmarks.iOS
         //
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-
-            var arguments = NSProcessInfo.ProcessInfo.Arguments;
-            var index = Array.IndexOf(arguments, "--benchmark-arguments");
-            var benchmarkArguments = arguments.Skip(index + 1).ToArray();
+            var arguments = NSProcessInfo.ProcessInfo.Arguments.Skip(1).ToArray();
 
             Forms.Init();
-            LoadApplication(new App(benchmarkArguments));
+            LoadApplication(new App(arguments));
 
             return base.FinishedLaunching(app, options);
 
