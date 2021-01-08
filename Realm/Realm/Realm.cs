@@ -357,7 +357,7 @@ namespace Realms
         {
             if (Error == null)
             {
-                ErrorMessages.OutputError(ErrorMessages.RealmNotifyErrorNoSubscribers);
+                Console.Error.WriteLine("A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
 
             Error?.Invoke(this, new ErrorEventArgs(ex));
