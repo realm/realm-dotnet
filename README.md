@@ -50,7 +50,7 @@ Prerequisites:
 
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
-1. Download and build the native libraries using the instructions in `wrappers/README.md`
+1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
 1. Open the `Realm.sln` in `Visual Studio`
 1. Build `Realm.Fody` and `Realm`
 1. Build and run the tests for the relevant platforms.
