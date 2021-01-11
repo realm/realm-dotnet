@@ -92,7 +92,7 @@ public:
 class PropertyTypeMismatchException : public std::runtime_error {
 public:
     PropertyTypeMismatchException(std::string object_type, std::string property, std::string property_type, std::string actual_type)
-        : std::runtime_error(util::format("Property type mismatch: %1. %2 is of type %3, but the supplied value is of type %4", object_type, property, property_type, actual_type)) {}
+        : std::runtime_error(util::format("Property type mismatch: %1.%2 is of type %3, but the supplied value is of type %4", object_type, property, property_type, actual_type)) {}
 
     PropertyTypeMismatchException(std::string property_type, std::string actual_type)
         : std::runtime_error(util::format("List type mismatch: attempted to add a value of type '%1' to a list that expects '%2'", actual_type, property_type)) {}

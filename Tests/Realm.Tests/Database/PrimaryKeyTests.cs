@@ -70,7 +70,7 @@ namespace Realms.Tests.Database
             new object[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
         };
 
-        private readonly IEnumerable<dynamic> _primaryKeyValues = new dynamic[] { "42", 123, ObjectId.GenerateNewId(), Guid.NewGuid() };
+        private readonly IEnumerable<dynamic> _primaryKeyValues = new dynamic[] { "42", 123L, ObjectId.GenerateNewId(), Guid.NewGuid() };
 
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
@@ -226,34 +226,21 @@ namespace Realms.Tests.Database
         // FindCore<T> converts its input in RealmValue. Which in turn treats long as PritiveValue of type Int.
         // Without this pass it'd be impossible to match any PK that's of primitive type, since a PK defined as e.g. short would always be
         // compared against an int
-        private static Type ConvertToRealmValue(Type toConvert)
+        private static Type GetDatabaseType(Type toConvert)
         {
-            var nativeTypes = new ReadOnlyCollection<Type>(new Type[] { typeof(int), typeof(long), typeof(short), typeof(byte), typeof(char) });
-
-            foreach (var type in nativeTypes)
-            {
-                if (toConvert == type)
-                {
-                    return typeof(int);
-                }
-            }
-
-            return null;
+            var intBackedTypes = new Type[] { typeof(int), typeof(long), typeof(short), typeof(byte), typeof(char) };
+            return intBackedTypes.Contains(toConvert) ? typeof(long) : toConvert;
         }
 
         private void RealmFind_IncorrectPKArgument_Throws<T>()
             where T : RealmObject
         {
             var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
-            var pkType = ConvertToRealmValue(pkInClass.PropertyType) ?? pkInClass.PropertyType;
+            var pkType = GetDatabaseType(pkInClass.PropertyType) ?? pkInClass.PropertyType;
 
-            foreach (var pk in _primaryKeyValues)
+            var keys = _primaryKeyValues.Where(pk => pk.GetType() != pkType);
+            foreach (var pk in keys)
             {
-                if (pk.GetType() == pkType)
-                {
-                    continue;
-                }
-
                 Assert.That(() => _realm.Find<T>(pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
                 Assert.That(() => _realm.DynamicApi.Find(typeof(T).Name, pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
             }
