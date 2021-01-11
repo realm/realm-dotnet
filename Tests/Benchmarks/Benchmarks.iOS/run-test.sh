@@ -4,7 +4,11 @@ appPath="bin/iPhoneSimulator/Release/Benchmarks.iOS.app"
 id="test-simulator"
 bundleId="io.realm.benchmarks"
 runtimeId="iOS14.3"
-benchmarkArguments="--headless -f \"QueryTests\" --join"
+
+benchmarkArguments="--headless --join --artifacts /Users/ferdinando.papale/MongoDB/realm-dotnet/Tests/Benchmarks/Benchmarks.iOS"
+
+benchmarkArguments="--headless --join --artifacts /Users/ferdinando.papale/MongoDB/realm-dotnet/Tests/Benchmarks/Benchmarks.iOS  -f * "
+
 
 msbuild -p:Platform=iPhoneSimulator -p:Configuration=Release /restore
 
