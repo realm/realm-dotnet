@@ -9,6 +9,7 @@ def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
+boolean isRelease = false;
 
 stage('Checkout') {
   rlmNode('docker') {
@@ -33,6 +34,7 @@ stage('Checkout') {
     // Also update in AppHandle.cs
     else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.4') {
       versionSuffix = "beta.4"
+      isRelease = true;
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
@@ -350,6 +352,8 @@ def NetCoreTest(String nodeName, String targetFramework) {
 
       def addNet5Framework = targetFramework == 'net5.0'
 
+      clearNugetCache();
+
       String script = """
         cd ${env.WORKSPACE}/Tests/Realm.Tests
         dotnet build -c ${configuration} -f ${targetFramework} -p:RestoreConfigFile=${env.WORKSPACE}/Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${packageVersion} -p:AddNet5Framework=${addNet5Framework}
@@ -412,6 +416,7 @@ def msbuild(Map args = [:]) {
       "NUGET_HTTP_CACHE_PATH=${env.HOME}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
     ]
     withEnv(env) {
+      clearNugetCache()
       sh invocation
     }
   } else {
@@ -420,6 +425,7 @@ def msbuild(Map args = [:]) {
       "NUGET_HTTP_CACHE_PATH=${env.userprofile}/.nuget/v3-cache-ci-${env.EXECUTOR_NUMBER}"
     ]
     withEnv(env) {
+      clearNugetCache()
       bat invocation
     }
   }
@@ -438,6 +444,17 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 
   buildDockerEnv("ci/realm-dotnet:${label}", extra_args: "-f ${image}").inside("--mount 'type=bind,src=/tmp,dst=/tmp' -u ${uid}:${gid}") {
     sh invocation
+  }
+}
+
+def clearNugetCache() {
+  if (isRelease) {
+    String invocation = 'dotnet nuget locals all -c'
+    if (isUnix()) {
+      sh invocation
+    } else {
+      bat invocation
+    }
   }
 }
 
