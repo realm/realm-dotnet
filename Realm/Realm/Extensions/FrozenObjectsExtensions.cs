@@ -46,7 +46,6 @@ namespace Realms
         /// <param name="realmObj">The <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> instance that you want to create a frozen version of.</param>
         /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
         /// <returns>A new frozen instance of the passed in object or the object itself if it was already frozen.</returns>
-        /// <seealso cref="RealmObjectBase.FreezeInPlace"/>
         public static T Freeze<T>(this T realmObj)
             where T : RealmObjectBase
         {
@@ -57,8 +56,7 @@ namespace Realms
                 return realmObj;
             }
 
-            var (realm, objectHandle) = realmObj.FreezeImpl();
-            return (T)realm.MakeObject(realmObj.ObjectMetadata, objectHandle);
+            return (T)realmObj.FreezeImpl();
         }
 
         /// <summary>
