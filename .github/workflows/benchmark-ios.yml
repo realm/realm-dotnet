@@ -30,9 +30,6 @@ jobs:
     needs: [build-wrappers]
     runs-on: macos-latest
     steps:
-      - name: Print
-        run:  |
-          xcrun simctl list
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -63,7 +60,7 @@ jobs:
           simId="benchmark-simulator"
           simType="com.apple.CoreSimulator.SimDeviceType.iPhone-12"
           bundleId="io.realm.benchmarks"
-          runtimeId="iOS14.3"
+          runtimeId="iOS14.2"
           resultPath=$(pwd)
 
           benchmarkArguments="--headless --join --artifacts ${pwd} -f QueryTests"
