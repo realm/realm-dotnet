@@ -54,3 +54,28 @@ jobs:
         run:  |
           msbuild -p:Platform=iPhoneSimulator -p:Configuration=Release /restore
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
+      - name: Run benchmarks
+        run:  |
+
+          simId="benchmark-simulator"
+          simType = "com.apple.CoreSimulator.SimDeviceType.iPhone-12"
+          bundleId="io.realm.benchmarks"
+          runtimeId="iOS14.3"
+          resultPath=$(pwd)
+
+          benchmarkArguments="--headless --join --artifacts ${pwd} -f QueryTests"
+
+          xcrun simctl create ${simId} ${simType} ${runtimeId}
+          xcrun simctl boot ${simId}
+          xcrun simctl install ${simId} ${appPath}
+          xcrun simctl launch --console-pty ${simId} ${bundleId} ${benchmarkArguments}
+
+          xcrun simctl shutdown ${simId}
+          xcrun simctl delete ${simId}
+
+        working-directory: ./Tests/Benchmarks/Benchmarks.iOS
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results-iOS
+          path: ./Tests/Benchmarks/Benchmarks.iOS/results/
