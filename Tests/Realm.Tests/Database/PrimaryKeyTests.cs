@@ -222,10 +222,11 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmFind_WhenPKIsObjectIdAndArgumentIsNot_Throws() => RealmFind_IncorrectPKArgument_Throws<PrimaryKeyObjectIdObject>();
 
-        // In Find<T> anything that is a primitive type (according to Realm's view) is converted to long?.
-        // FindCore<T> converts its input in RealmValue. Which in turn treats long as PritiveValue of type Int.
-        // Without this pass it'd be impossible to match any PK that's of primitive type, since a PK defined as e.g. short would always be
-        // compared against an int
+        /// <summary>
+        /// In <see cref="RealmFind_IncorrectPKArgument_Throws"/> we're using reflection to check if the primary
+        /// key type and the property type match. Since Realm stores all integral properties as Int64, we
+        /// want to treat the narrower types as "long" to match the value type in <see cref="_primaryKeyValues"/>.
+        /// </summary>
         private static Type GetDatabaseType(Type toConvert)
         {
             var intBackedTypes = new Type[] { typeof(int), typeof(long), typeof(short), typeof(byte), typeof(char) };
@@ -236,10 +237,10 @@ namespace Realms.Tests.Database
             where T : RealmObject
         {
             var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
-            var pkType = GetDatabaseType(pkInClass.PropertyType) ?? pkInClass.PropertyType;
+            var pkType = GetDatabaseType(pkInClass.PropertyType);
 
-            var keys = _primaryKeyValues.Where(pk => pk.GetType() != pkType);
-            foreach (var pk in keys)
+            var keysWithIncorrectType = _primaryKeyValues.Where(pk => pk.GetType() != pkType);
+            foreach (var pk in keysWithIncorrectType)
             {
                 Assert.That(() => _realm.Find<T>(pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
                 Assert.That(() => _realm.DynamicApi.Find(typeof(T).Name, pk), Throws.TypeOf<RealmException>().With.Message.Contains("Property type mismatch"));
