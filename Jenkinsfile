@@ -9,7 +9,7 @@ def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
-boolean isRelease = false;
+boolean isRelease = false
 
 stage('Checkout') {
   rlmNode('docker') {
