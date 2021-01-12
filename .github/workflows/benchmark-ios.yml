@@ -3,9 +3,6 @@ on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
-env:
-  # Branch for Github Pages
-  gh-pages-branch: gh-pages
 jobs:
   build-wrappers:
     runs-on: macos-latest
@@ -64,7 +61,7 @@ jobs:
           bundleId="io.realm.benchmarks"
           runtimeId="iOS14.2"
 
-          benchmarkArguments="--headless --join --artifacts ${resultPath} -f QueryTests"
+          benchmarkArguments="--headless --join --artifacts ${resultPath} -f \"*\""
 
           xcrun simctl create ${simId} ${simType} ${runtimeId}
           xcrun simctl boot ${simId}
@@ -77,5 +74,5 @@ jobs:
       - name: Save artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: benchmark-results-iOS
+          name: benchmark-results-ios
           path: ./Tests/Benchmarks/Benchmarks.iOS/results/
