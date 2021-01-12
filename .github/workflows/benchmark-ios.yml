@@ -73,6 +73,8 @@ jobs:
 
           xcrun simctl shutdown ${simId}
           xcrun simctl delete ${simId}
+          
+          find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Save artifacts
         uses: actions/upload-artifact@v2
