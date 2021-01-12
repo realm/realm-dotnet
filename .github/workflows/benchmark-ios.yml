@@ -56,12 +56,13 @@ jobs:
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Run benchmarks
         run:  |
+          appPath="bin/iPhoneSimulator/Release/Benchmarks.iOS.app"
+          resultPath=$(pwd)
 
           simId="benchmark-simulator"
           simType="com.apple.CoreSimulator.SimDeviceType.iPhone-12"
           bundleId="io.realm.benchmarks"
           runtimeId="iOS14.2"
-          resultPath=$(pwd)
 
           benchmarkArguments="--headless --join --artifacts ${pwd} -f QueryTests"
 
@@ -72,7 +73,6 @@ jobs:
 
           xcrun simctl shutdown ${simId}
           xcrun simctl delete ${simId}
-
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Save artifacts
         uses: actions/upload-artifact@v2
