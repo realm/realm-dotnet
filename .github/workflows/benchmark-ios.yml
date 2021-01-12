@@ -64,7 +64,7 @@ jobs:
           bundleId="io.realm.benchmarks"
           runtimeId="iOS14.2"
 
-          benchmarkArguments="--headless --join --artifacts ${pwd} -f QueryTests"
+          benchmarkArguments="--headless --join --artifacts ${resultPath} -f QueryTests"
 
           xcrun simctl create ${simId} ${simType} ${runtimeId}
           xcrun simctl boot ${simId}
@@ -73,8 +73,6 @@ jobs:
 
           xcrun simctl shutdown ${simId}
           xcrun simctl delete ${simId}
-          
-          find . -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
         working-directory: ./Tests/Benchmarks/Benchmarks.iOS
       - name: Save artifacts
         uses: actions/upload-artifact@v2
