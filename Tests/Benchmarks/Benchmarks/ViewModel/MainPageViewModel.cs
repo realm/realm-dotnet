@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Filters;
-using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using Xamarin.Forms;
 
@@ -50,7 +49,6 @@ namespace Benchmarks.ViewModel
                 if (artifactArgumentIndex >= 0)
                 {
                     artifactPath = args[artifactArgumentIndex + 1];
-                    Console.WriteLine("PATTTTTTH    " + artifactPath);
                 }
 
                 var filterArgumentIndex = Array.IndexOf(args, "-f");
@@ -91,7 +89,7 @@ namespace Benchmarks.ViewModel
                 config = config.AddFilter(new GlobFilter(filterPatterns));
             }
 
-            Summary[] benchmarkResults = await Task.Run(() =>
+            await Task.Run(() =>
             {
                 return BenchmarkRunner.Run(typeof(PerformanceTests.Program).Assembly, config);
             });
