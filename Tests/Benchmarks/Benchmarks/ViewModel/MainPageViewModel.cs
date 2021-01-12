@@ -50,6 +50,7 @@ namespace Benchmarks.ViewModel
                 if (artifactArgumentIndex >= 0)
                 {
                     artifactPath = args[artifactArgumentIndex + 1];
+                    Console.WriteLine("PATTTTTTH    " + artifactPath);
                 }
 
                 var filterArgumentIndex = Array.IndexOf(args, "-f");
