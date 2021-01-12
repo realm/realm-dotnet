@@ -21,16 +21,20 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace PerformanceTests
 {
     public static class Program
     {
         public static void Main(string[] args)
+        {
+            var config = GetCustomConfig();
+            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
+        }
+
+        public static IConfig GetCustomConfig()
         {
             var defaultConfig = DefaultConfig.Instance;
             var config = new ManualConfig()
@@ -42,11 +46,10 @@ namespace PerformanceTests
                 .WithSummaryStyle(defaultConfig.SummaryStyle)
                 .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
-                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
-            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
+            return config;
         }
     }
 }

@@ -3,14 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using BenchmarkDotNet.Analysers;
 using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Filters;
-using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using Xamarin.Forms;
@@ -19,7 +13,7 @@ namespace Benchmarks.ViewModel
 {
     public class MainPageViewModel : BaseViewModel
     {
-        public ICommand RunBenchmarksCommand { get; private set; }
+        string[] args;
 
         private string benchmarkResults;
 
@@ -29,7 +23,7 @@ namespace Benchmarks.ViewModel
             private set => SetProperty(ref benchmarkResults, value);
         }
 
-        string[] args;
+        public ICommand RunBenchmarksCommand { get; private set; }
 
         public MainPageViewModel(string[] args)
         {
@@ -61,8 +55,9 @@ namespace Benchmarks.ViewModel
                 var filterArgumentIndex = Array.IndexOf(args, "-f");
                 if (filterArgumentIndex >= 0)
                 {
-                    //This means that the filter needs to be the last argument
-                    filterPatterns = args[(filterArgumentIndex + 1)..args.Length];
+                    //The filter needs to be the last argument
+                    var extractedPatterns = args[(filterArgumentIndex + 1)..args.Length];
+                    filterPatterns = extractedPatterns.Contains("\"*\"") ? null : extractedPatterns;
                 }
 
                 var join = args.Contains("--join");
@@ -70,8 +65,6 @@ namespace Benchmarks.ViewModel
                 await RunBenchmarks(true, join, filterPatterns, artifactPath);
 
                 TerminateApp();
-
-                Console.WriteLine("Application should be closed by now..."); //TODO for testing
             }
         }
 
@@ -80,26 +73,12 @@ namespace Benchmarks.ViewModel
             Thread.CurrentThread.Abort();
         }
 
-        //What to do
-        // - Need to be sure that the application quits after running the tests
-        // - Make the IConfig in common between Xamarin and the rest
-
         async Task RunBenchmarks(bool headless = false, bool join = true,
             string[] filterPatterns = null, string artifactsPath = null)
         {
-            var defaultConfig = DefaultConfig.Instance;
-            IConfig config = new ManualConfig()
-                .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
-                .AddLogger(defaultConfig.GetLoggers().ToArray())
-                .AddAnalyser(defaultConfig.GetAnalysers().ToArray())
-                .AddValidator(defaultConfig.GetValidators().ToArray())
-                .WithUnionRule(defaultConfig.UnionRule)
-                .WithSummaryStyle(defaultConfig.SummaryStyle)
-                .AddDiagnoser(MemoryDiagnoser.Default)
-                .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed)
-                .WithOption(ConfigOptions.JoinSummary, join)
-                .WithOption(ConfigOptions.DisableOptimizationsValidator, true);  //TODO this should be removed, it's only so we can run it in debug
+            var config = PerformanceTests.Program.GetCustomConfig();
+
+            config = config.WithOption(ConfigOptions.JoinSummary, join);
 
             if (!string.IsNullOrEmpty(artifactsPath))
             {
@@ -118,19 +97,8 @@ namespace Benchmarks.ViewModel
 
             if (!headless)
             {
-                var logger = new AccumulationLogger();
-
-                //TODO For testing. We need to decide if it even makes sense to run it from UI
-                var summary = benchmarkResults[0];
-
-                MarkdownExporter.Console.ExportToLog(summary, logger);
-                ConclusionHelper.Print(logger,
-                        summary.BenchmarksCases
-                               .SelectMany(benchmark => benchmark.Config.GetCompositeAnalyser().Analyse(summary))
-                               .Distinct()
-                               .ToList());
-
-                BenchmarkResults = logger.GetLog();
+                //In this case it is run from the UI
+                //Does it make sense to show results on the simulator?
             }
         }
 
