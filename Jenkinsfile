@@ -9,7 +9,6 @@ def WindowsPlatforms = [ 'Win32', 'x64' ]
 def WindowsUniversalPlatforms = [ 'Win32', 'x64', 'ARM' ]
 
 String versionSuffix = ''
-boolean isRelease = false
 
 stage('Checkout') {
   rlmNode('docker') {
@@ -34,7 +33,6 @@ stage('Checkout') {
     // Also update in AppHandle.cs
     else if (env.CHANGE_BRANCH == 'release/10.0.0-beta.4') {
       versionSuffix = "beta.4"
-      isRelease = true;
     }
 
     stash includes: '**', excludes: 'wrappers/**', name: 'dotnet-source', useDefaultExcludes: false
@@ -448,7 +446,7 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 }
 
 def clearNugetCache() {
-  if (isRelease) {
+  if (env.CHANGE_BRANCH == 'release/10.0.0-beta.4') {
     String invocation = 'dotnet nuget locals all -c'
     if (isUnix()) {
       sh invocation
