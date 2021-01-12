@@ -447,7 +447,7 @@ def buildWrappersInDocker(String label, String image, String invocation) {
 
 def clearNugetCache() {
   if (env.CHANGE_BRANCH == 'release/10.0.0-beta.4') {
-    String invocation = ' (dotnet nuget locals all -c || true) && (nuget locals all -clear || true)'
+    String invocation = "(dotnet nuget locals all -c || echo 'no dotnet nuget') && (nuget locals all -clear || echo 'no nuget')"
     if (isUnix()) {
       sh invocation
     } else {
