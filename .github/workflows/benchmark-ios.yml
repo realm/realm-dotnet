@@ -30,6 +30,9 @@ jobs:
     needs: [build-wrappers]
     runs-on: macos-latest
     steps:
+      - name: Print
+        run:  |
+          xcrun simctl list
       - name: Checkout code
         uses: actions/checkout@v2
         with:
