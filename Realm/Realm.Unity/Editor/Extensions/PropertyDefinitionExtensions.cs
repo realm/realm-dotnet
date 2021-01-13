@@ -91,12 +91,12 @@ internal static class PropertyDefinitionExtensions
 
     internal static bool IsCollection(this PropertyDefinition property, TypeReference elementType)
     {
-        return (IsIList(property) || IsISet(property)) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().IsSameAs(elementType);
+        return (IsIList(property) || IsISet(property)) && ((GenericInstanceType)property.PropertyType).GenericArguments.Last().IsSameAs(elementType);
     }
 
     internal static bool IsCollection(this PropertyDefinition property, System.Type elementType)
     {
-        return property.IsCollection(out _) && ((GenericInstanceType)property.PropertyType).GenericArguments.Single().FullName == elementType.FullName;
+        return property.IsCollection(out _) && ((GenericInstanceType)property.PropertyType).GenericArguments.Last().FullName == elementType.FullName;
     }
 
     internal static bool IsIQueryable(this PropertyDefinition property)

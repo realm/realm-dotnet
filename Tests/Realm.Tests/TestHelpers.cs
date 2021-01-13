@@ -155,6 +155,18 @@ namespace Realms.Tests
             return values?.Select(v => v == null ? (RealmInteger<T>?)null : new RealmInteger<T>(v.Value)).ToArray();
         }
 
+        public static (TKey, RealmInteger<TValue>)[] ToIntegerTuple<TKey, TValue>(this (TKey, TValue)[] values)
+            where TValue : struct, IComparable<TValue>, IFormattable, IConvertible, IEquatable<TValue>
+        {
+            return values?.Select(kvp => (kvp.Item1, new RealmInteger<TValue>(kvp.Item2))).ToArray();
+        }
+
+        public static (TKey, RealmInteger<TValue>?)[] ToIntegerTuple<TKey, TValue>(this (TKey, TValue?)[] values)
+            where TValue : struct, IComparable<TValue>, IFormattable, IConvertible, IEquatable<TValue>
+        {
+            return values?.Select(kvp => (kvp.Item1, kvp.Item2 == null ? (RealmInteger<TValue>?)null : new RealmInteger<TValue>(kvp.Item2.Value))).ToArray();
+        }
+
         public static Task<TEventArgs> EventToTask<TEventArgs>(Action<EventHandler<TEventArgs>> subscribe, Action<EventHandler<TEventArgs>> unsubscribe)
         {
             Argument.NotNull(subscribe, nameof(subscribe));

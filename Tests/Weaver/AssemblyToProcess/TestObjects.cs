@@ -256,7 +256,10 @@ namespace AssemblyToProcess
 
         public IDictionary<string, bool> BooleanDictionary { get; }
 
+        [Required]
         public IDictionary<string, string> StringDictionary { get; }
+
+        public IDictionary<string, string> NullableStringDictionary { get; }
 
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDictionary { get; }
 

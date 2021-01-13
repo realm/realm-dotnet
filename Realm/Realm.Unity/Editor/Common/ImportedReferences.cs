@@ -464,12 +464,12 @@ namespace RealmWeaver
                 IQueryableOfT = new TypeReference("System.Linq", "IQueryable`1", Module, GetOrAddFrameworkReference("System.Core"));
                 IQueryableOfT.GenericParameters.Add(new GenericParameter(IQueryableOfT));
 
-                IDictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "IDictionary`2", Module, GetOrAddFrameworkReference("System"));
-                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
-                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
-
                 ISetOfT = new TypeReference("System.Collections.Generic", "ISet`1", Module, GetOrAddFrameworkReference("System"));
                 ISetOfT.GenericParameters.Add(new GenericParameter(ISetOfT));
+
+                IDictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "IDictionary`2", Module, Module.TypeSystem.CoreLibrary);
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
+                IDictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(IDictionaryOfTKeyTValue));
 
                 System_Collections_Generic_ListOfT = new TypeReference("System.Collections.Generic", "List`1", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_ListOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_ListOfT));
@@ -477,7 +477,7 @@ namespace RealmWeaver
                 System_Collections_Generic_HashSetOfT = new TypeReference("System.Collections.Generic", "HashSet`1", Module, GetOrAddFrameworkReference("System.Core"));
                 System_Collections_Generic_HashSetOfT.GenericParameters.Add(new GenericParameter(System_Collections_Generic_HashSetOfT));
 
-                System_Collections_Generic_DictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "Dictionary`2", Module, GetOrAddFrameworkReference("System.Core"));
+                System_Collections_Generic_DictionaryOfTKeyTValue = new TypeReference("System.Collections.Generic", "Dictionary`2", Module, Module.TypeSystem.CoreLibrary);
                 System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
                 System_Collections_Generic_DictionaryOfTKeyTValue.GenericParameters.Add(new GenericParameter(System_Collections_Generic_DictionaryOfTKeyTValue));
 

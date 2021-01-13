@@ -190,27 +190,6 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr GetRealmList(IntPtr propertyIndex)
-        {
-            var result = NativeMethods.get_list(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public IntPtr GetRealmSet(IntPtr propertyIndex)
-        {
-            var result = NativeMethods.get_set(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
-        public IntPtr GetRealmDictionary(IntPtr propertyIndex)
-        {
-            var result = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
-            nativeException.ThrowIfNecessary();
-            return result;
-        }
-
         public long AddInt64(IntPtr propertyIndex, long value)
         {
             var result = NativeMethods.add_int64(this, propertyIndex, value, out var nativeException);
@@ -238,21 +217,30 @@ namespace Realms
 
         public RealmList<T> GetList<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
+            var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            var listHandle = new ListHandle(Root, listPtr);
             var metadata = objectType == null ? null : realm.Metadata[objectType];
-            var listHandle = new ListHandle(Root, GetRealmList(propertyIndex));
             return new RealmList<T>(realm, listHandle, metadata);
         }
 
         public RealmSet<T> GetSet<T>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var setHandle = new SetHandle(Root, GetRealmSet(propertyIndex));
+            var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            var setHandle = new SetHandle(Root, setPtr);
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmSet<T>(realm, setHandle, metadata);
         }
 
         public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, IntPtr propertyIndex, string objectType)
         {
-            var dictionaryHandle = new DictionaryHandle(Root, GetRealmDictionary(propertyIndex));
+            var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            var dictionaryHandle = new DictionaryHandle(Root, dictionaryPtr);
             var metadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmDictionary<TValue>(realm, dictionaryHandle, metadata);
         }

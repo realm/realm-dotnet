@@ -446,12 +446,17 @@ namespace Realms
         public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
+            private readonly bool _shouldDisposeHandle;
             private int _index;
 
             internal Enumerator(RealmCollectionBase<T> parent)
             {
                 _index = -1;
                 _enumerating = parent.Handle.Value.CanSnapshot ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
+
+                // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
+                // parent collection after iterating it.
+                _shouldDisposeHandle = parent.Handle.Value.CanSnapshot;
             }
 
             public T Current => _enumerating[_index];
@@ -477,7 +482,10 @@ namespace Realms
 
             public void Dispose()
             {
-                _enumerating.Handle.Value.Close();
+                if (_shouldDisposeHandle)
+                {
+                    _enumerating.Handle.Value.Close();
+                }
             }
         }
     }
