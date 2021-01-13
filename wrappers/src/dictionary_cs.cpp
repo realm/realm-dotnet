@@ -37,7 +37,7 @@ REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, rea
         auto dict_key = from_capi(key.string);
         if (dictionary.contains(dict_key))
         {
-            throw std::exception("Duplicate key exception; throw something more concrete!");
+            throw std::logic_error("Duplicate key exception; throw something more concrete!");
         }
 
         dictionary.insert(dict_key, from_capi(value));
@@ -161,7 +161,7 @@ REALM_EXPORT Results* realm_dictionary_get_values(const object_store::Dictionary
 REALM_EXPORT Results* realm_dictionary_get_keys(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        throw new std::exception("Dictionary::get_keys is not implemented yet");
+        throw std::logic_error("Dictionary::get_keys is not implemented yet");
         return new Results(dictionary.as_results());
     });
 }
