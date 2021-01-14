@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 #pragma once
 
 #include <string>
@@ -29,7 +29,7 @@ struct NativeException {
     RealmErrorType type;
     std::string message;
     std::string detail;
-    
+
     struct Marshallable {
         RealmErrorType type;
         void* messagesBytes;
@@ -37,14 +37,14 @@ struct NativeException {
         void* detailBytes;
         size_t detailLength;
     };
-    
+
     Marshallable for_marshalling() const {
         auto messageCopy = ::operator new (message.size());
         message.copy(reinterpret_cast<char*>(messageCopy), message.length());
 
         auto detailCopy = ::operator new (detail.size());
         detail.copy(reinterpret_cast<char*>(detailCopy), detail.length());
-        
+
         return {
             type,
             messageCopy,
@@ -54,12 +54,12 @@ struct NativeException {
         };
     }
 };
-    
+
 class RowDetachedException : public std::runtime_error {
 public:
     RowDetachedException() : std::runtime_error("Attempted to access detached row") {}
 };
-    
+
 class RealmClosedException : public std::runtime_error {
 public:
     RealmClosedException() : std::runtime_error("This object belongs to a closed realm.") {}
@@ -75,7 +75,7 @@ class InvalidSchemaException : public std::runtime_error {
 public:
     InvalidSchemaException(std::string message) : std::runtime_error(message) {}
 };
-    
+
 class ObjectManagedByAnotherRealmException : public std::runtime_error {
 public:
     ObjectManagedByAnotherRealmException(std::string message) : std::runtime_error(message) {}
@@ -92,16 +92,16 @@ public:
 class PropertyTypeMismatchException : public std::runtime_error {
 public:
     PropertyTypeMismatchException(std::string object_type, std::string property, std::string property_type, std::string actual_type)
-        : std::runtime_error(util::format("Property type mismatch: %1.%2 is of type %3, but the value is of type %4")) {}
+        : std::runtime_error(util::format("Property type mismatch: %1.%2 is of type %3, but the supplied value is of type %4", object_type, property, property_type, actual_type)) {}
 
-    PropertyTypeMismatchException(std::string property_type, std::string actual_type) 
+    PropertyTypeMismatchException(std::string property_type, std::string actual_type)
         : std::runtime_error(util::format("List type mismatch: attempted to add a value of type '%1' to a list that expects '%2'", actual_type, property_type)) {}
 };
 
 REALM_EXPORT NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);
-    
+
 template <class T>
 struct Default {
     static T default_value() {
@@ -122,7 +122,7 @@ auto handle_errors(NativeException::Marshallable& ex, F&& func) -> decltype(func
         return func();
     }
     catch (...) {
-        ex = convert_exception().for_marshalling();  
+        ex = convert_exception().for_marshalling();
         return Default<RetVal>::default_value();
     }
 }
