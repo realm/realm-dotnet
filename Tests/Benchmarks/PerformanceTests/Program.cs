@@ -44,7 +44,7 @@ namespace PerformanceTests
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
                 //.WithOption(ConfigOptions.DisableOptimizationsValidator, true) //TODO For testing...
-                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))	//.AddJob(Job.MediumRun.WithToolchain(DefaultToolchain.Instance))  //TODO to test
+                //.AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))	//.AddJob(Job.MediumRun.WithToolchain(DefaultToolchain.Instance))  //TODO to test
                 .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
             return config;
