@@ -30,27 +30,21 @@ namespace Benchmarks.ViewModel
 {
     public class MainPageViewModel : BaseViewModel
     {
-        string[] args;
+        private readonly string[] _args;
 
-        private string benchmarkResults;
+        private string _benchmarkResults;
 
         public string BenchmarkResults
         {
-            get => benchmarkResults;
-            private set => SetProperty(ref benchmarkResults, value);
+            get => _benchmarkResults;
+            private set => SetProperty(ref _benchmarkResults, value);
         }
 
-        public ICommand RunBenchmarksCommand { get; private set; }
+        public ICommand RunBenchmarksCommand { get; }
 
         public MainPageViewModel(string[] args)
         {
-            this.args = args;
-
-            InitCommands();
-        }
-
-        void InitCommands()
-        {
+            _args = args;
             RunBenchmarksCommand = new Command(async () => await RunBenchmarks());
         }
 
@@ -58,26 +52,26 @@ namespace Benchmarks.ViewModel
         {
             base.OnAppearing();
 
-            if (args.Contains("--headless"))
+            if (_args.Contains("--headless"))
             {
                 string artifactPath = null;
                 string[] filterPatterns = null;
 
-                var artifactArgumentIndex = Array.IndexOf(args, "--artifacts");
+                var artifactArgumentIndex = Array.IndexOf(_args, "--artifacts");
                 if (artifactArgumentIndex >= 0)
                 {
-                    artifactPath = args[artifactArgumentIndex + 1];
+                    artifactPath = _args[artifactArgumentIndex + 1];
                 }
 
-                var filterArgumentIndex = Array.IndexOf(args, "-f");
+                var filterArgumentIndex = Array.IndexOf(_args, "-f");
                 if (filterArgumentIndex >= 0)
                 {
-                    //The filter needs to be the last argument
-                    var extractedPatterns = args[(filterArgumentIndex + 1)..args.Length];
+                    // The filter needs to be the last argument
+                    var extractedPatterns = _args[(filterArgumentIndex + 1).._args.Length];
                     filterPatterns = extractedPatterns.Contains("\"*\"") ? null : extractedPatterns;
                 }
 
-                var join = args.Contains("--join");
+                var join = _args.Contains("--join");
 
                 await RunBenchmarks(true, join, filterPatterns, artifactPath);
 
@@ -90,7 +84,7 @@ namespace Benchmarks.ViewModel
             Thread.CurrentThread.Abort();
         }
 
-        async Task RunBenchmarks(bool headless = false, bool join = true,
+        private async Task RunBenchmarks(bool headless = false, bool join = true,
             string[] filterPatterns = null, string artifactsPath = null)
         {
             var config = PerformanceTests.Program.GetCustomConfig();
@@ -114,8 +108,8 @@ namespace Benchmarks.ViewModel
 
             if (!headless)
             {
-                //In this case it is run from the UI
-                //Does it make sense to show results on the simulator?
+                // In this case it is run from the UI
+                // Does it make sense to show results on the simulator?
             }
         }
 
