@@ -21,8 +21,11 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 
 namespace PerformanceTests
 {
@@ -37,16 +40,11 @@ namespace PerformanceTests
         public static IConfig GetCustomConfig()
         {
             var defaultConfig = DefaultConfig.Instance;
-            var config = new ManualConfig()
-                .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
-                .AddLogger(defaultConfig.GetLoggers().ToArray())
-                .AddAnalyser(defaultConfig.GetAnalysers().ToArray())
-                .AddValidator(defaultConfig.GetValidators().ToArray())
-                .WithUnionRule(defaultConfig.UnionRule)
-                .WithSummaryStyle(defaultConfig.SummaryStyle)
-                .WithArtifactsPath(defaultConfig.ArtifactsPath)
+            var config = defaultConfig
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
+                .WithOption(ConfigOptions.DisableOptimizationsValidator, true) //TODO For testing...
+                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))	//.AddJob(Job.MediumRun.WithToolchain(DefaultToolchain.Instance))  //TODO to test
                 .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
             return config;
