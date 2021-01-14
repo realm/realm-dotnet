@@ -112,6 +112,8 @@ namespace Realms.Schema
                     return setResult;
                 case Type _ when type.IsClosedGeneric(typeof(IDictionary<,>), out var typeArguments):
                     return PropertyType.Dictionary | typeArguments.Last().ToPropertyType(out objectType);
+                case Type _ when type.IsClosedGeneric(typeof(KeyValuePair<,>), out var typeArguments):
+                    return typeArguments.Last().ToPropertyType(out objectType);
                 default:
                     throw new ArgumentException($"The property type {type.Name} cannot be expressed as a Realm schema type", nameof(type));
             }
