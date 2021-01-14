@@ -130,14 +130,9 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
 
         query_parser::NoArguments no_args;
         auto query = results.get_table()->query(query_string, no_args, mapping);
-        auto ordering = query.get_ordering();
+        auto ordering = query.get_ordering() ? *query.get_ordering() : results.get_descriptor_ordering();
 
-        if (ordering) {
-            return new Results(realm, results.get_query().and_query(query), *ordering);
-        }
-        else {
-            return new Results(realm, results.get_query().and_query(query));
-        }
+        return new Results(realm, results.get_query().and_query(query), ordering);
     });
 }
 
