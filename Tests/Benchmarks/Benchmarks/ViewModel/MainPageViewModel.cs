@@ -112,6 +112,5 @@ namespace Benchmarks.ViewModel
                 // Does it make sense to show results on the simulator?
             }
         }
-
     }
 }

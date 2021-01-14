@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-///
+
 using Benchmarks.View;
 using Benchmarks.ViewModel;
 using Xamarin.Forms;

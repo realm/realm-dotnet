@@ -33,7 +33,9 @@ namespace Benchmarks.ViewModel
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(field, value))
+            {
                 return false;
+            }
 
             field = value;
 
@@ -41,8 +43,12 @@ namespace Benchmarks.ViewModel
             return true;
         }
 
-        public virtual void OnAppearing() { }
+        public virtual void OnAppearing()
+        {
+        }
 
-        public virtual void OnDisappearing() { }
+        public virtual void OnDisappearing()
+        {
+        }
     }
 }
