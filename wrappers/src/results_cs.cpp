@@ -124,17 +124,15 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
         auto const &realm = results.get_realm();
-        auto const& object_schema = results.get_object_schema();
 
         query_parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
 
-        auto table = realm->read_group().get_table(object_schema.table_key);
-
+        auto table = results.get_table();
         query_parser::NoArguments no_args;
         auto query = table->query(query_string, no_args, mapping);
         auto ordering = query.get_ordering();
-        return new Results(realm, query, *ordering);
+        return new Results(realm, results.get_query().and_query(query), *ordering);
     });
 }
 
