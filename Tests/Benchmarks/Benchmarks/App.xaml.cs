@@ -15,17 +15,5 @@ namespace Benchmarks
                 BindingContext = new MainPageViewModel(args)
             };
         }
-
-        protected override void OnStart()
-        {
-        }
-
-        protected override void OnSleep()
-        {
-        }
-
-        protected override void OnResume()
-        {
-        }
     }
 }
