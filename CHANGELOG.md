@@ -14,7 +14,6 @@
 
 ### Internal
 * Using Core 10.3.0.
-* Migrated to Bison parser
 
 ## 10.0.0-beta.3 (2020-12-10)
 ------------------
