@@ -123,7 +123,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
-        auto const &realm = results.get_realm();
+        auto const& realm = results.get_realm();
 
         query_parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
