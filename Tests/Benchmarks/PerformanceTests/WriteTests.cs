@@ -31,6 +31,28 @@ namespace PerformanceTests
 
         protected const int MaxObjectCount = 100;
 
+        protected IDictionary<int, InsertClass[]> _testObjects;
+
+        protected abstract int[] ObjectSizes { get; }
+
+        protected override void SeedData()
+        {
+            _testObjects = ObjectSizes.ToDictionary(o => o, GenerateTestObjects);
+        }
+
+        protected abstract InsertClass[] GenerateTestObjects(int size);
+
+        protected abstract int GetCurrentSize();
+
+        [Benchmark]
+        public void Write()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(_testObjects[GetCurrentSize()].Take(ObjectCount));
+            });
+        }
+
         protected class InsertClass : RealmObject
         {
             public string StringValue { get; set; }
@@ -45,7 +67,7 @@ namespace PerformanceTests
         }
     }
 
-    public class EmptyWriteTests : WriteTests
+    public class EmptyWriteTests : BenchmarkBase
     {
         [Benchmark]
         public void EmptyWrite()
@@ -61,56 +83,31 @@ namespace PerformanceTests
         private const int Bytes_1KB = 1024;
         private const int Bytes_1MB = 1024 * 1024;
 
-        private IDictionary<int, InsertClass[]> _binaryObjects;
-
         [Params(Bytes_128B, Bytes_1KB, Bytes_1MB)]
         public int BinarySize { get; set; }
 
-        protected override void SeedData()
-        {
-            _binaryObjects = new[] { Bytes_128B, Bytes_1KB, Bytes_1MB }.ToDictionary(o => o, GenerateBinaryObjects);
-        }
+        protected override int[] ObjectSizes => new[] { Bytes_128B, Bytes_1KB, Bytes_1MB };
 
-        [Benchmark]
-        public void Binary()
-        {
-            _realm.Write(() =>
-            {
-                _realm.Add(_binaryObjects[BinarySize].Take(ObjectCount));
-            });
-        }
-
-        private InsertClass[] GenerateBinaryObjects(int binarySize)
+        protected override InsertClass[] GenerateTestObjects(int size)
             => Enumerable.Range(0, MaxObjectCount)
-            .Select(_ => new InsertClass { Bytes = _faker.Random.Bytes(binarySize) })
+            .Select(_ => new InsertClass { Bytes = _faker.Random.Bytes(size) })
             .ToArray();
+
+        protected override int GetCurrentSize() => BinarySize;
     }
 
     public class StringWriteTests : WriteTests
     {
-        private IDictionary<int, InsertClass[]> _stringObjects;
-
         [Params(20, 200)]
         public int StringLength { get; set; }
 
-        protected override void SeedData()
-        {
-            _stringObjects = new[] { 20, 200 }.ToDictionary(o => o, GenerateStringObjects);
-        }
+        protected override int[] ObjectSizes => new[] { 20, 200 };
 
-        private InsertClass[] GenerateStringObjects(int stringSize)
+        protected override InsertClass[] GenerateTestObjects(int size)
             => Enumerable.Range(0, MaxObjectCount)
-            .Select(_ => new InsertClass { StringValue = _faker.Random.Utf16String(stringSize, stringSize) })
+            .Select(_ => new InsertClass { StringValue = _faker.Random.Utf16String(size, size) })
             .ToArray();
 
-        [Benchmark]
-        public void Strings()
-        {
-            var objects = _stringObjects[StringLength];
-            _realm.Write(() =>
-            {
-                _realm.Add(_stringObjects[StringLength].Take(ObjectCount));
-            });
-        }
+        protected override int GetCurrentSize() => StringLength;
     }
 }
