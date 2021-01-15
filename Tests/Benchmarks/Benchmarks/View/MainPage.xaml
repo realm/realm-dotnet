@@ -14,8 +14,10 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate>
                         <StackLayout Orientation="Vertical">
-                            <Label Text="{Binding Name}" TextColor="#2196F3" FontSize="Large"/>
-                            <Label TextType="Html" Text="{Binding HtmlResult}"/>
+                            <Label Padding="10,0" Text="{Binding Name}" TextColor="#2196F3" FontSize="Large"/>
+                            <ScrollView Orientation="Horizontal">
+                                <Label Padding="10,0,10,10" TextType="Html" Text="{Binding HtmlResult}"/>
+                            </ScrollView>
                         </StackLayout>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
