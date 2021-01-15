@@ -129,10 +129,13 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
         realm::populate_keypath_mapping(mapping, *realm);
 
         query_parser::NoArguments no_args;
-        auto query = results.get_table()->query(query_string, no_args, mapping);
-        auto ordering = query.get_ordering() ? *query.get_ordering() : results.get_descriptor_ordering();
+        Query parsed_query = results.get_table()->query(query_string, no_args, mapping);
+        DescriptorOrdering new_order = results.get_descriptor_ordering();
+        if (auto parsed_ordering = parsed_query.get_ordering()) {
+            new_order.append(*parsed_ordering);
+        }
 
-        return new Results(realm, results.get_query().and_query(query), ordering);
+        return new Results(realm, results.get_query().and_query(std::move(parsed_query)), new_order);
     });
 }
 
