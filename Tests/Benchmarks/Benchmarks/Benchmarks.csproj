@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.12.1.1479" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1.1486" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -28,6 +28,7 @@
   <ItemGroup>
     <Folder Include="View\" />
     <Folder Include="ViewModel\" />
+    <Folder Include="Model\" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\..\stylecop.json" Link="stylecop.json" />

@@ -25,7 +25,6 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 
 namespace PerformanceTests
 {
@@ -33,7 +32,8 @@ namespace PerformanceTests
     {
         public static void Main(string[] args)
         {
-            var config = GetCustomConfig();
+            var config = GetCustomConfig()
+                .AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance));
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
         }
 
@@ -43,8 +43,6 @@ namespace PerformanceTests
             var config = defaultConfig
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                //.WithOption(ConfigOptions.DisableOptimizationsValidator, true) //TODO For testing...
-                //.AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))	//.AddJob(Job.MediumRun.WithToolchain(DefaultToolchain.Instance))  //TODO to test
                 .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
 
             return config;

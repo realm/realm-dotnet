@@ -9,7 +9,17 @@
             </Frame>
             <Button Text="Run Benchmarks"
                 Command="{Binding RunBenchmarksCommand}" />
-            <Label Text="{Binding BenchmarkResults}"/>
+            <ActivityIndicator IsRunning="{Binding IsRunning}"/>
+            <StackLayout BindableLayout.ItemsSource="{Binding BenchmarkResults}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Orientation="Vertical">
+                            <Label Text="{Binding Name}" TextColor="#2196F3" FontSize="Large"/>
+                            <Label TextType="Html" Text="{Binding HtmlResult}"/>
+                        </StackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
         </StackLayout>
     </ScrollView>
 </ContentPage>

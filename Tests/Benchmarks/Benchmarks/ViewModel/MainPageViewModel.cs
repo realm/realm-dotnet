@@ -17,13 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using BenchmarkDotNet.Analysers;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Filters;
+using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+using Benchmarks.Model;
 using Xamarin.Forms;
 
 namespace Benchmarks.ViewModel
@@ -32,12 +38,14 @@ namespace Benchmarks.ViewModel
     {
         private readonly string[] _args;
 
-        private string _benchmarkResults;
+        public ObservableCollection<BenchmarkResult> BenchmarkResults { get; private set; }
 
-        public string BenchmarkResults
+        private bool _isRunning;
+
+        public bool IsRunning
         {
-            get => _benchmarkResults;
-            private set => SetProperty(ref _benchmarkResults, value);
+            get => _isRunning;
+            private set => SetProperty(ref _isRunning, value);
         }
 
         public ICommand RunBenchmarksCommand { get; }
@@ -46,6 +54,7 @@ namespace Benchmarks.ViewModel
         {
             _args = args;
             RunBenchmarksCommand = new Command(async () => await RunBenchmarks());
+            BenchmarkResults = new ObservableCollection<BenchmarkResult>();
         }
 
         public override async void OnAppearing()
@@ -84,7 +93,7 @@ namespace Benchmarks.ViewModel
             Thread.CurrentThread.Abort();
         }
 
-        private async Task RunBenchmarks(bool headless = false, bool join = true,
+        private async Task RunBenchmarks(bool headless = false, bool join = false,
             string[] filterPatterns = null, string artifactsPath = null)
         {
             var config = PerformanceTests.Program.GetCustomConfig();
@@ -101,15 +110,35 @@ namespace Benchmarks.ViewModel
                 config = config.AddFilter(new GlobFilter(filterPatterns));
             }
 
+            Summary[] summaries = null;
+
+            IsRunning = true;
+
             await Task.Run(() =>
             {
-                return BenchmarkRunner.Run(typeof(PerformanceTests.Program).Assembly, config);
+                summaries = BenchmarkRunner.Run(typeof(PerformanceTests.Program).Assembly, config);
             });
+
+            IsRunning = false;
 
             if (!headless)
             {
-                // In this case it is run from the UI
-                // Does it make sense to show results on the simulator?
+                BenchmarkResults.Clear();
+
+                foreach (var summary in summaries)
+                {
+                    var logger = new AccumulationLogger();
+
+                    HtmlExporter.Default.ExportToLog(summary, logger);
+
+                    ConclusionHelper.Print(logger,
+                            summary.BenchmarksCases
+                                   .SelectMany(benchmark => benchmark.Config.GetCompositeAnalyser().Analyse(summary))
+                                   .Distinct()
+                                   .ToList());
+
+                    BenchmarkResults.Add(new BenchmarkResult(summary.Title, logger.GetLog()));
+                }
             }
         }
     }
