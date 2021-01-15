@@ -8,6 +8,7 @@
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
+* Replaced the implementation of the string query parser (the one used for realm.All().Filter("some-string-query")). This results in ~5% reduction of the size of the native binary while keeping the query execution times on par with the old parser.
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
