@@ -40,10 +40,18 @@ namespace PerformanceTests
         public static IConfig GetCustomConfig()
         {
             var defaultConfig = DefaultConfig.Instance;
-            var config = defaultConfig
+
+            var config = new ManualConfig()
+                .AddColumnProvider(defaultConfig.GetColumnProviders().ToArray())
+                .AddLogger(defaultConfig.GetLoggers().ToArray())
+                .AddAnalyser(defaultConfig.GetAnalysers().ToArray())
+                .AddValidator(defaultConfig.GetValidators().ToArray())
+                .WithUnionRule(defaultConfig.UnionRule)
+                .WithSummaryStyle(defaultConfig.SummaryStyle)
+                .WithArtifactsPath(defaultConfig.ArtifactsPath)
                 .AddDiagnoser(MemoryDiagnoser.Default)
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical))
-                .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed);
+                .AddExporter(MarkdownExporter.GitHub, JsonExporter.FullCompressed)
 
             return config;
         }
