@@ -70,7 +70,7 @@ namespace PerformanceTests
     public class EmptyWriteTests : BenchmarkBase
     {
         [Benchmark]
-        public void EmptyWrite()
+        public void Write()
         {
             using var transaction = _realm.BeginWrite();
             transaction.Commit();

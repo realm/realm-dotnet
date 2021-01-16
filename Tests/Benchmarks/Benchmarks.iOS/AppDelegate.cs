@@ -29,7 +29,9 @@ namespace Benchmarks.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            var arguments = NSProcessInfo.ProcessInfo.Arguments.Skip(1).ToArray();
+            var arguments = NSProcessInfo.ProcessInfo.Arguments
+                .Select(a => a.Replace("-app-arg=", string.Empty))
+                .Skip(1).ToArray();
 
             Forms.Init();
             LoadApplication(new App(arguments));
