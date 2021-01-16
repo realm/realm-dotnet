@@ -3,13 +3,8 @@ on:
   # To enable running it manually, possibility of adding parameters. It can be run manually only if this file is in master.
   workflow_dispatch:
   push:
-<<<<<<< HEAD
 #  branches: 
 #     -master
-=======
-   branches: 
-     -master
->>>>>>> 3e8ab9b7018e30ba03cc234a7503e8b418ea1db2
 env:
   # Branch for Github Pages
   gh-pages-branch: gh-pages
