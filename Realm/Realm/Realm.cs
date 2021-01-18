@@ -381,7 +381,7 @@ namespace Realms
                     _states.Value.Remove(Config.DatabasePath);
                 }
 
-                _state.Dispose();
+                _state.DisposeIfNecessary();
                 _state = null;
                 SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
             }
@@ -1364,7 +1364,7 @@ namespace Realms
 
         #endregion Transactions
 
-        internal class State : IDisposable
+        internal class State
         {
             private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
 
@@ -1451,9 +1451,10 @@ namespace Realms
                 }
             }
 
-            public void Dispose()
+            public void DisposeIfNecessary()
             {
-                GCHandle.Free();
+                if (!GetLiveRealms().Any())
+                    GCHandle.Free();
             }
         }
 
