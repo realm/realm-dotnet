@@ -24,37 +24,47 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AARealmValueTests : RealmInstanceTest //TODO for testing
     {
-        public AARealmValueTests()
-        {
-        }
-
         //TODO FP Most probably we can make the next function generic by using TestCases
 
-        [Test]
-        public void RealmValue_SetIntProperty()
-        {
-            var integerValue = 10;
-
-            var rvo = new RealmValueObject
-            {
-                Id = 1,
-                RealmValue = integerValue
-            };
-
-            _realm.Write(() =>
-            {
-                _realm.Add(rvo);
-            });
-
-            Assert.That(_realm.Find<RealmValueObject>(1).RealmValue.AsInt16(), Is.EqualTo(integerValue));
-        }
-
-        /*What to test?
+        /* What to test:
+         *  - Null value can be retrieved (RealmValue can contain null)
+         *  - RealmValue cannot be null
+         *  - Retrieve value with asInt, asString and  so on
          * - A realmValue can be set and retrieved with the same type from the db
          * - A realm value can change type and it can be retrieved
          * - Int, bool, char and others are memorised as 64bit, so we can see if we can cast it to narrower types
          * - Need to add RealmValue to the test classes with all Types
+         * - When testing with Null, you need to check it can be converted with all the .AsNullable....
          * 
+         * 
+         * Suggestions from Nikola
+         * That looks fine to me - I think you might also want to cover the explicit cast cases as well as some error cases - e.g. trying to cast the value to string
+            Some other scenarios you may want to try is:
+            - Once an object is managed, that we can do obj.RealmValue.AsInt32RealmInteger().Increment() and validate that this actually increments the underlying value.
+            - Assigning a value to 5, then to “abc” works.
+            - Taking a reference to the Realm value does not change after replacing it with something else. I.e. var val1 = obj.RealmValue; then obj.RealmValue = "something else" and then verify that val1 is different from obj.RealmValue and that val1 still has its original data.
+            - Ensure that notifications work - i.e. setting a realm value to something else will raise PropertyChanged notifications.
+            You can also consider structuring your tests similar to the way we’re doing List/Set tests - where we have a generic helper method that runs the actual tests and the tests are simply calling it - that will likely save you a ton of identical code.
+         * 
+         * 
+         * Nicola è D'accordo sul fatto che non si può fare l'ultimo punto (generalizzazione)
+         * Yeah, I see your point - a few of the tests could be rewritten as generic if we pass the to/from conversion functions, but the majority, which does AsInt, AsRealmInteger and so on will probably not work nicely. Perhaps you can at least unify the numeric tests
+            private void RunNumericTest(RealmValue initialValue, long expectedValue)
+            {
+                Assert.That((long)initialValue, Is.EqualTo(expectedValue));
+                Assert.That((int)initialValue, Is.EqualTo((int)expectedValue));
+                // ...
+            }
+            [Test]
+            public void RealmValue_WhenUnmanaged_IntTests()
+            {
+                RunUnmanagedTest(10, 10);
+            }
+            [Test]
+            public void RealmValue_WhenUnmanaged_ShortTests()
+            {
+                RunUnmanagedTest((short)5, 5);
+            }
          * 
          * 
          * Later:
