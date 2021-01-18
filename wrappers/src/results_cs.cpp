@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/parser/parser.hpp>
-#include <realm/parser/query_builder.hpp>
+#include <realm/parser/query_parser.hpp>
 
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
@@ -124,20 +123,19 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor query_string(query_buf, query_len);
-        auto query = results.get_query();
-        auto const &realm = results.get_realm();
+        auto const& realm = results.get_realm();
 
-        parser::ParserResult result = parser::parse(query_string.to_string());
-
-        parser::KeyPathMapping mapping;
+        query_parser::KeyPathMapping mapping;
         realm::populate_keypath_mapping(mapping, *realm);
 
-        query_builder::NoArguments no_args;
-        query_builder::apply_predicate(query, result.predicate, no_args, mapping);
+        query_parser::NoArguments no_args;
+        Query parsed_query = results.get_table()->query(query_string, no_args, mapping);
+        DescriptorOrdering new_order = results.get_descriptor_ordering();
+        if (auto parsed_ordering = parsed_query.get_ordering()) {
+            new_order.append(*parsed_ordering);
+        }
 
-        DescriptorOrdering ordering;
-        query_builder::apply_ordering(ordering, query.get_table(), result.ordering);
-        return new Results(realm, std::move(query), std::move(ordering));
+        return new Results(realm, results.get_query().and_query(std::move(parsed_query)), std::move(new_order));
     });
 }
 

@@ -611,7 +611,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("No property 'Foo' on object of type 'A'"));
+                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property: 'Foo'"));
         }
 
         [Test]
