@@ -135,7 +135,7 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
             new_order.append(*parsed_ordering);
         }
 
-        return new Results(realm, results.get_query().and_query(std::move(parsed_query)), new_order);
+        return new Results(realm, results.get_query().and_query(std::move(parsed_query)), std::move(new_order));
     });
 }
 
