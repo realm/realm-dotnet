@@ -247,31 +247,27 @@ namespace Realms
         {
             Config = config;
 
-            State state = null;
-
             if (config.EnableCache)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
                 {
-                    state = GCHandle.FromIntPtr(statePtr).Target as State;
+                    _state = GCHandle.FromIntPtr(statePtr).Target as State;
                 }
             }
 
-            if (state == null)
+            if (_state == null)
             {
-                state = new State();
-                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(state.GCHandle));
+                _state = new State();
+                sharedRealmHandle.SetManagedStateHandle(GCHandle.ToIntPtr(_state.GCHandle));
 
                 if (config.EnableCache)
                 {
-                    _states.Value[config.DatabasePath] = new WeakReference<State>(state);
+                    _states.Value[config.DatabasePath] = new WeakReference<State>(_state);
                 }
             }
 
-            state.AddRealm(this);
-
-            _state = state;
+            _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
@@ -1234,7 +1230,6 @@ namespace Realms
         /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IQueryable{T}"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the query.</typeparam>
         /// <returns>A thread-confined instance of the original <see cref="IQueryable{T}"/> resolved for the current thread.</returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The Query instance will own its handle.")]
         public IQueryable<T> ResolveReference<T>(ThreadSafeReference.Query<T> reference)
             where T : RealmObjectBase
         {
@@ -1460,7 +1455,6 @@ namespace Realms
             {
                 GCHandle.Free();
             }
-
         }
 
         /// <summary>
