@@ -62,7 +62,7 @@ namespace Realms
             public static extern IntPtr snapshot(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, out NativeException ex);
+            public static extern IntPtr get_filtered_results(ResultsHandle results, [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len, PrimitiveValue[] arguments, int args_count, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_find_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find_object(ResultsHandle results, ObjectHandle objectHandle, out NativeException ex);
@@ -187,9 +187,23 @@ namespace Realms
             return new ResultsHandle(this, ptr);
         }
 
-        public override ResultsHandle GetFilteredResults(string query)
+        public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, out var ex);
+            PrimitiveValue[] nativeArgs = new PrimitiveValue[arguments.Length];
+            RealmValue.HandlesToCleanup?[] nativeHandles = new RealmValue.HandlesToCleanup?[arguments.Length];
+            for (int i = 0; i < arguments.Length; ++i)
+            {
+                var converted = arguments[i].ToNative();
+                nativeArgs[i] = converted.Value;
+                nativeHandles[i] = converted.Handles;
+            }
+
+            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, nativeArgs, nativeArgs.Length, out var ex);
+            foreach (var handle in nativeHandles)
+            {
+                handle?.Dispose();
+            }
+
             ex.ThrowIfNecessary();
             return new ResultsHandle(this, ptr);
         }

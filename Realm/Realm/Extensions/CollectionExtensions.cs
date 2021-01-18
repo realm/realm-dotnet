@@ -179,10 +179,10 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate)
+        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
         {
             var realmResults = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
-            return realmResults.GetFilteredResults(predicate);
+            return realmResults.GetFilteredResults(predicate, arguments);
         }
     }
 }
