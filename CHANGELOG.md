@@ -1,4 +1,4 @@
-## 10.0.0-beta.4 (2021-01-18)
+## 10.0.0-beta.5 (2021-01-19)
 ------------------
 ### Breaking Changes
 * Removed `RealmObject.FreezeInPlace`. To freeze a realm object use the `Freeze` extension method. (Issue [#2180](https://github.com/realm/realm-dotnet/issues/2180))
