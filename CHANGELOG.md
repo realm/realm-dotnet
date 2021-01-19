@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.0.0-beta.5 (2021-01-19)
 ------------------
 ### Breaking Changes
 * Removed `RealmObject.FreezeInPlace`. To freeze a realm object use the `Freeze` extension method. (Issue [#2180](https://github.com/realm/realm-dotnet/issues/2180))
@@ -6,6 +6,9 @@
 ### Fixed
 * Worked around an issue with the .NET Native compiler (used in UWP projects) that would result in the following exception being thrown in Release: `Incompatible MarshalAs detected in parameter named 'value'. Please refer to MCG's warning message for more information.`. (Issue [#2169](https://github.com/realm/realm-dotnet/issues/2169))
 * Fixed a bug that could cause a deadlock in a multiprocess scenario where multiple processes share the same Realm file and listen for notifications from the file. (Core upgrade)
+* Fixed an issue where Sync connections would fail on Windows due to `SSL server certificate rejected`. (Core upgrade)
+* Fixed an issue with deleting and recreating objects with embedded objects. (Core upgrade)
+* Fix a race condition which would lead to "uncaught exception in notifier thread: N5realm15InvalidTableRefE: transaction_ended" and a crash when the source Realm was closed or invalidated at a very specific time during the first run of a collection notifier (Core upgrade)
 
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
@@ -15,8 +18,8 @@
 * Realm Studio: 10.0.0 or later.
 
 ### Internal
-* Using Core 10.3.0.
-* Migrate to bison parser
+* Using Core 10.3.3.
+* Migrated to bison parser.
 
 ## 10.0.0-beta.3 (2020-12-10)
 ------------------
