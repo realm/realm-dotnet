@@ -37,7 +37,7 @@ REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, rea
         auto dict_key = from_capi(key.string);
         if (dictionary.contains(dict_key))
         {
-            throw std::logic_error("Duplicate key exception; throw something more concrete!");
+            throw KeyAlreadyExistsException(dict_key);
         }
 
         dictionary.insert(dict_key, from_capi(value));
@@ -78,10 +78,33 @@ REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictio
     });
 }
 
-REALM_EXPORT void realm_dictionary_remove(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_dictionary_remove(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
 {
-    handle_errors(ex, [&]() {
-        dictionary.erase(from_capi(key.string));
+    return handle_errors(ex, [&]() {
+        auto dict_key = from_capi(key.string);
+        if (dictionary.contains(dict_key))
+        {
+            dictionary.erase(dict_key);
+            return true;
+        }
+
+        return false;
+    });
+}
+
+REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto dict_key = from_capi(key.string);
+
+        auto mixed_value = dictionary.try_get_any(dict_key);
+        if (mixed_value && mixed_value == from_capi(value))
+        {
+            dictionary.erase(dict_key);
+            return true;
+        }
+        
+        return false;
     });
 }
 

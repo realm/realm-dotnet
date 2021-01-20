@@ -75,7 +75,7 @@ namespace Realms
 
         public void Add(string key, TValue value) => _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
 
-        public void Add(KeyValuePair<string, TValue> item) => _dictionaryHandle.Add(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
+        public void Add(KeyValuePair<string, TValue> item) => Add(item.Key, item.Value);
 
         public bool ContainsKey(string key) => _dictionaryHandle.ContainsKey(key);
 
@@ -88,7 +88,7 @@ namespace Realms
 
         public bool Remove(string key) => _dictionaryHandle.Remove(key);
 
-        public bool Remove(KeyValuePair<string, TValue> item) => _dictionaryHandle.Remove(item.Key);
+        public bool Remove(KeyValuePair<string, TValue> item) => _dictionaryHandle.Remove(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
 
         public bool TryGetValue(string key, out TValue value)
         {

@@ -128,6 +128,9 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.ObjectManagedByAnotherRealm:
                     return new RealmObjectManagedByAnotherRealmException(message);
 
+                case RealmExceptionCodes.KeyAlreadyExists:
+                    return new ArgumentException(message);
+
                 default:
                     return new Exception(message);
             }

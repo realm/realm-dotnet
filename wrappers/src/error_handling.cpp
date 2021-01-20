@@ -117,6 +117,9 @@ namespace realm {
         catch (const PropertyTypeMismatchException& e) {
             return { RealmErrorType::PropertyMismatch, e.what() };
         }
+        catch (const KeyAlreadyExistsException& e) {
+            return { RealmErrorType::KeyAlreadyExists, e.what() };
+        }
         catch (const AppError& e) {
             if (e.is_client_error()) {
                 return { RealmErrorType::AppClientError, e.message };

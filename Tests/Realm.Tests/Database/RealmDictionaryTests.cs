@@ -32,21 +32,21 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<bool>> BoolTestValues()
         {
-            yield return new TestCaseData<bool>();
-            yield return new TestCaseData<bool>(("a", true));
-            yield return new TestCaseData<bool>(("b", false));
-            yield return new TestCaseData<bool>(("a", false), ("b", true));
-            yield return new TestCaseData<bool>(("a", true), ("b", false), ("c", true));
+            yield return new TestCaseData<bool>(true);
+            yield return new TestCaseData<bool>(true, ("a", true));
+            yield return new TestCaseData<bool>(false, ("b", false));
+            yield return new TestCaseData<bool>(true, ("a", false), ("b", true));
+            yield return new TestCaseData<bool>(false, ("a", true), ("b", false), ("c", true));
         }
 
         public static IEnumerable<TestCaseData<bool?>> NullableBoolTestValues()
         {
-            yield return new TestCaseData<bool?>();
-            yield return new TestCaseData<bool?>(("a", true));
-            yield return new TestCaseData<bool?>(("b", false));
-            yield return new TestCaseData<bool?>(("c", null));
-            yield return new TestCaseData<bool?>(("a", false), ("b", true));
-            yield return new TestCaseData<bool?>(("a", true), ("b", false), ("c", null));
+            yield return new TestCaseData<bool?>(true);
+            yield return new TestCaseData<bool?>(true, ("a", true));
+            yield return new TestCaseData<bool?>(true, ("b", false));
+            yield return new TestCaseData<bool?>(false, ("c", null));
+            yield return new TestCaseData<bool?>(true, ("a", false), ("b", true));
+            yield return new TestCaseData<bool?>(null, ("a", true), ("b", false), ("c", null));
         }
 
         [TestCaseSource(nameof(BoolTestValues))]
@@ -58,7 +58,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableBoolTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableBool(TestCaseData<bool?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableBooleanDictionary, testData);
+            RunUnmanagedTests(o => o.NullableBooleanDictionary, testData);
         }
 
         [TestCaseSource(nameof(BoolTestValues))]
@@ -70,7 +70,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableBoolTestValues))]
         public void RealmDictionary_WhenManaged_NullableBool(TestCaseData<bool?> testData)
         {
-            //RunManagedTests(o => o.NullableBooleanDictionary, testData);
+            RunManagedTests(o => o.NullableBooleanDictionary, testData);
         }
 
         #endregion
@@ -79,23 +79,23 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<byte>> ByteTestValues()
         {
-            yield return new TestCaseData<byte>();
-            yield return new TestCaseData<byte>(("123", 123));
-            yield return new TestCaseData<byte>(("a", 1), ("b", 1), ("c", 1));
-            yield return new TestCaseData<byte>(("a", 1), ("b", 2), ("c", 3));
-            yield return new TestCaseData<byte>(("a", byte.MinValue), ("z", byte.MaxValue));
-            yield return new TestCaseData<byte>(("a", byte.MinValue), ("zero", 0), ("one", 1), ("z", byte.MaxValue));
+            yield return new TestCaseData<byte>(5);
+            yield return new TestCaseData<byte>(5, ("123", 123));
+            yield return new TestCaseData<byte>(5, ("a", 1), ("b", 1), ("c", 1));
+            yield return new TestCaseData<byte>(5, ("a", 1), ("b", 2), ("c", 3));
+            yield return new TestCaseData<byte>(5, ("a", byte.MinValue), ("z", byte.MaxValue));
+            yield return new TestCaseData<byte>(5, ("a", byte.MinValue), ("zero", 0), ("one", 1), ("z", byte.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<byte?>> NullableByteTestValues()
         {
-            yield return new TestCaseData<byte?>();
-            yield return new TestCaseData<byte?>(("123", 123));
-            yield return new TestCaseData<byte?>(("null", null));
-            yield return new TestCaseData<byte?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<byte?>(("a", 1), ("b", null), ("c", 3));
-            yield return new TestCaseData<byte?>(("a", byte.MinValue), ("m", null), ("z", byte.MaxValue));
-            yield return new TestCaseData<byte?>(("a", byte.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", byte.MaxValue));
+            yield return new TestCaseData<byte?>(5);
+            yield return new TestCaseData<byte?>(null, ("123", 123));
+            yield return new TestCaseData<byte?>(5, ("null", null));
+            yield return new TestCaseData<byte?>(1, ("null1", null), ("null2", null));
+            yield return new TestCaseData<byte?>(9, ("a", 1), ("b", null), ("c", 3));
+            yield return new TestCaseData<byte?>(5, ("a", byte.MinValue), ("m", null), ("z", byte.MaxValue));
+            yield return new TestCaseData<byte?>(5, ("a", byte.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", byte.MaxValue));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -113,13 +113,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableByte(TestCaseData<byte?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableByteDictionary, testData);
+            RunUnmanagedTests(o => o.NullableByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableByteCounter(TestCaseData<byte?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
+            RunUnmanagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(ByteTestValues))]
@@ -137,13 +137,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmDictionary_WhenManaged_NullableByte(TestCaseData<byte?> testData)
         {
-            //RunManagedTests(o => o.NullableByteDictionary, testData);
+            RunManagedTests(o => o.NullableByteDictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableByteTestValues))]
         public void RealmDictionary_WhenManaged_NullableByteCounter(TestCaseData<byte?> testData)
         {
-            //RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
+            RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
         }
 
         #endregion
@@ -152,25 +152,25 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<short>> Int16TestValues()
         {
-            yield return new TestCaseData<short>();
-            yield return new TestCaseData<short>(("123", 123));
-            yield return new TestCaseData<short>(("123", -123));
-            yield return new TestCaseData<short>(("a", 1), ("b", 1), ("c", 1));
-            yield return new TestCaseData<short>(("a", 1), ("b", 2), ("c", 3));
-            yield return new TestCaseData<short>(("a", short.MinValue), ("z", short.MaxValue));
-            yield return new TestCaseData<short>(("a", short.MinValue), ("zero", 0), ("one", 1), ("z", short.MaxValue));
+            yield return new TestCaseData<short>(9);
+            yield return new TestCaseData<short>(-5, ("123", 123));
+            yield return new TestCaseData<short>(9, ("123", -123));
+            yield return new TestCaseData<short>(19, ("a", 1), ("b", 1), ("c", 1));
+            yield return new TestCaseData<short>(9, ("a", 1), ("b", 2), ("c", 3));
+            yield return new TestCaseData<short>(49, ("a", short.MinValue), ("z", short.MaxValue));
+            yield return new TestCaseData<short>(9, ("a", short.MinValue), ("zero", 0), ("one", 1), ("z", short.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<short?>> NullableInt16TestValues()
         {
-            yield return new TestCaseData<short?>();
-            yield return new TestCaseData<short?>(("123", 123));
-            yield return new TestCaseData<short?>(("123", -123));
-            yield return new TestCaseData<short?>(("null", null));
-            yield return new TestCaseData<short?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<short?>(("a", 1), ("b", null), ("c", 3));
-            yield return new TestCaseData<short?>(("a", short.MinValue), ("m", null), ("z", short.MaxValue));
-            yield return new TestCaseData<short?>(("a", short.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", short.MaxValue));
+            yield return new TestCaseData<short?>(7);
+            yield return new TestCaseData<short?>(7, ("123", 123));
+            yield return new TestCaseData<short?>(null, ("123", -123));
+            yield return new TestCaseData<short?>(7, ("null", null));
+            yield return new TestCaseData<short?>(7, ("null1", null), ("null2", null));
+            yield return new TestCaseData<short?>(-15, ("a", 1), ("b", null), ("c", 3));
+            yield return new TestCaseData<short?>(7, ("a", short.MinValue), ("m", null), ("z", short.MaxValue));
+            yield return new TestCaseData<short?>(7, ("a", short.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", short.MaxValue));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
@@ -188,13 +188,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt16(TestCaseData<short?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
+            RunUnmanagedTests(o => o.NullableInt16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt16Counter(TestCaseData<short?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
+            RunUnmanagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int16TestValues))]
@@ -212,13 +212,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt16(TestCaseData<short?> testData)
         {
-            //RunManagedTests(o => o.NullableInt16Dictionary, testData);
+            RunManagedTests(o => o.NullableInt16Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt16TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt16Counter(TestCaseData<short?> testData)
         {
-            //RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
         #endregion
@@ -227,25 +227,25 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<int>> Int32TestValues()
         {
-            yield return new TestCaseData<int>();
-            yield return new TestCaseData<int>(("123", 123));
-            yield return new TestCaseData<int>(("123", -123));
-            yield return new TestCaseData<int>(("a", 1), ("b", 1), ("c", 1));
-            yield return new TestCaseData<int>(("a", 1), ("b", 2), ("c", 3));
-            yield return new TestCaseData<int>(("a", int.MinValue), ("z", int.MaxValue));
-            yield return new TestCaseData<int>(("a", int.MinValue), ("zero", 0), ("one", 1), ("z", int.MaxValue));
+            yield return new TestCaseData<int>(999);
+            yield return new TestCaseData<int>(999, ("123", 123));
+            yield return new TestCaseData<int>(999, ("123", -123));
+            yield return new TestCaseData<int>(999, ("a", 1), ("b", 1), ("c", 1));
+            yield return new TestCaseData<int>(999, ("a", 1), ("b", 2), ("c", 3));
+            yield return new TestCaseData<int>(999, ("a", int.MinValue), ("z", int.MaxValue));
+            yield return new TestCaseData<int>(999, ("a", int.MinValue), ("zero", 0), ("one", 1), ("z", int.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<int?>> NullableInt32TestValues()
         {
-            yield return new TestCaseData<int?>();
-            yield return new TestCaseData<int?>(("123", 123));
-            yield return new TestCaseData<int?>(("123", -123));
-            yield return new TestCaseData<int?>(("null", null));
-            yield return new TestCaseData<int?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<int?>(("a", 1), ("b", null), ("c", 3));
-            yield return new TestCaseData<int?>(("a", int.MinValue), ("m", null), ("z", int.MaxValue));
-            yield return new TestCaseData<int?>(("a", int.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", int.MaxValue));
+            yield return new TestCaseData<int?>(777);
+            yield return new TestCaseData<int?>(null, ("123", 123));
+            yield return new TestCaseData<int?>(777, ("123", -123));
+            yield return new TestCaseData<int?>(777, ("null", null));
+            yield return new TestCaseData<int?>(777, ("null1", null), ("null2", null));
+            yield return new TestCaseData<int?>(777, ("a", 1), ("b", null), ("c", 3));
+            yield return new TestCaseData<int?>(null, ("a", int.MinValue), ("m", null), ("z", int.MaxValue));
+            yield return new TestCaseData<int?>(777, ("a", int.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", int.MaxValue));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
@@ -263,13 +263,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt32(TestCaseData<int?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
+            RunUnmanagedTests(o => o.NullableInt32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt32Counter(TestCaseData<int?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
+            RunUnmanagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int32TestValues))]
@@ -287,13 +287,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt32(TestCaseData<int?> testData)
         {
-            //RunManagedTests(o => o.NullableInt32Dictionary, testData);
+            RunManagedTests(o => o.NullableInt32Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt32TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt32Counter(TestCaseData<int?> testData)
         {
-            //RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
         }
 
         #endregion
@@ -302,25 +302,25 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<long>> Int64TestValues()
         {
-            yield return new TestCaseData<long>();
-            yield return new TestCaseData<long>(("123", 123));
-            yield return new TestCaseData<long>(("123", -123));
-            yield return new TestCaseData<long>(("a", 1), ("b", 1), ("c", 1));
-            yield return new TestCaseData<long>(("a", 1), ("b", 2), ("c", 3));
-            yield return new TestCaseData<long>(("a", long.MinValue), ("z", long.MaxValue));
-            yield return new TestCaseData<long>(("a", long.MinValue), ("zero", 0), ("one", 1), ("z", long.MaxValue));
+            yield return new TestCaseData<long>(123456789);
+            yield return new TestCaseData<long>(123456789, ("123", 123));
+            yield return new TestCaseData<long>(123456789, ("123", -123));
+            yield return new TestCaseData<long>(123456789, ("a", 1), ("b", 1), ("c", 1));
+            yield return new TestCaseData<long>(123456789, ("a", 1), ("b", 2), ("c", 3));
+            yield return new TestCaseData<long>(123456789, ("a", long.MinValue), ("z", long.MaxValue));
+            yield return new TestCaseData<long>(123456789, ("a", long.MinValue), ("zero", 0), ("one", 1), ("z", long.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<long?>> NullableInt64TestValues()
         {
-            yield return new TestCaseData<long?>();
-            yield return new TestCaseData<long?>(("123", 123));
-            yield return new TestCaseData<long?>(("123", -123));
-            yield return new TestCaseData<long?>(("null", null));
-            yield return new TestCaseData<long?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<long?>(("a", 1), ("b", null), ("c", 3));
-            yield return new TestCaseData<long?>(("a", long.MinValue), ("m", null), ("z", long.MaxValue));
-            yield return new TestCaseData<long?>(("a", long.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", long.MaxValue));
+            yield return new TestCaseData<long?>(1234);
+            yield return new TestCaseData<long?>(null, ("123", 123));
+            yield return new TestCaseData<long?>(1234, ("123", -123));
+            yield return new TestCaseData<long?>(1234, ("null", null));
+            yield return new TestCaseData<long?>(1234, ("null1", null), ("null2", null));
+            yield return new TestCaseData<long?>(null, ("a", 1), ("b", null), ("c", 3));
+            yield return new TestCaseData<long?>(1234, ("a", long.MinValue), ("m", null), ("z", long.MaxValue));
+            yield return new TestCaseData<long?>(1234, ("a", long.MinValue), ("zero", 0), ("null", null), ("one", 1), ("z", long.MaxValue));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -338,13 +338,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt64(TestCaseData<long?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
+            RunUnmanagedTests(o => o.NullableInt64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableInt64Counter(TestCaseData<long?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
+            RunUnmanagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         [TestCaseSource(nameof(Int64TestValues))]
@@ -362,13 +362,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt64(TestCaseData<long?> testData)
         {
-            //RunManagedTests(o => o.NullableInt64Dictionary, testData);
+            RunManagedTests(o => o.NullableInt64Dictionary, testData);
         }
 
         [TestCaseSource(nameof(NullableInt64TestValues))]
         public void RealmDictionary_WhenManaged_NullableInt64Counter(TestCaseData<long?> testData)
         {
-            //RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
+            RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
         #endregion
@@ -377,25 +377,25 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<float>> FloatTestValues()
         {
-            yield return new TestCaseData<float>();
-            yield return new TestCaseData<float>(("123", 123.123f));
-            yield return new TestCaseData<float>(("123", -123.456f));
-            yield return new TestCaseData<float>(("a", 1.1f), ("b", 1.1f), ("c", 1.1f));
-            yield return new TestCaseData<float>(("a", 1), ("b", 2.2f), ("c", 3.3f));
-            yield return new TestCaseData<float>(("a", float.MinValue), ("z", float.MaxValue));
-            yield return new TestCaseData<float>(("a", float.MinValue), ("zero", 0.0f), ("one", 1.1f), ("z", float.MaxValue));
+            yield return new TestCaseData<float>(1.23f);
+            yield return new TestCaseData<float>(1.23f, ("123", 123.123f));
+            yield return new TestCaseData<float>(1.23f, ("123", -123.456f));
+            yield return new TestCaseData<float>(1.23f, ("a", 1.1f), ("b", 1.1f), ("c", 1.1f));
+            yield return new TestCaseData<float>(0.8f, ("a", 1), ("b", 2.2f), ("c", 3.3f));
+            yield return new TestCaseData<float>(1.23f, ("a", float.MinValue), ("z", float.MaxValue));
+            yield return new TestCaseData<float>(1.23f, ("a", float.MinValue), ("zero", 0.0f), ("one", 1.1f), ("z", float.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<float?>> NullableFloatTestValues()
         {
-            yield return new TestCaseData<float?>();
-            yield return new TestCaseData<float?>(("123", 123.123f));
-            yield return new TestCaseData<float?>(("123", -123.456f));
-            yield return new TestCaseData<float?>(("null", null));
-            yield return new TestCaseData<float?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<float?>(("a", 1), ("b", null), ("c", 3.3f));
-            yield return new TestCaseData<float?>(("a", float.MinValue), ("m", null), ("z", float.MaxValue));
-            yield return new TestCaseData<float?>(("a", float.MinValue), ("zero", 0), ("null", null), ("one", 1.1f), ("z", float.MaxValue));
+            yield return new TestCaseData<float?>(999.888f);
+            yield return new TestCaseData<float?>(999.888f, ("123", 123.123f));
+            yield return new TestCaseData<float?>(999.888f, ("123", -123.456f));
+            yield return new TestCaseData<float?>(null, ("null", null));
+            yield return new TestCaseData<float?>(999.888f, ("null1", null), ("null2", null));
+            yield return new TestCaseData<float?>(null, ("a", 1), ("b", null), ("c", 3.3f));
+            yield return new TestCaseData<float?>(999.888f, ("a", float.MinValue), ("m", null), ("z", float.MaxValue));
+            yield return new TestCaseData<float?>(999.888f, ("a", float.MinValue), ("zero", 0), ("null", null), ("one", 1.1f), ("z", float.MaxValue));
         }
 
         [TestCaseSource(nameof(FloatTestValues))]
@@ -407,7 +407,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableFloatTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableFloat(TestCaseData<float?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableSingleDictionary, testData);
+            RunUnmanagedTests(o => o.NullableSingleDictionary, testData);
         }
 
         [TestCaseSource(nameof(FloatTestValues))]
@@ -419,7 +419,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableFloatTestValues))]
         public void RealmDictionary_WhenManaged_NullableFloat(TestCaseData<float?> testData)
         {
-            //RunManagedTests(o => o.NullableSingleDictionary, testData);
+            RunManagedTests(o => o.NullableSingleDictionary, testData);
         }
 
         #endregion
@@ -428,27 +428,27 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<double>> DoubleTestValues()
         {
-            yield return new TestCaseData<double>();
-            yield return new TestCaseData<double>(("123", 123.123));
-            yield return new TestCaseData<double>(("123", -123.456));
-            yield return new TestCaseData<double>(("a", 1.1), ("b", 1.1), ("c", 1.1));
-            yield return new TestCaseData<double>(("a", 1), ("b", 2.2), ("c", 3.3));
-            yield return new TestCaseData<double>(("a", 1), ("b", 2.2), ("c", 3.3), ("d", 4385948963486946854968945789458794538793438693486934869.238593285932859238952398));
-            yield return new TestCaseData<double>(("a", double.MinValue), ("z", double.MaxValue));
-            yield return new TestCaseData<double>(("a", double.MinValue), ("zero", 0.0), ("one", 1.1), ("z", double.MaxValue));
+            yield return new TestCaseData<double>(789.123);
+            yield return new TestCaseData<double>(789.123, ("123", 123.123));
+            yield return new TestCaseData<double>(789.123, ("123", -123.456));
+            yield return new TestCaseData<double>(789.123, ("a", 1.1), ("b", 1.1), ("c", 1.1));
+            yield return new TestCaseData<double>(789.123, ("a", 1), ("b", 2.2), ("c", 3.3));
+            yield return new TestCaseData<double>(789.123, ("a", 1), ("b", 2.2), ("c", 3.3), ("d", 4385948963486946854968945789458794538793438693486934869.238593285932859238952398));
+            yield return new TestCaseData<double>(789.123, ("a", double.MinValue), ("z", double.MaxValue));
+            yield return new TestCaseData<double>(789.123, ("a", double.MinValue), ("zero", 0.0), ("one", 1.1), ("z", double.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<double?>> NullableDoubleTestValues()
         {
-            yield return new TestCaseData<double?>();
-            yield return new TestCaseData<double?>(("123", 123.123));
-            yield return new TestCaseData<double?>(("123", -123.456));
-            yield return new TestCaseData<double?>(("null", null));
-            yield return new TestCaseData<double?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<double?>(("a", 1), ("b", null), ("c", 3.3));
-            yield return new TestCaseData<double?>(("a", 1), ("b", null), ("c", 3.3), ("d", 4385948963486946854968945789458794538793438693486934869.238593285932859238952398));
-            yield return new TestCaseData<double?>(("a", double.MinValue), ("m", null), ("z", double.MaxValue));
-            yield return new TestCaseData<double?>(("a", double.MinValue), ("zero", 0), ("null", null), ("one", 1.1), ("z", double.MaxValue));
+            yield return new TestCaseData<double?>(-123.789);
+            yield return new TestCaseData<double?>(-123.789, ("123", 123.123));
+            yield return new TestCaseData<double?>(null, ("123", -123.456));
+            yield return new TestCaseData<double?>(-123.789, ("null", null));
+            yield return new TestCaseData<double?>(-123.789, ("null1", null), ("null2", null));
+            yield return new TestCaseData<double?>(-123.789, ("a", 1), ("b", null), ("c", 3.3));
+            yield return new TestCaseData<double?>(null, ("a", 1), ("b", null), ("c", 3.3), ("d", 4385948963486946854968945789458794538793438693486934869.238593285932859238952398));
+            yield return new TestCaseData<double?>(-123.789, ("a", double.MinValue), ("m", null), ("z", double.MaxValue));
+            yield return new TestCaseData<double?>(-123.789, ("a", double.MinValue), ("zero", 0), ("null", null), ("one", 1.1), ("z", double.MaxValue));
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
@@ -460,7 +460,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDoubleTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableDouble(TestCaseData<double?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableDoubleDictionary, testData);
+            RunUnmanagedTests(o => o.NullableDoubleDictionary, testData);
         }
 
         [TestCaseSource(nameof(DoubleTestValues))]
@@ -472,7 +472,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDoubleTestValues))]
         public void RealmDictionary_WhenManaged_NullableDouble(TestCaseData<double?> testData)
         {
-            //RunManagedTests(o => o.NullableDoubleDictionary, testData);
+            RunManagedTests(o => o.NullableDoubleDictionary, testData);
         }
 
         #endregion
@@ -481,27 +481,27 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<decimal>> DecimalTestValues()
         {
-            yield return new TestCaseData<decimal>();
-            yield return new TestCaseData<decimal>(("123", 123.123m));
-            yield return new TestCaseData<decimal>(("123", -123.456m));
-            yield return new TestCaseData<decimal>(("a", 1.1m), ("b", 1.1m), ("c", 1.1m));
-            yield return new TestCaseData<decimal>(("a", 1), ("b", 2.2m), ("c", 3.3m));
-            yield return new TestCaseData<decimal>(("a", 1), ("b", 2.2m), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
-            yield return new TestCaseData<decimal>(("a", decimal.MinValue), ("z", decimal.MaxValue));
-            yield return new TestCaseData<decimal>(("a", decimal.MinValue), ("zero", 0.0m), ("one", 1.1m), ("z", decimal.MaxValue));
+            yield return new TestCaseData<decimal>(11.11m);
+            yield return new TestCaseData<decimal>(11.11m, ("123", 123.123m));
+            yield return new TestCaseData<decimal>(11.11m, ("123", -123.456m));
+            yield return new TestCaseData<decimal>(11.11m, ("a", 1.1m), ("b", 1.1m), ("c", 1.1m));
+            yield return new TestCaseData<decimal>(11.11m, ("a", 1), ("b", 2.2m), ("c", 3.3m));
+            yield return new TestCaseData<decimal>(11.11m, ("a", 1), ("b", 2.2m), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
+            yield return new TestCaseData<decimal>(11.11m, ("a", decimal.MinValue), ("z", decimal.MaxValue));
+            yield return new TestCaseData<decimal>(11.11m, ("a", decimal.MinValue), ("zero", 0.0m), ("one", 1.1m), ("z", decimal.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<decimal?>> NullableDecimalTestValues()
         {
-            yield return new TestCaseData<decimal?>();
-            yield return new TestCaseData<decimal?>(("123", 123.123m));
-            yield return new TestCaseData<decimal?>(("123", -123.456m));
-            yield return new TestCaseData<decimal?>(("null", null));
-            yield return new TestCaseData<decimal?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<decimal?>(("a", 1), ("b", null), ("c", 3.3m));
-            yield return new TestCaseData<decimal?>(("a", 1), ("b", null), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
-            yield return new TestCaseData<decimal?>(("a", decimal.MinValue), ("m", null), ("z", decimal.MaxValue));
-            yield return new TestCaseData<decimal?>(("a", decimal.MinValue), ("zero", 0), ("null", null), ("one", 1.1m), ("z", decimal.MaxValue));
+            yield return new TestCaseData<decimal?>(12.12m);
+            yield return new TestCaseData<decimal?>(null, ("123", 123.123m));
+            yield return new TestCaseData<decimal?>(12.12m, ("123", -123.456m));
+            yield return new TestCaseData<decimal?>(12.12m, ("null", null));
+            yield return new TestCaseData<decimal?>(12.12m, ("null1", null), ("null2", null));
+            yield return new TestCaseData<decimal?>(12.12m, ("a", 1), ("b", null), ("c", 3.3m));
+            yield return new TestCaseData<decimal?>(12.12m, ("a", 1), ("b", null), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
+            yield return new TestCaseData<decimal?>(12.12m, ("a", decimal.MinValue), ("m", null), ("z", decimal.MaxValue));
+            yield return new TestCaseData<decimal?>(null, ("a", decimal.MinValue), ("zero", 0), ("null", null), ("one", 1.1m), ("z", decimal.MaxValue));
         }
 
         [TestCaseSource(nameof(DecimalTestValues))]
@@ -513,7 +513,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDecimalTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableDecimal(TestCaseData<decimal?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableDecimalDictionary, testData);
+            RunUnmanagedTests(o => o.NullableDecimalDictionary, testData);
         }
 
         [TestCaseSource(nameof(DecimalTestValues))]
@@ -525,7 +525,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDecimalTestValues))]
         public void RealmDictionary_WhenManaged_NullableDecimal(TestCaseData<decimal?> testData)
         {
-            //RunManagedTests(o => o.NullableDecimalDictionary, testData);
+            RunManagedTests(o => o.NullableDecimalDictionary, testData);
         }
 
         #endregion
@@ -534,27 +534,27 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<Decimal128>> Decimal128TestValues()
         {
-            yield return new TestCaseData<Decimal128>();
-            yield return new TestCaseData<Decimal128>(("123", 123.123m));
-            yield return new TestCaseData<Decimal128>(("123", -123.456m));
-            yield return new TestCaseData<Decimal128>(("a", 1.1m), ("b", 1.1m), ("c", 1.1m));
-            yield return new TestCaseData<Decimal128>(("a", 1), ("b", 2.2m), ("c", 3.3m));
-            yield return new TestCaseData<Decimal128>(("a", 1), ("b", 2.2m), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
-            yield return new TestCaseData<Decimal128>(("a", decimal.MinValue), ("a1", Decimal128.MinValue), ("z", decimal.MaxValue), ("z1", Decimal128.MaxValue));
-            yield return new TestCaseData<Decimal128>(("a", Decimal128.MinValue), ("zero", 0.0m), ("one", 1.1m), ("z", Decimal128.MaxValue));
+            yield return new TestCaseData<Decimal128>(1.5m);
+            yield return new TestCaseData<Decimal128>(1.5m, ("123", 123.123m));
+            yield return new TestCaseData<Decimal128>(1.5m, ("123", -123.456m));
+            yield return new TestCaseData<Decimal128>(1.5m, ("a", 1.1m), ("b", 1.1m), ("c", 1.1m));
+            yield return new TestCaseData<Decimal128>(1.5m, ("a", 1), ("b", 2.2m), ("c", 3.3m));
+            yield return new TestCaseData<Decimal128>(1.5m, ("a", 1), ("b", 2.2m), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
+            yield return new TestCaseData<Decimal128>(1.5m, ("a", decimal.MinValue), ("a1", Decimal128.MinValue), ("z", decimal.MaxValue), ("z1", Decimal128.MaxValue));
+            yield return new TestCaseData<Decimal128>(1.5m, ("a", Decimal128.MinValue), ("zero", 0.0m), ("one", 1.1m), ("z", Decimal128.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<Decimal128?>> NullableDecimal128TestValues()
         {
-            yield return new TestCaseData<Decimal128?>();
-            yield return new TestCaseData<Decimal128?>(("123", 123.123m));
-            yield return new TestCaseData<Decimal128?>(("123", -123.456m));
-            yield return new TestCaseData<Decimal128?>(("null", null));
-            yield return new TestCaseData<Decimal128?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<Decimal128?>(("a", 1), ("b", null), ("c", 3.3m));
-            yield return new TestCaseData<Decimal128?>(("a", 1), ("b", null), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
-            yield return new TestCaseData<Decimal128?>(("a", decimal.MinValue), ("a1", Decimal128.MinValue), ("m", null), ("z", decimal.MaxValue), ("z1", Decimal128.MaxValue));
-            yield return new TestCaseData<Decimal128?>(("a", Decimal128.MinValue), ("zero", 0), ("null", null), ("one", 1.1m), ("z", Decimal128.MaxValue));
+            yield return new TestCaseData<Decimal128?>(-9.7m);
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("123", 123.123m));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("123", -123.456m));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("null", null));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("null1", null), ("null2", null));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("a", 1), ("b", null), ("c", 3.3m));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("a", 1), ("b", null), ("c", 3.3m), ("d", 43859489538793438693486934869.238436346943634634634634634634634634634593285932859238952398m));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("a", decimal.MinValue), ("a1", Decimal128.MinValue), ("m", null), ("z", decimal.MaxValue), ("z1", Decimal128.MaxValue));
+            yield return new TestCaseData<Decimal128?>(-9.7m, ("a", Decimal128.MinValue), ("zero", 0), ("null", null), ("one", 1.1m), ("z", Decimal128.MaxValue));
         }
 
         [TestCaseSource(nameof(Decimal128TestValues))]
@@ -566,7 +566,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableDecimal128Dictionary, testData);
+            RunUnmanagedTests(o => o.NullableDecimal128Dictionary, testData);
         }
 
         [TestCaseSource(nameof(Decimal128TestValues))]
@@ -578,7 +578,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDecimal128TestValues))]
         public void RealmDictionary_WhenManaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
-            //RunManagedTests(o => o.NullableDecimal128Dictionary, testData);
+            RunManagedTests(o => o.NullableDecimal128Dictionary, testData);
         }
 
         #endregion
@@ -592,26 +592,26 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<ObjectId>> ObjectIdTestValues()
         {
-            yield return new TestCaseData<ObjectId>();
-            yield return new TestCaseData<ObjectId>(("123", ObjectId1));
-            yield return new TestCaseData<ObjectId>(("123", ObjectId2));
-            yield return new TestCaseData<ObjectId>(("a", ObjectId1), ("b", ObjectId1), ("c", ObjectId1));
-            yield return new TestCaseData<ObjectId>(("a", ObjectId0), ("b", ObjectId1), ("c", ObjectId2));
-            yield return new TestCaseData<ObjectId>(("a", ObjectId0), ("z", ObjectIdMax));
-            yield return new TestCaseData<ObjectId>(("a", ObjectId0), ("zero", ObjectId1), ("one", ObjectId2), ("z", ObjectIdMax));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId());
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("123", ObjectId1));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("123", ObjectId2));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("a", ObjectId1), ("b", ObjectId1), ("c", ObjectId1));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("a", ObjectId0), ("b", ObjectId1), ("c", ObjectId2));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("a", ObjectId0), ("z", ObjectIdMax));
+            yield return new TestCaseData<ObjectId>(ObjectId.GenerateNewId(), ("a", ObjectId0), ("zero", ObjectId1), ("one", ObjectId2), ("z", ObjectIdMax));
         }
 
         public static IEnumerable<TestCaseData<ObjectId?>> NullableObjectIdTestValues()
         {
-            yield return new TestCaseData<ObjectId?>();
-            yield return new TestCaseData<ObjectId?>(("123", ObjectId1));
-            yield return new TestCaseData<ObjectId?>(("123", ObjectId2));
-            yield return new TestCaseData<ObjectId?>(("null", null));
-            yield return new TestCaseData<ObjectId?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<ObjectId?>(("a", ObjectId0), ("b", null), ("c", ObjectId2));
-            yield return new TestCaseData<ObjectId?>(("a", ObjectId2), ("b", null), ("c", ObjectId1), ("d", ObjectId0));
-            yield return new TestCaseData<ObjectId?>(("a", ObjectId0), ("m", null), ("z", ObjectIdMax));
-            yield return new TestCaseData<ObjectId?>(("a", ObjectId0), ("zero", ObjectId1), ("null", null), ("one", ObjectId2), ("z", ObjectIdMax));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId());
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("123", ObjectId1));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("123", ObjectId2));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("null", null));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<ObjectId?>(null, ("a", ObjectId0), ("b", null), ("c", ObjectId2));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("a", ObjectId2), ("b", null), ("c", ObjectId1), ("d", ObjectId0));
+            yield return new TestCaseData<ObjectId?>(ObjectId.GenerateNewId(), ("a", ObjectId0), ("m", null), ("z", ObjectIdMax));
+            yield return new TestCaseData<ObjectId?>(null, ("a", ObjectId0), ("zero", ObjectId1), ("null", null), ("one", ObjectId2), ("z", ObjectIdMax));
         }
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
@@ -623,7 +623,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableObjectId(TestCaseData<ObjectId?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableObjectIdDictionary, testData);
+            RunUnmanagedTests(o => o.NullableObjectIdDictionary, testData);
         }
 
         [TestCaseSource(nameof(ObjectIdTestValues))]
@@ -635,7 +635,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableObjectIdTestValues))]
         public void RealmDictionary_WhenManaged_NullableObjectId(TestCaseData<ObjectId?> testData)
         {
-            //RunManagedTests(o => o.NullableObjectIdDictionary, testData);
+            RunManagedTests(o => o.NullableObjectIdDictionary, testData);
         }
 
         #endregion
@@ -648,26 +648,26 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<DateTimeOffset>> DateTimeOffsetTestValues()
         {
-            yield return new TestCaseData<DateTimeOffset>();
-            yield return new TestCaseData<DateTimeOffset>(("123", Date1));
-            yield return new TestCaseData<DateTimeOffset>(("123", Date2));
-            yield return new TestCaseData<DateTimeOffset>(("a", Date1), ("b", Date1), ("c", Date1));
-            yield return new TestCaseData<DateTimeOffset>(("a", Date0), ("b", Date1), ("c", Date2));
-            yield return new TestCaseData<DateTimeOffset>(("a", DateTimeOffset.MinValue), ("z", DateTimeOffset.MaxValue));
-            yield return new TestCaseData<DateTimeOffset>(("a", DateTimeOffset.MinValue), ("zero", Date1), ("one", Date2), ("z", DateTimeOffset.MaxValue));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow);
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("123", Date1));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("123", Date2));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("a", Date1), ("b", Date1), ("c", Date1));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("a", Date0), ("b", Date1), ("c", Date2));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("a", DateTimeOffset.MinValue), ("z", DateTimeOffset.MaxValue));
+            yield return new TestCaseData<DateTimeOffset>(DateTimeOffset.UtcNow, ("a", DateTimeOffset.MinValue), ("zero", Date1), ("one", Date2), ("z", DateTimeOffset.MaxValue));
         }
 
         public static IEnumerable<TestCaseData<DateTimeOffset?>> NullableDateTimeOffsetTestValues()
         {
-            yield return new TestCaseData<DateTimeOffset?>();
-            yield return new TestCaseData<DateTimeOffset?>(("123", Date1));
-            yield return new TestCaseData<DateTimeOffset?>(("123", Date2));
-            yield return new TestCaseData<DateTimeOffset?>(("null", null));
-            yield return new TestCaseData<DateTimeOffset?>(("null1", null), ("null2", null));
-            yield return new TestCaseData<DateTimeOffset?>(("a", Date0), ("b", null), ("c", Date2));
-            yield return new TestCaseData<DateTimeOffset?>(("a", Date2), ("b", null), ("c", Date1), ("d", Date0));
-            yield return new TestCaseData<DateTimeOffset?>(("a", DateTimeOffset.MinValue), ("m", null), ("z", DateTimeOffset.MaxValue));
-            yield return new TestCaseData<DateTimeOffset?>(("a", DateTimeOffset.MinValue), ("zero", Date1), ("null", null), ("one", Date2), ("z", DateTimeOffset.MaxValue));
+            yield return new TestCaseData<DateTimeOffset?>(null);
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("123", Date1));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("123", Date2));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("null", null));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("null1", null), ("null2", null));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("a", Date0), ("b", null), ("c", Date2));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("a", Date2), ("b", null), ("c", Date1), ("d", Date0));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("a", DateTimeOffset.MinValue), ("m", null), ("z", DateTimeOffset.MaxValue));
+            yield return new TestCaseData<DateTimeOffset?>(DateTimeOffset.UtcNow, ("a", DateTimeOffset.MinValue), ("zero", Date1), ("null", null), ("one", Date2), ("z", DateTimeOffset.MaxValue));
         }
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
@@ -679,7 +679,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
         {
-            //RunUnmanagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
+            RunUnmanagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
         }
 
         [TestCaseSource(nameof(DateTimeOffsetTestValues))]
@@ -691,7 +691,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableDateTimeOffsetTestValues))]
         public void RealmDictionary_WhenManaged_NullableDateTimeOffset(TestCaseData<DateTimeOffset?> testData)
         {
-            //RunManagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
+            RunManagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
         }
 
         #endregion
@@ -700,26 +700,26 @@ namespace Realms.Tests.Database
 
         public static IEnumerable<TestCaseData<string>> StringTestValues()
         {
-            yield return new TestCaseData<string>();
-            yield return new TestCaseData<string>(("123", "abc"));
-            yield return new TestCaseData<string>(("123", "ced"));
-            yield return new TestCaseData<string>(("a", "AbCdEfG"), ("b", "HiJklMn"), ("c", "OpQrStU"));
-            yield return new TestCaseData<string>(("a", "vwxyz"), ("b", string.Empty), ("c", " "));
-            yield return new TestCaseData<string>(("a", string.Empty), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
-            yield return new TestCaseData<string>(("a", string.Empty), ("zero", "lorem ipsum"), ("one", "-1234567890"), ("z", "lololo"));
+            yield return new TestCaseData<string>(string.Empty);
+            yield return new TestCaseData<string>(string.Empty, ("123", "abc"));
+            yield return new TestCaseData<string>(string.Empty, ("123", "ced"));
+            yield return new TestCaseData<string>(string.Empty, ("a", "AbCdEfG"), ("b", "HiJklMn"), ("c", "OpQrStU"));
+            yield return new TestCaseData<string>(string.Empty, ("a", "vwxyz"), ("b", string.Empty), ("c", " "));
+            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
+            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("zero", "lorem ipsum"), ("one", "-1234567890"), ("z", "lololo"));
         }
 
         public static IEnumerable<TestCaseData<string>> NullableStringTestValues()
         {
-            yield return new TestCaseData<string>();
-            yield return new TestCaseData<string>(("123", "abc"));
-            yield return new TestCaseData<string>(("123", "ced"));
-            yield return new TestCaseData<string>(("null", null));
-            yield return new TestCaseData<string>(("null1", null), ("null2", null));
-            yield return new TestCaseData<string>(("a", "AbCdEfG"), ("b", null), ("c", "OpQrStU"));
-            yield return new TestCaseData<string>(("a", "vwxyz"), ("b", null), ("c", string.Empty), ("d", " "));
-            yield return new TestCaseData<string>(("a", string.Empty), ("m", null), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
-            yield return new TestCaseData<string>(("a", string.Empty), ("zero", "lorem ipsum"), ("null", null), ("one", "-1234567890"), ("z", "lololo"));
+            yield return new TestCaseData<string>(string.Empty);
+            yield return new TestCaseData<string>(null, ("123", "abc"));
+            yield return new TestCaseData<string>(string.Empty, ("123", "ced"));
+            yield return new TestCaseData<string>(string.Empty, ("null", null));
+            yield return new TestCaseData<string>(string.Empty, ("null1", null), ("null2", null));
+            yield return new TestCaseData<string>(string.Empty, ("a", "AbCdEfG"), ("b", null), ("c", "OpQrStU"));
+            yield return new TestCaseData<string>(null, ("a", "vwxyz"), ("b", null), ("c", string.Empty), ("d", " "));
+            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("m", null), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
+            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("zero", "lorem ipsum"), ("null", null), ("one", "-1234567890"), ("z", "lololo"));
         }
 
         [TestCaseSource(nameof(StringTestValues))]
@@ -731,7 +731,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableStringTestValues))]
         public void RealmDictionary_WhenUnmanaged_NullableString(TestCaseData<string> testData)
         {
-            //RunUnmanagedTests(o => o.NullableStringDictionary, testData);
+            RunUnmanagedTests(o => o.NullableStringDictionary, testData);
         }
 
         [TestCaseSource(nameof(StringTestValues))]
@@ -743,7 +743,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(NullableStringTestValues))]
         public void RealmDictionary_WhenManaged_NullableString(TestCaseData<string> testData)
         {
-            //RunManagedTests(o => o.NullableStringDictionary, testData);
+            RunManagedTests(o => o.NullableStringDictionary, testData);
         }
 
         #endregion
@@ -753,10 +753,20 @@ namespace Realms.Tests.Database
             var testObject = new DictionariesObject();
             var dictionary = accessor(testObject);
 
-            // We can't freeze unmanaged dictionaries.
-            Assert.Throws<RealmException>(() => dictionary.Freeze());
+            testData.Seed(dictionary);
 
             testData.AssertCount(dictionary);
+            testData.AssertContainsKey(dictionary);
+            testData.AssertKeys(dictionary);
+            testData.AssertValues(dictionary);
+            testData.AssertFreeze(dictionary);
+            testData.AssertIterator(dictionary);
+            testData.AssertTryGetValue(dictionary);
+            testData.AssertAccessor(dictionary);
+            testData.AssertSet(dictionary);
+            testData.AssertAdd(dictionary);
+            testData.AssertRemove(dictionary);
+            testData.AssertNotifications(dictionary);
         }
 
         private void RunManagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
@@ -774,29 +784,41 @@ namespace Realms.Tests.Database
             var managedDictionary = accessor(testObject);
             Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
 
-            Assert.That(managedDictionary, Is.EquivalentTo(testData.GetReferenceDictionary()));
-
             testData.AssertCount(managedDictionary);
+            testData.AssertContainsKey(managedDictionary);
+            testData.AssertKeys(managedDictionary);
+            testData.AssertValues(managedDictionary);
+            testData.AssertFreeze(managedDictionary);
+            testData.AssertIterator(managedDictionary);
+            testData.AssertTryGetValue(managedDictionary);
+            testData.AssertAccessor(managedDictionary);
+            testData.AssertSet(managedDictionary);
+            testData.AssertAdd(managedDictionary);
+            testData.AssertRemove(managedDictionary);
+            testData.AssertNotifications(managedDictionary);
         }
 
         private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
             where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
         {
-            return new TestCaseData<RealmInteger<T>>(data.InitialValues.ToIntegerTuple());
+            return new TestCaseData<RealmInteger<T>>(data.SampleValue, data.InitialValues.ToIntegerTuple());
         }
 
         private static TestCaseData<RealmInteger<T>?> ToInteger<T>(TestCaseData<T?> data)
             where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
         {
-            return new TestCaseData<RealmInteger<T>?>(data.InitialValues.ToIntegerTuple());
+            return new TestCaseData<RealmInteger<T>?>(data.SampleValue, data.InitialValues.ToIntegerTuple());
         }
 
         public class TestCaseData<T>
         {
+            public T SampleValue { get; }
+
             public (string Key, T Value)[] InitialValues { get; }
 
-            public TestCaseData(params (string Key, T Value)[] initialValues)
+            public TestCaseData(T sampleValue, params (string Key, T Value)[] initialValues)
             {
+                SampleValue = sampleValue;
                 InitialValues = initialValues.ToArray();
             }
 
@@ -807,11 +829,222 @@ namespace Realms.Tests.Database
 
             public void AssertCount(IDictionary<string, T> target)
             {
-                Seed(target);
                 var reference = GetReferenceDictionary();
 
                 Assert.That(target.Count, Is.EqualTo(reference.Count));
                 Assert.That(target, Is.EquivalentTo(reference));
+            }
+
+            public void AssertContainsKey(IDictionary<string, T> target)
+            {
+                foreach (var (key, _) in InitialValues)
+                {
+                    Assert.That(target.ContainsKey(key));
+                }
+
+                Assert.That(target.ContainsKey(Guid.NewGuid().ToString()), Is.False);
+            }
+
+            public void AssertAccessor(IDictionary<string, T> target)
+            {
+                foreach (var (key, value) in InitialValues)
+                {
+                    Assert.That(target[key], Is.EqualTo(value));
+                }
+
+                T val;
+                var missingKey = Guid.NewGuid().ToString();
+                Assert.Throws<KeyNotFoundException>(() => val = target[missingKey], $"The given key '{missingKey}' was not present in the dictionary.");
+            }
+
+            public void AssertKeys(IDictionary<string, T> target)
+            {
+                //Assert.That(target.Keys, Is.EquivalentTo(InitialValues.Select(x => x.Key)));
+            }
+
+            public void AssertValues(IDictionary<string, T> target)
+            {
+                Assert.That(target.Values, Is.EquivalentTo(InitialValues.Select(x => x.Value)));
+            }
+
+            public void AssertTryGetValue(IDictionary<string, T> target)
+            {
+                foreach (var (key, value) in InitialValues)
+                {
+                    var hasKey = target.TryGetValue(key, out var storedValue);
+                    Assert.That(hasKey, Is.True);
+                    Assert.That(storedValue, Is.EqualTo(value));
+                }
+            }
+
+            public void AssertAdd(IDictionary<string, T> target)
+            {
+                var expectedCount = target.Count;
+
+                var key1 = Guid.NewGuid().ToString();
+                var value1 = SampleValue;
+
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(key1, value1);
+                });
+
+                expectedCount++;
+
+                Assert.That(target.Count, Is.EqualTo(expectedCount));
+                Assert.That(target[key1], Is.EqualTo(value1));
+
+                var key2 = Guid.NewGuid().ToString();
+                var value2 = target.First().Value;
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(key2, value2);
+                });
+
+                expectedCount++;
+
+                Assert.That(target.Count, Is.EqualTo(expectedCount));
+                Assert.That(target[key2], Is.EqualTo(value2));
+
+                Assert.Throws<ArgumentException>(() =>
+                {
+                    WriteIfNecessary(target, () =>
+                    {
+                        target.Add(key2, SampleValue);
+                    });
+                }, target is RealmDictionary<T> ? $"An item with the key '{key2}' has already been added." : "An item with the same key has already been added.");
+            }
+
+            public void AssertRemove(IDictionary<string, T> target)
+            {
+                var expectedCount = target.Count;
+
+                if (target.Any())
+                {
+                    var key = target.Last().Key;
+                    var value = target.Last().Value;
+
+                    if (!Equals(value, SampleValue))
+                    {
+                        // Removing a KVP with existing key but the wrong value should return false
+                        var didRemoveWrongValue = WriteIfNecessary(target, () =>
+                        {
+                            return target.Remove(new KeyValuePair<string, T>(key, SampleValue));
+                        });
+
+                        Assert.That(didRemoveWrongValue, Is.False);
+                        Assert.That(target.ContainsKey(key), Is.True);
+                        Assert.That(target.Count, Is.EqualTo(expectedCount));
+                    }
+
+                    var didRemoveExisting = WriteIfNecessary(target, () =>
+                    {
+                        return target.Remove(new KeyValuePair<string, T>(key, value));
+                    });
+
+                    expectedCount--;
+
+                    Assert.That(didRemoveExisting, Is.True);
+                    Assert.That(target.ContainsKey(key), Is.False);
+                    Assert.That(target.Count, Is.EqualTo(expectedCount));
+                }
+
+                if (target.Any())
+                {
+                    var key = target.First().Key;
+                    var didRemoveExisting = WriteIfNecessary(target, () =>
+                    {
+                        return target.Remove(key);
+                    });
+
+                    expectedCount--;
+
+                    Assert.That(didRemoveExisting, Is.True);
+                    Assert.That(target.ContainsKey(key), Is.False);
+                    Assert.That(target.Count, Is.EqualTo(expectedCount));
+                }
+
+                var newKey = Guid.NewGuid().ToString();
+                var didRemoveNonExisting = WriteIfNecessary(target, () =>
+                {
+                    return target.Remove(newKey);
+                });
+
+                Assert.That(didRemoveNonExisting, Is.False);
+                Assert.That(target.ContainsKey(newKey), Is.False);
+                Assert.That(target.Count, Is.EqualTo(expectedCount));
+
+                didRemoveNonExisting = WriteIfNecessary(target, () =>
+                {
+                    return target.Remove(new KeyValuePair<string, T>(newKey, SampleValue));
+                });
+
+                Assert.That(didRemoveNonExisting, Is.False);
+                Assert.That(target.ContainsKey(newKey), Is.False);
+                Assert.That(target.Count, Is.EqualTo(expectedCount));
+            }
+
+            public void AssertSet(IDictionary<string, T> target)
+            {
+                var expectedCount = target.Count;
+
+                if (target.Any())
+                {
+                    var key = target.First().Key;
+                    WriteIfNecessary(target, () =>
+                    {
+                        target[key] = SampleValue;
+                    });
+
+                    Assert.That(target.ContainsKey(key));
+                    Assert.That(target[key], Is.EqualTo(SampleValue));
+                    Assert.That(target.Count, Is.EqualTo(expectedCount));
+                }
+
+                var newKey = Guid.NewGuid().ToString();
+                WriteIfNecessary(target, () =>
+                {
+                    target[newKey] = SampleValue;
+                });
+
+                expectedCount++;
+
+                Assert.That(target.ContainsKey(newKey));
+                Assert.That(target[newKey], Is.EqualTo(SampleValue));
+                Assert.That(target.Count, Is.EqualTo(expectedCount));
+            }
+
+            public void AssertIterator(IDictionary<string, T> target)
+            {
+                var referenceDict = GetReferenceDictionary();
+
+                foreach (var kvp in target)
+                {
+                    Assert.That(referenceDict.ContainsKey(kvp.Key));
+                    Assert.That(referenceDict[kvp.Key], Is.EqualTo(kvp.Value));
+
+                    referenceDict.Remove(kvp.Key);
+                }
+
+                Assert.That(referenceDict, Is.Empty);
+            }
+
+            public void AssertNotifications(IDictionary<string, T> target)
+            {
+
+            }
+
+            public void AssertFreeze(IDictionary<string, T> target)
+            {
+                if (target is RealmDictionary<T> realmDict)
+                {
+
+                }
+                else
+                {
+                    // We can't freeze unmanaged dictionaries.
+                    Assert.Throws<RealmException>(() => target.Freeze());
+                }
             }
 
             public void Seed(IDictionary<string, T> target, IEnumerable<(string Key, T Value)> values = null)
@@ -829,14 +1062,46 @@ namespace Realms.Tests.Database
             private static void WriteIfNecessary(IDictionary<string, T> collection, Action writeAction)
             {
                 Transaction transaction = null;
-                if (collection is RealmDictionary<T> realmDictionary)
+                try
                 {
-                    transaction = realmDictionary.Realm.BeginWrite();
+                    if (collection is RealmDictionary<T> realmDictionary)
+                    {
+                        transaction = realmDictionary.Realm.BeginWrite();
+                    }
+
+                    writeAction();
+
+                    transaction?.Commit();
                 }
+                catch
+                {
+                    transaction?.Rollback();
+                    throw;
+                }
+            }
 
-                writeAction();
+            private static TResult WriteIfNecessary<TResult>(IDictionary<string, T> collection, Func<TResult> writeFunc)
+            {
+                Transaction transaction = null;
 
-                transaction?.Commit();
+                try
+                {
+                    if (collection is RealmDictionary<T> realmDictionary)
+                    {
+                        transaction = realmDictionary.Realm.BeginWrite();
+                    }
+
+                    var result = writeFunc();
+
+                    transaction?.Commit();
+
+                    return result;
+                }
+                catch
+                {
+                    transaction?.Rollback();
+                    throw;
+                }
             }
 
             public IDictionary<string, T> GetReferenceDictionary() => InitialValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

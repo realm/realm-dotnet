@@ -74,7 +74,11 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_remove", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool remove(DictionaryHandle handle, PrimitiveValue value, out NativeException ex);
+            public static extern bool remove(DictionaryHandle handle, PrimitiveValue key, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_remove_value", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool remove(DictionaryHandle handle, PrimitiveValue key, PrimitiveValue value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_values", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_values(DictionaryHandle handle, out NativeException ex);
@@ -233,12 +237,28 @@ namespace Realms
             return result;
         }
 
-        public unsafe bool Remove(string key)
+        public bool Remove(string key)
         {
             RealmValue keyValue = key;
             var (primitiveKey, keyHandles) = keyValue.ToNative();
 
             var result = NativeMethods.remove(this, primitiveKey, out var nativeException);
+            keyHandles?.Dispose();
+            nativeException.ThrowIfNecessary();
+
+            return result;
+        }
+
+        public bool Remove(string key, in RealmValue value)
+        {
+            var (primitiveValue, valueHandles) = value.ToNative();
+
+            RealmValue keyValue = key;
+            var (primitiveKey, keyHandles) = keyValue.ToNative();
+
+            var result = NativeMethods.remove(this, primitiveKey, primitiveValue, out var nativeException);
+
+            valueHandles?.Dispose();
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
