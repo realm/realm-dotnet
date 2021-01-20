@@ -381,7 +381,6 @@ namespace Realms
                     _states.Value.Remove(Config.DatabasePath);
                 }
 
-                _state.DisposeIfNecessary();
                 _state = null;
                 SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
             }
@@ -1449,12 +1448,6 @@ namespace Realms
                         }
                     }
                 }
-            }
-
-            public void DisposeIfNecessary()
-            {
-                if (!GetLiveRealms().Any())
-                    GCHandle.Free();
             }
         }
 
