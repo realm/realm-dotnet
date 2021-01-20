@@ -47,7 +47,7 @@ namespace Realms
             public unsafe delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, int error_code, byte* message_buf, IntPtr message_len);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void FreeGCHandleCallback(IntPtr handle);
+            public delegate void OnBindingContextDestructedCallback(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open(Configuration configuration,
@@ -144,7 +144,7 @@ namespace Realms
             public static extern void get_schema(SharedRealmHandle sharedRealm, IntPtr callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback, OpenRealmCallback openCallback, FreeGCHandleCallback freeGcHandleCallback);
+            public static extern void install_callbacks(NotifyRealmCallback notifyRealmCallback, GetNativeSchemaCallback nativeSchemaCallback, OpenRealmCallback openCallback, OnBindingContextDestructedCallback contextDestructedCallback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -167,14 +167,14 @@ namespace Realms
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
-            NativeMethods.FreeGCHandleCallback freeGcHandle = FreeGCHandle;
+            NativeMethods.OnBindingContextDestructedCallback onBindingContextDestructed = OnBindingContextDestructed;
 
             GCHandle.Alloc(notifyRealm);
             GCHandle.Alloc(getNativeSchema);
             GCHandle.Alloc(openRealm);
-            GCHandle.Alloc(freeGcHandle);
+            GCHandle.Alloc(onBindingContextDestructed);
 
-            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, freeGcHandle);
+            NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, onBindingContextDestructed);
         }
 
         [Preserve]
@@ -425,12 +425,13 @@ namespace Realms
             }
         }
 
-        [MonoPInvokeCallbackAttribute(typeof(NativeMethods.FreeGCHandleCallback))]
-        public static void FreeGCHandle(IntPtr handle)
+        [MonoPInvokeCallbackAttribute(typeof(NativeMethods.OnBindingContextDestructedCallback))]
+        public static void OnBindingContextDestructed(IntPtr handle)
         {
             if (handle != IntPtr.Zero)
             {
-                GCHandle.FromIntPtr(handle).Free();
+                var gch = GCHandle.FromIntPtr(handle);
+                ((Realm.State)gch.Target).Dispose();
             }
         }
 
