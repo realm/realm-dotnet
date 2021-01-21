@@ -198,6 +198,7 @@ namespace Realms
 
         #endregion static
 
+        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "A realm is responsible for disposing of state as it could be shared")]
         private State _state;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
