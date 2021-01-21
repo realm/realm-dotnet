@@ -18,7 +18,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -71,6 +73,18 @@ namespace Realms.Tests.Database
         public void RealmDictionary_WhenManaged_NullableBool(TestCaseData<bool?> testData)
         {
             RunManagedTests(o => o.NullableBooleanDictionary, testData);
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Bool_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.BooleanDictionary, BoolTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableBool_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableBooleanDictionary, NullableBoolTestValues().Last());
         }
 
         #endregion
@@ -144,6 +158,30 @@ namespace Realms.Tests.Database
         public void RealmDictionary_WhenManaged_NullableByteCounter(TestCaseData<byte?> testData)
         {
             RunManagedTests(o => o.NullableByteCounterDictionary, ToInteger(testData));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Byte_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.ByteDictionary, ByteTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableByte_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableByteDictionary, NullableByteTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_ByteCounter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.ByteCounterDictionary, ToInteger(ByteTestValues().Last()));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableByteCounter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableByteCounterDictionary, ToInteger(NullableByteTestValues().Last()));
         }
 
         #endregion
@@ -221,6 +259,30 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableInt16CounterDictionary, ToInteger(testData));
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_Int16_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int16Dictionary, Int16TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt16_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt16Dictionary, NullableInt16TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Int16Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int16CounterDictionary, ToInteger(Int16TestValues().Last()));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt16Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt16CounterDictionary, ToInteger(NullableInt16TestValues().Last()));
+        }
+
         #endregion
 
         #region Int32
@@ -294,6 +356,30 @@ namespace Realms.Tests.Database
         public void RealmDictionary_WhenManaged_NullableInt32Counter(TestCaseData<int?> testData)
         {
             RunManagedTests(o => o.NullableInt32CounterDictionary, ToInteger(testData));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Int32_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int32Dictionary, Int32TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt32_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt32Dictionary, NullableInt32TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Int32Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int32CounterDictionary, ToInteger(Int32TestValues().Last()));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt32Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt32CounterDictionary, ToInteger(NullableInt32TestValues().Last()));
         }
 
         #endregion
@@ -371,6 +457,29 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableInt64CounterDictionary, ToInteger(testData));
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_Int64_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int64Dictionary, Int64TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt64_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt64Dictionary, NullableInt64TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Int64Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Int64CounterDictionary, ToInteger(Int64TestValues().Last()));
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableInt64Counter_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableInt64CounterDictionary, ToInteger(NullableInt64TestValues().Last()));
+        }
         #endregion
 
         #region Float
@@ -420,6 +529,18 @@ namespace Realms.Tests.Database
         public void RealmDictionary_WhenManaged_NullableFloat(TestCaseData<float?> testData)
         {
             RunManagedTests(o => o.NullableSingleDictionary, testData);
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Float_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.SingleDictionary, FloatTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableFloat_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableSingleDictionary, NullableFloatTestValues().Last());
         }
 
         #endregion
@@ -475,6 +596,18 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableDoubleDictionary, testData);
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_Double_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.DoubleDictionary, DoubleTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableDouble_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableDoubleDictionary, NullableDoubleTestValues().Last());
+        }
+
         #endregion
 
         #region Decimal
@@ -528,6 +661,18 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableDecimalDictionary, testData);
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_Decimal_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.DecimalDictionary, DecimalTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableDecimal_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableDecimalDictionary, NullableDecimalTestValues().Last());
+        }
+
         #endregion
 
         #region Decimal128
@@ -579,6 +724,18 @@ namespace Realms.Tests.Database
         public void RealmDictionary_WhenManaged_NullableDecimal128(TestCaseData<Decimal128?> testData)
         {
             RunManagedTests(o => o.NullableDecimal128Dictionary, testData);
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Decimal128_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.Decimal128Dictionary, Decimal128TestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableDecimal128_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableDecimal128Dictionary, NullableDecimal128TestValues().Last());
         }
 
         #endregion
@@ -638,6 +795,18 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableObjectIdDictionary, testData);
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_ObjectId_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.ObjectIdDictionary, ObjectIdTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableObjectId_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableObjectIdDictionary, NullableObjectIdTestValues().Last());
+        }
+
         #endregion
 
         #region DateTimeOffset
@@ -694,6 +863,18 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableDateTimeOffsetDictionary, testData);
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_DateTimeOffset_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.DateTimeOffsetDictionary, DateTimeOffsetTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableDateTimeOffset_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableDateTimeOffsetDictionary, NullableDateTimeOffsetTestValues().Last());
+        }
+
         #endregion
 
         #region String
@@ -746,56 +927,89 @@ namespace Realms.Tests.Database
             RunManagedTests(o => o.NullableStringDictionary, testData);
         }
 
+        [Test]
+        public void RealmDictionary_WhenManaged_String_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.StringDictionary, StringTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableString_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableStringDictionary, NullableStringTestValues().Last());
+        }
+
         #endregion
 
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
-            var testObject = new DictionariesObject();
-            var dictionary = accessor(testObject);
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var testObject = new DictionariesObject();
+                var dictionary = accessor(testObject);
 
-            testData.Seed(dictionary);
+                testData.Seed(dictionary);
 
+                await RunTestsCore(testData, dictionary);
+            });
+        }
+
+        private void RunManagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var testObject = new DictionariesObject();
+                var dictionary = accessor(testObject);
+
+                testData.Seed(dictionary);
+
+                _realm.Write(() =>
+                {
+                    _realm.Add(testObject);
+                });
+
+                var managedDictionary = accessor(testObject);
+                Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
+
+                await RunTestsCore(testData, managedDictionary);
+            });
+        }
+
+        private void RunManagedNotificationsTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var testObject = new DictionariesObject();
+                var dictionary = accessor(testObject);
+
+                testData.Seed(dictionary);
+
+                _realm.Write(() =>
+                {
+                    _realm.Add(testObject);
+                });
+
+                var managedDictionary = accessor(testObject);
+                Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
+
+                await testData.AssertNotifications_Realm(managedDictionary);
+                await testData.AssertNotifications_CollectionChanged(managedDictionary);
+            });
+        }
+
+        private static async Task RunTestsCore<T>(TestCaseData<T> testData, IDictionary<string, T> dictionary)
+        {
             testData.AssertCount(dictionary);
             testData.AssertContainsKey(dictionary);
             testData.AssertKeys(dictionary);
             testData.AssertValues(dictionary);
-            testData.AssertFreeze(dictionary);
             testData.AssertIterator(dictionary);
             testData.AssertTryGetValue(dictionary);
             testData.AssertAccessor(dictionary);
             testData.AssertSet(dictionary);
             testData.AssertAdd(dictionary);
             testData.AssertRemove(dictionary);
-            testData.AssertNotifications(dictionary);
-        }
-
-        private void RunManagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
-        {
-            var testObject = new DictionariesObject();
-            var dictionary = accessor(testObject);
-
-            testData.Seed(dictionary);
-
-            _realm.Write(() =>
-            {
-                _realm.Add(testObject);
-            });
-
-            var managedDictionary = accessor(testObject);
-            Assert.That(dictionary, Is.Not.SameAs(managedDictionary));
-
-            testData.AssertCount(managedDictionary);
-            testData.AssertContainsKey(managedDictionary);
-            testData.AssertKeys(managedDictionary);
-            testData.AssertValues(managedDictionary);
-            testData.AssertFreeze(managedDictionary);
-            testData.AssertIterator(managedDictionary);
-            testData.AssertTryGetValue(managedDictionary);
-            testData.AssertAccessor(managedDictionary);
-            testData.AssertSet(managedDictionary);
-            testData.AssertAdd(managedDictionary);
-            testData.AssertRemove(managedDictionary);
-            testData.AssertNotifications(managedDictionary);
+            await testData.AssertFreeze(dictionary);
         }
 
         private static TestCaseData<RealmInteger<T>> ToInteger<T>(TestCaseData<T> data)
@@ -1029,16 +1243,192 @@ namespace Realms.Tests.Database
                 Assert.That(referenceDict, Is.Empty);
             }
 
-            public void AssertNotifications(IDictionary<string, T> target)
+            public async Task AssertNotifications_Realm(IDictionary<string, T> target)
             {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
 
+                Seed(target);
+
+                var callbacks = new List<ChangeSet>();
+                using var token = target.SubscribeForNotifications((collection, changes, error) =>
+                {
+                    Assert.That(error, Is.Null);
+
+                    if (changes != null)
+                    {
+                        callbacks.Add(changes);
+                    }
+                });
+
+                await AssertNotificationsCore(target, callbacks, changes =>
+                {
+                    Assert.That(changes.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changes.ModifiedIndices, Is.Empty);
+                    Assert.That(changes.NewModifiedIndices, Is.Empty);
+                    Assert.That(changes.DeletedIndices, Is.Empty);
+                    Assert.That(changes.Moves, Is.Empty);
+
+                    return changes.InsertedIndices[0];
+                }, changes =>
+                {
+                    Assert.That(changes.InsertedIndices, Is.Empty);
+                    Assert.That(changes.ModifiedIndices, Is.Empty);
+                    Assert.That(changes.NewModifiedIndices, Is.Empty);
+                    Assert.That(changes.DeletedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changes.Moves, Is.Empty);
+
+                    return changes.DeletedIndices[0];
+                });
             }
 
-            public void AssertFreeze(IDictionary<string, T> target)
+            public async Task AssertNotifications_CollectionChanged(IDictionary<string, T> target)
             {
-                if (target is RealmDictionary<T> realmDict)
-                {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
 
+                Seed(target);
+
+                var callbacks = new List<NotifyCollectionChangedEventArgs>();
+                target.AsRealmCollection().CollectionChanged += HandleCollectionChanged;
+
+                await AssertNotificationsCore(target, callbacks, changes =>
+                {
+                    Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+                    Assert.That(changes.NewItems.Count, Is.EqualTo(1));
+
+                    return changes.NewStartingIndex;
+                }, changes =>
+                {
+                    Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+                    Assert.That(changes.OldItems.Count, Is.EqualTo(1));
+
+                    return changes.OldStartingIndex;
+                });
+
+                target.AsRealmCollection().CollectionChanged -= HandleCollectionChanged;
+
+                void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                {
+                    Assert.That(sender, Is.EqualTo(target));
+
+                    callbacks.Add(e);
+                }
+            }
+
+            private async Task AssertNotificationsCore<TArgs>(IDictionary<string, T> target, List<TArgs> callbacks, Func<TArgs, int> assertInsertion, Func<TArgs, int> assertDeletion)
+            {
+                var newKey = Guid.NewGuid().ToString();
+                WriteIfNecessary(target, () =>
+                {
+                    target.Add(newKey, SampleValue);
+                });
+
+                var changes = await EnsureRefreshed(1);
+                var insertedIndex = assertInsertion(changes);
+
+                Assert.That(target.ElementAt(insertedIndex).Key, Is.EqualTo(newKey));
+                Assert.That(target.ElementAt(insertedIndex).Value, Is.EqualTo(SampleValue));
+
+                Assert.That(target.AsRealmCollection()[insertedIndex].Key, Is.EqualTo(newKey));
+                Assert.That(target.AsRealmCollection()[insertedIndex].Value, Is.EqualTo(SampleValue));
+
+                WriteIfNecessary(target, () =>
+                {
+                    target.Remove(newKey);
+                });
+
+                changes = await EnsureRefreshed(2);
+
+                var deletedIndex = assertDeletion(changes);
+                Assert.That(deletedIndex, Is.EqualTo(insertedIndex));
+
+                //// Test modification of an existing element. This is blocked on https://github.com/realm/realm-core/issues/4318
+                //// var indexToUpdate = -1;
+                //// while (true)
+                //// {
+                ////     indexToUpdate = TestHelpers.Random.Next(0, target.Count);
+                ////     if (!Equals(target.AsRealmCollection()[indexToUpdate].Value, SampleValue))
+                ////     {
+                ////         break;
+                ////     }
+                //// }
+                ////
+                //// var keyToUpdate = target.ElementAt(indexToUpdate).Key;
+                //// WriteIfNecessary(target, () =>
+                //// {
+                ////     target[keyToUpdate] = SampleValue;
+                //// });
+                ////
+                //// target.AsRealmCollection().Realm.Refresh();
+                //// Assert.That(callbacks.Count, Is.EqualTo(3));
+                ////
+                //// changes = callbacks[2];
+                //// Assert.That(changes.ModifiedIndices.Length, Is.EqualTo(1));
+                //// Assert.That(changes.NewModifiedIndices.Length, Is.EqualTo(1));
+                //// Assert.That(changes.InsertedIndices, Is.Empty);
+                //// Assert.That(changes.DeletedIndices, Is.Empty);
+                //// Assert.That(changes.Moves, Is.Empty);
+                ////
+                //// Assert.That(changes.ModifiedIndices[0], Is.EqualTo(indexToUpdate));
+                //// Assert.That(target.ElementAt(changes.NewModifiedIndices[0]).Key, Is.EqualTo(keyToUpdate));
+                //// Assert.That(target.ElementAt(changes.NewModifiedIndices[0]).Value, Is.EqualTo(SampleValue));
+                ////
+                //// Assert.That(target.AsRealmCollection()[changes.NewModifiedIndices[0]].Key, Is.EqualTo(newKey));
+                //// Assert.That(target.AsRealmCollection()[changes.NewModifiedIndices[0]].Value, Is.EqualTo(SampleValue));
+
+                async Task<TArgs> EnsureRefreshed(int expectedCallbackCount)
+                {
+                    target.AsRealmCollection().Realm.Refresh();
+                    await TestHelpers.WaitForConditionAsync(() => callbacks.Count == expectedCallbackCount);
+
+                    Assert.That(callbacks.Count, Is.EqualTo(expectedCallbackCount));
+
+                    return callbacks[expectedCallbackCount - 1];
+                }
+            }
+
+            public async Task AssertFreeze(IDictionary<string, T> target)
+            {
+                Seed(target);
+
+                if (target is RealmDictionary<T>)
+                {
+                    var frozenDict = target.Freeze();
+                    var referenceDict = GetReferenceDictionary();
+
+                    Assert.That(frozenDict, Is.EquivalentTo(referenceDict));
+                    Assert.That(frozenDict, Is.TypeOf<RealmDictionary<T>>());
+
+                    var frozenCollection = frozenDict.AsRealmCollection();
+                    Assert.That(frozenCollection.IsValid);
+                    Assert.That(frozenCollection.IsFrozen);
+
+                    Assert.Throws<RealmFrozenException>(() =>
+                    {
+                        WriteIfNecessary(frozenDict, () =>
+                        {
+                            frozenDict.Add(Guid.NewGuid().ToString(), SampleValue);
+                        });
+                    });
+
+                    await Task.Run(() =>
+                    {
+                        // Ensure the frozen collection can be passed between threads
+                        Assert.That(frozenDict, Is.EquivalentTo(referenceDict));
+                    });
+
+                    var newKey = Guid.NewGuid().ToString();
+                    WriteIfNecessary(target, () =>
+                    {
+                        target.Add(newKey, SampleValue);
+                    });
+
+                    Assert.That(frozenDict.ContainsKey(newKey), Is.False);
+                    Assert.That(frozenDict.Count, Is.EqualTo(target.Count - 1));
+
+                    WriteIfNecessary(target, () =>
+                    {
+                        target.Remove(newKey);
+                    });
                 }
                 else
                 {

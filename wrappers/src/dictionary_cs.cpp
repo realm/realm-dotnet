@@ -134,11 +134,11 @@ REALM_EXPORT void realm_dictionary_destroy(object_store::Dictionary* dictionary)
     delete dictionary;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Set* set, void* managed_set, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, ManagedNotificationCallback callback, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, callback, [set](CollectionChangeCallback callback) {
-            return set->add_notification_callback(callback);
+        return subscribe_for_notifications(managed_dict, callback, [dictionary](CollectionChangeCallback callback) {
+            return dictionary->add_notification_callback(callback);
         });
     });
 }
