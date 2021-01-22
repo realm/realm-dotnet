@@ -9,6 +9,7 @@
 ### Enhancements
 * Add support for the `GUID` data type. It can be used as primary key and is indexable. (PR [#2120](https://github.com/realm/realm-dotnet/pull/2120))
 * Replaced the implementation of the string query parser (the one used for [`realm.All().Filter("some-string-query")`](https://docs.mongodb.com/realm-sdks/dotnet/10.0.0-beta.3/reference/Realms.CollectionExtensions.html#Realms_CollectionExtensions_Filter__1_System_Linq_IQueryable___0__System_String_)). This results in ~5% reduction of the size of the native binary while keeping the query execution times on par with the old parser. (PR [#2185](https://github.com/realm/realm-dotnet/pull/2185), Core upgrade)
+* Added support for value substitution in string based queries. So [`realm.All<T>().Filter("field1 = $0 && field2 = $1", value1, value2)`](https://github.com/realm/realm-js/blob/master/docs/tutorials/query-language.md) is now possible
 
 ### Compatibility
 * Realm Studio: 10.0.0 or later.
