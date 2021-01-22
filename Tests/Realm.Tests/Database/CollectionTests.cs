@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 
@@ -412,6 +413,194 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Bool_string_based_query() => Generic_string_based_query<BoolPropertyObject>();
+
+        [Test]
+        public void Char_string_based_query() => Generic_string_based_query<CharPropertyObject>();
+
+        [Test]
+        public void SingleByte_string_based_query() => Generic_string_based_query<SingleBytePropertyObject>();
+
+        [Test]
+        public void Int16_string_based_query() => Generic_string_based_query<Int16PropertyObject>();
+
+        [Test]
+        public void Int_string_based_query() => Generic_string_based_query<IntPropertyObject>();
+
+        [Test]
+        public void Int64_string_based_query() => Generic_string_based_query<Int64PropertyObject>();
+
+        [Test]
+        public void Float_string_based_query() => Generic_string_based_query<FloatPropertyObject>();
+
+        [Test]
+        public void Double_string_based_query() => Generic_string_based_query<DoublePropertyObject>();
+
+        [Test]
+        public void Date_string_based_query() => Generic_string_based_query<DatePropertyObject>();
+
+        [Test]
+        public void Decimal_string_based_query() => Generic_string_based_query<DecimalPropertyObject>();
+
+        [Test]
+        public void ObjectId_string_based_query() => Generic_string_based_query<ObjectIdPropertyObject>();
+
+        [Test]
+        public void Guid_string_based_query() => Generic_string_based_query<GuidPropertyObject>();
+
+        [Test]
+        public void Byte_string_based_query() => Generic_string_based_query<BytePropertyObject>();
+
+        [Test]
+        public void String_string_based_query() => Generic_string_based_query<StringPropertyObject>();
+
+        [Test]
+        public void Object_string_based_query() => Generic_string_based_query<ObjectPropertyObject>();
+
+        [Test]
+        public void Multiple_values_string_based_query() => Generic_string_based_query<MultiPropertyObject>();
+
+        private static InfoContainer[] InitArray()
+        {
+            var intProp = new IntPropertyObject { Int = 42 };
+
+            return new InfoContainer[]
+            {
+                new InfoContainer
+                (
+                    new BoolPropertyObject { Bool = true },
+                    "Bool == $0",
+                    true
+                ),
+                new InfoContainer
+                (
+                    new CharPropertyObject { Char = 'c' },
+                    "Char == $0",
+                    'c'
+                ),
+                new InfoContainer
+                (
+                    new SingleBytePropertyObject { Byte = 0x5 },
+                    "Byte == $0",
+                    0x5
+                ),
+                new InfoContainer
+                (
+                    new Int16PropertyObject { Short = 6 },
+                    "Short == $0",
+                    6
+                ),
+                new InfoContainer
+                (
+                    new IntPropertyObject { Int = 5 },
+                    "Int == $0",
+                    5
+                ),
+                new InfoContainer
+                (
+                    new Int64PropertyObject { Long = 5L },
+                    "Long == $0",
+                    5L
+                ),
+                new InfoContainer
+                (
+                    new FloatPropertyObject { Float = 5.0f },
+                    "Float == $0",
+                    5.0f
+                ),
+                new InfoContainer
+                (
+                    new DoublePropertyObject { Double = 5.0 },
+                    "Double == $0",
+                    5.0
+                ),
+                new InfoContainer
+                (
+                    new DatePropertyObject { Date = new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
+                    "Date == $0",
+                    new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero)
+                ),
+                new InfoContainer
+                (
+                    new DecimalPropertyObject { Decimal = new Decimal128(564.42343424323) },
+                    "Decimal == $0",
+                    new Decimal128(564.42343424323)
+                ),
+                new InfoContainer
+                (
+                    new ObjectIdPropertyObject { Id = new ObjectId("5f64cd9f1691c361b2451d96") },
+                    "Id == $0",
+                    new ObjectId("5f64cd9f1691c361b2451d96")
+                ),
+                new InfoContainer
+                (
+                    new GuidPropertyObject { Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e") },
+                    "Id == $0",
+                    new Guid("0f8fad5b-d9cb-469f-a165-70867728950e")
+                ),
+                new InfoContainer
+                (
+                    new BytePropertyObject { Data = new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 } },
+                    "Data == $0",
+                    new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }
+                ),
+                new InfoContainer
+                (
+                    new StringPropertyObject { String = "hello world" },
+                    "String == $0",
+                    "hello world"
+                ),
+                new InfoContainer
+                (
+                    new ObjectPropertyObject { Object = intProp },
+                    "Object == $0",
+                    intProp
+                ),
+                new InfoContainer
+                (
+                    new MultiPropertyObject
+                    {
+                        String = "hello pp",
+                        Int = 9,
+                        Float = 21.0f,
+                        Char = 'p'
+                    },
+                    "Int == $0 && Float == $1 && Char == $2 && String == $3",
+                    9, 21.0f, 'p', "hello pp"
+                )
+            };
+        }
+
+        private void Generic_string_based_query<T>()
+            where T : RealmObject
+        {
+            var listToStringQuery = InitArray();
+
+            if (listToStringQuery.Length < 1)
+            {
+                Assert.Fail("listToStringQuery is empty. Nothing to test.");
+            }
+
+            InfoContainer foundObj = listToStringQuery[0];
+            _realm.Write(() =>
+            {
+                for (int i = 0; i < listToStringQuery.Length; ++i)
+                {
+                    var currObj = listToStringQuery[i];
+                    if (typeof(T) == currObj.Obj.GetType())
+                    {
+                        foundObj = currObj;
+                    }
+
+                    _realm.Add(currObj.Obj);
+                }
+            });
+
+            var query = _realm.All<T>().Filter(foundObj.QueryString, foundObj.Value);
+            Assert.That(query.Single().Equals(foundObj.Obj));
+        }
+
+        [Test]
         public void Results_GetFiltered_List()
         {
             _realm.Write(() =>
@@ -713,7 +902,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "Betazaurus" });
             });
 
-            var query = _realm.All<Dog>().Where(d => d.Name.StartsWith("B"));
+            var query = _realm.All<Dog>().Where(d => d.Name.StartsWith("B", StringComparison.Ordinal));
             var frozenQuery = Freeze(query);
 
             Assert.That(query.AsRealmCollection().IsValid);
@@ -900,7 +1089,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "Lasse" });
             });
 
-            var frozenQuery = _realm.All<Dog>().Where(d => d.Name.StartsWith("R")).Freeze();
+            var frozenQuery = _realm.All<Dog>().Where(d => d.Name.StartsWith("R", StringComparison.Ordinal)).Freeze();
             Assert.That(frozenQuery.Count(), Is.EqualTo(2));
 
             _realm.Write(() =>

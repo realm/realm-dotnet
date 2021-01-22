@@ -134,10 +134,9 @@ REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint1
                 vec_args.push_back(from_capi(arguments[i]));
             }
             else {
-                vec_args.push_back(from_capi(arguments[i].link.object, true));
+                vec_args.push_back(from_capi(arguments[i].link.object, false));
             }
         }
-
 
         Query parsed_query = results.get_table()->query(query_string, vec_args , mapping);
         DescriptorOrdering new_order = results.get_descriptor_ordering();

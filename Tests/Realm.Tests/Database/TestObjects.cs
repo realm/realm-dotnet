@@ -488,9 +488,104 @@ namespace Realms.Tests
         public IList<IntPropertyObject> Items { get; }
     }
 
+    public struct InfoContainer
+    {
+        public RealmObject Obj;
+        public string QueryString;
+        public RealmValue[] Value;
+
+        public InfoContainer(RealmObject obj, string query, params RealmValue[] args)
+        {
+            Obj = obj;
+            QueryString = query;
+            Value = args;
+        }
+    }
+
+    public class BoolPropertyObject : RealmObject
+    {
+        public bool Bool { get; set; }
+    }
+
+    public class CharPropertyObject : RealmObject
+    {
+        public char Char { get; set; }
+    }
+
+    public class SingleBytePropertyObject : RealmObject
+    {
+        public byte Byte { get; set; }
+    }
+
+    public class Int16PropertyObject : RealmObject
+    {
+        public short Short { get; set; }
+    }
+
     public class IntPropertyObject : RealmObject
     {
         public int Int { get; set; }
+    }
+
+    public class Int64PropertyObject : RealmObject
+    {
+        public long Long { get; set; }
+    }
+
+    public class FloatPropertyObject : RealmObject
+    {
+        public float Float { get; set; }
+    }
+
+    public class DoublePropertyObject : RealmObject
+    {
+        public double Double { get; set; }
+    }
+
+    public class DatePropertyObject : RealmObject
+    {
+        public DateTimeOffset Date { get; set; }
+    }
+
+    public class DecimalPropertyObject : RealmObject
+    {
+        public Decimal128 Decimal { get; set; }
+    }
+
+    public class ObjectIdPropertyObject : RealmObject
+    {
+        public ObjectId Id { get; set; }
+    }
+
+    public class GuidPropertyObject : RealmObject
+    {
+        public Guid Id { get; set; }
+    }
+
+    public class BytePropertyObject : RealmObject
+    {
+        public byte[] Data { get; set; }
+    }
+
+    public class StringPropertyObject : RealmObject
+    {
+        public string String { get; set; }
+    }
+
+    public class ObjectPropertyObject : RealmObject
+    {
+        public IntPropertyObject Object { get; set; }
+    }
+
+    public class MultiPropertyObject : RealmObject
+    {
+        public string String { get; set; }
+
+        public int Int { get; set; }
+
+        public float Float { get; set; }
+
+        public char Char { get; set; }
     }
 
     public class RecursiveBacklinksObject : RealmObject

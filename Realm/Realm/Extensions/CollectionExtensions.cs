@@ -160,6 +160,7 @@ namespace Realms
         /// A Queryable collection, obtained by calling <see cref="Realm.All{T}"/>.
         /// </param>
         /// <param name="predicate">The predicate that will be applied.</param>
+        /// <param name="arguments">Comma separated values used for substitution in the predicate.</param>
         /// <returns>A queryable observable collection of objects that match the predicate.</returns>
         /// <remarks>
         /// This method can be used in combination with LINQ filtering, but it is strongly recommended
