@@ -941,6 +941,70 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        #region Binary
+
+        public static IEnumerable<TestCaseData<byte[]>> BinaryTestValues()
+        {
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>());
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("123", new byte[] { 1, 2, 3 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("123", new byte[] { 4, 5, 6 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", new byte[] { 2, 54, 98, 123 }), ("b", new byte[] { byte.MinValue, byte.MaxValue, 0 }), ("c", new byte[] { 1, 1, 1 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", new byte[] { 1 }), ("b", Array.Empty<byte>()), ("c", new byte[] { 0 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("z", new byte[] { 11, 22, 33, 44, 55, 66, 77, 88, 99 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("zero", new byte[] { byte.MinValue }), ("one", new byte[] { byte.MaxValue }), ("z", new byte[] { 99, 77, 55, 33, 128 }));
+        }
+
+        public static IEnumerable<TestCaseData<byte[]>> NullableBinaryTestValues()
+        {
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>());
+            yield return new TestCaseData<byte[]>(null, ("123", new byte[] { 1, 2, 3 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("123", new byte[] { 4, 5, 6 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("null", null));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", new byte[] { byte.MinValue, byte.MaxValue, 0 }), ("b", null), ("c", new byte[] { 1, 1, 1 }));
+            yield return new TestCaseData<byte[]>(null, ("a", new byte[] { 1 }), ("b", null), ("c", Array.Empty<byte>()), ("d", new byte[] { 0 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("m", null), ("z", new byte[] { 11, 22, 33, 44, 55, 66, 77, 88, 99 }));
+            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("zero", new byte[] { byte.MinValue }), ("null", null), ("one", new byte[] { byte.MaxValue }), ("z", new byte[] { 99, 77, 55, 33, 128 }));
+        }
+
+        [TestCaseSource(nameof(BinaryTestValues))]
+        public void RealmDictionary_WhenUnmanaged_Binary(TestCaseData<byte[]> testData)
+        {
+            RunUnmanagedTests(o => o.BinaryDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(NullableBinaryTestValues))]
+        public void RealmDictionary_WhenUnmanaged_NullableBinary(TestCaseData<byte[]> testData)
+        {
+            RunUnmanagedTests(o => o.NullableBinaryDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(BinaryTestValues))]
+        public void RealmDictionary_WhenManaged_Binary(TestCaseData<byte[]> testData)
+        {
+            RunManagedTests(o => o.BinaryDictionary, testData);
+        }
+
+        [TestCaseSource(nameof(NullableBinaryTestValues))]
+        public void RealmDictionary_WhenManaged_NullableBinary(TestCaseData<byte[]> testData)
+        {
+            RunManagedTests(o => o.NullableBinaryDictionary, testData);
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_Binary_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.BinaryDictionary, BinaryTestValues().Last());
+        }
+
+        [Test]
+        public void RealmDictionary_WhenManaged_NullableBinary_EmitsNotifications()
+        {
+            RunManagedNotificationsTests(o => o.NullableBinaryDictionary, NullableBinaryTestValues().Last());
+        }
+
+        #endregion
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -973,6 +1037,8 @@ namespace Realms.Tests.Database
 
                 await RunTestsCore(testData, managedDictionary);
                 await testData.AssertThreadSafeReference(managedDictionary);
+
+                testData.AssertNullKeys(managedDictionary);
             });
         }
 
@@ -1132,35 +1198,35 @@ namespace Realms.Tests.Database
 
             public void AssertRemove(IDictionary<string, T> target)
             {
+                Seed(target);
+
                 var expectedCount = target.Count;
 
                 if (target.Any())
                 {
-                    var key = target.Last().Key;
-                    var value = target.Last().Value;
-
-                    if (!Equals(value, SampleValue))
+                    if (TryGetDifferentValue(target, SampleValue, out var result))
                     {
                         // Removing a KVP with existing key but the wrong value should return false
                         var didRemoveWrongValue = WriteIfNecessary(target, () =>
                         {
-                            return target.Remove(new KeyValuePair<string, T>(key, SampleValue));
+                            return target.Remove(new KeyValuePair<string, T>(result.Key, SampleValue));
                         });
 
                         Assert.That(didRemoveWrongValue, Is.False);
-                        Assert.That(target.ContainsKey(key), Is.True);
+                        Assert.That(target.ContainsKey(result.Key), Is.True);
                         Assert.That(target.Count, Is.EqualTo(expectedCount));
                     }
 
+                    var kvp = target.Last();
                     var didRemoveExisting = WriteIfNecessary(target, () =>
                     {
-                        return target.Remove(new KeyValuePair<string, T>(key, value));
+                        return target.Remove(new KeyValuePair<string, T>(kvp.Key, kvp.Value));
                     });
 
                     expectedCount--;
 
                     Assert.That(didRemoveExisting, Is.True);
-                    Assert.That(target.ContainsKey(key), Is.False);
+                    Assert.That(target.ContainsKey(kvp.Key), Is.False);
                     Assert.That(target.Count, Is.EqualTo(expectedCount));
                 }
 
@@ -1367,17 +1433,12 @@ namespace Realms.Tests.Database
                     return;
                 }
 
-                var indexToUpdate = -1;
-                while (true)
+                if (!TryGetDifferentValue(target, SampleValue, out var result))
                 {
-                    indexToUpdate = TestHelpers.Random.Next(0, target.Count);
-                    if (!Equals(target.AsRealmCollection()[indexToUpdate].Value, SampleValue))
-                    {
-                        break;
-                    }
+                    Assert.Fail("Couldn't find a unique value to replace - fix the test!");
                 }
 
-                var keyToUpdate = target.ElementAt(indexToUpdate).Key;
+                var keyToUpdate = result.Key;
                 WriteIfNecessary(target, () =>
                 {
                     target[keyToUpdate] = SampleValue;
@@ -1387,7 +1448,7 @@ namespace Realms.Tests.Database
 
                 var (oldIndex, newIndex) = assertModification(changes);
 
-                Assert.That(oldIndex, Is.EqualTo(indexToUpdate));
+                Assert.That(oldIndex, Is.EqualTo(result.Index));
                 Assert.That(target.ElementAt(newIndex).Key, Is.EqualTo(keyToUpdate));
                 Assert.That(target.ElementAt(newIndex).Value, Is.EqualTo(SampleValue));
 
@@ -1479,6 +1540,24 @@ namespace Realms.Tests.Database
                 });
             }
 
+            public void AssertNullKeys(IDictionary<string, T> target)
+            {
+                Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
+
+                Assert.Throws<KeyNotFoundException>(() => _ = target[null], "The given key 'null' was not present in the dictionary.");
+                Assert.Throws<ArgumentNullException>(() => target[null] = SampleValue, "A persisted dictionary cannot store null keys.");
+                Assert.Throws<ArgumentNullException>(() => target.Add(null, SampleValue), "A persisted dictionary cannot store null keys.");
+                Assert.Throws<ArgumentNullException>(() => target.Add(new KeyValuePair<string, T>(null, SampleValue)), "A persisted dictionary cannot store null keys.");
+
+                Assert.That(target.ContainsKey(null), Is.False);
+                Assert.That(target.Remove(null), Is.False);
+                Assert.That(target.Remove(new KeyValuePair<string, T>(null, SampleValue)), Is.False);
+
+                var hasKey = target.TryGetValue(null, out var foundValue);
+                Assert.That(hasKey, Is.False);
+                Assert.That(foundValue, Is.EqualTo(default(T)));
+            }
+
             public void Seed(IDictionary<string, T> target, IEnumerable<(string Key, T Value)> values = null)
             {
                 WriteIfNecessary(target, () =>
@@ -1534,6 +1613,39 @@ namespace Realms.Tests.Database
                     transaction?.Rollback();
                     throw;
                 }
+            }
+
+            private static bool AreValuesEqual(T first, T second)
+            {
+                if (Equals(first, second))
+                {
+                    return true;
+                }
+
+                if (first is byte[] firstArr && second is byte[] secondArr)
+                {
+                    return Enumerable.SequenceEqual(firstArr, secondArr);
+                }
+
+                return false;
+            }
+
+            private static bool TryGetDifferentValue(IDictionary<string, T> collection, T valueToCompare, out (int Index, string Key, T Value) result)
+            {
+                var index = 0;
+                foreach (var kvp in collection)
+                {
+                    if (!AreValuesEqual(kvp.Value, valueToCompare))
+                    {
+                        result = (index, kvp.Key, kvp.Value);
+                        return true;
+                    }
+
+                    index++;
+                }
+
+                result = (-1, null, default(T));
+                return false;
             }
 
             public IDictionary<string, T> GetReferenceDictionary() => InitialValues.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

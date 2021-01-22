@@ -39,14 +39,19 @@ namespace Realms
         {
             get
             {
-                if (_dictionaryHandle.TryGet(key, Metadata, Realm, out var result))
+                if (TryGetValue(key, out var result))
                 {
-                    return Operator.Convert<RealmValue, TValue>(result);
+                    return result;
                 }
 
                 throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
             }
-            set => _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
+
+            set
+            {
+                EnsureKeyNotNull(key);
+                _dictionaryHandle.Set(key, Operator.Convert<TValue, RealmValue>(value));
+            }
         }
 
         public ICollection<string> Keys
@@ -73,11 +78,15 @@ namespace Realms
             _dictionaryHandle = adoptedDictionary;
         }
 
-        public void Add(string key, TValue value) => _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
+        public void Add(string key, TValue value)
+        {
+            EnsureKeyNotNull(key);
+            _dictionaryHandle.Add(key, Operator.Convert<TValue, RealmValue>(value));
+        }
 
         public void Add(KeyValuePair<string, TValue> item) => Add(item.Key, item.Value);
 
-        public bool ContainsKey(string key) => _dictionaryHandle.ContainsKey(key);
+        public bool ContainsKey(string key) => key != null && _dictionaryHandle.ContainsKey(key);
 
         public DynamicMetaObject GetMetaObject(Expression parameter)
         {
@@ -86,13 +95,13 @@ namespace Realms
 
         public override int IndexOf(KeyValuePair<string, TValue> value) => throw new NotSupportedException();
 
-        public bool Remove(string key) => _dictionaryHandle.Remove(key);
+        public bool Remove(string key) => key != null && _dictionaryHandle.Remove(key);
 
-        public bool Remove(KeyValuePair<string, TValue> item) => _dictionaryHandle.Remove(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
+        public bool Remove(KeyValuePair<string, TValue> item) => item.Key != null && _dictionaryHandle.Remove(item.Key, Operator.Convert<TValue, RealmValue>(item.Value));
 
         public bool TryGetValue(string key, out TValue value)
         {
-            if (_dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
+            if (key != null && _dictionaryHandle.TryGet(key, Metadata, Realm, out var realmValue))
             {
                 value = Operator.Convert<RealmValue, TValue>(realmValue);
                 return true;
@@ -100,6 +109,16 @@ namespace Realms
 
             value = default;
             return false;
+        }
+
+        private static string EnsureKeyNotNull(string key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key), "A persisted dictionary cannot store null keys.");
+            }
+
+            return key;
         }
 
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);

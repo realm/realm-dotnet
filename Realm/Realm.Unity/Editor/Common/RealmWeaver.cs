@@ -346,6 +346,7 @@ Analytics payload
             var isRequired = prop.IsRequired(_references);
             if (isRequired &&
                 !prop.IsCollection(typeof(string)) &&
+                !prop.IsCollection(typeof(byte[])) &&
                 !prop.IsNullable() &&
                 prop.PropertyType.FullName != StringTypeName &&
                 prop.PropertyType.FullName != ByteArrayTypeName)

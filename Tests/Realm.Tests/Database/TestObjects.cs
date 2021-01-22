@@ -315,6 +315,11 @@ namespace Realms.Tests
         public IDictionary<string, RealmInteger<int>?> NullableInt32CounterDictionary { get; }
 
         public IDictionary<string, RealmInteger<long>?> NullableInt64CounterDictionary { get; }
+
+        public IDictionary<string, byte[]> NullableBinaryDictionary { get; }
+
+        [Required]
+        public IDictionary<string, byte[]> BinaryDictionary { get; }
     }
 
     public class CounterObject : RealmObject
