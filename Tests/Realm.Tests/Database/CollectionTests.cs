@@ -466,108 +466,22 @@ namespace Realms.Tests.Database
 
             return new InfoContainer[]
             {
-                new InfoContainer
-                (
-                    new BoolPropertyObject { Bool = true },
-                    "Bool == $0",
-                    true
-                ),
-                new InfoContainer
-                (
-                    new CharPropertyObject { Char = 'c' },
-                    "Char == $0",
-                    'c'
-                ),
-                new InfoContainer
-                (
-                    new SingleBytePropertyObject { Byte = 0x5 },
-                    "Byte == $0",
-                    0x5
-                ),
-                new InfoContainer
-                (
-                    new Int16PropertyObject { Short = 6 },
-                    "Short == $0",
-                    6
-                ),
-                new InfoContainer
-                (
-                    new IntPropertyObject { Int = 5 },
-                    "Int == $0",
-                    5
-                ),
-                new InfoContainer
-                (
-                    new Int64PropertyObject { Long = 5L },
-                    "Long == $0",
-                    5L
-                ),
-                new InfoContainer
-                (
-                    new FloatPropertyObject { Float = 5.0f },
-                    "Float == $0",
-                    5.0f
-                ),
-                new InfoContainer
-                (
-                    new DoublePropertyObject { Double = 5.0 },
-                    "Double == $0",
-                    5.0
-                ),
-                new InfoContainer
-                (
-                    new DatePropertyObject { Date = new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
-                    "Date == $0",
-                    new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero)
-                ),
-                new InfoContainer
-                (
-                    new DecimalPropertyObject { Decimal = new Decimal128(564.42343424323) },
-                    "Decimal == $0",
-                    new Decimal128(564.42343424323)
-                ),
-                new InfoContainer
-                (
-                    new ObjectIdPropertyObject { Id = new ObjectId("5f64cd9f1691c361b2451d96") },
-                    "Id == $0",
-                    new ObjectId("5f64cd9f1691c361b2451d96")
-                ),
-                new InfoContainer
-                (
-                    new GuidPropertyObject { Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e") },
-                    "Id == $0",
-                    new Guid("0f8fad5b-d9cb-469f-a165-70867728950e")
-                ),
-                new InfoContainer
-                (
-                    new BytePropertyObject { Data = new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 } },
-                    "Data == $0",
-                    new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }
-                ),
-                new InfoContainer
-                (
-                    new StringPropertyObject { String = "hello world" },
-                    "String == $0",
-                    "hello world"
-                ),
-                new InfoContainer
-                (
-                    new ObjectPropertyObject { Object = intProp },
-                    "Object == $0",
-                    intProp
-                ),
-                new InfoContainer
-                (
-                    new MultiPropertyObject
-                    {
-                        String = "hello pp",
-                        Int = 9,
-                        Float = 21.0f,
-                        Char = 'p'
-                    },
-                    "Int == $0 && Float == $1 && Char == $2 && String == $3",
-                    9, 21.0f, 'p', "hello pp"
-                )
+                new InfoContainer(new BoolPropertyObject { Bool = true }, "Bool == $0", true),
+                new InfoContainer(new CharPropertyObject { Char = 'c' }, "Char == $0", 'c'),
+                new InfoContainer(new SingleBytePropertyObject { Byte = 0x5 }, "Byte == $0", 0x5),
+                new InfoContainer(new Int16PropertyObject { Short = 6 }, "Short == $0", 6),
+                new InfoContainer(new IntPropertyObject { Int = 5 }, "Int == $0", 5),
+                new InfoContainer(new Int64PropertyObject { Long = 5L }, "Long == $0", 5L),
+                new InfoContainer(new FloatPropertyObject { Float = 5.0f }, "Float == $0", 5.0f),
+                new InfoContainer(new DoublePropertyObject { Double = 5.0 }, "Double == $0", 5.0),
+                new InfoContainer(new DatePropertyObject { Date = new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }, "Date == $0", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero)),
+                new InfoContainer(new DecimalPropertyObject { Decimal = new Decimal128(564.42343424323) }, "Decimal == $0", new Decimal128(564.42343424323)),
+                new InfoContainer(new ObjectIdPropertyObject { Id = new ObjectId("5f64cd9f1691c361b2451d96") }, "Id == $0", new ObjectId("5f64cd9f1691c361b2451d96")),
+                new InfoContainer(new GuidPropertyObject { Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e") }, "Id == $0", new Guid("0f8fad5b-d9cb-469f-a165-70867728950e")),
+                new InfoContainer(new BytePropertyObject { Data = new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 } }, "Data == $0", new byte[] { 0x5, 0x4, 0x3, 0x2, 0x1 }),
+                new InfoContainer(new StringPropertyObject { String = "hello world" }, "String == $0", "hello world"),
+                new InfoContainer(new ObjectPropertyObject { Object = intProp }, "Object == $0", intProp),
+                new InfoContainer(new MultiPropertyObject { String = "hello pp", Int = 9, Float = 21.0f, Char = 'p' }, "Int == $0 && Float == $1 && Char == $2 && String == $3", 9, 21.0f, 'p', "hello pp")
             };
         }
 
