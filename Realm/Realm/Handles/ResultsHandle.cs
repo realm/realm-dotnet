@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -189,19 +190,16 @@ namespace Realms
 
         public override ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
         {
-            PrimitiveValue[] nativeArgs = new PrimitiveValue[arguments.Length];
-            RealmValue.HandlesToCleanup?[] nativeHandles = new RealmValue.HandlesToCleanup?[arguments.Length];
+            var nativeArgs = new (PrimitiveValue Value, RealmValue.HandlesToCleanup? Handles)[arguments.Length];
             for (int i = 0; i < arguments.Length; ++i)
             {
-                var converted = arguments[i].ToNative();
-                nativeArgs[i] = converted.Value;
-                nativeHandles[i] = converted.Handles;
+                nativeArgs[i] = arguments[i].ToNative();
             }
 
-            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, nativeArgs, nativeArgs.Length, out var ex);
-            foreach (var handle in nativeHandles)
+            var ptr = NativeMethods.get_filtered_results(this, query, (IntPtr)query.Length, nativeArgs.Select(x => x.Value).ToArray(), nativeArgs.Length, out var ex);
+            foreach (var arg in nativeArgs)
             {
-                handle?.Dispose();
+                arg.Handles?.Dispose();
             }
 
             ex.ThrowIfNecessary();
