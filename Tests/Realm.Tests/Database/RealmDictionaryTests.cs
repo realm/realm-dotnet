@@ -1249,6 +1249,7 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
 
                 Seed(target);
+                target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<ChangeSet>();
                 using var token = target.SubscribeForNotifications((collection, changes, error) =>
@@ -1296,6 +1297,8 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
 
                 Seed(target);
+
+                target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<NotifyCollectionChangedEventArgs>();
                 target.AsRealmCollection().CollectionChanged += HandleCollectionChanged;
@@ -1444,6 +1447,8 @@ namespace Realms.Tests.Database
                     {
                         target.Remove(newKey);
                     });
+
+                    frozenDict.AsRealmCollection().Realm.Dispose();
                 }
                 else
                 {
