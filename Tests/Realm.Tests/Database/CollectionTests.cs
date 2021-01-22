@@ -460,6 +460,18 @@ namespace Realms.Tests.Database
         [Test]
         public void Multiple_values_string_based_query() => Generic_string_based_query<MultiPropertyObject>();
 
+        [Test]
+        public void In_Memory_String_Based_Query_Fails()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new ObjectPropertyObject { Object = new IntPropertyObject { Int = 5 } });
+            });
+
+            var query = _realm.All<ObjectPropertyObject>().Filter("Object = $0", new IntPropertyObject { Int = 5 });
+            Assert.That(query.Count, Is.EqualTo(0));
+        }
+
         private static InfoContainer[] InitArray()
         {
             var intProp = new IntPropertyObject { Int = 42 };
