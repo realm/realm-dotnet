@@ -43,7 +43,7 @@ namespace binding {
     void (*s_open_realm_callback)(void* task_completion_source, ThreadSafeReference* ref, int32_t error_code, const char* message, size_t message_len);
     void (*s_realm_changed)(void* managed_state_handle);
     void (*s_get_native_schema)(SchemaForMarshaling schema, void* managed_callback);
-    void (*s_free_gc_handle)(void* managed_handle);
+    void (*s_on_binding_context_destructed)(void* managed_handle);
 
     CSharpBindingContext::CSharpBindingContext(void* managed_state_handle) : m_managed_state_handle(managed_state_handle) {}
 
@@ -54,7 +54,7 @@ namespace binding {
 
     CSharpBindingContext::~CSharpBindingContext()
     {
-        s_free_gc_handle(m_managed_state_handle);
+        s_on_binding_context_destructed(m_managed_state_handle);
     }
 }
 
@@ -104,12 +104,12 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
 extern "C" {
 
-REALM_EXPORT void shared_realm_install_callbacks(decltype(s_realm_changed) realm_changed, decltype(s_get_native_schema) get_schema, decltype(s_open_realm_callback) open_callback, decltype(s_free_gc_handle) free_gc_handle)
+REALM_EXPORT void shared_realm_install_callbacks(decltype(s_realm_changed) realm_changed, decltype(s_get_native_schema) get_schema, decltype(s_open_realm_callback) open_callback, decltype(s_on_binding_context_destructed) on_binding_context_destructed)
 {
     s_realm_changed = realm_changed;
     s_get_native_schema = get_schema;
     s_open_realm_callback = open_callback;
-    s_free_gc_handle = free_gc_handle;
+    s_on_binding_context_destructed = on_binding_context_destructed;
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
