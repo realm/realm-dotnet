@@ -413,55 +413,55 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Bool_string_based_query() => Generic_string_based_query<BoolPropertyObject>();
+        public void Bool_StringBasedQuery() => Generic_StringBasedQuery<BoolPropertyObject>();
 
         [Test]
-        public void Char_string_based_query() => Generic_string_based_query<CharPropertyObject>();
+        public void Char_StringBasedQuery() => Generic_StringBasedQuery<CharPropertyObject>();
 
         [Test]
-        public void SingleByte_string_based_query() => Generic_string_based_query<SingleBytePropertyObject>();
+        public void SingleByte_StringBasedQuery() => Generic_StringBasedQuery<SingleBytePropertyObject>();
 
         [Test]
-        public void Int16_string_based_query() => Generic_string_based_query<Int16PropertyObject>();
+        public void Int16_StringBasedQuery() => Generic_StringBasedQuery<Int16PropertyObject>();
 
         [Test]
-        public void Int_string_based_query() => Generic_string_based_query<IntPropertyObject>();
+        public void Int_StringBasedQuery() => Generic_StringBasedQuery<IntPropertyObject>();
 
         [Test]
-        public void Int64_string_based_query() => Generic_string_based_query<Int64PropertyObject>();
+        public void Int64_StringBasedQuery() => Generic_StringBasedQuery<Int64PropertyObject>();
 
         [Test]
-        public void Float_string_based_query() => Generic_string_based_query<FloatPropertyObject>();
+        public void Float_StringBasedQuery() => Generic_StringBasedQuery<FloatPropertyObject>();
 
         [Test]
-        public void Double_string_based_query() => Generic_string_based_query<DoublePropertyObject>();
+        public void Double_StringBasedQuery() => Generic_StringBasedQuery<DoublePropertyObject>();
 
         [Test]
-        public void Date_string_based_query() => Generic_string_based_query<DatePropertyObject>();
+        public void Date_StringBasedQuery() => Generic_StringBasedQuery<DatePropertyObject>();
 
         [Test]
-        public void Decimal_string_based_query() => Generic_string_based_query<DecimalPropertyObject>();
+        public void Decimal_StringBasedQuery() => Generic_StringBasedQuery<DecimalPropertyObject>();
 
         [Test]
-        public void ObjectId_string_based_query() => Generic_string_based_query<ObjectIdPropertyObject>();
+        public void ObjectId_StringBasedQuery() => Generic_StringBasedQuery<ObjectIdPropertyObject>();
 
         [Test]
-        public void Guid_string_based_query() => Generic_string_based_query<GuidPropertyObject>();
+        public void Guid_StringBasedQuery() => Generic_StringBasedQuery<GuidPropertyObject>();
 
         [Test]
-        public void Byte_string_based_query() => Generic_string_based_query<BytePropertyObject>();
+        public void Byte_StringBasedQuery() => Generic_StringBasedQuery<BytePropertyObject>();
 
         [Test]
-        public void String_string_based_query() => Generic_string_based_query<StringPropertyObject>();
+        public void String_StringBasedQuery() => Generic_StringBasedQuery<StringPropertyObject>();
 
         [Test]
-        public void Object_string_based_query() => Generic_string_based_query<ObjectPropertyObject>();
+        public void Object_StringBasedQuery() => Generic_StringBasedQuery<ObjectPropertyObject>();
 
         [Test]
-        public void Multiple_values_string_based_query() => Generic_string_based_query<MultiPropertyObject>();
+        public void MultipleValues_StringBasedQuery() => Generic_StringBasedQuery<MultiPropertyObject>();
 
         [Test]
-        public void In_Memory_String_Based_Query_Fails()
+        public void InMemoryObject_StringBasedQuery_ShouldFindNone()
         {
             _realm.Write(() =>
             {
@@ -497,7 +497,7 @@ namespace Realms.Tests.Database
             };
         }
 
-        private void Generic_string_based_query<T>()
+        private void Generic_StringBasedQuery<T>()
             where T : RealmObject
         {
             var listToStringQuery = InitArray();
